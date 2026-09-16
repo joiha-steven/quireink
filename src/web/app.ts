@@ -98,9 +98,6 @@ export function createApp(): Hono {
   // that becomes a logged, typed 500.
   app.onError(errorHandler())
 
-  // A trailing slash is the same page, not a miss. See `web/canonical-path.ts`.
-  app.use('*', canonicalPath())
-
   // A URL NO route claims. The `/{slug}` route answers a single-segment miss with the 404
   // page, so that case has always looked right — and it is the only case anyone checked.
   // Anything with two or more segments matched no route at all and fell through to Hono's
@@ -119,6 +116,20 @@ export function createApp(): Hono {
   // Nothing here ever sent content-encoding, so every page and every asset left the origin
   // uncompressed. Outermost of the three, so it sees the finished body of every route.
   app.use('*', compression())
+
+  // A trailing slash is the same page, not a miss. See `web/canonical-path.ts`.
+  //
+  // ⚠️ BELOW THE THREE ABOVE, and that placement is the whole point. Registered first, it was
+  // OUTSIDE them, so the 301 it returns without calling `next()` never reached `cacheHeaders`,
+  // `securityHeaders` or `compression`: measured 2026-09-16, `/page/1` answered 301 with no
+  // `cache-control` and no `x-frame-options` while an ordinary page carried both. A 301 with no
+  // freshness is heuristically cacheable and browsers hold it hard, and this one's destination
+  // is a SETTING (`listRoot()` reads `home.mode` and `home.listPath`), so renaming the list path
+  // left every reader who had seen `/page/1` being sent to the old one, with nothing on the
+  // server able to reach into their browser and undo it. From here it takes `private, no-store`
+  // from `cacheHeaders`, which is what `/favicon.ico`'s redirect already gets for the same
+  // reason: a pointer that can change must not be kept.
+  app.use('*', canonicalPath())
 
   // A URL the owner MOVED answers before any route sees it. See `web/redirects.ts`.
   app.use('*', userRedirects())

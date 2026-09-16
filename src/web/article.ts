@@ -26,7 +26,7 @@ import { formatCount, formatDate, t } from '@/i18n/i18n'
 import { PUBLIC_SHEET, articleScripts } from '@/web/assets'
 import { articleLabels } from '@/web/article-labels'
 import { ogImageUrl } from '@/render/og'
-import { isPublicallyVisible, clampExcerpt, readingMinutes, toPlainText, wordCount } from '@/utils'
+import { isPublicallyVisible, clampExcerpt, minutesFor, toPlainText, wordCount } from '@/utils'
 import { renderDocument, pageStyles } from '@/web/layout'
 import { blogPostingSchema } from '@/render/schema'
 import { postInfoPanel, termLinks, bookToggle } from '@/web/post-info'
@@ -99,10 +99,14 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     const category = features.categoryLabel ? post.categories[0] : undefined
     // The figures are wrapped and the units are not: the IDE chrome sets a literal apart
     // from the words around it, and it cannot do that to a bare text node.
+    // ONE pass for both numbers, and the same one the info panel prints. `wordCount` runs
+    // `toPlainText` over the whole body, and this pair used to be taken twice here and twice
+    // more in `postInfoPanel`: four passes for two numbers on one screen.
+    const words = features.readingTime ? wordCount(post.content) : 0
     const length = features.readingTime
-      ? ` · <span class="num">${formatCount(wordCount(post.content), settings.language)}</span>`
+      ? ` · <span class="num">${formatCount(words, settings.language)}</span>`
         + ` ${escapeHtml(s.wordsSuffix)}`
-        + ` · <span class="num">${readingMinutes(post.content)}</span> ${escapeHtml(s.readingSuffix)}`
+        + ` · <span class="num">${minutesFor(words)}</span> ${escapeHtml(s.readingSuffix)}`
       : ''
     // Desktop and tablet only, hidden by CSS on a narrow screen: two columns of type in
     // a phone-width viewport is worse than one, not better.
@@ -213,7 +217,7 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     // table read `mediaFacts` already did.
     hero = heroImage(post, settings, ready,
       dims.get(collapseBlob(post.featuredImage || post.coverImage || '')))
-    lead = postInfoPanel(post, settings, s) + seriesBox
+    lead = postInfoPanel(post, settings, s, words) + seriesBox
     // Tags first (they belong to the post), then the person, then the ways onward. '' unless
     // the owner has filled in both a name and a bio.
     footer = taxoBlock + authorBox(settings) + readNextBlock + relatedBlock
@@ -299,8 +303,14 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   // That sentence was true while the constant above said 200. They agree now.
   // Same shape as `OG_DESC_MAX` below — each surface states its own bound, and none of them
   // reaches back to shorten what everybody else gets.
+  // ONE pass, shared with the card below. Both surfaces fall back to the same flattened body
+  // and each clamps it to its own bound; they were running `toPlainText` over the whole
+  // document twice for one string. Lazy, because an authored description means neither needs
+  // it: only a post with no meta description and no excerpt pays anything at all.
+  let flattened: string | null = null
+  const plainBody = (): string => (flattened ??= toPlainText(item.content))
   const description = clampExcerpt(
-    post?.metaDescription || post?.excerpt || toPlainText(item.content).slice(0, 300),
+    post?.metaDescription || post?.excerpt || plainBody().slice(0, 300),
     META_DESC_MAX,
   )
 
@@ -316,7 +326,9 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   // Each island checks for its own markup first, so a post with no code blocks and no
   // images runs a few cheap queries that find nothing rather than downloading a file each.
   const shell = {
-    bodyData: articleLabels(settings, s, !!post, settings.comments.googleAuth && commentEnv?.googleConfigured === true),
+    bodyData: articleLabels(settings, s, !!post,
+      settings.comments.googleAuth && commentEnv?.googleConfigured === true,
+      commentsMount !== '', !!post && settings.features.bookMode),
     scripts: articleScripts(!!post && settings.features.bookMode, commentsMount !== '',
       !!post && settings.features.readerPen),
     customHead: settings.customHead,
@@ -341,7 +353,7 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
         // six lines of its own to fill, and a share preview that stops mid-thought after two
         // of them is the reason it looked thin. An AUTHORED meta description still wins --
         // those are words somebody chose -- and only the derived case runs longer.
-        desc: post ? clampExcerpt(post.metaDescription || toPlainText(item.content), OG_DESC_MAX) : undefined,
+        desc: post ? clampExcerpt(post.metaDescription || plainBody(), OG_DESC_MAX) : undefined,
         date: post ? formatDate(post.date, settings.language, settings.timezone) : undefined,
       }),
       ogType: post ? 'article' : 'website',

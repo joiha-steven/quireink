@@ -28,13 +28,14 @@ import { CONTROL_SM, ICON_KEY, TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/
 
 import { emptyState, icon, lamp, selectionBar, tabs, tick } from '@/web/admin/kit'
 import { numBand } from '@/web/admin/kit-figures'
+// Fifty a page. The island never draws a row; it decides which of these fifty-somethings
+// show, and it reads the same constant so the two cannot disagree about what a page is.
+import { SUBSCRIBERS_PER_PAGE as PER_PAGE } from '@/admin-shared/analytics'
 import type { subscribersView } from '@/web/admin/views-news'
 
 type People = Awaited<ReturnType<typeof subscribersView>>
 type Row = People['subscribers'][number]
 
-/** Fifty a page. The island never draws a row; it decides which of these fifty-somethings show. */
-export const PER_PAGE = 50
 
 const shortDate = (iso?: string): string => (iso ? iso.slice(0, 10) : '—')
 

@@ -7,7 +7,12 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { typographyToCss } from '@/content/settings'
 import { DEFAULT_TYPOGRAPHY, TYPE_ROLES, getFontPreset } from '@/content/themes'
 import { PUBLIC_CSS } from '@/web/public.css'
-import { MONO_TRACKING } from '@/render/font-faces'
+import { monoTracking } from '@/render/font-faces'
+
+// The three blocks together, which is what `MONO_TRACKING` used to be and what these
+// assertions are about: WHICH selectors the correction may and may not name. Which of the
+// three a given page actually gets is `monoTracking`'s own question, asserted below.
+const MONO_TRACKING = monoTracking('plex-mono', 'code') + monoTracking('jetbrains-mono', 'plain')
 
 const DIR = './.tmp/test-typography'
 freshDatabase(DIR)
@@ -311,5 +316,35 @@ describe('the page reads like a set book', () => {
     expect(PUBLIC_CSS).toContain('hyphenate-limit-chars:6 3 3')
     expect(PUBLIC_CSS).toContain('-webkit-hyphenate-limit-before:3')
     expect(PUBLIC_CSS).toContain('-webkit-hyphenate-limit-after:3')
+  })
+})
+
+describe('a page carries only the tracking it can match', () => {
+  it('a default install carries none of it', () => {
+    // Inter and the plain look: all three blocks are keyed on attributes this page does not
+    // have. They shipped anyway until 2026-09-16, 289 compressed bytes on every page view.
+    expect(monoTracking('inter', 'plain')).toBe('')
+    expect(monoTracking('reading', 'plain')).toBe('')
+  })
+
+  it('a mono chrome font carries its own block and not the other one', () => {
+    const plex = monoTracking('plex-mono', 'plain')
+    expect(plex).toContain('html[data-chrome-font="plex-mono"]')
+    expect(plex).not.toContain('jetbrains-mono')
+    expect(plex).not.toContain('data-look=code')
+
+    const jb = monoTracking('jetbrains-mono', 'plain')
+    expect(jb).toContain('html[data-chrome-font="jetbrains-mono"]')
+    expect(jb).not.toContain('plex-mono')
+  })
+
+  it('the source-code look carries the look block whatever the font is', () => {
+    expect(monoTracking('inter', 'code')).toContain('html[data-look=code]')
+    expect(monoTracking('inter', 'code')).not.toContain('data-chrome-font')
+  })
+
+  it('the look block comes LAST, so it wins over a font it is no longer drawing', () => {
+    const both = monoTracking('plex-mono', 'code')
+    expect(both.indexOf('data-look=code')).toBeGreaterThan(both.indexOf('data-chrome-font'))
   })
 })

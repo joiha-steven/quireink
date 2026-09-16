@@ -144,7 +144,11 @@ if (root) {
     const field = screen.querySelector<HTMLElement>(`[data-k="${CSS.escape(k)}"]`)
     const panel = field?.closest<HTMLElement>('[data-settings-panel]')
     if (panel?.dataset.settingsPanel) swap(panel.dataset.settingsPanel)
-    const note = field?.closest('[data-field-box]')?.querySelector<HTMLElement>('[data-field-error]')
+    // BY THE KEY, not by walking up to a wrapper. This read `field.closest('[data-field-box]')`
+    // and nothing in `web/admin/` has ever drawn `data-field-box`, so `closest` returned null
+    // and the server's named refusal stayed hidden on every screen that raised one. The
+    // paragraph carries the same key the event does (`screens/settings-home.ts`), so ask for it.
+    const note = screen.querySelector<HTMLElement>(`[data-field-error="${CSS.escape(k)}"]`)
     if (note) note.hidden = false
     field?.focus()
   })

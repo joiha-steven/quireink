@@ -18,6 +18,7 @@ import type { Context } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { COOKIE_NAME, resolveSession } from '@/auth/sessions'
 import { serverSecret } from '@/auth/secret'
+import { escapeHtml } from '@/utils'
 
 const secret = (): string => process.env.MCP_OAUTH_SECRET || serverSecret('mcp-oauth')
 
@@ -61,9 +62,12 @@ export function verifyCsrf(c: Context, p: OAuthParams, submitted: string): boole
   return expected.length === given.length && timingSafeEqual(expected, given)
 }
 
-const esc = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+// `escapeHtml` under a local name. This was a character-for-character copy of it, and the only
+// one of the tree's local escapers with no stated reason to exist: the others each name a real
+// constraint (XML wants `&apos;`, an import cycle, a text-node context). `utils.ts` opens by
+// warning about exactly this shape, two functions with one job and the weaker one reached for
+// by whoever writes the next line.
+const esc = escapeHtml
 
 /**
  * A self-contained consent page.

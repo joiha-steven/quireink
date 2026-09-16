@@ -130,12 +130,17 @@ Tính năng bật sẵn từ lúc cài, một công tắc để tắt (Cài đ�
 
 Số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-| | Trang chủ | Một bài | |
+**Bản cài MẶC ĐỊNH, không tắt thứ gì.** Đo trên bộ dữ liệu demo, đúng thứ `bun run tour` tự
+dựng, nên ai có kho mã cũng đo lại được. Chế độ đọc sách và cây bút cho người đọc vốn đã BẬT
+sẵn, ở đây chúng được tính đúng như vậy; cột cuối là phần lấy lại được nếu tắt đi.
+
+| | Trang chủ | Một bài | Nếu tắt bớt |
 |:---|---:|---:|:---|
-| **Số&nbsp;request** | 8 | 9 | 11 ở bài có bật chế độ sách và bình luận |
-| **Tổng&nbsp;tải&nbsp;về** | **100&nbsp;KB** | **98&nbsp;KB** | 68&nbsp;KB trong đó là font |
-| **JavaScript** | **3,8&nbsp;KB** | **6,5&nbsp;KB** | viết tay, không framework; +5,1&nbsp;KB chỉ khi bật chế độ đọc sách và bình luận, +4,5&nbsp;KB chỉ khi cho người đọc cầm bút |
-| **CSS** | 11,5&nbsp;KB | 11,5&nbsp;KB | +11&nbsp;KB chỉ ở trang có vệt bút |
+| **Số&nbsp;request** | 8 | 16 | 14 |
+| **Tổng&nbsp;tải&nbsp;về** | **128&nbsp;KB** | **131&nbsp;KB** | 122&nbsp;KB |
+| **JavaScript** | **4,2&nbsp;KB** | **15,8&nbsp;KB** | **7,5&nbsp;KB** nếu tắt chế độ đọc sách và cây bút; viết tay, không framework |
+| **CSS** | 12&nbsp;KB | 32,6&nbsp;KB | 20,6&nbsp;KB dôi ra là hai tệp vệt bút, và chỉ trang nào có vệt mới nạp chúng |
+| **Font** | 103&nbsp;KB | 73&nbsp;KB | cắt theo từng hệ chữ, nên đây là dòng duy nhất do nội dung của anh quyết: tiêu đề trong demo chạy qua ba bảng chữ cái |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần&nbsp;vào&nbsp;sau** | **0&nbsp;byte** | **0&nbsp;byte** | đúng trang đó trả `304` |
 

@@ -146,7 +146,25 @@ ENV NODE_ENV=production \
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/src ./src
 COPY --from=build /app/locales ./locales
-COPY --from=build /app/scripts ./scripts
+# THE SCRIPTS A RUNNING BLOG USES, not the whole directory.
+#
+# `COPY --from=build /app/scripts` shipped 4.1 MB of workshop to every install: 3.2 MB of
+# public-domain paintings that only the demo seeder reads, the twelve static guards, the 211
+# tour flows, the screenshot drivers. Measured 2026-09-16; the published image is 87 MB
+# compressed, and JPEGs do not compress twice, so the paintings alone were about 4% of what
+# every person pulls. Nothing in `src/` reads any of it and the entrypoint never seeds.
+#
+# What stays is what the docs tell an operator to run: the backup and uptime scripts
+# (`docs/self-host.md`), the owner-account CLI (`bun run user`), and the pen sheet. The BUILD
+# stage still gets the whole directory, because that is where `build:assets` and
+# `build:admin` live.
+#
+# `ops/` is named file by file rather than copied whole, because two of its six are
+# workshop too: `tour.sh` and `shoot-readme.sh` drive a browser and call `seed-showcase.ts`
+# and `tour.ts`, none of which is in the image. Shipping a script that cannot run is how an
+# operator ends up reporting a bug against a tool nobody meant them to have.
+COPY --from=build /app/scripts/ops/quire-backup.sh /app/scripts/ops/quire-uptime.sh ./scripts/ops/
+COPY --from=build /app/scripts/user.ts /app/scripts/pen-sheet.ts ./scripts/
 COPY package.json bun.lock tsconfig.json ./
 
 # See note 3 above. Both paths are ENV defaults, so overriding them in compose without

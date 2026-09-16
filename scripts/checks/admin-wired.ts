@@ -132,6 +132,102 @@ function readsInMarkup(): string {
   return out.join('\n')
 }
 
+
+/**
+ * ...AND THE OTHER DIRECTION, which is not the same question.
+ *
+ * The check above proves every hook the markup draws has a reader. It says nothing about a hook
+ * an island READS that nobody draws, and that fault is quieter: `querySelector` returns null, an
+ * `if` fails, and the screen simply never does the thing. Two shipped. `[data-log-nomatch]` meant
+ * filtering the activity log to nothing showed a blank panel instead of the "no match" box the
+ * screen draws for exactly that, and `[data-field-box]` meant the server's NAMED refusal on a
+ * settings field stayed hidden for ever: the island walked up to a wrapper that has never
+ * existed in `src/web/admin`. Both were found on 2026-09-16 by running this half by hand.
+ *
+ * The same lesson the CSS guards taught on 2026-09-11, on a different guard: cutting 208
+ * "unused" rules left both of them green and took five tour flows down. A guard's reverse is a
+ * second guard, and this file was half a guard for a day.
+ */
+/**
+ * Hooks an island reads from HTML THIS PRODUCT DID NOT WRITE, each with the reason.
+ *
+ * ⚠️ THE ONLY HONEST ENTRY IS FOREIGN MARKUP. A `parseDOM` rule runs over whatever is on the
+ * clipboard, so it may reasonably look for an attribute no `toDOM` here produces. Anything
+ * else put on this list to get a green check is the fault this half exists to catch.
+ */
+const FOREIGN = new Map<string, string>([
+  ['data-align', 'a table cell pasted from elsewhere; this editor writes the alignment as'
+    + ' `style="text-align: …"`, and `parseDOM` takes either'],
+])
+
+const WRITE_SPELLINGS = [
+  // `setAttribute('data-x', …)`, and its remove twin: you cannot remove what is never set.
+  /(?:set|remove)Attribute\(\s*['"`](data-[a-z0-9-]+)/g,
+  // An object literal of attributes, which is how ProseMirror's `toDOM` writes its nodes.
+  /['"`](data-[a-z0-9-]+)['"`]\s*:/g,
+  // Markup in a template literal, either a fixed value or an interpolated one.
+  /(data-[a-z0-9-]+)=["'`$]/g,
+  // `el.dataset.x = …`, the property form of the same write.
+  //
+  // ⚠️ THE WHOLE PROPERTY, then the `=`. Written as one pattern with a lookahead, the engine
+  // backtracks to whatever prefix makes the lookahead true, so `dataset.trashTab =` reported
+  // `data-trash-ta`. Nine names came back truncated on the first run of this half.
+  /dataset\.([A-Za-z0-9]+)\b\s*=[^=]/g,
+]
+
+const kebab = (camel: string): string =>
+  `data-${camel.replace(/([A-Z])/g, (_, c: string) => `-${c.toLowerCase()}`)}`
+
+/** Every hook an island asks the DOM for, and the file that asks. */
+function readByIslands(): Map<string, string> {
+  const out = new Map<string, string>()
+  // ⚠️ THE ADMIN'S OWN ISLANDS ONLY. `written()` reads `src/web/admin`, so the drawn side of
+  // this comparison is the admin's markup; `src/assets/js` reads hooks the PUBLIC pages draw
+  // (`data-turnstile`, `data-tz`) and would be reported against a directory that was never
+  // asked about it. `scripts/` steers by markers it does not own either.
+  for (const file of islands) {
+    if (!file.startsWith('src/admin')) continue
+    const text = bare(readFileSync(file, 'utf8'))
+    for (const hit of text.matchAll(/\[(data-[a-z0-9-]+)[\]=]|getAttribute\(\s*['"`](data-[a-z0-9-]+)/g)) {
+      const name = hit[1] ?? hit[2] ?? ''
+      if (name && !out.has(name)) out.set(name, file)
+    }
+    // Every `dataset.x`, then the writes taken back out: a property that is assigned is drawn
+    // by this island rather than asked of somebody else's markup.
+    const written = new Set([...text.matchAll(/dataset\.([A-Za-z0-9]+)\b\s*=[^=]/g)].map((m) => m[1]))
+    for (const hit of text.matchAll(/dataset\.([A-Za-z0-9]+)\b/g)) {
+      const prop = hit[1] ?? ''
+      if (written.has(prop)) continue
+      const name = kebab(prop)
+      if (!out.has(name)) out.set(name, file)
+    }
+  }
+  return out
+}
+
+/**
+ * Every hook anything WRITES: the server's markup, plus what an island sets itself.
+ *
+ * ⚠️ AN ISLAND DRAWING ITS OWN ATTRIBUTE COUNTS. `write-pick.ts` sets `data-write-pick` on a row
+ * it just picked and reads it back a moment later; the editor's schema writes `data-math`,
+ * `data-video` and `data-type` in `toDOM` and reads them in `parseDOM`. Five of the first seven
+ * this half reported were that shape, and a guard that calls them faults is a guard nobody runs
+ * twice. Only the WRITING spellings count, or a query would vouch for itself.
+ */
+function drawnAnywhere(): Set<string> {
+  const out = new Set(written().keys())
+  for (const file of islands) {
+    const text = bare(readFileSync(file, 'utf8'))
+    for (const re of WRITE_SPELLINGS) {
+      for (const hit of text.matchAll(re)) {
+        const raw = hit[1] ?? ''
+        out.add(raw.startsWith('data-') ? raw : kebab(raw))
+      }
+    }
+  }
+  return out
+}
+
 const prose = [...islands.map((f) => bare(readFileSync(f, 'utf8'))), readsInMarkup()].join('\n')
 const css = readFileSync(SHEET, 'utf8')
 const drawn = written()
@@ -142,13 +238,29 @@ for (const [hook, file] of [...drawn].sort()) {
   deaf.push(`${hook} — drawn in ${file}`)
 }
 
-console.log(`  ${drawn.size} hook(s) in the admin's markup, ${islands.length} island file(s) reading`)
-if (deaf.length === 0) {
+const drawnSomewhere = drawnAnywhere()
+const blind: string[] = []
+for (const [hook, file] of [...readByIslands()].sort()) {
+  if (drawnSomewhere.has(hook) || FOREIGN.has(hook)) continue
+  blind.push(`${hook} — asked for in ${file}`)
+}
+
+console.log(`  ${drawn.size} hook(s) drawn, ${islands.length} island file(s) reading,`
+  + ` ${readByIslands().size} hook(s) asked for`)
+if (deaf.length === 0 && blind.length === 0) {
   console.log('✓ check:admin-wired: ok')
 } else {
-  console.log(`✗ check:admin-wired: ${deaf.length} hook(s) that nothing reads`)
-  for (const line of deaf) console.log(`  - ${line}`)
-  console.log('  A drawn control with no reader is a key that does nothing when pressed.')
-  console.log('  Wire it in `src/admin/island/`, or take the markup out.')
+  if (deaf.length > 0) {
+    console.log(`✗ check:admin-wired: ${deaf.length} hook(s) that nothing reads`)
+    for (const line of deaf) console.log(`  - ${line}`)
+    console.log('  A drawn control with no reader is a key that does nothing when pressed.')
+    console.log('  Wire it in `src/admin/island/`, or take the markup out.')
+  }
+  if (blind.length > 0) {
+    console.log(`✗ check:admin-wired: ${blind.length} hook(s) that nothing draws`)
+    for (const line of blind) console.log(`  - ${line}`)
+    console.log('  An island asking for a hook nobody draws finds null and does nothing,')
+    console.log('  silently. Draw it in `src/web/admin/`, or stop asking.')
+  }
   process.exit(1)
 }

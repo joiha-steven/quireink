@@ -23,11 +23,11 @@ import { createHash } from 'node:crypto'
 import { parseUa } from '@/analytics/ua'
 import { bufferEvent, bufferScroll } from '@/analytics/buffer'
 import { nowMs } from '@/store/db'
-import { one } from '@/store/query'
 import { getSettings } from '@/content/settings'
 import { getPublicPosts } from '@/content/posts'
 import { listPageSize, parsePathPage } from '@/content/paginate'
 import { resolveSeries } from '@/content/series'
+import { liveSlugTaken } from '@/content/slugs'
 import { resolveTerm } from '@/content/taxonomy'
 import { serverSecret } from '@/auth/secret'
 
@@ -109,8 +109,9 @@ export async function pathIsServable(p: string): Promise<boolean> {
   if (slug === '' || slug.includes('/')) return false
   const { home } = await getSettings()
   if (home.mode !== 'list' && home.listPath === p) return true
-  return !!one<{ slug: string }>(`select slug from posts where slug = ? and deleted_at is null`, slug)
-    || !!one<{ slug: string }>(`select slug from pages where slug = ? and deleted_at is null`, slug)
+  // `slugs.ts` owns this question (Invariant 2), and this was a character-for-character copy
+  // of its body. That file's own comment records a previous round of the same drift.
+  return liveSlugTaken(slug)
 }
 
 // Record one page view. Never throws (analytics must not break a page load).

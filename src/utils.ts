@@ -125,6 +125,15 @@ export function toPlainText(markdown: string): string {
     // thing this file's own history argues hardest against.
     .replace(MATH_SYNTAX_GLOBAL, (...m: (string | undefined)[]) =>
       isDisplayMatch(m) ? ' ' : stripTex(mathOf(m)))
+    // A LIST MARKER, and only at the head of a line. The bare-character strip below takes
+    // `*` but not `-`, because a hyphen belongs inside "self-hosted" and between dates, so a
+    // list written with asterisks counted nothing extra and the same list written with
+    // hyphens counted one word per bullet. Found 2026-09-16 by making the editor's word count
+    // and this one agree: they disagreed on `- one\n- two`, and this side was the wrong one.
+    // It reaches further than the count: this is also the excerpt, the meta description, the
+    // OG card and the RSS summary, so a post opening with a hyphen list had the hyphens in
+    // all four. Anchored and followed by space, so nothing mid-sentence matches.
+    .replace(/^[ \t]*(?:[-+]|\d+[.)])[ \t]+/gm, '')
     .replace(/[#>*_`~]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
@@ -160,9 +169,24 @@ export function wordCount(markdown: string): number {
   return toPlainText(markdown).split(' ').filter(Boolean).length
 }
 
-// Estimated reading time in whole minutes (>= 1), ~200 words per minute.
+/**
+ * How fast a reader is assumed to be. One number, because it is printed in two places.
+ *
+ * The writing sheet used to carry its own copy at 220, with its own tokenizer, so the same
+ * body read "14 min" on the published page and "13 min" over the editor. Measured 2026-09-16
+ * on a 2,800 word piece: the two disagreed on every shape tried, prose and pictures and code
+ * and pen marks alike. `admin-shared/word-count.ts` is the same arithmetic now, not a second
+ * opinion about it.
+ */
+export const WORDS_PER_MINUTE = 200
+
+/** Whole minutes (>= 1) for a count somebody else has already taken. */
+export const minutesFor = (words: number): number =>
+  Math.max(1, Math.round(words / WORDS_PER_MINUTE))
+
+// Estimated reading time in whole minutes (>= 1).
 export function readingMinutes(markdown: string): number {
-  return Math.max(1, Math.round(wordCount(markdown) / 200))
+  return minutesFor(wordCount(markdown))
 }
 
 export type Heading = { id: string; text: string; level: 2 | 3 }

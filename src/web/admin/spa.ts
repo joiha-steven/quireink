@@ -14,7 +14,6 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Context } from 'hono'
 import type { SiteSettings } from '@/types'
-import { shellView } from '@/web/admin/views'
 import { getIntegrationStatus } from '@/store/integration-keys'
 import { railBootScript, railData, railHtml, railHtmlAttrs } from '@/web/admin/rail'
 import { overlaysHtml } from '@/web/admin/overlays'
@@ -219,24 +218,14 @@ function adminStyles(settings: SiteSettings): string {
   ].filter(Boolean).join('\n')
 }
 
-/**
- * THE SHELL'S OWN DATA, in the document rather than a round trip after it.
- *
- * `App.tsx` opened with `useView('shell')` and drew nothing until it answered: the language,
- * the version, whether a model is plugged in, the nav order, the owner's portrait. Its comment
- * said, correctly, that a language flash is worse than a blank frame — but the third option is
- * neither, and this is it. The server already holds every one of those facts while it is
- * writing this page.
- *
- * `useView` seeds itself from this at epoch 0 and revalidates behind the first paint, so
- * nothing here can go stale; what it removes is the WAIT, not the request. Step 0 of ADR 0054.
- *
- * `<` is escaped because a value could otherwise close the script tag from inside a string.
- */
-async function shellData(): Promise<string> {
-  const json = JSON.stringify(await shellView()).replace(/</g, '\\u003c')
-  return `<script type="application/json" id="admin-shell">${json}</script>`
-}
+// No `#admin-shell` payload. It held the language, the version, whether a model is plugged
+// in, the nav order and the owner's portrait, as JSON on every admin page, for `useView` to
+// seed itself from at epoch 0. `useView` left with React in ADR 0054's step 6 and nothing
+// replaced it: measured 2026-09-16, zero readers in any built bundle, 226 bytes a page. The
+// sibling payload `#admin-rail-data` IS read (`admin/island/rail.ts`) and stays.
+//
+// `shellView()` itself stays too: `/api/admin/view/shell` is alive, and the tour reads it
+// back as its oracle for the shell.
 
 /**
  * The shell, and it is no longer empty of anything. All five of ADR 0054's steps are
@@ -339,7 +328,6 @@ ${railHtml({ settings, aiConfigured, path })}
 </main>
 </div>
 ${overlaysHtml(adminT(settings.language), settings)}
-${await shellData()}
 ${railData(settings, aiConfigured)}
 <script type="module" src="${RAIL_ENTRY}"></script>${island}
 </body>

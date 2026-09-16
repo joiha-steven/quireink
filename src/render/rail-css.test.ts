@@ -1,7 +1,9 @@
 // The rail's three states are three media ranges, and the middle one is the newest: a band
 // under the title from 60rem to the rail breakpoint, where before there was only a drawer.
 import { describe, expect, it } from 'bun:test'
-import { singleRailCss } from '@/render/rail-css'
+import { DEFAULT_RAIL_WIDTH, railLookCss, singleRailCss } from '@/render/rail-css'
+import { DEFAULT_SETTINGS } from '@/content/settings'
+import { PUBLIC_CSS } from '@/web/public.css'
 
 describe('singleRailCss', () => {
   it('emits the band between 60rem and the gutter breakpoint, computed from the column', () => {
@@ -28,7 +30,11 @@ describe('singleRailCss', () => {
     // "// Contents".
     const band = singleRailCss(672).split('@media (min-width:1272px)')[0]!
     expect(band).toContain('.rail-inner > nav:not(.toc)::before{content:attr(aria-label)')
-    expect(band).toContain('html[data-look=code] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}')
+    // The dialect's own version of the same marker moved out of the geometry on 2026-09-16,
+    // because the geometry is cached for every blog and this rule belongs to one look.
+    expect(band).not.toContain('data-look=code')
+    expect(railLookCss(672, 'code'))
+      .toContain('html[data-look=code] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}')
   })
 
   it('sets the index as a column and the menu as a row, which is what each of them is', () => {
@@ -43,6 +49,40 @@ describe('singleRailCss', () => {
     expect(band).toContain('.toc ul{display:block}')
     expect(band).toContain('.toc li{width:max-content;max-width:100%')
     // And no line numbers wedged between two menu words, where there is no gutter to hold them.
-    expect(band).toContain('html[data-look=code] .rail-inner > nav:not(.toc) li::before{content:none}')
+    expect(railLookCss(672, 'code'))
+      .toContain('html[data-look=code] .rail-inner > nav:not(.toc) li::before{content:none}')
+  })
+
+  it('hands the dialect nothing to the three looks that did not ask', () => {
+    // These two rules shipped to every blog on every page view until 2026-09-16, inline,
+    // whatever it was wearing. `looks.test.ts` holds the same rule for the cached sheet.
+    for (const look of ['plain', 'paper', 'notes']) expect(railLookCss(672, look)).toBe('')
+  })
+
+  it("keeps the band's own bound, so the dialect stops where the band stops", () => {
+    // A moved column moves the breakpoint, and a look correction outside its band would sit
+    // over the gutter layout instead of the row.
+    expect(railLookCss(672, 'code')).toContain('max-width:1271px')
+    expect(railLookCss(900, 'code')).toContain('max-width:1499px')
+  })
+})
+
+describe('the default geometry lives in the cached sheet', () => {
+  it('names the same width the settings default does', () => {
+    // Two copies of one number. `public.css.ts` precomputes the rail for DEFAULT_RAIL_WIDTH
+    // and `layout.ts` skips the inline copy when the owner has not moved the column; if the
+    // settings default moved and this did not, every install would pay BOTH copies and the
+    // cached one would be wrong.
+    expect(DEFAULT_RAIL_WIDTH).toBe(DEFAULT_SETTINGS.contentWidth)
+  })
+
+  it('the sheet carries it, so a default page does not have to', () => {
+    expect(PUBLIC_CSS).toContain(singleRailCss(DEFAULT_RAIL_WIDTH))
+  })
+
+  it('a moved column still gets its own, and it differs', () => {
+    const moved = singleRailCss(900)
+    expect(moved).not.toBe(singleRailCss(DEFAULT_RAIL_WIDTH))
+    expect(PUBLIC_CSS).not.toContain(moved)
   })
 })

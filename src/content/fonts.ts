@@ -101,17 +101,19 @@ export function fontPreloadHrefs(
     ? [`/fonts/${slug}-latin.woff2`, `/fonts/${slug}-vietnamese.woff2`]
     : [`/fonts/${slug}-latin.woff2`])
   const reading = hasCustomFont ? [] : subsets(getFontPreset(id).slug)
-  // The CHROME face too, when it is a self-hosted family of its own. The rule above used to
-  // be "never, it is not the LCP", and that was written when the chrome font was Inter: the
-  // fallback was a system sans and the swap was barely visible. It is a MONOSPACE now on any
-  // site that picked one, and the header, the meta line and both rails all re-flow when it
-  // lands. Measured before changing it (origin, cold, 4x CPU throttle) — see
-  // docs/performance.md; the reading font still wins the race and is still declared first.
+  // The CHROME face too, but ONLY the ones whose fallback moves the page. The rule used to
+  // be "never, it is not the LCP", written when the chrome font was Inter and the swap was
+  // barely visible; a MONOSPACE re-flows the header, the meta line and both rails when it
+  // lands, which is what bought the exception. Measured before changing it (origin, cold,
+  // 4x CPU throttle) — see docs/performance.md; the reading font still wins the race and is
+  // still declared first. `CHROME_FONTS[].preload` carries the rule and says why, because
+  // reading it off the default is what broke it once already.
   // `getChromeFont` falls back to Inter for an unknown id, which is right for the FONT
   // STACK and wrong here: an install that has never chosen a chrome font is using the
   // reading face, and preloading 44 KB of Inter it will not paint a glyph in is worse than
   // preloading nothing. Measured — that mistake cost 160ms of LCP.
-  const chrome = isChromeFontId(chromeFont) ? getChromeFont(chromeFont).slug : null
+  const picked = isChromeFontId(chromeFont) ? getChromeFont(chromeFont) : null
+  const chrome = picked?.preload ? picked.slug : null
   const extra = chrome && chrome !== getFontPreset(id).slug ? subsets(chrome) : []
   // ...and the newspaper look's headline face, which on that look IS the LCP element: the
   // title is set in it, not in the reading font (`web/look-paper.css.ts`). Without this the
@@ -329,12 +331,30 @@ export function fontPresetCss(id: string): string {
 // null when nothing extra is fetched: `reading` follows the reading font, which is already
 // preloaded. It has to match the slug in `render/font-faces.ts` FACES, and a test pins that
 // — two lists of the same filenames is exactly how a preload ends up pointing at a 404.
-export type ChromeFont = { id: string; name: string; sans: string | null; slug: string | null }
+/**
+ * `preload` is whether this face's FALLBACK moves the page when the real one lands.
+ *
+ * A monospace has no metric-matched system twin, so the header, the meta line and both rails
+ * re-flow when it arrives, and paying for it early is worth 33 KB of head start. Inter does
+ * have twins (`render/font-faces.ts` declares Arial at size-adjust 104.38% and Roboto at
+ * 105.4%), so its swap moves nothing and the preload buys nothing but the bytes.
+ *
+ * ⚠️ THIS FIELD EXISTS BECAUSE THE RULE USED TO BE READ OFF THE DEFAULT. `fontPreloadHrefs`
+ * preloaded any chrome face with a slug, which was written when the default was JetBrains
+ * Mono, and the default moved to Inter on 2026-09-13 without the preload moving with it. From
+ * that day a fresh install preloaded 33,256 bytes of Inter it barely paints a glyph in, and
+ * the comment in `fontPreloadHrefs` had already priced that exact mistake at 160ms of LCP.
+ * Measured 2026-09-16: default install 73,812 bytes preloaded, JetBrains Mono 55,112, an
+ * unknown id 40,556 — the default was the most expensive of the three.
+ */
+export type ChromeFont = {
+  id: string; name: string; sans: string | null; slug: string | null; preload?: true
+}
 export const CHROME_FONTS: ChromeFont[] = [
   { id: 'inter', name: 'Inter', sans: null, slug: 'inter' },
   { id: 'reading', name: 'Reading font', sans: 'var(--font-reading)', slug: null },
-  { id: 'plex-mono', name: 'IBM Plex Mono', slug: 'plexmono-400', sans: `'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace` },
-  { id: 'jetbrains-mono', name: 'JetBrains Mono', slug: 'jetbrainsmono', sans: `'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace` },
+  { id: 'plex-mono', name: 'IBM Plex Mono', slug: 'plexmono-400', preload: true, sans: `'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace` },
+  { id: 'jetbrains-mono', name: 'JetBrains Mono', slug: 'jetbrainsmono', preload: true, sans: `'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace` },
 ]
 
 // INTER, not the monospace, since 2026-09-13. The default used to be JetBrains Mono, which

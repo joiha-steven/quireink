@@ -72,7 +72,16 @@ export async function getPublicNotes(): Promise<Note[]> {
 
 export async function getNote(slug: string): Promise<NoteWithContent | null> {
   try {
-    const row = one<NoteRow>(`select * from notes where ${liveOnly('notes')} and slug = ?`, slug)
+    // NAMED COLUMNS, never `select *`. `content/autosave.ts` states the rule in capitals: nothing
+    // that renders a page may read the autosave columns, and `getPost` has always named its own.
+    // These two did not, so every render pulled `draft_content` and `draft_at` off the row and
+    // threw them away. Nothing leaked, because `rowToMeta` builds from named fields, but the blob
+    // is the size of a whole post: measured 2026-09-16 with an 85,000 character autosave on an
+    // 796 character page, 9.2us a read became 2.9us. A test that holds the OUTPUT cannot see this;
+    // only the column list can.
+    const row = one<NoteRow>(
+      `select slug, title, date, status, source_url, source_title, quote, updated_at, content
+         from notes where ${liveOnly('notes')} and slug = ?`, slug)
     if (!row) return null
     return { ...rowToMeta(row), content: expandBlob(row.content ?? '') }
   } catch (error) {

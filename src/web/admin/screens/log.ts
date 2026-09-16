@@ -108,7 +108,7 @@ export async function logScreen(settings: SiteSettings): Promise<string> {
   // what tells them apart before the sentence is read; the lens is not the blank page.
   const body = entries.length === 0
     ? emptyState({ title: t.logEmpty, description: t.logEmptyHint, glyph: 'blankPage' })
-    : `${emptyState({ title: t.logNoMatch, glyph: 'lens', hidden: true })}`
+    : `${emptyState({ title: t.logNoMatch, glyph: 'lens', hidden: true, attrs: 'data-log-nomatch' })}`
       + `<ul data-log-list class="admin-stagger paper-cols">${entries.map((e: ActivityEntry, i: number) => row(t, e, i)).join('')}</ul>`
       + `<div data-log-more class="px-5 py-3"${entries.length > PAGE ? '' : ' hidden'}>`
       + `<button type="button" class="${SHEET_TOOL}">${escapeHtml(t.logShowMore.replace('{n}', String(PAGE)))}</button></div>`

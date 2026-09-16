@@ -31,8 +31,8 @@ import { getCommentEnv } from '@/comments/comment-env'
 import { getIntegrationStatus } from '@/store/integration-keys'
 import { updateCheckStatus } from '@/server/update-check'
 import { getIndex, getCategories, getTags, getPublicPosts, getTrashedPosts } from '@/content/posts'
-import { getPageIndex, getTrashedPages, getPage, getPublicPages } from '@/content/pages'
-import { getNoteIndex, getTrashedNotes, getNote } from '@/content/notes'
+import { getPageIndex, getTrashedPages, getPublicPages } from '@/content/pages'
+import { getNoteIndex, getTrashedNotes } from '@/content/notes'
 import { getPost } from '@/content/posts'
 import { getAllSeriesNames } from '@/content/series'
 import { searchEverything } from '@/content/search-owner'
@@ -43,7 +43,6 @@ import { getTrashedFiles } from '@/media/files'
 import { OwnerRouter } from '@/web/guard'
 import { APP_VERSION } from '@/version'
 import { dashboardView } from '@/web/admin/views-home'
-import { newsletterView } from '@/web/admin/views-news'
 
 /** Printed by the Help page and the dashboard, so the two can never disagree. */
 const VERSION = APP_VERSION
@@ -108,35 +107,6 @@ async function editorView(slug: string) {
     // machine happens to be typing it. Without this the editor read and wrote the browser's
     // zone, so a post scheduled from a laptop on UTC went out seven hours late in Hanoi and
     // the line under the field agreed with the laptop.
-    timezone: settings.timezone,
-  }
-}
-
-async function pageEditorView(slug: string) {
-  const [page, settings] = await Promise.all([
-    slug ? getPage(slug) : Promise.resolve(null), getSettings(),
-  ])
-  if (slug && !page) return null
-  return {
-    page,
-    autosaveAt: slug ? (getAutosave('page', slug)?.at ?? null) : null,
-    contentWidth: settings.contentWidth,
-    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume, squeak: settings.motion.penSqueak },
-    autosaveSeconds: settings.autosaveSeconds,
-  }
-}
-
-async function noteEditorView(slug: string) {
-  const [note, settings] = await Promise.all([
-    slug ? getNote(slug) : Promise.resolve(null), getSettings(),
-  ])
-  if (slug && !note) return null
-  return {
-    note,
-    autosaveAt: slug ? (getAutosave('note', slug)?.at ?? null) : null,
-    contentWidth: settings.contentWidth,
-    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume, squeak: settings.motion.penSqueak },
-    autosaveSeconds: settings.autosaveSeconds,
     timezone: settings.timezone,
   }
 }
@@ -239,16 +209,6 @@ export async function trashView() {
 }
 
 /**
- * The assistant page. The conversation is client state, so this is everything the page
- * wants from the server — and it does want it: "no model connected" has to be visible
- * BEFORE a question is typed, not delivered as an error five seconds after sending one.
- */
-async function assistantView() {
-  const ai = await getIntegrationStatus()
-  return { configured: ai.aiConfigured, model: ai.aiModel }
-}
-
-/**
  * The shell itself: the admin's language, the version Help and the dashboard print, and
  * whether a model is plugged in.
  *
@@ -271,43 +231,21 @@ export async function shellView() {
   return { language: settings.language, version: VERSION, aiConfigured, navOrder: settings.navOrder, avatar: settings.author.avatarUrl, seenRelease: settings.seenRelease, look: settings.look }
 }
 
-/**
- * EVERY PAYLOAD'S TYPE, under the name its endpoint answers to.
- *
- * The shapes are the builders' own, so a caller that holds the builder is already held to
- * them. What this map adds is the NAME: a reader that has only the string `'analytics'` can
- * reach the type that address returns without writing the shape out a second time.
- *
- * ⚠️ NOTHING IMPORTS IT TODAY, counted 2026-09-16. `src/admin/useView.ts` resolved a name
- * through it and left with the React admin in ADR 0054, and the screens that replaced it hold
- * the builders directly. It is kept because the addresses it names are still served and the
- * browser still fetches three of them; if it is ever imported again, the rule that mattered is
- * that `src/admin` may take it with `import type` only, never as a value. Guard #8
- * (`check:bundle`) proves that from the built output rather than from the import graph.
- */
-export type ViewPayloads = {
-  dashboard: Awaited<ReturnType<typeof dashboardView>>
-  content: Awaited<ReturnType<typeof contentView>>
-  editor: NonNullable<Awaited<ReturnType<typeof editorView>>>
-  'page-editor': NonNullable<Awaited<ReturnType<typeof pageEditorView>>>
-  'note-editor': NonNullable<Awaited<ReturnType<typeof noteEditorView>>>
-  // One endpoint, two faces: the summary, or one page's detail when `path` is given. The
-  // client narrows on the `detail` key, which only one face has.
-  analytics:
-    | Awaited<ReturnType<typeof analyticsSummaryView>>
-    | Awaited<ReturnType<typeof analyticsDetailView>>
-  'analytics-now': Awaited<ReturnType<typeof getRightNow>>
-  comments: Awaited<ReturnType<typeof commentsView>>
-  settings: Awaited<ReturnType<typeof settingsView>>
-  newsletter: Awaited<ReturnType<typeof newsletterView>>
-  log: Awaited<ReturnType<typeof logView>>
-  trash: Awaited<ReturnType<typeof trashView>>
-  assistant: Awaited<ReturnType<typeof assistantView>>
-  shell: Awaited<ReturnType<typeof shellView>>
-}
-
 // ----- the routes -------------------------------------------------------------
 
+/**
+ * The view endpoints that still have a caller, and no others.
+ *
+ * ⚠️ SEVEN OF THESE ARE READ ONLY BY THE TOUR, and that counts. `dashboard`, `content`,
+ * `editor`, `settings`, `trash` and `shell` are how a flow reads back what a write landed,
+ * which is the oracle the browser half cannot provide for itself; `analytics-now` is the one
+ * a shipped bundle fetches. Seven more were left behind when ADR 0054 removed the React
+ * admin, with no reader in `src/`, in any built bundle or in `scripts/`: page-editor,
+ * note-editor, analytics, comments, newsletter, log and assistant, deleted 2026-09-16.
+ *
+ * Deleting one the tour uses does not fail a typecheck. It fails the tour, and only when
+ * somebody runs it.
+ */
 export function viewRoutes(): OwnerRouter {
   const routes = new OwnerRouter()
 
@@ -330,42 +268,14 @@ export function viewRoutes(): OwnerRouter {
     return c.json({ data })
   })
 
-  routes.get('/api/admin/view/page-editor', async (c) => {
-    const data = await pageEditorView(c.req.query('slug') ?? '')
-    if (data === null) return c.json({ error: 'Not found' }, 404)
-    return c.json({ data })
-  })
-
-  routes.get('/api/admin/view/note-editor', async (c) => {
-    const data = await noteEditorView(c.req.query('slug') ?? '')
-    if (data === null) return c.json({ error: 'Not found' }, 404)
-    return c.json({ data })
-  })
-
-  // Analytics: the summary, or one page's detail when `path` is given.
-  routes.get('/api/admin/view/analytics', async (c) => {
-    const window = rangeOf(c.req.query('range'))
-    const path = c.req.query('path') ?? ''
-    if (path) return c.json({ data: await analyticsDetailView(path, window) })
-    return c.json({ data: await analyticsSummaryView(window) })
-  })
-
   // The live strip's poll: five minutes of rows, nothing else. Separate from the view
   // above because the poll must not re-run a dashboard's worth of aggregates every few
   // seconds to refresh one number.
   routes.get('/api/admin/view/analytics-now', async (c) => c.json({ data: await getRightNow() }))
 
-  routes.get('/api/admin/view/comments', async (c) => c.json({ data: await commentsView() }))
-
   routes.get('/api/admin/view/settings', async (c) => c.json({ data: await settingsView() }))
 
-  routes.get('/api/admin/view/newsletter', async (c) => c.json({ data: await newsletterView() }))
-
-  routes.get('/api/admin/view/log', async (c) => c.json({ data: await logView() }))
-
   routes.get('/api/admin/view/trash', async (c) => c.json({ data: await trashView() }))
-
-  routes.get('/api/admin/view/assistant', async (c) => c.json({ data: await assistantView() }))
 
   routes.get('/api/admin/view/shell', async (c) => c.json({ data: await shellView() }))
 

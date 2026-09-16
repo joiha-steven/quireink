@@ -12,8 +12,22 @@ import { chromeLabels } from '@/web/chrome'
 import { PEN_LINES_SHEET, PEN_MARKS_SHEET, penSheets } from '@/web/assets'
 import { inkSignature, resolveInks } from '@/pen/palette'
 
-/** The body data for a post or a page: `isPost` gates the gestures a page never gets. */
-export function articleLabels(settings: SiteSettings, s: Dict, isPost: boolean, google = false): Record<string, string> {
+/**
+ * The body data for a post or a page: `isPost` gates the gestures a page never gets.
+ *
+ * @param comments whether the comment island is mounted on this page
+ * @param book whether book mode is switched on
+ *
+ * Those two were unconditional until 2026-09-16, which contradicts this file's own opening
+ * line: a switch that is off hands over no words. Comments default to OFF, so a fresh install
+ * shipped 16 comment strings on every post, forever. Measured: 705 raw bytes and 230
+ * compressed for the comment group, 198 and 48 for book mode, on every page view, and HTML is
+ * the one thing here a browser refetches rather than keeping.
+ */
+export function articleLabels(
+  settings: SiteSettings, s: Dict, isPost: boolean, google = false,
+  comments = true, book = true,
+): Record<string, string> {
   const post = isPost
   return {
     ...chromeLabels(settings),
@@ -25,28 +39,32 @@ export function articleLabels(settings: SiteSettings, s: Dict, isPost: boolean, 
     lightboxPrev: s.lightboxPrev,
     lightboxNext: s.lightboxNext,
     lightboxClose: s.lightboxClose,
-    commentsHeading: s.commentsHeading,
-    commentsEmpty: s.commentsEmpty,
-    commentReply: s.commentReply,
-    commentDeleted: s.commentDeleted,
-    commentName: s.commentName,
-    commentEmail: s.commentEmail,
-    commentEmailNote: s.commentEmailNote,
-    commentWebsite: s.commentWebsite,
-    commentBody: s.commentBody,
-    commentSubmit: s.commentSubmit,
-    commentError: s.commentError,
-    commentChecking: s.commentChecking,
-    commentSignInGoogle: s.commentSignInGoogle,
-    commentAs: s.commentAs,
-    commentSignOut: s.commentSignOut,
-    commentSignInError: s.commentSignInError,
-    bookMode: s.bookMode,
-    bookModePrev: s.bookModePrev,
-    bookModeNext: s.bookModeNext,
-    bookModeClose: s.bookModeClose,
-    bookModeSmaller: s.bookModeSmaller,
-    bookModeLarger: s.bookModeLarger,
+    ...(comments ? {
+      commentsHeading: s.commentsHeading,
+      commentsEmpty: s.commentsEmpty,
+      commentReply: s.commentReply,
+      commentDeleted: s.commentDeleted,
+      commentName: s.commentName,
+      commentEmail: s.commentEmail,
+      commentEmailNote: s.commentEmailNote,
+      commentWebsite: s.commentWebsite,
+      commentBody: s.commentBody,
+      commentSubmit: s.commentSubmit,
+      commentError: s.commentError,
+      commentChecking: s.commentChecking,
+      commentSignInGoogle: s.commentSignInGoogle,
+      commentAs: s.commentAs,
+      commentSignOut: s.commentSignOut,
+      commentSignInError: s.commentSignInError,
+    } : {}),
+    ...(book ? {
+      bookMode: s.bookMode,
+      bookModePrev: s.bookModePrev,
+      bookModeNext: s.bookModeNext,
+      bookModeClose: s.bookModeClose,
+      bookModeSmaller: s.bookModeSmaller,
+      bookModeLarger: s.bookModeLarger,
+    } : {}),
     ...(post && settings.features.resume ? { resumePrompt: s.resumePrompt } : {}),
     ...(post && settings.features.readerPen ? readerPenData(settings.inks, s, google) : {}),
   }

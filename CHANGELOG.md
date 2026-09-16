@@ -2,6 +2,97 @@
 
 ## Unreleased
 
+### A sweep of the whole system: seven faults, three index changes, and a guard that ran one way
+
+**Seven things that were wrong, not slow.**
+
+- **A fresh install preloaded 33 KB of a typeface it barely paints a glyph in.** The rule was
+  "preload the chrome face when it has a file of its own", written while the default chrome
+  face was JetBrains Mono, which has no metric-matched system twin and re-flows the header
+  when it lands. The default became Inter on 2026-09-13 and the rule did not move with it;
+  Inter ships two metric-matched twins, so its swap moves nothing. Measured: a default install
+  preloaded 73,812 bytes, a JetBrains Mono install 55,112, an unknown id 40,556. The default
+  was the most expensive of the three. The rule is a property of the face now, and
+  `fonts-preload.test.ts` holds it there.
+- **Setting a timezone made the home page render 4.3x slower.** Every printed date built an
+  `Intl.DateTimeFormat` to test whether the zone name was valid, threw it away, then built
+  another inside `toLocaleDateString`. Measured: `formatDate` cost 40.5us with no zone and
+  76.7us with one, against 0.43us for a formatter kept. A home page render built 185 of the
+  probes. Both are remembered now, the same way the file's own `DAY_PARTS` already was, and
+  800 printings across ten languages, eight zones and five dates come back byte for byte.
+- **One body, two reading times.** The published page said 14 minutes and the writing sheet
+  said 13, because the editor carried its own word counter at 220 words a minute against the
+  page's 200, with its own tokenizer that counted the address inside `![a](https://…)` as
+  prose. One arithmetic now. Fixing it found a second fault underneath: `toPlainText` stripped
+  a `*` bullet and not a `-` one, so a list written with hyphens counted one word per bullet,
+  in the excerpt, the meta description, the OG card and the RSS summary as well as the count.
+- **`/page/1` answered a 301 with no `Cache-Control` and no security headers**, because the
+  redirect was registered above the middleware that adds them and returned without calling
+  through. A 301 with no freshness is held hard by browsers, and this one's destination is a
+  setting, so renaming the list path left every reader who had seen `/page/1` being sent to
+  the old one with nothing on the server able to undo it. It takes `private, no-store` now.
+- **Filtering the activity log to nothing showed a blank panel.** The island looked for
+  `[data-log-nomatch]` on every keystroke and no screen has ever drawn it. The trash screen,
+  written the same week, passes it correctly.
+- **A settings field's named refusal never became visible.** The island walked up to
+  `[data-field-box]` to find the sentence, and nothing in `src/web/admin` has ever drawn that
+  either. It asks for the paragraph by the key it already has.
+- **`getPage` and `getNote` selected the autosave blob into the public render path**, which
+  `autosave.ts` forbids in capitals and `getPost` has always obeyed. Nothing leaked; the read
+  was 9.2us where naming the columns is 2.9us.
+
+**Three index changes on the analytics database, measured on 120,000 rows.**
+
+- `analytics_scroll (visitor, path, created_at)` arrives. The leave-sample merge is on the
+  WRITE path and had no usable index, so it read every row ever recorded for a path and sorted
+  them to keep one: 3.41ms to 0.00ms, inside a synchronous transaction that batches 100 rows.
+- `analytics_events (visitor, created_at)` arrives. Nothing led on `visitor`, so the
+  returning-reader count made SQLite build a transient index on every dashboard load: 54.94ms
+  to 3.05ms.
+- `analytics_events (device)` GOES, and removing it made the one query that reads that column
+  eight times faster: 16.60ms to 1.25ms, because SQLite drove off the device index and walked
+  the whole history for a 30-day question. Its two identical siblings have no such index.
+
+**Bytes.**
+
+- **8,576 compressed bytes off every admin page.** Two of the four stylesheets were appended
+  after the minifier rather than through it, so their comments were being served, which is the
+  thing the minifier's own header says it exists to prevent.
+- **About 1,600 compressed bytes off every public page view**, which is HTML and so is
+  refetched rather than kept: the rail's geometry moved into the immutable sheet for the
+  default column width, the three chrome-tracking blocks became the one a page can match, and
+  the comment and book-mode labels stop shipping when those switches are off. Moving the
+  geometry found two `html[data-look=code]` rules living inside it, which meant every blog was
+  downloading a correction to the source-code dialect on every page view whatever it wore.
+  `looks.test.ts` holds that a look ships as its own sheet and never in the common one; it had
+  never seen these, because it reads the sheet and these were inline.
+- **4.1 MB off the Docker image**, which was carrying the twelve guards, the 211 tour flows
+  and 3.2 MB of public-domain paintings that only the demo seeder reads. The image now takes
+  the four scripts a running blog actually uses.
+- **Seven dead view endpoints and 103 lines behind them.** `page-editor`, `note-editor`,
+  `analytics`, `comments`, `newsletter`, `log` and `assistant` had no caller in the source, in
+  any built bundle or in the tour. The seven that do have one are untouched, and six of those
+  are the tour's own oracle. The unread `#admin-shell` JSON on every admin page is out too,
+  and `jsx` left `tsconfig.json`, where it had outlived the last `.tsx` file.
+
+**And the guard that was half a guard.** `check:admin-wired` proved every hook the admin draws
+has a reader, and said nothing about a hook an island reads that nobody draws. That is the
+quieter fault: `querySelector` returns null and the screen simply never does the thing. Running
+the other direction by hand found the two log and settings faults above. It runs both ways now,
+and was made red by each of them before being trusted.
+
+Four small duplications went with it: the subscriber page size was written twice, once in the
+renderer and once in the island; `liveSlugTaken` was typed out a second time character for
+character; the MCP consent page had its own copy of `escapeHtml`; and the analytics
+internal-address test had its own list of private ranges, the shortest of three in the tree, so
+`fe80::`, CGNAT and `0.0.0.0` were being counted as public readers.
+
+**The README's speed table was measured against a configuration nobody installs.** It priced
+book mode and the reader's pen as opt-ins; both are on by default. A default post is 16
+requests and 15.8 KB of JavaScript, not 9 and 6.5. The table now says what a default install
+costs and what turning things off gives back, measured on the demo fixture so anyone with the
+repository can take the numbers again.
+
 ### Code blocks: 346 languages instead of 21, and a named fence is no longer reinterpreted
 
 - **A grammar loads when a fence asks for one.** The highlighter used to hand twenty-one

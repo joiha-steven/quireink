@@ -19,6 +19,21 @@ export const RAIL_GAP = 40
 export const RAIL_PAD = 14
 export const RAIL_BREATHING = 10 // clear space between a rail and the viewport edge
 
+/**
+ * The column width a fresh install has, and therefore the one geometry worth precomputing.
+ *
+ * `singleRailCss` was emitted inline on EVERY page view, and everything in it is a static
+ * string except the one breakpoint number, which is `colWidth + 600`. Measured 2026-09-16 by
+ * cutting the two `@media` blocks out of a real post and re-gzipping: 3,554 raw and 1,046
+ * compressed bytes, per view, the largest single item in the inline `<style>`. The hashed
+ * sheets are `max-age=31536000, immutable` and the HTML is not, so a byte moved from one to
+ * the other is paid once per deploy instead of once per page a reader has not seen.
+ *
+ * ⚠️ MUST EQUAL `DEFAULT_SETTINGS.contentWidth`. A second copy of a number is exactly how the
+ * default and the precomputed sheet drift apart, so `rail-css.test.ts` compares them.
+ */
+export const DEFAULT_RAIL_WIDTH = 672
+
 // Viewport width at which BOTH gutters can hold a rail (keeps the column centred).
 function breakpoint(colWidth: number): number {
   return colWidth + 2 * (RAIL_W + RAIL_GAP + RAIL_BREATHING)
@@ -59,19 +74,6 @@ export function singleRailCss(colWidth: number): string {
     `.rail-inner > nav:not(.toc)::before{content:attr(aria-label);display:block;margin-bottom:.5rem;` +
     `font-weight:var(--fw-heading,600);color:var(--c-heading);` +
     `font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}` +
-    // The heading this band INVENTS has to wear the same marker as the ones the markup
-    // carries, and it cannot get it from `ide.css.ts` the way they do: that sheet marks
-    // `.rail h2::before`, this heading is not an h2, and its own ::before is already spoken
-    // for by the label. So the marker is restated here, inside the band that creates it.
-    // Without this line the menu's heading stood bare directly above a marked "// Contents"
-    // — two chrome headings, one screen, two registers (measured at 1180 on 2026-09-12).
-    `html[data-look=code] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}` +
-    // AND NO LINE NUMBERS ON THE MENU HERE. In the gutter they stand in a column of their own
-    // out past the text, which is what a line number is. In this band there is no gutter: the
-    // ring lands INSIDE the 24px between two menu words, three pixels from each, and the row
-    // reads as one run-on string. The index below keeps its numbers, because there each entry
-    // is a line of its own and the number falls at the end of it.
-    `html[data-look=code] .rail-inner > nav:not(.toc) li::before{content:none}` +
     `.rail ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}` +
     `.rail li,.toc li{margin-top:0}` +
     // THE INDEX IS NOT A ROW OF WORDS. The menu is — five single words read fine wrapped on
@@ -227,4 +229,37 @@ export function listingRailCss(colWidth: number): string {
     `.drawer-only{display:none}` +
     `.rail-toggle,.rail-scrim{display:none}}`
   )
+}
+
+/**
+ * The source-code look's two corrections to the rail BAND, and only that look's.
+ *
+ * They lived inside `singleRailCss`, which meant every blog on earth downloaded two
+ * `html[data-look=code]` rules on every page view whatever it was wearing. `looks.test.ts`
+ * holds that a look ships as its own sheet and the common sheet carries none of it; it never
+ * saw these, because it reads `PUBLIC_CSS` and these were inline. Moving the geometry into the
+ * cached sheet on 2026-09-16 is what made the assertion reach them.
+ *
+ * They cannot go in `look-code.css.ts` with the rest of the dialect: both sit inside the band's
+ * media query, whose upper bound is computed from the reading column, and a static sheet has no
+ * width to compute it from. So they stay here, beside the band that creates them, and are asked
+ * for by the one look that wants them.
+ */
+export function railLookCss(colWidth: number, look: string): string {
+  if (look !== 'code') return ''
+  const at = breakpoint(colWidth)
+  return `@media (min-width:60rem) and (max-width:${at - 1}px){`
+    // The band's menu heading needs the marker every other chrome label carries, and it cannot
+    // get it from `ide.css.ts` the way they do: that sheet marks `.rail h2::before`, this
+    // heading is not an h2, and its own ::before is already spoken for by the label. Without
+    // this line the menu's heading stood bare directly above a marked "// Contents": two
+    // chrome headings, one screen, two registers (measured at 1180 on 2026-09-12).
+    + `html[data-look=code] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}`
+    // AND NO LINE NUMBERS ON THE MENU HERE. In the gutter they stand in a column of their own
+    // out past the text, which is what a line number is. In this band there is no gutter: the
+    // ring lands INSIDE the 24px between two menu words, three pixels from each, and the row
+    // reads as one run-on string. The index below keeps its numbers, because there each entry
+    // is a line of its own and the number falls at the end of it.
+    + `html[data-look=code] .rail-inner > nav:not(.toc) li::before{content:none}`
+    + `}`
 }

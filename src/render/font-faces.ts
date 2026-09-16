@@ -253,5 +253,18 @@ const track = (id: string, em: string): string =>
  */
 const trackLook = CHROME_TRACKED.map((s) => `html[data-look=code] ${s}`).join(',')
 
-export const MONO_TRACKING = `${track('plex-mono', '-0.04em')}${track('jetbrains-mono', '-0.05em')}`
-  + `${trackLook}{letter-spacing:-0.05em}`
+/**
+ * The correction this page actually needs, and nothing else.
+ *
+ * All three blocks used to ship on every page view, and at most one of them can ever match:
+ * the two font blocks are keyed on a `data-chrome-font` the server writes itself, and the
+ * third on a `data-look` it also writes. On a default install (Inter, plain) all three were
+ * dead. Measured 2026-09-16, per page view: 909 raw / 102 compressed for plex-mono, 999 / 98
+ * for jetbrains-mono, 657 / 89 for the look. HTML is refetched for every page a reader has
+ * not already seen, so this is per view rather than once per deploy.
+ */
+export const monoTracking = (chromeFont: string, look: string): string =>
+  (chromeFont === 'plex-mono' ? track('plex-mono', '-0.04em') : '')
+  + (chromeFont === 'jetbrains-mono' ? track('jetbrains-mono', '-0.05em') : '')
+  // Last, so it wins over a plex-mono setting whose face is no longer the one being drawn.
+  + (look === 'code' ? `${trackLook}{letter-spacing:-0.05em}` : '')

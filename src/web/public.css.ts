@@ -22,6 +22,7 @@
 
 
 import { RAIL_CSS } from '@/web/rail.css'
+import { DEFAULT_RAIL_WIDTH, singleRailCss } from '@/render/rail-css'
 import { ISLANDS_CSS } from '@/web/islands.css'
 import { BOOK_CSS } from '@/web/book.css'
 import { BOOK_TEXT_CSS } from '@/web/book-text.css'
@@ -370,6 +371,7 @@ export const PUBLIC_CSS = `${BASE_CSS}
 ${FIGURE_CSS}
 
 ${RAIL_CSS}
+${singleRailCss(DEFAULT_RAIL_WIDTH)}
 ${ISLANDS_CSS}
 ${BOOK_CSS}
 ${BOOK_TEXT_CSS}

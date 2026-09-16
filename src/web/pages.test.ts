@@ -13,6 +13,7 @@ import { savePost } from '@/content/posts'
 import { savePage } from '@/content/pages'
 import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache, pageCache } from '@/server/cache'
+import { PUBLIC_CSS } from '@/web/public.css'
 import { createApp } from '@/web/app'
 
 const DIR = './.tmp/test-pages'
@@ -242,7 +243,10 @@ describe('the markup hooks the IDE chrome needs', () => {
     expect(html).toContain('class="post-cat link-accent"')
     expect(html).toContain('<span class="post-facts">')
     expect(html).not.toContain('</a> · <span class="post-facts">')
-    expect(html).toContain('.post-meta,.taxo-rule,.post-taxo{display:none}')
+    // The rule itself moved into the hashed sheet on 2026-09-16, with the rest of the rail's
+    // default geometry, so it is no longer in the page's own `<style>`. `rail-css.test.ts`
+    // holds that the sheet carries it; what this file asserts is the MARKUP it acts on.
+    expect(PUBLIC_CSS).toContain('.post-meta,.taxo-rule,.post-taxo{display:none}')
     // Both copies carry the wrappers the IDE chrome needs, or the panel would be the one
     // surface on the site where a date is not a literal.
     expect(html.match(/<span class="term-list">/g)).toHaveLength(4)
@@ -281,7 +285,11 @@ describe('the markup hooks the IDE chrome needs', () => {
     // Measured: a post opening on a #wide image printed the panel's tag rows across the
     // picture. The gutter cannot hold both, and text over a photograph is the worse failure.
     await savePost({ title: 'Wide', content: 'body text here', status: 'published', date: PAST })
-    expect(await get('/wide').then((r) => r.text()))
+    // In the hashed sheet since 2026-09-16, with the rest of the rail's default geometry,
+    // rather than in this page's own `<style>`. The page still has to exist for the rule to
+    // act on, which is what the save above is for.
+    expect((await get('/wide')).status).toBe(200)
+    expect(PUBLIC_CSS)
       .toContain(':is(figure.img-wide,.video-wide):nth-child(-n+2){width:100%;margin-right:0}')
   })
 

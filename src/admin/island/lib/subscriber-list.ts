@@ -14,8 +14,7 @@
 // text written here is a count and the "showing 1-50 of 200" line.
 import type { SiteLang } from '@/types'
 import { formatCount } from '@/i18n/format'
-
-const PER_PAGE = 50
+import { SUBSCRIBERS_PER_PAGE as PER_PAGE } from '@/admin-shared/analytics'
 
 export type SubscriberWords = { showing?: string; deleteFailed?: string }
 

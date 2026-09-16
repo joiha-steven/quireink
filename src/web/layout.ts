@@ -15,8 +15,8 @@ import type { GallerySettings, FigureSettings, SiteSettings, FeatureSettings, In
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss, shapeToCss, tableToCss, resolveAppIcon, getDefaultTheme } from '@/content/settings'
-import { singleRailCss } from '@/render/rail-css'
-import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
+import { DEFAULT_RAIL_WIDTH, railLookCss, singleRailCss } from '@/render/rail-css'
+import { fontFaceCss, monoTracking } from '@/render/font-faces'
 import { penSheetsFor, lookSheet } from '@/web/assets'
 import { paperLabelCss } from '@/web/look-paper.css'
 import { LISTS_PLAIN_CSS } from '@/pen/lists.css'
@@ -200,7 +200,14 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // Injected at runtime, not written by hand, because a media query cannot read a CSS
     // variable and the breakpoint is COMPUTED from the reading column: the rail only moves
     // into the gutter when there is room for it on BOTH sides, so the column stays centred.
-    singleRailCss(settings.contentWidth),
+    //
+    // ...and ONLY when the owner has moved the column. The default geometry is in the hashed
+    // sheet, right after `RAIL_CSS`, where it is cached immutably instead of being re-sent
+    // with every page: 1,046 compressed bytes a view. A site that has changed the width still
+    // gets its own copy here, after the sheet, so it overrides the precomputed one.
+    settings.contentWidth === DEFAULT_RAIL_WIDTH ? '' : singleRailCss(settings.contentWidth),
+    // The source-code look's two corrections to the band, and nothing for the other three.
+    railLookCss(settings.contentWidth, settings.look),
     // The site default for galleries. In CSS on purpose: rendered Markdown is cached under
     // a hash of its input, so a default that changed the MARKUP would leave every body that
     // was already rendered serving the old shape until something unrelated evicted it.
@@ -240,8 +247,9 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     typographyToCss(settings.typography),
     fontToCss(settings.customFont),
     // Keyed on `data-chrome-font`, which `renderDocument` puts on <html>. It has to come
-    // after the chrome font is resolved and before the owner's own CSS can override it.
-    MONO_TRACKING,
+    // after the chrome font is resolved and before the owner's own CSS can override it, and
+    // it emits only the one block this page's own attributes can match.
+    monoTracking(settings.chromeFont, settings.look),
     settings.customCss,
   ].filter(Boolean).join('\n')
 }

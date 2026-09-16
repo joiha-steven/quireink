@@ -22,6 +22,7 @@
 import type { Context } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { COOKIE_NAME, isSessionIp, resolveSession } from '@/auth/sessions'
+import { isBlockedAddress } from '@/server/safe-fetch'
 
 /**
  * Loopback, link-local and the three private ranges.
@@ -32,19 +33,15 @@ import { COOKIE_NAME, isSessionIp, resolveSession } from '@/auth/sessions'
 export function isInternalIp(ip: string): boolean {
   const raw = (ip || '').trim().toLowerCase()
   if (!raw || raw === 'unknown') return true // no address at all is not a reader either
-  // IPv6 forms, including the v4-mapped `::ffff:127.0.0.1` a dual-stack listener reports.
-  const v6 = raw.replace(/^\[|\]$/g, '')
-  if (v6 === '::1' || v6 === '::') return true
-  const v4 = v6.startsWith('::ffff:') ? v6.slice(7) : v6
-  if (v4.startsWith('127.')) return true
-  if (v4.startsWith('10.')) return true
-  if (v4.startsWith('192.168.')) return true
-  if (v4.startsWith('169.254.')) return true // link-local
-  const m = /^172\.(\d{1,3})\./.exec(v4)
-  if (m && Number(m[1]) >= 16 && Number(m[1]) <= 31) return true
-  // fc00::/7, the IPv6 private range.
-  if (/^f[cd][0-9a-f]{2}:/.test(v6)) return true
-  return false
+  // Brackets off, and the v4-mapped `::ffff:127.0.0.1` a dual-stack listener reports unwrapped,
+  // because `isBlockedAddress` takes a bare literal.
+  const bare = raw.replace(/^\[|\]$/g, '')
+  // ⚠️ THE SAME RANGE TEST THE SSRF GUARD USES, not a third opinion about what is private.
+  // This had its own list and it was the shortest of the three in the tree: no IPv6
+  // link-local at all (it tested `169.254.` for v4 only), no CGNAT `100.64.0.0/10`, no
+  // `0.0.0.0/8`. Measured 2026-09-16 against the same addresses, `fe80::1`, `100.64.0.1` and
+  // `0.0.0.0` were each blocked by `safe-fetch` and counted as a public reader here.
+  return isBlockedAddress(bare) || isBlockedAddress(bare.replace(/^::ffff:/, ''))
 }
 
 /**

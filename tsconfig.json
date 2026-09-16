@@ -6,8 +6,10 @@
     "moduleResolution": "bundler",
     "moduleDetection": "force",
     "types": ["bun"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
+    // No `jsx` and no `jsxImportSource`. There is no JSX left in the tree: ADR 0054 took the
+    // last 191 `.tsx` files out, and both sub-projects (`src/assets/js`, `src/admin`) are
+    // standalone and set neither. Removed 2026-09-16; they were the last thing in the build
+    // telling a reader this was a React codebase.
 
     // `strict` matches the frozen tree exactly, ON PURPOSE. Turning on a stricter flag
     // mid-port (noUncheckedIndexedAccess was tried first) turns a pure-motion diff into a

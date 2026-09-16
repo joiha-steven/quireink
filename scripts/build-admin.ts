@@ -75,9 +75,15 @@ const styles = minifyCss(`${utilities}\n${chrome}`)
 // pages whose HTML contains its element (ADR 0027), but the editor cannot know which
 // gestures a post will use before the owner writes them — a stroke you cannot see while
 // writing is a stroke you cannot place.
+//
+// ⚠️ THROUGH THE MINIFIER, LIKE THE OTHER TWO. These two were appended to the already-minified
+// pair, so their comments went to the browser: measured 2026-09-16, 18,203 raw bytes and 8,576
+// compressed of commentary on every admin page, which is more compressed weight than all the
+// JavaScript an admin screen loads. `web/css-min.ts` opens by saying its whole reason is that
+// comments were being served; two of the four sheets were not being asked.
 const { PROSE_CSS } = await import(`${ROOT}src/web/prose.css.ts`)
 const { INK_CSS } = await import(`${ROOT}src/pen/ink.css.ts`)
-await Bun.write(`${OUT}/admin.css`, `${styles}\n${PROSE_CSS}\n${INK_CSS}`)
+await Bun.write(`${OUT}/admin.css`, minifyCss(`${styles}\n${PROSE_CSS}\n${INK_CSS}`))
 
 // The ENTRIES only, largest first: the chunks they share are counted in the total and would
 // otherwise print twenty lines of four-kilobyte noise over the number that matters.

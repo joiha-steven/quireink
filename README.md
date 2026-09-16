@@ -138,16 +138,22 @@ It is on from the first install, and one switch turns it off (Settings → Posts
 
 Off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-| | Home | A post | |
+**A DEFAULT install, with nothing switched off.** Measured on the demo fixture, which is what
+`bun run tour` seeds, so anyone with the repository can take these numbers again. Book mode and
+the reader's pen are ON out of the box and are priced here as what they are; the last column is
+what a blog gets back by turning them off.
+
+| | Home | A post | Turning things off |
 |:---|---:|---:|:---|
-| **Requests** | 8 | 9 | 11 on a post with book mode and comments switched on |
-| **Total&nbsp;transferred** | **100&nbsp;KB** | **98&nbsp;KB** | 68&nbsp;KB of that is the fonts |
-| **JavaScript** | **3.8&nbsp;KB** | **6.5&nbsp;KB** | written by hand, no framework; +5.1&nbsp;KB only when book mode and comments are on, +4.5&nbsp;KB only when readers are given the pen |
-| **CSS** | 11.5&nbsp;KB | 11.5&nbsp;KB | +11&nbsp;KB only on a page carrying the pen |
+| **Requests** | 8 | 16 | 14 |
+| **Total&nbsp;transferred** | **128&nbsp;KB** | **131&nbsp;KB** | 122&nbsp;KB |
+| **JavaScript** | **4.2&nbsp;KB** | **15.8&nbsp;KB** | **7.5&nbsp;KB** without book mode and the reader's pen; written by hand, no framework |
+| **CSS** | 12&nbsp;KB | 32.6&nbsp;KB | the extra 20.6&nbsp;KB is the two pen sheets, and only a page carrying a mark links them |
+| **Fonts** | 103&nbsp;KB | 73&nbsp;KB | cut per script, so this is the one row your own content decides: the demo's titles run to three alphabets |
 | **Third&#8209;party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
 | **Coming&nbsp;back** | **0&nbsp;bytes** | **0&nbsp;bytes** | the same page answers `304`; a page you have not read yet still costs its HTML |
 
-The CSS and JavaScript rows are build artefacts, the same bytes on every install, brotli from the origin since 2.2.5. The totals came off a live site running Vietnamese, Literata to read and JetBrains Mono for the furniture, and they are not a property of the software: fonts are cut per script, so a browser fetches only the ranges your pages use. The pen's stroke shapes ride in two further immutable sheets that board only a page carrying a mark ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). An inkless page never pays for them.
+The CSS and JavaScript rows are build artefacts, the same bytes on every install, brotli from the origin since 2.2.5. The font row is not a property of the software at all: faces are cut per script and a browser fetches only the ranges your pages use, so an English-only blog pays for one subset where the demo pays for three. The pen's stroke shapes ride in two further immutable sheets that board only a page carrying a mark ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). An inkless page never pays for them, and none of these sheets is fetched twice: they are hashed and immutable, so the second page a reader opens pays for its HTML and nothing else.
 
 Five decisions keep it there, and all five are hard to walk back.
 

@@ -56,3 +56,15 @@ export function trendOf(cur: number, prev?: number): Trend | null {
  * browser bundle — which `check:bundle` fails, loudly and correctly.
  */
 export const TOP_N = 10
+
+/**
+ * How many subscribers stand on a page of the newsletter list.
+ *
+ * Here for the same reason `TOP_N` is: the SERVER hides every row past the first fifty as it
+ * draws them, and the ISLAND unhides a slice and writes the "showing 1-50 of 200" line under
+ * it. Two copies of the number meant the sentence and the rows could disagree about what a
+ * page is, silently, and the file that held each copy could not import the other: an island
+ * that imports a server module drags `bun:sqlite` into the browser bundle, which
+ * `check:bundle` fails, loudly and correctly.
+ */
+export const SUBSCRIBERS_PER_PAGE = 50

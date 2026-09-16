@@ -20,7 +20,7 @@ import type { PostWithContent, SiteSettings } from '@/types'
 import type { Dict } from '@/locales/types'
 import { formatCount, formatDate, zonedDay } from '@/i18n/i18n'
 import { tagText, termSlug } from '@/content/taxonomy'
-import { escapeAttr, escapeHtml, readingMinutes, wordCount } from '@/utils'
+import { escapeAttr, escapeHtml, minutesFor } from '@/utils'
 import { ICONS, INK_LOOP_SVG } from '@/icons'
 import { TOC_ANCHORS } from '@/render/toc'
 
@@ -46,7 +46,23 @@ export function termLinks(list: string[], kind: 'category' | 'tag', lower = fals
 const termRow = (label: string, html: string): string =>
   `<p class="info-terms">${escapeHtml(label)}: <span class="term-list">${html}</span></p>`
 
-export function postInfoPanel(post: PostWithContent, settings: SiteSettings, s: Dict): string {
+/**
+ * @param words the body's word count, already taken.
+ *
+ * Passed in rather than taken again: `renderArticle` prints the same two numbers in the meta
+ * line above the title, so the pair was being computed FOUR times per article, each one a
+ * `toPlainText` pass over the whole body. Measured 2026-09-16 on a 2,978 character post,
+ * toggling `features.readingTime`: 1,515us against 973us, so that one line of chrome was 36%
+ * of the render, and it grows with the piece. It is also the repo's worst smell in its
+ * plainest form, one rule written twice for one screen.
+ *
+ * NOT read off `post.readingMinutes`, though the column exists. A row written before
+ * `toPlainText` learned to drop list markers holds the old answer, and a panel disagreeing
+ * with the line six centimetres above it is the fault this change is fixing.
+ */
+export function postInfoPanel(
+  post: PostWithContent, settings: SiteSettings, s: Dict, words: number,
+): string {
   const { features } = settings
   const rows: string[] = [
     `<p><time datetime="${escapeAttr(post.date)}">${
@@ -78,8 +94,8 @@ export function postInfoPanel(post: PostWithContent, settings: SiteSettings, s: 
     // The figures are wrapped and the units are not, the same way the meta line does it, so
     // the IDE chrome can set a literal apart from the words beside it.
     rows.push(`<p><span class="num">${
-      formatCount(wordCount(post.content), settings.language)}</span> ${escapeHtml(s.wordsSuffix)}`
-      + ` · <span class="num">${readingMinutes(post.content)}</span> ${escapeHtml(s.readingSuffix)}</p>`)
+      formatCount(words, settings.language)}</span> ${escapeHtml(s.wordsSuffix)}`
+      + ` · <span class="num">${minutesFor(words)}</span> ${escapeHtml(s.readingSuffix)}</p>`)
   }
   // No category link among the rows even though the meta line carries one: the full list of
   // categories is two lines further down, and naming the first of them twice in a 250px
