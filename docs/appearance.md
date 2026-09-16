@@ -144,12 +144,16 @@ one line of explanation each; clicking one writes it where your cursor is.
   /* Colour — every one of these already changes with the palette, so set them only
      when you want something the six palettes do not offer. */
   --c-bg:      #fcfcfc;  /* page background */
-  --c-text:    #2e2e2e;  /* body text */
-  --c-heading: #121212;  /* headings */
-  --c-meta:    #6d6d6d;  /* dates, counts, small print */
-  --c-link:    #121212;  /* links */
-  --c-accent:  #121212;  /* the one accent: active states, markers */
-  --c-rule:    #ebebeb;  /* hairlines and dividers */
+  --c-text:    #30302f;  /* body text */
+  --c-heading: #1a1919;  /* headings */
+  --c-meta:    #6d6c6c;  /* dates, counts, small print */
+  --c-link:    #1a1919;  /* links */
+  --c-accent:  #1a1919;  /* the one accent: active states, markers */
+  --c-rule:    #e3e2e2;  /* hairlines and dividers, decorative only */
+  --c-field-edge:        /* the edge of an input, a select or an outline button. A SEPARATE
+                            token because WCAG 1.4.11 wants 3:1 on a control's boundary and a
+                            divider is 1.26:1; it is mixed from --c-text and --c-bg, so it
+                            follows the palette. Override it and check the ratio yourself. */
 
   /* Shape */
   --radius:      .5rem;  /* corner radius (Shape sets this; override for a value between) */

@@ -355,7 +355,7 @@ body:has(.book-overlay[open]){overflow:hidden}
 .comment-field{margin:0}
 .comment-field label{display:block;color:var(--c-meta);margin-bottom:.375rem}
 .comment-body-field{margin-top:1rem}
-.comment-form input,.comment-form textarea{width:100%;padding:.5rem .75rem;border:1px solid var(--c-rule);
+.comment-form input,.comment-form textarea{width:100%;padding:.5rem .75rem;border:1px solid var(--c-field-edge);
   border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;
   box-shadow:var(--well)}
 /* The focus treatment the newsletter field already had, applied to the same-looking field. */
@@ -366,7 +366,7 @@ body:has(.book-overlay[open]){overflow:hidden}
 .comment-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-top:1rem}
 .comment-form .comment-actions button{margin:0 0 0 auto}
 @media (max-width:639px){.comment-form .comment-actions button{margin-left:0}}
-.comment-form button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
+.comment-form button{padding:.5rem 1rem;border:1px solid var(--c-field-edge);border-radius:var(--radius,.5rem);
   background:var(--c-bg);color:var(--c-heading);font:inherit;font-weight:500;cursor:pointer}
 .comment-form button:hover{background:var(--c-rule)}
 .comment-status:empty{display:none}

@@ -114,3 +114,57 @@ describe('the six are one set', () => {
     }
   })
 })
+
+// A CONTROL'S EDGE IS NOT A DIVIDER, and WCAG asks a different question of it.
+//
+// SC 1.4.11 wants 3:1 on anything a reader needs in order to identify a control. The hairline
+// this theme draws between two cards is 1.26 to 1.35:1 against its own paper in all twelve
+// combinations, which is right for a divider and wrong for the edge of a box somebody has to
+// find and type into. Every input, textarea, select and outline button takes `--c-field-edge`
+// now; everything decorative still takes `--c-rule`.
+//
+// The mix is computed here the way a browser computes it, so this is the measurement rather
+// than a restatement of the intention: `color-mix(in srgb, A p%, B)` in sRGB is a plain
+// per-channel interpolation of the two colours' 0-255 values.
+describe('a control has an edge somebody can find', () => {
+  const FIELD_MIX = 0.58
+  const CONTROL_MIN = 3.0
+
+  const channels = (hex: string): number[] => {
+    const h = hex.replace('#', '')
+    const parts = h.length === 3 ? h.split('').map((c) => c + c) : [h.slice(0, 2), h.slice(2, 4), h.slice(4, 6)]
+    return parts.map((p) => parseInt(p, 16))
+  }
+  const toHex = (c: number[]): string => `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`
+  const fieldEdge = (text: string, bg: string): string =>
+    toHex(channels(text).map((v, i) => Math.round(v * FIELD_MIX + channels(bg)[i]! * (1 - FIELD_MIX))))
+
+  for (const preset of THEME_PRESETS) {
+    for (const scheme of ['light', 'dark'] as const) {
+      const c = preset.theme[scheme]
+      it(`${preset.id}/${scheme}: the field edge clears ${CONTROL_MIN}:1`, () => {
+        const ratio = contrast(fieldEdge(c.text, c.bg), c.bg)
+        expect({ id: `${preset.id}/${scheme}`, ok: ratio >= CONTROL_MIN, ratio: Number(ratio.toFixed(2)) })
+          .toEqual({ id: `${preset.id}/${scheme}`, ok: true, ratio: Number(ratio.toFixed(2)) })
+      })
+
+      it(`${preset.id}/${scheme}: and stays quieter than the words beside it`, () => {
+        // A field's edge louder than `--c-meta` would make every form read as the heaviest
+        // thing on its page. 58% was chosen as the first mix that clears 3:1 everywhere while
+        // still sitting under meta in all twelve.
+        expect(contrast(fieldEdge(c.text, c.bg), c.bg)).toBeLessThan(contrast(c.meta, c.bg))
+      })
+    }
+  }
+
+  it('and the DIVIDER is still nowhere near it, which is why they are two tokens', () => {
+    // If someone ever points a control back at `--c-rule`, this is the number they would be
+    // choosing. Measured, so the reason for the second token cannot quietly stop being true.
+    for (const preset of THEME_PRESETS) {
+      for (const scheme of ['light', 'dark'] as const) {
+        const c = preset.theme[scheme]
+        expect(contrast(c.rule, c.bg)).toBeLessThan(CONTROL_MIN)
+      }
+    }
+  })
+})

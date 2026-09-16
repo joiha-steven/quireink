@@ -25,7 +25,7 @@ export const SUBSCRIBE_CSS = `
   border:0;border-radius:999px;background:none;color:var(--c-meta);font-size:1.125rem;line-height:1;cursor:pointer}
 .overlay-close:hover{color:var(--c-heading);background:var(--c-rule)}
 .overlay h2{font-size:inherit;font-weight:var(--fw-heading,600);color:var(--c-heading);margin:0 2rem .75rem 0}
-.search-input{width:100%;padding:.5rem .75rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;box-shadow:var(--well)}
+.search-input{width:100%;padding:.5rem .75rem;border:1px solid var(--c-field-edge);border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;box-shadow:var(--well)}
 .search-input:focus{border-color:var(--c-heading)}
 .search-results{list-style:none;padding:0;margin:.85rem 0 0;overflow-y:auto}
 .search-results li{margin:0 0 .6rem}
@@ -65,13 +65,13 @@ export const SUBSCRIBE_CSS = `
 form.subscribe{display:flex;gap:.5rem;margin:0}
 /* The honeypot: parked, not display:none — some form fillers skip boxless fields. */
 form.subscribe .hp{position:absolute;left:-9999px;width:1px;height:1px;flex:none;border:0;padding:0;opacity:0;pointer-events:none}
-form.subscribe input{min-width:0;flex:1;padding:.5rem .75rem;border:1px solid var(--c-rule);
+form.subscribe input{min-width:0;flex:1;padding:.5rem .75rem;border:1px solid var(--c-field-edge);
   border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;
   box-shadow:var(--well)}
 /* The border darkening stays, the outline:none does not: it was cancelling the site's one
    focus ring on the only field in the header, so keyboard focus vanished here alone. */
 form.subscribe input:focus{border-color:var(--c-heading)}
-form.subscribe button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
+form.subscribe button{padding:.5rem 1rem;border:1px solid var(--c-field-edge);border-radius:var(--radius,.5rem);
   background:var(--c-bg);color:var(--c-heading);font:inherit;font-weight:500;cursor:pointer}
 form.subscribe button:hover{background:var(--c-rule)}
 form.subscribe button:disabled{opacity:.5}
