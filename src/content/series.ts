@@ -6,7 +6,7 @@
 import type { Post } from '@/types'
 import { getPublicPosts, getIndex } from '@/content/posts'
 import { slugify } from '@/utils'
-import { orderSeries } from '@/content/series-order'
+import { orderSeries, seriesSlug } from '@/content/series-order'
 import { run, tx } from '@/store/query'
 
 // Re-exported for server callers + tests; defined in the client-safe pure module.
@@ -45,16 +45,9 @@ export async function getSeriesList(): Promise<{ name: string; slug: string; cou
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
 }
 
-/**
- * The URL slug for a series, with the same fallback taxonomy has (`content/taxonomy.ts`).
- *
- * ⚠️ AND A SERIES HAD IT WORSE THAN A TAG. `slugify` folds Latin and Cyrillic and drops the
- * rest, so a series named in Japanese slugged to the empty string — and where a tag at least
- * still RESOLVED from its raw name, `resolveSeries` compared slugs only. Measured: slug `""`,
- * `/series/` answered 301 then 404, and `/series/書体の話` answered 404. There was no address
- * for that series at all, and the link on every post in it pointed at nothing.
- */
-const seriesSlug = (name: string): string => slugify(name) || name
+// ⚠️ ONE COPY, in `series-order.ts`. A series named in Japanese slugs to the empty string, and
+// the fallback was written here in 2026-09 while a second copy of the arithmetic sat one file
+// below feeding the admin's drawer — which went on printing `href="/series/"` for months.
 
 // Resolve a series slug → display name + ordered public posts (null name if no match).
 export async function resolveSeries(slug: string): Promise<{ name: string | null; posts: Post[] }> {

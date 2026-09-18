@@ -67,4 +67,17 @@ describe('seriesEntries', () => {
     const out = seriesEntries([post('a1', 1, '2020-01-01', 'My Series')])
     expect(out[0].slug).toBe('my-series')
   })
+
+  /**
+   * ⚠️ THE SAME FALLBACK THE PUBLIC SIDE HAS. `slugify` folds Latin and Cyrillic and drops
+   * everything else, so a series named in Japanese slugs to the empty string — and the admin's
+   * series drawer builds `/series/<slug>` out of THIS function. `content/series.ts` fixed the
+   * public half with `slugify(name) || name`; this half kept its own copy of the arithmetic and
+   * kept printing `href="/series/"`, which is not that series and not any series.
+   */
+  it('falls back to the raw name where a slug cannot be made', () => {
+    const out = seriesEntries([post('a1', 1, '2020-01-01', '書体の話')])
+    expect(out[0].slug).toBe('書体の話')
+    expect(out[0].slug).not.toBe('')
+  })
 })

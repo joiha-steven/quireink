@@ -7,6 +7,7 @@
 
 import type { HomeSettings, Page, Post, SiteSettings, Note } from '@/types'
 import { termSlug } from '@/content/taxonomy'
+import { seriesSlug } from '@/content/series-order'
 import { clampExcerpt } from '@/utils'
 
 const escapeXml = (s: string) =>
@@ -119,6 +120,30 @@ export function renderSitemap(
       .map(([slug, when]) => url(`${site}/${kind}/${encodeURIComponent(slug)}`, when))
   }
 
+  /**
+   * SERIES, on the same terms as a tag — and missing from here until 2026-09-19.
+   *
+   * `/series/:slug` is a public route with a feed of its own (`web/term-routes.ts`), and no
+   * decision anywhere says it should be kept out of the index. It simply was not listed, so a
+   * crawler reached a series only by following a link from a post in it.
+   *
+   * The slug is `seriesSlug`, which keeps the raw name when nothing can be slugified from it,
+   * so the encoding above matters here for the same reason.
+   */
+  const seriesUrls = (): string[] => {
+    const latest = new Map<string, string>()
+    for (const p of posts) {
+      if (!p.series) continue
+      const when = p.updatedAt ?? p.date
+      const slug = seriesSlug(p.series)
+      const seen = latest.get(slug)
+      if (seen === undefined || when > seen) latest.set(slug, when)
+    }
+    return [...latest]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([slug, when]) => url(`${site}/series/${encodeURIComponent(slug)}`, when))
+  }
+
   const entries = [
     url(site),
     ...(home.mode === 'list' ? [] : [url(`${site}${home.listPath}`)]),
@@ -139,6 +164,7 @@ export function renderSitemap(
     ...notes.map((n) => url(`${site}/notes/${n.slug}`, n.updatedAt ?? n.date)),
     ...terms('category', (p) => p.categories),
     ...terms('tag', (p) => p.tags),
+    ...seriesUrls(),
   ]
   const body = entries.join('\n')
   // Declared only when it is used: a namespace on a document with no element in it is an

@@ -158,6 +158,21 @@ describe('machine-readable surfaces', () => {
     expect(robots).toContain('User-agent: *\nAllow: /')
   })
 
+  /**
+   * A series is a public address with a feed of its own, and it appeared in no sitemap until
+   * 2026-09-19 — a crawler could only reach one by following a link from a post inside it.
+   * The Japanese name is the second half: `seriesSlug` keeps the raw letters when nothing can
+   * be slugified from them, and a `<loc>` has to carry that percent-encoded.
+   */
+  it('lists every series, and encodes a name that will not slugify', async () => {
+    await saveSettings({ siteUrl: 'https://example.com' })
+    await savePost({ title: 'One', content: 'a', status: 'published', date: PAST, series: 'Field notes', seriesOrder: 1 })
+    await savePost({ title: 'Two', content: 'b', status: 'published', date: PAST, series: '書体の話', seriesOrder: 1 })
+    const xml = await get('/sitemap.xml').then((r) => r.text())
+    expect(xml).toContain('https://example.com/series/field-notes')
+    expect(xml).toContain(`https://example.com/series/${encodeURIComponent('書体の話')}`)
+  })
+
   it('escapes XML rather than letting a title break the document', async () => {
     await saveSettings({ siteUrl: 'https://example.com' })
     await savePost({ title: 'Tom & Jerry <fight>', content: 'body', status: 'published', date: PAST })
