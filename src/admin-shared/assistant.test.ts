@@ -5,7 +5,7 @@
 // wrong exchange, or a settings answer shown under a media call.
 import { describe, expect, it } from 'bun:test'
 import {
-  FOLD, blocksOf, entriesOf, foldMarks, jsonMarks, tokens, type Turn,
+  FOLD, blocksOf, entriesOf, foldMarks, jsonMarks, tokens, windowed, type Turn,
 } from '@/admin-shared/assistant'
 import { htmlOf } from '@/web/admin/mark-html'
 
@@ -115,5 +115,62 @@ describe('a long result is cut in two without being tinted twice', () => {
     // on its own sees an unterminated quote and reads the rest of the line as one string.
     const { head, tail } = foldMarks(long)
     expect(head[head.length - 1]?.cls).toBe(tail[0]?.cls)
+  })
+})
+
+
+/**
+ * ⚠️ THE WINDOW USED TO BE A SUBTRACTION, and a round that calls a tool is four turns long.
+ *
+ * `turns.slice(-30)` landed wherever the arithmetic put it, so the conversation regularly went
+ * out beginning with a `tool_result` whose `tool_use` had just been cut off. Anthropic refuses
+ * a tool result following no tool use; OpenAI refuses a `tool` message answering nothing. The
+ * owner read "the model did not respond", and it did not recover: the server stores what the
+ * screen sends, so the next question re-cut at the same place and reopening the conversation
+ * loaded the damage back. Around the eighth question, on every provider.
+ */
+describe('the window opens where a question begins', () => {
+  const round = (n: number): Turn[] => [
+    { kind: 'user', text: `q${n}` },
+    { kind: 'tool_use', id: `t${n}`, name: 'list_posts', args: {} },
+    { kind: 'tool_result', id: `t${n}`, name: 'list_posts', text: '[]' },
+    { kind: 'assistant', text: `a${n}` },
+  ]
+
+  it('leaves a short conversation exactly as it is', () => {
+    const turns = [...round(1), ...round(2)]
+    expect(windowed(turns, 30)).toEqual(turns)
+  })
+
+  it('never begins on an orphan, at any window size', () => {
+    const turns = Array.from({ length: 12 }, (_, i) => round(i + 1)).flat()
+    // Every size across two whole rounds, so no arithmetic can be lucky.
+    for (let size = 1; size <= 12; size++) {
+      const cut = windowed(turns, size)
+      expect(`${size}: ${cut[0]?.kind}`).toBe(`${size}: user`)
+      // And what is kept is still whole: every result answers a call that is present.
+      const calls = new Set(cut.filter((t) => t.kind === 'tool_use').map((t) => t.id))
+      const orphans = cut.filter((t) => t.kind === 'tool_result' && !calls.has(t.id))
+      expect(`${size}: ${orphans.length} orphans`).toBe(`${size}: 0 orphans`)
+    }
+  })
+
+  it('drops whole exchanges rather than turns', () => {
+    const turns = [...round(1), ...round(2), ...round(3)]
+    // 6 asks for a window that starts mid-round-2; it opens at q3 instead.
+    expect(windowed(turns, 6).map((t) => t.kind === 'user' ? t.text : t.kind))
+      .toEqual(['q3', 'tool_use', 'tool_result', 'assistant'])
+  })
+
+  it('keeps a round longer than the window rather than sending a fragment of it', () => {
+    const long: Turn[] = [
+      { kind: 'user', text: 'big' },
+      ...Array.from({ length: 8 }, (_, i) => ([
+        { kind: 'tool_use', id: `b${i}`, name: 'list_posts', args: {} },
+        { kind: 'tool_result', id: `b${i}`, name: 'list_posts', text: '[]' },
+      ])).flat() as Turn[],
+    ]
+    // A window of 3 cannot be honoured without cutting the round in half, so it is not.
+    expect(windowed(long, 3)).toEqual(long)
   })
 })

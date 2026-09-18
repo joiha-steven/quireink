@@ -125,17 +125,46 @@ export async function runAssistant(
    * the model learns what happened instead of asking again in the next breath.
    */
   const answered = new Set(turns.filter((t) => t.kind === 'tool_result').map((t) => t.id))
-  for (const t of turns) {
-    if (t.kind !== 'tool_use' || answered.has(t.id)) continue
-    if (verdict.approve?.includes(t.id)) {
-      added.push({ kind: 'tool_result', id: t.id, name: t.name, text: await runTool(byName.get(t.name), t.args) })
-    } else if (verdict.decline?.includes(t.id)) {
-      added.push({ kind: 'tool_result', id: t.id, name: t.name, text: DECLINED })
-    } else {
-      // Neither answer given: the pause still stands, and re-asking the model with an
-      // unanswered call is a request every provider refuses.
-      return { ok: true, turns: [], text: '', usage: noUsage(), context: 0, awaiting: [{ id: t.id, name: t.name, args: t.args }] }
+  const unanswered = turns.filter(
+    (t): t is Extract<Turn, { kind: 'tool_use' }> => t.kind === 'tool_use' && !answered.has(t.id),
+  )
+  // ⚠️ DECIDED BEFORE ANYTHING RUNS, and it used to be decided as it went. The loop executed
+  // each approved call in turn and returned `turns: []` the moment it met one the owner had
+  // not spoken for — throwing away work that had already HAPPENED. The screen then still held
+  // those calls unanswered, so the next Allow ran them again: one approval, two deletes, two
+  // uploads, two test sends. Nothing recorded the first run except the activity log.
+  //
+  // Reachable without anybody doing anything strange: the round trip caps the verdict at a
+  // fixed number of ids while the screen sends one per pending call, and a stream dropped
+  // between the tools running and the `done` event leaves exactly this state.
+  //
+  // So: every unanswered call is named first, and if ANY of them is still waiting the pause
+  // stands with nothing executed — the same shape the in-round pause below already has, for
+  // the same reason it has it. All of them, with their reasons, not just the first: the note
+  // saying WHY the owner is being asked hangs off `reason`, and a re-ask that dropped it asked
+  // the question without the one sentence that explains it.
+  const unspoken = unanswered.filter(
+    (t) => !verdict.approve?.includes(t.id) && !verdict.decline?.includes(t.id),
+  )
+  if (unspoken.length > 0) {
+    // EVERY unanswered call comes back, not just the ones still without an answer. The verdict
+    // that arrives next has to name all of them or the ones already approved stay unanswered
+    // for ever — approved, not run, and not asked about again. Returning only the unspoken half
+    // trades a repeat for a deadlock, which is quieter and no better.
+    const tainted = afterUntrusted()
+    return {
+      ok: true, turns: [], text: '', usage: noUsage(), context: 0,
+      awaiting: unanswered.map((t) => ({
+        id: t.id, name: t.name, args: t.args,
+        reason: askReason(t.name, byName.get(t.name), tainted) ?? undefined,
+      })),
     }
+  }
+  for (const t of unanswered) {
+    added.push({
+      kind: 'tool_result', id: t.id, name: t.name,
+      text: verdict.approve?.includes(t.id) ? await runTool(byName.get(t.name), t.args) : DECLINED,
+    })
   }
   const spent: Usage = noUsage()
   let context = 0

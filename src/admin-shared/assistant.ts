@@ -37,6 +37,30 @@ export type Entry = { id: string; name: string; args: Record<string, unknown>; a
  */
 export const WINDOW = 30
 
+/**
+ * The last `window` turns, moved forward to where a question begins.
+ *
+ * ⚠️ COUNTING IS NOT CUTTING. `turns.slice(-WINDOW)` lands wherever the arithmetic puts it, and
+ * a round that called a tool is four turns long — so the window routinely opened on a
+ * `tool_result` whose `tool_use` had just been cut away. Anthropic refuses a tool result that
+ * follows no tool use; OpenAI refuses a `tool` message answering nothing. The owner saw "the
+ * model did not respond", and it was permanent: the server stores what the screen sent, so the
+ * next question re-cut at the same place and reopening the conversation reloaded the damage.
+ * Around the eighth question, on every provider.
+ *
+ * FORWARD, not backward: everything dropped is older than the cut, and what is left begins with
+ * a question and is whole. A single round longer than the window has no question inside it, and
+ * then the last one before it is used instead — a larger payload than asked for, and a valid
+ * one, which is the right way round.
+ */
+export function windowed(turns: Turn[], window = WINDOW): Turn[] {
+  if (turns.length <= window) return turns
+  const cut = turns.length - window
+  let start = turns.findIndex((t, i) => i >= cut && t.kind === 'user')
+  if (start === -1) start = turns.findLastIndex((t) => t.kind === 'user')
+  return start <= 0 ? turns : turns.slice(start)
+}
+
 /** Where the context meter turns amber: past this, one more question stops being loose change. */
 export const CONTEXT_WARN = 60_000
 

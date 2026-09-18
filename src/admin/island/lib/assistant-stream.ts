@@ -8,7 +8,7 @@
 // In `island/lib/` because `scripts/build-admin.ts` globs `island/*.ts` without recursing: a
 // file one directory down is a module, not a browser entry of its own.
 import type { Pending, Turn } from '@/admin-shared/assistant'
-import { WINDOW } from '@/admin-shared/assistant'
+import { windowed } from '@/admin-shared/assistant'
 
 export type Usage = { input: number; output: number }
 
@@ -66,7 +66,7 @@ export async function ask(
   const res = await fetch('/api/assistant', {
     method: 'POST',
     headers: { 'content-type': 'application/json', accept: 'text/event-stream' },
-    body: JSON.stringify({ turns: turns.slice(-WINDOW), chatId, ...verdict }),
+    body: JSON.stringify({ turns: windowed(turns), chatId, ...verdict }),
   })
   // A session that died while the page was open answers 401 to every one of these. The React
   // face read them with a bare `fetch` and showed "the model did not answer", which sent the

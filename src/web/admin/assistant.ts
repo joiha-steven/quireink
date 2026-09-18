@@ -15,6 +15,9 @@ import { ownerRouter, param } from '@/web/guard'
 const body = async <T>(c: Context): Promise<Partial<T>> =>
   (await c.req.json().catch(() => ({}))) as Partial<T>
 
+/** The conversation ceiling, and therefore the ceiling on how many calls one verdict can name. */
+const MAX_TURNS = 60
+
 const turn = z.union([
   z.object({ kind: z.literal('user'), text: z.string().max(20_000) }),
   z.object({ kind: z.literal('assistant'), text: z.string().max(50_000) }),
@@ -59,7 +62,7 @@ export function assistantRoutes() {
 
   router.post('/api/assistant', async (c) => {
     const input = await body<{ turns: unknown }>(c)
-    const parsed = z.array(turn).min(1).max(60).safeParse(input.turns)
+    const parsed = z.array(turn).min(1).max(MAX_TURNS).safeParse(input.turns)
     if (!parsed.success) return fail(c, 'bad_conversation', 400)
     const asked = parsed.data as Turn[]
     // The chat this belongs to. Absent is allowed and means "answer but store nothing",
@@ -67,7 +70,10 @@ export function assistantRoutes() {
     // The owner's answer to a pause, if this request is one. Ids only: the calls
     // themselves are already in the turns, so nothing here can invent an action.
     const ids = (v: unknown): string[] =>
-      (Array.isArray(v) ? v : []).filter((x): x is string => typeof x === 'string').slice(0, 20)
+      // 60, the same ceiling the conversation itself has: the screen sends one id per call it
+      // is waiting on, so a cap lower than the conversation could TRUNCATE a verdict — and a
+      // truncated verdict used to mean the approved half ran and its results were discarded.
+      (Array.isArray(v) ? v : []).filter((x): x is string => typeof x === 'string').slice(0, MAX_TURNS)
     const verdict = {
       approve: ids((input as { approve?: unknown }).approve),
       decline: ids((input as { decline?: unknown }).decline),

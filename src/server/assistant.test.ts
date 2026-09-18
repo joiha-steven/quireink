@@ -10,6 +10,7 @@ import { savePost } from '@/content/posts'
 import { buildChat, parseChat, type Turn } from './assistant-dialects'
 import { runAssistant, toSpec } from './assistant'
 import { collectTools } from '@/mcp/registry'
+import { refusals } from '@/test/gemini-schema'
 import { withoutProviderEnv } from '@/test/env'
 
 // This file asserts what happens with NO provider configured; the machine may disagree.
@@ -76,37 +77,6 @@ describe('buildChat folds the neutral turns into each dialect', () => {
  * in `bun test` rather than in somebody's chat box.
  */
 describe('the gemini request the real tool registry produces', () => {
-  // https://ai.google.dev/api/caching#Schema — every field it reads, and no more.
-  const FIELDS = new Set(['type', 'format', 'title', 'description', 'nullable', 'default',
-    'items', 'minItems', 'maxItems', 'enum', 'properties', 'required', 'minProperties',
-    'maxProperties', 'minimum', 'maximum', 'minLength', 'maxLength', 'pattern', 'example',
-    'anyOf', 'propertyOrdering'])
-  // Its `Type` enum. No `null`: a nullable member is the `nullable` flag instead.
-  const TYPES = new Set(['string', 'number', 'integer', 'boolean', 'array', 'object'])
-
-  /** Every complaint, with the path that earned it: a list, so one run names them all. */
-  const refusals = (schema: Record<string, unknown>, where: string): string[] => {
-    const out: string[] = []
-    for (const [key, value] of Object.entries(schema)) {
-      if (!FIELDS.has(key)) { out.push(`${where}: no such field "${key}"`); continue }
-      if (key === 'type' && !TYPES.has(String(value))) out.push(`${where}.type = ${JSON.stringify(value)}`)
-      // `enum` is strings only there; a numeric union has to travel as a description.
-      if (key === 'enum' && !(value as unknown[]).every((v) => typeof v === 'string')) {
-        out.push(`${where}.enum = ${JSON.stringify(value)}`)
-      }
-      if (key === 'items') out.push(...refusals(value as Record<string, unknown>, `${where}.items`))
-      if (key === 'anyOf') {
-        (value as Record<string, unknown>[]).forEach((m, i) => out.push(...refusals(m, `${where}.anyOf[${i}]`)))
-      }
-      if (key === 'properties') {
-        for (const [name, sub] of Object.entries(value as Record<string, Record<string, unknown>>)) {
-          out.push(...refusals(sub, `${where}.${name}`))
-        }
-      }
-    }
-    return out
-  }
-
   it('carries nothing gemini would refuse', async () => {
     const specs = (await collectTools()).map(toSpec)
     expect(specs.length).toBeGreaterThan(20)
@@ -173,6 +143,47 @@ describe('runAssistant', () => {
     expect(reply.text).toBe('You have one post.')
     expect(reply.turns.map((t) => t.kind)).toEqual(['tool_use', 'tool_result', 'assistant'])
     expect(sawToolResult).toContain('the-one-post') // the REAL tool really ran
+  })
+
+  /**
+   * ⚠️ A PARTIAL VERDICT USED TO RUN HALF THE WORK AND THEN THROW IT AWAY.
+   *
+   * The loop executed each approved call as it walked and returned `turns: []` the moment it
+   * met one with no answer — so the work HAPPENED and nothing recorded it. The screen still
+   * held those calls unanswered, and the next Allow ran them again: one approval, two deletes.
+   * Reachable without malice — the round trip caps how many ids a verdict may name, and a
+   * stream dropped between the tools running and the `done` event leaves exactly this state.
+   *
+   * The post is the proof. A reply with `turns: []` proves only what was RETURNED; whether the
+   * delete ran is a question about the database.
+   */
+  it('runs nothing while any call is still unanswered, so a second Allow cannot repeat the first', async () => {
+    await savePost({ title: 'Keep me', slug: 'keep-me', status: 'published', content: 'Body.', date: '2020-01-01T00:00:00.000Z', excerpt: 'Set.' })
+    await saveIntegrationKeys({ aiProvider: 'anthropic', aiApiKey: 'sk-test' })
+    let rounds = 0
+    globalThis.fetch = (async () => {
+      rounds++
+      return new Response(JSON.stringify({ content: [{ type: 'text', text: 'done' }] }))
+    }) as unknown as typeof fetch
+
+    const history: Turn[] = [
+      { kind: 'user', text: 'tidy up' },
+      { kind: 'tool_use', id: 'd1', name: 'delete_post', args: { slug: 'keep-me' } },
+      { kind: 'tool_use', id: 'd2', name: 'delete_post', args: { slug: 'the-one-post' } },
+    ]
+    const reply = await runAssistant(history, undefined, { approve: ['d1'] })
+    expect(reply.ok).toBe(true)
+    if (!reply.ok) return
+    expect(rounds).toBe(0) // the model was never asked
+    expect(reply.turns).toEqual([])
+    // BOTH still waiting, not just the one the walk happened to reach first, and each with the
+    // reason the screen prints under the question.
+    expect(reply.awaiting).toEqual([
+      { id: 'd1', name: 'delete_post', args: { slug: 'keep-me' }, reason: 'listed' },
+      { id: 'd2', name: 'delete_post', args: { slug: 'the-one-post' }, reason: 'listed' },
+    ])
+    const row = db().query("select deleted_at as trashed from posts where slug = 'keep-me'").get() as { trashed: string | null }
+    expect(row.trashed).toBe(null) // the approved delete did NOT run
   })
 
   it("stops an ordinary edit once readers' words are in the transcript, and says why", async () => {
