@@ -9,8 +9,27 @@ import { slugify } from '@/utils'
 type Taxo = 'categories' | 'tags'
 type HasTaxo = { categories: string[]; tags: string[] }
 
-// The URL slug for a taxonomy term (what links should point at).
-export const termSlug = (term: string): string => slugify(term)
+/**
+ * The URL slug for a taxonomy term (what links should point at).
+ *
+ * ⚠️ THE RAW TERM WHEN THERE IS NOTHING TO SLUGIFY, and that is not a nicety. `slugify` folds
+ * Latin and Cyrillic and drops everything else, so a tag written in Japanese, Chinese, Korean,
+ * Thai, Arabic, Hebrew, Hindi or Greek came back as the EMPTY STRING — eight scripts, three of
+ * which this admin is translated into. Every taxonomy link on every page then pointed at
+ * `/tag/`, which is a 404; the sitemap advertised the same dead URL and collapsed every such
+ * tag into one `<loc>`; and worst of all `/tag/日本語` WORKED until `canonicalTermSlug` compared
+ * it against the empty slug and 301'd the working address into the dead one. A blog in one of
+ * those scripts had no reachable term archive at all.
+ *
+ * A post slug has a `post-<timestamp>` fallback for the same reason, and `slugify`'s own comment
+ * records CJK falling through to it deliberately. Taxonomy had no fallback of any kind.
+ *
+ * Raw rather than percent-encoded, because that is what the rest of the tree already compares
+ * against: `resolveTerm` matches `term === raw` after decoding, and `web/term-routes.ts` encodes
+ * once when it redirects. Returning an encoded slug here would make the canonical check see a
+ * difference that is not one and 301 to a double-encoded address.
+ */
+export const termSlug = (term: string): string => slugify(term) || term
 
 /**
  * A TAG as it is displayed: spaces become hyphens, diacritics kept.

@@ -230,6 +230,17 @@ async function submit(
     if (!res.ok) {
       // The server's message, not a generic one: it says which field is wrong, and the
       // reader has to fix it themselves.
+      //
+      // ⚠️ AND THE STAMP IS ARMED AGAIN BEFORE THEY DO. `takeSolution` spends the answer, so a
+      // send the reader can FIX — a mistyped address, a body over the limit, a reply too deep,
+      // the minute's allowance — left the next press with no stamp at all. That is a 400 and
+      // not the 409 the retry above knows how to recover from, so the form was dead for good
+      // and only a reload cleared it, which throws away what they wrote. The retry exists
+      // because losing that is unforgivable; this is the same loss one branch over, and it is
+      // the DEFAULT configuration, since Turnstile ships off and this gate is what stands in
+      // for it. The server spends a salt only on a verdict of `ok`, so re-solving the page's
+      // own challenge is valid.
+      startSolving(document.querySelector<HTMLElement>('#comments'))
       const { error } = await res.json().catch(() => ({})) as { error?: string }
       status.textContent = error ?? label('commentError')
       return

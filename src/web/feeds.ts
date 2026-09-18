@@ -113,7 +113,10 @@ export function renderSitemap(
     }
     return [...latest]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([slug, when]) => url(`${site}/${kind}/${slug}`, when))
+      // ENCODED HERE, and only here. A term that no script can slugify keeps its own letters
+      // (`content/taxonomy.ts`), which is right for an href a browser encodes on the way out and
+      // wrong for a `<loc>`: the sitemap protocol wants the URL escaped as it would be fetched.
+      .map(([slug, when]) => url(`${site}/${kind}/${encodeURIComponent(slug)}`, when))
   }
 
   const entries = [
