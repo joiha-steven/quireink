@@ -87,9 +87,13 @@ export function buildParts(provider: string, model: string, key: string, parts: 
 export function parseText(provider: string, json: unknown, cap = 300): string | null {
   const j = json as Record<string, any>
   let text: unknown
-  if (provider === 'anthropic') text = j?.content?.[0]?.text
+  // THE FIRST BLOCK IS NOT ALWAYS THE TEXT. Anthropic returns an array of blocks, and a model
+  // that thinks puts a `thinking` block in front of its answer — so reading index 0 returned
+  // undefined and the job did nothing, quietly, after the call had been paid for. `parseChat`
+  // eight lines below has always walked the array; this is the same walk.
+  if (provider === 'anthropic') text = (j?.content ?? []).find((b: any) => b?.type === 'text')?.text
   else if (OPENAI_COMPATIBLE[provider]) text = j?.choices?.[0]?.message?.content
-  else if (provider === 'gemini') text = j?.candidates?.[0]?.content?.parts?.[0]?.text
+  else if (provider === 'gemini') text = (j?.candidates?.[0]?.content?.parts ?? []).find((p: any) => typeof p?.text === 'string')?.text
   if (typeof text !== 'string') return null
   const clean = text.trim().replace(/^["'“‘]+|["'’”]+$/g, '').replace(/\s+/g, ' ').slice(0, cap).trim()
   return clean || null

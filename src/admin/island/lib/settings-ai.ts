@@ -64,7 +64,17 @@ export function wireAi(screen: HTMLElement, _w: ListWords): void {
     show(card.querySelector('[data-ai-when-on]'), on)
     if (load) load.disabled = !on
   }
-  provider?.addEventListener('change', () => { settle(); say('none') })
+  provider?.addEventListener('change', () => {
+    settle()
+    say('none')
+    // THE MODEL GOES WITH THE PROVIDER IT BELONGED TO. The menu ships holding the stored id and
+    // `postCard` reads every `[data-card-field]` by value, disabled or not — so leaving it here
+    // sent Anthropic's model to Google on the next Save. `fill()` below deliberately KEEPS a
+    // stored-but-unlisted id, which is right within one provider and wrong across a change; this
+    // is the line that tells the two cases apart. The route clears it server-side as well.
+    if (menu) { menu.replaceChildren(); menu.value = ''; menu.disabled = true }
+    show(menuBox, false)
+  })
   settle()
 
   load?.addEventListener('click', () => {

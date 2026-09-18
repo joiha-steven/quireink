@@ -289,7 +289,14 @@ export function parseChat(provider: string, json: unknown): ChatAnswer {
       out.calls.push({ id: String(c.id), name: String(c?.function?.name ?? ''), args })
     }
   } else if (provider === 'gemini') {
-    out.usage = { input: num(j?.usageMetadata?.promptTokenCount), output: num(j?.usageMetadata?.candidatesTokenCount) }
+    // THINKING IS OUTPUT, and Gemini reports it in a field of its own. The other three fold
+    // reasoning into their output count already; reading only `candidatesTokenCount` made the
+    // owner's cost meter read about half on a thinking model, on the one screen that promises
+    // to say what a conversation costs.
+    out.usage = {
+      input: num(j?.usageMetadata?.promptTokenCount),
+      output: num(j?.usageMetadata?.candidatesTokenCount) + num(j?.usageMetadata?.thoughtsTokenCount),
+    }
     let n = 0
     for (const p of j?.candidates?.[0]?.content?.parts ?? []) {
       if (typeof p?.text === 'string') out.text += p.text

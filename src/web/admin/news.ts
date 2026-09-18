@@ -254,10 +254,20 @@ export function newsRoutes() {
     const input = await body<IntegrationKeys>(c)
     const provider = str(input.aiProvider) ?? ''
     // The one enum the schema also checks; anything else becomes "off" rather than a 500.
+    const chosen = AI_PROVIDERS.includes(provider) ? provider : ''
+    // ⚠️ A MODEL BELONGS TO A PROVIDER. The card's model menu ships disabled holding the one
+    // stored id, and the payload is read off the DOM — so switching provider and pressing Save
+    // stored the OLD provider's model under the NEW provider's name, and the next job asked
+    // Google for `gpt-4o-mini`. The card said "Saved, and the far end answered".
+    //
+    // Cleared here rather than only in the browser, because this is the fact the browser cannot
+    // be trusted with: an id it never showed can still be in the box. A model the owner picked
+    // for the new provider arrives named in this request and survives; anything else does not.
+    const switching = chosen !== ((await getIntegrationKeys()).aiProvider ?? '')
     await saveIntegrationKeys({
-      aiProvider: AI_PROVIDERS.includes(provider) ? provider : '',
+      aiProvider: chosen,
       aiApiKey: str(input.aiApiKey),
-      aiModel: str(input.aiModel),
+      aiModel: switching ? (str(input.aiModel) ?? '') : str(input.aiModel),
     })
     void logActivity('settings.save', 'ai keys')
     return json({ saved: true })

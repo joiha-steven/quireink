@@ -156,9 +156,10 @@ export function foldAnthropicChunk(fold: StreamFold, payload: unknown): string {
  * `parseChat` covers for the non-streaming path).
  */
 export function foldGeminiChunk(fold: StreamFold, payload: unknown): string {
-  const meta = (payload as { usageMetadata?: { promptTokenCount?: unknown; candidatesTokenCount?: unknown } })?.usageMetadata
+  const meta = (payload as { usageMetadata?: { promptTokenCount?: unknown; candidatesTokenCount?: unknown; thoughtsTokenCount?: unknown } })?.usageMetadata
   // A running total on every chunk, so the last one wins rather than being added.
-  if (meta) fold.usage = { input: num(meta.promptTokenCount), output: num(meta.candidatesTokenCount) }
+  // Thinking is output here too — the same field `parseChat` reads on the whole-answer path.
+  if (meta) fold.usage = { input: num(meta.promptTokenCount), output: num(meta.candidatesTokenCount) + num(meta.thoughtsTokenCount) }
 
   const parts = (payload as { candidates?: { content?: { parts?: unknown[] } }[] })
     ?.candidates?.[0]?.content?.parts
