@@ -64,6 +64,18 @@ async function signInFirst(c: Context): Promise<Response> {
   return c.redirect(`/login?next=${next}`, 302)
 }
 
+/**
+ * ⚠️ THIS PAGE IS THE OWNER'S, AND ITS PATH DOES NOT SAY SO.
+ *
+ * `cache-headers.ts` decides by path — `/admin`, `/login`, `/api` — and `/notes/clip` is none
+ * of them, so a 200 here took the PUBLIC header and a shared cache was invited to keep the
+ * owner's rendered page for sixty seconds and serve it to anybody. That includes `?saved=<slug>`,
+ * which links a note that defaults to draft, and `?url=…&quote=…`, which echoes the passage.
+ * `cache-headers.ts` states the rule this breaks in its own words; saying so here is what makes
+ * it true, because that file leaves alone any response that has already spoken for itself.
+ */
+const OWNER_PAGE = { 'x-robots-tag': 'noindex', 'cache-control': 'private, no-store' }
+
 export async function handleClipPage(c: Context): Promise<Response> {
   if (currentOwner(c) === null) return signInFirst(c)
   const settings = await getSettings()
@@ -77,7 +89,7 @@ export async function handleClipPage(c: Context): Promise<Response> {
     const body = `<header class="listing-head"><h1>${escapeHtml(s.clipSavedHeading)}</h1></header>`
       + `<p class="clip-line">${note ? `<a class="link-accent" href="/notes/${escapeAttr(note.slug)}">${escapeHtml(s.clipSavedView)}</a>` : ''}</p>`
       + `<p class="clip-line"><a class="link-accent" href="/notes/clip">${escapeHtml(s.clipAgain)}</a></p>`
-    return c.html(await page(`${s.clipSavedHeading} · ${settings.title}`, body), 200, { 'x-robots-tag': 'noindex' })
+    return c.html(await page(`${s.clipSavedHeading} · ${settings.title}`, body), 200, OWNER_PAGE)
   }
 
   const f = fields(q)
@@ -87,7 +99,7 @@ export async function handleClipPage(c: Context): Promise<Response> {
     const body = `<header class="listing-head"><h1>${escapeHtml(s.clipToolHeading)}</h1></header>`
       + `<p class="clip-line"><a class="clip-tool" href="${escapeAttr(bookmarklet(site))}" draggable="true">${escapeHtml(label)}</a></p>`
       + `<p class="clip-line t-small text-meta">${escapeHtml(s.clipToolHint)}</p>`
-    return c.html(await page(`${s.clipToolHeading} · ${settings.title}`, body), 200, { 'x-robots-tag': 'noindex' })
+    return c.html(await page(`${s.clipToolHeading} · ${settings.title}`, body), 200, OWNER_PAGE)
   }
 
   const source = f.url
@@ -109,7 +121,7 @@ ${hidden('url', f.url)}${hidden('quote', f.quote)}
 </div>
 <button type="submit">${escapeHtml(s.clipSave)}</button>
 </form>`
-  return c.html(await page(`${s.clipHeading} · ${settings.title}`, body), 200, { 'x-robots-tag': 'noindex' })
+  return c.html(await page(`${s.clipHeading} · ${settings.title}`, body), 200, OWNER_PAGE)
 }
 
 /** The POST half: owner-gated like every write, and it answers with a redirect to the page. */

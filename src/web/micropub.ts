@@ -100,7 +100,12 @@ export function micropubRoutes(): Hono {
   app.post('/micropub', async (c) => {
     const auth = await bearerAuth(c)
     if (!auth) return oops('unauthorized', 'a bearer token is required', 401)
-    if (!auth.scopes.includes('full')) return oops('insufficient_scope', 'this token may only read', 403)
+    // `admin` is `full` PLUS the guarded settings (`mcp/tokens.ts`), so asking for `full` alone
+    // refused the strongest token there is and told its owner it was read-only. The MCP door
+    // spells the same question correctly (`web/admin/mcp-transport.ts`); this is that spelling.
+    if (!auth.scopes.includes('full') && !auth.scopes.includes('admin')) {
+      return oops('insufficient_scope', 'this token may only read', 403)
+    }
     const site = resolveSiteUrl(await getSettings())
     const inc = await read(c.req.raw)
     if (!inc) return oops('invalid_request', 'could not read the request')

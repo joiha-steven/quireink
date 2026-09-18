@@ -44,9 +44,14 @@ const say = (ok: boolean, line: string) => {
 }
 
 /** Rows the owner would notice missing. Analytics is counted separately, in its own file. */
+// `notes` and `webmentions` arrived with the notebook in 2.2.10 and were not added here, so a
+// restored archive could have lost every note the owner wrote and this check would still pass.
+// The rows were always IN the archive (`VACUUM INTO` copies the whole file); what was missing
+// was anybody counting them, which is the difference between a backup and a backup nobody has
+// opened. A new table that holds the owner's own writing belongs in this list the same day.
 const TABLES = [
-  'posts', 'pages', 'post_revisions', 'media', 'files', 'comments', 'redirects',
-  'subscribers', 'newsletter_sends', 'settings', 'users', 'activity_log',
+  'posts', 'pages', 'post_revisions', 'notes', 'media', 'files', 'comments', 'redirects',
+  'subscribers', 'newsletter_sends', 'webmentions', 'settings', 'users', 'activity_log',
 ] as const
 
 const ANALYTICS_TABLES = ['analytics_events', 'analytics_scroll'] as const

@@ -39,6 +39,17 @@ describe('/micropub', () => {
     expect(((await res.json()) as { error: string }).error).toBe('insufficient_scope')
   })
 
+  // ⚠️ `admin` IS `full` PLUS THE GUARDED SETTINGS, not a different kind of token. Asking for
+  // `full` by name refused the strongest token there is and told its owner it "may only read",
+  // which is the one sentence guaranteed to send them looking in the wrong place. The MCP door
+  // has always spelled the same question with both names.
+  it('takes an admin token, which is full and more', async () => {
+    const admin = (await createToken('boss', 'admin')).token
+    const res = await post(admin, new URLSearchParams({ h: 'entry', content: 'From the admin token.' }),
+      'application/x-www-form-urlencoded')
+    expect(`${res.status} ${res.headers.get('location') ? 'created' : 'no location'}`).toBe('201 created')
+  })
+
   it('answers q=config', async () => {
     const res = await app.request('/micropub?q=config', { headers: { authorization: `Bearer ${read}` } })
     expect(res.status).toBe(200)
