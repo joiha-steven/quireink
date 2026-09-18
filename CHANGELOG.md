@@ -16,6 +16,71 @@ queue and the activity log were already capped at 200 and are untouched.
   disagree about what it looks like. It needs no island: it is three links, and the browser is
   the handler, which is now written down in the wiring guard's own list of reasons.
 
+### Fixed
+
+- **A blog whose tags are not written in Latin or Cyrillic had no term archive at all.**
+  `slugify` folds those two scripts and drops everything else, and the taxonomy slug had no
+  fallback of any kind, so a tag in Japanese, Chinese, Korean, Thai, Arabic, Hebrew, Hindi or
+  Greek came back as the empty string. Every taxonomy link on every page pointed at `/tag/`,
+  which is a 404; the sitemap advertised that same dead URL and collapsed every such tag into
+  one entry; and `/tag/日本語` worked right up until the canonical check compared it against the
+  empty slug and redirected the working address into the dead one. Three of those scripts are
+  languages this admin is translated into. A post slug has had a fallback for this since the
+  Russian locale arrived; taxonomy never got one.
+- **A visitor's comment could become permanently unsendable.** The proof-of-work stamp is spent
+  when the comment is sent, and a refusal the reader can FIX — a mistyped address, a body over
+  the limit, a reply too deep, the minute's allowance — returned without arming a new one. The
+  next press then sent no stamp at all, which is a 400 rather than the 409 the retry knows how
+  to recover from, so the form was dead until a reload threw away what they had written. This is
+  the path every fresh install takes, since Turnstile ships off and the stamp is what stands in
+  for it.
+- **A footnote could put a working event handler on the page.** A footnote's id is the author's
+  own text and it goes into four HTML attributes, unescaped, with a charset that allowed quotes
+  and slashes. `[^n"/onmouseover="alert(1)]` closed the `id="` attribute and opened one of its
+  own; parsed into a DOM, the list item came back carrying a real `onmouseover`, on the reader's
+  page and on the owner's preview. The slash removes the need for a space, because HTML reads a
+  slash after a quoted value as an attribute separator, which is why the string looks harmless.
+  This is the one rendering path that does not go through the Markdown engine, so it broke the
+  promise that file opens with: raw HTML is escaped and shown, never rendered. Anything that can
+  write a post it did not author reaches it: the MCP door, both importers, the assistant. The id
+  is escaped now rather than narrowed, because `[^ghi-chú]` is an id people write and a stricter
+  charset would have taken it with the hole. Found in the same pass: an id containing `&` lost
+  its reference from the sentence while its note stayed in the list.
+- **The second factor could be guessed at about eighty tries a second.** The rate-limit pair on
+  the 2FA step is gated on the code NOT looking like a TOTP, so a six-digit guess was never
+  counted and never charged; the only cost was five tries per ticket, and a ticket costs one
+  correct password, which is exactly what an attacker at this step already has. Measured against
+  the real app from one address, sequentially: 645 guesses in 8 seconds, no 429, the account not
+  locked afterwards. With the drift window three codes are live at any instant, so that is an
+  even chance of being inside within the hour. Now counted per account and per address, the same
+  shape the password step has used all along, and cleared when the owner gets it right.
+- **Switching the MCP server on and saving left its address and its token manager invisible**
+  until the page was reloaded. Those two blocks are gated on the SAVED setting rather than on
+  the switch, deliberately and for a measured reason: this card has its own Save, so opening
+  them on the flip handed out a URL and a freshly minted token for a door that still answered
+  404. The other half of that rule was never written, and the hook was drawn twice and read by
+  nobody, so the blocks stayed shut after the save that should have opened them.
+- **A `From:` name in quotes went out as two mailboxes.** `encodeAddress` unquoted a display
+  name and never re-quoted it, so `"Blog, Inc"` was sent as `From: Blog, Inc <hi@example.com>`,
+  which RFC 5322 reads as a list of two addresses with no `Sender:`; a colon in the name made a
+  malformed group instead. The quoted spelling is the correct thing for an owner to type into
+  `smtp_from`, so this broke the input that was right, and the comment above the function had
+  been promising the opposite behaviour since the mail half became ours in 2.2.10. A non-ASCII
+  name escaped it by accident, because that one goes out as an encoded word.
+- **Two lines that went past the length a mail server allows.** A trailing space is rewritten as
+  `=20` after the encoder has decided the line fits, so 74 characters and a space came out at 77
+  where RFC 2045 allows 76; and an encoded `Subject:` was sized to 76 on its own, which is 81
+  once the header name in front of it is counted. Decoders tolerate both, which is why nothing
+  had noticed. Measured, fixed, and pinned by a sweep that tries every length around the cap.
+- **The SMTP reader cut a reply where the text first appeared rather than where the match was.**
+  A multi-line reply whose continuation carried the same characters as its final line would be
+  cut in the wrong place, leaving half of it in the buffer to be read as the answer to the next
+  command. One token: `end.index` instead of `indexOf(end[0])`.
+- **The OAuth consent token did not pin the scope it was minted for**, so the signature for a
+  `read` consent verified against a `full` one. Only the owner's own browser can submit that
+  form and the scope is printed on it, so nothing was exploitable; but "pinning the parameters"
+  is what the function's own comment promises, and the scope is one of them.
+
 ## 2026-09-19 · Quire Ink 2.2.12
 
 The AI assistant had been refusing every prompt on Google Gemini since 2.2.10, and the default

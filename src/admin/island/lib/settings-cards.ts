@@ -13,6 +13,7 @@
 // than as dots: sending the dots back would store the dots.
 import { LAMP_HUES, LAMP_SHAPE } from '@/admin-shared/kit'
 import { changedIn, partialOf, settle, type Field } from './settings-form'
+import { applyLiveGates } from './settings-controls'
 
 export type CardWords = Partial<Record<string, string>>
 
@@ -68,6 +69,9 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
         // has just cleared — so this is the new baseline. Without it the card would stay amber
         // for the rest of the page's life over an edit it had already saved.
         remember(card)
+        // And the blocks that wait for a SAVED answer can open now, for the same reason: this
+        // is the moment the form and the record agree. See `applyLiveGates`.
+        applyLiveGates(card)
         // A card that TESTED and passed is green; one that only stored is green too, because
         // there was nothing at the far end to be wrong about.
         setLamp(lamp, 'good', w.connectionOk ?? '')

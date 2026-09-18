@@ -165,16 +165,42 @@ function echoWell(root: HTMLElement, el: HTMLInputElement): void {
  * Read from the DOM every time rather than kept in a variable: the answer is already on the
  * screen, and a second copy of it is a second thing that can be wrong.
  */
-export function applyGates(root: HTMLElement): void {
-  const valueOf = (key: string): string => {
-    const sw = root.querySelector<HTMLElement>(`[data-switch][data-k="${CSS.escape(key)}"]`)
-    if (sw) return switchOn(sw) ? '1' : '0'
-    const track = root.querySelector<HTMLElement>(`[data-choice-track][data-k="${CSS.escape(key)}"]`)
-    if (track) return choiceValue(track)
-    const field = root.querySelector<HTMLInputElement>(`[data-k="${CSS.escape(key)}"]`)
-    if (!field) return ''
-    return field.type === 'checkbox' ? (field.checked ? '1' : '0') : field.value
+/** What a settings key is answering, read off the screen wherever it is drawn. */
+function answerIn(root: HTMLElement, key: string): string {
+  const sw = root.querySelector<HTMLElement>(`[data-switch][data-k="${CSS.escape(key)}"]`)
+  if (sw) return switchOn(sw) ? '1' : '0'
+  const track = root.querySelector<HTMLElement>(`[data-choice-track][data-k="${CSS.escape(key)}"]`)
+  if (track) return choiceValue(track)
+  const field = root.querySelector<HTMLInputElement>(`[data-k="${CSS.escape(key)}"]`)
+  if (!field) return ''
+  return field.type === 'checkbox' ? (field.checked ? '1' : '0') : field.value
+}
+
+/**
+ * ⚠️ THE GATES THAT FOLLOW THE SAVED ANSWER, NOT THE ONE IN THE FORM.
+ *
+ * `applyGates` below deliberately does NOT touch `data-gate-live`, and the MCP card explains
+ * why at length: flipping its switch leaves the endpoint off until the card's own Save is
+ * pressed, so opening the address block on the flip handed out a URL, and the manager below it
+ * handed out a token, for a door that was still shut. Measured on a fresh install: every call
+ * answered 404 until the settings row was actually written.
+ *
+ * What was missing is the other half. Nothing re-read the hook after a save, so the blocks
+ * stayed shut until the page was reloaded: the owner switched the MCP server on, saved, watched
+ * the lamp go green, and the address and the "mint a token" key simply were not there. The hook
+ * was drawn twice and read by nobody.
+ *
+ * Called from the card's Save, which is the one moment the two answers are the same: the card
+ * has just written what is in it, so what is in it IS what is stored.
+ */
+export function applyLiveGates(card: HTMLElement): void {
+  for (const box of card.querySelectorAll<HTMLElement>('[data-gate-live]')) {
+    box.hidden = answerIn(card, box.dataset.gateLive ?? '') !== '1'
   }
+}
+
+export function applyGates(root: HTMLElement): void {
+  const valueOf = (key: string): string => answerIn(root, key)
 
   for (const box of root.querySelectorAll<HTMLElement>('[data-gate]')) {
     box.hidden = valueOf(box.dataset.gate ?? '') !== '1'
