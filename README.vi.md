@@ -38,6 +38,12 @@ Không thuật toán, không quảng cáo, không nền tảng nào đứng gi�
 > [báo lại](https://github.com/joiha-steven/quireink/issues). Những thứ bản này cố ý **không**
 > làm nằm ở [mục bên dưới](#bản-này).
 
+> **Người làm ra nó không biết code.** Từng dòng Quire Ink đều do Claude Code viết; tôi không
+> học phần mềm, cũng không có kinh nghiệm phát triển phần mềm nào. Thứ tôi có là thời gian ngồi
+> với nó, nên bản mới ra khá đều — và nếu bạn gặp lỗi, cứ
+> [mở một issue](https://github.com/joiha-steven/quireink/issues). Có người báo thì tôi mới
+> biết, và biết thì tôi sửa sớm nhất có thể.
+
 ## Nó là gì
 
 Một cái blog bạn viết và đăng, chạy trên máy chủ bạn thuê. Nó có đủ đồ đạc của một cái blog: trang chủ, bài viết, chuyên mục, ô tìm kiếm, phần bình luận, và bản tin tự gửi email mỗi khi bạn đăng bài. Thứ nó không có là thuật toán quyết định ai được đọc bài bạn, quảng cáo chen ngang, và một công ty có thể đổi luật chơi vào năm sau.

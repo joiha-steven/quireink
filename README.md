@@ -32,6 +32,11 @@ One process. Two SQLite files. No cloud account anywhere in the path. Your name 
 > ship: [tell the issue tracker](https://github.com/joiha-steven/quireink/issues) what broke.
 > What this release deliberately does **not** do is [listed below](#this-release).
 
+> **Written by someone who cannot code.** Every line of Quire Ink is Claude Code's work; I have
+> no software background at all. What I do have is time for it, so updates come often — and if
+> something breaks, [open an issue](https://github.com/joiha-steven/quireink/issues). Being told
+> is the only way I find out, and I fix what I can as soon as I can.
+
 ## What it is
 
 A blog you write in and publish from, on a server you rent. It has the usual furniture: a front page, posts, categories, a search box, comments, a newsletter that goes out when you publish. What it has none of is an algorithm deciding who sees your writing, ads across the middle of it, or a company that can change the rules next year.
