@@ -358,10 +358,26 @@ export const SIDEBAR_UTIL =
 // a word in it is what a PLACE looks like. "Light" was the clearest symptom: read down the
 // rail it is a page you can go to. A control that fits in its own glyph should be one, and a
 // strip of them says "these are the tool's own switches" by being a different shape entirely.
-export const SIDEBAR_ICON =
-  'relative grid h-8 w-8 shrink-0 place-items-center rounded-md text-neutral-500 transition-colors duration-[120ms] hover:bg-neutral-200/70 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0'
+const SIDEBAR_ICON_SHAPE =
+  'relative grid h-8 w-8 shrink-0 place-items-center text-neutral-500 transition-colors duration-[120ms] hover:bg-neutral-200/70 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0'
 
-// The group row that folds the second half of the rail out. An EYEBROW, not a destination:
-// it names no page, and at the destinations' 15px/500 it read as a fifth place to go.
-export const SIDEBAR_GROUP =
-  'relative flex h-8 w-full items-center rounded-lg px-3 text-left text-xs font-medium uppercase tracking-[0.04em] text-neutral-500 transition-colors duration-[120ms] hover:bg-neutral-200/70 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
+export const SIDEBAR_ICON = `${SIDEBAR_ICON_SHAPE} rounded-md`
+
+/**
+ * THE OWNER'S OWN KEY, which is a FACE and not a tool.
+ *
+ * Its radius has to be written here rather than added at the call, and that is the bug this
+ * exists to close: the button asked for `rounded-full` beside `SIDEBAR_ICON`, both rules set
+ * the same property, and the sheet's order decided — `rounded-md` won, so the one key in the
+ * strip that is a person was cut into the same 6px square as the three that are switches.
+ * Measured 2026-09-19: border-radius 6px on a control whose markup said 9999.
+ */
+export const SIDEBAR_FACE = `${SIDEBAR_ICON_SHAPE} rounded-full`
+
+// The group row that folds the second half of the rail out. It wore an eyebrow's register from
+// 2026-09-14 — 32px tall, 12px uppercase, tracked 0.04em — on the reading that a row naming no
+// page should not look like one. What that bought was a column of five rows carrying two type
+// sizes, two weights and two row heights, with the loudest type in it on the one row that is
+// not a place. It takes the destinations' row instead: same height, same size, same weight.
+// The chevron, the glyph and the fold are what say it is not a page.
+export const SIDEBAR_GROUP = SIDEBAR_NAV

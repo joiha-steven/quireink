@@ -156,7 +156,7 @@ export function aiCard(t: AdminStrings, s: SiteSettings, i: IntegrationStatus): 
   // thing on the page that says, right now, whether the provider will take the key.
   const check = `<div class="flex flex-wrap items-center gap-x-3 gap-y-2">`
     + `<button type="button" data-ai-models-load${i.aiConfigured ? '' : ' disabled'}`
-    + ` class="${buttonClass('secondary')}">${escapeHtml(t.aiModelsLoad)}</button>${said}</div>`
+    + ` class="${buttonClass('secondary', 'sm')}">${escapeHtml(t.aiModelsLoad)}</button>${said}</div>`
   const model = `<span data-ai-model-box${i.aiModel ? '' : ' hidden'}>`
     + pickControl({
       value: i.aiModel, width: 'full', label: t.aiModelLabel, attrs: 'data-ai-model data-card-field="aiModel" disabled',

@@ -30,7 +30,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { CONTROL, buttonClass } from '@/admin-shared/kit'
 import { NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { group, panelCard, settingRow, switchRow, textField } from '@/web/admin/fields'
-import { PANEL, connectionCard, panelList } from '@/web/admin/fields-box'
+import { PANEL, panelList } from '@/web/admin/fields-box'
 import { pick, slider } from '@/web/admin/fields-pick'
 import { gate } from '@/web/admin/fields-pic'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
@@ -75,7 +75,7 @@ function sessionRow(t: AdminStrings): string {
     + `${escapeHtml(t.securityThisDevice)}</span></span>`
     + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">`
     + `${escapeHtml(t.securityLastSeen)} <span data-sec-seen></span></span></span>`
-    + `<button type="button" data-sec-end class="${buttonClass('secondary')}">`
+    + `<button type="button" data-sec-end class="${buttonClass('secondary', 'sm')}">`
     + `<span data-sec-end-other>${escapeHtml(t.securitySignOut)}</span>`
     + `<span data-sec-end-this hidden>${escapeHtml(t.securitySignOutThis)}</span>`
     + `</button></li></template>`
@@ -105,7 +105,10 @@ function security(t: AdminStrings): string {
       label: t.securityNewPassword,
       control: `<div class="flex flex-wrap items-center gap-2">`
         + passwordBox({ label: t.securityNewPassword, hook: 'data-sec-new', autocomplete: 'new-password' })
-        + `<button type="button" data-sec-change disabled class="${buttonClass('secondary')}">`
+        // ⚠️ `md`, BECAUSE IT STANDS BESIDE A BOX. The small key is right everywhere else on
+        // this screen, and wrong on the one row that also holds an input: 33.5 against the
+        // box's 36 is a row with two heights, which is what the tour measures for.
+        + `<button type="button" data-sec-change disabled class="${buttonClass('secondary', 'md')}">`
         + `${escapeHtml(t.securityChangePassword)}</button></div>`
         // Said BEFORE the key is pressed, because it is the surprising half and it is the half
         // somebody doing this actually wants.
@@ -120,7 +123,7 @@ function security(t: AdminStrings): string {
       noteHtml: `<span data-sec-recovery-note data-tpl="${escapeAttr(t.securityRecoveryHint)}">`
         + `${escapeHtml(t.securityRecoveryHint.replace('{n}', '0'))}</span>`,
       inline: true,
-      control: `<button type="button" data-sec-recovery disabled class="${buttonClass('secondary')}">`
+      control: `<button type="button" data-sec-recovery disabled class="${buttonClass('secondary', 'sm')}">`
         + `${escapeHtml(t.securityNewCodes)}</button>`,
     })
     // Shown once and never again: minting replaces the old set, so the list the island writes
@@ -140,7 +143,7 @@ function security(t: AdminStrings): string {
         + `<span data-sec-totp-on hidden>${escapeHtml(t.securityTotpOn)}</span>`
         + `<span data-sec-totp-off>${escapeHtml(t.securityTotpOff)}</span></span>`,
       inline: true,
-      control: `<button type="button" data-sec-reenrol disabled class="${buttonClass('secondary')}">`
+      control: `<button type="button" data-sec-reenrol disabled class="${buttonClass('secondary', 'sm')}">`
         + `${escapeHtml(t.securityReenrol)}</button>`,
     })
     // The enrolment panel, and the `<code>` in it is EMPTY on purpose: the secret arrives from
@@ -151,9 +154,10 @@ function security(t: AdminStrings): string {
       + `<div class="mt-3 flex flex-wrap items-center gap-2">`
       + `<input inputmode="numeric" autocomplete="one-time-code" placeholder="000000" data-sec-otp`
       + ` class="${CONTROL} w-32 text-center font-mono tabular-nums">`
-      + `<button type="button" data-sec-otp-confirm disabled class="${buttonClass()}">`
+      // Beside the six-digit box, so both keys take the box's height.
+      + `<button type="button" data-sec-otp-confirm disabled class="${buttonClass('primary', 'md')}">`
       + `${escapeHtml(t.securityConfirmCode)}</button>`
-      + `<button type="button" data-sec-otp-close class="${buttonClass('secondary')}">`
+      + `<button type="button" data-sec-otp-close class="${buttonClass('secondary', 'md')}">`
       + `${escapeHtml(t.close)}</button></div>`,
       `class="${PANEL}" data-sec-enrol`)
     // EMPTY, with the row's shape beside it in a template. "Sign out everywhere else" appeared
@@ -164,7 +168,7 @@ function security(t: AdminStrings): string {
       control: `<ul class="divide-y divide-neutral-100 dark:divide-neutral-800" data-sec-sessions></ul>`
         + sessionRow(t)
         + `<button type="button" data-sec-signout-others hidden`
-        + ` class="${buttonClass('secondary', 'md', 'mt-3')}">`
+        + ` class="${buttonClass('secondary', 'sm', 'mt-3')}">`
         + `${escapeHtml(t.securitySignOutOthers)}</button>`,
     })
     + `</div>`
@@ -319,13 +323,12 @@ export function accountTab(t: AdminStrings, s: SiteSettings): string {
         + ` data-say-contains-name="${escapeAttr(t.pwContainsName)}"`,
     })
     + `</div><div class="${COL}">`
-    + connectionCard({
+    // AN ORDINARY CARD. It was a `connectionCard` with `state: 'good'` written in by hand and
+    // a lamp that said "the connection is fine" — on a card of five settings that reach nothing
+    // at all, beside a Save key duplicating the sheet's own. Both came off on 2026-09-19: the
+    // five keys go to the server when the screen's Save goes, like every other field here.
+    + panelCard({
       title: t.cardThisAdmin,
-      // The five TOP-LEVEL keys this card owns, which is the granularity `changedIn` asked
-      // about in React: `PUT /api/settings` merges, so a card save sends these five objects
-      // and leaves the other tabs' keys alone.
-      keys: ['dashboard', 'features', 'motion', 'autosaveSeconds', 'typography'],
-      state: 'good', lampTitle: t.connectionOk, saveLabel: t.save,
       body: thisAdmin(t, s),
     })
     + `</div></div>`

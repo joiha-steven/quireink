@@ -6,7 +6,7 @@
 
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { SIDEBAR_ICON, type RailRow } from '@/admin-shared/rail'
+import { SIDEBAR_FACE, SIDEBAR_ICON, type RailRow } from '@/admin-shared/rail'
 import { buttonClass } from '@/admin-shared/kit'
 import { floor, glyph, renderRow } from '@/web/admin/rail-rows'
 
@@ -159,7 +159,7 @@ export function ownerMenu(t: AdminStrings, avatar: string): string {
     : glyph('person')
   return `<div class="relative">`
     + `<button type="button" data-nav-owner aria-expanded="false" aria-label="${escapeAttr(t.tabAccount)}"`
-    + ` title="${escapeAttr(t.tabAccount)}" class="${SIDEBAR_ICON} overflow-hidden rounded-full ring-1 ring-neutral-300 dark:ring-neutral-700">${face}</button>`
+    + ` title="${escapeAttr(t.tabAccount)}" class="${SIDEBAR_FACE} overflow-hidden ring-1 ring-neutral-300 dark:ring-neutral-700">${face}</button>`
     + `<div data-rail-menu="owner" hidden class="absolute bottom-full left-0 z-50 mb-2 w-52 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">`
     // The Account tab, by the URL ADR 0041 kept working.
     + `<a href="/admin/settings?tab=account" class="${item}">${escapeHtml(t.tabAccount)}</a>`

@@ -21,6 +21,10 @@ export type Lamp = 'good' | 'attention' | 'off'
 
 export const setLamp = (el: Element | null, state: Lamp, title: string): void => {
   if (!(el instanceof HTMLElement)) return
+  // Off says nothing a card header needs to say, so it shows nothing — the same rule the
+  // server draws by (`connectionCard` in `web/admin/fields-box.ts`). Hidden rather than
+  // removed: the next save may turn the card on, and this is the element that reports it.
+  el.hidden = state === 'off'
   el.className = `${LAMP_SHAPE} ${LAMP_HUES[state]}`
   if (title) { el.setAttribute('role', 'img'); el.setAttribute('aria-label', title); el.title = title }
 }
@@ -225,12 +229,24 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
     return false
   }
 
+  /**
+   * ⚠️ AND IT PAINTS BACK. Going amber was all this did until 2026-09-19, which held while every
+   * card had a key of its own to put the lamp right again. Six of them have none — the sheet's
+   * Save stores them — so an edit lit the lamp and nothing ever put it out: the card read
+   * "you have unsaved work here" for the rest of the session over a change that was stored
+   * seconds later. The lamp goes back to the state the server drew it in, which rides on the
+   * mark itself as `data-lamp-rest`.
+   */
   function repaint(): void {
     for (const card of screen.querySelectorAll<HTMLElement>('[data-card]')) {
       const roots = (card.dataset.cardKeys ?? '').split(' ').filter(Boolean)
       const dirty = (roots.length > 0 && changedIn(fields(), ...roots)) || edited(card)
-      if (!dirty) continue
-      setLamp(card.querySelector('[data-card-lamp]'), 'attention', w.connectionDirty ?? '')
+      const mark = card.querySelector<HTMLElement>('[data-card-lamp]')
+      if (dirty) { setLamp(mark, 'attention', w.connectionDirty ?? ''); continue }
+      const rest = mark?.dataset.lampRest
+      if (rest === 'good' || rest === 'attention' || rest === 'off') {
+        setLamp(mark, rest, mark?.dataset.lampRestTitle ?? '')
+      }
     }
   }
 }

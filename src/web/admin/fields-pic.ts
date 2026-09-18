@@ -56,9 +56,9 @@ export function pickedImage(f: {
     + ` class="${f.previewClass}"${f.value ? '' : ' hidden'}>`
     + empty
     + `<div class="flex${f.row ? '' : ' flex-wrap'} gap-2">`
-    + `<button type="button" data-pick-open class="${buttonClass('secondary')}">`
+    + `<button type="button" data-pick-open class="${buttonClass('secondary', 'sm')}">`
     + `${escapeHtml(f.chooseLabel)}</button>`
-    + `<button type="button" data-pick-clear class="${buttonClass('ghost')}"${f.value ? '' : ' hidden'}>`
+    + `<button type="button" data-pick-clear class="${buttonClass('ghost', 'sm')}"${f.value ? '' : ' hidden'}>`
     + `${escapeHtml(f.removeLabel)}</button></div></div>`
 }
 
@@ -72,8 +72,14 @@ export function pickedImage(f: {
  * picture will be — a favicon is 32px and an app icon is not — so the row does not change height
  * the moment one goes in. Measured on the Blog tab: the two rows sit in the same card and their
  * "Choose an image" keys landed 16px apart, because the 32px slot and the 48px slot pushed the
- * words along by different amounts. The box is the larger of the two; the picture is centred in
- * it and keeps its own size.
+ * words along by different amounts.
+ *
+ * ⚠️ 64px, AND THE PICTURE STANDS AT THE BOX'S LEFT EDGE. The box was 48 and centred what it
+ * held, which fixed the keys and broke the pictures: a 32px favicon centred in 48 starts 8px in
+ * from the 48px app icon below it, so the column had two left edges — measured x=808 against
+ * x=800. And 48 was the larger of these two rows only; the portrait on the same screen is 64,
+ * which pushed ITS keys 16px further right again (x=876 against x=860). One box at the largest
+ * of the three, everything in it flush left: one edge for the pictures, one for the keys.
  */
 export function iconUpload(f: {
   k: string
@@ -86,7 +92,7 @@ export function iconUpload(f: {
 }): string {
   return `<div class="flex items-center gap-3" data-icon="${escapeAttr(f.kind)}">`
     + hiddenField(f.k, f.value)
-    + `<span class="flex h-12 w-12 shrink-0 items-center justify-center">`
+    + `<span class="flex h-16 w-16 shrink-0 items-center">`
     + `<img src="${escapeAttr(f.value)}" alt="" data-icon-preview`
     + ` class="bg-neutral-100 object-contain p-1 ${f.previewClass}"${f.value ? '' : ' hidden'}>`
     + `<span aria-hidden="true" data-icon-slot class="${EMPTY_SLOT} shrink-0 ${f.previewClass}"`
@@ -97,8 +103,12 @@ export function iconUpload(f: {
     + `${f.value ? ' hidden' : ''}>${escapeHtml(f.emptyLabel)}</span>`
     + `<input type="file" hidden data-icon-file`
     + ` accept="image/png,image/jpeg,image/svg+xml,image/gif,image/webp,image/x-icon,.ico">`
-    + `<button type="button" data-icon-open class="${buttonClass('secondary')}">`
+    // THE PAIR IS ITS OWN GROUP, at the same 8px `pickedImage` uses between the same two keys.
+    // Loose in the row they took the row's 12, so the portrait's pair and the icons' pair sat
+    // 4px apart on a screen that shows all three one under another. Measured 2026-09-19.
+    + `<div class="flex gap-2">`
+    + `<button type="button" data-icon-open class="${buttonClass('secondary', 'sm')}">`
     + `${escapeHtml(f.chooseLabel)}</button>`
-    + `<button type="button" data-icon-clear class="${buttonClass('ghost')}"${f.value ? '' : ' hidden'}>`
-    + `${escapeHtml(f.removeLabel)}</button></div>`
+    + `<button type="button" data-icon-clear class="${buttonClass('ghost', 'sm')}"${f.value ? '' : ' hidden'}>`
+    + `${escapeHtml(f.removeLabel)}</button></div></div>`
 }

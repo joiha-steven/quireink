@@ -19,7 +19,7 @@ import { unclosed, snippetBytes } from '@/admin-shared/snippet'
 import { ICON_KEY, buttonClass } from '@/admin-shared/kit'
 import { NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { group, panelCard, settingRow, switchList, switchRow, textControl } from '@/web/admin/fields'
-import { connectionCard, pairGrid } from '@/web/admin/fields-box'
+import { pairGrid } from '@/web/admin/fields-box'
 import { checkField } from '@/web/admin/fields-pick'
 import { pickedImage } from '@/web/admin/fields-pic'
 import { emptyState, icon } from '@/web/admin/kit'
@@ -128,10 +128,10 @@ const BEACON_PH = '<script defer src="https://example.com/beacon.js"></script>'
  * beats green the moment there are unsaved edits — is the island's to apply from there.
  */
 export function siteCard(t: AdminStrings, s: SiteSettings): string {
-  return connectionCard({
+  // Crawlers and two code boxes: settings, with nothing to try and nothing to report. It wore
+  // a hardcoded green lamp and a second Save key until 2026-09-19.
+  return panelCard({
     title: t.cardServerSettings,
-    keys: ['seo', 'customHead', 'customBodyEnd'],
-    state: 'good', lampTitle: t.connectionOk, saveLabel: t.save,
     body: group({ title: t.tabServer, first: true, body: crawlers(t, s) })
       + group({
         title: t.cardCustomCode, note: t.customCodeNote,
@@ -220,7 +220,7 @@ export function redirectsCard(t: AdminStrings, rows: Redirect[]): string {
       )
       + `<div class="flex flex-wrap items-center justify-between gap-3">`
       + checkField({ label: t.redirectPermanent, on: true, attrs: 'data-redirect-permanent' })
-      + `<button type="button" data-redirect-add disabled class="${buttonClass()}">`
+      + `<button type="button" data-redirect-add disabled class="${buttonClass('primary', 'sm')}">`
       + `${escapeHtml(t.redirectAdd)}</button></div></div>`,
   })
 }
@@ -246,11 +246,11 @@ export function importCard(t: AdminStrings): string {
       + `<input type="file" hidden data-import-file accept="${accept}">`
       + `<div class="rounded-lg border border-dashed border-neutral-300 bg-neutral-50/60 p-4 dark:border-neutral-700 dark:bg-neutral-900/50">`
       + `<div class="flex flex-wrap items-center gap-3">`
-      + `<button type="button" data-import-choose class="${buttonClass('secondary')}">`
+      + `<button type="button" data-import-choose class="${buttonClass('secondary', 'sm')}">`
       + `${escapeHtml(t.importChoose)}</button>`
       + `<span class="min-w-0 truncate text-sm text-neutral-600 dark:text-neutral-300" data-import-name hidden></span>`
       + `</div></div>`
-      + `<button type="button" data-import-run disabled class="${buttonClass()}"`
+      + `<button type="button" data-import-run disabled class="${buttonClass('primary', 'sm')}"`
       + ` data-label-idle="${escapeAttr(t.importRun)}" data-label-busy="${escapeAttr(`${t.importRun}…`)}"`
       + ` data-label-images="${escapeAttr(t.importImages)}">${escapeHtml(t.importRun)}</button>`
       + `</div>`,

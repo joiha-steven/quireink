@@ -94,7 +94,9 @@ const SHAPE =
 // the ordinary one rather than two, which is what a second size is for.
 const SIZES: Record<ButtonSize, string> = {
   md: 'min-h-9 px-3.5 py-1.5 text-sm',
-  sm: 'min-h-8 px-3 py-1.5 text-xs',
+  // 13px, up from 12 on 2026-09-19: a card's own keys wear this size, and a row read across
+  // held `Choose image` at 12 beside a segmented strip at 13 and a label at 14. The strip's.
+  sm: 'min-h-8 px-3 py-1.5 text-[13px]',
 }
 
 /**

@@ -75,9 +75,9 @@ export function frontCard(t: AdminStrings, f: FrontSettings, v: HomeTabView): st
     // Order is the owner's, so it is MOVED rather than dragged: two keys are the whole
     // interaction and they work on a phone and with a keyboard.
     + `<div class="flex gap-1">`
-    + `<button type="button" data-strip-up class="${buttonClass('ghost')}"`
+    + `<button type="button" data-strip-up class="${buttonClass('ghost', 'sm')}"`
     + `${i === 0 ? ' disabled' : ''}>↑</button>`
-    + `<button type="button" data-strip-remove class="${buttonClass('ghost')}">`
+    + `<button type="button" data-strip-remove class="${buttonClass('ghost', 'sm')}">`
     + `${escapeHtml(t.removeSelection)}</button></div></div>`
     + stripSize(t, s.count, s.columns) + `</div>`
   return `<div class="${SETTING_GAP}">`

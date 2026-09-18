@@ -87,7 +87,7 @@ function menu(t: AdminStrings, s: SiteSettings): string {
   return `<div class="space-y-3" data-menu>`
     + `<span class="${SETTING_LABEL}">${escapeHtml(t.menuTitle)}</span>`
     + `<div class="space-y-3" data-menu-rows>${s.menu.map(row).join('')}</div>`
-    + `<button type="button" data-menu-add class="${buttonClass('secondary')}">`
+    + `<button type="button" data-menu-add class="${buttonClass('secondary', 'sm')}">`
     + `${escapeHtml(t.menuAdd)}</button>`
     + `<p class="${NOTE_TEXT}">${escapeHtml(t.menuHint)}</p>`
     + listField('menu', s.menu)

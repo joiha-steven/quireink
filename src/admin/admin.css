@@ -908,11 +908,8 @@ input[type='color']::-moz-color-swatch {
 .rail-more { justify-content: space-between; gap: .5rem; }
 .rail-more-face { gap: .75rem; }
 :root[data-rail-collapsed='1'] #admin-rail .rail-more-face { gap: 0; }
-/* Collapsed it is NOT an eyebrow, because there is no word for an eyebrow to be. It is one
-   more glyph in a column of glyphs, so it takes the destinations' 40px rather than the 32px a
-   heading wears — at 32 it sat 4px high in its own row and the dots read as mis-aligned
-   against the four marks above them. */
-:root[data-rail-collapsed='1'] #admin-rail .rail-more { height: 2.5rem; }
+/* The 40px this used to restore when the rail shut is the row's own height now that the group
+   row is set like the destinations above it (`SIDEBAR_GROUP` in `admin-shared/rail.ts`). */
 
 /* A zone's floor only exists while something is being arranged. It is a DROP TARGET, and at
    rest it was 12px of nothing between the destinations and the group — which made the phone's

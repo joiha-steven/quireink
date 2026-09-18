@@ -25,7 +25,7 @@ import type { UpdateState } from '@/server/update-check'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { SHEET_TOOL, SHEET_TOOL_DANGER, buttonClass } from '@/admin-shared/kit'
 import { META, NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
-import { group, settingRow, switchList, switchRow, textField } from '@/web/admin/fields'
+import { group, panelCard, settingRow, switchList, switchRow, textField } from '@/web/admin/fields'
 import { PANEL_LIST, connectionCard, loadFailure, pairGrid } from '@/web/admin/fields-box'
 import { gate } from '@/web/admin/fields-pic'
 import { lamp } from '@/web/admin/kit'
@@ -48,7 +48,7 @@ const cache = (t: AdminStrings, s: SiteSettings): string =>
   }))
   + settingRow({
     label: t.clearCache, note: t.cacheClearDesc, inline: true,
-    control: `<button type="button" data-cache-clear class="${buttonClass('secondary')}">`
+    control: `<button type="button" data-cache-clear class="${buttonClass('secondary', 'sm')}">`
       + `${escapeHtml(t.clearCache)}</button>`,
   })
   + `</div>`
@@ -131,10 +131,10 @@ const storage = (t: AdminStrings, s: SiteSettings): string =>
  * keys in the body — the endpoint merges, so nothing else on the record is touched.
  */
 export const installCard = (t: AdminStrings, s: SiteSettings, u: UpdateStatus): string =>
-  connectionCard({
+  // Cache, updates and storage limits: all four keys are ordinary settings, so the sheet's
+  // Save stores them. The hardcoded green lamp and the card's own key came off 2026-09-19.
+  panelCard({
     title: t.cardInstall,
-    keys: ['cache', 'updateCheck', 'maxUploadMb', 'storageQuotaGb'],
-    state: 'good', lampTitle: t.connectionOk, saveLabel: t.save,
     body: group({ title: t.cacheTitle, first: true, body: cache(t, s) })
       + group({ title: t.updateTitle, body: updates(t, s, u) })
       + group({ title: t.storageTitle, body: storage(t, s) }),
@@ -194,7 +194,7 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
   })
   const body = `<div class="space-y-5">`
     + `<p class="${NOTE_TEXT}">${escapeHtml(t.exportHint)}</p>`
-    + `<button type="button" data-backup-export class="${buttonClass()}">`
+    + `<button type="button" data-backup-export class="${buttonClass('primary', 'sm')}">`
     + `${escapeHtml(t.exportNow)}</button>`
     + `<div class="space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
     + switchList(switchRow({
@@ -208,7 +208,7 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
       + count('backups.keep', t.backupKeepLabel, b.keep),
     ), 'data-gate="backups.enabled"')
     + `<div class="flex items-center gap-3">`
-    + `<button type="button" data-backup-run class="${buttonClass('secondary')}">`
+    + `<button type="button" data-backup-run class="${buttonClass('secondary', 'sm')}">`
     + `${escapeHtml(t.backupNow)}</button>`
     + `<span class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">`
     // BOTH LAMPS SHIP DRAWN, one hidden. A lamp's colour is a class, and nothing in the island
@@ -240,7 +240,6 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
     keys: ['backups'],
     state: b.enabled ? 'good' : 'off',
     lampTitle: b.enabled ? t.connectionOk : t.connectionOff,
-    saveLabel: t.save,
     body,
   })
 }

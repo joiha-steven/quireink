@@ -95,9 +95,9 @@ function tokenRow(t: AdminStrings): string {
  */
 function tokens(t: AdminStrings): string {
   const keys = `<div class="flex flex-wrap items-center gap-2">`
-    + `<button type="button" data-mcp-generate class="${buttonClass()}">`
+    + `<button type="button" data-mcp-generate class="${buttonClass('primary', 'sm')}">`
     + `${escapeHtml(t.mcpGenerate)}</button>`
-    + `<button type="button" data-mcp-refresh class="${buttonClass('ghost')}">`
+    + `<button type="button" data-mcp-refresh class="${buttonClass('ghost', 'sm')}">`
     + `${escapeHtml(t.mcpRefresh)}</button>`
     + `<div class="flex w-full basis-full flex-wrap items-center gap-x-4 gap-y-1.5">`
     + checkField({
@@ -116,9 +116,9 @@ function tokens(t: AdminStrings): string {
     + `${escapeHtml(t.mcpOnceWarning)}</p>`
     + `<div class="flex items-center gap-2">`
     + `<code class="${COPY_BOX} bg-white dark:bg-neutral-900" data-mcp-token></code>`
-    + `<button type="button" data-mcp-copy-token class="${buttonClass()}">`
+    + `<button type="button" data-mcp-copy-token class="${buttonClass('primary', 'sm')}">`
     + `${escapeHtml(t.mcpCopy)}</button>`
-    + `<button type="button" data-mcp-close class="${buttonClass('ghost')}">`
+    + `<button type="button" data-mcp-close class="${buttonClass('ghost', 'sm')}">`
     + `${escapeHtml(t.close)}</button></div></div>`
   const head = `<tr><th class="${TH}">${escapeHtml(t.mcpColName)}</th>`
     + `<th class="hidden ${TH} sm:table-cell">${escapeHtml(t.mcpColCreated)}</th>`
@@ -168,7 +168,7 @@ export function mcpCard(t: AdminStrings, s: SiteSettings, endpoint: string): str
     control: `<div class="flex items-center gap-2">`
       + `<code class="${COPY_BOX} bg-neutral-50 dark:bg-neutral-900" data-mcp-url>`
       + `${escapeHtml(endpoint)}</code>`
-      + `<button type="button" data-mcp-copy class="${buttonClass('secondary')}">`
+      + `<button type="button" data-mcp-copy class="${buttonClass('secondary', 'sm')}">`
       + `${escapeHtml(t.mcpCopy)}</button></div>`,
   })
   return connectionCard({
@@ -176,7 +176,6 @@ export function mcpCard(t: AdminStrings, s: SiteSettings, endpoint: string): str
     keys: ['mcp'],
     state: live ? 'good' : 'off',
     lampTitle: live ? t.connectionOk : t.connectionOff,
-    saveLabel: t.save,
     // NO stack gap on this box: its last child is the one that can be hidden, and `space-y-*`
     // is `& > :not(:last-child)` — so the list above would keep a margin it only earns while
     // the manager is showing. The 20px rides on the gated block instead, where a `display:none`

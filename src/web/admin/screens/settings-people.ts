@@ -34,7 +34,7 @@ import type { CommentEnv } from '@/comments/comment-env'
 import type { CommentSettings, SiteSettings } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { NOTE, NOTE_TEXT } from '@/admin-shared/scale'
-import { settingRow, switchList, switchRow, textControl } from '@/web/admin/fields'
+import { panelCard, settingRow, switchList, switchRow, textControl } from '@/web/admin/fields'
 import { INSET, connectionCard } from '@/web/admin/fields-box'
 import { checkField } from '@/web/admin/fields-pick'
 import { gate } from '@/web/admin/fields-pic'
@@ -317,12 +317,13 @@ export function peopleTab(t: AdminStrings, s: SiteSettings, view: PeopleTabView)
     // because "should there be comments" is both the last thing on a post and the first thing on
     // this tab. Whichever is changed, the other reads it: they are the same `data-k`, and the
     // sheet's Save sends one value for it.
-    + connectionCard({
+    // ONE SWITCH, so no lamp and no key of its own. Both were here until 2026-09-19 and both
+    // were saying what the switch underneath them already said: the lamp went green when the
+    // switch went on, and the Save key stored the one value the sheet's Save was storing
+    // anyway. A lamp earns its place by reporting something the card cannot show — whether the
+    // far end answered — and this card has no far end.
+    + panelCard({
       title: t.cardComments,
-      keys: ['comments'],
-      state: c.enabled ? 'good' : 'off',
-      lampTitle: c.enabled ? t.connectionOk : t.connectionOff,
-      saveLabel: t.save,
       body: switchList([switchRow({
         k: 'comments.enabled', label: t.commentsEnable, note: t.commentsEnableDesc,
         on: c.enabled,

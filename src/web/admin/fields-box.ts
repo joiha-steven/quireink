@@ -61,7 +61,17 @@ export function connectionCard(c: {
   keys: string[]
   state: 'good' | 'attention' | 'off'
   lampTitle: string
-  saveLabel: string
+  /**
+   * The card's OWN key, for a card that can TRY the far end.
+   *
+   * Left out, the card has no key of its own and the sheet's Save stores it like every other
+   * field on the screen — which is what six of these eleven cards were already doing the long
+   * way round: no route, no test, a partial of their own settings keys to the same endpoint the
+   * sheet posts to, under a second Save key three inches from the first (2026-09-19). The card
+   * keeps its lamp either way; the lamp answers "is what I see what is stored", which is a
+   * question a card without a key still has.
+   */
+  saveLabel?: string
   body: string
   actions?: string
   /**
@@ -74,14 +84,31 @@ export function connectionCard(c: {
   route?: string
   attrs?: string
 }): string {
-  const foot = `<div class="mt-5 flex flex-wrap items-center gap-3 border-t border-neutral-100 pt-4`
-    + ` dark:border-neutral-800">`
-    + `<button type="button" data-card-save class="${buttonClass('primary', 'sm')}">`
-    + `${escapeHtml(c.saveLabel)}</button></div>`
-    + `<p class="${NOTE_ALERT} mt-2" data-card-error hidden></p>`
+  const foot = c.saveLabel
+    ? `<div class="mt-5 flex flex-wrap items-center gap-3 border-t border-neutral-100 pt-4`
+      + ` dark:border-neutral-800">`
+      + `<button type="button" data-card-save class="${buttonClass('primary', 'sm')}">`
+      + `${escapeHtml(c.saveLabel)}</button></div>`
+      + `<p class="${NOTE_ALERT} mt-2" data-card-error hidden></p>`
+    : ''
   return panelCard({
     title: c.title,
-    lampHtml: lamp({ state: c.state, title: c.lampTitle, attrs: 'data-card-lamp' }),
+    // ⚠️ THE OFF LAMP SHIPS HIDDEN. `kit.ts` states the rule — a lamp with nothing to say draws
+    // nothing at all — and a card header is where it was being broken: a screen of twenty-two
+    // cards drew grey marks on the handful that CAN report, so the eye read the mark itself as
+    // the message and the colour as noise. Off is not news; the switch inside the card already
+    // says it. Drawn and hidden rather than left out, because `setLamp` has to find it the
+    // moment a save turns the card on.
+    lampHtml: lamp({
+      state: c.state, title: c.lampTitle,
+      // `data-lamp-rest` is the state the SERVER drew, and it is what the island puts back when
+      // a card stops being dirty. Without it an edit painted the lamp amber and nothing ever
+      // painted it back: saving from the sheet's own key leaves the card's own save untouched,
+      // so the amber outlived the change it was reporting.
+      attrs: `data-card-lamp data-lamp-rest="${c.state}"`
+        + ` data-lamp-rest-title="${escapeAttr(c.lampTitle)}"`
+        + (c.state === 'off' ? ' hidden' : ''),
+    }),
     actions: c.actions,
     body: c.body + foot,
     attrs: `data-card data-card-keys="${escapeAttr(c.keys.join(' '))}"`
