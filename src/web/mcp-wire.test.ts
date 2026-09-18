@@ -15,6 +15,8 @@ import { resetLimits } from '@/server/rate-limit'
 import { getSettings, saveSettings } from '@/content/settings'
 import { savePost } from '@/content/posts'
 import { payload } from '@/test/api'
+import { collectTools } from '@/mcp/registry'
+import { toSpec } from '@/server/assistant'
 
 // Its own directory: `openDatabases` holds one pair of connections per process and closes
 // the previous pair, so two test files sharing a directory would fight over them.
@@ -124,6 +126,36 @@ describe('the MCP endpoint', () => {
     expect(names).toContain('create_post')
     expect(names).toContain('list_pages')
     expect(names).toContain('list_media')
+  })
+
+  /**
+   * ⚠️ TWO DOORS, TWO SERIALISERS — and `server/assistant.ts` promises they agree.
+   *
+   * The assistant tells the model it has "the same surface an MCP agent gets". They are the
+   * same REGISTRY, but not the same conversion: the SDK builds these schemas with its own
+   * bundled copy of zod, ours builds the assistant's with the root copy, and #66 was a zod
+   * release changing what that conversion emits. Nothing compared the two, so the day they
+   * stopped agreeing nobody would have known.
+   *
+   * Compared by MEANING, not by spelling. This door owes JSON Schema and nothing more — its
+   * `$schema` and `const` are perfectly ordinary there, and a client adapts them the same way
+   * `geminiParams` does for us. What must never drift is WHAT a tool takes: the same tools,
+   * the same arguments, the same ones required.
+   */
+  it('describes the same tools, and the same arguments, as the assistant door', async () => {
+    const token = await mintToken()
+    const res = await rpc(token, { jsonrpc: '2.0', id: 9, method: 'tools/list' })
+    const body = await res.json() as { result?: { tools?: { name: string; inputSchema: Record<string, unknown> }[] } }
+    const shape = (name: string, schema: Record<string, unknown>) => [
+      name,
+      Object.keys((schema.properties ?? {}) as object).sort().join(','),
+      ((schema.required ?? []) as string[]).slice().sort().join(','),
+    ].join(' | ')
+
+    const overTheWire = (body.result?.tools ?? []).map((t) => shape(t.name, t.inputSchema)).sort()
+    const inTheAdmin = (await collectTools()).map(toSpec).map((s) => shape(s.name, s.parameters)).sort()
+    expect(overTheWire.length).toBeGreaterThan(20)
+    expect(overTheWire).toEqual(inTheAdmin)
   })
 
   it('actually runs a tool against the real data layer', async () => {
