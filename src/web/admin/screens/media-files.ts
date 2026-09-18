@@ -63,7 +63,9 @@ function fileRow(t: AdminStrings, lang: SiteLang, f: FileItem, managed: boolean)
     + `<div class="flex shrink-0 flex-wrap items-center gap-3 text-xs">${actions}</div></li>`
 }
 
-export function filesPanel(t: AdminStrings, lang: SiteLang, files: FileItem[], icons: FileItem[], open: boolean): string {
+export function filesPanel(
+  t: AdminStrings, lang: SiteLang, files: FileItem[], icons: FileItem[], open: boolean, pagerHtml = '',
+): string {
   const rows = files.map((f) => fileRow(t, lang, f, false)).join('')
   const iconRows = icons.map((f) => fileRow(t, lang, f, true)).join('')
   const empty = files.length === 0 && icons.length === 0
@@ -79,7 +81,7 @@ export function filesPanel(t: AdminStrings, lang: SiteLang, files: FileItem[], i
     + `${escapeHtml(t.iconsGroupTitle)}</h3>`
     + `<ul class="${FRAME}">${iconRows}</ul></div></div>`
     + `<div data-file-empty${empty ? '' : ' hidden'}>${emptyState({ title: t.noFiles })}</div>`
-    + `</div></div></div>`
+    + `</div>` + pagerHtml + `</div></div>`
 }
 
 /** `preload=metadata`: the browser fetches only the headers, not the file. */
@@ -98,7 +100,9 @@ function videoRow(t: AdminStrings, lang: SiteLang, f: FileItem): string {
     + `${escapeHtml(t.copyUrl)}</button></div></li>`
 }
 
-export function videosPanel(t: AdminStrings, lang: SiteLang, videos: FileItem[], open: boolean): string {
+export function videosPanel(
+  t: AdminStrings, lang: SiteLang, videos: FileItem[], open: boolean, pagerHtml = '',
+): string {
   const rows = videos.map((f) => videoRow(t, lang, f)).join('')
   return `<div data-media-panel="videos" class="px-4 pt-4 pb-2"${open ? '' : ' hidden'}>`
     + `<div class="space-y-5">`
@@ -108,5 +112,5 @@ export function videosPanel(t: AdminStrings, lang: SiteLang, videos: FileItem[],
     + `<ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-video-list`
     + `${videos.length ? '' : ' hidden'}>${rows}</ul>`
     + `<div data-video-empty${videos.length ? ' hidden' : ''}>${emptyState({ title: t.noVideos })}</div>`
-    + `</div></div></div>`
+    + `</div>` + pagerHtml + `</div></div>`
 }

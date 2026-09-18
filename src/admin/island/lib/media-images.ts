@@ -40,11 +40,26 @@ export function wireImages(panel: HTMLElement, tools: HTMLElement | null, w: Wor
     unusedBadge: w.unusedBadge ?? '',
   }
 
-  /** How many pictures there are, and what they weigh — over the WHOLE library, not the view. */
+  /**
+   * How many pictures there are, and what they weigh — over the WHOLE library, not the view.
+   *
+   * ⚠️ IT CANNOT COUNT THE GRID ANY MORE. That sentence was true while every row was on the
+   * page; the library is paged now, so counting the tiles printed "200 pictures" to an owner
+   * with four thousand and the figure changed as they turned pages. The server carries the
+   * library's own two numbers on the tools row, and this moves them by what has happened HERE:
+   * three uploaded is three more, two deleted is two fewer. The baseline is the page as it
+   * arrived, so the delta is always against a number the server and this agree on.
+   */
+  const weigh = (list: HTMLElement[]) => list.reduce((n, el) => n + Number(el.dataset.size ?? 0), 0)
+  const libraryCount = Number(tools?.dataset.mediaTotal ?? '0')
+  const libraryBytes = Number(tools?.dataset.mediaTotalBytes ?? '0')
+  const drawnCount = grid.tiles().length
+  const drawnBytes = weigh(grid.tiles())
+
   function retotal(): void {
     const all = grid.tiles()
-    if (countN) countN.textContent = String(all.length)
-    if (bytesN) bytesN.textContent = formatBytes(all.reduce((n, el) => n + Number(el.dataset.size ?? 0), 0))
+    if (countN) countN.textContent = String(libraryCount + all.length - drawnCount)
+    if (bytesN) bytesN.textContent = formatBytes(libraryBytes + weigh(all) - drawnBytes)
     show(tools, all.length > 0)
     show(actions, all.length > 0)
     show(host, all.length > 0)

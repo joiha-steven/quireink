@@ -16,6 +16,7 @@ import { adminT } from '@/i18n/admin-i18n'
 import { writePane } from '@/web/admin/screens/content-pane'
 import type { WriteItem } from '@/web/admin/screens/content-items'
 import { applyAll, keepStanding, paintMarks, pieces, showHits, sortBy } from './lib/write-filter'
+import { WRITE_PAGE } from '@/admin-shared/write'
 
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
@@ -204,5 +205,78 @@ describe('the sort moves the rows it already has', () => {
     sortBy(box, list, 'updated')
     expect([...box.querySelectorAll('[data-piece]')].map((e) => (e as HTMLElement).dataset.piece))
       .toEqual(before.map((e) => (e as HTMLElement).dataset.piece))
+  })
+})
+
+/**
+ * ⚠️ THE COLUMN SHOWS A PAGE AT A TIME, and the count must not follow it.
+ *
+ * A blog with two thousand pieces drew two thousand rows, and the browser laid out and painted
+ * every one of them before the owner could read the first. So the server draws the first page
+ * and hides the rest, and the island reveals another page each time the foot of the list comes
+ * into view (`admin-shared/write.ts`).
+ *
+ * The trap this pins is the one the file's own comment describes: a row is hidden for exactly
+ * ONE reason. The reveal had to go inside that single decision rather than beside it, and the
+ * number that comes back has to stay "how many answer the question" — it is what decides
+ * whether the column says nothing matched, and that sentence must not depend on how far
+ * somebody has scrolled.
+ */
+describe('a page at a time', () => {
+  const askTo = (limit: number, over: Partial<Parameters<typeof applyAll>[1]> = {}) =>
+    applyAll(pieces(pane), { needle: '', kind: 'all', state: 'all', needs: '', hits: null, ...over }, limit)
+
+  it('reveals only the first page but counts every match', () => {
+    expect(askTo(2)).toBe(ITEMS.length)
+    expect(showing().length).toBe(2)
+  })
+
+  it('reveals the page in the order the rows are IN, not the order they were written', () => {
+    expect(askTo(3)).toBe(ITEMS.length)
+    expect(showing()).toEqual(['post:kerning', 'post:ligatures', 'post:bare'])
+  })
+
+  it('pages what MATCHES, so a narrowed list starts again at its own top', () => {
+    // Four posts, two revealed: the pages are of the answer, not of the whole column.
+    expect(askTo(2, { kind: 'post' })).toBe(4)
+    expect(showing()).toEqual(['post:kerning', 'post:ligatures'])
+  })
+
+  it('a bigger limit than there are rows changes nothing', () => {
+    expect(askTo(9_999)).toBe(ITEMS.length)
+    expect(showing().length).toBe(ITEMS.length)
+  })
+
+  /**
+   * The server draws the first page hidden-past-the-line and the island takes it from there.
+   * If these two numbers ever disagree the column either flashes a thousand rows on load or
+   * stops one page short of the end with no way to ask for more.
+   */
+  it('arrives with one page showing and a foot to watch', () => {
+    const many = Array.from({ length: WRITE_PAGE + 12 }, (_, i) =>
+      piece({ kind: 'post', slug: `p${i}`, title: `Post ${i}`, touched: NOW - i, created: NOW - i }))
+    draw(many)
+    expect(showing().length).toBe(WRITE_PAGE)
+    expect(pane.querySelector<HTMLElement>('[data-write-more]')?.hidden).toBe(false)
+    // And a short column has no foot at all, so nothing is watching for a page that cannot come.
+    draw()
+    expect(pane.querySelector<HTMLElement>('[data-write-more]')?.hidden).toBe(true)
+  })
+
+  /**
+   * ⚠️ AND THE SORT HAS TO MOVE THE ARRAY WITH THE NODES. It used to sort a copy, which was
+   * invisible while every match was on screen and stops being invisible the moment only the
+   * first page is: the reveal would have shown the first rows of the OLD order while the reader
+   * was looking at the new one.
+   */
+  it('keeps the array in step with the DOM when the order changes', () => {
+    const list = pieces(pane)
+    const box = pane.querySelector<HTMLElement>('[data-write-list]')!
+    sortBy(box, list, 'created')
+    const inDom = [...box.querySelectorAll<HTMLElement>('[data-piece]')].map((el) => el.dataset.piece ?? '')
+    expect(list.map((p) => p.key)).toEqual(inDom)
+    // And the first page is now the first of the NEW order.
+    applyAll(list, { needle: '', kind: 'all', state: 'all', needs: '', hits: null }, 1)
+    expect(showing()).toEqual([inDom[0] ?? ''])
   })
 })

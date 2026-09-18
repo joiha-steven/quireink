@@ -103,8 +103,22 @@ export function paintMarks(row: HTMLElement, needle: string): void {
  * The four stack, which is the point: "drafts of posts, missing a share image" is one question
  * and not three lists.
  */
-export function applyAll(list: Piece[], q: Question): number {
-  let shown = 0
+/**
+ * `limit` is the REVEAL, and it is deliberately inside this one function.
+ *
+ * The column shows a page of rows at a time and reveals another when its foot scrolls into view
+ * (`admin-shared/write.ts`). That could have been a second mechanism — a CSS rule, an index
+ * attribute — and the comment above says what happened the last time there were two: the count
+ * came from one of them and the drawing from the other, and the half that was wrong was the
+ * half nothing could see. So a row is hidden for exactly one reason, computed here, and the
+ * number returned is how many ANSWER the question rather than how many are on screen. That
+ * number is what "nothing matches" is decided on, and it must not change because somebody has
+ * not scrolled yet.
+ *
+ * The list is walked in DOM order, which `sortBy` keeps true.
+ */
+export function applyAll(list: Piece[], q: Question, limit = Infinity): number {
+  let matched = 0
   for (const p of list) {
     const ok = (q.kind === 'all' || p.kind === q.kind)
       && (q.state === 'all' || p.state === q.state)
@@ -112,11 +126,12 @@ export function applyAll(list: Piece[], q: Question): number {
       && (!q.needle
         || indexIn(p.find, q.needle) !== -1
         || (q.hits?.has(p.key) ?? false))
-    p.el.hidden = !ok
-    if (ok) shown += 1
-    paintMarks(p.el, q.needle)
+    if (ok) matched += 1
+    const show = ok && matched <= limit
+    p.el.hidden = !show
+    if (show) paintMarks(p.el, q.needle)
   }
-  return shown
+  return matched
 }
 
 /** The summary line: the matched passage while searching, the standing line otherwise. */
@@ -155,8 +170,18 @@ export function keepStanding(list: Piece[]): void {
  * Moving nodes, not rebuilding them: `appendChild` on an element already in the list MOVES it,
  * so the whole sort is one pass and the rows keep every listener and every attribute they have.
  */
+/**
+ * ⚠️ THE ARRAY IS SORTED IN PLACE, so it goes on mirroring the DOM.
+ *
+ * It used to sort a COPY and move the nodes by it, which was invisible while every matching row
+ * was on screen — visibility is per-row and does not care about order. It stopped being
+ * invisible the moment the column began revealing a page at a time: `applyAll` would have
+ * revealed the first hundred of the ORIGINAL order while the reader was looking at the sorted
+ * one, so switching from "last edited" to "written" would have shown a hundred rows from the
+ * middle of the list.
+ */
 export function sortBy(box: HTMLElement, list: Piece[], by: 'updated' | 'created'): void {
   const key = by === 'created' ? (p: Piece) => p.created : (p: Piece) => p.touched
-  const order = [...list].sort((a, b) => key(b) - key(a))
-  for (const p of order) box.appendChild(p.el)
+  list.sort((a, b) => key(b) - key(a))
+  for (const p of list) box.appendChild(p.el)
 }

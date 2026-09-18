@@ -103,11 +103,11 @@
   (last-updated / date-created). They were one segmented row of six until 2026-09-09, and
   six segments in 288px broke their labels over two lines in every language. The date beside
   "Published" is the PUBLICATION date; a draft's only honest date is its save.
-- The pane FOLLOWS A SAVE. A save bumps no epoch (the editor would remount), so the pane
-  stood still: a first save put the new piece nowhere, a rename left the old name.
-  `touchView('content')` refetches every mounted reader without the epoch; the forms call it
-  through `useListedRow` only when the row's own fields changed, never on a body autosave.
-  The selected row comes from the ADDRESS BAR (`pieceAtPath`), which every save syncs.
+- **A PAGE OF ROWS AT A TIME** (`WRITE_PAGE`, `src/admin-shared/write.ts`): the server draws the
+  first hundred and ships the rest `hidden`; the island reveals another hundred as the foot of the
+  list scrolls in. A REVEAL, not a fetch — every piece stays in the page, so search, filters and
+  sort remain node moves and the box still reaches a piece six hundred rows down. The limit is
+  inside `applyAll` (one reason per hidden row) and its count is how many MATCH, not how many show.
 - Taxonomy and Series open as right-hand `SlideOver`s from the pane's tool line —
   `TaxonomyManager`: rename (merge) / remove terms across all posts → `updateTerm`.
 

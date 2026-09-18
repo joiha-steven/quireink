@@ -45,17 +45,28 @@ export const GRID = 'grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-col
  * sort — and the tab row was otherwise empty. React reached that with a portal, because the
  * count lived in the grid's state and the tabs in its parent's; the server just writes it there.
  */
-export function imageTools(t: AdminStrings, lang: SiteLang, items: MediaItem[]): string {
-  const bytes = items.reduce((n, m) => n + (m.size || 0), 0)
+/**
+ * ⚠️ THE COUNT IS THE LIBRARY, NOT THE PAGE. `items` is one page of tiles now, so counting it
+ * would print "200 images" to somebody with four thousand, and the figure would change as they
+ * turned pages. `totals` comes from one `count(*)` over the whole table (`views-media.ts`).
+ */
+export function imageTools(
+  t: AdminStrings, lang: SiteLang, totals: { images: number; bytes: number },
+): string {
+  const bytes = totals.bytes
   // A real box, and not `display: contents`. The React face portalled this band into a slot
   // the sheet row owned — `flex w-full … sm:flex-1` — and with `contents` the count and the
   // search group become direct children of the row instead, which lays them out with ITS gaps:
   // measured 2026-09-14 at 375, the row came out 4px shorter and the two lines 4px closer.
   return `<div class="flex w-full min-w-0 flex-wrap items-center gap-3 sm:w-auto sm:flex-1"`
-    + ` data-media-tools${items.length ? '' : ' hidden'}>`
+    // THE LIBRARY'S OWN NUMBERS, carried for the island — which can no longer count them,
+    // because the grid beside it holds one page. It moves these by the delta of what it
+    // uploads and deletes instead (`island/lib/media-images.ts`).
+    + ` data-media-total="${totals.images}" data-media-total-bytes="${totals.bytes}"`
+    + ` data-media-tools${totals.images ? '' : ' hidden'}>`
     + `<span class="w-full whitespace-nowrap text-sm text-neutral-500 sm:w-auto dark:text-neutral-400">`
     + `<span class="font-medium text-neutral-700 tabular-nums dark:text-neutral-200" data-media-count>`
-    + `${escapeHtml(formatCount(items.length, lang))}</span> ${escapeHtml(t.mediaTotalImages)}`
+    + `${escapeHtml(formatCount(totals.images, lang))}</span> ${escapeHtml(t.mediaTotalImages)}`
     + `<span class="text-neutral-300 dark:text-neutral-600"> · </span>`
     + `<span class="tabular-nums" data-media-bytes>${escapeHtml(formatBytes(bytes))}</span></span>`
     + `<div class="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 sm:flex-none">`
@@ -136,7 +147,9 @@ export const tileHtml = (m: MediaItem, w: MediaWords, lang: SiteLang, mode: 'pag
  * grid, the grid stopped being the last child and took a 20px margin the React face never
  * drew. One wrapper, and the stack has one child again whichever state is showing.
  */
-export function imagesPanel(t: AdminStrings, lang: SiteLang, items: MediaItem[], open: boolean): string {
+export function imagesPanel(
+  t: AdminStrings, lang: SiteLang, items: MediaItem[], open: boolean, pagerHtml = '',
+): string {
   const w = mediaWords(t)
   const tiles = items.map((m) => tileHtml(m, w, lang, 'page')).join('')
   return `<div data-media-panel="images" class="px-4 pt-4 pb-2"${open ? '' : ' hidden'}>`
@@ -148,5 +161,5 @@ export function imagesPanel(t: AdminStrings, lang: SiteLang, items: MediaItem[],
     + `<div data-media-empty${items.length ? ' hidden' : ''}>`
     + emptyState({ title: t.noMedia }) + `</div>`
     + `<div data-media-none hidden>` + emptyState({ title: t.mediaNoMatch }) + `</div>`
-    + `</div></div></div>`
+    + `</div>` + pagerHtml + `</div></div>`
 }

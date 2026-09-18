@@ -22,6 +22,7 @@ import { formatCount } from '@/i18n/format'
 import { formatDateTimeShort } from '@/admin-shared/when'
 import { CONTROL_SM, SHEET_TOOL, SHEET_TOOL_DANGER, buttonClass } from '@/admin-shared/kit'
 import { fold } from '@/admin-shared/fold'
+import { WRITE_PAGE } from '@/admin-shared/write'
 import { icon, lamp, tabs, tick } from '@/web/admin/kit'
 import { isQueued, needsOf, type WriteItem, type WriteNeeds } from '@/web/admin/screens/content-items'
 
@@ -148,7 +149,7 @@ function rowBody(it: WriteItem, t: RowWords, views: Record<string, number>, lang
  */
 function row(
   it: WriteItem, t: RowWords, views: Record<string, number>, lang: SiteLang, now: number,
-  openKey: string, needs: WriteNeeds,
+  openKey: string, out: boolean, over: boolean,
 ): string {
   const key = `${it.kind}:${it.slug}`
   const open = key === openKey
@@ -157,7 +158,9 @@ function row(
   // so a page that drew all forty-eight and then hid forty would be a flash of the wrong answer
   // on a screen somebody was sent to for a specific one. Two mechanisms for one question is
   // what the first cut had, and the count went wrong: see `island/lib/write-filter.ts`.
-  const out = needs !== null && !needsOf(it).split(' ').includes(needs)
+  // `over` is the second reason a row ships hidden: it is past the first page, and the island
+  // reveals it when the foot of the list comes into view (`admin-shared/write.ts`). Still ONE
+  // mechanism — `hidden` on the row — which is the rule this comment was written for.
   const facts = ` data-piece="${escapeAttr(key)}" data-piece-kind="${escapeAttr(it.kind)}"`
     + ` data-piece-state="${it.status === 'published' ? 'published' : 'draft'}"`
     + ` data-piece-needs="${escapeAttr(needsOf(it))}"`
@@ -169,7 +172,7 @@ function row(
     + ` data-find-raw="${escapeAttr(`${it.title} ${it.terms}`)}"`
   return `<a data-write-row href="${escapeAttr(it.editHref)}"`
     + ` data-href="${escapeAttr(it.editHref)}"${facts}`
-    + (open ? ' aria-current="page"' : '') + (out ? ' hidden' : '')
+    + (open ? ' aria-current="page"' : '') + (out || over ? ' hidden' : '')
     + ` class="${ROW}">${rowBody(it, t, views, lang, now)}</a>`
 }
 
@@ -291,11 +294,22 @@ export function writePane(opts: {
   // BOTH FACES IN ONE BOX (trap 4): the sentence and the scroller are mutually exclusive, and a
   // stack that hides one of a pair hands the other a margin it never had.
   const none = needs !== null && !items.some((it) => needsOf(it).split(' ').includes(needs))
+  // The `needs` rule lives HERE now rather than inside `row`, because the count of rows that
+  // survive it is what decides where the first page ends. One rule, read once, used twice.
+  let shown = 0
+  const rows = items.map((it) => {
+    const out = needs !== null && !needsOf(it).split(' ').includes(needs)
+    if (!out) shown += 1
+    return row(it, t, views, lang, now, openKey, out, !out && shown > WRITE_PAGE)
+  }).join('')
   const list = `<div class="flex min-h-0 flex-1 flex-col">`
     + `<p data-write-none${none ? '' : ' hidden'} class="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">`
     + `${escapeHtml(t.filterEmpty)}</p>`
     + `<div data-write-list${none ? ' hidden' : ''} class="scroll-fade min-h-0 flex-1 overflow-y-auto pb-6">`
-    + items.map((it) => row(it, t, views, lang, now, openKey, needs)).join('')
+    + rows
+    // THE FOOT OF THE LIST, which is what the island watches. Drawn only when there is more to
+    // reveal, so a blog with forty pieces has no sentinel and no observer work at all.
+    + `<div data-write-more${shown > WRITE_PAGE ? '' : ' hidden'} class="h-8"></div>`
     + `</div></div>`
   return `<aside data-write-pane data-write-showing="${escapeAttr(needs ?? '')}"`
     + ` data-write-open="${escapeAttr(openKey)}"`

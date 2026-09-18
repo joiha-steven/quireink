@@ -15,6 +15,7 @@ import { db } from '@/store/db'
 import { run } from '@/store/query'
 import { getSettings } from '@/content/settings'
 import { mediaScreen } from './media'
+import { MEDIA_PAGE } from '@/web/admin/views-media'
 
 const DIR = './.tmp/test-screen-media'
 freshDatabase(DIR)
@@ -138,5 +139,57 @@ describe('the count is over the whole library, not the view', () => {
 
   it('hides the tools when there is nothing to search through', async () => {
     expect(await draw()).toContain('data-media-tools hidden')
+  })
+})
+
+/**
+ * ⚠️ ONE PAGE OF TILES, and the count above them still means the library.
+ *
+ * The screen turns every row into a tile with a picture in it, so a library of several
+ * thousand was a page the browser thought about for seconds. It is paged at
+ * `MEDIA_PAGE` now — but a pager is two promises, and both are easy to get wrong: the grid
+ * holds ONE page, and the figure above it holds ALL of them. A count that followed the grid
+ * would tell an owner with four thousand pictures that they have two hundred.
+ */
+describe('the library is paged', () => {
+  const many = (n: number) => { for (let i = 0; i < n; i++) picture(`p${String(i).padStart(4, '0')}.jpg`) }
+  const tiles = (html: string) => (html.match(/data-media="/g) ?? []).length
+
+  it('draws one page of tiles and says how many there are altogether', async () => {
+    many(MEDIA_PAGE + 25)
+    const html = await mediaScreen(await getSettings(), new URLSearchParams())
+    expect(tiles(html)).toBe(MEDIA_PAGE)
+    // The count line, which reads the whole table rather than the grid under it.
+    expect(html).toContain(`>${MEDIA_PAGE + 25}</span>`)
+  })
+
+  it('turns to the rest on page two, and offers no pager when there is one page', async () => {
+    many(MEDIA_PAGE + 25)
+    const two = await mediaScreen(await getSettings(), new URLSearchParams('tab=images&page=2'))
+    expect(tiles(two)).toBe(25)
+    db().run(`delete from media`)
+    picture('alone.jpg')
+    const one = await mediaScreen(await getSettings(), new URLSearchParams())
+    expect(one).not.toContain('data-media-pager')
+  })
+
+  /**
+   * ⚠️ THE LINK CARRIES ITS OWN TAB. Switching tabs here is an attribute rather than a
+   * navigation, so the address can say `?tab=files` while somebody is looking at pictures — a
+   * pager that wrote only `page=` would turn the page of the wrong kind.
+   */
+  it('names the kind in every pager link', async () => {
+    many(MEDIA_PAGE + 1)
+    const html = await mediaScreen(await getSettings(), new URLSearchParams())
+    // `&amp;` because this is an attribute in HTML, not a URL in a string.
+    expect(html).toContain('/admin/media?tab=images&amp;page=2')
+    expect(html).not.toContain('href="/admin/media?page=2"')
+  })
+
+  it('pages videos and files by the same measure', async () => {
+    for (let i = 0; i < MEDIA_PAGE + 3; i++) attachment(`clip${i}.mp4`, 'video/mp4')
+    const html = await mediaScreen(await getSettings(), new URLSearchParams('tab=videos'))
+    expect((html.match(/<video /g) ?? []).length).toBe(MEDIA_PAGE)
+    expect(html).toContain('/admin/media?tab=videos&amp;page=2')
   })
 })

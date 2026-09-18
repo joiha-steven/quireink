@@ -69,10 +69,11 @@ function insertRows(rows: MediaRow[]): void {
 
 // Non-cached read of the whole library, newest first (mutating helpers use it to
 // return authoritative current state).
-async function listMedia(): Promise<MediaItem[]> {
+async function listMedia(page?: { limit: number; offset: number }): Promise<MediaItem[]> {
   try {
     return all<MediaRow>(
-      `select * from media where ${liveOnly('media')} order by uploaded_at desc`,
+      `select * from media where ${liveOnly('media')} order by uploaded_at desc`
+      + (page ? ` limit ${Number(page.limit)} offset ${Number(page.offset)}` : ''),
     ).map(rowToItem)
   } catch (error) {
     console.error(`[ERROR] media.listMedia: ${(error as Error).message}`)
@@ -80,9 +81,34 @@ async function listMedia(): Promise<MediaItem[]> {
   }
 }
 
-// Library list, newest first. Fresh every request.
-export async function getMedia(): Promise<MediaItem[]> {
-  return listMedia()
+/**
+ * Library list, newest first. Fresh every request.
+ *
+ * ⚠️ `page` IS OPTIONAL AND THE DEFAULT IS STILL EVERYTHING, because two callers need every
+ * row: `media-usage.ts`, which answers "is this picture used anywhere", and the `list_media`
+ * tool, whose whole job is the inventory. Only the SCREEN pages, because the screen is the one
+ * that turns a row into a tile with a picture in it — ten thousand of those is a page nobody
+ * can use and a browser that thinks about it for several seconds.
+ */
+export async function getMedia(page?: { limit: number; offset: number }): Promise<MediaItem[]> {
+  return listMedia(page)
+}
+
+/**
+ * The whole library in two numbers, for a screen holding one page of it. Both from one query:
+ * the count decides how many pages exist, and the byte total is the line above the grid, which
+ * has to mean the LIBRARY — a figure that changed as you turned pages answers nothing.
+ */
+export function countMedia(): { count: number; bytes: number } {
+  try {
+    const row = all<{ n: number; bytes: number }>(
+      `select count(*) as n, coalesce(sum(size), 0) as bytes from media where ${liveOnly('media')}`,
+    )[0]
+    return { count: row?.n ?? 0, bytes: row?.bytes ?? 0 }
+  } catch (error) {
+    console.error(`[ERROR] media.countMedia: ${(error as Error).message}`)
+    return { count: 0, bytes: 0 }
+  }
 }
 
 /**

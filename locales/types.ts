@@ -635,6 +635,10 @@ export type AdminStrings = {
   noMedia: string
   deleteNoMatch: string
   libraryIntro: string
+  /** The library's pager: one page of tiles at a time, and the way to the next. */
+  pagerPrev: string
+  pagerNext: string
+  pagerOf: string
   deleteSelected: string
   clearSelection: string
   iconsGroupTitle: string

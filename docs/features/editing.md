@@ -229,6 +229,15 @@ all from one parse. Four libraries used to answer those five questions separatel
   (MIME `video/*`, extension fallback) splits them between the Videos tab (grid of
   native `<video controls preload="metadata">` players + copy URL) and the Files tab.
   No schema change; `FileUploader` takes `accept`/`label` for the video dropzone.
+- **ONE PAGE AT A TIME** (`MEDIA_PAGE = 200`, [`views-media.ts`](../../src/web/admin/views-media.ts)):
+  each tab draws 200 and a pager under the grid links to the next (`?tab=<kind>&page=<n>` — the
+  link carries its own kind, because switching tabs is an attribute rather than a navigation and
+  the address can be sitting on another one). Turning a page is a real navigation, so Back works
+  and no tile is ever built in the browser. Images page in SQL (`getMedia({limit, offset})`);
+  videos and files are one table split by a predicate, so that read is whole and the slice is in
+  the view. The count and size above the grid are the WHOLE library (`countMedia()`) and do not
+  move as pages turn — the island carries them on `data-media-total` and shifts them only by what
+  is uploaded or deleted on the page in front of it. The name search narrows the page it is on.
 - **Publishing:** copy the video URL and paste it on its own line in the editor —
   content stays 100% Markdown, exactly like YouTube/Vimeo/TikTok. The renderer
   (`PostContent buildVideos`) turns a platform URL into an iframe embed and a DIRECT

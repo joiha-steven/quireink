@@ -16,6 +16,7 @@ import { focusOn, onFocusChange } from './lib/focus-mode'
 import { saySettled } from './lib/say-across'
 import { showTab } from './lib/tab-strip'
 import { applyAll, keepStanding, pieces, showHits, sortBy } from './lib/write-filter'
+import { WRITE_PAGE } from '@/admin-shared/write'
 import { wirePicking } from './lib/write-pick'
 import { wireDrawers } from './lib/write-drawers'
 
@@ -55,6 +56,11 @@ function wirePane(screen: HTMLElement): () => void {
   keepStanding(rows)
   let hits: Map<string, string> | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
+  // HOW FAR DOWN THE LIST HAS BEEN REVEALED. The server drew the first page and hid the rest
+  // (`admin-shared/write.ts`); this is the only thing that moves that line, and every question
+  // the column can be asked puts it back to the top through `ask()`.
+  const more = pane.querySelector<HTMLElement>('[data-write-more]')
+  let limit = WRITE_PAGE
 
   /**
    * ⚠️ AN EMPTY LIST AND A SEARCH IN FLIGHT ARE NOT THE SAME THING.
@@ -65,16 +71,45 @@ function wirePane(screen: HTMLElement): () => void {
    */
   function settle(): void {
     const needle = search?.value.trim() ?? ''
-    const shown = applyAll(rows, {
+    // `matched` is how many ANSWER, not how many are on screen — so "nothing matches" stays a
+    // statement about the blog rather than about how far somebody has scrolled.
+    const matched = applyAll(rows, {
       needle,
       kind: pane!.dataset.showKind ?? 'all',
       state: pane!.dataset.showState ?? 'all',
       needs: pane!.dataset.writeShowing ?? '',
       hits,
-    })
+    }, limit)
     const waiting = needle.length >= 2 && hits === null
-    if (none) none.hidden = shown > 0 || waiting
-    if (list) list.hidden = shown === 0
+    if (none) none.hidden = matched > 0 || waiting
+    if (list) list.hidden = matched === 0
+    // The foot goes away when there is nothing left under it, which is also what stops the
+    // observer below from firing for ever at the bottom of a short list.
+    if (more) more.hidden = matched <= limit
+  }
+
+  /**
+   * A NEW QUESTION STARTS AT THE TOP. Narrowing to drafts after scrolling through six hundred
+   * rows must not answer with rows six hundred deep in the drafts; and a filter that left the
+   * reveal where it was would have made the length of the answer depend on the order the
+   * questions were asked in.
+   */
+  function ask(): void {
+    limit = WRITE_PAGE
+    settle()
+    list?.scrollTo({ top: 0 })
+  }
+
+  // ---- the foot of the list, and the next page with it ---------------------------------
+  //
+  // `rootMargin` so the next page is revealed BEFORE the foot is reached: a reader who scrolls
+  // fast should never see the list end. The root is the column's own scroller, not the window.
+  if (more) {
+    new IntersectionObserver((entries) => {
+      if (more.hidden || !entries.some((e) => e.isIntersecting)) return
+      limit += WRITE_PAGE
+      settle()
+    }, { root: list, rootMargin: '600px' }).observe(more)
   }
 
   // ---- the search ---------------------------------------------------------------------
@@ -86,12 +121,12 @@ function wirePane(screen: HTMLElement): () => void {
     if (q.length < 2) {
       hits = null
       showHits(rows, null)
-      settle()
+      ask()
       return
     }
     // The title lane answers now; the body lane answers when it answers. 180ms, because this
     // runs per keystroke and the query it sends reads the whole blog.
-    settle()
+    ask()
     timer = setTimeout(() => { void body(q) }, 180)
   })
 
@@ -121,7 +156,7 @@ function wirePane(screen: HTMLElement): () => void {
     }
     showTab(strip)
     keep({ kind })
-    settle()
+    ask()
   }
 
   function setState(state: string): void {
@@ -137,7 +172,7 @@ function wirePane(screen: HTMLElement): () => void {
       if (dark) dark.hidden = on
     }
     keep({ state })
-    settle()
+    ask()
   }
 
   strip?.addEventListener('click', (e) => {
@@ -161,6 +196,8 @@ function wirePane(screen: HTMLElement): () => void {
     sortKey.textContent = (next === 'created' ? sortKey.dataset.wordCreated : sortKey.dataset.wordUpdated) ?? ''
     sortBy(list, rows, next)
     keep({ sort: next })
+    // The order decides WHICH hundred is the first hundred, so a re-sort re-reveals from the top.
+    ask()
   })
 
   /**
@@ -177,7 +214,7 @@ function wirePane(screen: HTMLElement): () => void {
     const url = new URL(location.href)
     url.searchParams.delete('needs')
     history.replaceState(history.state, '', url)
-    settle()
+    ask()
   })
 
   // ---- what the column remembers across a row click ------------------------------------
