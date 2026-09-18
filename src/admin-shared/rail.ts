@@ -70,7 +70,7 @@ export function railRows(t: AdminStrings): Map<NavId, RailRow> {
     // --- controls ----------------------------------------------------------------------
     // Their labels are the READING state: collapse says "Collapse" and flips to "Expand"
     // when the rail is shut, and the icon switch says "Hide icons" while they are on. The
-    // other half of each pair is `railFlipLabels` below, so a face that has to swap a word
+    // other half of each pair is drawn beside it and hidden, so a face that has to swap a word
     // at runtime does not have to know which words those are.
     { id: 'collapse', label: t.navCollapse, icon: 'prev' },
     { id: 'theme', label: t.themeLabel, icon: null },
@@ -85,20 +85,6 @@ export function railRows(t: AdminStrings): Map<NavId, RailRow> {
     { id: 'search', label: t.paletteTitle, icon: 'search' },
   ]
   return new Map(rows.map((r) => [r.id, r]))
-}
-
-/**
- * The words a control swaps to when its state flips.
- *
- * Kept beside the rows rather than inside either face: the server paints one of each pair into
- * the HTML and the island swaps to the other on a click, so the two have to agree on what the
- * other word is, and a face that guessed would put "Collapse" on a rail that is already shut.
- */
-export function railFlipLabels(t: AdminStrings): Record<string, string> {
-  return {
-    collapse: t.navExpand,
-    icons: t.navIconsShow,
-  }
 }
 
 /**

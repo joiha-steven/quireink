@@ -44,6 +44,12 @@ const SCREENS = [
   // The writing screen and its two panes, which are the admin's other half.
   '/admin/write',
   '/admin/editor',
+  // ⚠️ AND THE 404, which is the only address here that draws `emptyState` on a seeded
+  // instance. The tour seeds sixty pieces, so every other screen has content and the empty
+  // state -- a whole layout of its own, and the one a phone meets after a mistyped address --
+  // was never measured. Its action block scrolled a 375px phone sideways from 2026-09-07 to
+  // 2026-09-19 with all 211 flows green.
+  '/admin/no-such-screen',
 ]
 
 /**
@@ -160,6 +166,63 @@ const MEASURE = `
       if (edges.size > 1) found.push('labels ' + name(card) + ' left ' + [...edges].join('/'))
     }
 
+    // ---- 4. the page does not scroll sideways ------------------------------------------------
+    //
+    // A phone that scrolls sideways is the fault an owner meets before any of the arithmetic
+    // above, and nothing here was measuring it. Found on 2026-09-19 on the two screens a phone
+    // most often arrives at by accident: the empty Write sheet and the 404. Both draw
+    // emptyState, whose action block was a flex item with min-width auto, so it took its
+    // content's width -- and the content is recentPieces at max-w-sm, 384px laid into the 343
+    // a 375px phone has left. document.scrollWidth 388 against a 375 viewport.
+    // The page itself, first: whatever the cause, a phone that can be dragged sideways is the
+    // fault an owner meets before any of the arithmetic above. This is the measurement the
+    // element walk below cannot replace -- the empty state's block hangs off a 375 phone from
+    // inside a canvas that clips, so nothing is "off the screen" and the document still
+    // scrolls 388 in 375.
+    // ⚠️ THE VISUAL VIEWPORT, NOT clientWidth. atWidth emulates a phone (mobile: true), and    // in that mode Chrome widens the layout viewport to whatever the content needs -- so
+    // clientWidth came back 388 on a 375 phone and scrollWidth > clientWidth was false on a
+    // page that visibly scrolled. The visual viewport is the glass, and it stays 375.
+    const glass = window.visualViewport ? Math.round(window.visualViewport.width) : document.documentElement.clientWidth
+    const vw = glass
+    // ⚠️ THE BODY AND THE SHELL, not the root alone. Under phone emulation the root reported
+    // scrollWidth 375 on a page whose shell was 388 wide -- the root clips, so asking it
+    // whether the page is too wide is asking the thing that hid the answer.
+    const widest = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth,
+      ...[...document.body.children].filter(seen).map((el) => el.scrollWidth))
+    if (widest > glass) {
+      found.push('wider than the glass: ' + widest + ' in ' + glass)
+    }
+    // ⚠️ ANY x-overflow that is not visible, and never the document's own two elements.
+    //
+    // Both halves were learned the hard way in one sitting. Walking all the way to the root
+    // excused everything under the shell, which clips the x axis -- the check then passed
+    // against a page that was visibly wrong. Counting only auto and scroll reported three
+    // elements that are CUT ON PURPOSE: the dashboard greeting, the live strip's page names
+    // and a redirect's destination all sit inside a truncate, whose whole job is to let the
+    // text be wider than its box and show an ellipsis where it stops.
+    // (No backticks in here -- this whole expression is a template literal. See the top.)
+    const handled = (el) => {
+      for (let p = el.parentElement; p && p !== document.body && p !== document.documentElement; p = p.parentElement) {
+        if (getComputedStyle(p).overflowX !== 'visible') return true
+      }
+      return false
+    }
+    for (const el of document.querySelectorAll('body *')) {
+      if (!seen(el)) continue
+      const r = box(el)
+      if (r.width === 0 || r.height === 0) continue
+      if (r.right <= vw + 0.5 && r.left >= -0.5) continue
+      // The skip link is parked off-screen on purpose until it takes focus.
+      if (el.classList.contains('sr-only')) continue
+      // Something inside a box that scrolls, or clips, is that box's business.
+      if (handled(el)) continue
+      // The OUTERMOST offender only: a child hanging off the edge because its parent does is
+      // one fault, and naming both of them twice is how a finding stops being read.
+      if (el.parentElement && (box(el.parentElement).right > vw + 0.5 || box(el.parentElement).left < -0.5)) continue
+      found.push('off the screen: ' + name(el) + ' at ' + round(r.left) + '..' + round(r.right) + ' of ' + vw)
+      break
+    }
+
     return found.length === 0
       ? 'ok (even)'
       : found.length + ' uneven: ' + found.slice(0, 14).join(' | ')
@@ -168,11 +231,22 @@ const MEASURE = `
 /**
  * TWO WIDTHS, because a stack that is even in one column can stop being even in two.
  *
- * 1440 is where the admin is used and 390 is a phone held upright. The band between them is
+ * 1440 is where the admin is used and 375 is a phone held upright. The band between them is
  * covered by the layout flows in `tour-flows-layout.ts`; what these add is the arithmetic, at
  * the two shapes the markup actually has.
+ *
+ * ⚠️ 375, DOWN FROM 390 on 2026-09-19. 375 is the narrowest screen still in use (iPhone SE,
+ * 13 mini) and every fault visible at 390 is visible at 375 too.
+ *
+ * ⚠️ AND WHAT THIS STILL CANNOT SEE. The fault that prompted the width change -- the empty
+ * state's action block hanging 4.5px off each edge, document scrollWidth 388 in 375 -- does
+ * not reproduce here. `atWidth` emulates a phone, and under that emulation the same page on
+ * the same build measured 375 against 375 while a desktop window at 375 measured 388. So the
+ * two measurements below are a net for OTHER overflows, not a guard on that one; the fix for
+ * it is held by nothing but the comment in `emptyState`. Worth an hour with the meta viewport
+ * before trusting this file to catch the next one.
  */
-const WIDTHS = [1440, 390] as const
+const WIDTHS = [1440, 375] as const
 
 /**
  * THE RAIL'S ICONS STAND ON ONE COLUMN, measured in INK rather than in boxes.

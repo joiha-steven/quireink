@@ -170,10 +170,7 @@ export const FIGURE = 'text-[1.875rem] font-medium leading-none tracking-[-0.02e
 // is the only thing left saying where one band ends.
 export const SECTION_GAP = 'space-y-10'
 export const CARD_GAP = 'gap-6'
-export const CARD_STACK = 'space-y-6'
 export const HEADER_GAP = 'mb-10'
-export const GROUP_GAP = 'mb-6'
-export const CLUSTER_GAP = 'mb-4'
 
 /** The gap between two settings inside one card. One number, so no card invents its own. */
 export const SETTING_GAP = 'space-y-5'

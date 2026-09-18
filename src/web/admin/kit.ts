@@ -105,7 +105,13 @@ export function emptyState({ title, description = '', glyph, actionHtml = '', hi
     // chrome font. The description explains it in a sentence and takes the other face.
     + `<p class="text-sm font-medium text-neutral-700 dark:text-neutral-300">${escapeHtml(title)}</p>`
     + (description ? `<p class="${NOTE_TEXT} mt-1.5 max-w-sm">${escapeHtml(description)}</p>` : '')
-    + (actionHtml ? `<div class="mt-4">${actionHtml}</div>` : '')
+    // ⚠️ `w-full min-w-0`, OR THE PHONE SCROLLS SIDEWAYS. This is a flex item in a centred
+    // column, so with `min-width: auto` it takes its content's width and the column centres
+    // whatever that is — and the content includes `recentPieces`, which is `max-w-sm`: 384px
+    // laid into the 343 a 375px phone leaves after the shell's padding, hanging 4.5px off each
+    // edge. Measured at 375: document scrollWidth 388 on /admin/write and on the 404, both of
+    // which are the two screens a phone is most likely to arrive at by accident.
+    + (actionHtml ? `<div class="mt-4 w-full min-w-0">${actionHtml}</div>` : '')
     + `</div>`
 }
 
