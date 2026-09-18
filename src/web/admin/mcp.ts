@@ -244,6 +244,21 @@ export function mcpOAuthRoutes(): Hono {
 
   app.options('/api/mcp/token', () => new Response(null, { status: 204, headers: CORS }))
 
+  /**
+   * GET IS THE WRONG METHOD, AND SAYING SO IS NOT THE SAME AS SAYING THE DOOR IS NOT THERE.
+   *
+   * This address is advertised on every public page — `<link rel="token_endpoint">` in
+   * `web/layout.ts` — so a client that probes it with GET is doing what the markup invited.
+   * With only POST and OPTIONS mounted, Hono answered 404, which tells that client the endpoint
+   * does not exist and ends the discovery it was in the middle of. 405 with `Allow` says the
+   * endpoint is here and names the method it takes. The neighbouring `/authorize` already
+   * answers a GET properly, so this was the one door of the pair that lied.
+   */
+  app.get('/api/mcp/token', () => new Response(null, {
+    status: 405,
+    headers: { ...CORS, allow: 'POST, OPTIONS' },
+  }))
+
   app.post('/api/mcp/token', async (c) => {
     if (!(await mcpEnabled())) return corsJson({ error: 'temporarily_unavailable' }, 503)
     const form = await c.req.formData().catch(() => null)

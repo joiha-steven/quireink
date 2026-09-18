@@ -359,4 +359,18 @@ describe('discovery metadata', () => {
     // S256 only. `plain` is in the spec and is not PKCE in any useful sense.
     expect(meta.code_challenge_methods_supported).toEqual(['S256'])
   })
+
+  /**
+   * A 404 here tells a client the endpoint is not there, and every public page says it is:
+   * `<link rel="token_endpoint">` rides in the head of the whole site. Until 2026-09-19 only
+   * POST and OPTIONS were mounted, so a discovery probe with GET was answered "no such thing"
+   * by the one address the markup had just pointed it at.
+   */
+  it('tells a GET at the token endpoint which method it wants, not that it is missing', async () => {
+    const res = await app.request('/api/mcp/token')
+    expect(res.status).toBe(405)
+    expect(res.headers.get('allow')).toBe('POST, OPTIONS')
+    // The probe may well be cross-origin; the refusal has to be readable when it is.
+    expect(res.headers.get('access-control-allow-origin')).toBe('*')
+  })
 })

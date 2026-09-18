@@ -75,7 +75,7 @@ export function articleLabels(
  * (it links them itself, the moment a mark needs them — ADR 0027 keeps them off a page
  * with no ink), the five highlighter pigments as this site writes them, and its words.
  */
-export function readerPenData(inks: InkSettings, s: Dict, google = false): Record<string, string> {
+function readerPenData(inks: InkSettings, s: Dict, google = false): Record<string, string> {
   const sheets = inkSignature(inks) ? penSheets(inks) : { marks: PEN_MARKS_SHEET, lines: PEN_LINES_SHEET }
   const light = resolveInks(inks).light
   return {

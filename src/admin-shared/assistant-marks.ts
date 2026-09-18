@@ -85,7 +85,7 @@ export type ExchangeState = {
 }
 
 /** One question and everything that came back for it. */
-export function exchangeMark(block: Block, w: AssistantWords, state: ExchangeState = {}): Mark {
+function exchangeMark(block: Block, w: AssistantWords, state: ExchangeState = {}): Mark {
   const said = block.parts.filter((p) => p.kind === 'assistant')
   const used = block.parts.filter((p) => p.kind === 'tool_use')
   const awaiting = state.awaiting ?? []

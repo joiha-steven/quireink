@@ -25,7 +25,7 @@ const HEAD = '/* The pen, from Quire Ink (quireink.com). Wrap the text in class=
 /** One sheet per ink signature; a blog changes its inks about never. */
 const built = new Map<string, string>()
 
-export function penCssFor(signature: string, build: () => string): string {
+function penCssFor(signature: string, build: () => string): string {
   const hit = built.get(signature)
   if (hit) return hit
   built.clear()
