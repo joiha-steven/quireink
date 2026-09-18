@@ -33,11 +33,27 @@ const ECHOES_REASONING = new Set(['deepseek'])
 
 export const echoesReasoning = (provider: string): boolean => ECHOES_REASONING.has(provider)
 
+/**
+ * The model each provider gets when the owner has not picked one.
+ *
+ * ⚠️ A DEFAULT IS A MODEL ID THAT EXPIRES. `gemini-2.0-flash` sat here until 2026-09-18 and
+ * Google had shut it down on 2026-06-01 — announced in February, gone in June, and nothing
+ * here could know. The model menu is empty until the owner presses "Load models", so this IS
+ * the normal path: paste a key, press Save, and every AI job asks a model that no longer
+ * exists. Three of the four fail SILENTLY (`ask()` returns null for every kind of no), so the
+ * only symptom was that alt text, excerpts and the comment guard quietly stopped happening.
+ *
+ * Gemini stays on 2.5 rather than 3.x deliberately: from Gemini 3 onward a tool call's thought
+ * signature must be echoed back or the next round is a 4xx, and nothing here carries one yet.
+ *
+ * `deepseek-flash` is the current name for V4.1-Flash; `deepseek-v4-flash` was retired on
+ * 2026-09-10 and is still routed there, which is exactly how a dead default hides.
+ */
 export const DEFAULT_MODELS: Record<string, string> = {
   anthropic: 'claude-haiku-4-5',
   openai: 'gpt-4o-mini',
-  gemini: 'gemini-2.0-flash',
-  deepseek: 'deepseek-v4-flash',
+  gemini: 'gemini-2.5-flash',
+  deepseek: 'deepseek-flash',
 }
 
 /**
@@ -78,7 +94,11 @@ export const AI_PROVIDER_NAMES: Record<keyof typeof DEFAULT_MODELS, string> = {
  * that answers no still writes excerpts, guards comments and runs the whole assistant.
  */
 const EVERY_MODEL_SEES = new Set(['anthropic', 'openai', 'gemini'])
-const SEEING_MODEL: Record<string, RegExp> = { deepseek: /vision/i }
+// `flash`, not `vision`. The `-vision-exp` id this was written for was retired on 2026-09-10
+// and its traffic moved to V4.1-Flash, which sees images under the plain name `deepseek-flash`
+// — so the rule matched only a name nobody can choose any more, and answered NO for the one
+// current model that can see. Pro cannot; the legacy `-flash` aliases all route to Flash.
+const SEEING_MODEL: Record<string, RegExp> = { deepseek: /flash/i }
 
 export function seesImages(provider: string, model = ''): boolean {
   if (EVERY_MODEL_SEES.has(provider)) return true

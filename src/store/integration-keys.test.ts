@@ -157,12 +157,16 @@ describe('the provider list, all the way down', () => {
   })
 
   it('reports whether the stored model can be shown a picture', async () => {
-    await saveIntegrationKeys({ aiProvider: 'deepseek', aiApiKey: 'k', aiModel: 'deepseek-v4-flash' })
+    // RE-BASELINED 2026-09-18. The pair this used to name was `deepseek-v4-flash` (text) and
+    // `-vision-exp` (pictures). DeepSeek retired both ids on 2026-09-10 and now serves them
+    // from V4.1-Flash, which sees — so the old expectation asserted a fact that had stopped
+    // being true, and the two current models are `deepseek-flash` (sees) and `deepseek-v4-pro`
+    // (does not). The QUESTION is unchanged, and it is the only thing worth pinning: one
+    // provider, one key, two models, opposite answers.
+    await saveIntegrationKeys({ aiProvider: 'deepseek', aiApiKey: 'k', aiModel: 'deepseek-v4-pro' })
     expect((await getIntegrationStatus()).aiSeesImages).toBe(false)
-    await saveIntegrationKeys({ aiModel: 'deepseek-v4-flash-vision-exp' })
+    await saveIntegrationKeys({ aiModel: 'deepseek-flash' })
     expect((await getIntegrationStatus()).aiSeesImages).toBe(true)
-    // Same provider, same key, opposite answer — which is the whole point of asking the
-    // model rather than the provider.
-    expect(seesImages('deepseek', 'deepseek-v4-flash')).toBe(false)
+    expect(seesImages('deepseek', 'deepseek-v4-pro')).toBe(false)
   })
 })

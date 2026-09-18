@@ -158,18 +158,29 @@ describe('seeing is a property of the MODEL', () => {
   // sells a text model and a vision model under one name and one key. Anything that
   // answers per-provider gets one of the two wrong, and neither error announces itself —
   // the text model would be sent pictures, or the vision model would be refused them.
+  //
+  // RE-BASELINED 2026-09-18, ids only. This named `deepseek-v4-flash` (text) against
+  // `-vision-exp` (pictures); DeepSeek retired both on 2026-09-10 and serves them from
+  // V4.1-Flash, which sees. The current split is `deepseek-flash` against `deepseek-v4-pro`,
+  // and the rule the test exists for is untouched.
   it('splits one provider by its model id', () => {
-    expect(seesImages('deepseek', 'deepseek-v4-flash')).toBe(false)
-    expect(seesImages('deepseek', 'deepseek-v4-flash-vision-exp')).toBe(true)
-    expect(buildParts('deepseek', 'deepseek-v4-flash', 'k', IMAGE)).toBeNull()
-    expect(buildParts('deepseek', 'deepseek-v4-flash-vision-exp', 'k', IMAGE)).not.toBeNull()
+    expect(seesImages('deepseek', 'deepseek-v4-pro')).toBe(false)
+    expect(seesImages('deepseek', 'deepseek-flash')).toBe(true)
+    expect(buildParts('deepseek', 'deepseek-v4-pro', 'k', IMAGE)).toBeNull()
+    expect(buildParts('deepseek', 'deepseek-flash', 'k', IMAGE)).not.toBeNull()
     // ...and the text model still answers about text, which is the other three jobs.
-    expect(buildParts('deepseek', 'deepseek-v4-flash', 'k', TEXT)).not.toBeNull()
+    expect(buildParts('deepseek', 'deepseek-v4-pro', 'k', TEXT)).not.toBeNull()
+    // The retired ids still route to Flash, so they still see. A blog that stored one before
+    // the rename keeps working, and keeps its alt text.
+    expect(seesImages('deepseek', 'deepseek-v4-flash')).toBe(true)
+    expect(seesImages('deepseek', 'deepseek-v4-flash-vision-exp')).toBe(true)
   })
 
   it('an unknown model on such a provider answers no, not yes', () => {
     expect(seesImages('deepseek', 'something-new')).toBe(false)
-    expect(seesImages('deepseek', '')).toBe(false) // '' falls back to the default, text
+    // '' falls back to the default, which is now a model that CAN see — the default moved to
+    // `deepseek-flash` when `deepseek-v4-flash` was retired.
+    expect(seesImages('deepseek', '')).toBe(true)
   })
 
   it('leaves whole-provider families alone, whatever the model is called', () => {
