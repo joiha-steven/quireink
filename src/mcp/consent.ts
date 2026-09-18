@@ -43,7 +43,12 @@ function sessionKey(c: Context): string | null {
  * client being replayed for another.
  */
 function computeCsrf(session: string, p: OAuthParams): string {
-  const material = [session, p.clientId, p.redirectUri, p.challenge].join('|')
+  // ⚠️ THE SCOPE IS PART OF WHAT WAS APPROVED. Without it the token minted for a `read` consent
+  // verifies just as well against a `full` one, so the signature stops pinning the thing the
+  // owner actually read on the page. Not exploitable on its own, since only the owner's own
+  // browser can submit this form and the scope is printed on it, but "pinning the parameters"
+  // is what the sentence above promises and the scope is one of them.
+  const material = [session, p.clientId, p.redirectUri, p.challenge, p.scope ?? ''].join('|')
   return createHmac('sha256', secret()).update(material).digest('base64url')
 }
 

@@ -165,3 +165,65 @@ describe('the whole message', () => {
     expect(/[^\r]\n/.test(built)).toBe(false)
   })
 })
+
+/**
+ * ⚠️ THE THREE PLACES THIS WRITER WENT OUTSIDE ITS OWN RULES.
+ *
+ * All three are things a relay or a reader's client judges, never this process, which is why
+ * the file's opening sentence is about silence. Each one below was measured before it was
+ * fixed, and the measurement is in the assertion.
+ */
+describe('what a mail server reads back', () => {
+  /**
+   * `From: Blog, Inc <hi@example.com>` is a list of TWO mailboxes with no `Sender:`
+   * (RFC 5322 §3.6.2), and a colon makes a malformed group. The quoted spelling is the correct
+   * thing for an owner to type, so unquoting it broke the input that was right.
+   */
+  it('keeps the quotes on a display name that needs them', () => {
+    expect(encodeAddress('"Blog, Inc" <hi@example.com>')).toBe('"Blog, Inc" <hi@example.com>')
+    expect(encodeAddress('Quire: the blog <hi@example.com>')).toBe('"Quire: the blog" <hi@example.com>')
+    // A quote inside the name survives the round trip through the escape.
+    expect(encodeAddress('"A \\"quoted\\" one" <q@example.com>')).toBe('"A \\"quoted\\" one" <q@example.com>')
+  })
+
+  /** An encoded word is an atom: quoting it would put the quotes in the reader's client. */
+  it('encodes rather than quotes a name that is not ASCII, and leaves a plain one alone', () => {
+    expect(encodeAddress('"Hùng Trần" <h@example.com>')).toBe('=?UTF-8?B?SMO5bmcgVHLhuqdu?= <h@example.com>')
+    expect(encodeAddress('Plain Name <p@example.com>')).toBe('Plain Name <p@example.com>')
+    expect(encodeAddress('<bare@example.com>')).toBe('<bare@example.com>')
+  })
+
+  /**
+   * RFC 2045 §6.7 rule 5: no line longer than 76. A trailing space is rewritten as `=20` AFTER
+   * the encoder has decided the line fits, so 74 characters and a space came out at 77.
+   */
+  it('never writes a line past 76, whatever lands at the end of it', () => {
+    const tooLong: string[] = []
+    for (let n = 40; n <= 90; n++) {
+      for (const tail of [' ', '\t', '']) {
+        const body = `${'a'.repeat(n)}${tail}\nnext line ${'b'.repeat(n)}`
+        for (const line of quotedPrintable(body).split('\r\n')) {
+          if (line.length > 76) tooLong.push(`${n}${JSON.stringify(tail)}: ${line.length}`)
+        }
+      }
+    }
+    expect(tooLong).toEqual([])
+  })
+
+  /** And the fix must not have changed what comes back out. */
+  it('still decodes to exactly what went in', () => {
+    for (const body of ['plain', `${'a'.repeat(74)} \nnext`, 'Bề rộng của cột\ttabbed  ', '=start', 'end ']) {
+      expect(decodeQuotedPrintable(quotedPrintable(body))).toBe(body)
+    }
+  })
+
+  /**
+   * RFC 2047 §2 limits a LINE carrying encoded words to 76, and the header name is on that line.
+   * The word was sized to 72 on its own, which is 81 after `Subject: `.
+   */
+  it('leaves room for the header name in front of an encoded subject', () => {
+    const long = 'Bề rộng của cột trong một tiêu đề khá dài để ép xuống dòng'
+    const first = `Subject: ${encodeHeader(long)}`.split('\r\n')[0]!
+    expect(first.length).toBeLessThanOrEqual(76)
+  })
+})

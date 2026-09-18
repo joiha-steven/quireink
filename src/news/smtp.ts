@@ -93,7 +93,11 @@ class Wire {
     }
     const end = /^(\d{3}) [^\n]*\r?\n/m.exec(this.buffer)
     if (!end) return
-    const at = this.buffer.indexOf(end[0]) + end[0].length
+    // ⚠️ CUT WHERE THE MATCH IS, not where the TEXT first appears. `indexOf` finds the earliest
+    // copy of the final line's text, and a multi-line reply whose continuation happens to carry
+    // the same characters would be cut in the wrong place, leaving half a reply in the buffer to
+    // be read as the answer to the NEXT command. `end.index` is where the regex actually matched.
+    const at = end.index + end[0].length
     const block = this.buffer.slice(0, at)
     this.buffer = this.buffer.slice(at)
     const send = this.waiting

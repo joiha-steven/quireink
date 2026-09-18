@@ -42,7 +42,13 @@ export function quotedPrintable(text: string): string {
   /** Appends a token that must not be split, breaking the line first if it will not fit. */
   const put = (token: string): void => {
     // The `+ 1` leaves room for the trailing `=` a soft break needs.
-    if (line.length + token.length + 1 > QP_LINE) flush(true)
+    //
+    // ⚠️ A SPACE OR A TAB NEEDS TWO MORE THAN THAT. If one ends up last on a line it is rewritten
+    // as `=20` or `=09`, because a trailing space is eaten in transit — and that rewrite happens
+    // AFTER this decided the line would fit. Measured: 74 characters and a space came out as a
+    // 77-character line, where RFC 2045 §6.7 rule 5 allows 76.
+    const need = token === ' ' || token === '\t' ? 3 : token.length + 1
+    if (line.length + need > QP_LINE) flush(true)
     line += token
   }
 
@@ -88,7 +94,12 @@ export function decodeQuotedPrintable(encoded: string): string {
 }
 
 /** Room inside one `=?UTF-8?B?…?=` word, in bytes, so the whole word stays under 76 columns. */
-const WORD_BYTES = 45
+// ⚠️ AND THE HEADER NAME IS IN FRONT OF THE FIRST ONE. 45 bytes makes an encoded word 72
+// characters long, which fits 76 on its own and not after `Subject: `: measured at 81. RFC 2047
+// §2 limits a LINE carrying encoded words to 76, so the budget is 76 less the longest header
+// name this writes (`Subject: `, 9) less the word's own `=?UTF-8?B?` and `?=` (12), rounded down
+// to a whole base64 group: 39 bytes, and the first line comes out at 73.
+const WORD_BYTES = 39
 
 /**
  * A header value that may hold anything, as ASCII. RFC 2047.
@@ -121,17 +132,48 @@ export function encodeHeader(value: string): string {
 }
 
 /**
+ * Characters that cannot stand in a bare display name: RFC 5322 calls them `specials`, and a
+ * name carrying one has to be a quoted string instead.
+ */
+const SPECIALS = /[()<>[\]:;@\\,."]/
+
+/**
+ * A display name in a form a mail server will read back as ONE name.
+ *
+ * ⚠️ AN ENCODED WORD IS NOT QUOTED, and a quoted string is not encoded. `=?UTF-8?B?…?=` is an
+ * atom: quoting it would make the quotes part of the name in every client that decodes it. So
+ * the two branches are exclusive, and `encodeHeader` returning the value unchanged is how this
+ * knows which one it is in.
+ */
+function displayName(name: string): string {
+  const encoded = encodeHeader(name)
+  if (encoded !== name) return encoded
+  return SPECIALS.test(name) ? `"${name.replace(/([\\"])/g, '\\$1')}"` : name
+}
+
+/**
  * `Display Name <user@host>` with only the name encoded.
  *
  * The address itself is never encoded: it is the routing information, and a relay that cannot
- * read it will not deliver. A name that is already quoted keeps its quotes.
+ * read it will not deliver.
+ *
+ * ⚠️ A NAME THAT IS ALREADY QUOTED KEEPS ITS QUOTES, which is what the line above this used to
+ * claim while the code did the opposite: it unquoted and never re-quoted. `"Blog, Inc"` went out
+ * as `From: Blog, Inc <hi@example.com>`, which RFC 5322 §3.6.2 reads as a list of TWO mailboxes
+ * with no `Sender:`, and a colon in a name makes a malformed group. The quoted spelling is the
+ * CORRECT thing for an owner to type into `smtp_from`, so this broke the input that was right.
+ * A non-ASCII name escaped it by accident, because that one goes out as an encoded word.
+ *
+ * nodemailer quoted these; it went when the mail half became ours (2.2.10).
  */
 export function encodeAddress(address: string): string {
   const match = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(address)
   if (!match) return address.trim()
-  const name = match[1]!.replace(/^"(.*)"$/, '$1')
+  const quoted = /^"(.*)"$/.exec(match[1]!)
+  // Undo the escapes a quoted string carries, so the name is the name before it is re-emitted.
+  const name = quoted ? quoted[1]!.replace(/\\(.)/g, '$1') : match[1]!
   if (!name) return `<${match[2]!.trim()}>`
-  return `${encodeHeader(name)} <${match[2]!.trim()}>`
+  return `${displayName(name)} <${match[2]!.trim()}>`
 }
 
 /** Just the `user@host` out of either spelling, for the `MAIL FROM` and `RCPT TO` commands. */
