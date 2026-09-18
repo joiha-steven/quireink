@@ -61,6 +61,23 @@ async function listRoot(): Promise<string> {
 export function canonicalPath(): MiddlewareHandler {
   return async (c, next) => {
     const { pathname, search } = new URL(c.req.url)
+    // ⚠️ A SECOND LEADING SLASH IS ANOTHER ORIGIN, and this middleware answers every request.
+    // `//evil.example/` reaches here as a path, loses its trailing slash by the rule below and
+    // goes back out as `Location: //evil.example` — which a browser reads as a protocol-relative
+    // URL and follows off this site. That is the open redirect `web/auth-http.ts` describes at
+    // length and `web/comment-auth.ts` and `web/pen-routes.ts` both guard: a link wearing the
+    // blog's own domain that lands on somebody else's. `/\evil.example/` is the same trick —
+    // the URL parser normalises the backslash before we see it, so one test covers both.
+    //
+    // Measured 2026-09-18 with `curl --path-as-is`, because a normal client collapses the pair
+    // before it is sent and every ordinary probe therefore comes back clean. A proxy that merges
+    // slashes hides it too (nginx does by default); the one-command Caddy layout this project
+    // ships does not, and `web/security-headers.ts` already refuses to let a proxy be the
+    // software's security.
+    //
+    // Left to the 404 rather than redirected: no page here has two leading slashes, so there is
+    // no canonical spelling to send anybody to.
+    if (pathname.startsWith('//')) return next()
     if (pathname.length > 1 && pathname.endsWith('/')) {
       return c.redirect(pathname.replace(/\/+$/, '') + search, 301)
     }

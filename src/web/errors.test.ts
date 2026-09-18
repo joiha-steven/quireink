@@ -120,4 +120,21 @@ describe('a trailing slash', () => {
   it('normalises an API path too, rather than 404ing it', async () => {
     expect((await app.request('/api/search/')).status).toBe(301)
   })
+
+  // ⚠️ A SECOND LEADING SLASH IS SOMEBODY ELSE'S SITE. `//evil.example/` lost its trailing
+  // slash by the rule above and went back out as `Location: //evil.example`, which a browser
+  // reads as a protocol-relative URL and follows off this blog — a phishing link wearing the
+  // owner's own domain, on every install behind a proxy that does not merge slashes.
+  //
+  // Measured with `curl --path-as-is`: an ordinary client collapses the pair before it is
+  // sent, which is why nothing had ever seen it. `web/auth-http.ts`, `web/comment-auth.ts`
+  // and `web/pen-routes.ts` each guard the same pair; this middleware answers EVERY request
+  // and did not.
+  it('refuses to send a protocol-relative path back as a Location', async () => {
+    for (const path of ['//evil.example/', '//evil.example/x/', '///evil.example/']) {
+      const res = await app.request(path)
+      expect(`${path} -> ${res.status} ${res.headers.get('location') ?? '-'}`)
+        .toBe(`${path} -> 404 -`)
+    }
+  })
 })
