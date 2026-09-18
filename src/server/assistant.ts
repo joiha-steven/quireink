@@ -28,7 +28,14 @@ const MAX_ROUNDS = 8
 const MAX_TURNS = 60 // history the server will accept; the UI trims sooner
 const RESULT_CAP = 20_000
 
-function toSpec(def: ToolDef): ToolSpec {
+/**
+ * A registered tool as a provider wants to hear about it.
+ *
+ * EXPORTED FOR THE TEST, which is the point: the schemas that reach a provider are zod's
+ * output and not anything written here, so a guard that rebuilt them its own way would be
+ * pinning a copy. It reads this.
+ */
+export function toSpec(def: ToolDef): ToolSpec {
   const shape = def.meta.inputSchema ?? {}
   // zod v4 speaks JSON Schema natively; `io: 'input'` because a tool's schema describes
   // what the model may SEND. Optionals stay optional instead of becoming `| undefined`.

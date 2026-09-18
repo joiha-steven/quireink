@@ -141,7 +141,11 @@ function geminiContents(turns: Turn[]): unknown[] {
  * them; Gemini knows `enum` and not `const`, and rejects the request rather than ignoring
  * a word it does not recognise.
  *
- * So: recursive, and every rewrite below is a shape zod actually emits for these 42 tools.
+ * So: recursive, and every rewrite below is a shape zod actually emits for the tools this
+ * blog registers. WHICH SHAPES THOSE ARE IS NOT OURS TO DECIDE: zod chose the type array
+ * below in a patch release, and the only reason anyone found out was a bug report. What
+ * holds this now is `assistant.test.ts`'s walk over the REAL registry, which fails on any
+ * construct Gemini refuses — including one nobody here wrote.
  */
 /**
  * A fixed set of allowed values, in the only form Gemini takes.
@@ -165,7 +169,22 @@ function geminiParams(schema: Record<string, unknown>): Record<string, unknown> 
   const out: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(rest)) {
-    if (key === 'const') {
+    if (key === 'type' && Array.isArray(value)) {
+      // A UNION OF PRIMITIVES, written the way the JSON Schema spec allows and Gemini does
+      // not. `update_settings.value` is `string | number | boolean`; zod 4.4 wrote that as an
+      // `anyOf` of one-type schemas, zod 4.6 writes it as a TYPE ARRAY — same schema, same
+      // meaning, and the difference arrived in a dependency bump with no line of ours to
+      // review. Gemini's `type` is an enum field, so an array there is not a schema it reads
+      // loosely: it refuses the whole request with 400 before doing any work, which the admin
+      // could only report as "the model did not respond" (issue #66, v2.2.11).
+      //
+      // Back to the anyOf, which it has always taken. `null` is not one of its types — a
+      // nullable member is that flag instead — and a union of one is just that one.
+      const names = value.filter((t) => t !== 'null')
+      if (names.length < value.length) out.nullable = true
+      if (names.length === 1) out.type = names[0]
+      else if (names.length > 1) out.anyOf = names.map((t) => ({ type: t }))
+    } else if (key === 'const') {
       Object.assign(out, allowed([value]))
     } else if (key === 'anyOf' && Array.isArray(value)) {
       const members = value as Record<string, unknown>[]

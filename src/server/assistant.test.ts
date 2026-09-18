@@ -8,7 +8,8 @@ import { db } from '@/store/db'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 import { savePost } from '@/content/posts'
 import { buildChat, parseChat, type Turn } from './assistant-dialects'
-import { runAssistant } from './assistant'
+import { runAssistant, toSpec } from './assistant'
+import { collectTools } from '@/mcp/registry'
 import { withoutProviderEnv } from '@/test/env'
 
 // This file asserts what happens with NO provider configured; the machine may disagree.
@@ -56,6 +57,74 @@ describe('buildChat folds the neutral turns into each dialect', () => {
     expect(body.contents[2].parts[0].functionResponse.name).toBe('list_posts')
     expect(body.tools[0].functionDeclarations[0].parameters.$schema).toBeUndefined()
     expect(body.tools[0].functionDeclarations[0].parameters.additionalProperties).toBeUndefined()
+  })
+})
+
+/**
+ * THE SCHEMAS THAT ACTUALLY GO OUT, judged against what Gemini actually takes.
+ *
+ * The test above hands `buildChat` a schema written by hand, so it can only ever catch a
+ * rewrite somebody here forgot. It cannot catch the other half: the schemas are ZOD's output,
+ * and zod changed it in a patch release. 4.4 wrote `string | number | boolean` as an `anyOf`
+ * of one-type schemas and 4.6 writes it as `type: ['string','number','boolean']` — the same
+ * schema by the spec, and a 400 from Gemini, which the admin could only report as "the model
+ * did not respond" (issue #66: every prompt failed on 2.2.11 and none on 2.2.9).
+ *
+ * So this walks the REAL registry through the REAL `toSpec` and refuses anything outside
+ * Gemini's own Schema — by NAME as well as by shape, because the failure that shipped was a
+ * field nobody here wrote. A new tool, or a dependency that changes its mind again, goes red
+ * in `bun test` rather than in somebody's chat box.
+ */
+describe('the gemini request the real tool registry produces', () => {
+  // https://ai.google.dev/api/caching#Schema — every field it reads, and no more.
+  const FIELDS = new Set(['type', 'format', 'title', 'description', 'nullable', 'default',
+    'items', 'minItems', 'maxItems', 'enum', 'properties', 'required', 'minProperties',
+    'maxProperties', 'minimum', 'maximum', 'minLength', 'maxLength', 'pattern', 'example',
+    'anyOf', 'propertyOrdering'])
+  // Its `Type` enum. No `null`: a nullable member is the `nullable` flag instead.
+  const TYPES = new Set(['string', 'number', 'integer', 'boolean', 'array', 'object'])
+
+  /** Every complaint, with the path that earned it: a list, so one run names them all. */
+  const refusals = (schema: Record<string, unknown>, where: string): string[] => {
+    const out: string[] = []
+    for (const [key, value] of Object.entries(schema)) {
+      if (!FIELDS.has(key)) { out.push(`${where}: no such field "${key}"`); continue }
+      if (key === 'type' && !TYPES.has(String(value))) out.push(`${where}.type = ${JSON.stringify(value)}`)
+      // `enum` is strings only there; a numeric union has to travel as a description.
+      if (key === 'enum' && !(value as unknown[]).every((v) => typeof v === 'string')) {
+        out.push(`${where}.enum = ${JSON.stringify(value)}`)
+      }
+      if (key === 'items') out.push(...refusals(value as Record<string, unknown>, `${where}.items`))
+      if (key === 'anyOf') {
+        (value as Record<string, unknown>[]).forEach((m, i) => out.push(...refusals(m, `${where}.anyOf[${i}]`)))
+      }
+      if (key === 'properties') {
+        for (const [name, sub] of Object.entries(value as Record<string, Record<string, unknown>>)) {
+          out.push(...refusals(sub, `${where}.${name}`))
+        }
+      }
+    }
+    return out
+  }
+
+  it('carries nothing gemini would refuse', async () => {
+    const specs = (await collectTools()).map(toSpec)
+    expect(specs.length).toBeGreaterThan(20)
+    const body = JSON.parse(buildChat('gemini', 'm', 'k', 'sys', TURNS, specs)!.body)
+    const found = (body.tools[0].functionDeclarations as { name: string; parameters: Record<string, unknown> }[])
+      .flatMap((fn) => refusals(fn.parameters, fn.name))
+    expect(found).toEqual([])
+  })
+
+  it('folds the union zod 4.6 writes as a type array back into an anyOf', async () => {
+    const specs = (await collectTools()).map(toSpec)
+    const body = JSON.parse(buildChat('gemini', 'm', 'k', 'sys', TURNS, specs)!.body)
+    const fn = body.tools[0].functionDeclarations
+      .find((f: { name: string }) => f.name === 'update_settings')
+    // `string | number | boolean`, however zod chose to write it this week.
+    expect(fn.parameters.properties.value.anyOf).toEqual([
+      { type: 'string' }, { type: 'number' }, { type: 'boolean' },
+    ])
   })
 })
 
