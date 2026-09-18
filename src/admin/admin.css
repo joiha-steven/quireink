@@ -952,6 +952,24 @@ input[type='color']::-moz-color-swatch {
    word would be a smear. Both are in the markup; this picks. */
 #admin-rail .rail-mark,
 :root[data-rail-collapsed='1'] #admin-rail .rail-word { display: none; }
+/* ⚠️ THE WORD IS CENTRED ON ITS LETTERS, NOT ON ITS BOX. `quireINK` has a descender on the `q`
+   and the viewBox carries it: the box runs from y=-78.8 to y=23.6 while the letters run from
+   the cap line to the baseline, -76.82 to 0. Centring the box therefore hangs the visible word
+   ABOVE the line everything beside it sits on. Measured in the open rail at 1600x1000: the
+   letters' middle landed at 37.89px against the search key's 40.00 — 2.11px high, which is
+   exactly half the descender and is why it read as "the logo is not on the same axis as
+   search".
+
+   A PERCENTAGE of the word's own height, like the mark's nudge below: the descender is 21.6 of
+   the viewBox's 102.4 units, so half of it is 10.55%, and that stays true at any height. */
+#admin-rail .rail-word { translate: 0 10.55%; }
+/* ⚠️ AND THE COLLAPSED MARK MUST NOT BE CLIPPED BY ITS OWN WRAPPER. The wrapper truncates,
+   which is right for a five-letter word in a narrow rail and wrong for a fixed glyph: shut, it
+   shrinks to exactly the mark's 27.83px, and the 10.9% nudge below then pushes 3.03px of the
+   mark past its right edge, where `overflow: hidden` cuts it. Measured: the dot's right edge
+   landed at 120.49px against a wrapper ending at 117.91 — 2.58px of the red full stop gone.
+   Collapsed there is nothing to truncate, so nothing should be hidden. */
+:root[data-rail-collapsed='1'] #admin-rail .rail-wordmark-box { overflow: visible; }
 :root[data-rail-collapsed='1'] #admin-rail .rail-mark {
   display: block;
   /* ⚠️ THE LETTER IS CENTRED, NOT THE BOX. `Q.` is a Q plus a red dot that hangs off its right,

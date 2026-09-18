@@ -43,7 +43,7 @@ import { arrangeFoot, arrangeTemplate, footStrip } from '@/web/admin/rail-foot'
  */
 function topRow(t: AdminStrings): string {
   return `<div data-nav-top class="rail-top flex min-w-0 items-center justify-between gap-1">`
-    + `<span class="min-w-0 truncate">`
+    + `<span class="rail-wordmark-box min-w-0 truncate">`
     + `<a href="/admin" class="rail-wordmark flex h-10 items-center leading-none">${WORDMARK}</a>`
     + `</span>${searchKey(t)}</div>`
 }
