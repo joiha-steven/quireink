@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.11`
+`2.2.12`
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -152,20 +152,21 @@ The CSS and JavaScript rows are build artefacts, the same bytes on every install
 
 <img src="docs/demo-admin.jpg" alt="The Quire Ink admin: a post open in the editor with a pencil underline, a red ring and a highlighted sentence, beside the Appearance settings showing the four looks, the reading fonts, the shape controls and the colour presets" width="960">
 
-<sub>The admin as 2.2.11 draws it: server-rendered pages, no framework. Everything on the right, the four looks included, is a setting rather than code, and the chrome on both screens is wearing one of them.</sub>
+<sub>The admin as 2.2.12 draws it: server-rendered pages, no framework. Everything on the right, the four looks included, is a setting rather than code, and the chrome on both screens is wearing one of them.</sub>
 
 </div>
 
 ## This release
 
-**2.2.11** is the repair release for 2.2.10, cut the same day. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has all of it, measurement by measurement.
+**2.2.12** gives the assistant back to anyone using Google Gemini, and stops two admin screens drawing their whole table. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has all of it, measurement by measurement.
 
-- **The spare menu button is gone.** 2.2.10 precomputed the rail geometry into the cached sheet, which saves 1,046 compressed bytes a view and moved the rule that hides the drawer button 130 rules ahead of the rule that sizes it. One class each, so source order decided it: every blog on the default column drew a button beside a rail that was already in the gutter, and the source-code look printed it as `[menu]`.
-- **Page two of a category or a tag is its own page**, with its own address and its own title. It had been naming page one as the canonical, which asks a search engine to fold the deeper pages away and take with them every post that appears nowhere else.
-- **A listing's rail is reachable between 960 and 1272px**, an iPad on its side and a 13 inch laptop. It was laid out at the foot of the page with the button that opens it hidden.
-- **A new install types quietly:** the key sound starts at 10 rather than 60. Four edges on the settings screens line up, and three contrast measurements that sat just under the line are over it.
+- **Gemini answers again.** Since 2.2.10 it had refused every prompt, and no line of this repository had changed: a zod release began writing one tool's `string | number | boolean` as a type array instead of an `anyOf`, and Google's schema reader takes a single type there, so it refused the whole request with a 400. The admin could only report that as "check the key", on a key that was correct. Reported as [#66](https://github.com/joiha-steven/quireink/issues/66).
+- **The default Gemini model is one that still exists.** Google shut `gemini-2.0-flash` down on 1 June, and that was the fallback for anyone who pasted a key without picking a model, which is the normal path. Alt text, excerpts and the comment guard had been failing silently on those blogs ever since.
+- **The library turns pages**, 200 at a time, and the write column draws a hundred rows and reveals more as you scroll. Every piece stays in the page, so the search box still reaches a post six hundred rows down.
+- **A link with two leading slashes no longer leaves the site.** The redirect that strips a trailing slash answered `//evil.example/` with a `Location` pointing at another origin, so a link wearing the blog's own domain landed somewhere else.
+- **Three admin controls stop reporting success without doing the work:** the off-server backup's "Save and test" tested nothing on any install that already had a bucket, a card holding a key could not go amber over an unsaved edit, and the key that opens the reader sign-in settings went nowhere.
 
-**2.2.10, the day before,** is where the subtraction landed.
+**2.2.10 and 2.2.11, three days before,** are where the subtraction landed.
 
 **Twenty-two declared packages left and twelve arrived**, among them React, the seven `@tiptap/*` packages wrapping the editor, `marked` and the Tailwind CLI. Declared dependencies went from 32 to 22, the lockfile from 360 resolved packages to 221, and a clean install from 194 MB on disk to 138 MB.
 
@@ -176,7 +177,7 @@ The CSS and JavaScript rows are build artefacts, the same bytes on every install
 - **Four looks**, chosen as the last question setup asks, and six palettes now solved for one contrast so they differ in hue and nothing else.
 - **A reader downloads less than they did in 2.2.9**: a post is 122.8 KB where it was 131, and the home page 118.9 KB where it was 128. The [table above](#speed) has the rows.
 
-**What it does not do.** There is no multi-user mode: one blog, one owner, one process, and comments have accounts where the writing side does not. A NAS and a Kubernetes cluster get no Caddy, deliberately, because both already terminate TLS somewhere else. Two devices marking the same page at once overwrite each other, last save wins. Nothing in the admin shows which passages readers keep most; only the `list_mentions` MCP tool answers that. Webmention verifies its source and rate-limits but has no spam judgement. Typing straight after a link puts the characters inside it, found and left alone on purpose, pinned by a test so it cannot drift without somebody deciding. There are four looks and no fifth, a look dresses the published site only, and going further is still custom CSS. The STARTTLS upgrade is proved against a real relay at deploy time and nowhere else, since Bun cannot turn an open socket into a TLS one on the server side. The Help screens are still English only, a few counts still read "1 words", the Motion switch is the owner's rather than per-reader, an install that rewrites its own HTML with nginx `sub_filter` loses the origin's compression and validator, and an origin with no CDN makes a reader on the far side of the planet pay a round trip that saved bytes cannot buy back.
+**What it does not do.** There is no multi-user mode: one blog, one owner, one process, and comments have accounts where the writing side does not. A NAS and a Kubernetes cluster get no Caddy, deliberately, because both already terminate TLS somewhere else. Two devices marking the same page at once overwrite each other, last save wins. Nothing in the admin shows which passages readers keep most; only the `list_mentions` MCP tool answers that. Webmention verifies its source and rate-limits but has no spam judgement. Typing straight after a link puts the characters inside it, found and left alone on purpose, pinned by a test so it cannot drift without somebody deciding. There are four looks and no fifth, a look dresses the published site only, and going further is still custom CSS. The STARTTLS upgrade is proved against a real relay at deploy time and nowhere else, since Bun cannot turn an open socket into a TLS one on the server side. The library's name search narrows the page it is on rather than the whole library, which is what a pager costs. The Help screens are still English only, a few counts still read "1 words", the Motion switch is the owner's rather than per-reader, an install that rewrites its own HTML with nginx `sub_filter` loses the origin's compression and validator, and an origin with no CDN makes a reader on the far side of the planet pay a round trip that saved bytes cannot buy back.
 
 ## Install
 

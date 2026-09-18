@@ -1,5 +1,95 @@
 # CHANGELOG
 
+## 2026-09-19 · Quire Ink 2.2.12
+
+The AI assistant had been refusing every prompt on Google Gemini since 2.2.10, and the default
+Gemini model had been shut down by Google since June. Both are fixed. Two admin screens that
+drew their whole table now draw a page of it.
+
+### New feature
+
+- **The library turns pages.** 200 pictures a tab, a pager under the grid, and the page in the
+  address so it can be linked and the Back key works. Videos and files page by the same measure.
+  The count and the size above the grid stay the whole library rather than the page, so the
+  figure does not move as you turn. The pager link carries its own kind, because switching tabs
+  on that screen is an attribute rather than a navigation and the address can be sitting on
+  another one.
+- **The write column draws a hundred rows, then more as you scroll.** Everything stays IN the
+  page, which is what lets the search, both filter rows and the sort go on being node moves over
+  what is already there: the search box still reaches a piece six hundred rows down. Driven with
+  226 pieces, it showed 100, then 200, then 226, and found "Bulk post number 170" from the box.
+
+### Fixed
+
+- **Gemini refused every assistant prompt on 2.2.11, and nothing in this repository had
+  changed.** `update_settings.value` is `string | number | boolean`. zod 4.4.3 wrote that as an
+  `anyOf` of one-type schemas and zod 4.6.0, which arrived with 2.2.10, writes it as
+  `type: ["string","number","boolean"]`. Both are the same schema by the spec; Google's `type`
+  is a single-valued enum, so it refused the whole request with a 400 before reading a word of
+  it. The admin could only report that as "the model did not respond, check the key", on a key
+  that was correct. Found by building the outgoing request on both tags with each tag's own
+  lockfile and diffing: 49 function declarations against 42, identical apart from the seven new
+  note tools and that one field. A guard now walks the real registry through the real
+  conversion and refuses anything outside Gemini's own Schema, by field name as well as by
+  shape, because what escaped was a field nobody here wrote.
+- **The default Gemini model had been shut down by Google on 1 June 2026.** `gemini-2.0-flash`
+  was the fallback whenever the owner had not picked a model by hand, which is the normal path:
+  the model menu is empty until Load models is pressed. Every Gemini blog in that state lost all
+  four AI jobs at once, and three of them failed in silence, because alt text, excerpts and the
+  comment guard treat every kind of no as "quietly do nothing". Now `gemini-2.5-flash`, and
+  deliberately not 3.x, whose tool calls must echo a thought signature nothing here carries yet.
+  DeepSeek's retired `deepseek-v4-flash` moves to `deepseek-flash` for the same reason.
+- **A path with two leading slashes came back as a redirect off the site.** The middleware that
+  strips a trailing slash answers every request; handed `//evil.example/` it replied
+  `Location: //evil.example`, which a browser reads as another origin. So a link wearing the
+  blog's own domain landed somewhere else. An ordinary client collapses the pair before it is
+  sent, which is why nothing had seen it; `curl --path-as-is` shows it, and a proxy that merges
+  slashes hides it, but the one-command Caddy layout this project ships does not.
+- **A conversation past the eighth question broke, and stayed broken.** The screen sent the last
+  30 turns, counted; a round that calls a tool is four turns long, so the window regularly opened
+  on a tool result whose call had just been cut away, which Anthropic and OpenAI both refuse. The
+  server stores what the screen sent, so the next question re-cut at the same place and reopening
+  the conversation loaded the damage back. The window now opens where a question begins.
+- **Pressing Allow could run an approved tool twice.** The consent loop executed each approved
+  call as it walked the turns and threw the results away the moment it met one the owner had not
+  answered for, leaving those calls unanswered on screen; the next Allow ran them again. Delete
+  survives that, uploading a picture and sending a test newsletter do not. Nothing runs now until
+  every call has an answer, and the pause names all of them rather than the first.
+- **The clip page was offered to shared caches.** `/notes/clip` is the owner's, and the header
+  rule decides by path, so a CDN was invited to hold the owner's rendered page for a minute and
+  serve it to anybody, including the variant that links a note which defaults to draft.
+- **Micropub refused the strongest token there is.** `admin` is `full` plus the guarded settings,
+  not a different kind of grant, so an admin token was turned away as read-only.
+- **The restore check was not counting the notebook.** `notes` and `webmentions` arrived with
+  2.2.10 and were never added to the list of tables it compares, so a restored archive could have
+  lost every note the owner wrote and the check would still have passed.
+- **Alt text and excerpts stopped silently on a thinking Anthropic model.** The answer was read
+  off the first content block, and a model that thinks puts a thinking block in front of it.
+- **Gemini's thinking tokens never reached the cost meter**, which reported roughly half on a
+  thinking model, on the one screen that promises to say what a conversation costs.
+- **Switching AI provider stored the previous provider's model.** The model menu ships disabled
+  holding the stored id and the card reads its payload off the page, so the next job asked Google
+  for `gpt-4o-mini`, and the card said the far end had answered.
+- **"Save and test" on the off-server backup tested nothing**, on every install that already had
+  a bucket: the test is skipped unless the bucket field has been typed into, and a stored
+  credential ships as an empty box because blank means keep. A rotated secret was reported as
+  verified and would have been discovered at the one moment it matters.
+- **A card holding a key could not go amber.** The rule is that unsaved edits outrank a working
+  connection, and the repaint only compared settings controls: credential boxes carry none, so
+  Cloudflare, the off-server copy, SMTP and the comment keys stayed green through any typing.
+- **"How readers sign in" went nowhere.** Drawn beside the comments switch since the admin was
+  converted, read by nothing.
+- **The wordmark sat 2.11px above the axis of the search key beside it**, because the box it is
+  centred in carries the descender of the `q` and the letters do not. Shut, the rail's `Q.` lost
+  2.58px of its red full stop to the wrapper that truncates the word in the open rail.
+- **`get_post_traffic` carried visitors' words unmarked.** It is the traffic tool narrowed to one
+  page and returns the same referrer list, written through an open endpoint, so whether the
+  assistant paused before a write depended on which of the two the model reached for.
+- **There are two copies of zod in the tree, and now there is one.** The MCP door serialises tool
+  schemas with the SDK's own bundled copy, which the lockfile had left a version behind, so the
+  two doors onto one tool registry disagreed about that same field. The safe spelling was an
+  accident of resolution; it is a written line now, and a test holds the two doors to each other.
+
 ## 2026-09-16 · Quire Ink 2.2.11
 
 No new feature in this one. It is the repair release for 2.2.10, cut the same day, and every

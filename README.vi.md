@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.11`
+`2.2.12`
 
 **Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc. Tên bạn trên đó, không phải tên chúng tôi.
@@ -107,7 +107,7 @@ bun src/index.ts
 
 <img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: một bài mở trong trình soạn với câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung; bên cạnh là trang cấu hình Giao diện với bốn lối, bốn font đọc, các nút chỉnh hình dáng và dải bảng màu" width="960">
 
-<sub>Trang quản trị như 2.2.11 vẽ nó: trang do máy chủ dựng, không framework. Mọi thứ bên phải, kể cả bốn lối giao diện, đều là tuỳ chọn bấm chọn chứ không phải code, và khung trên cả hai màn đang mặc một trong số đó.</sub>
+<sub>Trang quản trị như 2.2.12 vẽ nó: trang do máy chủ dựng, không framework. Mọi thứ bên phải, kể cả bốn lối giao diện, đều là tuỳ chọn bấm chọn chứ không phải code, và khung trên cả hai màn đang mặc một trong số đó.</sub>
 
 </div>
 
@@ -141,14 +141,15 @@ Giữ được như vậy là nhờ mấy luật cứng: mỗi gói JavaScript c
 
 ## Bản này
 
-**2.2.11** là bản vá cho 2.2.10, cắt cùng ngày. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ, kèm số đo từng mục.
+**2.2.12** trả lại trợ lý cho những ai dùng Google Gemini, và ngăn hai màn quản trị vẽ nguyên bảng dữ liệu của chúng. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ, kèm số đo từng mục.
 
-- **Nút mở menu thừa đã đi.** 2.2.10 đem hình học thanh bên vào tệp kiểu dáng có bộ đệm, tiết kiệm 1.046 byte nén mỗi lượt xem, và đẩy luật cất nút đi xuống trước luật quy định cỡ nút 130 luật. Mỗi bên một lớp, nên thứ tự quyết định: blog nào để nguyên bề rộng cột mặc định cũng vẽ thêm một cái nút cạnh thanh bên vốn đã nằm ở lề, và lối chữ mã in nó ra thành `[menu]`.
-- **Trang hai của danh mục hay thẻ là trang của chính nó**, có địa chỉ riêng và tiêu đề riêng. Trước đó nó khai trang một là địa chỉ chuẩn, tức bảo máy tìm kiếm gộp các trang sau vào trang đầu, mang theo mọi bài chỉ xuất hiện ở đó.
-- **Thanh bên của trang danh sách với tới được ở khoảng 960 tới 1272px**, tức iPad nằm ngang và laptop 13 inch. Trước đó nó rơi xuống cuối trang, còn nút mở thì bị ẩn.
-- **Bản cài mới gõ khẽ:** tiếng gõ bắt đầu ở 10 thay vì 60. Bốn chỗ mép trong màn Cài đặt đã thẳng hàng, và ba phép đo tương phản nằm ngay dưới vạch nay đã qua vạch.
+- **Gemini trả lời lại được.** Từ 2.2.10 nó từ chối mọi câu hỏi, mà không một dòng mã nào trong kho này đổi: một bản zod mới bắt đầu viết kiểu `string | number | boolean` của một công cụ thành mảng kiểu thay vì `anyOf`, còn bộ đọc lược đồ của Google chỉ nhận một kiểu ở chỗ đó, nên nó từ chối nguyên yêu cầu bằng lỗi 400. Trang quản trị chỉ biết báo là "kiểm tra lại khoá", trong khi khoá hoàn toàn đúng. Được báo ở [#66](https://github.com/joiha-steven/quireink/issues/66).
+- **Model Gemini mặc định nay là model còn tồn tại.** Google đã tắt hẳn `gemini-2.0-flash` ngày 1 tháng 6, mà đó lại là model dùng thay cho ai dán khoá vào rồi lưu mà không tự chọn, tức là đường đi mặc định. Từ đó tới nay, việc mô tả ảnh, tóm tắt và gác bình luận trên các blog ấy hỏng trong im lặng.
+- **Thư viện chia trang**, mỗi trang 200, còn cột bài viết vẽ một trăm dòng rồi cuộn tới đâu hiện thêm tới đó. Mọi bài vẫn nằm sẵn trong trang, nên ô tìm kiếm vẫn với tới được bài nằm sâu sáu trăm dòng.
+- **Đường dẫn mở đầu bằng hai dấu gạch chéo không còn đưa người đọc rời khỏi trang.** Lệnh chuyển hướng cắt dấu gạch cuối đã trả lời `//evil.example/` bằng một `Location` trỏ sang tên miền khác, nên một đường dẫn mang tên miền của chính blog lại dẫn đi nơi khác.
+- **Ba nút trong trang quản trị thôi báo thành công khi chưa làm gì:** nút "Lưu và thử" của bản sao lưu ngoài máy chủ không hề thử trên mọi bản cài vốn đã có kho chứa, thẻ đang giữ khoá không chuyển sang màu hổ phách khi có sửa chưa lưu, và nút mở phần cài đặt đăng nhập của người đọc bấm vào không đi đâu cả.
 
-**2.2.10, hôm trước,** là chỗ phép trừ diễn ra.
+**2.2.10 và 2.2.11, ba hôm trước,** là chỗ phép trừ diễn ra.
 
 **Hai mươi hai gói khai báo rời đi, mười hai gói đi vào**, trong đó có React, bảy gói `@tiptap/*` bọc quanh trình soạn thảo, `marked` và Tailwind CLI. Số gói khai báo đi từ 32 xuống 22, tệp khoá phiên bản từ 360 gói xuống 221, và bản cài sạch từ 194 MB xuống 138 MB.
 
@@ -159,7 +160,7 @@ Giữ được như vậy là nhờ mấy luật cứng: mỗi gói JavaScript c
 - **Bốn lối giao diện**, chọn ở câu hỏi cuối cùng lúc cài, và sáu bảng màu nay giải cùng một độ tương phản nên chỉ khác nhau ở sắc màu.
 - **Người đọc tải về ít hơn bản 2.2.9**: một bài còn 122,8 KB thay vì 131, trang chủ còn 118,9 KB thay vì 128. [Bảng ở trên](#tốc-độ) ghi từng dòng.
 
-**Và bản này KHÔNG làm được gì.** Không có chế độ nhiều người dùng: một blog, một chủ, một tiến trình; phần bình luận có tài khoản còn phần viết thì không. NAS và Kubernetes cố ý không có Caddy, vì cả hai đã có sẵn chỗ cắt TLS riêng. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Gõ tiếp ngay sau một liên kết thì chữ rơi vào trong liên kết đó, đã tìm ra và cố ý để nguyên, có test ghim lại để nó không tự đổi khi chưa ai quyết. Có bốn lối giao diện và không có lối thứ năm, lối áp cho cả site và chỉ thay trang đã xuất bản, muốn đi xa hơn vẫn phải viết CSS riêng. Bước nâng cấp STARTTLS chỉ được chứng minh trên một relay thật lúc deploy chứ không ở đâu khác, do Bun không biến được một socket đang mở thành TLS ở phía máy chủ. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, và origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng mà số byte tiết kiệm không mua lại được.
+**Và bản này KHÔNG làm được gì.** Không có chế độ nhiều người dùng: một blog, một chủ, một tiến trình; phần bình luận có tài khoản còn phần viết thì không. NAS và Kubernetes cố ý không có Caddy, vì cả hai đã có sẵn chỗ cắt TLS riêng. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Gõ tiếp ngay sau một liên kết thì chữ rơi vào trong liên kết đó, đã tìm ra và cố ý để nguyên, có test ghim lại để nó không tự đổi khi chưa ai quyết. Có bốn lối giao diện và không có lối thứ năm, lối áp cho cả site và chỉ thay trang đã xuất bản, muốn đi xa hơn vẫn phải viết CSS riêng. Bước nâng cấp STARTTLS chỉ được chứng minh trên một relay thật lúc deploy chứ không ở đâu khác, do Bun không biến được một socket đang mở thành TLS ở phía máy chủ. Ô tìm kiếm tên trong thư viện chỉ lọc trong trang đang mở chứ không lọc cả thư viện, đó là cái giá của việc chia trang. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, và origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng mà số byte tiết kiệm không mua lại được.
 
 ## Cài đặt
 
