@@ -17,6 +17,7 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { createApp } from '@/web/app'
 import { savePost } from '@/content/posts'
+import { getSeriesList } from '@/content/series'
 import { clearCache } from '@/server/cache'
 
 const DIR = './.tmp/test-term-scripts'
@@ -62,5 +63,34 @@ describe('a tag whose letters no slug can carry', () => {
     expect(xml).not.toContain('/tag/</loc>')
     expect(xml).toContain(`/tag/${encodeURIComponent('日本語')}</loc>`)
     expect(xml).toContain(`/tag/${encodeURIComponent('한국어')}</loc>`)
+  })
+})
+
+/**
+ * ⚠️ A SERIES HAD THE SAME HOLE AND NO WAY OUT OF IT.
+ *
+ * Taxonomy at least still RESOLVED from the raw term, which is why `/tag/日本語` worked until the
+ * canonical check took it away. `resolveSeries` compared slugs only, so a series named in a
+ * script `slugify` cannot fold had no address at all: slug `""`, `/series/` answering 301 then
+ * 404, `/series/書体の話` answering 404, and the link on every post in that series pointing at
+ * nothing. Found while bringing the docs in line with the taxonomy fix, because the sentence in
+ * `docs/features/reading.md` says a series slug is made "like categories/tags" — and it was.
+ */
+describe('a series whose letters no slug can carry', () => {
+  it('has an address, in every script', async () => {
+    for (const name of ['書体の話', '한국어 연재', 'ไทย', 'Letterforms', 'giao diện']) {
+      db().run(`delete from posts`)
+      clearCache()
+      for (const [i, part] of [['One', 'part-one'], ['Two', 'part-two']].entries()) {
+        await savePost({
+          title: part[0]!, slug: part[1]!, status: 'published', content: 'Body.', excerpt: 'Set.',
+          date: `2026-01-0${i + 1}T00:00:00.000Z`, series: name, seriesOrder: i + 1,
+        })
+      }
+      const slug = (await getSeriesList())[0]?.slug ?? ''
+      expect(`${name}: ${slug === '' ? 'NO SLUG' : 'slugged'}`).toBe(`${name}: slugged`)
+      const res = await app.request(`/series/${encodeURIComponent(slug)}`)
+      expect(`${name}: ${res.status}`).toBe(`${name}: 200`)
+    }
   })
 })

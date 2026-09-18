@@ -18,7 +18,7 @@ queue and the activity log were already capped at 200 and are untouched.
 
 ### Fixed
 
-- **A blog whose tags are not written in Latin or Cyrillic had no term archive at all.**
+- **A blog whose tags or series are not written in Latin or Cyrillic had no archive at all.**
   `slugify` folds those two scripts and drops everything else, and the taxonomy slug had no
   fallback of any kind, so a tag in Japanese, Chinese, Korean, Thai, Arabic, Hebrew, Hindi or
   Greek came back as the empty string. Every taxonomy link on every page pointed at `/tag/`,
@@ -26,7 +26,11 @@ queue and the activity log were already capped at 200 and are untouched.
   one entry; and `/tag/日本語` worked right up until the canonical check compared it against the
   empty slug and redirected the working address into the dead one. Three of those scripts are
   languages this admin is translated into. A post slug has had a fallback for this since the
-  Russian locale arrived; taxonomy never got one.
+  Russian locale arrived; taxonomy never got one. A SERIES had it worse and was found while
+  bringing the docs in line with the taxonomy fix: `docs/features/reading.md` says a series slug
+  is made "like categories/tags", and it was, except that `resolveSeries` compared slugs only.
+  So where `/tag/日本語` at least resolved until the canonical check took it away, a series in
+  that script had no address at all, in either spelling.
 - **A visitor's comment could become permanently unsendable.** The proof-of-work stamp is spent
   when the comment is sent, and a refusal the reader can FIX — a mistyped address, a body over
   the limit, a reply too deep, the minute's allowance — returned without arming a new one. The

@@ -115,6 +115,16 @@ needed:
 `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/manifest.webmanifest`, `/og`, `/uploads/*`,
 `/.well-known/*`, `/api/md/:slug`. Server-rendered HTML built as strings, not JSX.
 
+**A term or series slug falls back to the name itself** when `slugify` returns nothing, which it
+does for every script it cannot fold — Japanese, Chinese, Korean, Thai, Arabic, Hebrew, Hindi,
+Greek. Three of those are languages this admin is translated into, and until 2026-09-19 a blog
+written in one of them had no reachable `/tag/`, `/category/` or `/series/` page at all: the
+links pointed at the bare kind path, the sitemap advertised it, and the canonical check redirected
+the one address that did work into the one that did not. The fallback is the RAW name and not a
+percent-encoded one, because `resolveTerm`/`resolveSeries` decode before matching and
+`term-routes.ts` encodes once when it redirects; the sitemap encodes at the point of emission,
+where a `<loc>` wants the URL as it would be fetched.
+
 **Admin (`src/web/admin` drawing, `src/admin` wiring):** every address is a page the server
 draws, and the browser gets one island per screen — ADR 0054, which replaced 0006. It was one
 route serving an embedded SPA shell with client-side routing and 13 pages; there is no shell, no

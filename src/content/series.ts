@@ -29,7 +29,7 @@ export async function getSeriesForPost(slug: string): Promise<SeriesInfo | null>
   const currentIndex = posts.findIndex((p) => p.slug === slug)
   return {
     name: current.series,
-    slug: slugify(current.series),
+    slug: seriesSlug(current.series),
     posts,
     currentIndex,
   }
@@ -41,16 +41,36 @@ export async function getSeriesList(): Promise<{ name: string; slug: string; cou
   const counts = new Map<string, number>()
   for (const p of all) if (p.series) counts.set(p.series, (counts.get(p.series) ?? 0) + 1)
   return [...counts]
-    .map(([name, count]) => ({ name, slug: slugify(name), count }))
+    .map(([name, count]) => ({ name, slug: seriesSlug(name), count }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
 }
+
+/**
+ * The URL slug for a series, with the same fallback taxonomy has (`content/taxonomy.ts`).
+ *
+ * ⚠️ AND A SERIES HAD IT WORSE THAN A TAG. `slugify` folds Latin and Cyrillic and drops the
+ * rest, so a series named in Japanese slugged to the empty string — and where a tag at least
+ * still RESOLVED from its raw name, `resolveSeries` compared slugs only. Measured: slug `""`,
+ * `/series/` answered 301 then 404, and `/series/書体の話` answered 404. There was no address
+ * for that series at all, and the link on every post in it pointed at nothing.
+ */
+const seriesSlug = (name: string): string => slugify(name) || name
 
 // Resolve a series slug → display name + ordered public posts (null name if no match).
 export async function resolveSeries(slug: string): Promise<{ name: string | null; posts: Post[] }> {
   const all = await getPublicPosts()
+  // The raw name as well as its slug, which is what `resolveTerm` has always done: a series
+  // whose letters no slug can carry is reached by its own name, and that is what the link
+  // above now prints.
+  let raw = slug
+  try {
+    raw = decodeURIComponent(slug)
+  } catch {
+    /* malformed encoding → compare against the literal slug */
+  }
   let name: string | null = null
   for (const p of all) {
-    if (p.series && slugify(p.series) === slug) {
+    if (p.series && (slugify(p.series) === slug || p.series === raw)) {
       name = p.series
       break
     }

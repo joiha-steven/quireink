@@ -120,7 +120,18 @@ Extends the existing `rate-limit.ts` sliding window.
 | Password attempt, per IP | 10 / 15 min | 429 with `Retry-After` |
 | Password attempt, per username | 5 / 15 min | soft lock 15 min, message says so plainly |
 | TOTP attempt, per session | 5 total | the pending sign-in is destroyed, start over |
+| TOTP attempt, per account | 15 / 15 min | 429 with `Retry-After` |
+| TOTP attempt, per IP | 30 / 15 min | 429 with `Retry-After` |
 | Recovery code attempt | 5 / hour, per IP | 429 |
+| Recovery code attempt, per account | 10 / hour | 429 |
+
+The two TOTP rows are the ones that survive a fresh ticket, and until 2026-09-19 they did
+not exist: the limit block was gated on the code NOT looking like a TOTP, so a six-digit
+guess was neither counted nor charged. Five per ticket was the whole of it, and a ticket
+costs one correct password — which is what the attacker at this step already has, since
+that is what a second factor is for. Measured from one address, sequentially: 645 guesses
+in 8 seconds and no 429. Looser than the recovery rows because a code costs no argon2 and
+a phone whose clock has drifted burns several in a row.
 
 **Failures count; successes do not.** The window is checked before the attempt and charged
 only after it fails, and a correct password clears the username's window outright. Built

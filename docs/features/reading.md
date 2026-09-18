@@ -198,8 +198,12 @@
   action POSTs `/api/series` (`updateSeries` / `reorderSeries`, owner-gated) then reloads.
   `series_order` is otherwise set per-post in the editor's Settings panel.
 - **`/series/:slug`** lists a series in the owner's order and is never paginated: a series is read
-  front to back and is not a timeline. Slug derived with `slugify` and reverse-resolved by
-  `resolveSeries` (like categories/tags). Held in the page cache like every other public page, so
+  front to back and is not a timeline. Slug derived with `slugify` **falling back to the name
+  itself**, and reverse-resolved by `resolveSeries` from either spelling — like categories and
+  tags, which is what that sentence promised before either of them did it. `slugify` folds Latin
+  and Cyrillic and drops the rest, so before 2026-09-19 a series named in Japanese, Korean, Thai,
+  Arabic, Hebrew, Hindi, Greek or Chinese had slug `""` and NO address: `/series/` answered 404
+  and so did `/series/<the name>`, because the resolver compared slugs only. Held in the page cache like every other public page, so
   an admin save empties it along with everything else (Invariant 1).
 
 ## The year archive — `src/content/archive.ts`, `src/web/archive-page.ts`, `features.archive`

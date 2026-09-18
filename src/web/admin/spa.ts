@@ -55,7 +55,9 @@ try {
 /**
  * The stylesheet, served under a name that carries a fingerprint.
  *
- * `admin.css` is 68 KB and was `cache-control: no-cache` with no validator, so the owner
+ * `admin.css` is 39 KB compressed (668 KB raw, measured 2026-09-19; this said 68 KB and had
+ * not been re-measured since the Tailwind capture, ADR 0053) and was `cache-control:
+ * no-cache` with no validator, so the owner
  * re-downloaded it on every single admin load while the chunks beside it, which carry the
  * bundler's hash, were `immutable` and free. The public side has always done this
  * (`/assets/site.<hash>.css`); this is the same trick.
