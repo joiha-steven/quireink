@@ -123,7 +123,7 @@ const ko = {
   bcastRead: '글 읽기',
   bcastDigestSubject: '새 글 {n}개',
   replySubject: '내 댓글에 새 답글',
-  replyIntro: '{name}님이 "{title}"의 내 댓글에 답글을 남겼습니다.',
+  replyIntro: '{name}님이 “{title}”의 내 댓글에 답글을 남겼습니다.',
   replyRead: '답글 보기',
   notFoundTitle: '페이지를 찾을 수 없습니다',
   notFoundText: '찾으시는 페이지가 존재하지 않거나 이동되었습니다.',
