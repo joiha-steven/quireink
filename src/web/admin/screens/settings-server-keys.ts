@@ -261,8 +261,14 @@ export function offsiteCard(t: AdminStrings, i: IntegrationStatus): string {
     //
     // `data-card-test-when` on the bucket: with no bucket there is nothing to write into, and a
     // test that cannot run must not report a failure.
+    //
+    // ⚠️ AND THE GATE HAS TO KNOW ABOUT A BUCKET IT CANNOT SEE. A stored credential ships as an
+    // empty box (blank means keep), so on an install that already HAS a bucket the gate field
+    // was empty and the test was skipped — the card saved, tested nothing, and reported that
+    // the far end had answered. `data-card-test-stored` says what only the server knows.
     attrs: 'data-card-tests data-card-test="/api/backup/offsite-test"'
-      + ' data-card-test-when="s3Bucket"',
+      + ' data-card-test-when="s3Bucket"'
+      + (on ? ' data-card-test-stored' : ''),
     // ⚠️ AMBER, NOT GREY, WHEN THERE ARE NO CREDENTIALS. Grey is `connectionOff` and it means
     // somebody switched this off on purpose; this card has no switch, so the only thing "off"
     // could mean here is "never set up", and that is a thing to DO rather than a settled state.

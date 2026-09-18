@@ -105,6 +105,17 @@ if (root) {
     if (b?.dataset.tab) swap(b.dataset.tab)
   })
 
+  // A KEY ON ONE TAB THAT OPENS ANOTHER. "How readers sign in →" sits beside the comments
+  // switch on Posts because how a commenter proves they are a person is a connection, and lives
+  // with the keys for it — one click rather than three tabs of hunting. It was drawn and read by
+  // nothing since the conversion: the React face called `setTab` on state it owned, and the
+  // server has no state. Delegated from the screen rather than the strip, because the key is
+  // inside a panel, not in the tab row.
+  screen.addEventListener('click', (e) => {
+    const to = (e.target as HTMLElement).closest<HTMLElement>('[data-settings-goto]')?.dataset.settingsGoto
+    if (to) swap(to)
+  })
+
   // ⚠️ ON ARRIVAL TOO, not only on a swap. The server draws the selected tab, so `swap` has
   // never run when the page opens — and arriving on `?tab=account` at 375px is exactly the case
   // this exists for: four tabs past the right edge, with the strip apparently showing "Blog".

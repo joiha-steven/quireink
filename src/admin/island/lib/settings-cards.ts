@@ -64,6 +64,10 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
       const res = sent.ok ? await saveKeys(card, fields()) : sent
       if (res.ok) {
         settle(ownFields(card, fields()))
+        // What is in the boxes now IS what is stored — including the password boxes `postCard`
+        // has just cleared — so this is the new baseline. Without it the card would stay amber
+        // for the rest of the page's life over an edit it had already saved.
+        remember(card)
         // A card that TESTED and passed is green; one that only stored is green too, because
         // there was nothing at the far end to be wrong about.
         setLamp(lamp, 'good', w.connectionOk ?? '')
@@ -161,8 +165,15 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
   async function tried(card: HTMLElement): Promise<{ ok: boolean; error?: string }> {
     const route = card.dataset.cardTest
     if (!route) return { ok: true }
+    // ⚠️ AND A STORED CREDENTIAL SHIPS AS AN EMPTY BOX. The gate asks whether the field is
+    // filled in, which is right for a card nobody has configured and wrong for every card that
+    // already works: blank means KEEP, so on an install with a bucket the gate field was empty,
+    // the test never ran, and the key that says "Save and test" went green saying the far end
+    // had answered. A rotated secret would be reported as verified and discovered at the one
+    // moment it matters. `data-card-test-stored` is the server's answer to "is there something
+    // at the far end already", which is the question the gate meant to ask.
     const needs = card.dataset.cardTestWhen
-    if (needs) {
+    if (needs && card.dataset.cardTestStored === undefined) {
       const gateField = card.querySelector<HTMLInputElement>(`[data-card-field="${needs}"]`)
       if (!gateField?.value.trim()) return { ok: true }
     }
@@ -180,15 +191,40 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
     location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`
   }
 
+  /**
+   * What the server drew in every credential box, so an edit to one can be seen.
+   *
+   * ⚠️ THE LAMP COULD NOT GO AMBER ON A CREDENTIAL CARD, which is this file's own first rule:
+   * "A card with unsaved edits is amber even when the thing it configures is working." The
+   * repaint below only looked at `[data-k]` settings controls and gave up on a card with none
+   * — and a credential box deliberately carries no `data-k`, because it posts to its own
+   * endpoint. So every card that holds a key (Cloudflare, the off-server copy, SMTP, the
+   * comment keys) stayed green through any amount of typing. Paste a key, get distracted,
+   * navigate away, and nothing on the screen had said it was unsaved.
+   *
+   * Compared against what was RENDERED rather than against `defaultValue`, because a `<select>`
+   * has no such property and the AI card's provider menu is one.
+   */
+  const drawn = new Map<Element, string>()
+  const boxes = (card: ParentNode) =>
+    card.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('[data-card-field]')
+  const remember = (root: ParentNode) => { for (const el of boxes(root)) drawn.set(el, el.value) }
+  remember(screen)
+
   /** A card goes amber the moment it holds an edit nobody has stored. */
   screen.addEventListener('input', () => repaint())
+  screen.addEventListener('change', () => repaint())
   screen.addEventListener('click', () => repaint())
+
+  function edited(card: HTMLElement): boolean {
+    for (const el of boxes(card)) if (el.value !== (drawn.get(el) ?? '')) return true
+    return false
+  }
 
   function repaint(): void {
     for (const card of screen.querySelectorAll<HTMLElement>('[data-card]')) {
       const roots = (card.dataset.cardKeys ?? '').split(' ').filter(Boolean)
-      if (roots.length === 0) continue
-      const dirty = changedIn(fields(), ...roots)
+      const dirty = (roots.length > 0 && changedIn(fields(), ...roots)) || edited(card)
       if (!dirty) continue
       setLamp(card.querySelector('[data-card-lamp]'), 'attention', w.connectionDirty ?? '')
     }

@@ -97,9 +97,8 @@ function end(t: AdminStrings, s: SiteSettings): string {
     // they are a person is a connection, and lives on the tab that holds the keys for it. One
     // click, rather than three tabs of hunting.
     //
-    // ⚠️ `data-settings-goto` IS NOT WIRED YET. The React face called `setTab('people')` on a
-    // state it owned; the server has no state and the sheet's tab strip is the island's. Until
-    // `settings-controls.ts` honours this attribute the key is drawn and does nothing.
+    // `data-settings-goto` is honoured by `island/settings.ts`, beside the tab strip's own
+    // handler. It was drawn and wired to nothing from the conversion until 2026-09-18.
     + `<button type="button" data-settings-goto="people" class="${SHEET_TOOL}">`
     + `${escapeHtml(t.linkCommentSignIn)} →</button>`
     + `</div>`
