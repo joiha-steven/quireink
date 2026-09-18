@@ -22,7 +22,7 @@ import { META, NOTE_TEXT } from '@/admin-shared/scale'
 import {
   CONTROL_SM, ICON_KEY, ICON_KEY_DANGER, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER,
 } from '@/admin-shared/kit'
-import { emptyState, icon, pageHeader, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
+import { emptyState, icon, pageHeader, pager, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
 import { trashView } from '@/web/admin/views'
 
 export type Kind = 'posts' | 'pages' | 'notes' | 'media' | 'files' | 'comments' | 'subscribers'
@@ -148,7 +148,14 @@ function subscriberRows(t: AdminStrings, rows: { id: number; email: string; stat
 }
 
 /** One kind's panel: its rows, or the drawing that says this kind has nothing in it. */
-const panel = (t: AdminStrings, kind: Kind, open: Kind, rows: string): string =>
+/**
+ * How many rows of one kind the Trash draws at once. Smaller than the library's 200 because a
+ * trash row is a line of text rather than a picture, and because nobody browses their bin: they
+ * come here to find one thing or to empty it.
+ */
+const TRASH_PAGE = 100
+
+const panel = (t: AdminStrings, kind: Kind, open: Kind, rows: string, pagerHtml = ''): string =>
   `<div data-trash-panel="${kind}"${kind === open ? '' : ' hidden'}>`
   + (rows
     // ⚠️ THE THIRD FACE, which this screen did not have until 2026-09-16. The search above hides
@@ -159,16 +166,40 @@ const panel = (t: AdminStrings, kind: Kind, open: Kind, rows: string): string =>
     ? `${emptyState({ title: t.filterEmpty, glyph: 'lens', hidden: true, attrs: `data-trash-nomatch="${kind}"` })}`
       + `<ul class="${LIST}">${rows}</ul>`
     : `<div class="p-8">${emptyState({ title: t.trashEmpty, description: t.trashEmptyHint, glyph: 'emptyBox' })}</div>`)
+  + pagerHtml
   + `</div>`
 
 export async function trashScreen(settings: SiteSettings, query: URLSearchParams): Promise<string> {
   const t = adminT(settings.language)
   const open = openKind(query)
-  const { posts, pages, notes, media, files, comments, subscribers } = await trashView()
+  const all = await trashView()
 
   const counts: Record<Kind, number> = {
-    posts: posts.length, pages: pages.length, notes: notes.length, media: media.length,
-    files: files.length, comments: comments.length, subscribers: subscribers.length,
+    posts: all.posts.length, pages: all.pages.length, notes: all.notes.length,
+    media: all.media.length, files: all.files.length, comments: all.comments.length,
+    subscribers: all.subscribers.length,
+  }
+
+  /**
+   * ONE PAGE OF THE OPEN KIND. A bulk delete puts thousands here at once, and this screen drew
+   * every one of them; the counts in the tab labels are still the whole kind, because they come
+   * from the arrays above rather than from the page.
+   *
+   * SLICED HERE rather than limited in SQL, unlike the library: the trash is seven lists and the
+   * counts beside the tabs have to be exact, so the read is whole either way and the only thing
+   * worth not doing is drawing it.
+   */
+  const at = Math.max(1, Math.floor(Number(query.get('page') ?? '1')) || 1)
+  const pageOf = <T>(list: T[], kind: Kind): T[] =>
+    kind === open ? list.slice((at - 1) * TRASH_PAGE, at * TRASH_PAGE) : list.slice(0, TRASH_PAGE)
+  const keys = (kind: Kind): string =>
+    pager(t, '/admin/trash', kind, kind === open ? at : 1,
+      Math.max(1, Math.ceil(counts[kind] / TRASH_PAGE)))
+  const { posts, pages, notes, media, files, comments, subscribers } = {
+    posts: pageOf(all.posts, 'posts'), pages: pageOf(all.pages, 'pages'),
+    notes: pageOf(all.notes, 'notes'), media: pageOf(all.media, 'media'),
+    files: pageOf(all.files, 'files'), comments: pageOf(all.comments, 'comments'),
+    subscribers: pageOf(all.subscribers, 'subscribers'),
   }
   const items: { key: Kind; label: string }[] = [
     { key: 'posts', label: `${t.tabPosts} (${counts.posts})` },
@@ -193,13 +224,13 @@ export async function trashScreen(settings: SiteSettings, query: URLSearchParams
     + `<button type="button" data-trash-restore-picked class="${SHEET_TOOL}" hidden>${escapeHtml(t.restore)} (<span data-trash-picked>0</span>)</button>`
     + `<button type="button" data-trash-empty class="${SHEET_TOOL_DANGER}"${counts[open] > 0 ? '' : ' hidden'}>${escapeHtml(t.emptyTrash)}</button>`
 
-  const body = panel(t, 'posts', open, slugRows(t, 'posts', posts))
-    + panel(t, 'pages', open, slugRows(t, 'pages', pages))
-    + panel(t, 'notes', open, slugRows(t, 'notes', notes))
-    + panel(t, 'media', open, mediaRows(t, media))
-    + panel(t, 'files', open, fileRows(t, files))
-    + panel(t, 'comments', open, commentRows(t, comments))
-    + panel(t, 'subscribers', open, subscriberRows(t, subscribers))
+  const body = panel(t, 'posts', open, slugRows(t, 'posts', posts), keys('posts'))
+    + panel(t, 'pages', open, slugRows(t, 'pages', pages), keys('pages'))
+    + panel(t, 'notes', open, slugRows(t, 'notes', notes), keys('notes'))
+    + panel(t, 'media', open, mediaRows(t, media), keys('media'))
+    + panel(t, 'files', open, fileRows(t, files), keys('files'))
+    + panel(t, 'comments', open, commentRows(t, comments), keys('comments'))
+    + panel(t, 'subscribers', open, subscriberRows(t, subscribers), keys('subscribers'))
 
   // The words the island can need to SAY, and only those: every other string on this screen is
   // already written into the markup above. `{name}` and `{n}` stay unreplaced — the island fills

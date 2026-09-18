@@ -103,3 +103,12 @@
   - Structure: masthead (site name) · rule · lead post (cover + 26px title + excerpt + solid
     button) · each further post (19px title + excerpt + text link, rule-separated) · rule · footer.
   All values are escaped; the reply's `contentHtml` is already-sanitized comment markdown.
+
+## The people list is paged
+
+- **200 subscribers at a time** (`PEOPLE_PAGE`, [`views-news.ts`](../../src/web/admin/views-news.ts)),
+  with the shared `pager()` under the table and the page in the address. A newsletter is the one
+  list in the admin that grows without anybody deciding to grow it, and the screen drew every row
+  plus a second copy of each for the phone layout.
+- **The three counts above the table are the whole list**, counted before the slice. "1,240
+  confirmed" is the number the owner came for, and it must not move as pages turn.

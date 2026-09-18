@@ -170,7 +170,7 @@ describe('the library is paged', () => {
     db().run(`delete from media`)
     picture('alone.jpg')
     const one = await mediaScreen(await getSettings(), new URLSearchParams())
-    expect(one).not.toContain('data-media-pager')
+    expect(one).not.toContain('data-pager')
   })
 
   /**

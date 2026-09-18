@@ -39,7 +39,10 @@ const SHEET = 'src/admin/dist/admin.css'
  * list to get a green check is how the eight above shipped; the only honest entries are ones
  * where the browser itself is the handler.
  */
-const ELSEWHERE = new Map<string, string>([])
+const ELSEWHERE = new Map<string, string>([
+  ['data-pager', 'the pager is three <a href> links (`web/admin/kit.ts`): turning a page is a '
+    + 'navigation, so the browser IS the handler. The name is on the <nav> so a test can find it.'],
+])
 
 /** Source with its comments taken out. See the note on `islands` below for why that matters. */
 const bare = (src: string): string => src

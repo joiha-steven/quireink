@@ -8,16 +8,15 @@
   (index/search/getPost, page index/getPage, media/file lists, the finalize sweeps) so trashed
   items leave the site, lists, search, sitemap/feed/llms and the libraries at once.
 - **The way IN is the editor's Attributes panel** (`screens/sheet-frame.ts` draws it,
-  `island/lib/sheet-errands.ts` acts on it), beside History and View post, and only for a piece
-  that has been saved. It went missing between 2026-08-17 and 2026-08-30: the old content table's row actions carried the trash icon and the
-  `DELETE /api/{posts,pages}/:slug` behind it, and neither was rebuilt when the Write screen
-  became two panes (`b4459b4`). For thirteen days and four releases the admin could reach
-  `/admin/trash` and had no way to put anything in it — reported from outside as issue #60.
-  **Every tour flow that touched the trash called the endpoint directly**, which is why 2,100
-  green tests and a 61-flow browser tour all missed it; there is now one that clicks the
-  control. The confirmation says the piece can be brought back, because this delete is soft —
-  the strings it replaced (`confirmDeletePost`/`confirmDeletePage`) said it could not be
-  undone, which was never true of this endpoint.
+  `island/lib/sheet-errands.ts` acts on it), beside History and View post, and only for a saved
+  piece. It went missing 2026-08-17 to 2026-08-30: the old content table's row actions carried the
+  trash icon and the `DELETE /api/{posts,pages}/:slug` behind it, and neither was rebuilt when the
+  Write screen became two panes (`b4459b4`). Thirteen days and four releases with `/admin/trash`
+  reachable and no way to put anything in it, reported from outside as issue #60. **Every tour
+  flow that touched the trash called the endpoint directly**, which is why 2,100 green tests and
+  a 61-flow tour all missed it; one clicks the control now. The confirmation says the piece can
+  be brought back, because this delete is soft: `confirmDeletePost`/`confirmDeletePage` had said
+  it could not be undone, which was never true of this endpoint.
 - **Media/file soft delete KEEPS the blob** — a published post linking a trashed image keeps
   rendering; the blob is removed only on purge. So `/api/media/delete` no longer purges the page
   cache (it used to). A trashed row **keeps its slug** (still reserved via `ensureSlugFree`) so
@@ -26,12 +25,13 @@
   revisions + settings); if any target image is still referenced it returns `in_use:<n>` (409) and
   the island re-asks with a stronger confirm, retrying with `force:true`. Stops a purge silently
   breaking a live page.
-- Per kind the lib exports `restoreX`, `purgeX` (hard delete: row + revisions/blobs),
-  `getTrashedX`, `emptyXTrash`. `screens/trash.ts` draws all four lists (4 tabs) and `island/trash.ts` acts via
-  **`POST /api/trash`** `{ kind, action: restore|purge|empty, ids? }` (owner-gated) then reloads — which is why the
-  kind is in the address as `?tab=media`: a kind held only in the page put the owner back on Posts after emptying
-  the picture trash. **Nothing auto-purges** — removal is manual. Restore and purge are writes like any other, so
-  each clears the whole page cache (Invariant 1); there is no per-surface invalidation to get wrong.
+- Per kind the lib exports `restoreX`, `purgeX` (hard delete: row + revisions/blobs), `getTrashedX`,
+  `emptyXTrash`. `screens/trash.ts` draws all seven lists and `island/trash.ts` acts via **`POST /api/trash`**
+  `{ kind, action: restore|purge|empty, ids? }` (owner-gated) then reloads, which is why the kind is in the
+  address as `?tab=media`: a kind held only in the page put the owner back on Posts after emptying the picture
+  trash. **Nothing auto-purges.** Restore and purge are writes like any other, so each clears the whole page
+  cache (Invariant 1).
+- **100 rows of the open kind at a time** (`TRASH_PAGE`) with the shared `pager()` under it and the page in the address. The tab counts stay the whole kind, because a bulk delete is how this screen gets big and "how many" is what it is opened for; sliced in the screen rather than in SQL, since seven exact counts mean the read is whole anyway.
 - Adding a mutating trash action → log it (activity actions `*.restore` / `*.purge` /
   `trash.empty`) and keep the i18n keys in sync.
 

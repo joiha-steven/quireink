@@ -18,8 +18,9 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { ICONS, GLYPHS, type GlyphName, type IconName } from '@/icons'
 import {
   CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOOL, SHEET_TOOL_DANGER, SHEET_TOP,
-  TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, type LampState,
+  TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, buttonClass, type LampState,
 } from '@/admin-shared/kit'
+import { META } from '@/admin-shared/scale'
 import {
   SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE, TAB_TRACK, TAB_TRACK_DENSE, edgeAt, tabItemClass, type TabRole, type TabSize,
 } from '@/admin-shared/tabs'
@@ -327,4 +328,40 @@ export function selectionBar({ clearLabel, deleteLabel, attrs = '', extras = '' 
     + extras
     + `<button type="button" data-pick-delete class="${SHEET_TOOL_DANGER}">`
     + `${escapeHtml(deleteLabel)} (<span data-pick-count>0</span>)</button></div>`
+}
+
+/**
+ * THE WAY TO THE NEXT PAGE, and it is three links rather than an island.
+ *
+ * Turning a page is a navigation: the address says which page, the server draws it, and Back
+ * goes back a page the way it does everywhere else. An island would have had to BUILD a row or
+ * a tile, and a row built in the browser is a second copy of the server's own drawing, drifting
+ * from it in silence. Three screens share this one, so they cannot disagree about what a pager
+ * looks like either.
+ *
+ * ⚠️ THE LINK CARRIES ITS OWN TAB. On every screen that has one, switching tabs is an attribute
+ * rather than a navigation, so the address can be sitting on one kind while somebody is looking
+ * at another. A pager that wrote only `page=` would turn the page of the wrong one.
+ *
+ * Nothing at all when there is one page, which is the usual case: a pager under a list of nine
+ * is an offer to go nowhere.
+ */
+export function pager(
+  t: { pagerPrev: string; pagerNext: string; pagerOf: string },
+  screen: string, tab: string, at: number, pages: number,
+): string {
+  if (pages <= 1) return ''
+  const href = (n: number) => `${screen}?tab=${tab}${n > 1 ? `&page=${n}` : ''}`
+  const step = (n: number, label: string, live: boolean) => live
+    ? `<a href="${escapeAttr(href(n))}" class="${buttonClass('secondary')}">${escapeHtml(label)}</a>`
+    // Drawn and dead rather than absent: a pager whose keys move as you reach the ends is a
+    // pair of buttons that will not stay under the pointer.
+    : `<span aria-disabled="true" class="${buttonClass('secondary')} pointer-events-none opacity-50">`
+      + `${escapeHtml(label)}</span>`
+  return `<nav class="flex items-center justify-center gap-3 pt-6 pb-2" data-pager="${escapeAttr(tab)}">`
+    + step(at - 1, t.pagerPrev, at > 1)
+    + `<span class="${META} tabular-nums">`
+    + `${escapeHtml(t.pagerOf.replace('{n}', String(at)).replace('{total}', String(pages)))}</span>`
+    + step(at + 1, t.pagerNext, at < pages)
+    + `</nav>`
 }

@@ -41,12 +41,26 @@ export async function newsletterView() {
  * It returns each address with its UNSUBSCRIBE TOKEN, which is a credential: anyone holding
  * one can take that reader off the list. This view goes to a client-bound payload.
  */
-export async function subscribersView() {
+/**
+ * How many people the list draws at once.
+ *
+ * A newsletter is the one list here that grows without anybody deciding to grow it: every
+ * sign-up adds a row, and a blog with twenty thousand readers drew twenty thousand rows and a
+ * second copy of each for the phone layout. The three counts above the table are the WHOLE list
+ * and are counted before the slice, because "1,240 confirmed" is the number the owner came for.
+ */
+export const PEOPLE_PAGE = 200
+
+export async function subscribersView(page = 1) {
   const [subscribers, stats] = await Promise.all([listSubscribers(), statsByEmail()])
   const counts = { confirmed: 0, pending: 0, unsubscribed: 0 }
   for (const s of subscribers) counts[s.status] += 1
+  const at = Math.max(1, Math.floor(page) || 1)
+  const shown = subscribers.slice((at - 1) * PEOPLE_PAGE, at * PEOPLE_PAGE)
   return {
-    subscribers: subscribers.map((s) => ({ ...s, stats: stats.get(s.email) ?? null })),
+    subscribers: shown.map((s) => ({ ...s, stats: stats.get(s.email) ?? null })),
     counts,
+    at,
+    pages: Math.max(1, Math.ceil(subscribers.length / PEOPLE_PAGE)),
   }
 }

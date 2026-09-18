@@ -50,7 +50,9 @@ const openRate = (s: Row['stats']): string | null =>
   s && s.broadcasts > 0 ? `${Math.round((s.opened / s.broadcasts) * 100)}%` : null
 
 
-export function peoplePanel(t: AdminStrings, lang: SiteLang, data: People, open: boolean): string {
+export function peoplePanel(
+  t: AdminStrings, lang: SiteLang, data: People, open: boolean, pagerHtml = '',
+): string {
   const { subscribers, counts } = data
   const n = (x: number): string => escapeHtml(formatCount(x, lang))
   const statusLabel: Record<string, string> = {
@@ -138,6 +140,7 @@ export function peoplePanel(t: AdminStrings, lang: SiteLang, data: People, open:
     + `<th class="w-12 px-2 py-2.5"></th></tr></thead>`
     + `<tbody>${subscribers.map(row).join('')}</tbody></table></div>`
     + `<ul class="admin-stagger sm:hidden">${subscribers.map(card).join('')}</ul>`
+    + pagerHtml
 
   const tools = `<div class="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-5 py-3 dark:border-neutral-800">`
     + `<input type="search" data-sub-search placeholder="${escapeAttr(t.nlSearchPlaceholder)}"`

@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## Unreleased
+
+The last two admin lists that drew their whole table. The library and the write column were
+paged in 2.2.12; these are the same shape, found by looking for the rest of them. The comments
+queue and the activity log were already capped at 200 and are untouched.
+
+- **The Trash draws 100 rows of the open kind**, with the same pager and the page in the
+  address. A single bulk delete is how this screen gets big. The counts beside the tabs stay the
+  whole kind, because "how many" is what the screen is opened for.
+- **The people list draws 200 subscribers.** A newsletter is the one list here that grows
+  without anybody deciding to grow it, and the screen drew every row plus a second copy of each
+  for the phone layout. The three counts above the table are still the whole list.
+- The pager itself moved into the shared admin kit, so the three screens that have one cannot
+  disagree about what it looks like. It needs no island: it is three links, and the browser is
+  the handler, which is now written down in the wiring guard's own list of reasons.
+
 ## 2026-09-19 · Quire Ink 2.2.12
 
 The AI assistant had been refusing every prompt on Google Gemini since 2.2.10, and the default

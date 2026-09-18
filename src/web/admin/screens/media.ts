@@ -17,9 +17,8 @@ import type { SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { SHEET_FOOT, buttonClass } from '@/admin-shared/kit'
-import { META } from '@/admin-shared/scale'
-import { pageHeader, sheet, sheetTop, tabs } from '@/web/admin/kit'
+import { SHEET_FOOT } from '@/admin-shared/kit'
+import { pageHeader, pager, sheet, sheetTop, tabs } from '@/web/admin/kit'
 import { mediaScreenView } from '@/web/admin/views-media'
 import { imageTools, imagesPanel } from '@/web/admin/screens/media-images'
 import { filesPanel, videosPanel } from '@/web/admin/screens/media-files'
@@ -30,38 +29,6 @@ type Kind = (typeof KINDS)[number]
 const openKind = (query: URLSearchParams): Kind => {
   const asked = query.get('tab')
   return KINDS.find((k) => k === asked) ?? 'images'
-}
-
-/**
- * THE WAY TO THE NEXT PAGE, and it is three links rather than an island.
- *
- * Turning a page is a navigation: the address says which page, the server draws it, and Back
- * goes back a page the way it does everywhere else. An island would have had to build a tile,
- * and a tile built in the browser is a second copy of `media-images.ts` drifting from it in
- * silence — the same rule the write column keeps.
- *
- * ⚠️ THE LINK CARRIES ITS OWN TAB. Switching tabs on this screen is an attribute and not a
- * navigation, so the address can be sitting on `?tab=files` while somebody is looking at the
- * pictures. A pager that only wrote `page=` would send them to page two of the wrong kind.
- *
- * Nothing at all when there is one page, which is the usual case: a pager under a grid of nine
- * is an offer to go nowhere.
- */
-function pager(t: AdminStrings, kind: Kind, at: number, pages: number): string {
-  if (pages <= 1) return ''
-  const href = (n: number) => `/admin/media?tab=${kind}${n > 1 ? `&page=${n}` : ''}`
-  const step = (n: number, label: string, live: boolean) => live
-    ? `<a href="${escapeAttr(href(n))}" class="${buttonClass('secondary')}">${escapeHtml(label)}</a>`
-    // Drawn and dead rather than absent: a pager whose keys move as you reach the ends is a
-    // pair of buttons that will not stay under the pointer.
-    : `<span aria-disabled="true" class="${buttonClass('secondary')} pointer-events-none opacity-50">`
-      + `${escapeHtml(label)}</span>`
-  return `<nav class="flex items-center justify-center gap-3 pt-6 pb-2" data-media-pager="${escapeAttr(kind)}">`
-    + step(at - 1, t.pagerPrev, at > 1)
-    + `<span class="${META} tabular-nums">`
-    + `${escapeHtml(t.pagerOf.replace('{n}', String(at)).replace('{total}', String(pages)))}</span>`
-    + step(at + 1, t.pagerNext, at < pages)
-    + `</nav>`
 }
 
 /**
@@ -110,9 +77,9 @@ export async function mediaScreen(settings: SiteSettings, query: URLSearchParams
       // where React put them with a portal. `hidden` when another kind is open: a tab that is
       // not on screen must not leave its tools in the visible row.
       sheetTop(strip + imageTools(t, lang, view.totals))
-      + imagesPanel(t, lang, view.images, open === 'images', pager(t, 'images', view.at.images, view.pages.images))
-      + videosPanel(t, lang, view.videos, open === 'videos', pager(t, 'videos', view.at.videos, view.pages.videos))
-      + filesPanel(t, lang, view.files, view.icons, open === 'files', pager(t, 'files', view.at.files, view.pages.files))
+      + imagesPanel(t, lang, view.images, open === 'images', pager(t, '/admin/media', 'images', view.at.images, view.pages.images))
+      + videosPanel(t, lang, view.videos, open === 'videos', pager(t, '/admin/media', 'videos', view.at.videos, view.pages.videos))
+      + filesPanel(t, lang, view.files, view.icons, open === 'files', pager(t, '/admin/media', 'files', view.at.files, view.pages.files))
       // The page's old intro sentence, demoted to the sheet's closing small print — a hint is
       // not a headline.
       + `<div class="${SHEET_FOOT}">${escapeHtml(t.libraryIntro)}</div>`,

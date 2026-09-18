@@ -17,7 +17,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { SHEET_FOOT, SHEET_TOOL_ON_CANVAS } from '@/admin-shared/kit'
-import { pageHeader, sheet, sheetTop, tabs } from '@/web/admin/kit'
+import { pageHeader, pager, sheet, sheetTop, tabs } from '@/web/admin/kit'
 import { newsletterView, subscribersView } from '@/web/admin/views-news'
 import { peoplePanel } from '@/web/admin/screens/newsletter-people'
 import { sendPanel, testPanel } from '@/web/admin/screens/newsletter-send'
@@ -51,7 +51,9 @@ function words(t: AdminStrings): string {
 export async function newsletterScreen(settings: SiteSettings, query: URLSearchParams): Promise<string> {
   const t = adminT(settings.language)
   const open = openTab(query)
-  const [letter, people] = await Promise.all([newsletterView(), subscribersView()])
+  const [letter, people] = await Promise.all([
+    newsletterView(), subscribersView(Number(query.get('page') ?? '1')),
+  ])
 
   const strip = tabs({
     items: [
@@ -76,7 +78,8 @@ export async function newsletterScreen(settings: SiteSettings, query: URLSearchP
     + ` data-lang="${escapeAttr(settings.language)}" data-nl-words="${words(t)}">`
     + pageHeader({ title: t.navNewsletter, actions: link })
     + sheet(sheetTop(strip) + warning
-      + peoplePanel(t, settings.language, people, open === 'people')
+      + peoplePanel(t, settings.language, people, open === 'people',
+        pager(t, '/admin/newsletter', 'people', people.at, people.pages))
       + sendPanel(t, letter.posts, open === 'send')
       + testPanel(t, open === 'test')
       + `<div class="${SHEET_FOOT}">${escapeHtml(t.nlPageHint)}</div>`)
