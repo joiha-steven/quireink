@@ -108,7 +108,7 @@ function islandNamed(stem: string): string {
 
 const RAIL_ENTRY_NAME = railEntryName()
 const RAIL_ENTRY = `/admin/assets/${RAIL_ENTRY_NAME}`
-const STYLES_NAME = `admin.${fingerprint('admin.css')}.css`
+export const STYLES_NAME = `admin.${fingerprint('admin.css')}.css`
 const STYLES = `/admin/assets/${STYLES_NAME}`
 
 /**
@@ -342,6 +342,19 @@ export function adminAsset(name: string): Asset | null {
   return ASSETS.get(name) ?? null
 }
 
+/**
+ * A sheet name from a PREVIOUS release: `admin.<fingerprint>.css`, but not this shell's.
+ *
+ * A tab left open across a release still holds the old shell, and what it asks for on the
+ * next screen is that shell's stylesheet. Until 2026-09-19 the answer was 404 and the admin
+ * drew with no stylesheet at all — the two wordmark shapes side by side among the rest of it,
+ * because the rule that picks between them (`#admin-rail .rail-mark`) was in the sheet that
+ * never arrived. The current sheet under the old name is the smaller wrong by far: styles one
+ * release ahead of the markup are a nudge out of place, a 404 is a bare page.
+ */
+export const staleSheet = (name: string): boolean =>
+  name !== STYLES_NAME && /^admin\.[a-z0-9]+\.css$/.test(name)
+
 export function handleAdminAsset(c: Context): Response {
   const name = c.req.path.replace('/admin/assets/', '')
   // ONE virtual name, the sheet's. The entry had one too and that was the bug: a module is
@@ -349,12 +362,14 @@ export function handleAdminAsset(c: Context): Response {
   // modules, and a chunk that imports the entry back gets a second copy of everything in it.
   // The bare `admin.css` still serves — a bookmark, or a shell an old tab is still holding —
   // and still revalidates, because only the fingerprinted URL promises the bytes cannot change.
-  const stored = name === STYLES_NAME ? 'admin.css' : name
+  const stale = staleSheet(name)
+  const stored = name === STYLES_NAME || stale ? 'admin.css' : name
   const asset = adminAsset(stored)
   if (!asset) return new Response('Not found', { status: 404 })
   // Every name the shell emits carries a hash: the bundler's on the entry and the chunks,
-  // ours on the sheet. Anything else is a bare name and must revalidate.
-  const immutable = stored !== name || /[-.][a-z0-9]{8,}\./.test(name)
+  // ours on the sheet. Anything else is a bare name and must revalidate — and so must a
+  // fingerprint from an earlier release, whose bytes have just changed under it.
+  const immutable = !stale && (stored !== name || /[-.][a-z0-9]{8,}\./.test(name))
   return new Response(asset.body, {
     headers: {
       'content-type': asset.type,
