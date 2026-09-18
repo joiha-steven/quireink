@@ -138,6 +138,26 @@ export async function submitSecondFactor(input: {
     return { status: 'rate-limited', retryAfter: Math.ceil(HOUR / 1000) }
   }
 
+  // ⚠️ AND THE SIX-DIGIT HALF NEEDS THE SAME PAIR, which it did not have. The block above is
+  // gated on `!looksLikeTotp`, so a code shaped like a TOTP was checked with nothing counted
+  // before it and nothing charged after it. The only cost was `MAX_TOTP_ATTEMPTS` against one
+  // ticket, and a fresh ticket is free: the password step charges its bucket on failure only and
+  // CLEARS the per-user one on success, so a caller who knows the password can mint tickets for
+  // ever. Measured against the real app from one address, sequentially: 645 guesses in 8 seconds,
+  // no 429, the account not locked after it. At ~290,000 guesses an hour against the three codes
+  // that are live at any instant, that is an even chance of being inside within the hour, on the
+  // one account there is. `docs/spec/06-auth.md` states the rule this restores.
+  //
+  // Looser than the recovery pair because a code costs no argon2 and a real owner fumbles: a
+  // phone whose clock has drifted can burn several in a row. Fifteen an hour per account still
+  // leaves an attacker needing longer than the sun has left.
+  const totpKey = `totp:ip:${input.ip}`
+  const totpUserKey = `totp:user:${ticket.userId}`
+  if (looksLikeTotp && (overLimit(totpKey, 30, FIFTEEN_MIN) || overLimit(totpUserKey, 15, FIFTEEN_MIN))) {
+    logAuthEvent('auth.totp.failed', 'rate limited')
+    return { status: 'rate-limited', retryAfter: Math.ceil(FIFTEEN_MIN / 1000) }
+  }
+
   const state = totpStateFor(ticket.userId)
   let matched = false
   let usedRecovery = false
@@ -150,6 +170,8 @@ export async function submitSecondFactor(input: {
       setTotpLastStep(ticket.userId, result.step)
       matched = true
     } else {
+      recordHit(totpKey, FIFTEEN_MIN)
+      recordHit(totpUserKey, FIFTEEN_MIN)
       logAuthEvent('auth.totp.failed')
     }
   } else if (!looksLikeTotp) {
@@ -172,6 +194,9 @@ export async function submitSecondFactor(input: {
   }
 
   pending.delete(input.ticket)
+  // The second factor was right, so whatever came before it was this person mistyping. Same
+  // reasoning as `clearLimit(userKey)` after the password, and the same line.
+  clearLimit(totpUserKey)
   const session = createSession(ticket.userId, { ip: input.ip, userAgent: input.userAgent })
   if (usedRecovery) logAuthEvent('auth.recovery.used')
   logAuthEvent('auth.login', usedRecovery ? 'via recovery code' : 'via totp')

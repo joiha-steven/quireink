@@ -311,3 +311,65 @@ describe('the console rescue', () => {
       .toBe('need-enrolment')
   })
 })
+
+/**
+ * ⚠️ A FRESH TICKET USED TO MAKE THE SECOND FACTOR FREE.
+ *
+ * `MAX_TOTP_ATTEMPTS` destroys a ticket after five wrong codes, and that is all there was: the
+ * rate-limit block above the check is gated on the code NOT looking like a TOTP, so a six-digit
+ * guess was never counted and never charged. Getting another ticket costs one correct password,
+ * which the attacker in this threat model has, and the password step CLEARS its per-user bucket
+ * on success. Measured against the real app from one address, sequentially: 645 guesses in 8
+ * seconds, no 429, the account not locked afterwards. Three codes are live at any instant with
+ * the drift window, so that is an even chance of being inside within the hour.
+ *
+ * What this pins is that the guesses are counted ACROSS tickets. Counting them within one is the
+ * thing that already worked and is not the hole.
+ */
+describe('the second factor is bounded across tickets, not just within one', () => {
+  const wrongCode = (now: number) => {
+    const right = currentCode(now)
+    // Any six digits that are not the live one, and not a neighbouring step either.
+    for (let n = 0; n < 1000; n++) {
+      const guess = String((Number(right) + 1 + n) % 1_000_000).padStart(6, '0')
+      if (guess !== right && guess !== codeForStep(secret, stepAt(now) - 1) && guess !== codeForStep(secret, stepAt(now) + 1)) return guess
+    }
+    return '000000'
+  }
+
+  it('stops counting out fresh tickets after the per-account allowance', async () => {
+    const ip = freshIp()
+    const now = Date.now()
+    let limited = false
+    let guesses = 0
+    // Ten tickets of five guesses each is fifty: far past any allowance a fumbling owner needs,
+    // and nothing like the hundreds a real attempt makes in a second.
+    for (let ticketNo = 0; ticketNo < 10 && !limited; ticketNo++) {
+      const pw = await submitPassword({ username: 'owner', password: PASSWORD, ip, now })
+      if (pw.status !== 'need-2fa') break
+      for (let i = 0; i < 5 && !limited; i++) {
+        const out = await submitSecondFactor({ ticket: pw.ticket, code: wrongCode(now), ip, now })
+        guesses += 1
+        if (out.status === 'rate-limited') limited = true
+        if (out.status === 'restart') break
+      }
+    }
+    expect(`${limited ? 'stopped' : 'NEVER STOPPED'} after ${guesses} guesses`)
+      .toBe(`stopped after ${guesses} guesses`)
+    expect(guesses).toBeLessThan(40)
+  })
+
+  it('lets an owner whose phone has drifted fumble a few and still get in', async () => {
+    const ip = freshIp()
+    const now = Date.now()
+    const first = await submitPassword({ username: 'owner', password: PASSWORD, ip, now })
+    expect(first.status).toBe('need-2fa')
+    if (first.status !== 'need-2fa') return
+    for (let i = 0; i < 3; i++) {
+      const out = await submitSecondFactor({ ticket: first.ticket, code: wrongCode(now), ip, now })
+      expect(out.status).toBe('rejected')
+    }
+    const good = await submitSecondFactor({ ticket: first.ticket, code: currentCode(now), ip, now })
+    expect(good.status).toBe('ok')
+  })
+})

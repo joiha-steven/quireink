@@ -1,5 +1,29 @@
 import { describe, it, expect } from '@/test/vitest'
+import { beforeAll, afterAll } from 'bun:test'
+import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { prepareFootnotes, applyFootnotes } from '@/render/footnotes'
+import { renderPostContent } from '@/render/post-content'
+
+// A DOM, because the question below is what a BROWSER makes of the string, and the string is
+// the one thing that looks innocent.
+//
+// Reached through `globalThis` and typed here rather than by `lib: dom`: this is the reader's
+// half of the tree, which the root project compiles WITHOUT a DOM on purpose, and one test is
+// not a reason to give every file in `src/render` a `document` it must never use.
+beforeAll(() => GlobalRegistrator.register())
+afterAll(() => GlobalRegistrator.unregister())
+
+type Attr = { name: string }
+type El = { tagName: string; attributes: Attr[] }
+type Doc = { body: { innerHTML: string }; querySelectorAll: (sel: string) => El[] }
+const dom = (): Doc => (globalThis as unknown as { document: Doc }).document
+
+/** Every `on*` attribute a browser would end up honouring, whatever the string looked like. */
+function handlersIn(html: string): string[] {
+  dom().body.innerHTML = html
+  return [...dom().querySelectorAll('*')]
+    .flatMap((el) => [...el.attributes].filter((a) => /^on/i.test(a.name)).map((a) => `${el.tagName}.${a.name}`))
+}
 
 describe('prepareFootnotes', () => {
   it('extracts a definition and numbers its reference', () => {
@@ -48,5 +72,45 @@ describe('applyFootnotes', () => {
     expect(html).toContain('<li id="fn-s">')
     expect(html).toContain('<strong>bold</strong>') // definition markdown rendered
     expect(html).toContain('href="#fnref-s"') // back-reference
+  })
+})
+
+/**
+ * ⚠️ THE ID IS THE AUTHOR'S TEXT, AND IT GOES INTO FOUR ATTRIBUTES.
+ *
+ * `prepareFootnotes` accepts everything but a bracket and a space, quotes and slashes included,
+ * so `[^n"/onmouseover="alert(1)]` closed the `id="` attribute and opened one of its own. Parsed
+ * into a DOM, the `<li>` came back carrying a real `onmouseover` handler, on the reader's page
+ * and on the owner's preview. The slash is what removes the need for a space: HTML5 reads a
+ * slash after a quoted value as an attribute separator.
+ *
+ * This is the one rendering path that does not go through the engine, and it broke the sentence
+ * `post-content.ts` opens with: raw HTML is escaped and shown, never rendered. Anything that can
+ * write a post it did not author reaches it — the MCP door, the two importers, the assistant.
+ *
+ * ASSERTED AGAINST A PARSED DOM, not against the string. The string looks wrong in a way that is
+ * easy to talk yourself out of: there is no space before `onmouseover`, so a regular expression
+ * for ` on\w+=` says it is fine. Only a parser answers the question.
+ */
+describe('a footnote id cannot invent an attribute', () => {
+  const HOSTILE = ['n"/onmouseover="alert(1)', 'p"><script>alert(1)</script>', "q'/onfocus='z", 'r"onload="s']
+  // Ids a real blog writes. Narrowing the charset to `[\w-]` would have shut the hole and taken
+  // these with it, which is why the fix escapes instead.
+  const ORDINARY = ['ghi-chú', 'note_1', 'a&b', 'ссылка', '注']
+
+  it('gives the page no handler and no script, whatever the id says', async () => {
+    for (const id of [...HOSTILE, ...ORDINARY]) {
+      const html = await renderPostContent({ markdown: `Claim[^${id}].\n\n[^${id}]: the note.\n` })
+      const handlers = handlersIn(html)
+      expect(`${id}: ${handlers.join(',')} scripts=${dom().querySelectorAll('script').length}`)
+        .toBe(`${id}:  scripts=0`)
+    }
+  })
+
+  it('still makes a footnote out of an id that is not English', async () => {
+    for (const id of ORDINARY) {
+      const html = await renderPostContent({ markdown: `Claim[^${id}].\n\n[^${id}]: the note.\n` })
+      expect(`${id}: ${html.includes('class="fnref"') ? 'linked' : 'LOST'}`).toBe(`${id}: linked`)
+    }
   })
 })
