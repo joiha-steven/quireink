@@ -81,7 +81,16 @@ function topRow(t: AdminStrings, open: Tab): string {
     // The save, its receipt and the way past the tabs travel as ONE group, and the group is what
     // takes the free space rather than a spacer between the parts: as three loose items on a
     // wrapping row, 375px broke them into three lines with the key alone at the right edge.
-    + `<div class="flex min-w-0 flex-1 items-center justify-end gap-3">`
+    //
+    // ⚠️ NO `min-w-0` HERE, AND THAT IS THE WHOLE POINT OF THE WRAP. With it the group may be
+    // laid out narrower than the key and the search box inside it, which do not shrink — so
+    // instead of the row wrapping, the group stayed on line one and its contents printed ON TOP
+    // OF THE TABS. Measured at 1400px on 2026-09-19: German and Portuguese buried their last tab
+    // ("Konto", "Conta"), French and Russian buried two each. Seven tabs is 668px of strip in
+    // Vietnamese and 813 in Russian, against a key and a 208px box that are the same width in
+    // every language. Without it the group is never narrower than what it holds, `flex-wrap`
+    // does what it is there for, and the whole group drops to a second line.
+    + `<div class="flex flex-1 items-center justify-end gap-3">`
     // The receipt says WHEN, not "saved!": a screen open all afternoon and one saved thirty
     // seconds ago read identically otherwise. It clears the moment the form is dirty again.
     + `<span class="shrink-0 text-xs text-neutral-500 dark:text-neutral-400" data-settings-said></span>`

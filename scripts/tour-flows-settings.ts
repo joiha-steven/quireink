@@ -366,4 +366,33 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       if (unnamed.length) return unnamed.length + ' unnamed mark(s) still open a card title'
       return 'ok card ' + cs + '/' + c.fontWeight + ', group ' + gs + ' uppercase, ' + marks.length + ' mark(s)'
     })()`, 900))
+
+  // ITEM 16: THE HEADER ROW SURVIVES A LANGUAGE THAT IS NOT ENGLISH. Seven tabs, the save key
+  // and a 208px search box share one wrapping row, and the tour runs in ONE language — so the
+  // row was only measured at the width English needs, and four of eleven languages shipped
+  // with the key printed ON TOP OF THE TABS (2026-09-19: de and pt buried their last tab, fr
+  // and ru two each; the strip is 668px in Vietnamese and 813 in Russian).
+  //
+  // It stretches the labels instead of switching language, which would need a reload.
+  // NOTE: this body is a template literal. No backticks.
+  flow('admin: the settings header holds when the labels grow', () => expect('/admin/settings', `
+    (() => {
+      const bar = document.querySelector('[data-settings-tabs]')
+      const save = document.querySelector('[data-settings-save]')
+      if (!bar || !save) return 'no tab strip or no save key'
+      const tabs = Array.from(bar.querySelectorAll('button, a, [role=tab]'))
+      const was = tabs.map((t) => t.textContent)
+      const pad = (s) => { const n = Math.ceil(s.length * 0.35); return s + ' ' + 'xx'.repeat(Math.ceil(n / 2)).slice(0, n) }
+      tabs.forEach((t) => { t.textContent = pad(t.textContent) })
+      const sr = save.getBoundingClientRect()
+      const over = tabs.filter((t) => {
+        const r = t.getBoundingClientRect()
+        return r.right > sr.left + 1 && r.left < sr.right - 1 && r.bottom > sr.top + 1 && r.top < sr.bottom - 1
+      }).map((t) => t.textContent.trim())
+      const grew = Math.round(bar.scrollWidth)
+      tabs.forEach((t, i) => { t.textContent = was[i] })
+      return over.length === 0
+        ? 'ok strip grew to ' + grew + 'px and the key moved off the row instead of onto the tabs'
+        : over.length + ' tab(s) under the save key: ' + over.slice(0, 2).join(', ')
+    })()`, 900))
 }
