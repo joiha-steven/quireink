@@ -181,3 +181,78 @@ describe('machine-readable surfaces', () => {
     expect(xml).not.toContain('<fight>')
   })
 })
+
+describe('the characters XML has no spelling for', () => {
+  // ⚠️ A CONFORMING READER REJECTS THE DOCUMENT, NOT THE ITEM. XML 1.0 admits tab, newline and
+  // carriage return and nothing else below ` `; a vertical tab, a form feed, an escape, a
+  // NUL, half a surrogate pair and `￾` are not characters it can carry at all, and no
+  // amount of escaping makes them legal. One post's title stops every subscriber's reader.
+  //
+  // The owner sees nothing: HTML takes the same character without complaint, so the post's own
+  // page is perfect. Measured before the fix: eight of them in `/feed.xml` from four posts.
+  // They arrive by import, over MCP, and off a clipboard — a word processor and a terminal both
+  // produce them.
+  const ch = (c: number): string => String.fromCharCode(c)
+
+  /** Exactly the set XML 1.0 forbids, counted by CHARACTER: a surrogate pair is one of them. */
+  const forbidden = (text: string): number[] => {
+    const bad: number[] = []
+    for (let i = 0; i < text.length; i++) {
+      const c = text.charCodeAt(i)
+      if (c >= 0xd800 && c <= 0xdbff) {
+        const next = text.charCodeAt(i + 1)
+        if (next >= 0xdc00 && next <= 0xdfff) { i += 1; continue }
+        bad.push(c)
+        continue
+      }
+      const ok = c === 0x9 || c === 0xa || c === 0xd
+        || (c >= 0x20 && c <= 0xd7ff) || (c >= 0xe000 && c <= 0xfffd)
+      if (!ok) bad.push(c)
+    }
+    return bad
+  }
+
+  it('the counter-test: this checker reports what it is looking for', () => {
+    // Without this, the three below pass on a checker that finds nothing anywhere — which is
+    // what the first version did, by calling every emoji illegal and then being loosened.
+    expect(forbidden(`a${ch(11)}b`)).toEqual([11])
+    expect(forbidden(`a${ch(0)}b`)).toEqual([0])
+    expect(forbidden(`a${ch(0xd800)}b`)).toEqual([0xd800])
+    expect(forbidden('a\tb\nc\rd')).toEqual([])
+    expect(forbidden('Chào 👋🏽 書体')).toEqual([])
+  })
+
+  it('are gone from every feed, with the words either side still apart', async () => {
+    await saveSettings({ title: `Blog${ch(12)}cua toi`, siteUrl: 'https://example.com' })
+    await savePost({
+      title: `Tieu de${ch(11)}gay`, content: 'body', status: 'published', date: PAST,
+      excerpt: `Tom tat${ch(27)}gay`, categories: ['Muc'], tags: ['The'],
+    })
+    await savePost({
+      title: `Nua cap ${ch(0xd800)} lac`, content: 'body', status: 'published', date: PAST,
+      excerpt: `Va ${ch(0xdc00)} nua`, categories: ['Muc'],
+    })
+    for (const url of ['/feed.xml', '/sitemap.xml', '/category/muc/feed.xml']) {
+      const text = await (await get(url)).text()
+      expect({ url, bad: forbidden(text) }).toEqual({ url, bad: [] })
+    }
+    // A space rather than a deletion, so the break the character stood for is still a break.
+    expect(await (await get('/feed.xml')).text()).toContain('Tieu de gay')
+  })
+
+  it('leaves everything XML does allow exactly alone', async () => {
+    await saveSettings({ title: 'Blog', siteUrl: 'https://example.com' })
+    await savePost({
+      title: 'Chào 👋🏽 書体 & "trích" <thẻ>', content: 'body', status: 'published', date: PAST,
+      excerpt: 'Dòng một\nDòng hai\tcách',
+    })
+    const text = await (await get('/feed.xml')).text()
+    // An emoji is a surrogate PAIR and legal; CJK is legal; the five entities are escaped and
+    // not stripped. Nothing above is touched by the filter.
+    expect(text).toContain('Chào 👋🏽 書体 &amp; &quot;trích&quot; &lt;thẻ&gt;')
+    // Tab and newline ARE legal in XML and the filter leaves them — which no field here can
+    // show, because `clampExcerpt` collapses an excerpt's whitespace at save time and every
+    // other field is a single line by construction. The counter-test above holds that half.
+    expect(text).toContain('Dòng một Dòng hai cách')
+  })
+})

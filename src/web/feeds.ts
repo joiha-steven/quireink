@@ -10,8 +10,29 @@ import { termSlug } from '@/content/taxonomy'
 import { seriesSlug } from '@/content/series-order'
 import { clampExcerpt } from '@/utils'
 
+/**
+ * ⚠️ CHARACTERS XML FORBIDS OUTRIGHT, which no escape can rescue.
+ *
+ * XML 1.0 admits tab, newline, carriage return and then nothing below `\u0020`. Everything
+ * else in that range — a vertical tab, a form feed, an escape, a NUL — is not a character the
+ * format has a spelling for, and neither is half a surrogate pair or `\uFFFE`. A document
+ * holding one is rejected WHOLE by a conforming reader: not the item, the feed.
+ *
+ * So one post whose title carries a stray `\u000B` stops every subscriber's reader updating,
+ * and the owner sees nothing wrong — HTML takes the same character without complaint, so the
+ * post's own page looks perfect. Measured 2026-09-19: eight such characters in `/feed.xml`
+ * from four posts. They arrive by import (old exports and anything pasted out of a word
+ * processor carry them), over MCP, and off a clipboard.
+ *
+ * A SPACE, not a deletion: `\u000B` stands where a break was meant, and dropping it joins the
+ * two words either side of it into one.
+ */
+// eslint-disable-next-line no-control-regex
+const XML_FORBIDS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g
+
 const escapeXml = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  s.replace(XML_FORBIDS, ' ')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&apos;')
 
 const rfc822 = (iso: string) => new Date(iso).toUTCString()
