@@ -46,6 +46,35 @@ describe('saveRedirect', () => {
     await expect(saveRedirect({ source: '/a', destination: '/a' })).rejects.toBeInstanceOf(RedirectInputError)
     expect(await getRedirects()).toHaveLength(0)
   })
+
+  it('rejects a rule that would lead back to its own source', async () => {
+    // ⚠️ THE SELF-REDIRECT CHECK ABOVE IS THE SAME REFUSAL ONE STEP SHORT. Two rules pointing
+    // at each other were accepted in silence and a visitor walked `/a` to `/b` to `/a` until
+    // the browser gave up — measured at twelve hops before this refused. The cost outlives the
+    // mistake: these are 301s, and a browser caches a permanent redirect hard, so the loop goes
+    // on running for a reader who met it once after the owner has already fixed the rule.
+    await saveRedirect({ source: '/a', destination: '/b' })
+    await expect(saveRedirect({ source: '/b', destination: '/a' })).rejects.toBeInstanceOf(RedirectInputError)
+
+    // A ring of three, which reasoning about pairs alone would let through.
+    await saveRedirect({ source: '/x', destination: '/y' })
+    await saveRedirect({ source: '/y', destination: '/z' })
+    await expect(saveRedirect({ source: '/z', destination: '/x' })).rejects.toBeInstanceOf(RedirectInputError)
+
+    // Replacing a rule is judged on what it WOULD leave behind, not on what is there now.
+    await expect(saveRedirect({ source: '/a', destination: '/b' })).resolves.toBeUndefined()
+    expect((await getRedirects()).map((r) => `${r.source}->${r.destination}`).sort())
+      .toEqual(['/a->/b', '/x->/y', '/y->/z'])
+  })
+
+  it('still allows a chain that ends somewhere', async () => {
+    // The counter-test: a rule that refused every chain would pass the one above too.
+    await saveRedirect({ source: '/cu', destination: '/moi' })
+    await expect(saveRedirect({ source: '/moi', destination: '/dich' })).resolves.toBeUndefined()
+    await expect(saveRedirect({ source: '/ra-ngoai', destination: 'https://example.com/x' }))
+      .resolves.toBeUndefined()
+    expect(await getRedirects()).toHaveLength(3)
+  })
 })
 
 describe('removal', () => {

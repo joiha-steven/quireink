@@ -64,6 +64,9 @@ export function findRedirect(path: string): Redirect | null {
 
 export class RedirectInputError extends Error {}
 
+/** How far a save looks down the chain before deciding a ring is not its doing. */
+const MAX_CHAIN_HOPS = 10
+
 // Create/replace a redirect (upsert by source). Normalizes + validates; a self-
 // redirect (source === destination) is rejected as a no-op loop.
 export async function saveRedirect(input: {
@@ -86,6 +89,25 @@ export async function saveRedirect(input: {
   const sourceSlug = source.slice(1)
   if (sourceSlug && !sourceSlug.includes('/') && liveSlugTaken(sourceSlug)) {
     throw new RedirectInputError(`live_content: ${source} is a post or page`)
+  }
+  // ⚠️ AND A LOOP IS THE SAME REFUSAL ONE STEP FURTHER. `source === destination` above catches
+  // the rule that points at itself; two rules pointing at each other were accepted in silence,
+  // and a visitor then walked `/a` to `/b` to `/a` until the browser gave up. The cost outlives
+  // the mistake, because these are 301s: a browser caches a permanent redirect hard, so the
+  // loop keeps running for readers who met it once, after the owner has already fixed the rule.
+  //
+  // Walked rather than reasoned about, so a three-rule ring is caught as surely as a pair. The
+  // hop cap stops this being a walk over the whole table; a chain longer than that which does
+  // not return here is somebody else's rule and not this one's business.
+  if (destination.startsWith('/')) {
+    let at = destination
+    for (let hop = 0; hop < MAX_CHAIN_HOPS && at !== ''; hop++) {
+      if (at === source) {
+        throw new RedirectInputError(`loop: ${source} would lead back to itself`)
+      }
+      const next = findRedirect(at)
+      at = next !== null && next.destination.startsWith('/') ? next.destination : ''
+    }
   }
   run(
     `insert into redirects (source, destination, permanent, created_at)
