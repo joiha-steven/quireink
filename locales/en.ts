@@ -74,6 +74,7 @@ const en = {
   // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
   // and the word before a clip's source.
   notesTitle: 'Notes',
+  alsoIn: 'Also in',
   notesMeta: 'Notes and clippings kept on {site}.',
   notesEmpty: 'No notes yet.',
   noteSourcePrefix: 'From',

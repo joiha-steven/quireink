@@ -5,6 +5,23 @@
 What `/` serves: the post list, a chosen page, or the composed front page. Its own file, both
 because it is long and because it is the one feature somebody installing Quire Ink reads before
 they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
+## The language a piece is written in — ADR 0056, `src/content/translations.ts`
+
+- **Two columns, on posts and pages:** `lang` and `tr_group`. `lang` NULL means *nobody has
+  said*, which is not the same fact as *the site's language* — only a piece that NAMES its
+  language joins an hreflang pair, so a blog that has never touched this advertises nothing.
+- **What it changes on the page:** `<html lang>` (hyphenation, quote marks, the CJK fallback
+  face, and the voice a screen reader reads in), the `hreflang` set, the sitemap's alternates,
+  and one line under the title with links to the other languages.
+- **The switcher's label is in the PIECE's language**, and every link carries `lang` as well as
+  `hreflang` — a screen reader in a Vietnamese document pronounces "English" as Vietnamese
+  otherwise, which is the one way a switcher is worse than none. The rest of the chrome stays in
+  `settings.language`; ADR 0056 says why that stops there.
+- **In the editor** (Attributes → Language, Translation group): a select with *Same as the blog*
+  first, and a text field offering the groups already in use. Under it, the group's current
+  members — drafts included — so a typo in the name shows as an empty line rather than as
+  nothing at all.
+
 ## URL redirects — `src/server/redirects.ts`, Admin → Settings → Server & connections
 
 - **What:** owner-managed 301 (permanent) / 302 (temporary) redirects, plus an automatic

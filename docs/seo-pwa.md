@@ -36,6 +36,20 @@
   **`escapeXml` sweeps the characters XML forbids; the JSON builder does not and must not** —
   JSON forbids none of them, `JSON.stringify` escapes a lone surrogate since ES2019, and a
   sweep here would make the two feeds disagree about what the owner actually wrote.
+- **hreflang, from one rule** ([ADR 0056](./decisions/0056-a-piece-names-its-own-language.md),
+  `src/content/translations.ts`). A post or page can name the language it is written in and a
+  group its translations share; `groupsOf` turns those two columns into the alternate set, and
+  BOTH surfaces read it — `<link rel="alternate">` in the article's head and `<xhtml:link>` in
+  the sitemap entry. Two documents claiming different sets for one URL is a disagreement a
+  crawler resolves by believing neither.
+  - **Every member is in its own set.** The classic fault is a set that names only the others;
+    an asymmetric set may be ignored whole.
+  - **`x-default` goes to the piece in the site's own language**, and to the first otherwise.
+  - **A group with two pieces in one language is dropped**, not deduped: the piece that lost the
+    tie would publish a set it is not in.
+  - **A draft or a scheduled translation is never in it.** Both lists are the public ones.
+  - **The `xhtml` namespace is declared only when an entry used it**, the same rule the image
+    namespace already follows.
 - **A feed per archive** — `/category/:slug/feed.xml`, `/tag/:slug/feed.xml` and
   `/series/:slug/feed.xml`, in `src/web/term-routes.ts` rather than beside the four above,
   because a term feed cannot be built until the term is resolved and that is what that file

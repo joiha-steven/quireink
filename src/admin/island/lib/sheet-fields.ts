@@ -52,6 +52,18 @@ function wirePlain(root: HTMLElement, draft: SheetDraft, edit: Edit): void {
       continue
     }
     if (node instanceof HTMLInputElement && node.dataset.dateBox !== undefined) continue
+    // ⚠️ A SELECT IS NOT AN INPUT, and until 2026-09-19 this loop only knew the two below. The
+    // panel had never held one, so the gap was latent: the first select drawn on it — the
+    // piece's language (ADR 0056) — carried its `data-k`, looked exactly right, and saved
+    // nothing, because nothing was listening. `change`, not `input`: a keyboard walking a
+    // closed select fires `input` on every option it passes over, so an `input` listener would
+    // write six languages on the way to the seventh.
+    if (node instanceof HTMLSelectElement) {
+      node.addEventListener('change', () => {
+        edit({ [key]: node.value } as Partial<SheetDraft>)
+      })
+      continue
+    }
     if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
       const numeric = node instanceof HTMLInputElement && node.type === 'number'
       node.addEventListener('input', () => {

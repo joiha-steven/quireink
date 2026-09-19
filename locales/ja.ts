@@ -74,6 +74,7 @@ const ja = {
   // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
   // and the word before a clip's source.
   notesTitle: 'ノート',
+  alsoIn: '他の言語',
   notesMeta: '{site} に残したノートと抜き書き。',
   notesEmpty: 'まだノートはありません。',
   noteSourcePrefix: '出典',

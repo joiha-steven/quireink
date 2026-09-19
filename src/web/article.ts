@@ -19,18 +19,18 @@ import { collapseBlob } from '@/media/blob'
 import { renderPostContent } from '@/render/post-content'
 import type { ImageDims, ReadyOriginals } from '@/render/figures'
 import { extractHeadings } from '@/utils'
+import { langOf, siblingsOf } from '@/content/translations'
+import { articleHead } from '@/web/article-head'
 import { TOC_ANCHORS } from '@/render/toc'
 import { menuBlock } from '@/web/sidebar'
 import { termSlug } from '@/content/taxonomy'
 import { formatCount, formatDate, t } from '@/i18n/i18n'
-import { PUBLIC_SHEET, articleScripts } from '@/web/assets'
+import { articleScripts } from '@/web/assets'
 import { articleLabels } from '@/web/article-labels'
-import { ogImageUrl } from '@/render/og'
 import { isPublicallyVisible, clampExcerpt, minutesFor, toPlainText, wordCount } from '@/utils'
 import { renderDocument, pageStyles } from '@/web/layout'
 import { articleBandCss } from '@/render/rail-css'
-import { blogPostingSchema } from '@/render/schema'
-import { postInfoPanel, termLinks, bookToggle } from '@/web/post-info'
+import { languageLine, postInfoPanel, termLinks, bookToggle } from '@/web/post-info'
 
 import { escapeAttr, escapeHtml } from '@/utils'
 
@@ -44,9 +44,6 @@ import { escapeAttr, escapeHtml } from '@/utils'
  *  which is over the wall by exactly the punctuation that says it was cut. */
 const META_DESC_MAX = 157
 
-/** How much of a post the share card carries: six lines at the card's body size. A card is
- *  read whole, so it is not bound by where a search result stops. */
-const OG_DESC_MAX = 320
 
 /**
  * Media facts the renderer needs: which originals have responsive variants, and the
@@ -66,6 +63,8 @@ async function mediaFacts(): Promise<{ ready: ReadyOriginals; dims: ImageDims }>
 }
 
 // `canonicalPath`: the address this answers at when that is not its own slug (`home-mode.ts`).
+
+
 export async function renderArticle(slug: string, canonicalPath?: string): Promise<string | null> {
   const settings = await getSettings()
   const s = t(settings.language)
@@ -85,7 +84,22 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     markdown: item.content, readyOriginals: ready, imageDims: dims,
   })
 
-  let header = `<header><h1 class="reading-font fs-h1 font-semibold">${escapeHtml(item.title)}</h1></header>`
+  // The other languages this piece exists in, and the line a reader presses. Read once, used
+  // by both headers below and by `articleHead` further down.
+  const selfPath = canonicalPath ?? `/${item.slug}`
+  const siblings = await siblingsOf(item, settings)
+  const pieceLang = langOf(item, settings.language)
+  // ⚠️ THE LABEL IS IN THE PIECE'S LANGUAGE, not the site's. This line sits in a document
+  // whose `<html lang>` is the piece's, it is read by whoever is reading that piece, and
+  // "Cũng có bằng English" under an English headline is wrong for both of them.
+  //
+  // The rest of the chrome around it — the date, the reading time, the byline — is still the
+  // SITE's language, because making a whole page follow its piece is a different feature from
+  // this one (ADR 0056 says so in as many words) and half of it would be worse than neither.
+  // What this line buys is the one sentence whose only reader is the reader of this piece.
+  const langs = languageLine(siblings, t(pieceLang).alsoIn)
+
+  let header = `<header><h1 class="reading-font fs-h1 font-semibold">${escapeHtml(item.title)}</h1>${langs}</header>`
   // The post's own picture, above the body. '' unless the owner turned a hero on AND this
   // post has an image — a page never has one, which is why it is set inside the post branch.
   let hero = ''
@@ -141,7 +155,7 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
 <h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtml(item.title)}</h1>${
       // Standfirst: the excerpt, so a long read opens on a sentence rather than a wall.
       features.deck && post.excerpt ? `
-<p class="deck">${escapeHtml(post.excerpt)}</p>` : ''}
+<p class="deck">${escapeHtml(post.excerpt)}</p>` : ''}${langs}
 </header>`
 
     // The series card. Three things the port dropped, each of which the data and the locale
@@ -339,41 +353,10 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   const site = resolveSiteUrl(settings)
   return renderDocument(
     settings,
-    {
-      title: `${post?.metaTitle || item.title} · ${settings.title}`,
-      description,
-      canonical: site ? `${site}${canonicalPath ?? `/${item.slug}`}` : undefined,
-      // Absolute, always: `resolveSiteUrl` falls back to SITE_URL and then to localhost,
-      // and a relative og:image is ignored by every scraper.
-      image: ogImageUrl(settings, site, {
-        title: post?.metaTitle || item.title,
-        featuredImage: post?.featuredImage,
-        // The CARD's description, which is not the search snippet and should not be capped
-        // like one. `description` above is bounded by META_DESC_MAX (157) because a
-        // meta description longer than that is truncated by the engine anyway; the card has
-        // six lines of its own to fill, and a share preview that stops mid-thought after two
-        // of them is the reason it looked thin. An AUTHORED meta description still wins --
-        // those are words somebody chose -- and only the derived case runs longer.
-        desc: post ? clampExcerpt(post.metaDescription || plainBody(), OG_DESC_MAX) : undefined,
-        date: post ? formatDate(post.date, settings.language, settings.timezone) : undefined,
-      }),
-      ogType: post ? 'article' : 'website',
-      // Only a POST, and only when the owner has the setting on. A page (About, Colophon)
-      // gets none: a `WebPage` object restating the title and the canonical tells a crawler
-      // nothing the tags beside it did not already say.
-      jsonLd: post && settings.seo.autoSchema
-        ? blogPostingSchema(post, settings, site, {
-            description,
-            // The same card the OG tags point at, so the two never disagree about what the
-            // picture for this post is.
-            image: ogImageUrl(settings, site, {
-              title: post.metaTitle || item.title,
-              featuredImage: post.featuredImage,
-            }),
-          }) ?? undefined
-        : undefined,
-      stylesheet: PUBLIC_SHEET,
-    },
+    articleHead({
+      settings, site, item, post, canonicalPath, description, plainBody,
+      selfPath, pieceLang, siblings,
+    }),
     pageStyles(settings, toc ? articleBandCss(settings.contentWidth) : ''),
     // `book-text` is the owner's book-typography switch: indented paragraphs, a tighter
     // lead between them, justified with hyphens once the column is wide enough. It sits on

@@ -74,6 +74,7 @@ const vi = {
   // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
   // and the word before a clip's source.
   notesTitle: 'Sổ tay',
+  alsoIn: 'Cũng có bằng',
   notesMeta: 'Ghi chú và trích dẫn giữ lại trên {site}.',
   notesEmpty: 'Chưa có ghi chú nào.',
   noteSourcePrefix: 'Từ',

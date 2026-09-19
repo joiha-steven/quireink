@@ -16,6 +16,8 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { buttonClass, OVERLAY_LIFT } from '@/admin-shared/kit'
 import { textArea, textField } from '@/web/admin/fields'
 import { chipField, fieldNote, pickField, pictureField, statusPair, typedDate } from './sheet-fields'
+import { plainPick } from '@/web/admin/fields-pick'
+import { SITE_LANGS } from '@/locales/langs'
 
 export type SheetKind = 'post' | 'page' | 'note'
 
@@ -38,11 +40,47 @@ export type PanelPiece = {
   sourceUrl: string
   sourceTitle: string
   quote: string
+  /** '' = the site's language (ADR 0056). */
+  lang: string
+  translationGroup: string
+  /** The group's other members, already worded: `English · Tiếng Việt`. '' when it stands alone. */
+  translations: string
   /** `Scheduled for 4 March 2027, 09:30`, already worded; empty when it is not scheduled. */
   scheduledNote: string
 }
 
-export type PanelLists = { categories: string[]; tags: string[]; series: string[] }
+export type PanelLists = { categories: string[]; tags: string[]; series: string[]; groups: string[] }
+
+/**
+ * WHAT LANGUAGE THIS IS IN, and which of the owner's pieces say the same thing (ADR 0056).
+ *
+ * ⚠️ NOT ON A NOTE. A note is a page of a notebook and a clip quotes its source in the source's
+ * own language; there is no second note that is "the English one". The columns exist on posts
+ * and pages only, and so does this pair.
+ *
+ * The group is a TEXT field with the groups already in use offered under it (`pickField`, the
+ * same control the series name uses), not a picker over every post. Two reasons: a select of
+ * six hundred options is the heaviest thing on this panel for a field almost nobody fills, and
+ * a group the owner can SEE and type is a group they can fix when it is wrong. What tells them
+ * it is wrong is the line under it, which lists what is currently in the group.
+ */
+function translationFields(t: AdminStrings, piece: PanelPiece, lists: PanelLists): string {
+  if (piece.kind === 'note') return ''
+  return `<div class="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
+    + plainPick({
+      k: 'lang', label: t.pieceLanguage, value: piece.lang,
+      note: t.pieceLanguageHint,
+      options: [['', t.pieceLanguageSame], ...SITE_LANGS.map((l) => [l.value, l.label] as [string, string])],
+    })
+    + pickField({
+      k: 'translationGroup', label: t.translationGroup, value: piece.translationGroup,
+      options: lists.groups, placeholder: t.translationGroupPlaceholder,
+    })
+    // Server-drawn and read-only: what is in this group right now, in the order the site
+    // would print it. An empty group after typing a name is the typo saying so.
+    + (piece.translations ? fieldNote(`${t.translationsIn} ${piece.translations}`) : '')
+    + `</div>`
+}
 
 /** The three fields every kind has: where it lives, when it goes out, and whether it is out. */
 function common(t: AdminStrings, lang: SiteLang, piece: PanelPiece): string {
@@ -132,6 +170,7 @@ export function sheetPanel(frame: PanelFrame): string {
         value: piece.featuredImage, t,
       })
       : '')
+    + translationFields(t, piece, frame.lists)
 
   // A click anywhere off the sheet is "not now". A DIV, because as a button it was a focusable
   // control whose accessible name was the panel's title and whose action was to dismiss it: Tab

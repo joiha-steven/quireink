@@ -288,3 +288,31 @@ insert into mcp_tokens_new (id, name, token_hash, prefix, scope, created_at, exp
 drop table mcp_tokens;
 alter table mcp_tokens_new rename to mcp_tokens;
 create index if not exists mcp_tokens_hash_idx on mcp_tokens (token_hash);
+
+-- migration: 016-post-language
+-- ADR 0056: a piece can name the language it is written in, and pieces that say the same
+-- thing in different languages can name each other. Same shape as `schema.sql` creates fresh.
+--
+-- `lang` NULL means "the site's language", which is what every row written before this had and
+-- what most rows on most blogs will keep. It is NOT backfilled: writing the site's language
+-- into every row would make "the owner chose this" and "nobody has said" the same fact, and
+-- the first is what turns on an hreflang pair.
+--
+-- `tr_group` is a shared opaque id, not a slug. A slug rename would break a pairing stored as
+-- one, and three languages are a graph rather than a chain — a group is the only shape that
+-- holds both without a join table.
+--
+-- ⚠️ NO INDEX ON `tr_group`, and the reason is worth writing down because the first cut had
+-- one and it broke every upgrade. `schema.sql` runs BEFORE the migrations, always, so an
+-- index declared there against a column a migration is about to add is an index created
+-- against a table that does not have it yet: "no such column: tr_group", on boot, on every
+-- existing install. Declaring it only in the migration is no better — a FRESH database
+-- RECORDS every step without running it, so the index would never exist there.
+--
+-- It is not needed either way. The siblings of a piece are found over the index this blog
+-- already reads whole on every listing, not by a second query, so the lookup costs nothing
+-- a scan of rows already in memory does not.
+alter table posts add column lang text;
+alter table posts add column tr_group text;
+alter table pages add column lang text;
+alter table pages add column tr_group text;

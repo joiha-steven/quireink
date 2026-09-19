@@ -44,6 +44,16 @@ export function payloadOf(
     base.excerpt = draft.excerpt
   }
   if (kind === 'page') base.featuredImage = draft.featuredImage || undefined
+  // ADR 0056, on a post and a page but not a note. SECOND HAND-WRITTEN LIST, and the second
+  // one this feature caught: `getPage` named its own columns and went stale the same way, so
+  // the language reached the database and the sitemap and never reached the page. Here it was
+  // the other direction — the panel took the answer, the island wrote it into the draft, and
+  // the save left it out. Every field on this object is a field somebody has to remember, and
+  // `sheet-save.test.ts` is what remembers for them.
+  if (kind !== 'note') {
+    base.lang = draft.lang || undefined
+    base.translationGroup = draft.translationGroup.trim() || undefined
+  }
   if (kind === 'note') {
     base.sourceUrl = draft.sourceUrl.trim() || undefined
     base.sourceTitle = draft.sourceTitle.trim() || undefined

@@ -74,6 +74,7 @@ const ko = {
   // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
   // and the word before a clip's source.
   notesTitle: '노트',
+  alsoIn: '다른 언어',
   notesMeta: '{site}에 남긴 노트와 발췌.',
   notesEmpty: '아직 노트가 없습니다.',
   noteSourcePrefix: '출처',

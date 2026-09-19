@@ -185,6 +185,9 @@ article > header .t-small{margin:0}
    the post it belongs to. A book serif headline with a terminal subtitle under it, and the
    one seam on the page where the two faces touch. Same class as the comment body, which
    lost its reading face in the port for the same reason. */
+/* The other languages this piece exists in (ADR 0056). Its OWN rule and not the mt-3 utility:
+   the .t-small rule above is (0,1,2) and wins, so a utility here computes to zero. */
+article > header .post-langs{margin-top:.75rem}
 .deck{margin:1rem 0 0;color:var(--c-meta);font-family:var(--font-reading);
   font-size:var(--fs-h4);line-height:var(--lh-h4);letter-spacing:var(--ls-h4)}
 #post-body{margin-top:2.5rem}

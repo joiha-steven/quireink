@@ -5,10 +5,11 @@
 // than serving an empty document: an empty feed looks like a broken site to a reader's
 // aggregator, while a 404 looks like what it is.
 
-import type { HomeSettings, Page, Post, SiteSettings, Note } from '@/types'
+import type { HomeSettings, Page, Post, SiteLang, SiteSettings, Note } from '@/types'
 import { termSlug } from '@/content/taxonomy'
 import { seriesSlug } from '@/content/series-order'
 import { clampExcerpt } from '@/utils'
+import { groupsOf } from '@/content/translations'
 
 /**
  * ⚠️ CHARACTERS XML FORBIDS OUTRIGHT, which no escape can rescue.
@@ -132,13 +133,34 @@ function postImages(p: Post, site: string): string[] {
   return [...new Set(refs)].map((u) => (u.startsWith('/') ? `${site}${u}` : u))
 }
 
+/** The XML namespace an `<xhtml:link>` alternate lives in. */
+const XHTML_NS = 'http://www.w3.org/1999/xhtml'
+
 export function renderSitemap(
-  posts: Post[], pages: Page[], site: string, home: HomeSettings, archive = false, notes: Note[] = [],
+  posts: Post[], pages: Page[], site: string, home: HomeSettings, archive = false,
+  notes: Note[] = [], siteLang: SiteLang = 'en',
 ): string {
-  const url = (loc: string, lastmod?: string, images: string[] = []) =>
+  /**
+   * TRANSLATIONS, BY THE SAME RULE THE ARTICLE PAGE USES — `content/translations.ts` decides,
+   * and both surfaces read it. Two documents claiming different alternate sets for one URL is
+   * a disagreement a crawler resolves by believing neither.
+   *
+   * Built from the lists already in hand, so this costs a pass over rows the caller has
+   * already read rather than a query per piece.
+   */
+  const groups = groupsOf([
+    ...posts.map((p) => ({ piece: p, path: `/${p.slug}` })),
+    ...pages.map((p) => ({ piece: p, path: `/${p.slug}` })),
+  ], siteLang)
+  const alternates = (slug: string): string =>
+    (groups.get(slug) ?? []).map((sibling) =>
+      `<xhtml:link rel="alternate" hreflang="${escapeXml(sibling.lang)}"`
+      + ` href="${escapeXml(`${site}${sibling.path}`)}"/>`).join('')
+
+  const url = (loc: string, lastmod?: string, images: string[] = [], alts = '') =>
     `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${isoDay(lastmod)}</lastmod>` : ''}${
       images.map((i) => `<image:image><image:loc>${escapeXml(i)}</image:loc></image:image>`).join('')
-    }</url>`
+    }${alts}</url>`
   // Once `/` belongs to a page, that page has two URLs and its own slug 301s to `/`
   // (ADR 0014). Naming both here asks a crawler to index a redirect, so the slug goes and
   // the root stays. The post list, meanwhile, has moved somewhere that is not in either
@@ -214,8 +236,9 @@ export function renderSitemap(
     // is a duplicate `<loc>`, which is a sitemap error and not a cosmetic one.
     ...(archive && !ownsArchiveSlug ? [url(`${site}/archive`)] : []),
     ...posts.filter((p) => p.slug !== homeSlug)
-      .map((p) => url(`${site}/${p.slug}`, p.updatedAt ?? p.date, postImages(p, site))),
-    ...pages.filter((p) => p.slug !== homeSlug).map((p) => url(`${site}/${p.slug}`)),
+      .map((p) => url(`${site}/${p.slug}`, p.updatedAt ?? p.date, postImages(p, site), alternates(p.slug))),
+    ...pages.filter((p) => p.slug !== homeSlug)
+      .map((p) => url(`${site}/${p.slug}`, undefined, [], alternates(p.slug))),
     // The notebook (ADR 0044): its index once there is anything in it, and each note under
     // its own address. Never mixed into the post entries above.
     ...(notes.length ? [url(`${site}/notes`, notes[0]!.updatedAt ?? notes[0]!.date)] : []),
@@ -227,7 +250,8 @@ export function renderSitemap(
   const body = entries.join('\n')
   // Declared only when it is used: a namespace on a document with no element in it is an
   // unread line on every sitemap a blog without a single image ever serves.
-  const ns = body.includes('<image:image>') ? `\n        xmlns:image="${IMAGE_NS}"` : ''
+  const ns = (body.includes('<image:image>') ? `\n        xmlns:image="${IMAGE_NS}"` : '')
+    + (body.includes('<xhtml:link') ? `\n        xmlns:xhtml="${XHTML_NS}"` : '')
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${ns}>
 ${body}

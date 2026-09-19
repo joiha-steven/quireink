@@ -96,3 +96,87 @@ export function registerAttributeFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'a
     })()`, 1600)
   })
 }
+
+/**
+ * THE LANGUAGE PAIR, PRESSED (ADR 0056).
+ *
+ * `translations.test.ts` proves the rule and the two documents. What it cannot prove is that
+ * the two controls exist on the panel, are reachable, and carry what the owner typed all the
+ * way to the page — which is three separate wires and the place this feature would fail
+ * silently: a select drawn with no `data-k` saves nothing and looks perfect.
+ *
+ * ⚠️ IT CLEANS UP AFTER ITSELF. The flows after this one read the same fixture, and a post left
+ * behind in English with a translation group changes what they are testing.
+ */
+export function registerLanguageFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWidth'>): void {
+  flow('editor: a piece can say what language it is in, and who its translations are', async () => {
+    const group = 'tour-tr-' + Date.now()
+    const made = await atWidth(1700, '/admin/editor', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const panel = [...document.querySelectorAll('button')]
+        .find((b) => /attributes|thuộc tính/i.test(b.textContent || ''))
+      if (panel) { panel.click(); await sleep(500) }
+
+      const pick = document.querySelector('select[data-k="lang"]')
+      if (!pick) return 'no language select on the panel'
+      if (pick.offsetParent === null) return 'the language select is in the markup but not on screen'
+      // Eleven languages and "same as the blog", and the empty value has to be FIRST: it is
+      // what every piece already written has, and a list that opens on Deutsch is a list that
+      // sets Deutsch on the next piece somebody tabs through.
+      if (pick.options.length < 12) return 'the language select offers ' + pick.options.length
+      if (pick.options[0].value !== '') return 'the first option is not "same as the blog"'
+
+      const box = document.querySelector('[data-k="translationGroup"]')
+      if (!box) return 'no translation group field'
+
+      const title = document.querySelector('[data-sheet-title], input[data-k="title"], h1[contenteditable]')
+      if (title) {
+        title.textContent = 'Tour language'
+        title.value = 'Tour language'
+        title.dispatchEvent(new Event('input', { bubbles: true }))
+      }
+      pick.value = 'en'
+      pick.dispatchEvent(new Event('change', { bubbles: true }))
+      box.value = ${JSON.stringify('PLACEHOLDER')}
+      box.dispatchEvent(new Event('input', { bubbles: true }))
+      await sleep(200)
+
+      const save = [...document.querySelectorAll('button')]
+        .find((b) => /^(save draft|lưu nháp)$/i.test((b.textContent || '').trim()))
+      if (!save) return 'no save key'
+      save.click()
+      await sleep(1400)
+      return 'saved at ' + location.pathname
+    })()`.replace('"PLACEHOLDER"', JSON.stringify(group)), 3000)
+    if (!String(made).startsWith('saved at /admin/editor/')) return String(made)
+
+    const slug = String(made).replace('saved at /admin/editor/', '')
+    // Back through the server: the panel has to READ what the save wrote, which is the other
+    // half of the wire and the half a save-only probe cannot see.
+    const read = await atWidth(1700, `/admin/editor/${slug}`, `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const panel = [...document.querySelectorAll('button')]
+        .find((b) => /attributes|thuộc tính/i.test(b.textContent || ''))
+      if (panel) { panel.click(); await sleep(500) }
+      const pick = document.querySelector('select[data-k="lang"]')
+      const box = document.querySelector('[data-k="translationGroup"]')
+      return JSON.stringify({ lang: pick && pick.value, group: box && box.value })
+    })()`, 2500)
+    const back = JSON.parse(String(read))
+    if (back.lang !== 'en') return `the language came back as ${JSON.stringify(back.lang)}`
+    if (back.group !== group) return `the group came back as ${JSON.stringify(back.group)}`
+
+    await atWidth(1700, `/admin/editor/${slug}`, `
+    (async () => {
+      await fetch('/api/posts/' + ${JSON.stringify(slug)}, { method: 'DELETE' })
+      await fetch('/api/trash', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'posts', action: 'purge', ids: [${JSON.stringify(slug)}] }),
+      })
+      return 'gone'
+    })()`, 1500)
+    return `ok language ${back.lang} and group kept through a save and a reload`
+  })
+}

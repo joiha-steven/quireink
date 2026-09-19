@@ -84,7 +84,7 @@ export function registerFeedRoutes(app: Hono): void {
     ({ notes, settings, site }) => renderJsonFeed(noteItems(notes, site), settings, site, notesChannel(settings, '/notes/feed.json')))
   feedRoute('/sitemap.xml', (s) => s.seo.sitemap, 'application/xml; charset=utf-8',
     ({ posts, pages, notes, settings, site }) =>
-      renderSitemap(posts, pages, site, settings.home, settings.features.archive, notes))
+      renderSitemap(posts, pages, site, settings.home, settings.features.archive, notes, settings.language))
   feedRoute('/robots.txt', (s) => s.seo.robots, 'text/plain; charset=utf-8',
     ({ settings, site }) => renderRobots(settings, site))
   feedRoute('/llms.txt', (s) => s.seo.llms, 'text/plain; charset=utf-8',

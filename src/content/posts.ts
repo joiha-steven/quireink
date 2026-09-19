@@ -13,7 +13,7 @@ import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
 import { getSettings } from '@/content/settings'
 import { writeExcerpt } from '@/content/ai-excerpt'
 import { writeTerms, updateTermRows, type TermKind } from '@/content/post-terms'
-import { META_COLS, rowToMeta, type PostRow } from '@/content/post-row'
+import { META_COLS, asLang, rowToMeta, type PostRow } from '@/content/post-row'
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, fromIso } from '@/store/db'
 import { clearAutosave } from '@/content/autosave'
@@ -41,6 +41,11 @@ function projection(p: PostWithContent): string {
     metaTitle: p.metaTitle ?? '',
     metaDescription: p.metaDescription ?? '',
     coverImage: p.coverImage ? collapseBlob(p.coverImage) : '',
+    // The LANGUAGE is part of the page a reader gets — it sets `<html lang>`, the hyphenation
+    // and the quote marks — so changing it is a change worth a snapshot. The GROUP is not:
+    // pairing two pieces alters neither of their pages, and a revision for it would spend one
+    // of the three a post keeps on a relationship.
+    lang: p.lang ?? '',
     featuredImage: p.featuredImage ? collapseBlob(p.featuredImage) : '',
     excerpt: p.excerpt ?? '',
     content: collapseBlob(p.content),
@@ -163,6 +168,11 @@ function normalize(input: Partial<PostWithContent>, excerptWords = 50): PostWith
     metaDescription: input.metaDescription?.trim() || undefined,
     coverImage: input.coverImage || undefined,
     featuredImage: input.featuredImage || undefined,
+    // ⚠️ NARROWED, NOT TAKEN. This is the door an MCP tool and the import route come through
+    // as well as the editor, so `lang` has to survive a caller that sends 'klingon' — as
+    // undefined, which is the same thing as never having said (ADR 0056).
+    lang: asLang(input.lang),
+    translationGroup: input.translationGroup?.trim() || undefined,
     excerpt,
     content,
   }
@@ -206,17 +216,18 @@ export async function savePost(
     run(
       `insert into posts (slug, title, date, status, featured_image, excerpt, reading_minutes,
                           content, series, series_order, meta_title, meta_description,
-                          cover_image, created_at, updated_at)
+                          cover_image, lang, tr_group, created_at, updated_at)
        values ($slug, $title, $date, $status, $featuredImage, $excerpt, $readingMinutes,
                $content, $series, $seriesOrder, $metaTitle, $metaDescription,
-               $coverImage, $createdAt, $now)
+               $coverImage, $lang, $trGroup, $createdAt, $now)
        on conflict(slug) do update set
          title = excluded.title, date = excluded.date, status = excluded.status,
          featured_image = excluded.featured_image, excerpt = excluded.excerpt,
          reading_minutes = excluded.reading_minutes, content = excluded.content,
          series = excluded.series, series_order = excluded.series_order,
          meta_title = excluded.meta_title, meta_description = excluded.meta_description,
-         cover_image = excluded.cover_image, updated_at = excluded.updated_at`,
+         cover_image = excluded.cover_image, lang = excluded.lang,
+         tr_group = excluded.tr_group, updated_at = excluded.updated_at`,
       {
         slug: post.slug,
         title: post.title,
@@ -232,6 +243,8 @@ export async function savePost(
         metaTitle: post.metaTitle?.trim() || null,
         metaDescription: post.metaDescription?.trim() || null,
         coverImage: post.coverImage ? collapseBlob(post.coverImage) : null,
+        lang: post.lang ?? null,
+        trGroup: post.translationGroup ?? null,
         // A rename INSERTS a row rather than updating one, so `on conflict do update` is
         // not there to leave the birthday alone: without this the post is restamped as
         // created today every time its slug changes.

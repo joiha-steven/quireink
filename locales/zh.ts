@@ -74,6 +74,7 @@ const zh = {
   // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
   // and the word before a clip's source.
   notesTitle: '笔记',
+  alsoIn: '其他语言',
   notesMeta: '{site} 上保存的笔记与摘录。',
   notesEmpty: '还没有笔记。',
   noteSourcePrefix: '来自',

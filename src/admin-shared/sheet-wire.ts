@@ -39,6 +39,9 @@ export type SheetDraft = {
   sourceUrl: string
   sourceTitle: string
   quote: string
+  /** '' = the site's language. A post and a page only; a note has neither (ADR 0056). */
+  lang: string
+  translationGroup: string
 }
 
 /** Everything the island needs that is not in the markup. */
@@ -101,6 +104,7 @@ export const emptyDraft = (): SheetDraft => ({
   categories: [], tags: [], series: '', seriesOrder: 0,
   featuredImage: '', coverImage: '', metaTitle: '', metaDescription: '', excerpt: '',
   sourceUrl: '', sourceTitle: '', quote: '',
+  lang: '', translationGroup: '',
 })
 
 /**

@@ -16,6 +16,9 @@
 // "date · 4,160 words · 21 min" and the wrap lands mid-phrase. Stacked, it reads as what it
 // is — a properties panel.
 
+import type { SiteLang } from '@/types'
+import type { Sibling } from '@/content/translations'
+import { SITE_LANGS } from '@/locales/langs'
 import type { PostWithContent, SiteSettings } from '@/types'
 import type { Dict } from '@/locales/types'
 import { formatCount, formatDate, zonedDay } from '@/i18n/i18n'
@@ -129,3 +132,32 @@ export function postInfoPanel(
 
   return `<aside class="post-info t-small text-meta">${rows.join('')}</aside>`
 }
+
+/**
+ * THE OTHER LANGUAGES, AS LINKS A READER CAN PRESS (ADR 0056).
+ *
+ * `hreflang` tells a search engine; this tells the person. They are not the same job and the
+ * first does not do the second — a reader who lands on the Vietnamese essay from a Vietnamese
+ * search has no way to the English one except this line.
+ *
+ * ⚠️ EACH NAME IS IN ITS OWN LANGUAGE, and each link carries `lang` as well as `hreflang`. A
+ * screen reader in a Vietnamese document meeting the string "English" pronounces it as
+ * Vietnamese unless the element says otherwise, which is the one place a language switcher can
+ * be actively worse than no switcher at all.
+ *
+ * NOT in the meta line: `post-meta` is hidden above the rail breakpoint, where the same facts
+ * are in the gutter, and a way out of the page is not a fact that may disappear on a wide
+ * screen.
+ */
+export function languageLine(siblings: readonly Sibling[], label: string): string {
+  if (siblings.length === 0) return ''
+  const link = (sibling: Sibling): string =>
+    `<a class="link-accent" href="${escapeAttr(sibling.path)}" hreflang="${escapeAttr(sibling.lang)}"`
+    + ` lang="${escapeAttr(sibling.lang)}">${escapeHtml(nameOfLang(sibling.lang))}</a>`
+  return `\n<p class="t-small text-meta post-langs">${escapeHtml(label)} ${
+    siblings.map(link).join(' · ')}</p>`
+}
+
+/** A language in its own name — the only spelling a switcher may use. */
+const nameOfLang = (code: SiteLang): string =>
+  SITE_LANGS.find((l) => l.value === code)?.label ?? code

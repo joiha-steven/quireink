@@ -3,6 +3,7 @@
 
 import type { Page, PageWithContent } from '@/types'
 import { collapseBlob, expandBlob } from '@/media/blob'
+import { asLang } from '@/content/post-row'
 import { clearAutosave } from '@/content/autosave'
 import { slugify } from '@/utils'
 import { ensureSlugFree } from '@/content/slugs'
@@ -13,7 +14,7 @@ import { liveOnly, nowMs, toIso } from '@/store/db'
 // `updated_at` joined the list read when the admin stopped sorting by title: one stream of
 // posts AND pages, most recently touched first (ADR 0024), needs pages to carry the same
 // stamp posts always did.
-const META_COLS = 'slug, title, status, featured_image, updated_at'
+const META_COLS = 'slug, title, status, featured_image, updated_at, lang, tr_group'
 
 type PageRow = {
   slug: string
@@ -21,6 +22,8 @@ type PageRow = {
   status: string
   featured_image: string | null
   updated_at?: number | null
+  lang: string | null
+  tr_group: string | null
   content?: string | null
 }
 
@@ -31,6 +34,8 @@ function rowToMeta(row: PageRow): Page {
     status: row.status === 'published' ? 'published' : 'draft',
     featuredImage: row.featured_image ? expandBlob(row.featured_image) : undefined,
     updatedAt: row.updated_at ? toIso(row.updated_at) : undefined,
+    lang: asLang(row.lang),
+    translationGroup: row.tr_group || undefined,
   }
 }
 
@@ -68,8 +73,13 @@ export async function getPage(slug: string): Promise<PageWithContent | null> {
     // is the size of a whole post: measured 2026-09-16 with an 85,000 character autosave on an
     // 796 character page, 9.2us a read became 2.9us. A test that holds the OUTPUT cannot see this;
     // only the column list can.
+    // ⚠️ `META_COLS`, NOT A SECOND HAND-WRITTEN LIST. This read spelled its own columns out and
+    // then went stale the day a column was added: `lang` and `tr_group` reached the row, the
+    // index and the sitemap, and every PAGE rendered in the site's language because the one
+    // read that draws a page had never been told about them. The constant exists so there is
+    // one list; the `content` body is the only thing this needs on top of it.
     const row = one<PageRow>(
-      `select slug, title, status, featured_image, updated_at, content
+      `select ${META_COLS}, content
          from pages where ${liveOnly('pages')} and slug = ?`, slug)
     if (!row) return null
     return { ...rowToMeta(row), content: expandBlob(row.content ?? '') }
@@ -90,6 +100,10 @@ function normalize(input: Partial<PageWithContent>): PageWithContent {
     slug,
     status: input.status === 'published' ? 'published' : 'draft',
     featuredImage: input.featuredImage || undefined,
+    // Narrowed rather than taken, for the reason `posts.ts` states: this door is also the
+    // MCP tool's and the importer's.
+    lang: asLang(input.lang),
+    translationGroup: input.translationGroup?.trim() || undefined,
     content,
   }
 }
@@ -122,13 +136,16 @@ export async function savePage(
   // A RENAME inserts rather than updates, so that clause never runs and the page was
   // restamped as created today every time its slug moved. Hence the carried value.
   run(
-    `insert into pages (slug, title, status, featured_image, content, created_at, updated_at)
-     values ($slug, $title, $status, $featuredImage, $content, $createdAt, $now)
+    `insert into pages (slug, title, status, featured_image, content, lang, tr_group,
+                        created_at, updated_at)
+     values ($slug, $title, $status, $featuredImage, $content, $lang, $trGroup, $createdAt, $now)
      on conflict(slug) do update set
        title          = excluded.title,
        status         = excluded.status,
        featured_image = excluded.featured_image,
        content        = excluded.content,
+       lang           = excluded.lang,
+       tr_group       = excluded.tr_group,
        updated_at     = excluded.updated_at`,
     {
       slug: page.slug,
@@ -136,6 +153,8 @@ export async function savePage(
       status: page.status,
       featuredImage: page.featuredImage ? collapseBlob(page.featuredImage) : null,
       content: collapseBlob(page.content),
+      lang: page.lang ?? null,
+      trGroup: page.translationGroup ?? null,
       createdAt: existing?.created_at ?? now,
       now: now,
     },

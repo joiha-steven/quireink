@@ -28,6 +28,7 @@ import { getNote } from '@/content/notes'
 import { getAllSeriesNames } from '@/content/series'
 import { emptyState } from '@/web/admin/kit'
 import { writingSheet } from './sheet'
+import { groupMembersLine, translationGroups } from '@/content/translations'
 import { sheetPanel, type PanelLists, type PanelPiece } from './sheet-panel'
 import { historyDialog } from './sheet-history'
 
@@ -38,19 +39,22 @@ type Loaded = {
   lists: PanelLists
 }
 
-const NO_LISTS: PanelLists = { categories: [], tags: [], series: [] }
+const NO_LISTS: PanelLists = { categories: [], tags: [], series: [], groups: [] }
 
 async function load(kind: SheetKind, slug: string): Promise<Loaded | null> {
   if (kind === 'post') {
-    const [row, categories, tags, series] = await Promise.all([
+    const [row, categories, tags, series, groups] = await Promise.all([
       slug ? getPost(slug) : Promise.resolve(null),
-      getCategories(), getTags(), getAllSeriesNames(),
+      getCategories(), getTags(), getAllSeriesNames(), translationGroups(),
     ])
     if (slug && !row) return null
-    return { row, lists: { categories, tags, series } }
+    return { row, lists: { categories, tags, series, groups } }
   }
   const row = slug ? await (kind === 'page' ? getPage(slug) : getNote(slug)) : null
   if (slug && !row) return null
+  // A PAGE gets the group names too: it has the two columns and the panel draws the pair for
+  // it. A note has neither, so it keeps the empty lists.
+  if (kind === 'page') return { row, lists: { ...NO_LISTS, groups: await translationGroups() } }
   return { row, lists: NO_LISTS }
 }
 
@@ -84,6 +88,8 @@ function draftOf(kind: SheetKind, row: Loaded['row'], timezone: string): SheetDr
     sourceUrl: note.sourceUrl ?? '',
     sourceTitle: note.sourceTitle ?? '',
     quote: note.quote ?? '',
+    lang: post.lang ?? '',
+    translationGroup: post.translationGroup ?? '',
   }
 }
 
@@ -202,6 +208,11 @@ export async function writingFrame(
     sourceUrl: draft.sourceUrl,
     sourceTitle: draft.sourceTitle,
     quote: draft.quote,
+    lang: draft.lang,
+    translationGroup: draft.translationGroup,
+    // Already worded, server-side: the group's members in their own language names. The panel
+    // only prints it, because the island holds no dictionary and no list of pieces.
+    translations: await groupMembersLine(draft.slug, draft.translationGroup),
     scheduledNote: scheduled
       ? `${t.scheduledForPrefix} ${formatWallClock(draft.date, settings.language)}`
       : '',

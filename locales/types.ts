@@ -82,6 +82,8 @@ export type Dict = {
   archiveYears: string
   archiveEmpty: string
   notesTitle: string
+  /** The label before a piece's other languages, on the article itself (ADR 0056). */
+  alsoIn: string
   notesMeta: string
   notesEmpty: string
   noteSourcePrefix: string
@@ -571,6 +573,12 @@ export type AdminStrings = {
   seriesField: string
   seriesOrder: string
   seriesPlaceholder: string
+  pieceLanguage: string
+  pieceLanguageHint: string
+  pieceLanguageSame: string
+  translationGroup: string
+  translationGroupPlaceholder: string
+  translationsIn: string
   coverImageLabel: string
   coverImageHint: string
   metaTitleLabel: string

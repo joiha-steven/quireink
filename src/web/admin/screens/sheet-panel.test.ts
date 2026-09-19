@@ -9,7 +9,10 @@ import { adminT } from '@/i18n/admin-i18n'
 import { sheetPanel, type PanelPiece, type SheetKind } from './sheet-panel'
 
 const t = adminT('en')
-const LISTS = { categories: ['Type', 'Tools'], tags: ['ink', 'paper'], series: ['A history'] }
+const LISTS = {
+  categories: ['Type', 'Tools'], tags: ['ink', 'paper'], series: ['A history'],
+  groups: ['thu-gui-me'],
+}
 
 const piece = (kind: SheetKind, over: Partial<PanelPiece> = {}): PanelPiece => ({
   kind,
@@ -18,6 +21,7 @@ const piece = (kind: SheetKind, over: Partial<PanelPiece> = {}): PanelPiece => (
   categories: [], tags: [], series: '', seriesOrder: 0,
   featuredImage: '', coverImage: '', metaTitle: '', metaDescription: '', excerpt: '',
   sourceUrl: '', sourceTitle: '', quote: '', scheduledNote: '',
+  lang: '', translationGroup: '', translations: '',
   ...over,
 })
 

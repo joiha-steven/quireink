@@ -45,6 +45,11 @@ create table if not exists posts (
   broadcast_at     integer,
   created_at       integer not null,
   updated_at       integer not null,
+  -- The language this piece is WRITTEN in, and the group its translations share (ADR 0056).
+  -- NULL lang = the site's language: "nobody has said" and "the owner chose this" are
+  -- different facts, and only the second turns on an hreflang pair.
+  lang             text,
+  tr_group         text,
   -- Soft delete (Invariant 6): NULL = live, a timestamp = in Trash.
   deleted_at       integer,
   -- The editor's server-side autosave: the whole in-progress draft as JSON, and when it was
@@ -107,6 +112,9 @@ create table if not exists pages (
   content        text not null default '',
   created_at     integer not null,
   updated_at     integer not null,
+  -- Same pair as `posts`, same rule (ADR 0056).
+  lang           text,
+  tr_group       text,
   deleted_at     integer,
   -- Same pair as `posts`, same rule: never rendered, cleared by a real save.
   autosave_json  text,

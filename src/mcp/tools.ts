@@ -32,6 +32,14 @@ const postFields = {
   tags: z.array(z.string()).optional(),
   featuredImage: z.string().optional().describe('Image URL used only for SEO/social cards'),
   date: z.string().optional().describe('ISO 8601 publish date; defaults to now'),
+  // ADR 0056. An agent that cannot set these is an agent that ERASES them: `update_post` is a
+  // REPLACE, so a field missing from this shape comes back undefined and overwrites what was
+  // there. The same is already true of `series` and `coverImage`, which is the argument for
+  // adding rather than for leaving well alone.
+  lang: z.string().optional().describe(
+    "Language this piece is written in (a site language code such as 'en' or 'vi'). Omit for the blog's own language."),
+  translationGroup: z.string().optional().describe(
+    'A name shared by every translation of this piece. Two pieces with the same group are each other\'s translations.'),
 }
 
 const pageFields = {
@@ -40,6 +48,14 @@ const pageFields = {
   status: z.enum(['draft', 'published']).optional().describe("Defaults to 'draft'"),
   slug: z.string().optional(),
   featuredImage: z.string().optional(),
+  // ADR 0056. An agent that cannot set these is an agent that ERASES them: `update_post` is a
+  // REPLACE, so a field missing from this shape comes back undefined and overwrites what was
+  // there. The same is already true of `series` and `coverImage`, which is the argument for
+  // adding rather than for leaving well alone.
+  lang: z.string().optional().describe(
+    "Language this piece is written in (a site language code such as 'en' or 'vi'). Omit for the blog's own language."),
+  translationGroup: z.string().optional().describe(
+    'A name shared by every translation of this piece. Two pieces with the same group are each other\'s translations.'),
 }
 
 export function registerTools(server: ToolHost): void {
