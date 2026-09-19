@@ -18,7 +18,8 @@ const pt = {
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
   // is on. Brackets come from the sheet, never from here.
   shortSearch: '/buscar',
-  shortTheme: 'escuro',
+  shortThemeDark: 'escuro',
+  shortThemeLight: 'claro',
   shortGrid: 'grade',
   shortMail: '@email',
   shortMenu: 'menu',

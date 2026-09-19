@@ -17,7 +17,8 @@ const ru = {
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
   // is on. Brackets come from the sheet, never from here.
   shortSearch: '/поиск',
-  shortTheme: 'тёмная',
+  shortThemeDark: 'тёмная',
+  shortThemeLight: 'светлая',
   shortGrid: 'сетка',
   shortMail: '@почта',
   shortMenu: 'меню',

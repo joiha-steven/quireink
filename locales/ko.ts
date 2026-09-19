@@ -17,7 +17,8 @@ const ko = {
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
   // is on. Brackets come from the sheet, never from here.
   shortSearch: '/검색',
-  shortTheme: '다크',
+  shortThemeDark: '다크',
+  shortThemeLight: '라이트',
   shortGrid: '그리드',
   shortMail: '@메일',
   shortMenu: '메뉴',

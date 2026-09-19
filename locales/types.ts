@@ -20,7 +20,15 @@ export type Dict = {
   menu: string
   skipToContent: string
   shortSearch: string
-  shortTheme: string
+  /**
+   * The two halves of the theme key's token, and it names WHAT PRESSING GIVES YOU rather than
+   * what is on screen: a page already in the dark that offers "dark" has told the reader
+   * nothing they cannot see. Lowercase, like every other short token; the brackets are the
+   * stylesheet's. Only ever drawn under the IDE chrome, where the icon is hidden — so the
+   * glyph beside it, which shows the CURRENT sky, is never visible at the same time.
+   */
+  shortThemeDark: string
+  shortThemeLight: string
   shortGrid: string
   shortMail: string
   shortMenu: string

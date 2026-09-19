@@ -17,7 +17,8 @@ const zh = {
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
   // is on. Brackets come from the sheet, never from here.
   shortSearch: '/搜索',
-  shortTheme: '暗色',
+  shortThemeDark: '暗色',
+  shortThemeLight: '浅色',
   shortGrid: '网格',
   shortMail: '@邮件',
   shortMenu: '菜单',

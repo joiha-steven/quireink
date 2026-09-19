@@ -79,12 +79,26 @@ const MOON = 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'
  */
 let sun = ''
 
-/** Repaint the button's glyph to match what the reader is actually looking at. */
+/**
+ * Repaint the button to match what the reader is looking at.
+ *
+ * TWO HALVES THAT ARE NEVER SEEN TOGETHER. The glyph shows the CURRENT sky — a moon while the
+ * page is dark — and the word shows WHAT PRESSING GIVES YOU, which is the opposite. They do
+ * not contradict each other because only one of them is ever on screen: `.btn-token` is
+ * `display:none` until the IDE chrome is on, and that chrome hides the icon.
+ *
+ * The word was drawn once by the server and never moved, so a page already in the dark went on
+ * offering "dark" — the one thing its reader could see for themselves.
+ */
 function drawIcon(button: HTMLElement, dark: boolean): void {
   const svg = button.querySelector('svg')
-  if (!svg) return
-  if (!sun) sun = svg.innerHTML
-  svg.innerHTML = dark ? `<path d="${MOON}"/>` : sun
+  if (svg) {
+    if (!sun) sun = svg.innerHTML
+    svg.innerHTML = dark ? `<path d="${MOON}"/>` : sun
+  }
+  const token = button.querySelector('.btn-token')
+  const words = (button.dataset.themeWords ?? '').split('|')
+  if (token && words.length === 2) token.textContent = dark ? words[1]! : words[0]!
 }
 
 /**

@@ -169,9 +169,17 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   // than two `setAttribute` calls in `core.js`. The reader's JS budget is 8,800 bytes and the
   // accessibility pass that added them put it 59 over; a fact that never changes does not
   // belong in a bundle that is defended byte by byte.
+  // ⚠️ THE TOKEN NAMES WHAT PRESSING GIVES YOU, and both words ride on the button so the
+  // island carries no locale table — the same arrangement the palette key uses below.
+  //
+  // The page is CACHED and the reader's choice is in their own storage, so the server cannot
+  // know which of the two is right: it prints the dark word, which is what a page that has
+  // never been switched is offering, and `theme.ts` sets it on its first apply along with the
+  // glyph. A reader in the dark sees it corrected in the same frame the palette arrives in.
   actions.push(`<button type="button" class="icon-btn" data-theme-toggle
+ data-theme-words="${escapeAttr(`${s.shortThemeDark}|${s.shortThemeLight}`)}"
  aria-label="${escapeAttr(s.theme)}" title="${escapeAttr(s.theme)}"
- aria-haspopup="true" aria-expanded="false">${ICON.sun}${token(s.shortTheme)}</button>`)
+ aria-haspopup="true" aria-expanded="false">${ICON.sun}${token(s.shortThemeDark)}</button>`)
   // Only above two enabled, which is the same condition `themesToCss` uses to emit the
   // per-palette rules at all: below it there is one palette and nothing to switch between.
   //
