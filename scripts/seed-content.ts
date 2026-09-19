@@ -32,8 +32,17 @@ export type Seed = {
   body: string
   series?: string
   order?: number
+  /**
+   * What this post is WRITTEN in, when that is not the site's own language.
+   *
+   * Absent on an English post because absent is the honest answer for one: a fixture that
+   * named every language including the default would demonstrate a blog where somebody has
+   * been through every post and said so, which is not the blog anybody installs.
+   */
+  lang?: SiteLang
 }
 
+import type { SiteLang } from '@/types'
 import { TYPE_POSTS } from './seed-content-type'
 import { PAGE_POSTS } from './seed-content-page'
 import { HAND_POSTS } from './seed-content-hand'

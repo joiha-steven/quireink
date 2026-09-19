@@ -296,3 +296,31 @@ describe('markdown render — an image src cannot carry a script scheme', () => 
       .toBe('data:image/png;base64,iVBORw0KGgo=')
   })
 })
+
+// A BOX THAT SCROLLS AND CANNOT BE FOCUSED IS A MOUSE-ONLY BOX (2026-09-19, Front-End
+// Checklist `keyboard-navigation`). Two wrappers in an article take their own horizontal
+// scrollbar — a wide table and a display formula — and neither was a tab stop, so the part
+// past the right edge was reachable by dragging and by nothing else. Measured at a 320px
+// viewport on the seeded blog: four of six tables overflowed, and seven of seven formulas.
+//
+// Shiki has always put the same attribute on `<pre>`, which is how the group was found: the
+// code block was the one that was already right, and the two beside it were not.
+describe('a scrolling box in an article can be reached without a mouse', () => {
+  it('makes the table wrapper a tab stop', async () => {
+    const html = await render('| a | b |\n| - | - |\n| 1 | 2 |')
+    expect(html).toContain('<div class="table-scroll" tabindex="0">')
+  })
+
+  it('makes the formula wrapper a tab stop', async () => {
+    expect(await render('$$x^2$$')).toContain('<div class="math-block" tabindex="0">')
+  })
+
+  it('leaves the table itself alone', async () => {
+    // The counter-test. `tabindex` on the TABLE would satisfy a naive grep for the attribute
+    // while scrolling nothing — the box that scrolls is the wrapper, and only the element
+    // with the overflow can be the one that takes the keys.
+    const html = await render('| a | b |\n| - | - |\n| 1 | 2 |')
+    expect(html).toContain('<table>')
+    expect(html).not.toMatch(/<table[^>]+tabindex/)
+  })
+})

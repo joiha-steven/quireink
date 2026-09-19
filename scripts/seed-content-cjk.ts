@@ -12,16 +12,24 @@
 // chosen rather than whatever the browser reaches for last. That was the actual defect: not
 // that CJK looked bad, but that it looked like nobody had decided. Zero bytes downloaded.
 //
-// ⚠️ ONE THING THESE CANNOT PROVE: a Han character is drawn differently in Chinese, Japanese
-// and Korean typography, and a font-family list picks the first INSTALLED family without
-// consulting the language of the text. All three posts render in the same Han face. Fixing it
-// needs a per-post language, which no post has — `<html lang>` is one site-wide setting.
+// ⚠️ THE THING THESE COULD NOT PROVE, UNTIL THEY COULD. A Han character is drawn differently
+// in Chinese, Japanese and Korean typography, and a font-family list picks the first INSTALLED
+// family without consulting the language of the text. All three posts rendered in the same Han
+// face, and the note here said the fix "needs a per-post language, which no post has".
+//
+// A post has had one since ADR 0056, and this file went on not using it for three commits —
+// so the demonstration went on showing the defect after the tree had stopped having it, which
+// is the worse of the two ways a fixture can be wrong. Each post below now NAMES its language,
+// `cjkLangCss` in `content/fonts.ts` matches it on `:lang()`, and the three are set in three
+// different countries' shapes. That is the claim this file exists to make, and it is now true
+// of what it produces rather than of what it says.
 import type { Seed } from './seed-content'
 
 export const CJK_POSTS: Seed[] = [
   {
     title: '字面、字身，以及汉字为什么不肯听拉丁字母的话',
     slug: 'zimian-yu-zishen',
+    lang: 'zh',
     excerpt: '拉丁字母的宽度各不相同，汉字却每一个都住在同样大的方框里。'
       + '真正决定疏密的不是那个框，而是框里那一点留白——字面率。'
       + '把中文和英文排在同一行时，出问题的几乎永远是这件事。',
@@ -76,6 +84,7 @@ $$\\Delta \\approx \\frac{s\\,r}{2} - \\frac{x}{2}$$
   {
     title: '約物は半角か、全角か——組版が黙って決めていること',
     slug: 'yakumono-hankaku-zenkaku',
+    lang: 'ja',
     excerpt: '句読点や括弧は、字身の全部を使うわけではない。'
       + 'それでも全角の枠を持って歩くので、行の中に説明のつかない空きが生まれる。'
       + '禁則処理と字詰めは、その空きをどう配るかという一つの問題の裏表である。',
@@ -133,6 +142,7 @@ $$\\text{行送り} \\geq 1.0 + 0.5 + 0.3 = 1.8$$
   {
     title: '모아쓰기와 행간: 한글이 라틴 알파벳과 다르게 숨 쉬는 법',
     slug: 'moaseugi-wa-haenggan',
+    lang: 'ko',
     excerpt: '한글은 낱자를 모아 한 글자를 만든다. '
       + '그래서 같은 크기라도 획이 들어찬 정도가 글자마다 크게 다르고, '
       + '라틴 알파벳에 맞춘 행간을 그대로 쓰면 페이지가 답답해진다.',

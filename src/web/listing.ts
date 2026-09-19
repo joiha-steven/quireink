@@ -14,6 +14,7 @@ import { termSlug } from '@/content/taxonomy'
 import type { Paged } from '@/content/paginate'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { postImage, type ReadyImages } from '@/web/front-card'
+import { langAttr } from '@/content/translations'
 
 // The site's calendar year and month, not the stored instant's. Slicing the UTC ISO put a
 // post published on 1 January at 02:00 in Hanoi under last year's marker while its own card
@@ -59,6 +60,9 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
     : ''
   const Title = opts.lead ? 'h1' : 'h2'
   const size = opts.lead ? 'fs-h1' : 'fs-h2'
+  // The piece's own language, on the piece's own words and nowhere else. '' unless this post
+  // names a language the site is not in, which is every post on almost every blog.
+  const lang = langAttr(post, settings.language)
   // A month marker is a child of that month's first card, so it flows with the card and
   // the timeline needs no measurement and no script. CSS hides it below the breakpoint.
   const mark = opts.month
@@ -87,8 +91,8 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
   const shape = thumb ? ` data-thumb="${thumbKind}"` : ''
   return `<article class="reveal"${shape}${opts.lead ? ' data-lead' : ''}>${mark}${thumbBlock}
 <p class="t-small text-meta">${categoryLink}<time class="meta-part" datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${minutes}</p>
-<${Title} class="reading-font mt-2 ${size} font-semibold"><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
-${post.excerpt ? `<p class="reading-font mt-3 t-body text-text">${escapeHtml(post.excerpt)}</p>` : ''}
+<${Title} class="reading-font mt-2 ${size} font-semibold"${lang}><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
+${post.excerpt ? `<p class="reading-font mt-3 t-body text-text"${lang}>${escapeHtml(post.excerpt)}</p>` : ''}
 </article>`
 }
 

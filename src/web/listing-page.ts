@@ -20,6 +20,7 @@ import { timelineCss } from '@/render/rail-css'
 import { ogCardUrl, siteDomain } from '@/render/og'
 import { chromeLabels, searchForm, siteFooter, siteHeader } from '@/web/chrome'
 import { getPublicPosts } from '@/content/posts'
+import { langAttr } from '@/content/translations'
 import { getMailStatus } from '@/news/mail'
 import { PUBLIC_SHEET, scriptTag } from '@/web/assets'
 
@@ -227,7 +228,8 @@ export async function notFoundPage(): Promise<Response> {
   const latest = (await getPublicPosts()).slice(0, 3)
   const latestBlock = latest.length
     ? `<hr><section class="related"><h2>${escapeHtml(s.frontLatest)}</h2><ul>${
-        latest.map((p) => `<li><a class="link-accent" href="/${escapeAttr(p.slug)}">${escapeHtml(p.title)}</a>`
+        latest.map((p) => `<li><a class="link-accent" href="/${escapeAttr(p.slug)}"${
+          langAttr(p, settings.language)}>${escapeHtml(p.title)}</a>`
           + `<p class="t-small text-meta">${escapeHtml(formatDate(p.date, settings.language, settings.timezone))}</p></li>`).join('')
       }</ul></section>`
     : ''

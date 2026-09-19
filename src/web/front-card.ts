@@ -7,11 +7,12 @@
 // image, then rules. Most stories there carry no image at all, which is why an image is a
 // dial here and never a requirement.
 
-import type { FrontSettings, Post, SiteSettings } from '@/types'
+import type { FrontSettings, Post, SiteLang, SiteSettings } from '@/types'
 import { formatDate, t } from '@/i18n/i18n'
 import { termSlug } from '@/content/taxonomy'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { responsiveSources, type ReadyOriginals } from '@/render/figures'
+import { langAttr } from '@/content/translations'
 
 /** Which originals have responsive variants. Built once per render, never per image. */
 /**
@@ -157,14 +158,14 @@ function meta(post: Post, settings: SiteSettings, front: FrontSettings): string 
   return parts.length ? `<p class="fc-meta t-small text-meta">${parts.join(' · ')}</p>` : ''
 }
 
-function title(post: Post, tag: 'h1' | 'h2' | 'h3'): string {
-  return `<${tag} class="fc-title reading-font"><a class="link-accent" href="/${escapeAttr(post.slug)}">${
-    escapeHtml(post.title)}</a></${tag}>`
+function title(post: Post, tag: 'h1' | 'h2' | 'h3', siteLang: SiteLang): string {
+  return `<${tag} class="fc-title reading-font"${langAttr(post, siteLang)}>`
+    + `<a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${tag}>`
 }
 
-function deck(post: Post, max: number): string {
+function deck(post: Post, max: number, siteLang: SiteLang): string {
   const text = clamp(post.excerpt ?? '', max)
-  return text ? `<p class="fc-deck reading-font">${escapeHtml(text)}</p>` : ''
+  return text ? `<p class="fc-deck reading-font"${langAttr(post, siteLang)}>${escapeHtml(text)}</p>` : ''
 }
 
 /** The category above a headline, which is how a front page says where it is. */
@@ -199,10 +200,11 @@ export function leadItem(post: Post, ctx: Ctx, opening = ''): string {
   // is about; these are the piece, which is what actually makes somebody start reading.
   const body = afterExcerpt(opening, post.excerpt ?? '')
   const intro = body
-    ? `<p class="fc-intro reading-font">${escapeHtml(clamp(body, LEAD_INTRO_CHARS[front.kind]))}</p>`
+    ? `<p class="fc-intro reading-font"${langAttr(post, settings.language)}>${
+      escapeHtml(clamp(body, LEAD_INTRO_CHARS[front.kind]))}</p>`
     : ''
   return `<article class="fc fc-lead${picture ? ' has-media' : ''}">
-<div class="fc-text">${category(post)}${title(post, 'h1')}${deck(post, DECK_CHARS[front.kind].lead)}${intro}${meta(post, settings, front)}</div>
+<div class="fc-text">${category(post)}${title(post, 'h1', settings.language)}${deck(post, DECK_CHARS[front.kind].lead, settings.language)}${intro}${meta(post, settings, front)}</div>
 ${picture ? `<div class="fc-media">${picture}</div>` : ''}
 </article>`
 }
@@ -222,7 +224,7 @@ export function cardItem(post: Post, ctx: Ctx, opts: { category?: boolean } = {}
   const cat = opts.category === false ? '' : category(post)
   return `<article class="fc${picture ? ' has-media' : ''}">
 ${picture ? `<div class="fc-media">${picture}</div>` : ''}
-<div class="fc-text">${cat}${title(post, 'h3')}${deck(post, DECK_CHARS[front.kind].card)}${meta(post, settings, front)}</div>
+<div class="fc-text">${cat}${title(post, 'h3', settings.language)}${deck(post, DECK_CHARS[front.kind].card, settings.language)}${meta(post, settings, front)}</div>
 </article>`
 }
 
@@ -240,5 +242,5 @@ ${picture ? `<div class="fc-media">${picture}</div>` : ''}
  * nothing on the page moves.
  */
 export function lineItem(post: Post, ctx: Ctx, tag: 'h2' | 'h3'): string {
-  return `<article class="fc fc-line">${title(post, tag)}${meta(post, ctx.settings, ctx.front)}</article>`
+  return `<article class="fc fc-line">${title(post, tag, ctx.settings.language)}${meta(post, ctx.settings, ctx.front)}</article>`
 }

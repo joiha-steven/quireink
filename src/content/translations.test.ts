@@ -275,3 +275,103 @@ describe('an agent can set it too', () => {
     expect(after.content).toBe('x2')
   })
 })
+
+describe('what a LIST says', () => {
+  // ⚠️ THROUGH A REAL REQUEST, not through `langAttr`. A unit test of that function stays
+  // green with every call site deleted, and the call sites are the whole feature: the rule was
+  // right before this change too, and five documents still announced a Korean headline as
+  // Vietnamese. Each `it` below names a surface, so a dropped call says which one.
+  const korean = () => post('모아쓰기와 행간', 'ko')
+
+  it('marks a foreign headline on the home page, and leaves the date alone', async () => {
+    await korean()
+    const home = await html('/')
+    expect(home).toContain('<html lang="vi"')
+
+    // ⚠️ ON THE HEADING ITSELF, not merely somewhere in the document. Asserted as
+    // `toContain('lang="ko"')` this passed with the heading's copy deleted, because the
+    // excerpt underneath carries its own and one page-wide match cannot tell two call sites
+    // apart. Both of this post's own runs of words are named, each on its own element.
+    const heading = home.match(/<h[12] class="reading-font[^>]*>/)
+    expect(heading?.[0], 'the headline').toContain('lang="ko"')
+    const excerpt = home.match(/<p class="reading-font[^>]*>/)
+    expect(excerpt?.[0], 'the excerpt').toContain('lang="ko"')
+
+    // THE LINE ABOVE THE HEADLINE IS THE SITE SPEAKING (ADR 0056: the date, the reading time
+    // and the byline stay in the site's language). A `lang` on the card would hand the date to
+    // Korean to win the title, so the attribute must be on the heading and not on the article.
+    expect(home).not.toContain('<article class="reveal" lang=')
+    const meta = home.match(/<p class="t-small text-meta"[^>]*>/)
+    expect(meta?.[0]).not.toContain('lang=')
+  })
+
+  it('marks it in the archive, the category and the series', async () => {
+    await savePost({
+      title: '모아쓰기와 행간', content: 'x', status: 'published', date: PAST,
+      lang: 'ko', categories: ['Chu'], series: 'Sach', seriesOrder: 1,
+    } as never)
+    // A series needs two pieces before it draws a list at all.
+    await savePost({
+      title: 'Bai hai', content: 'x', status: 'published', date: PAST,
+      categories: ['Chu'], series: 'Sach', seriesOrder: 2,
+    } as never)
+    clearCache()
+    for (const path of ['/archive', '/category/chu', '/series/sach']) {
+      expect(await html(path), path).toContain('lang="ko"')
+    }
+
+    // The series box INSIDE an article is a sixth surface and a separate call site: it lists
+    // its neighbours by title, from `article.ts` rather than from any listing. Read from the
+    // other piece, so the Korean title is a neighbour and not the page's own headline.
+    const sibling = await html('/bai-hai')
+    const item = sibling.match(/<li><a href="\/[^"]*"[^>]*>모아쓰기[^<]*<\/a><\/li>/)
+    expect(item?.[0], 'the series box').toContain('lang="ko"')
+  })
+
+  it('marks it on the not-found page and on a magazine front', async () => {
+    // Written out rather than `korean()`: the magazine front draws a headline, a standfirst
+    // AND the lead's opening lines, and the third only appears when the body carries words
+    // past the excerpt. A fixture without them leaves that call site unguarded.
+    await savePost({
+      title: '모아쓰기와 행간', status: 'published', date: PAST, lang: 'ko',
+      excerpt: 'Han gul mo a sseu gi.',
+      content: 'Han gul mo a sseu gi. Geu rae seo gat eun keu gi ra do hoek i deul eo chan.',
+    } as never)
+    // A 404 offers the three newest posts, from `listing-page.ts` — its own call site.
+    const missing = await html('/khong-co-trang-nay')
+    const row = missing.match(/<li><a class="link-accent"[^>]*>/)
+    expect(row?.[0], 'the not-found list').toContain('lang="ko"')
+
+    // And the front page has a SECOND card renderer (`front-card.ts`) that the list mode
+    // never touches: headline, deck and the lead's opening lines, three more call sites.
+    await saveSettings({ home: { mode: 'front' } } as never)
+    clearCache()
+    const front = await html('/')
+    expect(front, 'the front mode rendered').toContain('fc-title')
+    // Each element asserted separately, for the reason the home-page case above records: a
+    // page-wide match passes while two of the three call sites are gone.
+    for (const cls of ['fc-title', 'fc-deck', 'fc-intro']) {
+      const el = front.match(new RegExp(`<[^>]*class="${cls}[^>]*>`))
+      expect(el?.[0], cls).toContain('lang="ko"')
+    }
+    await saveSettings({ home: { mode: 'list' } } as never)
+    clearCache()
+  })
+
+  it('says nothing when the piece agrees with the site', async () => {
+    // The counter-test. Without it every assertion above also passes on a build that prints
+    // `lang` on all thirty cards — which is thirty attributes repeating what `<html>` already
+    // said, and it would hide a piece that really is in another language among them.
+    await post('Bai tieng Viet', 'vi')
+    const home = await html('/')
+    expect(home).toContain('Bai tieng Viet')
+    expect(home.match(/lang="/g)?.length).toBe(1) // <html lang="vi"> and nothing else
+  })
+
+  it('says nothing when nobody has named a language', async () => {
+    await post('Chua ai noi', undefined)
+    const home = await html('/')
+    expect(home).toContain('Chua ai noi')
+    expect(home.match(/lang="/g)?.length).toBe(1)
+  })
+})

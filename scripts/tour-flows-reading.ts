@@ -1,16 +1,18 @@
-// Two things about a page a READER meets that only a browser can answer.
+// Three things about a page a READER meets that only a browser can answer.
 //
 // Its own file because `tour-flows.ts` and `tour-flows-shell.ts` are both within a dozen
-// lines of the 400-line rule, and because the pair below share a subject the other files do
+// lines of the 400-line rule, and because the first two share a subject the other files do
 // not: both are about a page holding its shape while the reader moves through it — one down
 // the length of a paragraph, the other down the length of an article.
 //
-// Neither fault is reachable from a unit test. The first is a float closing up around a
-// picture, which needs line boxes; the second is a scroll listener, which needs a scroll.
+// None of the three is reachable from a unit test. The first is a float closing up around a
+// picture, which needs line boxes; the second is a scroll listener, which needs a scroll; the
+// third is focus and a computed custom property, and a string of HTML has neither.
 import type { Tour } from './tour'
 
-// `expect` is unused here: both flows pin a width, because both faults are about what a
-// LAYOUT does and neither is visible at the tour's own window.
+// The first two flows pin a width with `atWidth`, because both faults are about what a LAYOUT
+// does and neither is visible at the tour's own window. The third uses `expect`: it measures
+// inside iframes it sizes itself, so the tour's own window is beside the point.
 export function registerReadingFlows({ flow, atWidth, expect }: Pick<Tour, 'flow' | 'atWidth' | 'expect'>): void {
   // ONE LEFT EDGE PER PARAGRAPH. A feed card floats its picture and lets the words close up
   // underneath, which assumed four lines of standfirst would run past it. What actually sits
@@ -167,5 +169,119 @@ export function registerReadingFlows({ flow, atWidth, expect }: Pick<Tour, 'flow
         return 'the spine sits ' + Math.round((vp.left + vp.right) / 2 - innerWidth / 2) + 'px off the fold'
       d.querySelector('.book-x').click()
       return 'ok'
+    })()`, 400))
+
+  // A BOX THAT SCROLLS. `tabindex` is a claim about the focus order and a string of HTML
+  // cannot answer it: only a browser holding the document knows what `activeElement` becomes.
+  //
+  // ⚠️ NOT IN AN IFRAME, which was the first attempt and is impossible by design — every
+  // response carries `X-Frame-Options: DENY`, so the frame stays blank and `contentDocument`
+  // is null. The window is pinned narrow instead, which is also the honest width: this is a
+  // phone fault.
+  //
+  // ⚠️ AND THE TABLE IS MADE HERE, not borrowed from the seed. The second attempt pointed at
+  // a seeded post and reported "the wrapper does not overflow at 360px, so it proves nothing:
+  // 312 in 312" — the widest table in the fixture FITS a phone, so the flow would have been
+  // measuring a box with no overflow for as long as nobody read the verdict. Twelve columns
+  // overflow at any width there is, and the post is purged on the way out.
+  //
+  // NOTE: a template literal. No backticks inside it.
+  flow('a wide table in an article can be reached without a mouse', async () => {
+    const slug = 'tour-wide-table'
+    const made = await expect('/admin', `
+      (async () => {
+        const cells = []
+        for (let i = 1; i <= 12; i += 1) cells.push('column ' + i)
+        const row = '| ' + cells.join(' | ') + ' |'
+        const rule = '| ' + cells.map(() => '---').join(' | ') + ' |'
+        const res = await fetch('/api/posts', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            title: 'Tour: a wide table', slug: '${slug}', status: 'published',
+            date: new Date(Date.now() - 60000).toISOString(),
+            content: 'Mot doan van dung truoc bang.\\n\\n' + row + '\\n' + rule + '\\n' + row + '\\n',
+          }),
+        })
+        if (!res.ok) return 'could not make the post: ' + res.status
+        return 'ok'
+      })()`, 600)
+    if (!made.startsWith('ok')) return made
+
+    const seen = await atWidth(360, `/${slug}`, `
+      (() => {
+        const box = document.querySelector('.table-scroll')
+        if (!box) return 'the article has no .table-scroll at all'
+        const spill = box.scrollWidth - box.clientWidth
+        if (spill <= 0) {
+          return 'the wrapper does not overflow at 360px, so it proves nothing: '
+            + box.scrollWidth + ' in ' + box.clientWidth
+        }
+        box.focus()
+        if (document.activeElement !== box) {
+          const a = document.activeElement
+          return 'the scrolling box cannot take focus (active element is '
+            + (a ? a.tagName + '.' + a.className : 'none') + '), so its '
+            + spill + 'px past the right edge are reachable by dragging and by nothing else'
+        }
+        // ⚠️ THE COUNTER-MEASUREMENT. focus() on a plain div leaves activeElement on the body,
+        // so a harness that blessed anything would be caught here rather than blessing a
+        // wrapper that had quietly lost its attribute.
+        const plain = document.createElement('div')
+        document.body.appendChild(plain)
+        plain.focus()
+        const fooled = document.activeElement === plain
+        plain.remove()
+        if (fooled) return 'this browser focuses a plain div, so the check above says nothing'
+        // And the TABLE is not the target: the box with the overflow is.
+        if (document.querySelector('table[tabindex]')) {
+          return 'the table carries tabindex, but the wrapper is the element that scrolls'
+        }
+        return 'ok the wrapper took focus with ' + spill + 'px past its right edge'
+      })()`, 400)
+
+    // ⚠️ PURGED, NOT TRASHED, and on the way out of a FAILURE too: a DELETE is a soft delete,
+    // so a flow that gives up early would leave a row in the Trash for every flow after it.
+    await expect('/admin', `
+      (async () => {
+        await fetch('/api/posts/${slug}', { method: 'DELETE' })
+        await fetch('/api/trash', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ kind: 'posts', action: 'purge', ids: ['${slug}'] }),
+        })
+        return 'ok'
+      })()`, 600)
+    return seen
+  })
+
+  // A HEADLINE IN ANOTHER LANGUAGE, on a page that is not in it. `lang` on a list item is a
+  // claim about which `:lang()` rule wins, and the only way to ask is to read back the custom
+  // property the stylesheet sets — the markup says nothing about which face resolved.
+  flow('a foreign headline in the feed takes its own face', () => expect('/', `
+    (() => {
+      const root = document.documentElement
+      if (root.getAttribute('lang') === 'ko') {
+        return 'the home page itself claims to be Korean, so an item cannot be told apart'
+      }
+      if (!document.documentElement.outerHTML.includes(':lang(ko)')) {
+        return 'the stylesheet ships no :lang(ko) rule, so nothing could have applied'
+      }
+      const head = [...document.querySelectorAll('h1[lang], h2[lang]')]
+        .find((h) => h.getAttribute('lang') === 'ko')
+      if (!head) {
+        const any = [...document.querySelectorAll('h1, h2')].map((h) => h.textContent.trim().slice(0, 16))
+        return 'no headline in the feed says it is Korean; saw ' + JSON.stringify(any.slice(0, 8))
+      }
+      const varOf = (el) => getComputedStyle(el).getPropertyValue('--font-reading').trim()
+      if (varOf(head) === varOf(root)) {
+        return 'the Korean headline resolves the same reading face as the page round it ('
+          + varOf(head).slice(0, 60) + '), so :lang(ko) matched nothing'
+      }
+      // The counter-test: a neighbour that named no language must resolve the ROOT's face.
+      const plain = [...document.querySelectorAll('h1, h2')].find((h) => !h.hasAttribute('lang'))
+      if (plain && varOf(plain) !== varOf(root)) {
+        return 'a headline with no lang resolves something other than the page face, so the '
+          + 'comparison above cannot tell a matched rule from a mismatched one'
+      }
+      return 'ok the Korean headline resolves a reading face the page round it does not'
     })()`, 400))
 }

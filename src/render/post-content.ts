@@ -107,9 +107,28 @@ function buildCallouts(html: string): string {
  * A string pass rather than a `renderer.table` override, so marked's own table HTML stays
  * byte-for-byte what it was and the golden diff is exactly this wrapper. GFM cannot nest a
  * table inside a table, so the non-greedy match cannot close on the wrong tag.
+ *
+ * ⚠️ `tabindex="0"` BECAUSE A BOX THAT SCROLLS AND CANNOT BE FOCUSED IS A MOUSE-ONLY BOX.
+ * Measured at a 320px viewport: four of the six tables in the seed overflow their wrapper,
+ * and the columns past the edge were reachable by dragging and by nothing else — no Tab
+ * stop, so no arrow keys, so a keyboard or switch user could not read them at all. One
+ * attribute makes the box a focus target and the arrow keys start working; it is what
+ * `scrollable-region-focusable` asks for and it needs no script.
+ *
+ * ⚠️ AND NO `aria-label` WITH IT, which is the other half of the usual advice and is turned
+ * down here on purpose. A name would have to be a word in the reader's language, and this
+ * function renders the BODY — `renderPostContent` takes markdown and media facts, no
+ * settings and no locale, and `bodyKey` is content-addressed over exactly those. Threading a
+ * language in to label a wrapper would put the site's language into every cached body on the
+ * blog. The house already answered this once: the paper look's "Table 1." labels are drawn by
+ * CSS counters from a per-language stylesheet (`look-paper.css.ts`), not written into the
+ * body. What a screen reader announces here is the table itself, headers and all.
  */
 function wrapTables(html: string): string {
-  return html.replace(/<table>[\s\S]*?<\/table>/g, (table) => `<div class="table-scroll">${table}</div>`)
+  return html.replace(
+    /<table>[\s\S]*?<\/table>/g,
+    (table) => `<div class="table-scroll" tabindex="0">${table}</div>`,
+  )
 }
 
 function dedupeHeadingIds(html: string): string {

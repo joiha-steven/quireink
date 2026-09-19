@@ -142,11 +142,19 @@ const DIVERGED: Record<string, { behaviour: string; why: string }> = {
   //    table became a scroll box as tall as the piece and Safari drew a scrollbar down the
   //    reading column. Each v2 answer grew by exactly the 32 bytes of the wrapper and nothing
   //    else, which was asserted at capture time rather than eyeballed.
-  'footnote-in-table': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
-  'gfm-table-align': { behaviour: 'table scope', why: 'th carries scope="col" before align; wrapped to scroll' },
-  'gfm-table-pipes': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
-  'list-with-table': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
-  'mixed-everything': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
+  //
+  //    And a third time on 2026-09-19, by the 16 bytes of `tabindex="0"` on that wrapper.
+  //    The box scrolled and could not be focused, so the columns past its edge were reachable
+  //    by dragging and by nothing else: four of the six tables in the seed overflow at a 320px
+  //    viewport, measured. Shiki had put the same attribute on `<pre>` since the beginning —
+  //    the code block was the one that was already right. Again asserted rather than eyeballed:
+  //    the capture was accepted only after removing that exact string from each answer
+  //    reproduced the file already on disk, byte for byte.
+  'footnote-in-table': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll, focusably' },
+  'gfm-table-align': { behaviour: 'table scope', why: 'th carries scope="col" before align; wrapped to scroll, focusably' },
+  'gfm-table-pipes': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll, focusably' },
+  'list-with-table': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll, focusably' },
+  'mixed-everything': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll, focusably' },
   // ── A task item says it is one (2026-09-09, with the pen's list marks — ADR 0042).
   //    `class="task"` on the `<li>` round a GFM checkbox, from `markTaskItems` in
   //    `post-content.ts`, so the stylesheet can keep its ink dot off an item that already

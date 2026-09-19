@@ -104,6 +104,7 @@ Işık, yığın, İstanbul. Üç kelime, dört farklı i.`,
   {
     title: 'Die Kunst der Kapitälchen',
     slug: 'die-kunst-der-kapitaelchen',
+    lang: 'de',
     excerpt: 'Echte Kapitälchen sind gezeichnet: eigene Strichstärke, eigene Laufweite, eigene Höhe. Alles andere ist verkleinerte Versalschrift, wirkt dünn und zu eng — und genau das tut der Browser, wenn die Schrift den Schnitt nicht mitbringt.',
     category: 'Typography', tags: ['small caps', 'craft'],
     ago: 34,
@@ -149,6 +150,7 @@ Enska notaði þorn líka, öldum saman. Hún missti hann ekki af málfræðileg
   {
     title: 'La chasse, l’approche et le gris typographique',
     slug: 'la-chasse-et-l-approche',
+    lang: 'fr',
     excerpt: 'Trois mots français pour trois choses que l’anglais confond sous le seul mot spacing. La chasse appartient à la lettre, l’approche au couple, le gris à la page entière — et l’un ne corrige jamais l’autre.',
     category: 'Typography', tags: ['kerning', 'tracking', 'craft'],
     ago: 48,
@@ -171,6 +173,7 @@ Same test, other languages: Íslenska, Čeština, Türkçe. Cùng một phép th
   {
     title: 'Thư pháp và nhịp thở',
     slug: 'thu-phap-va-nhip-tho',
+    lang: 'vi',
     excerpt: 'Nét chữ đẹp không đến từ cổ tay. Nó đến từ chỗ người viết quyết định dừng lại, và từ nhịp thở giữa hai nét — thứ không cây bút nào dạy được cho người đang cầm nó.',
     category: 'Calligraphy', tags: ['vietnamese', 'practice', 'rhythm'],
     ago: 96,
@@ -193,6 +196,7 @@ Tập một nét duy nhất, lặp lại kín một trang, cho tới khi nét th
   {
     title: 'Dấu phụ tiếng Việt và chiều cao chữ hoa',
     slug: 'dau-phu-tieng-viet',
+    lang: 'vi',
     excerpt: 'Chữ Quốc ngữ chồng hai dấu lên cùng một nguyên âm: một dấu chất lượng, một dấu thanh. Đó là bài kiểm tra khắc nghiệt nhất cho khoảng cách dòng, và là lý do một trang tiếng Việt cần thoáng hơn tiếng Anh chừng hai phần mười.',
     category: 'Typography', tags: ['vietnamese', 'diacritics', 'leading'],
     ago: 104,
@@ -217,6 +221,7 @@ Deutsch, Polski und Türkçe stellen dieselbe Frage in kleinerem Maßstab: Grö�
   {
     title: 'Der Blocksatz und die Lücke',
     slug: 'der-blocksatz-und-die-luecke',
+    lang: 'de',
     excerpt: 'Blocksatz ohne Silbentrennung ist der häufigste Satzfehler im Web: Löcher, die sich über drei Zeilen zu einem Bach zusammenschließen. Zu beheben ist er in einer einzigen CSS-Zeile, die fast niemand hinschreibt.',
     category: 'Typography', tags: ['justification', 'hyphenation', 'craft'],
     ago: 112,

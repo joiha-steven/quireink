@@ -21,7 +21,7 @@ import { standaloneUrls } from '@/render/link-cards'
 import { cardFacts, noteLinks } from '@/content/link-cards'
 import type { ImageDims, ReadyOriginals } from '@/render/figures'
 import { extractHeadings } from '@/utils'
-import { langOf, siblingsOf } from '@/content/translations'
+import { langAttr, langOf, siblingsOf } from '@/content/translations'
 import { articleHead } from '@/web/article-head'
 import { TOC_ANCHORS } from '@/render/toc'
 import { menuBlock } from '@/web/sidebar'
@@ -177,8 +177,9 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
           escapeAttr(series.slug)}">${escapeHtml(series.name)}</a> · ${escapeHtml(s.seriesPartPrefix)} ${
           series.currentIndex + 1}/${series.posts.length}</p><ol>${
           series.posts.map((p) => (p.slug === post.slug
-            ? `<li aria-current="page">${escapeHtml(p.title)}</li>`
-            : `<li><a href="/${escapeAttr(p.slug)}">${escapeHtml(p.title)}</a></li>`)).join('')
+            ? `<li aria-current="page"${langAttr(p, settings.language)}>${escapeHtml(p.title)}</li>`
+            : `<li><a href="/${escapeAttr(p.slug)}"${langAttr(p, settings.language)}>${
+              escapeHtml(p.title)}</a></li>`)).join('')
         }</ol></aside>`
       : ''
     // Tags and categories, each on its own labelled line, over a rule. The rule is the

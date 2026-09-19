@@ -87,6 +87,7 @@ for (let i = 0; i < POSTS.length; i += 1) {
     categories: [p.category],
     tags: p.tags,
     ...(p.series ? { series: p.series, seriesOrder: p.order } : {}),
+    ...(p.lang ? { lang: p.lang } : {}),
     // THE POST'S OWN FIRST PICTURE, when it has one. It was the app icon on two posts in
     // three, which made every thumbnail and every card the same Q, blown up: a list of
     // pictures that told you nothing. A post with no picture gets none — no placeholder,

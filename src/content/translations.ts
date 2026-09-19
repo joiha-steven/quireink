@@ -25,6 +25,7 @@
 // the same reason.
 
 import type { Page, Post, SiteLang, SiteSettings } from '@/types'
+import { escapeAttr } from '@/utils'
 import { getIndex, getPublicPosts } from '@/content/posts'
 import { getPageIndex, getPublicPages } from '@/content/pages'
 import { getSettings } from '@/content/settings'
@@ -43,6 +44,29 @@ type Piece = Pick<Post, 'slug' | 'title' | 'lang' | 'translationGroup'>
 /** What a piece is written in when it has not said: the site's own language. */
 export const langOf = (piece: { lang?: SiteLang }, siteLang: SiteLang): SiteLang =>
   piece.lang ?? siteLang
+
+/**
+ * ` lang="ko"` for a title in a LIST, and '' far more often than not.
+ *
+ * An article page gets the piece's language on `<html>` and everything inside it inherits.
+ * A listing cannot: one document carries thirty titles, and the eleven in Korean sit beside
+ * the twenty in English under one root. Without this, `:lang()` matches that root and every
+ * one of them is Korean-or-not by the site's answer — which is how a Han character ends up
+ * drawn in the wrong country's shapes (`content/fonts.ts` builds those rules and says so) and
+ * how a screen reader reads 모아쓰기 in an English voice.
+ *
+ * ⚠️ IT GOES ON THE PIECE'S OWN WORDS AND NOTHING ELSE — the title and the excerpt. The date,
+ * the category, the reading time and the pager around them are the SITE speaking, in the site's
+ * language, and ADR 0056 turns down "the whole page follows the piece" in as many words. A
+ * `lang` on the card would hand the date to the wrong dictionary to win the headline.
+ *
+ * ⚠️ AND IT IS EMPTY WHEN THE TWO AGREE, which is every card on the monolingual blogs that are
+ * almost all of them. `lang` is inherited: repeating the root's own answer thirty times is
+ * thirty attributes that change nothing. Same reasoning as a NULL `lang` advertising no
+ * hreflang — a blog that has not said anything has nothing said on its behalf.
+ */
+export const langAttr = (piece: { lang?: SiteLang }, siteLang: SiteLang): string =>
+  piece.lang && piece.lang !== siteLang ? ` lang="${escapeAttr(piece.lang)}"` : ''
 
 /**
  * Every translation group on the blog, as `slug -> the whole group INCLUDING that slug`.

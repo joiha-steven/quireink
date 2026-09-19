@@ -13,7 +13,7 @@ const html = (md: string) => renderPostContent({ markdown: md })
 describe('the four delimiters', () => {
   test('$$…$$ is a block, in its own scrollable wrapper', async () => {
     const out = await html('$$M \\times V = P \\times Q$$')
-    expect(out).toContain('<div class="math-block">')
+    expect(out).toContain('<div class="math-block" tabindex="0">')
     expect(out).toContain('display="block"')
     // The operator arrives as the real character, not as the control word.
     expect(out).toContain('×')
@@ -21,7 +21,7 @@ describe('the four delimiters', () => {
   })
 
   test('\\[…\\] is the same block', async () => {
-    expect(await html('\\[x^2\\]')).toContain('<div class="math-block">')
+    expect(await html('\\[x^2\\]')).toContain('<div class="math-block" tabindex="0">')
   })
 
   test('$…$ is inline, and stays inside the markup around it', async () => {
@@ -166,14 +166,14 @@ describe('a delimiter that opens nothing', () => {
 
   test('a formula written over several lines still gets its wrapper', async () => {
     const out = await html('$$\nM \\times V = P \\times Q\n$$\n')
-    expect(out).toContain('<div class="math-block">')
+    expect(out).toContain('<div class="math-block" tabindex="0">')
     expect(out).toContain('×')
   })
 
   test('a formula closing at the end of a content line keeps that line', async () => {
     // `x = 1$$` both ends the formula and is part of it, unlike a code fence's closing line.
     const out = await html('$$\nx = 1$$\n')
-    expect(out).toContain('<div class="math-block">')
+    expect(out).toContain('<div class="math-block" tabindex="0">')
     expect(out).toContain('<mn')
   })
 })

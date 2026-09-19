@@ -250,7 +250,14 @@ function oneBlock(node: Block): string {
     case 'mathBlock':
       // The wrapper is what scrolls: a long derivation is wider than the measure and takes
       // its own scrollbar rather than widening the page.
-      return `<div class="math-block">${renderFormula(node.value, true)}</div>\n`
+      //
+      // ⚠️ AND `tabindex="0"`, so the part past the edge can be reached without a mouse.
+      // Measured at 320px: EVERY display formula in the seed overflows its wrapper, seven of
+      // seven — a derivation is wider than a reading measure almost by definition, so this
+      // box is the one that always scrolls rather than the one that sometimes does. A focus
+      // target is what turns the arrow keys on; the label question is answered in
+      // `wrapTables` (`render/post-content.ts`) and answered the same way.
+      return `<div class="math-block" tabindex="0">${renderFormula(node.value, true)}</div>\n`
     case 'table':
       return tableToHtml(node)
     case 'footnoteDef':

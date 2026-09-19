@@ -42,7 +42,7 @@ describe('math: the reader gets MathML, not TeX', () => {
 
   it('renders a display formula the same way, inside the block that scrolls', () => {
     const html = toHtml('$$\\frac{a}{b}$$\n', PAGE)
-    expect(html).toContain('<div class="math-block">')
+    expect(html).toContain('<div class="math-block" tabindex="0">')
     expect(html).toContain('<math')
     expect(html).toContain('display="block"')
   })

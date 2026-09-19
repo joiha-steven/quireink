@@ -21,6 +21,39 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
   first, and a text field offering the groups already in use. Under it, the group's current
   members — drafts included — so a typo in the name shows as an empty line rather than as
   nothing at all.
+- **A LIST marks each title too** (`langAttr`, same file). An article page can put the piece's
+  language on `<html>` and let everything inherit; a listing holds thirty pieces under one root
+  and cannot. Without the attribute, `:lang()` matches that root, so a Korean headline on a
+  Vietnamese blog is drawn in whichever Han face the system reaches for and read aloud in a
+  Vietnamese voice. Six surfaces carry it: the feed cards, the magazine front's headline,
+  standfirst and opening lines, the archive rows, the not-found page's three newest, and the
+  series box inside an article.
+  ⚠ On the piece's own words ONLY — the headline, the standfirst, the excerpt. The date, the
+  category and the reading time beside them are the site speaking, and ADR 0056 turns down "the
+  whole page follows the piece". A `lang` on the card would hand the date to the wrong language
+  in order to win the title.
+  ⚠ And nothing at all when the piece agrees with the site, which is every card on a
+  monolingual blog: `lang` inherits, so repeating the root's own answer thirty times says
+  nothing and buries the one card where it matters.
+  ⚠ **A piece can only name one of the eleven languages the interface speaks** (`locales/langs.ts`).
+  A guest post in Polish or Icelandic stores NULL and renders in the site's language, because
+  `lang` is typed as `SiteLang`. The seed carries four such posts. Widening it to any BCP-47 tag
+  is a decision ADR 0056 did not take.
+
+## A scrolling box in an article can be reached without a mouse
+
+- **`tabindex="0"` on `.table-scroll` and `.math-block`.** Both take their own horizontal
+  scrollbar when what they hold is wider than the reading measure, and neither was a tab stop —
+  so the columns past the right edge were reachable by dragging and by nothing else. Measured at
+  a 320px viewport on the seeded blog: four of six tables overflow, and **seven of seven**
+  display formulas. Shiki has always put the same attribute on `<pre>`, so the code block was
+  the one already right; finding it is what said the other two were the group.
+- **No `aria-label` with it**, which is the other half of the usual advice and is declined here.
+  A name would have to be a word in the reader's language, and `renderPostContent` takes
+  markdown and media facts — no settings, no locale — with `bodyKey` content-addressed over
+  exactly those. Threading a language in would put the site's language into every cached body on
+  the blog. The house answered this once already: the paper look's "Table 1." labels are drawn
+  by CSS counters from a per-language stylesheet, not written into the body.
 
 ## URL redirects — `src/server/redirects.ts`, Admin → Settings → Server & connections
 
