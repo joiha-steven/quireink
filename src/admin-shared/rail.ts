@@ -232,6 +232,30 @@ export const RAIL_KEYS = {
 } as const
 
 /**
+ * How the library lays each of its three tabs out, remembered PER KIND.
+ *
+ * ⚠️ ONE PREFERENCE FOR ALL THREE WOULD HAVE MOVED A DEFAULT. Pictures want a grid and files
+ * want a list — a PDF's useful facts are its name, its size and its date, which is a row, and
+ * that is what the Files tab has always drawn. A single shared setting would have opened Files
+ * as a tray of cards for everyone who had never touched the control.
+ *
+ * Here beside the rail's keys because they are read in the same place and for the same reason:
+ * the boot script writes them on `<html>` BEFORE the first paint. A view applied afterwards is
+ * a library that visibly re-flows on every load, which is the beat that whole script exists to
+ * beat.
+ */
+export const MEDIA_VIEW_KEYS = {
+  images: 'quireink-admin-media-view-images',
+  videos: 'quireink-admin-media-view-videos',
+  files: 'quireink-admin-media-view-files',
+} as const
+
+/** What each tab looks like for somebody who has never touched the keys. */
+export const MEDIA_VIEW_DEFAULT = { images: 'grid', videos: 'grid', files: 'list' } as const
+
+export type MediaKind = keyof typeof MEDIA_VIEW_KEYS
+
+/**
  * The band where the rail costs more than it returns: wide enough that a rail belongs on
  * screen at all, but not wide enough to spend 208px of it on words. An iPad in landscape and a
  * foldable opened and turned both land here.

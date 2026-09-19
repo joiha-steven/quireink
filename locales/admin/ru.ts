@@ -380,6 +380,8 @@ const ru = {
   removeAria: 'Убрать',
   paletteNames: { mono: 'Моно', sepia: 'Сепия', forest: 'Лес', ocean: 'Океан', scifi: 'Sci-Fi', amber: 'Янтарь' },
   libraryTitle: 'Библиотека',
+  mediaViewGrid: 'Сетка',
+  mediaViewList: 'Список',
   tabImages: 'Изображения',
   tabVideos: 'Видео',
   tabFiles: 'Файлы',

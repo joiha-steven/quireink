@@ -380,6 +380,8 @@ const vi = {
   removeAria: 'Xóa',
   paletteNames: { mono: 'Đơn sắc', sepia: 'Nâu giấy', forest: 'Rừng xanh', ocean: 'Đại dương', scifi: 'Viễn tưởng', amber: 'Hổ phách' },
   libraryTitle: 'Thư viện',
+  mediaViewGrid: 'Lưới',
+  mediaViewList: 'Danh sách',
   tabImages: 'Hình ảnh',
   tabVideos: 'Video',
   tabFiles: 'Files',

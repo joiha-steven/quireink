@@ -380,6 +380,8 @@ const ja = {
   removeAria: '削除',
   paletteNames: { mono: 'モノ', sepia: 'セピア', forest: 'フォレスト', ocean: 'オーシャン', scifi: 'サイファイ', amber: 'アンバー' },
   libraryTitle: 'ライブラリ',
+  mediaViewGrid: 'グリッド',
+  mediaViewList: 'リスト',
   tabImages: '画像',
   tabVideos: '動画',
   tabFiles: 'ファイル',

@@ -380,6 +380,8 @@ const zh = {
   removeAria: '删除',
   paletteNames: { mono: '单色', sepia: '棕褐', forest: '森林', ocean: '海洋', scifi: '科幻', amber: '琥珀' },
   libraryTitle: '资源库',
+  mediaViewGrid: '网格',
+  mediaViewList: '列表',
   tabImages: '图片',
   tabVideos: '视频',
   tabFiles: '文件',

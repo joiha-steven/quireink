@@ -380,6 +380,8 @@ const en = {
   removeAria: 'Remove',
   paletteNames: { mono: 'Mono', sepia: 'Sepia', forest: 'Forest', ocean: 'Ocean', scifi: 'Sci-Fi', amber: 'Amber' },
   libraryTitle: 'Library',
+  mediaViewGrid: 'Grid',
+  mediaViewList: 'List',
   tabImages: 'Images',
   tabVideos: 'Videos',
   tabFiles: 'Files',

@@ -13,6 +13,7 @@ import { wireImages } from './lib/media-images'
 import { wireAttachments } from './lib/media-attachments'
 import type { Words } from './lib/media-bridge'
 import { showTab } from './lib/tab-strip'
+import { MEDIA_VIEW_KEYS, type MediaKind } from '@/admin-shared/rail'
 
 const root = document.querySelector<HTMLElement>('[data-screen="media"]')
 
@@ -45,6 +46,24 @@ if (root) {
     }
     showTab(strip)
   }
+
+  // ── grid or list ──────────────────────────────────────────────────────────────────────
+  // ONE ATTRIBUTE, on `<html>`, where the boot script already put it before the first paint.
+  // Nothing is rebuilt and nothing is measured: the stylesheet holds both layouts for all three
+  // kinds, and this only says which one is asked for.
+  const viewKeys = screen.querySelector<HTMLElement>('[data-media-view-keys]')
+  viewKeys?.addEventListener('click', (e) => {
+    const key = (e.target as HTMLElement).closest<HTMLElement>('[data-media-view-key]')
+    const view = key?.dataset.mediaViewKey
+    if (view !== 'grid' && view !== 'list') return
+    // The keys belong to whichever tab is open, and the tab is already on the screen's root —
+    // so the pair does not have to be redrawn when the kind changes, and the stylesheet reads
+    // both facts for itself.
+    const kind = screen.dataset.mediaTab as MediaKind | undefined
+    if (!kind || !(kind in MEDIA_VIEW_KEYS)) return
+    document.documentElement.setAttribute(`data-media-view-${kind}`, view)
+    try { localStorage.setItem(MEDIA_VIEW_KEYS[kind], view) } catch { /* a private window still switches */ }
+  })
 
   strip?.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]')

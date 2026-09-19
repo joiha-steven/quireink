@@ -193,3 +193,43 @@ describe('the library is paged', () => {
     expect(html).toContain('/admin/media?tab=videos&amp;page=2')
   })
 })
+
+describe('grid or list, remembered per tab', () => {
+  // ⚠️ ONE PREFERENCE FOR ALL THREE WOULD HAVE MOVED A DEFAULT. A PDF's useful facts are its
+  // name, its size and its date — a row — which is what Files has always drawn, while pictures
+  // want a grid. A single shared setting opens Files as a tray of cards for everybody who never
+  // touched the control, so each kind carries its own.
+  //
+  // And NEITHER KEY IS MARKED ACTIVE IN THE MARKUP. Which one is pressed is a `localStorage`
+  // preference the server cannot read; the boot script writes it on `<html>` before the first
+  // paint and the stylesheet paints the key. A control corrected after the paint is a control
+  // that flickers, which is the bug this admin has already paid for once (`chord.test.ts`).
+  it('offers both layouts, and claims neither', async () => {
+    const html = await mediaScreen(await getSettings(), new URLSearchParams())
+    expect(html).toContain('data-media-view-key="grid"')
+    expect(html).toContain('data-media-view-key="list"')
+    // `aria-pressed` is how this screen's OTHER strip marks its chosen key. If it ever appears
+    // on these two, the server has started guessing at a preference it cannot read.
+    const keys = html.slice(html.indexOf('data-media-view-keys'))
+    expect(keys.slice(0, keys.indexOf('</div>'))).not.toContain('aria-pressed')
+  })
+
+  it('the boot script answers all three, with today’s looks as the defaults', async () => {
+    const { railBootScript } = await import('@/web/admin/rail')
+    const boot = railBootScript()
+    for (const kind of ['images', 'videos', 'files']) {
+      expect(boot).toContain(`data-media-view-${kind}`)
+    }
+    // A grid for pictures and for players; a list for files. The stored value can only be the
+    // other one, so the default is what the expression falls back to.
+    expect(boot).toContain(`data-media-view-images',S.getItem("quireink-admin-media-view-images")==="list"?"list":"grid"`)
+    expect(boot).toContain(`data-media-view-files',S.getItem("quireink-admin-media-view-files")==="grid"?"grid":"list"`)
+  })
+
+  it('and the stylesheet carries both layouts for all three', async () => {
+    const sheet = await Bun.file('src/admin/admin.css').text()
+    expect(sheet).toContain(":root[data-media-view-images='list'] [data-media-grid]")
+    expect(sheet).toContain(":root[data-media-view-videos='list'] [data-video-list]")
+    expect(sheet).toContain(":root[data-media-view-files='grid'] [data-file-frame]")
+  })
+})

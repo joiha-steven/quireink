@@ -75,11 +75,11 @@ export function filesPanel(
     + selectionBar({ clearLabel: t.clearSelection, deleteLabel: t.deleteSelected, attrs: 'data-file-bar' })
     + `<div data-file-body>`
     + `<div class="space-y-6" data-file-lists${empty ? ' hidden' : ''}>`
-    + `<ul class="${FRAME}" data-file-list${files.length ? '' : ' hidden'}>${rows}</ul>`
+    + `<ul class="${FRAME}" data-file-frame data-file-list${files.length ? '' : ' hidden'}>${rows}</ul>`
     + `<div class="space-y-2"${icons.length ? '' : ' hidden'}>`
     + `<h3 class="text-xs font-semibold text-neutral-500 dark:text-neutral-400">`
     + `${escapeHtml(t.iconsGroupTitle)}</h3>`
-    + `<ul class="${FRAME}">${iconRows}</ul></div></div>`
+    + `<ul class="${FRAME}" data-file-frame>${iconRows}</ul></div></div>`
     + `<div data-file-empty${empty ? '' : ' hidden'}>${emptyState({ title: t.noFiles })}</div>`
     + `</div>` + pagerHtml + `</div></div>`
 }

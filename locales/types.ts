@@ -588,6 +588,9 @@ export type AdminStrings = {
   schemeNames: Record<string, string>
   // media
   libraryTitle: string
+  /** The library's two layouts, on the keys that switch between them. */
+  mediaViewGrid: string
+  mediaViewList: string
   tabImages: string
   tabVideos: string
   tabFiles: string

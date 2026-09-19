@@ -19,6 +19,8 @@ import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { SHEET_FOOT } from '@/admin-shared/kit'
 import { pageHeader, pager, sheet, sheetTop, tabs } from '@/web/admin/kit'
+import { SEGMENT_TRACK, edgeAt, tabItemClass } from '@/admin-shared/tabs'
+import { ICONS } from '@/icons'
 import { mediaScreenView } from '@/web/admin/views-media'
 import { imageTools, imagesPanel } from '@/web/admin/screens/media-images'
 import { filesPanel, videosPanel } from '@/web/admin/screens/media-files'
@@ -53,6 +55,26 @@ function words(t: AdminStrings): string {
   }))
 }
 
+/**
+ * THE LIBRARY'S TWO LAYOUTS, on one pair of keys for all three kinds.
+ *
+ * ⚠️ NEITHER KEY IS MARKED ACTIVE HERE, and that is deliberate: which one is pressed is a
+ * `localStorage` preference the SERVER cannot read. The boot script writes `data-media-view` on
+ * `<html>` before the first paint and the stylesheet paints the matching key — the same
+ * arrangement the rail's own state uses, and the one the chord badge had to be moved to after
+ * it flickered the logo on every load.
+ */
+function viewKeys(t: AdminStrings): string {
+  const key = (view: 'grid' | 'list', icon: 'grid' | 'menu', label: string, i: number): string =>
+    `<button type="button" data-media-view-key="${view}" title="${escapeAttr(label)}"`
+    + ` aria-label="${escapeAttr(label)}"`
+    + ` class="${tabItemClass(false, 'sm', false, 'choice', edgeAt(i, 2))} !px-2 flex items-center">`
+    + `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"`
+    + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[icon]}</svg></button>`
+  return `<div class="${SEGMENT_TRACK} shrink-0" data-media-view-keys>`
+    + key('grid', 'grid', t.mediaViewGrid, 0) + key('list', 'menu', t.mediaViewList, 1) + `</div>`
+}
+
 export async function mediaScreen(settings: SiteSettings, query: URLSearchParams): Promise<string> {
   const t = adminT(settings.language)
   const lang = settings.language
@@ -76,7 +98,7 @@ export async function mediaScreen(settings: SiteSettings, query: URLSearchParams
       // The images tab's own tools ride on the sheet's FIRST ROW beside the kind tabs, which is
       // where React put them with a portal. `hidden` when another kind is open: a tab that is
       // not on screen must not leave its tools in the visible row.
-      sheetTop(strip + imageTools(t, lang, view.totals))
+      sheetTop(strip + viewKeys(t) + imageTools(t, lang, view.totals))
       + imagesPanel(t, lang, view.images, open === 'images', pager(t, '/admin/media', 'images', view.at.images, view.pages.images))
       + videosPanel(t, lang, view.videos, open === 'videos', pager(t, '/admin/media', 'videos', view.at.videos, view.pages.videos))
       + filesPanel(t, lang, view.files, view.icons, open === 'files', pager(t, '/admin/media', 'files', view.at.files, view.pages.files))

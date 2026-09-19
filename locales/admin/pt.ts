@@ -381,6 +381,8 @@ const pt = {
   removeAria: 'Remover',
   paletteNames: { mono: 'Mono', sepia: 'Sépia', forest: 'Floresta', ocean: 'Oceano', scifi: 'Sci-Fi', amber: 'Âmbar' },
   libraryTitle: 'Biblioteca',
+  mediaViewGrid: 'Grelha',
+  mediaViewList: 'Lista',
   tabImages: 'Imagens',
   tabVideos: 'Vídeos',
   tabFiles: 'Arquivos',

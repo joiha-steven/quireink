@@ -27,7 +27,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr } from '@/utils'
 import { reconcileNavOrder } from '@/content/nav-order'
-import { NARROW, RAIL_KEYS, RAIL_WIDTH, ZONES, defaultOrder, railRows, type RailRow } from '@/admin-shared/rail'
+import { MEDIA_VIEW_DEFAULT, MEDIA_VIEW_KEYS, NARROW, RAIL_KEYS, RAIL_WIDTH, ZONES, defaultOrder, railRows, type MediaKind, type RailRow } from '@/admin-shared/rail'
 import { WORDMARK, floor, renderRow, searchKey, searchRow } from '@/web/admin/rail-rows'
 import { OVERLAY } from '@/admin-shared/kit'
 import { arrangeFoot, arrangeTemplate, footStrip } from '@/web/admin/rail-foot'
@@ -180,6 +180,11 @@ var more=S.getItem(${JSON.stringify(RAIL_KEYS.more)})==='1';
 h.setAttribute('data-rail-collapsed',shut?'1':'0');
 h.setAttribute('data-rail-icons',icons?'1':'0');
 h.setAttribute('data-rail-more',more?'1':'0');
+${(Object.keys(MEDIA_VIEW_KEYS) as MediaKind[]).map((kind) =>
+  `h.setAttribute('data-media-view-${kind}',S.getItem(${JSON.stringify(MEDIA_VIEW_KEYS[kind])})`
+  + `===${JSON.stringify(MEDIA_VIEW_DEFAULT[kind] === 'grid' ? 'list' : 'grid')}`
+  + `?${JSON.stringify(MEDIA_VIEW_DEFAULT[kind] === 'grid' ? 'list' : 'grid')}`
+  + `:${JSON.stringify(MEDIA_VIEW_DEFAULT[kind])});`).join('\n')}
 h.style.setProperty('--admin-nav-w',shut?${JSON.stringify(RAIL_WIDTH.shut)}:${JSON.stringify(RAIL_WIDTH.open)});
 if(/mac|iphone|ipad/i.test(navigator.platform||''))h.setAttribute('data-mac','1');
 var hr=new Date().getHours();
