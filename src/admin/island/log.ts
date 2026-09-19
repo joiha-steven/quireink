@@ -15,7 +15,8 @@ import { fold } from '@/admin-shared/fold'
 const root = document.querySelector<HTMLElement>('[data-screen="log"]')
 
 if (root) {
-  const PAGE = Number(root.dataset.logPage ?? 50)
+  // The server decides this and writes it on the root; 100 is only what to do without one.
+  const PAGE = Number(root.dataset.logPage) || 100
   const rows = [...root.querySelectorAll<HTMLElement>('[data-log-row]')]
   const kind = root.querySelector<HTMLSelectElement>('[data-log-kind]')
   const days = root.querySelector<HTMLSelectElement>('[data-log-days]')

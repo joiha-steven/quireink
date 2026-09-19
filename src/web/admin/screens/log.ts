@@ -27,8 +27,14 @@ import { emptyState, pageHeader, select, sheet, sheetTop } from '@/web/admin/kit
 import { logView } from '@/web/admin/views'
 import type { SiteSettings } from '@/types'
 
-/** How many rows stand on screen before "show more". A rendering decision, not a round trip. */
-const PAGE = 50
+/**
+ * How many rows stand on screen before "show more". A rendering decision, not a round trip.
+ *
+ * The endpoint caps at 200 and every one of them is in the markup, so this only decides how
+ * many arrive visible. The island reads it off `data-log-page`, which makes this number the
+ * only one: the fallback beside it there is for a root that somehow has no attribute.
+ */
+const PAGE = 100
 
 const KINDS: LogKind[] = ['writing', 'media', 'people', 'settings', 'system', 'security', 'error']
 
@@ -50,9 +56,9 @@ const rowGlyph = (action: string): string =>
  * keystroke is one `includes` per row rather than a fold of two hundred strings.
  */
 function row(t: AdminStrings, e: ActivityEntry, i: number): string {
-  // PAST THE FIRST PAGE IT ARRIVES HIDDEN, so the first paint is the fifty rows the old screen
-  // drew and not two hundred. The island owns it from there: a filter changes WHICH fifty, so
-  // the count cannot be baked into the markup beyond this first answer.
+  // PAST THE FIRST PAGE IT ARRIVES HIDDEN, so the first paint is one page and not two hundred
+  // rows. The island owns it from there: a filter changes WHICH rows, so the count cannot be
+  // baked into the markup beyond this first answer.
   const sentence = logSentence(t, e.action, e.detail)
   const find = fold(`${sentence} ${e.detail} ${e.action}`)
   // The machine's own words, kept where somebody debugging an install can reach them and
