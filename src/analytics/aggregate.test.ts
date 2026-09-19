@@ -138,6 +138,20 @@ describe('depthBuckets', () => {
       { bucket: 3, samples: 3 },
     ])
   })
+
+  it('names every quartile once one of them has a sample', () => {
+    // A distribution missing a quartile is not a smaller distribution, it is a different shape,
+    // and `group by` drops the empty ones. Same lie `dailySeries` was fixed for: the boundaries
+    // are known here, so a quartile nobody stopped in is an answer rather than a gap.
+    scroll(90, null)
+    expect(depthBuckets(T0, null).map((b) => b.bucket)).toEqual([0, 1, 2, 3])
+  })
+
+  it('and stays empty when nothing was measured at all', () => {
+    // Four zeros would draw four empty bars under a heading; the screen already has a sentence
+    // for a window with no samples in it, and this is how it still reaches that sentence.
+    expect(depthBuckets(T0 + 90 * HOUR, null)).toEqual([])
+  })
 })
 
 describe('engagement', () => {
@@ -150,7 +164,15 @@ describe('engagement', () => {
       scroll(0, 1_000, T0, list)
     }
     expect(engagement(T0, null)).toEqual({ avgReadDepth: 80, avgDwellMs: 60_000 })
-    expect(depthBuckets(T0, null)).toEqual([{ bucket: 3, samples: 1 }])
+    // ⚠️ FOUR ROWS, THREE OF THEM EMPTY, and that is the point: one sample that reached the end
+    // is a distribution where nobody stopped early, and it used to come back as the single row
+    // `[{ bucket: 3, samples: 1 }]` — which the admin drew as the whole shape.
+    expect(depthBuckets(T0, null)).toEqual([
+      { bucket: 0, samples: 0 },
+      { bucket: 1, samples: 0 },
+      { bucket: 2, samples: 0 },
+      { bucket: 3, samples: 1 },
+    ])
     // A note is content, and so is a page whose slug happens to start like a list's.
     scroll(40, 2_000, T0, '/notes/one')
     scroll(40, 2_000, T0, '/pages-of-history')
@@ -160,7 +182,12 @@ describe('engagement', () => {
   it('still answers for a list when asked about that list', () => {
     scroll(10, 500, T0, '/')
     expect(engagement(T0, '/')).toEqual({ avgReadDepth: 10, avgDwellMs: 500 })
-    expect(depthBuckets(T0, '/')).toEqual([{ bucket: 0, samples: 1 }])
+    expect(depthBuckets(T0, '/')).toEqual([
+      { bucket: 0, samples: 1 },
+      { bucket: 1, samples: 0 },
+      { bucket: 2, samples: 0 },
+      { bucket: 3, samples: 0 },
+    ])
   })
 
   it('averages depth over every sample', () => {

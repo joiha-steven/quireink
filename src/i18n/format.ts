@@ -216,3 +216,40 @@ export function formatBytes(bytes: number): string {
   }
   return `${value.toFixed(1)} ${units[i]}`
 }
+
+/**
+ * A weekday's own name, by the index `Date.getUTCDay` uses — 0 is Sunday.
+ *
+ * Anchored on a date that IS a Sunday and read in UTC, so the name is a fact about the index
+ * and not about the reader's clock: the caller already knows which weekday it means, and all
+ * it wants is what that day is called here.
+ */
+const SUNDAY = Date.UTC(2024, 0, 7)
+export function formatWeekday(dow: number, lang: SiteLang): string {
+  return printer(lang, { timeZone: 'UTC' }, { weekday: 'short' })
+    .format(new Date(SUNDAY + dow * 86_400_000))
+}
+
+/**
+ * The seven weekday indices in the order this language writes a week.
+ *
+ * ⚠️ THE WEEK DOES NOT START ON THE SAME DAY EVERYWHERE, and a list that always opened on
+ * Monday would be wrong in English and Japanese while a list that always opened on Sunday
+ * would be wrong in Vietnamese, German and Russian. `Intl` knows: `getWeekInfo().firstDay` is
+ * 1 for Monday through 7 for Sunday. Falls back to Monday, which is ISO 8601's answer, for a
+ * runtime that does not carry it.
+ */
+export function weekdayOrder(lang: SiteLang): number[] {
+  // `getWeekInfo` is standards-track and shipped, and TypeScript's `Intl.Locale` has not caught
+  // up — so the shape is named here rather than reached for with a cast to anything.
+  type WithWeek = Intl.Locale & { getWeekInfo?: () => { firstDay?: number } }
+  let first = 1
+  try {
+    first = (new Intl.Locale(dateLocale(lang)) as WithWeek).getWeekInfo?.().firstDay ?? 1
+  } catch {
+    first = 1
+  }
+  // `firstDay` counts Monday..Sunday as 1..7; `getUTCDay` counts Sunday..Saturday as 0..6.
+  const start = first % 7
+  return Array.from({ length: 7 }, (_, i) => (start + i) % 7)
+}

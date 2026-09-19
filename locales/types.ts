@@ -1103,8 +1103,12 @@ export type AdminStrings = {
   analyticsVisitors: string
   analyticsAvgDepth: string
   analyticsPeak: string
+  /** The legend mark on the chart's dashed tail: the bucket that is not finished yet. */
+  analyticsStillCounting: string
   analyticsNew: string
   analyticsReturning: string
+  /** The heading over the ten best-read pieces. Every other block on the screen has one. */
+  analyticsTopPages: string
   analyticsTopReferrers: string
   analyticsTopCountries: string
   analyticsColPage: string
@@ -1151,6 +1155,8 @@ export type AdminStrings = {
   // finally lets an owner ask for what the database has been holding all along (#64).
   analyticsRangeAll: string
   // Calendar years, side by side, whatever window the tabs are showing.
+  /** The rhythm panel beside `analyticsByYear`: which weekdays readers come on. */
+  analyticsByWeekday: string
   analyticsByYear: string
   analyticsNoData: string
   analyticsPrivacyNote: string

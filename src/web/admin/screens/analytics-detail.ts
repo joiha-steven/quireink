@@ -81,6 +81,7 @@ export async function analyticsDetailScreen(settings: SiteSettings, path: string
         peakLabel: t.analyticsPeak,
         viewsLabel: t.analyticsViews,
         visitorsLabel: t.analyticsVisitors,
+        partialLabel: t.analyticsStillCounting,
         lang,
       }),
     })

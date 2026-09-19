@@ -10,10 +10,10 @@
 // never changed. That is why the island is small and this file is the shape of the page.
 import type { SiteLang, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import type { AnalyticsSummary, NameStat } from '@/analytics/types'
+import type { AnalyticsSummary, DailyPoint, NameStat } from '@/analytics/types'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { formatCount } from '@/i18n/format'
+import { formatCount, formatWeekday, weekdayOrder } from '@/i18n/format'
 import { flag, formatDuration } from '@/admin-shared/analytics'
 import { emptyState, linkTabs, pageHeader, sheet, sheetTop } from '@/web/admin/kit'
 import { numBand } from '@/web/admin/kit-figures'
@@ -122,6 +122,39 @@ function columns(t: AdminStrings, lang: SiteLang, d: AnalyticsSummary): string {
     + `<div class="grid sm:grid-cols-2 sm:divide-x sm:divide-neutral-100 lg:grid-cols-4 dark:sm:divide-neutral-800">${audience}</div>`
 }
 
+/**
+ * WHICH WEEKDAYS READERS COME ON, folded out of the chart's own buckets — no second query.
+ *
+ * The screen could say what happened on a given day and how a year compared with the one
+ * before it, and nothing in between: an owner deciding when to publish, or when to send the
+ * letter, had the answer in front of them thirty times over and no way to add it up.
+ *
+ * ⚠️ ONLY WHERE IT IS A RHYTHM. The buckets are days for 7, 30, 90 and 365; they are hours for
+ * the 24-hour window and months for all time, and neither folds into a weekday. Fourteen is the
+ * floor because seven buckets is not a pattern, it is the chart above rearranged — each weekday
+ * would have exactly one sample and the bars would say "last Tuesday" while the heading says
+ * "Tuesdays".
+ *
+ * The labels and the ORDER are the language's own (`i18n/format.ts`): a week opens on Monday in
+ * Vietnamese and on Sunday in English, and both are right.
+ */
+function weekdayRows(daily: DailyPoint[], lang: SiteLang): BarRow[] {
+  const totals = [0, 0, 0, 0, 0, 0, 0]
+  for (const p of daily) {
+    // The label is the LOCAL date the bucket machinery already resolved (`YYYY-MM-DD`), so
+    // reading it back as a UTC instant gives that date's own weekday and no zone enters twice.
+    const [y, m, d] = p.day.split('-').map(Number)
+    if (!y || !m || !d) continue
+    const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay()
+    totals[dow] = (totals[dow] ?? 0) + p.views
+  }
+  return weekdayOrder(lang).map((dow) => ({
+    key: String(dow),
+    label: formatWeekday(dow, lang),
+    value: totals[dow] ?? 0,
+  }))
+}
+
 /** The summary, or one page's detail when `?path=` is set. Two views behind one address. */
 export async function analyticsScreen(settings: SiteSettings, query: URLSearchParams): Promise<string> {
   const window = rangeOf(query.get('range') ?? undefined)
@@ -149,15 +182,26 @@ export async function analyticsScreen(settings: SiteSettings, query: URLSearchPa
    * deliberately: "2024 against 2025" is not a question about the last thirty days.
    */
   const yearRows: BarRow[] = (years ?? []).map((y) => ({ key: y.year, label: y.year, value: y.views }))
-  const byYear = yearRows.length > 1
-    ? `<div class="border-b border-neutral-100 dark:border-neutral-800">`
-      + barList({ title: t.analyticsByYear, unit: t.analyticsViews, rows: yearRows, empty: t.analyticsNoData, lang, bare: true })
-      + `</div>`
-    : ''
+  const panel = (title: string, rows: BarRow[]): string =>
+    barList({ title, unit: t.analyticsViews, rows, empty: t.analyticsNoData, lang, bare: true })
+
+  // The two questions about TIME that are not the chart, side by side when both have an answer
+  // and full width when only one does. A seven-row list across a 1400px pane is six inches of
+  // paper holding an inch of ink.
+  const rhythm = [
+    window.bucket === 'day' && summary.daily.length >= 14 ? panel(t.analyticsByWeekday, weekdayRows(summary.daily, lang)) : '',
+    yearRows.length > 1 ? panel(t.analyticsByYear, yearRows) : '',
+  ].filter(Boolean)
+  const byYear = rhythm.length === 0
+    ? ''
+    : `<div class="grid border-b border-neutral-100 dark:border-neutral-800`
+      + `${rhythm.length > 1 ? ' sm:grid-cols-2 sm:divide-x sm:divide-neutral-100 dark:sm:divide-neutral-800' : ''}">`
+      + rhythm.join('') + `</div>`
 
   const body = summary.totalViews > 0
     ? `<div class="border-b border-neutral-100 px-4 pb-2 pt-4 dark:border-neutral-800">`
-      + trendChart({ points: summary.daily, peakLabel: t.analyticsPeak, viewsLabel: t.analyticsViews, visitorsLabel: t.analyticsVisitors, lang })
+      + trendChart({ points: summary.daily, peakLabel: t.analyticsPeak, viewsLabel: t.analyticsViews,
+        visitorsLabel: t.analyticsVisitors, partialLabel: t.analyticsStillCounting, lang })
       + `</div>`
       // Under the chart rather than in the headline band: these two answer "what does my blog
       // cost to serve", which is a different question from the five reader metrics, and one of
@@ -165,7 +209,8 @@ export async function analyticsScreen(settings: SiteSettings, query: URLSearchPa
       + deliveryPanel(t, lang, summary)
       + byYear
       + topPages(t, lang, summary.topPages, titles, range)
-      + pieceIndex(t, lang, pieces, titles, range)
+      // The index is handed what the table above just drew, so it can open on the rest.
+      + pieceIndex(t, lang, pieces, titles, range, new Set(summary.topPages.map((p) => p.path)))
       + columns(t, lang, summary)
     : `<div class="flex flex-1 items-center justify-center p-10">${emptyState({ title: t.analyticsNoData })}</div>`
 

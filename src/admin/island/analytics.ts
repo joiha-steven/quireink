@@ -36,14 +36,22 @@ if (root) {
       // SEARCHING OPENS THE LIST. Somebody who typed a title wants the answer, not the answer
       // plus a button admitting there might be more of it.
       const open = showAll || needle.length > 0
+      // `shown` is how many MATCH, which is what the count beside the heading reports.
+      // `placed` is how many are on screen, which is what the ten-row cap counts. They were
+      // one variable until the rows already drawn in the table above started arriving hidden:
+      // those still match a search, and still have to come back the moment one is typed.
       let shown = 0
+      let placed = 0
       let last: HTMLElement | null = null
       for (const row of rows) {
         const hit = !needle || (row.dataset.find ?? '').includes(needle)
         if (hit) shown += 1
-        row.hidden = !hit || (!open && shown > TOP_N)
+        const eligible = hit && (open || !row.hasAttribute('data-piece-above'))
+        const show = eligible && (open || placed < TOP_N)
+        if (show) placed += 1
+        row.hidden = !show
         row.removeAttribute('data-last')
-        if (!row.hidden) last = row
+        if (show) last = row
       }
       // The hairline belongs under the last row SHOWING. `TROW`'s own `last:border-0` answers
       // for `:last-child`, which is a hidden row whenever anything is hidden.

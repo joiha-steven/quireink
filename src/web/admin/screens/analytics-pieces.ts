@@ -53,7 +53,18 @@ function rowsOf(pieces: PieceStat[], titles: Record<string, string>): Row[] {
   return rows.sort((a, b) => b.views - a.views || a.title.localeCompare(b.title))
 }
 
-export function pieceIndex(t: AdminStrings, lang: SiteLang, pieces: PieceStat[], titles: Record<string, string>, range: string): string {
+/**
+ * ⚠️ THE PIECES THE TABLE ABOVE ALREADY SHOWED ARRIVE HIDDEN, which is what this file's own
+ * first paragraph has always claimed it was for: "a piece that is not in the top ten and never
+ * will be". It was not doing it. Both lists are ordered by views, so the first ten rows here
+ * were the ten titles directly above, repeated with two of their four columns dropped — the
+ * same names twice in a row, which is the first thing anyone notices on this screen.
+ *
+ * Hidden and not REMOVED, because the filter has to find them: typing the name of the best-read
+ * piece must land on it, and `Show all` means all. So `above` marks them and the island applies
+ * the same rule — they come back the moment anything is typed or the list is opened.
+ */
+export function pieceIndex(t: AdminStrings, lang: SiteLang, pieces: PieceStat[], titles: Record<string, string>, range: string, above: ReadonlySet<string>): string {
   const rows = rowsOf(pieces, titles)
   const n = (x: number): string => escapeHtml(formatCount(x, lang))
 
@@ -65,11 +76,21 @@ export function pieceIndex(t: AdminStrings, lang: SiteLang, pieces: PieceStat[],
   // hidden behind thirty others — so the ten on screen ended with a rule under them that the
   // React face never drew, between the last title and the "Show all" link. `admin.css` keys
   // the rule off this attribute and the island moves it as the filter opens and closes.
-  const lastShown = Math.min(TOP_N, rows.length) - 1
+  // Which rows stand on screen with nothing typed: the first ten that are not already above.
+  // The island recomputes exactly this, so the two must agree — and they agree by being the
+  // same two lines rather than by being checked against each other.
+  let placed = 0
+  const shows = rows.map((r) => {
+    const show = !above.has(r.path) && placed < TOP_N
+    if (show) placed += 1
+    return show
+  })
+  const lastShown = shows.lastIndexOf(true)
   const body = rows.map((r, i) =>
     `<tr data-piece${i === lastShown ? ' data-last' : ''}`
+    + (above.has(r.path) ? ' data-piece-above' : '')
     + ` data-find="${escapeAttr(fold(`${r.title} ${r.path}`))}"`
-    + ` class="${TROW}"${i < TOP_N ? '' : ' hidden'}>`
+    + ` class="${TROW}"${shows[i] ? '' : ' hidden'}>`
     + `<td class="w-full max-w-0 px-4 py-2.5">`
     + `<a href="${escapeAttr(detailHref(r.path, range))}" data-piece-row`
     + ` class="block truncate text-neutral-700 hover:underline dark:text-neutral-200"`

@@ -139,6 +139,12 @@ export function topPages(t: AdminStrings, lang: SiteLang, pages: TopPage[], titl
   const name = (path: string): string => escapeHtml(titles[path] ?? path)
   const head = [t.analyticsViews, t.analyticsVisitors, t.analyticsColTime, t.analyticsColDepth]
 
+  // ⚠️ THE TABLE HAD NO NAME. Every other block on this screen carries one — `Every piece`
+  // directly beneath it does — so the screen opened with an anonymous grid of numbers and then
+  // a titled one, and a reader had to work out from the columns which was which.
+  const heading = `<div class="flex items-center gap-3 px-4 pt-3 pb-2">`
+    + `<h2 class="text-sm font-medium text-neutral-900 dark:text-white">${escapeHtml(t.analyticsTopPages)}</h2></div>`
+
   const table = `<div class="hidden border-b border-neutral-100 sm:block dark:border-neutral-800">`
     + `<div class="${TABLE_SCROLL}"><table class="w-full text-sm"><thead class="${THEAD}"><tr>`
     + `<th class="w-full px-4 py-2.5 font-medium">${escapeHtml(t.analyticsColPage)}</th>`
@@ -163,5 +169,5 @@ export function topPages(t: AdminStrings, lang: SiteLang, pages: TopPage[], titl
       + `</dl></li>`).join('')
     + `</ul>`
 
-  return table + cards
+  return heading + table + cards
 }

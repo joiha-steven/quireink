@@ -136,9 +136,19 @@ const READ_PATHS = `path not in ('/', '/search', '/notes')
   and path not glob '/page/*' and path not glob '/category/*'
   and path not glob '/tag/*' and path not glob '/series/*'`
 
-/** Quartile distribution of scroll samples. Integer division, as in the original. */
+/**
+ * Quartile distribution of scroll samples — ALL FOUR QUARTILES, zeros included. Integer
+ * division, as in the original.
+ *
+ * ⚠️ `group by` DROPS THE EMPTY ONES, and a distribution missing a quartile is not a smaller
+ * distribution, it is a different shape. A page everybody reads to the end returned three rows
+ * — 26-50, 51-75, 76-100 — and the admin drew them as the whole story, so the quartile that
+ * mattered most, the one where nobody stopped, was the one not on the page. It is exactly the
+ * lie `dailySeries` above was fixed for: a bucket with nothing in it is a fact about the window
+ * rather than a gap in the data, and the boundaries are known here.
+ */
 export function depthBuckets(since: number, path: string | null): DepthBucket[] {
-  return path === null
+  const rows = path === null
     ? all<DepthBucket>(
         `select min(3, depth / 25) as bucket, count(*) as samples from analytics_scroll
           where created_at >= $since and ${READ_PATHS} group by bucket order by bucket`,
@@ -149,6 +159,12 @@ export function depthBuckets(since: number, path: string | null): DepthBucket[] 
           where created_at >= $since and path = $path group by bucket order by bucket`,
         { since, path },
       )
+  // ⚠️ NOTHING MEASURED STAYS NOTHING. Four zeros is a distribution in which nobody read
+  // anything, and the admin would draw four empty bars under a heading; no rows at all is the
+  // shape the screen already has a sentence for. The filling is for a window that HAS samples.
+  if (rows.length === 0) return []
+  const found = new Map(rows.map((r) => [r.bucket, r.samples]))
+  return [0, 1, 2, 3].map((bucket) => ({ bucket, samples: found.get(bucket) ?? 0 }))
 }
 
 /** Average scroll depth, and average dwell over the samples that measured one. */
