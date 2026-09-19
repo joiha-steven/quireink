@@ -15,6 +15,13 @@ import { addComment, getCommentTree } from '@/comments/comments'
 import { payload } from '@/test/api'
 
 const DIR = './.tmp/test-mcp-steward'
+// ⚠️ ITS OWN UPLOADS TREE, because `create_snapshot` below builds a REAL archive and
+// `backup.ts` reads `STORAGE_LOCAL_DIR || './uploads'`. Unset, this test tars whatever the
+// developer's own upload folder happens to hold: it passed all morning and then timed out at
+// 5,056ms of a 5,000ms budget against 895 files, none of which belong to it. Every other test
+// that touches uploads already sets this (`web/uploads.test.ts`, `web/admin-ops.test.ts`,
+// `web/admin-import.test.ts`); the one that archives them was the one that did not.
+process.env.STORAGE_LOCAL_DIR = `${DIR}-uploads`
 freshDatabase(DIR)
 const app = createApp()
 let token = ''
@@ -37,7 +44,10 @@ beforeEach(async () => {
   token = (await payload<{ token: string }>(res)).token
 })
 
-afterAll(() => dropDatabase(DIR))
+afterAll(() => {
+  delete process.env.STORAGE_LOCAL_DIR
+  dropDatabase(DIR)
+})
 
 const call = async (name: string, args: Record<string, unknown> = {}) => {
   const res = await app.request('/api/mcp', {

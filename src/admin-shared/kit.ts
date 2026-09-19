@@ -94,9 +94,10 @@ const SHAPE =
 // the ordinary one rather than two, which is what a second size is for.
 const SIZES: Record<ButtonSize, string> = {
   md: 'min-h-9 px-3.5 py-1.5 text-sm',
-  // 13px, up from 12 on 2026-09-19: a card's own keys wear this size, and a row read across
-  // held `Choose image` at 12 beside a segmented strip at 13 and a label at 14. The strip's.
-  sm: 'min-h-8 px-3 py-1.5 text-[13px]',
+  // 13px since 2026-09-19, beside a strip at 13 and a label at 14. ⚠️ `py-1`, never `py-1.5`:
+  // at the larger padding a BORDERED variant clears `min-h-8` by itself and lands on 33.5
+  // while a borderless one is held at 32 — two heights in one row (`docs/admin-design.md`).
+  sm: 'min-h-8 px-3 py-1 text-[13px]',
 }
 
 /**

@@ -271,4 +271,77 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
       }
       return 'ok shut -> Person "tourblog" with a public key and a webfinger -> shut'
     })()`, 2500))
+
+  // TWO CONTROL HEIGHTS, AND THIS IS WHAT HOLDS THEM TO TWO. `docs/admin-design.md` states the
+  // rule — 36 for the ordinary control, 32 for the small one — and nothing could check it:
+  // `check:admin-kit` compares CLASS STRINGS, so a primitive whose own recipe computes to the
+  // wrong number passes it, and its header says as much ("a settings field two pixels taller
+  // than the button beside it does not fail a type check and does not fail a test... found by
+  // photographing the running admin, which is not a thing anyone does on every commit").
+  //
+  // It had drifted. Measured 2026-09-19 across all seven tabs: 31 keys at 33.5px, because the
+  // box is `border-box` and a bordered variant paid for its hairline out of a height that only
+  // `min-h-8` was holding up. `Download archive` 32 sat beside `Download Markdown` 33.5 in one
+  // card. `kit.ts` carries the arithmetic; this is the measurement that keeps it true.
+  //
+  // ⚠️ THE EXEMPTIONS ARE NAMED, NOT INFERRED. A switch, a checkbox, a colour well, a slider,
+  // a theme tile and a segmented ITEM all have their own sizes with their own written reasons
+  // (`admin-design.md` on the sub-16px hierarchy; `admin-shared/tabs.ts` on why the item is 30
+  // inside a 32 track). A guard that measured them too would be turned off within a week.
+  //
+  // NOTE: a template literal. No backticks inside it.
+  flow('admin: every key and field on settings is one of the two heights', () => expect('/admin/settings', `
+    (() => {
+      const shown = (e) => e.getClientRects().length > 0
+      // includes(), NOT a regular expression, and no backticks in this comment either. The
+      // flow is a template literal: the backslashes in a /rounded-l-[5px]/ pattern are eaten
+      // before the browser sees them, so what arrives is a CHARACTER CLASS that matches
+      // nothing — the first run of this guard reported all 49 segmented items as faults.
+      // A segment is known by its TRACK, not by its own corners: only the first and last item
+      // carry a rounding class, so a corner test exempted 34 of the 49 and reported the middles.
+      // Every SEGMENT_TRACK variant in admin-shared/tabs.ts carries no-scrollbar.
+      const seg = (e) => {
+        const p = e.parentElement
+        return !!p && String(p.className || '').includes('no-scrollbar')
+      }
+      const exempt = (e) => {
+        const t = (e.getAttribute('type') || '').toLowerCase()
+        if (t === 'checkbox' || t === 'color' || t === 'range') return true
+        if (e.getAttribute('role') === 'switch' || e.closest('[role=switch]')) return true
+        if (seg(e)) return true
+        // A theme or font tile is a picture of a choice, not a control on a row.
+        if (e.tagName === 'BUTTON' && e.getBoundingClientRect().height > 36) return true
+        // A field stretched to a row it does not set (h-full beside a colour well).
+        if (getComputedStyle(e).height !== getComputedStyle(e).minHeight
+            && (e.className || '').includes('h-full')) return true
+        return false
+      }
+      const panels = [...document.querySelectorAll('[data-settings-panel]')]
+      if (panels.length !== 7) return panels.length + ' settings panel(s), expected seven'
+      const off = []
+      let seen = 0
+      for (const panel of panels) {
+        // Every panel is measured, not only the one on top: six of the seven ship hidden, and
+        // a hidden box still has to be right the moment the strip shows it. They are shown one
+        // at a time here rather than all at once, so each is laid out in the real column width.
+        const was = panel.hidden
+        panel.hidden = false
+        for (const e of panel.querySelectorAll('.card-body button, .card-body input, .card-body select')) {
+          if (!shown(e) || exempt(e)) continue
+          seen += 1
+          const h = Math.round(e.getBoundingClientRect().height * 10) / 10
+          if (h !== 36 && h !== 32) {
+            const what = (e.textContent || e.placeholder || e.getAttribute('aria-label') || e.tagName).trim()
+            off.push(what.slice(0, 22) + '=' + h)
+          }
+        }
+        panel.hidden = was
+      }
+      if (seen < 40) return 'only ' + seen + ' control(s) measured, which is too few to mean anything'
+      if (off.length) {
+        return off.length + ' of ' + seen + ' control(s) are neither 36 nor 32: '
+          + off.slice(0, 8).join(', ')
+      }
+      return 'ok ' + seen + ' control(s), all of them 36 or 32'
+    })()`, 900))
 }

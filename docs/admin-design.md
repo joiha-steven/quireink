@@ -136,6 +136,18 @@ character and none of its typographic rules **except one**, below.
   ordinary control was 40 until this release — a number the admin arrived with rather than
   one anyone measured. ⚠️ A caller cannot shrink a control by passing `h-8`: it loses to
   `min-h-9`, which is a different property. `Select` swaps its BASE (`small`) instead.
+  ⚠️ **A MINIMUM HEIGHT IS NOT A HEIGHT, and the hairline is what finds the difference.** The
+  box is `border-box`, so a bordered variant pays for its 1px out of the same height: at
+  `py-1.5` the small key's content is 19.5 + 12 = 31.5, `min-h-8` lifts a BORDERLESS one to 32,
+  and a bordered one is 33.5 — already past the minimum, so nothing lifts it and nothing lines
+  it up. Measured across all seven settings tabs on 2026-09-19: **31 keys at 33.5**, with
+  `Download archive` 32 beside `Download Markdown` 33.5 inside one card, and `Copy` 33.5 beside
+  `New token` 32 inside another. `py-1` puts both variants under the minimum, so both come out
+  32. The segmented strip met the same number a fortnight earlier and took the same cure
+  (`admin-shared/tabs.ts`); raising the small key's type from 12px to 13px is what pushed this
+  one over afterwards, and nothing said so — `check:admin-kit` compares class STRINGS, so a
+  primitive whose own recipe computes wrong passes it. A **tour flow** measures every key and
+  field on the settings screen now, because a computed height fails no unit test.
 - **Enclosure weakens inward, and settings is built from three ranks.** The sheet's edge, then
   the card's, then whatever is in the card — each line lighter than the one around it. It ran
   backwards until 2026-09-01: the sheet `neutral-200/80`, the card `neutral-100`, and a box
