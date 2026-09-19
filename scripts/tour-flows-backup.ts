@@ -54,4 +54,45 @@ export function registerBackupFlows({ flow, expect }: Tour): void {
       if (!handedOver.includes('/api/backup/export')) return 'handed over the wrong URL: ' + handedOver
       return 'ok handed ' + handedOver + ' to the browser, fetched nothing'
     })()`, 1200))
+
+  // ── The OTHER key in that card, and the lesson of issue #60 ─────────────────────────────
+  //
+  // `/api/export/markdown` is covered by a route test and a round-trip test, and neither of
+  // them can see whether anything on screen reaches it. That is exactly how the Trash spent
+  // thirteen days and four releases with a working endpoint and no control that called it:
+  // every flow touching it called the endpoint directly. So this one CLICKS, in the language
+  // the admin happens to be in, and asserts the same two halves as the flow above.
+  flow('admin: the writing can be taken away as Markdown, by pressing the key', () => expect('/admin/settings', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const tab = [...document.querySelectorAll('button, a')].find((n) => /server|máy chủ/i.test(n.textContent || ''))
+      if (tab) { tab.click(); await sleep(500) }
+      const button = document.querySelector('[data-writing-export]')
+      if (!button) return 'no Markdown export key on the server tab'
+      if (button.offsetParent === null) return 'the key is in the markup but not on screen'
+      const label = (button.textContent || '').trim()
+      if (!label) return 'the key has no words on it'
+
+      let handedOver = null
+      let pulledThroughJs = false
+      const realClick = HTMLAnchorElement.prototype.click
+      const realFetch = window.fetch
+      HTMLAnchorElement.prototype.click = function () { handedOver = this.getAttribute('href') }
+      window.fetch = function (input, ...rest) {
+        if (String(input && input.url ? input.url : input).includes('/api/export/')) pulledThroughJs = true
+        return realFetch.call(this, input, ...rest)
+      }
+      try {
+        button.click()
+        await sleep(600)
+      } finally {
+        HTMLAnchorElement.prototype.click = realClick
+        window.fetch = realFetch
+      }
+
+      if (pulledThroughJs) return 'the bundle was fetched into the tab instead of handed to the browser'
+      if (!handedOver) return 'pressing it handed no URL to the browser'
+      if (!handedOver.includes('/api/export/markdown')) return 'handed over the wrong URL: ' + handedOver
+      return 'ok "' + label + '" handed ' + handedOver + ' to the browser'
+    })()`, 1200))
 }

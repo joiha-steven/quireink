@@ -12,6 +12,9 @@ import { COOKIE_NAME, createSession } from '@/auth/sessions'
 import { resetSecretCache } from '@/auth/secret'
 import { resetLimits } from '@/server/rate-limit'
 import { payload } from '@/test/api'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 const DIR = './.tmp/test-admin-import'
 const UPLOADS = `${DIR}-uploads`
@@ -198,5 +201,86 @@ describe('the image fetch batch', () => {
   it('is owner-gated', async () => {
     // 403, not 401: the gate checks the origin BEFORE the session, same as every write.
     expect((await app.request('/api/import/images', { method: 'POST' })).status).toBe(403)
+  })
+})
+
+describe('a blog leaves and comes back', () => {
+  // THE WHOLE ROUND TRIP, THROUGH THE ROUTES THE OWNER ACTUALLY PRESSES.
+  //
+  // `server/export-md.test.ts` proves the FORMAT survives: build the files, parse them, compare.
+  // It cannot see the two things that make the format reachable — whether the bundle is
+  // recognised as ours at all, and whether what is recognised is then saved. Both are wiring,
+  // both are invisible to a parser test, and either one missing turns "your writing can come
+  // home" into a 400 nobody discovers until they try it.
+  it('exports the writing and imports it back through /api/import/archive', async () => {
+    const { savePost } = await import('@/content/posts')
+    const { savePage } = await import('@/content/pages')
+    const { saveNote } = await import('@/content/notes')
+    const { saveSettings } = await import('@/content/settings')
+    const { buildExportZip } = await import('@/server/export-md')
+
+    await saveSettings({ title: 'My Blog', siteUrl: 'https://example.com' })
+    await savePost({
+      title: 'Buoi chieu', content: 'Than bai voi ==but da==.', status: 'published',
+      date: '2020-01-01T00:00:00.000Z', categories: ['Suy nghi'], tags: ['thu'],
+      series: 'La thu', seriesOrder: 2,
+    })
+    await savePage({ title: 'Gioi thieu', content: 'Ve toi.', status: 'published' })
+    await saveNote({
+      title: 'Cay but', content: 'Ghi lai.', status: 'published',
+      date: '2020-02-01T00:00:00.000Z', quote: 'every stroke starts wet',
+    })
+
+    const dir = mkdtempSync(join(tmpdir(), 'quire-roundtrip-'))
+    const dest = join(dir, 'export.zip')
+    await buildExportZip(dest)
+    const bytes = await Bun.file(dest).arrayBuffer()
+    try { rmSync(dir, { recursive: true, force: true }) } catch { /* ignore */ }
+
+    // A CLEAN BLOG, which is what moving somewhere else means. Everything asserted below has
+    // to arrive from the file rather than from the rows that built it.
+    for (const t of ['posts', 'pages', 'notes', 'post_terms']) db().run(`delete from ${t}`)
+    const { getIndex, getPost } = await import('@/content/posts')
+    expect(await getIndex()).toHaveLength(0)
+
+    const form = new FormData()
+    form.set('file', new File([bytes], 'export.zip', { type: 'application/zip' }))
+    const res = await asOwner('/api/import/archive', { method: 'POST', body: form })
+    expect(res.status).toBe(200)
+    const report = await payload<{ posts: number; pages: number; notes: number; skipped: number }>(res)
+    expect(report).toMatchObject({ posts: 1, pages: 1, notes: 1, skipped: 0 })
+
+    // And the post is the post, not a husk with the right name on it.
+    const back = (await getPost('buoi-chieu'))!
+    expect(back.title).toBe('Buoi chieu')
+    expect(back.content).toBe('Than bai voi ==but da==.')
+    expect(back.categories).toEqual(['Suy nghi'])
+    expect(back.tags).toEqual(['thu'])
+    expect(back.series).toBe('La thu')
+    expect(back.seriesOrder).toBe(2)
+    expect(back.status).toBe('published')
+
+    const { getNote } = await import('@/content/notes')
+    expect((await getNote('cay-but'))!.quote).toBe('every stroke starts wet')
+  })
+
+  it('does not claim an archive that is not ours', async () => {
+    // The counter-test for the sniff above. A folder of Markdown with no `site.json` is what
+    // half the static site generators in the world produce, and reading one as a Quire Ink
+    // bundle would import somebody else's blog under our own field names.
+    const { ZipWriter } = await import('@/import/zip-write')
+    const parts: Uint8Array[] = []
+    const zip = new ZipWriter({ write: (b) => parts.push(new Uint8Array(b)) })
+    zip.addText('posts/hello.md', '---\ntitle: "Hello"\n---\n\nbody\n')
+    zip.finish()
+    const total = parts.reduce((n, p) => n + p.length, 0)
+    const bytes = new Uint8Array(total)
+    let at = 0
+    for (const part of parts) { bytes.set(part, at); at += part.length }
+
+    const form = new FormData()
+    form.set('file', new File([bytes], 'notours.zip', { type: 'application/zip' }))
+    const res = await asOwner('/api/import/archive', { method: 'POST', body: form })
+    expect(res.status).toBe(400)
   })
 })

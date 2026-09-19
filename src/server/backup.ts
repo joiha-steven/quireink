@@ -37,7 +37,8 @@ export type Snapshot = {
 export const snapshotsDir = (): string =>
   resolve(process.env.BACKUP_DIR || join(process.env.DATA_DIR || './data', 'backups'))
 
-const uploadsDir = (): string => resolve(process.env.STORAGE_LOCAL_DIR || './uploads')
+/** Where the blob store lives. Shared with the Markdown export, so the two agree by construction. */
+export const uploadsDir = (): string => resolve(process.env.STORAGE_LOCAL_DIR || './uploads')
 
 /**
  * `quire-2026-07-29T2040.tar.gz` — sortable, and unambiguous in a Downloads folder a year

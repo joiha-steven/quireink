@@ -26,9 +26,38 @@ export type ImportedPost = {
   content: string
   /** URL path this item lived at on the platform it left — the persister 301s it to the new slug. */
   path?: string
+  /**
+   * Fields only a QUIRE INK bundle carries, because it is an export of this shape rather than
+   * a conversion out of somebody else's. The other three parsers leave every one undefined,
+   * and `persist` passes whatever is set straight to `savePost`.
+   *
+   * Declared rather than cast in: without them `import/quireink.ts` had to widen its own
+   * objects with `as`, which is the compiler being told to stop looking at exactly the fields
+   * whose survival the round trip is about.
+   */
+  series?: string
+  seriesOrder?: number
+  coverImage?: string
+  featuredImage?: string
+  metaTitle?: string
+  metaDescription?: string
 }
-export type ImportedPage = { title: string; slug: string; status: 'draft' | 'published'; content: string; path?: string }
-export type ImportResult = { posts: ImportedPost[]; pages: ImportedPage[]; skipped: number }
+export type ImportedPage = {
+  title: string; slug: string; status: 'draft' | 'published'; content: string; path?: string
+  featuredImage?: string
+}
+/**
+ * A notebook entry (ADR 0044). OPTIONAL on the result, because only one source has ever had
+ * one: a Quire Ink bundle. WordPress, Ghost, Substack and Medium have no such kind, and giving
+ * their parsers an empty array to return would be four places stating a fact about a fifth.
+ */
+export type ImportedNote = {
+  title: string; slug: string; date: string; status: 'draft' | 'published'; content: string
+  sourceUrl?: string; sourceTitle?: string; quote?: string
+}
+export type ImportResult = {
+  posts: ImportedPost[]; pages: ImportedPage[]; notes?: ImportedNote[]; skipped: number
+}
 
 // ---- deterministic cleanup ----------------------------------------------------------
 

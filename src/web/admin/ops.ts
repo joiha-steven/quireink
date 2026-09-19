@@ -10,6 +10,7 @@ import { Hono } from 'hono'
 import { one } from '@/store/query'
 import { savePost, getPost } from '@/content/posts'
 import { savePage, getPage } from '@/content/pages'
+import { saveNote } from '@/content/notes'
 import { SlugConflictError } from '@/content/slugs'
 import { saveRedirect } from '@/server/redirects'
 import { normalizePath } from '@/server/redirect-path'
@@ -119,11 +120,12 @@ export function opsRoutes() {
   }
 
   const persist = async (
-    result: { posts: import('@/import/convert').ImportedPost[]; pages: import('@/import/convert').ImportedPage[]; skipped: number },
+    result: import('@/import/convert').ImportResult,
     source: string,
   ) => {
     let importedPosts = 0
     let importedPages = 0
+    let importedNotes = 0
     let redirects = 0
     for (const { slug, path, ...rest } of result.posts) {
       const finalSlug = await saveUnique(slug, (s) => savePost({ ...rest, slug: s }))
@@ -135,16 +137,27 @@ export function opsRoutes() {
       redirects += await redirectOldPath(path, finalSlug)
       importedPages += 1
     }
-    if (importedPosts + importedPages > 0) clearCache()
+    // NOTES, and only ever from a Quire Ink bundle (ADR 0044 — no other platform has the
+    // kind). No `redirectOldPath`: a note's address is `/notes/<slug>` in a namespace of its
+    // own, so nothing it used to live at belongs to this blog.
+    for (const { slug, ...rest } of result.notes ?? []) {
+      await saveUnique(slug, (s) => saveNote({ ...rest, slug: s }))
+      importedNotes += 1
+    }
+    if (importedPosts + importedPages + importedNotes > 0) clearCache()
     // ⚠️ THE KIND IS WHAT THE LOG PRINTS, and there was one kind for four importers: a Ghost,
     // Substack or Medium import was recorded as `import.wordpress`, which the activity log
     // renders as "Imported from WordPress" in eleven languages. The detail line said `ghost:`
     // underneath it and nobody reads a detail line to check a heading.
     void logActivity(
       source === 'wordpress' ? 'import.wordpress' : 'import.posts',
-      `${source}: ${importedPosts} posts + ${importedPages} pages`,
+      `${source}: ${importedPosts} posts + ${importedPages} pages`
+        + (importedNotes > 0 ? ` + ${importedNotes} notes` : ''),
     )
-    return { posts: importedPosts, pages: importedPages, skipped: result.skipped, redirects }
+    return {
+      posts: importedPosts, pages: importedPages, notes: importedNotes,
+      skipped: result.skipped, redirects,
+    }
   }
 
   router.post('/api/import/ghost', async (c) => {
@@ -182,7 +195,9 @@ export function opsRoutes() {
       const decoder = new TextDecoder()
       entries = unzip(
         new Uint8Array(await file.arrayBuffer()),
-        (name) => /\.(html|csv)$/i.test(name),
+        // `.md` and `site.json` are this blog's OWN bundle (`server/export-md.ts`). Widening
+        // the filter costs a Substack archive nothing, because those hold neither.
+        (name) => /\.(html|csv|md)$/i.test(name) || /(^|\/)site\.json$/.test(name),
       ).map(({ name, bytes }) => ({ name, text: decoder.decode(bytes) }))
     } catch (cause) {
       // Two codes rather than four: `unzip` distinguishes a corrupt entry from an unreadable
@@ -192,7 +207,12 @@ export function opsRoutes() {
       return fail(c, tooBig ? 'file_too_large' : 'not_a_zip', tooBig ? 413 : 400)
     }
     const { isSubstack, isMedium, parseSubstack, parseMedium } = await import('@/import/archive')
+    const { isQuireInk, parseQuireInk } = await import('@/import/quireink')
     const now = new Date().toISOString()
+    // OURS FIRST, because its sniff is the most specific of the three: a `site.json` beside
+    // Markdown under `posts/`. Substack and Medium carry neither, so the order is not what
+    // keeps them apart — it is that the most exact test should not be the last one asked.
+    if (isQuireInk(entries)) return json(await persist(parseQuireInk(entries, now), 'quireink'))
     if (isSubstack(entries)) return json(await persist(parseSubstack(entries, now), 'substack'))
     if (isMedium(entries)) return json(await persist(parseMedium(entries, now), 'medium'))
     return fail(c, 'not_a_recognised_export', 400)

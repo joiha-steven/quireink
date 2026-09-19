@@ -67,6 +67,13 @@ function wireBackupKeys(screen: HTMLElement, w: ListWords): void {
       return
     }
 
+    // The Markdown bundle, by the same route to the browser and for the same reason: it
+    // carries the uploads tree, so it is the same order of magnitude as the archive above.
+    if (target.closest('[data-writing-export]')) {
+      hand('/api/export/markdown')
+      return
+    }
+
     const cache = target.closest<HTMLButtonElement>('[data-cache-clear]')
     if (cache) { void clearCache(cache, w); return }
 

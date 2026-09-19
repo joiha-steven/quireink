@@ -58,7 +58,7 @@ To start you need a domain and a rented server, and the cheapest tier is enough.
 <details>
 <summary><b>Against the usual alternatives</b></summary>
 
-- **Instead of a hosted platform.** Your writing is two SQLite files on your own disk. No account, no plan, no export button you have to hope still works in five years.
+- **Instead of a hosted platform.** Your writing is two SQLite files on your own disk, and one button turns it into a folder of Markdown any editor can read. No account, no plan, no export you have to hope still works in five years.
 - **Instead of WordPress.** No PHP, no MySQL, no plugins to keep patched. One process, and readers get single-digit kilobytes of JavaScript.
 - **Instead of a static site generator.** You get a real admin: write, upload a photo, schedule and publish from a laptop or a phone, with search, comments, a newsletter and stats already there. No rebuild, no deploy, no git push to fix a typo.
 - **Instead of writing your own.** The boring half is done and tested: sign-in with TOTP, sessions, image resizing, feeds, OG images, redirects, an undo for deletes, revisions, backups, importers for WordPress, Ghost, Substack and Medium, eleven languages.
@@ -87,7 +87,7 @@ bun src/index.ts
 | 🔎&nbsp;**Search&nbsp;engines** | Sitemap, `robots.txt`, `llms.txt`, and an OG image drawn per post. RSS and JSON Feed, for the blog and for the notebook. Rename a slug and the old URL keeps working |
 | 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP |
 | 💾&nbsp;**Backups** | One button downloads the whole install. Scheduled snapshots stay on the server and are shipped to your own R2 or S3 bucket. [Details](./docs/backups.md) |
-| 📥&nbsp;**Moving&nbsp;in** | A WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you; the server works out whose it is. Everything becomes Markdown, old URLs answer with redirects, images land in your library |
+| 📥&nbsp;**Moving&nbsp;in,&nbsp;and&nbsp;out** | A WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you; the server works out whose it is. Old URLs answer with redirects, images land in your library. Out is a ZIP of Markdown with YAML front matter, which this blog also reads back |
 | 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and one more is one file. No CJK webfont ships, because they run to megabytes, but each of the three names its own face |
 | 🔐&nbsp;**Sign-in** | Username and password hashed with argon2id, an authenticator code every time, ten recovery codes, every signed-in device listed with a button to end it. No Google in the login path |
 | 🤖&nbsp;**Assistant** | Your own model key: Claude, GPT, Gemini or DeepSeek. Answers arrive as they are written, conversations are kept, each carries a receipt of what it cost. It also writes alt text and sorts spam into the trash |

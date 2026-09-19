@@ -270,8 +270,27 @@ describe('the manual archive', () => {
       .toHaveLength(0)
   })
 
+  // The OTHER download in that card, and the one thing worth asserting about it here rather
+  // than in `server/export-md.test.ts`: the route hands back a real ZIP, streamed, with its
+  // length declared. What is IN the bundle is that file's job.
+  it('hands the Markdown bundle over as a streamed ZIP', async () => {
+    const res = await asOwner('/api/export/markdown')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toBe('application/zip')
+    expect(res.headers.get('content-disposition'))
+      .toMatch(/attachment; filename="quire-writing-\d{4}-\d{2}-\d{2}T\d{4}\.zip"/)
+
+    const bytes = new Uint8Array(await res.arrayBuffer())
+    // `PK\x03\x04`: the local header of the first entry. An empty or error body has no such
+    // thing, and the two names above would still be right.
+    expect([bytes[0], bytes[1], bytes[2], bytes[3]]).toEqual([0x50, 0x4b, 0x03, 0x04])
+    // The same proof the archive above needs, for the same reason: a length declared with no
+    // bytes behind it is exactly what the premature sweep looked like.
+    expect(bytes.byteLength).toBe(Number(res.headers.get('content-length')))
+  })
+
   it('every backup route is owner-gated', async () => {
-    for (const path of ['/api/backup/export', '/api/backup/list', '/api/backup/download?name=x']) {
+    for (const path of ['/api/backup/export', '/api/export/markdown', '/api/backup/list', '/api/backup/download?name=x']) {
       expect((await app.request(path)).status).toBe(401)
     }
     // 403 rather than 401 on the writes: the gate checks the origin BEFORE the session, so

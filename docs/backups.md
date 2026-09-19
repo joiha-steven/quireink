@@ -1,7 +1,9 @@
-# Backups
+# Backups, and the way out
 
-There are **four**, and they answer different questions. Losing track of which is which is
-how an install ends up with two copies of the same protection and none of another.
+There are **four backups**, and they answer different questions. Losing track of which is which
+is how an install ends up with two copies of the same protection and none of another. There is
+also a **fifth download that is not a backup at all** — the Markdown export, which answers "take
+my writing somewhere else" and is [its own section below](#the-markdown-export-not-a-backup).
 
 | | Where | Answers | Source |
 |:--|:--|:--|:--|
@@ -177,3 +179,51 @@ lands on one copy and not the other, which is exactly how the two diverged here.
 They are variables rather than literals because **this repository is public**. A script that
 names somebody's data directory, their bucket and their alert endpoint publishes all three
 to everyone who reads it.
+
+
+## The Markdown export, which is not a backup
+
+`GET /api/export/markdown` — **Settings → Server & connections → Backups**, the second key.
+[ADR 0055](decisions/0055-the-writing-leaves-as-markdown.md);
+[`src/server/export-md.ts`](../src/server/export-md.ts).
+
+**It does not restore this blog, and nothing above carries the writing anywhere else.** That is
+the whole distinction, and the reason the two sit in one card with two sentences under them:
+
+| | Restores this install | Readable without Quire Ink |
+|:--|:--|:--|
+| the backup archive | yes | no |
+| the Markdown bundle | no | yes |
+
+A ZIP:
+
+    posts/<slug>.md    every post, drafts included, trash excluded
+    pages/<slug>.md
+    notes/<slug>.md
+    uploads/…          the blob store, file for file
+    site.json          the settings, whole
+    README.md          what the bundle is
+
+**Image paths are left exactly as the body holds them** (`/uploads/media/photo.webp`), because
+rewriting them would be lossy one way and unround-trippable the other. Put `uploads/` at a web
+root and every picture resolves; the bundle's own README says so, in English, for whoever opens
+it years from now.
+
+**What is not in it:** revisions, comments, subscribers, analytics, the activity log, sessions,
+and every credential. Keys live in `integration_keys` and passwords in `users`, neither of which
+this module reads — `export-md.test.ts` plants three secrets and looks for them, with a
+counter-test that a value which *should* be there is found by the same search.
+
+**It comes back.** [`src/import/quireink.ts`](../src/import/quireink.ts) reads the bundle and is
+wired into `POST /api/import/archive` as a fourth recognised shape, sniffed structurally
+(`site.json` beside Markdown under `posts/`) like the Substack and Medium ones. That reader
+exists so that "everything survives the round trip" is a test rather than a hope: a field added
+to a post is a field the writer starts emitting, and without a reader nothing notices it cannot
+be read back.
+
+**The ZIP is written by us** — [`src/import/zip-write.ts`](../src/import/zip-write.ts), no
+dependency, checked by the reader this repository already had for Substack and Medium. Text is
+deflated; an upload is stored, because a webp is already compressed and a stored entry's size is
+known before its header is written, which is what lets a large file stream. Zip64 is written only
+when a field overflows; the entry-count branch is tested and the four-gigabyte one is not, which
+[the test says out loud](../src/import/zip-write.test.ts).

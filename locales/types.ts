@@ -1353,6 +1353,8 @@ export type AdminStrings = {
   offsiteTest: string
   exportHint: string
   exportNow: string
+  exportWritingHint: string
+  exportWritingNow: string
   exportBusy: string
   exportReplicationNote: string
   backupAuto: string

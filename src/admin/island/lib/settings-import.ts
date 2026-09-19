@@ -24,7 +24,8 @@
 import { say } from './media-bridge'
 import { show, type ListWords } from './list-dom'
 
-type Imported = { posts: number; pages: number; skipped: number; redirects: number }
+/** `notes` arrives only from a Quire Ink bundle; no other export has the kind (ADR 0044). */
+type Imported = { posts: number; pages: number; notes?: number; skipped: number; redirects: number }
 /** What `/api/import/images` answers. `remaining` COUNTS FAILURES, which is what ends the loop. */
 type Images = { found: number; moved: number; remaining: number; failed: { url: string; reason: string }[] }
 
@@ -88,7 +89,8 @@ async function run(file: File, key: HTMLButtonElement, w: ListWords): Promise<vo
   const json = await res?.json().catch(() => null) as
     { success?: boolean; data?: Imported } | null
   if (!json?.success || !json.data) { say(w.importFailed ?? '', 'error'); return }
-  say(`${w.importDone ?? ''}: ${json.data.posts} + ${json.data.pages}`)
+  const notes = json.data.notes ?? 0
+  say(`${w.importDone ?? ''}: ${json.data.posts} + ${json.data.pages}` + (notes > 0 ? ` + ${notes}` : ''))
   await bringImagesHome(key, w)
 }
 

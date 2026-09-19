@@ -196,6 +196,16 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
     + `<p class="${NOTE_TEXT}">${escapeHtml(t.exportHint)}</p>`
     + `<button type="button" data-backup-export class="${buttonClass('primary', 'sm')}">`
     + `${escapeHtml(t.exportNow)}</button>`
+    // TWO WAYS OUT, IN ONE CARD, because an owner looking for either is looking in the same
+    // place: "let me take a copy away". They are not the same copy, and the two sentences say
+    // which is which — the archive puts THIS blog back, the Markdown goes anywhere. Drawn as
+    // the quieter of the two keys, because the archive is the one somebody needs weekly and
+    // this is the one they need once.
+    + `<div class="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
+    + `<p class="${NOTE_TEXT}">${escapeHtml(t.exportWritingHint)}</p>`
+    + `<button type="button" data-writing-export class="${buttonClass('secondary', 'sm')}">`
+    + `${escapeHtml(t.exportWritingNow)}</button>`
+    + `</div>`
     + `<div class="space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
     + switchList(switchRow({
       k: 'backups.enabled', label: t.backupAuto, note: t.backupAutoDesc, on: b.enabled,
