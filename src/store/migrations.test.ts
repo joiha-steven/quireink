@@ -6,6 +6,7 @@ import { mkdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { openDatabases, closeDatabases, parseMigrations } from './db'
 import migrations from './migrations.sql' with { type: 'text' }
+import analyticsMigrations from './migrations-analytics.sql' with { type: 'text' }
 
 const DIR = './.tmp/test-migrations'
 
@@ -153,4 +154,45 @@ test('an OLD database gets the columns it was created without', () => {
   expect(() => openDatabases(dir)).not.toThrow()
   closeDatabases()
   try { rmSync(dir, { recursive: true, force: true }) } catch { /* ignore */ }
+})
+
+/** Every `alter table X add column Y` a migrations file asks for, as pairs. */
+const columnsAdded = (sql: string): { table: string; column: string }[] =>
+  [...sql.matchAll(/alter\s+table\s+(\w+)\s+add\s+column\s+(\w+)/gi)]
+    .map((m) => ({ table: m[1]!, column: m[2]! }))
+
+test('a FRESH database already has every column a migration would add', () => {
+  // ⚠️ THE ONE FAILURE THE FIXTURE ABOVE CANNOT SEE, and the one this file's own header
+  // warns about: a schema change is TWO edits, and doing only the migration leaves a fresh
+  // install without the column. It fails SILENTLY in that direction, because `applyMigrations`
+  // records every step as applied on a fresh database without running it — so the column is
+  // never added, nothing throws, and the install is simply missing it while every upgraded
+  // instance has it.
+  //
+  // The test above asserts columns by name and is written by hand, so it only knows about the
+  // ones somebody remembered to add to it. This one reads the migrations file, which means it
+  // cannot go stale: a step added tomorrow is checked tomorrow.
+  const fresh = `${DIR}-fresh`
+  rmSync(fresh, { recursive: true, force: true })
+  const { db, analyticsDb } = openDatabases(fresh)
+
+  const missing: string[] = []
+  for (const [file, handle, sql] of [
+    ['quire.db', db, migrations],
+    ['analytics.db', analyticsDb, analyticsMigrations],
+  ] as const) {
+    for (const { table, column } of columnsAdded(sql)) {
+      if (!columns(handle, table).includes(column)) missing.push(`${file}: ${table}.${column}`)
+    }
+  }
+  expect(missing).toEqual([])
+
+  // A migrations file whose steps nothing reads would pass the line above in silence.
+  expect(columnsAdded(migrations).length).toBeGreaterThan(5)
+  // And the reader finds what it is looking for.
+  expect(columnsAdded('alter table posts add column foo text;'))
+    .toEqual([{ table: 'posts', column: 'foo' }])
+
+  closeDatabases()
+  try { rmSync(fresh, { recursive: true, force: true }) } catch { /* ignore */ }
 })
