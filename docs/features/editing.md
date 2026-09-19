@@ -151,6 +151,43 @@
 - Time machine: each overwrite snapshots the prior version (`revisions.ts`, keeps 3); restore
   loads it into the editor (non-destructive — current version is snapshotted on next save).
 
+## Several pieces at once — the write column's selection bar
+
+`island/lib/write-pick.ts` draws it, `web/admin/content-bulk.ts` answers it, and
+`admin-shared/write.ts` holds the one number they share.
+
+- **Select is a MODE**, not a control on every row: a trash icon a few pixels from the title
+  you click dozens of times a day has to appear on hover to stay out of the way, which on a
+  touch screen means it never appears. In the mode a row stops being a link — its `href` is
+  removed, so it stops being one for the keyboard and the screen reader at the same moment it
+  stops being one for the mouse.
+- **Three verbs, on two rows**: Publish, Draft, Move to Trash, each printing `(N)` and each
+  disabled at zero. Five controls do not fit one 320px line in any language but English. The
+  count is on each key rather than in a sentence, because a count inside a sentence needs a
+  plural form in half these languages — the same argument `selectPieces` settled.
+- **Shift fills the range**, over what is SHOWN. Filling over hidden rows would tick pieces
+  the owner never saw between the two they clicked. Select-all is one key with two words
+  (`data-on` / `data-off`), and it too means what is on screen: the rows all ship and the
+  island hides them, so "all" taken literally would tick two hundred rows of which the owner
+  can see twelve, and then publish them.
+- **One request per `BULK_MAX` pieces, not one per piece.** Every write through the owner gate
+  flushes the page cache, purges the CDN and leaves a log row (Invariant 1, `web/guard.ts`), so
+  fifty ticks used to be fifty of each. A selection larger than the ceiling is sent in runs of
+  it — three requests for six hundred, where the old way was six hundred.
+- **The route holds no `clearCache()`**, deliberately: the gate flushes on the way out of every
+  2xx write, which is exactly once per request. A hand-placed call would be a second flush.
+- **A status flip pushes no revision.** A post's `projection` counts status as a change, so
+  `savePost` would snapshot the body before it — and only three revisions are kept per post, so
+  a bulk publish would replace the owner's real earlier drafts with copies of the current body
+  differing by one word. `{ revision: false }`.
+- **Binning does not reload; publishing does.** The bin's whole argument for asking nothing is
+  that the undo is in the toast, and a reload takes the toast with it. A status change moves a
+  row's lamp, its label and which filters it answers to, and nothing in the island builds
+  markup — so the page comes back, and the sentence travels with it (`lib/say-across.ts`).
+- **Three log actions, not one.** `content.trash` / `content.publish` / `content.draft`, so the
+  heading carries the verb; `web/admin/ops.ts` records what one kind standing for four
+  importers cost. The pieces are the sentence's object, through `{t}`.
+
 ## The Markdown this blog speaks — `src/md/` (ADR 0052)
 
 One engine, written here, with no dependencies. It renders the reader's page, opens a post in

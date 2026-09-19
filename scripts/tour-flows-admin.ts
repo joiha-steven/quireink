@@ -7,7 +7,7 @@
 
 import type { Tour } from './tour'
 import { registerEditorFlows } from './tour-flows-editor'
-import { registerTrashFromEditorFlows } from './tour-flows-bin'
+import { registerTrashFromEditorFlows, registerBulkBarFlows } from './tour-flows-bin'
 import { registerDrawerFlows } from './tour-flows-terms'
 import { registerSettingsFlows } from './tour-flows-settings'
 import { registerHomeFlows } from './tour-flows-home'
@@ -178,6 +178,7 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   // The editor half, next door — see its header for the seam.
   registerEditorFlows({ flow, expect, atWidth })
   registerTrashFromEditorFlows({ flow, expect, atWidth })
+  registerBulkBarFlows({ flow, expect, atWidth })
   registerDrawerFlows({ flow, expect, atWidth })
 
   // The home screen and the rail (ADR 0024 step 6), likewise.

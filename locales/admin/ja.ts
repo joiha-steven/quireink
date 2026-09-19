@@ -161,6 +161,12 @@ const ja = {
   // beside it already prints `(N)`.
   selectPieces: '選択',
   selectDone: '完了',
+  selectAll: 'すべて',
+  selectNone: '解除',
+  backToDraft: '下書き',
+  publishedMany: '{n} 件を公開',
+  draftedMany: '{n} 件を下書きに',
+  bulkPartial: '変えられなかったものがあります',
   trashPartial: '一部の項目を移動できませんでした',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const ja = {
     'note.create': 'ノート「{t}」を書いた',
     'note.update': 'ノート「{t}」を編集した',
     'note.delete': 'ノート「{t}」をゴミ箱へ移動した',
+    'content.trash': 'ゴミ箱へ: {t}',
+    'content.publish': '公開: {t}',
+    'content.draft': '下書きに戻す: {t}',
     'media.upload': '画像 {t} を追加しました',
     'media.delete': '画像 {t} を削除しました',
     'media.restore': '画像 {t} を戻しました',

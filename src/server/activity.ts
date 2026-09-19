@@ -13,6 +13,9 @@ export type ActivityAction =
   | 'post.create' | 'post.update' | 'post.delete'
   | 'page.create' | 'page.update' | 'page.delete'
   | 'note.create' | 'note.update' | 'note.delete'
+  // Several pieces at once, from the write column's selection mode. THREE, not one with
+  // the verb in a detail line: `web/admin/ops.ts` records what a heading that lies costs.
+  | 'content.trash' | 'content.publish' | 'content.draft'
   | 'media.upload' | 'media.delete'
   | 'file.add' | 'file.delete' | 'icon.upload' | 'font.upload'
   | 'settings.save' | 'taxonomy.update' | 'series.update' | 'cache.clear'

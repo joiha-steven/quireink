@@ -161,6 +161,12 @@ const fr = {
   // beside it already prints `(N)`.
   selectPieces: 'Choisir',
   selectDone: 'Terminé',
+  selectAll: 'Tout',
+  selectNone: 'Aucun',
+  backToDraft: 'Brouillon',
+  publishedMany: '{n} publiés',
+  draftedMany: '{n} repassés en brouillon',
+  bulkPartial: 'Certains éléments n’ont pas changé',
   trashPartial: 'Certains éléments n’ont pas pu être déplacés',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const fr = {
     'note.create': 'A écrit la note « {t} »',
     'note.update': 'A modifié la note « {t} »',
     'note.delete': 'A mis la note « {t} » à la corbeille',
+    'content.trash': 'Mis à la corbeille : {t}',
+    'content.publish': 'Publiés : {t}',
+    'content.draft': 'Repassés en brouillon : {t}',
     'media.upload': 'Image {t} ajoutée',
     'media.delete': 'Image {t} supprimée',
     'media.restore': 'Image {t} récupérée',

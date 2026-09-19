@@ -11,3 +11,22 @@
 // to have, which is worse than a long list. So the browser is spared the LAYOUT and the PAINT
 // of a thousand rows, and the owner's search still reads every one of them.
 export const WRITE_PAGE = 100
+
+/**
+ * HOW MANY PIECES ONE BULK REQUEST MAY NAME.
+ *
+ * Both sides read it, for the same reason `WRITE_PAGE` is shared: the route refuses past this
+ * number, and the column that draws the key is the one that decides how many go in a request.
+ * Two numbers would mean a control that fires a request its own server refuses, and the owner
+ * would meet that as a red toast after doing the work of selecting.
+ *
+ * It is a ceiling on ONE REQUEST rather than on one press. A selection larger than this is sent
+ * in runs of this size — three requests for six hundred pieces, where the per-piece way this
+ * replaced was six hundred. The point of the route was never "exactly one request"; it was that
+ * the count stops being the number of things the owner ticked.
+ *
+ * 200 is well past the hundred rows `WRITE_PAGE` reveals, so reaching it means the owner
+ * scrolled and kept going. What it protects is a single thread: every piece is a read, a write
+ * and an index update, and the key would otherwise sit there looking stuck.
+ */
+export const BULK_MAX = 200

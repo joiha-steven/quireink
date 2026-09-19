@@ -255,16 +255,32 @@ function head(t: AdminStrings, needs: WriteNeeds): string {
     + `<button type="button" data-write-drawer="taxonomy" class="${SHEET_TOOL}">${escapeHtml(t.tabTaxonomy)}</button>`
     + `<button type="button" data-write-drawer="series" class="${SHEET_TOOL}">${escapeHtml(t.tabSeries)}</button>`
     + `</span>`
-    // Picking: done, and the one key that acts.
-    + `<span data-write-picking-tools hidden class="flex w-full items-center justify-between gap-2">`
+    // Picking: two rows, because five controls do not fit on one 320px line in any language
+    // that is not English. Leaving and selecting on top, the three verbs under them, wrapping
+    // rather than scrolling — the same rule the editor's toolbar is held to.
+    + `<span data-write-picking-tools hidden class="flex w-full flex-col gap-2">`
+    + `<span class="flex items-center justify-between gap-2">`
     + `<button type="button" data-write-done class="${SHEET_TOOL}">${escapeHtml(t.selectDone)}</button>`
-    // ⚠️ NO `data-word-trash` HERE. The label this key rebuilds on every pick comes from
-    // `data-write-words`, which the pane already carries and `write-pick.ts` already reads; a
-    // second copy of the same sentence on the same element is two mechanisms deciding one
-    // thing, and the one nothing read sat there unnoticed until a wiring sweep found it.
-    + `<button type="button" data-write-trash class="${SHEET_TOOL_DANGER}">`
+    // ONE KEY, TWO WORDS, chosen by what is already ticked — the `data-on`/`data-off` shape
+    // the CSS reference toggle uses. A toggle whose label never changes is a control that
+    // cannot say which way it is about to go.
+    + `<button type="button" data-write-all class="${SHEET_TOOL}"`
+    + ` data-on="${escapeAttr(t.selectAll)}" data-off="${escapeAttr(t.selectNone)}">`
+    + `${escapeHtml(t.selectAll)}</button>`
+    + `</span>`
+    + `<span class="flex flex-wrap items-center gap-2">`
+    // ⚠️ NO `data-word-*` ON ANY OF THESE. The label each key rebuilds on every pick comes
+    // from `data-write-words`, which the pane already carries and `write-pick.ts` already
+    // reads; a second copy of the same sentence on the same element is two mechanisms
+    // deciding one thing, and the one nothing read sat there unnoticed until a wiring sweep
+    // found it.
+    + `<button type="button" data-write-publish class="${SHEET_TOOL}" disabled>`
+    + `${escapeHtml(t.publish)} (0)</button>`
+    + `<button type="button" data-write-draft class="${SHEET_TOOL}" disabled>`
+    + `${escapeHtml(t.backToDraft)} (0)</button>`
+    + `<button type="button" data-write-trash class="${SHEET_TOOL_DANGER}" disabled>`
     + `${escapeHtml(t.moveToTrash)} (0)</button>`
-    + `</span></div>`
+    + `</span></span></div>`
 
   return `<div class="space-y-3 px-4 pb-2 pt-4">`
     + `<div class="flex items-center gap-2">${search}`
@@ -325,6 +341,8 @@ export function writePane(opts: {
 /** What the island has to be able to say, in whichever language the blog is written in. */
 const words = (t: AdminStrings): Record<string, string> => ({
   trash: t.moveToTrash, trashed: t.trashedMany, trashPartial: t.trashPartial, undo: t.undo,
+  publish: t.publish, published: t.publishedMany,
+  draft: t.backToDraft, drafted: t.draftedMany, bulkPartial: t.bulkPartial,
   restoreFailed: t.restoreFailed,
   saveFailed: t.saveFailed, renamed: t.renamed, deleted: t.deleted,
   renameTermTitle: t.renameTermTitle, renameSeriesTitle: t.renameSeriesTitle,

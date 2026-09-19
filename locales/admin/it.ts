@@ -161,6 +161,12 @@ const it = {
   // beside it already prints `(N)`.
   selectPieces: 'Scegli',
   selectDone: 'Fatto',
+  selectAll: 'Tutti',
+  selectNone: 'Nessuno',
+  backToDraft: 'Bozza',
+  publishedMany: '{n} pubblicati',
+  draftedMany: '{n} riportati a bozza',
+  bulkPartial: 'Alcuni elementi non sono cambiati',
   trashPartial: 'Alcuni elementi non sono stati spostati',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const it = {
     'note.create': 'Ha scritto la nota «{t}»',
     'note.update': 'Ha modificato la nota «{t}»',
     'note.delete': 'Ha spostato la nota «{t}» nel cestino',
+    'content.trash': 'Nel cestino: {t}',
+    'content.publish': 'Pubblicati: {t}',
+    'content.draft': 'Di nuovo in bozza: {t}',
     'media.upload': 'Aggiunta l’immagine {t}',
     'media.delete': 'Eliminata l’immagine {t}',
     'media.restore': 'Recuperata l’immagine {t}',

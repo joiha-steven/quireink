@@ -162,6 +162,12 @@ const pt = {
   // beside it already prints `(N)`.
   selectPieces: 'Escolher',
   selectDone: 'Pronto',
+  selectAll: 'Todos',
+  selectNone: 'Nenhum',
+  backToDraft: 'Rascunho',
+  publishedMany: '{n} publicados',
+  draftedMany: '{n} passados a rascunho',
+  bulkPartial: 'Alguns itens não mudaram',
   trashPartial: 'Alguns itens não puderam ser movidos',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -948,6 +954,9 @@ const pt = {
     'note.create': 'Escreveu a nota «{t}»',
     'note.update': 'Editou a nota «{t}»',
     'note.delete': 'Moveu a nota «{t}» para o lixo',
+    'content.trash': 'Para o lixo: {t}',
+    'content.publish': 'Publicados: {t}',
+    'content.draft': 'De volta a rascunho: {t}',
     'media.upload': 'Adicionou a imagem {t}',
     'media.delete': 'Apagou a imagem {t}',
     'media.restore': 'Recuperou a imagem {t}',

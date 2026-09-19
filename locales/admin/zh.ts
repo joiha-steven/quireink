@@ -161,6 +161,12 @@ const zh = {
   // beside it already prints `(N)`.
   selectPieces: '选择',
   selectDone: '完成',
+  selectAll: '全选',
+  selectNone: '取消',
+  backToDraft: '草稿',
+  publishedMany: '已发布 {n} 项',
+  draftedMany: '已把 {n} 项改回草稿',
+  bulkPartial: '有些项没有改动',
   trashPartial: '部分条目没能移动',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const zh = {
     'note.create': '写了笔记“{t}”',
     'note.update': '编辑了笔记“{t}”',
     'note.delete': '将笔记“{t}”移到了回收站',
+    'content.trash': '移入回收站：{t}',
+    'content.publish': '已发布：{t}',
+    'content.draft': '改回草稿：{t}',
     'media.upload': '加了图片 {t}',
     'media.delete': '删了图片 {t}',
     'media.restore': '把图片 {t} 找回来了',

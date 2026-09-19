@@ -161,6 +161,12 @@ const ru = {
   // beside it already prints `(N)`.
   selectPieces: 'Выбрать',
   selectDone: 'Готово',
+  selectAll: 'Все',
+  selectNone: 'Снять',
+  backToDraft: 'Черновик',
+  publishedMany: 'Опубликовано: {n}',
+  draftedMany: 'В черновики: {n}',
+  bulkPartial: 'Часть записей не изменилась',
   trashPartial: 'Некоторые записи переместить не удалось',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const ru = {
     'note.create': 'Написал заметку «{t}»',
     'note.update': 'Изменил заметку «{t}»',
     'note.delete': 'Переместил заметку «{t}» в корзину',
+    'content.trash': 'В корзину: {t}',
+    'content.publish': 'Опубликовано: {t}',
+    'content.draft': 'Обратно в черновики: {t}',
     'media.upload': 'Добавлено изображение {t}',
     'media.delete': 'Удалено изображение {t}',
     'media.restore': 'Возвращено изображение {t}',

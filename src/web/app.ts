@@ -34,6 +34,7 @@ import { updatePing } from '@/web/update-ping'
 import { compression } from '@/web/compress'
 import { errorHandler, notFoundHandler, requestLogger } from '@/web/api'
 import { contentRoutes } from '@/web/admin/content'
+import { bulkRoutes } from '@/web/admin/content-bulk'
 import { noteRoutes } from '@/web/admin/notes'
 import { renderNotePage, renderNotesIndex } from '@/web/notes-page'
 import { clipRoutes, handleClipPage } from '@/web/clip-page'
@@ -217,6 +218,7 @@ export function createApp(): Hono {
   // it (Invariant 4), and `check:routes` fails the build if one escapes.
 
   app.route('/', contentRoutes().routes)
+  app.route('/', bulkRoutes().routes)
   app.route('/', noteRoutes().routes)
   app.route('/', clipRoutes().routes)
   // The open standards (ADR 0046): Micropub into the notebook, Webmention in.

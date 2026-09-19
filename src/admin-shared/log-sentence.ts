@@ -20,13 +20,32 @@ import type { IconName } from '@/icons'
  */
 export type LogKind = 'writing' | 'media' | 'people' | 'settings' | 'system' | 'security' | 'error'
 
-const KIND_OF: Record<string, LogKind> = {
-  post: 'writing', page: 'writing', series: 'writing',
+/**
+ * EVERY FAMILY, and a family missing from here does not fail — it lands in 'system'.
+ *
+ * Which is a quiet wrong answer twice over: the row wears the cache glyph, and the screen's
+ * own filter files it under the wrong heading, so an owner asking "what happened to my
+ * writing" is not shown it. `log-sentence.test.ts` reads the `ActivityAction` union and
+ * requires a key here for every family in it.
+ *
+ * Four were missing when that guard was written on 2026-09-19, and all four had been for a
+ * long time: `note` (the whole notebook), `taxonomy`, `trash` — and `auth`, which is every
+ * sign-in, every failed sign-in, every wrong authenticator code and every recovery code
+ * spent. Those are the rows `activity.ts` says in as many words are the ones an owner most
+ * needs to find AFTER the fact, and they were filed under the heading for cache flushes.
+ */
+export const KIND_OF: Record<string, LogKind> = {
+  post: 'writing', page: 'writing', note: 'writing', series: 'writing',
+  taxonomy: 'writing',
+  // The selection mode acting on several pieces at once, and the bin they land in. Both are
+  // answers to "where did my writing go", which is the question this heading is for.
+  content: 'writing', trash: 'writing',
   media: 'media', file: 'media', font: 'media', icon: 'media', import: 'media',
   comment: 'people', subscriber: 'people', newsletter: 'people', mail: 'people',
   settings: 'settings', redirect: 'settings',
-  cache: 'system', backup: 'system', mcp: 'system',
-  security: 'security',
+  // `export` is the Markdown bundle, beside the backup it sits next to in the admin.
+  cache: 'system', backup: 'system', mcp: 'system', export: 'system',
+  security: 'security', auth: 'security',
   error: 'error',
 }
 

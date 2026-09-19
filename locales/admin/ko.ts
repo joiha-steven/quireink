@@ -161,6 +161,12 @@ const ko = {
   // beside it already prints `(N)`.
   selectPieces: '선택',
   selectDone: '완료',
+  selectAll: '전체',
+  selectNone: '해제',
+  backToDraft: '초안',
+  publishedMany: '{n}개 공개',
+  draftedMany: '{n}개를 초안으로',
+  bulkPartial: '바뀌지 않은 항목이 있습니다',
   trashPartial: '일부 항목을 옮기지 못했습니다',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const ko = {
     'note.create': '노트 “{t}”을(를) 작성함',
     'note.update': '노트 “{t}”을(를) 수정함',
     'note.delete': '노트 “{t}”을(를) 휴지통으로 옮김',
+    'content.trash': '휴지통으로: {t}',
+    'content.publish': '공개: {t}',
+    'content.draft': '초안으로 되돌림: {t}',
     'media.upload': '이미지 {t}을(를) 추가했습니다',
     'media.delete': '이미지 {t}을(를) 지웠습니다',
     'media.restore': '이미지 {t}을(를) 되살렸습니다',

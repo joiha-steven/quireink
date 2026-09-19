@@ -161,6 +161,12 @@ const es = {
   // beside it already prints `(N)`.
   selectPieces: 'Elegir',
   selectDone: 'Listo',
+  selectAll: 'Todo',
+  selectNone: 'Ninguno',
+  backToDraft: 'Borrador',
+  publishedMany: '{n} publicados',
+  draftedMany: '{n} pasados a borrador',
+  bulkPartial: 'Algunos elementos no cambiaron',
   trashPartial: 'Algunos elementos no se pudieron mover',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const es = {
     'note.create': 'Escribió la nota «{t}»',
     'note.update': 'Editó la nota «{t}»',
     'note.delete': 'Movió la nota «{t}» a la papelera',
+    'content.trash': 'A la papelera: {t}',
+    'content.publish': 'Publicados: {t}',
+    'content.draft': 'De vuelta a borrador: {t}',
     'media.upload': 'Añadiste la imagen {t}',
     'media.delete': 'Borraste la imagen {t}',
     'media.restore': 'Recuperaste la imagen {t}',

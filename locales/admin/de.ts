@@ -161,6 +161,12 @@ const de = {
   // beside it already prints `(N)`.
   selectPieces: 'Wählen',
   selectDone: 'Fertig',
+  selectAll: 'Alle',
+  selectNone: 'Keine',
+  backToDraft: 'Entwurf',
+  publishedMany: '{n} veröffentlicht',
+  draftedMany: '{n} zu Entwürfen gemacht',
+  bulkPartial: 'Einige Stücke blieben unverändert',
   trashPartial: 'Einige Beiträge konnten nicht verschoben werden',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const de = {
     'note.create': 'Notiz „{t}“ geschrieben',
     'note.update': 'Notiz „{t}“ bearbeitet',
     'note.delete': 'Notiz „{t}“ in den Papierkorb verschoben',
+    'content.trash': 'In den Papierkorb: {t}',
+    'content.publish': 'Veröffentlicht: {t}',
+    'content.draft': 'Zurück zu Entwürfen: {t}',
     'media.upload': 'Bild {t} hinzugefügt',
     'media.delete': 'Bild {t} gelöscht',
     'media.restore': 'Bild {t} zurückgeholt',

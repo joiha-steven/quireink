@@ -161,6 +161,12 @@ const en = {
   // beside it already prints `(N)`.
   selectPieces: 'Select',
   selectDone: 'Done',
+  selectAll: 'All',
+  selectNone: 'None',
+  backToDraft: 'Draft',
+  publishedMany: '{n} published',
+  draftedMany: '{n} moved to drafts',
+  bulkPartial: 'Some pieces could not be changed',
   trashPartial: 'Some pieces could not be moved',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const en = {
     'note.create': 'Wrote the note “{t}”',
     'note.update': 'Edited the note “{t}”',
     'note.delete': 'Moved the note “{t}” to the trash',
+    'content.trash': 'Moved to the Trash: {t}',
+    'content.publish': 'Published: {t}',
+    'content.draft': 'Back to drafts: {t}',
     'media.upload': 'Added the picture {t}',
     'media.delete': 'Deleted the picture {t}',
     'media.restore': 'Brought the picture {t} back',

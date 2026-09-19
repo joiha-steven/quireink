@@ -161,6 +161,12 @@ const vi = {
   // beside it already prints `(N)`.
   selectPieces: 'Chọn',
   selectDone: 'Xong',
+  selectAll: 'Tất cả',
+  selectNone: 'Bỏ chọn',
+  backToDraft: 'Về nháp',
+  publishedMany: 'Đã đăng {n}',
+  draftedMany: 'Đã chuyển {n} về nháp',
+  bulkPartial: 'Có mục không đổi được',
   trashPartial: 'Một số mục không chuyển được',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -947,6 +953,9 @@ const vi = {
     'note.create': 'Viết ghi chú “{t}”',
     'note.update': 'Sửa ghi chú “{t}”',
     'note.delete': 'Chuyển ghi chú “{t}” vào thùng rác',
+    'content.trash': 'Bỏ vào thùng rác: {t}',
+    'content.publish': 'Đã đăng: {t}',
+    'content.draft': 'Chuyển về nháp: {t}',
     'media.upload': 'Thêm ảnh {t}',
     'media.delete': 'Xoá ảnh {t}',
     'media.restore': 'Lấy ảnh {t} về',

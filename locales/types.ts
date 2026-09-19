@@ -334,6 +334,12 @@ export type AdminStrings = {
   // beside it already prints `(N)`.
   selectPieces: string
   selectDone: string
+  selectAll: string
+  selectNone: string
+  backToDraft: string
+  publishedMany: string
+  draftedMany: string
+  bulkPartial: string
   trashPartial: string
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
