@@ -15,6 +15,7 @@ import { cached, notFoundPage } from '@/web/listing-page'
 import { parsePathPage } from '@/content/paginate'
 import { renderHome, renderPostList, slugRole } from '@/web/home-mode'
 import { registerFeedRoutes } from '@/web/feed-routes'
+import { registerApiV1Routes } from '@/web/api-v1'
 import { registerTermRoutes } from '@/web/term-routes'
 import { renderArticle } from '@/web/article'
 import { assetBody, SW_BODY } from '@/web/assets'
@@ -187,6 +188,14 @@ export function createApp(): Hono {
   app.post('/api/newsletter/unsubscribe', handleUnsubscribePost)
   app.get('/api/newsletter/open', handleOpenPixel)
   app.get('/api/md/:slug', handleMarkdown)
+
+  // ----- the Content API (ADR 0057) -------------------------------------------
+  // `/api/v1/*`: the published writing as JSON, for a client building something out of this
+  // blog rather than reading it. GET only, and every path answers 404 until the owner turns it
+  // on in Settings -> Server & connections. Registered as a group in `web/api-v1.ts`, where the
+  // switch is checked once for all of them.
+
+  registerApiV1Routes(app)
   app.get('/manifest.webmanifest', handleManifest)
   // Pointed at by the `Speculation-Rules` header on every public page. A document rather
   // than an inline script, so the public site keeps shipping none.

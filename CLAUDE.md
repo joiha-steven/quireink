@@ -80,7 +80,7 @@ history is never needed to fix or understand code.
 | Comments · Analytics | `src/comments/` · `src/analytics/` (writes go through `buffer.ts`) |
 | SQL, migrations, the live/trashed predicate | `src/store/` |
 | Scheduled publishing, redirects, rate limit, activity | `src/server/` |
-| MCP server, tokens | `src/mcp/`, `src/web/admin/mcp-transport.ts`, `src/web/admin/mcp.ts` |
+| MCP server, tokens · the read-only Content API | `src/mcp/`, `src/web/admin/mcp-transport.ts`, `src/web/admin/mcp.ts` · `src/web/api-v1.ts` |
 | UI strings, translations | `src/i18n/`, `locales/` (repo root, so translators can find it) |
 | Imports (WordPress/Ghost/…), image rescue | `src/import/`, `src/web/admin/ops.ts` |
 

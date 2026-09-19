@@ -7,6 +7,13 @@
 // off limits. What IS driven is the screen — the strip, the search, the explanations, the
 // controls that only move the FORM — plus `PUT /api/settings`, which the existing settings flows
 // already exercise and which is restored afterwards.
+//
+// The Content API flow at the foot is the one that presses a Save in anger, and it is here for a
+// reason nothing smaller can cover: the chain from a switch on this screen to a public endpoint
+// answering runs through the form collector, a dotted path, `PUT /api/settings`, `sanitizeApi`
+// and `apiRoute`, and every link of it has a unit test while the CHAIN has none. Two bugs of
+// exactly that shape shipped on 2026-09-19 — a control that saved nothing, and a save that left
+// a field out — and both were found by a browser flow after 3,800 unit tests had gone green.
 import type { Tour } from './tour'
 import { SCREEN_FORMS } from './tour-ask'
 
@@ -133,4 +140,62 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
       localStorage.removeItem('quireink-admin-settings-notes')
       return 'ok (hidden, remembered, and back)'
     })()`, 1800))
+
+  // ⚠️ THE ONE SAVE THIS FILE PRESSES, and it puts the setting back before it returns. A flow
+  // that leaves the Content API switched on hands every flow after it a blog with a public
+  // endpoint the install default does not have.
+  //
+  // It earned its place on the first run: the card had been given a Save key of its own, copied
+  // from MCP, which `fields-box.ts` reserves for a card that can TRY the far end. This found it
+  // by pressing the key that is actually there.
+  flow('admin: the Content API switch reaches the public endpoint, and comes back off', () => expect('/admin/settings?tab=server', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      /** Poll the door until it says what we are waiting for, or give up. */
+      const doorSays = async (want) => {
+        for (let i = 0; i < 40; i++) {
+          const res = await fetch('/api/v1/posts')
+          if (res.status === want) return res
+          await sleep(150)
+        }
+        return null
+      }
+      const sw = document.querySelector('[data-switch][data-k="api.enabled"]')
+      if (!sw) return 'no Content API switch on the Server tab'
+      if (sw.getAttribute('aria-checked') !== 'false') return 'the API was already on, so this proves nothing'
+      const card = sw.closest('[data-card]')
+      if (!card) return 'the switch is not on a card'
+      // ⚠️ THE SCREEN'S Save, not a card's. This card sets a boolean and reaches nothing, so it
+      // has no key of its own — and asserting that here is what keeps one from growing back.
+      if (card.querySelector('[data-card-save]')) return 'the card grew a Save key of its own'
+      const save = document.querySelector('[data-settings-save]')
+      if (!save) return 'the settings screen has no Save key'
+
+      // Shut, before anything is pressed. This is the install default and the point of it.
+      const before = await fetch('/api/v1/posts')
+      if (before.status !== 404) return 'the API answered ' + before.status + ' with the setting off'
+      // The address is readable either way, and it is the one the SERVER printed.
+      const shown = card.querySelector('[data-api-url]')
+      if (!shown || !shown.textContent.trim().endsWith('/api/v1')) return 'the card does not show its address'
+
+      sw.click(); await sleep(150)
+      if (save.disabled) return 'the Save key stayed disabled after the switch moved'
+      save.click()
+      const open = await doorSays(200)
+      if (!open) return 'the endpoint never opened after saving the switch on'
+      const body = await open.json()
+      if (!body || !Array.isArray(body.items)) return 'the endpoint answered something that is not a listing'
+      if (body.items.length === 0) return 'the endpoint answered with no posts on a seeded blog'
+      if (body.items.some((p) => !p.slug || !p.url)) return 'a row came back without a slug or a URL'
+      // Nothing that is not public: the seed carries drafts and scheduled posts.
+      const one = await (await fetch('/api/v1/posts/' + body.items[0].slug)).json()
+      if (typeof one.content !== 'string' || one.content === '') return 'the single piece came back without its body'
+      if ('deletedAt' in one || 'status' in one) return 'a field that must not travel came back'
+
+      sw.click(); await sleep(150)
+      save.click()
+      const shut = await doorSays(404)
+      if (!shut) return 'the endpoint stayed open after the switch went back off'
+      return 'ok 404 -> 200 with ' + body.total + ' post(s), one body read -> 404'
+    })()`, 2000))
 }

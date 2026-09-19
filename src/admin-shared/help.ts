@@ -26,6 +26,7 @@ export const HELP_INDEX: [string, string][] = [
   ['server', 'Server'],
   ['cache', 'Cache'],
   ['mcp', 'MCP'],
+  ['api', 'Content API'],
   ['markdown', 'Markdown'],
   ['keys', 'Keyboard'],
   ['trouble', 'Troubleshooting'],
@@ -138,6 +139,21 @@ export const HELP_SECTIONS: HelpSection[] = [
     <a href="${doc('docs/mcp.md')}" target="_blank" rel="noopener noreferrer" class="${A}">MCP docs</a>
     <a href="/admin/settings?tab=server" class="${A}">Server &amp; connections</a>
     <a href="/admin/log" class="${A}">Activity log</a></p>`,
+  },
+  {
+    id: 'api',
+    title: 'Content API — let a program read the blog',
+    body: `<p class="${P}">
+    The <b>Content API</b> serves your published writing as JSON at <code class="${CODE}">/api/v1</code> — posts, pages, notes and your categories, each with the Markdown it was written in. It is for building something out of the blog rather than reading it: a second front end, a search index, a static export, a script that checks its own links. Turn it on in Settings → Server &amp; connections; until you do, every one of those paths answers <b>404</b>.
+    </p>
+    <p class="${P}">
+    <b>It is read-only and it has no key.</b> Anyone who knows the address can read it, and what they get is exactly what they could already get by browsing the site: no drafts, no posts dated ahead, nothing in the trash, and nothing that can change the blog. The switch is there because of what it makes <i>cheap</i>, not what it makes possible — the whole blog in as many requests as it has pages, instead of as many as it has readers. On a quiet personal blog that is a convenience; decide for yours.
+    </p>
+    <p class="${P}">
+    To write from a program instead, use <b>MCP</b> above, or Micropub from a notebook client. Both authenticate; this does not, which is why it may only read.
+    </p>
+    <p class="${LINKS}"><a href="${doc('docs/content-api.md')}" target="_blank" rel="noopener noreferrer" class="${A}">Content API docs</a>
+    <a href="/admin/settings?tab=server" class="${A}">Server &amp; connections</a></p>`,
   },
 ]
 

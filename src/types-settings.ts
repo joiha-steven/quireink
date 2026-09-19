@@ -26,6 +26,23 @@ export type McpSettings = {
 }
 
 /**
+ * The read-only Content API (ADR 0057): `/api/v1/*`, JSON, GET only.
+ *
+ * OFF at install and OFF on every upgrade, and that is the whole of the argument for it. The
+ * API serves nothing a reader could not already fetch by browsing — no drafts, no future dates,
+ * no trash — so switching it on publishes no new FACT. What it publishes is a SHAPE: the whole
+ * blog, paginated, parseable, in as many requests as it has pages. That is the thing an owner
+ * should decide rather than have decided for them, and a default of off is the only way the
+ * decision reaches them.
+ *
+ * Beside `mcp` rather than in `features`, because `features` is what a READER sees on a page and
+ * this is a door for a program. Same group shape as MCP, same 404 while it is shut.
+ */
+export type ApiSettings = {
+  enabled: boolean
+}
+
+/**
  * What `/` serves. ADR 0014.
  *
  * `list` is what this has always been and stays the default, byte for byte: an install that

@@ -2,9 +2,13 @@
 // back-compat shims). No DB, no Blob, no React. settings.ts depends on this ONE
 // WAY (settings -> settings-sanitize, never back) for its getSettings/saveSettings merge.
 
-import type { BackupSettings, CacheSettings, DashboardSettings, CommentSettings, FeatureSettings, GallerySettings, FigureSettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings, KeyFeedback } from '@/types'
+import type { BackupSettings, CacheSettings, DashboardSettings, CommentSettings, FeatureSettings, GallerySettings, FigureSettings, HomeSettings, McpSettings, ApiSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings, KeyFeedback } from '@/types'
 import { DEFAULT_PRESET_ID, isPresetId, defaultThemes, THEME_PRESETS } from '@/content/themes'
 import { withHolesFilled } from '@/content/settings-partial'
+// The value scrubbers, re-exported so that every caller of this module keeps working:
+// `clampNumber` alone has five import sites. See `settings-scrub.ts` for the seam.
+export { clampNumber, sanitizeCss, sanitizeSnippet, sanitizeUrl } from '@/content/settings-scrub'
+import { clampNumber } from '@/content/settings-scrub'
 
 // Keep only well-formed menu items (label + href both present).
 export function sanitizeMenu(input: unknown, fallback: MenuItem[]): MenuItem[] {
@@ -145,6 +149,18 @@ export function sanitizeComments(input: unknown, fallback: CommentSettings): Com
 
 export function sanitizeMcp(input: unknown, fallback: McpSettings): McpSettings {
   const o = (input ?? {}) as Partial<McpSettings>
+  return { enabled: bool(o.enabled, fallback.enabled) }
+}
+
+/**
+ * The Content API switch (ADR 0057).
+ *
+ * Its own function rather than a second call to `sanitizeMcp`, which happens to take the same
+ * shape today. Two switches that are equal by coincidence are a shared function waiting to be
+ * given a second field for one of them — and then the other silently grows it too.
+ */
+export function sanitizeApi(input: unknown, fallback: ApiSettings): ApiSettings {
+  const o = (input ?? {}) as Partial<ApiSettings>
   return { enabled: bool(o.enabled, fallback.enabled) }
 }
 
@@ -338,45 +354,6 @@ export function sanitizeBackups(input: unknown, fallback: BackupSettings): Backu
     intervalDays: clampNumber(o.intervalDays, 1, 30, fallback.intervalDays),
     keep: clampNumber(o.keep, 1, 30, fallback.keep),
   }
-}
-
-// Owner CSS injected raw into <style>. Owner-only, so the only hazard is an
-// accidental `</style>` closing the tag early — strip it; pass the rest through.
-export function sanitizeCss(value: unknown): string {
-  return typeof value === 'string' ? value.replace(/<\/style/gi, '') : ''
-}
-
-/**
- * The owner's own markup, kept as typed.
- *
- * Deliberately NOT the treatment `sanitizeCss` gives its input, and the difference is the
- * whole point: that one strips `</style` so a stylesheet field can never become a script,
- * because CSS is all it was ever for. These fields ARE for script — a tracking snippet is
- * the thing they exist to hold — so stripping tags would leave a box that silently ruins
- * every snippet pasted into it, which is worse than not having the box.
- *
- * What it does do is refuse anything that is not a string and trim the edges, so a field
- * holding only whitespace reads as empty everywhere rather than as "set to a space".
- */
-export function sanitizeSnippet(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : ''
-}
-
-// Accept only a valid http(s) URL with no trailing slash; '' otherwise.
-export function sanitizeUrl(value: unknown): string {
-  if (typeof value !== 'string' || !value.trim()) return ''
-  try {
-    const u = new URL(value.trim())
-    if (u.protocol !== 'http:' && u.protocol !== 'https:') return ''
-    return u.origin
-  } catch {
-    return ''
-  }
-}
-
-export function clampNumber(value: unknown, min: number, max: number, fallback: number): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
-  return Math.min(max, Math.max(min, Math.round(value)))
 }
 
 // Featured-post slugs: trimmed, de-duped, capped. Non-array (or absent) → the fallback.

@@ -27,6 +27,7 @@ import type { Redirect } from '@/server/redirects'
 import { importCard, redirectsCard, siteCard } from '@/web/admin/screens/settings-server-code'
 import { aiCard, cloudflareCard, offsiteCard } from '@/web/admin/screens/settings-server-keys'
 import { mcpCard } from '@/web/admin/screens/settings-server-mcp'
+import { apiCard } from '@/web/admin/screens/settings-server-api'
 import { backupsCard, installCard, type UpdateStatus } from '@/web/admin/screens/settings-server-ops'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
 
@@ -63,7 +64,8 @@ export type ServerTabView = {
  * back.
  */
 export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView): string {
-  const endpoint = `${(s.siteUrl || view.origin).replace(/\/+$/, '')}/api/mcp`
+  const origin = (s.siteUrl || view.origin).replace(/\/+$/, '')
+  const endpoint = `${origin}/api/mcp`
   return `<div class="${GRID}">`
     + `<div class="${COL}">`
     + siteCard(t, s)
@@ -74,6 +76,8 @@ export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView)
     + installCard(t, s, view.update)
     + aiCard(t, s, view.integrations)
     + mcpCard(t, s, endpoint)
+    // Under MCP: the two machine doors read as a pair, and this is the smaller one.
+    + apiCard(t, s, `${origin}/api/v1`)
     + backupsCard(t, s)
     // The snapshot that leaves the machine (ADR 0035): a copy beside the data does not survive
     // the disk. It sits under the backups it ships.

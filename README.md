@@ -85,10 +85,11 @@ bun src/index.ts
 | 📈&nbsp;**Numbers** | Analytics without cookies: who read what, how far they got, where they came from, per post as well as per site. Nothing is ever deleted. Plus an activity log and a trash you can undo |
 | 💬&nbsp;**Comments** | Readers comment without an account. The page signs its own spam challenge, so no third party sees them; Turnstile takes over only if you add its keys |
 | 🔎&nbsp;**Search&nbsp;engines** | Sitemap, `robots.txt`, `llms.txt`, and an OG image drawn per post. RSS and JSON Feed, for the blog and for the notebook. Rename a slug and the old URL keeps working |
+| 🔌&nbsp;**Read&nbsp;by&nbsp;a&nbsp;program** | A read-only JSON API at `/api/v1`: posts, pages, notes and your categories, each with the Markdown it was written in — enough to build a second front end, a search index or a static export without scraping pages. Off until you switch it on, and it shows only what is already public. [How it works](./docs/content-api.md) |
 | 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP |
 | 💾&nbsp;**Backups** | One button downloads the whole install. Scheduled snapshots stay on the server and are shipped to your own R2 or S3 bucket. [Details](./docs/backups.md) |
 | 📥&nbsp;**Moving&nbsp;in,&nbsp;and&nbsp;out** | A WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you; the server works out whose it is. Old URLs answer with redirects, images land in your library. Out is a ZIP of Markdown with YAML front matter, which this blog also reads back |
-| 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and one more is one file. No CJK webfont ships, because they run to megabytes, but each of the three names its own face |
+| 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and one more is one file. A post or a page can also name the language IT is written in and point at its own translations, so one English essay on a Vietnamese blog is announced as English. No CJK webfont ships, because they run to megabytes, but each of the three names its own face |
 | 🔐&nbsp;**Sign-in** | Username and password hashed with argon2id, an authenticator code every time, ten recovery codes, every signed-in device listed with a button to end it. No Google in the login path |
 | 🤖&nbsp;**Assistant** | Your own model key: Claude, GPT, Gemini or DeepSeek. Answers arrive as they are written, conversations are kept, each carries a receipt of what it cost. It also writes alt text and sorts spam into the trash |
 | ⌨️&nbsp;**The&nbsp;admin** | Server-rendered HTML with islands of hand-written JavaScript, no framework. ⌘⇧K finds any named setting and jumps to it. Nine chords in the editor, find and replace among them. Series, drafts, scheduling, and it all works from a phone |
@@ -354,12 +355,7 @@ SMTP, Turnstile and CDN credentials go in **Settings → Comments & mail** and *
 
 **Eleven languages** on the reader's side and in the admin: English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano and Русский. The first question setup asks is which one this blog speaks.
 
-<details>
-<summary><b>Help translate</b> &nbsp;two plain files, and the compiler refuses a half-done one</summary>
-
-Every language is a pair of files of quoted strings under [`locales/`](./locales): `locales/<code>.ts` is what readers see, `locales/admin/<code>.ts` what the owner sees. To add one, copy the two `en` files, translate, and register the code in `locales/langs.ts`, `src/types.ts` and `DATE_LOCALE` in `src/i18n/format.ts`. The compiler refuses to build until every key exists, so a half-done translation cannot ship silently. Pull requests welcome, since a native speaker's ear beats ours.
-
-</details>
+Adding a twelfth is two files and a registered code, and the compiler refuses to build a half-done one. [How to](./docs/translations.md).
 
 ## Develop
 

@@ -41,6 +41,8 @@ copies of a rule means one is wrong within a month
 | [seo-pwa.md](seo-pwa.md) | Sitemap, feeds, OG, region, PWA |
 | [agent-ready.md](agent-ready.md) | Markdown negotiation, `.well-known` discovery, the three shipped skills, Content-Signal |
 | [mcp.md](mcp.md) | MCP server, tokens, OAuth |
+| [content-api.md](content-api.md) | The read-only Content API at `/api/v1`, off by default |
+| [translations.md](translations.md) | Adding a language, and the typography guard |
 | [pen.md](pen.md) | The pen on a page that is not this blog: `/pen.css`, the `.pen` class, the three elements |
 | [agent-cookbook.md](agent-cookbook.md) | Prompts that do real jobs with a connected agent, and where the lines are |
 | [backups.md](backups.md) | What is copied off the server, how often, and how to restore it |

@@ -20,8 +20,12 @@ import { SPECULATION_HEADER } from '@/web/speculation'
  * readers costs one render. `stale-while-revalidate` is what keeps the refresh off the
  * reader's critical path: the first request after expiry is answered from the stale copy
  * and the edge fetches a new one behind it.
+ *
+ * EXPORTED because the Content API answers with the same freshness (ADR 0057): it is the same
+ * published content, purged by the same write, and a second window written out beside this one
+ * is two answers to one question waiting to disagree.
  */
-const PUBLIC = 'public, s-maxage=60, stale-while-revalidate=600'
+export const PUBLIC = 'public, s-maxage=60, stale-while-revalidate=600'
 
 /**
  * The owner's own surfaces, and anything that is not a 200.

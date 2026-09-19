@@ -13,6 +13,7 @@ import type { BackupListWire, SnapshotWire } from '@/admin-shared/wire'
 import { ask, owned, say } from './media-bridge'
 import { broke, put, read, row, show, type ListWords } from './list-dom'
 import { fillTokens, wireMcp } from './settings-mcp'
+import { wireApi } from './settings-api'
 
 export type { ListWords }
 
@@ -47,6 +48,7 @@ export function wireLists(screen: HTMLElement, w: ListWords): void {
   wireRedirects(screen, w)
   wireBackupKeys(screen, w)
   wireMcp(screen, w)
+  wireApi(screen, w)
   wireRetries(screen)
 }
 

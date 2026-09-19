@@ -1231,6 +1231,8 @@ export type AdminStrings = {
   movedToTrash: string
   // MCP server (Admin → Settings → Advanced)
   cardMcp: string
+  // The read-only Content API (ADR 0057), on the same tab and off by default
+  cardApi: string
   cardCloudflare: string
   cardAi: string
   cardInk: string
@@ -1321,6 +1323,12 @@ export type AdminStrings = {
   importImages: string
   importImagesDone: string
   importImagesFailed: string
+  apiEnable: string
+  apiEnableDesc: string
+  apiUrlLabel: string
+  apiUrlHint: string
+  apiUrlCopied: string
+  apiReadOnly: string
   mcpEnable: string
   mcpEnableDesc: string
   mcpUrlLabel: string
