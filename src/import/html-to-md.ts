@@ -281,7 +281,18 @@ function table(node: Element): Block {
   const first = rows[0]
   const head = first ? asCells(first) : []
   const align = first ? cells(first).map(alignOf) : []
-  return { type: 'table', align, head, rows: rows.slice(1).map(asCells) }
+  const body = rows.slice(1).map(asCells)
+
+  // ⚠️ THE HEADER ROW DECIDES HOW MANY COLUMNS THERE ARE, and GFM drops every cell a later row
+  // has past that count — so a table whose first row is narrower than its body arrived here
+  // complete and published short. HTML gets narrow first rows honestly: `<td colspan="2">` is
+  // one cell holding two columns, and Markdown has no colspan to convert it into. Padding the
+  // header out to the widest row is the whole repair, and it loses nothing: a row shorter than
+  // the header is padded by the renderer already.
+  const width = Math.max(head.length, ...body.map((row) => row.length))
+  while (head.length < width) head.push({ children: [] })
+  while (align.length < width) align.push(null)
+  return { type: 'table', align, head, rows: body }
 }
 
 /**

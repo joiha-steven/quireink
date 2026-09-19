@@ -4,7 +4,7 @@
 import { describe, it, expect } from 'bun:test'
 import { parseGhost, looksLikeGhost } from './ghost'
 import { parseSubstack, parseMedium, parseCsv, isSubstack, isMedium, type Entry } from './archive'
-import { cleanImportHtml, cleanImportMarkdown } from './convert'
+import { cleanImportHtml, cleanImportMarkdown, slugTracker } from './convert'
 
 const NOW = '2026-08-23T00:00:00.000Z'
 
@@ -62,6 +62,40 @@ describe('Ghost', () => {
     expect(hello.date).toBe('2024-05-01T08:00:00.000Z')
     expect(posts.find((p) => p.slug === 'waiting')!.status).toBe('draft') // scheduled → draft
     expect(posts.find((p) => p.slug === 'sent-letter')!.status).toBe('published') // sent = delivered
+  })
+})
+
+describe('the slug every imported post is filed under', () => {
+  // `slugify` folds Latin and Cyrillic and returns '' for everything else, so a blog whose
+  // titles are Japanese, Arabic, Thai, emoji or punctuation alone arrives here with nothing to
+  // make a name out of. The first such post is `untitled`; the second was `-2`, because the
+  // collision loop rebuilt the name out of the EMPTY STRING it was handed instead of out of the
+  // name it had just chosen. A whole blog could land as `untitled`, `-2`, `-3`, `-4`.
+  it('numbers the untitled ones after the name they were given', () => {
+    const next = slugTracker()
+    expect([next(''), next(''), next('')]).toEqual(['untitled', 'untitled-2', 'untitled-3'])
+  })
+
+  it('still numbers an ordinary collision after its own stem', () => {
+    const next = slugTracker()
+    expect([next('bai-viet'), next('bai-viet'), next('khac')]).toEqual(['bai-viet', 'bai-viet-2', 'khac'])
+  })
+
+  it('gives a Ghost blog written in Japanese a slug apiece', () => {
+    // The shape end to end, because the allocator alone cannot say the importer reaches it.
+    const jp = { db: [{ data: { posts: [
+      { id: 'a', title: '書体の話', slug: '', status: 'published', type: 'post', html: '<p>A</p>' },
+      { id: 'b', title: '日本語のブログ', slug: '', status: 'published', type: 'post', html: '<p>B</p>' },
+    ], tags: [], posts_tags: [] } }] }
+    const slugs = parseGhost(jp, NOW).posts.map((p) => p.slug)
+    expect(slugs).toEqual(['untitled', 'untitled-2'])
+    expect(slugs.every((s) => /^[a-z0-9]/.test(s))).toBe(true)
+    // ⚠️ A DIGIT SURVIVES `slugify` where the rest of the title does not, so `書体の話 2` is
+    // filed under `2` — odd to look at, unique, and not this allocator's business.
+    const withDigit = { db: [{ data: { posts: [
+      { id: 'c', title: '書体の話 2', slug: '', status: 'published', type: 'post', html: '<p>C</p>' },
+    ], tags: [], posts_tags: [] } }] }
+    expect(parseGhost(withDigit, NOW).posts.map((p) => p.slug)).toEqual(['2'])
   })
 })
 

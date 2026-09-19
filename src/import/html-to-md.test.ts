@@ -105,6 +105,18 @@ describe('the shapes a platform actually exports', () => {
     expect(md).toContain('---:')
   })
 
+  it('keeps a cell that a narrow first row would have dropped', () => {
+    // `<td colspan="2">` is one cell holding two columns, and Markdown has no colspan — so the
+    // header row came back one column wide and GFM, which reads the column count off that row,
+    // dropped every cell past it. `b` was in the imported file and not on the imported page.
+    const html = '<table><tr><td colspan="2">wide</td></tr><tr><td>a</td><td>b</td></tr></table>'
+    const md = htmlToMarkdown(html)
+    const page = toHtml(md)
+    expect(page).toContain('>a<')
+    expect(page).toContain('>b<')
+    expect((page.match(/<td/g) ?? []).length).toBe(2)
+  })
+
   it('reads the language off a highlighted code block', () => {
     const md = htmlToMarkdown('<pre><code class="language-ts">const x = 1\n</code></pre>')
     expect(md).toBe('```ts\nconst x = 1\n```')

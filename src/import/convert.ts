@@ -75,9 +75,15 @@ export function htmlToMarkdown(html: string): string {
 export function slugTracker(): (base: string) => string {
   const used = new Set<string>()
   return (base: string): string => {
-    let slug = base || 'untitled'
+    // ⚠️ THE SUFFIX HANGS OFF THE STEM, NOT OFF WHAT CAME IN. `slugify` returns '' for a title
+    // written in an alphabet it does not fold — Japanese, Arabic, Thai, an emoji, punctuation
+    // alone — so a run with two such posts named the first `untitled` and the second `-2`,
+    // because the loop rebuilt the name out of the empty string it was handed rather than out
+    // of the name it had just chosen. Every post after that: `-3`, `-4`.
+    const stem = base || 'untitled'
+    let slug = stem
     let n = 2
-    while (used.has(slug)) slug = `${base}-${n++}`
+    while (used.has(slug)) slug = `${stem}-${n++}`
     used.add(slug)
     return slug
   }
