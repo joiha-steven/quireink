@@ -102,6 +102,27 @@ export function decodeQuotedPrintable(encoded: string): string {
 const WORD_BYTES = 39
 
 /**
+ * ⚠️ NO VALUE CARRIES A LINE ENDING INTO A HEADER, OR INTO AN SMTP COMMAND.
+ *
+ * A header ends at the first CRLF and the next line is the next header, so a value holding one
+ * writes a header nobody asked for — `To: Reader\r\nBcc: …` is two headers and a copy of the
+ * letter to a third party. The same characters in an envelope address are a second SMTP command,
+ * because `smtp.ts` writes `MAIL FROM:<…>` and `RCPT TO:<…>` around what it is handed.
+ *
+ * Measured before this existed: `buildMessage` with a recipient of `Reader\r\nBcc: evil@… <r@…>`
+ * emitted a real `Bcc:` header. Nothing reachable put one there — a subscriber's address is
+ * checked on the way in and every other recipient is the owner's own — so this is the sink
+ * holding rather than a hole closing, which is where a rule about a format belongs. The subject
+ * was already safe by accident: anything outside printable ASCII forces the encoded form, and a
+ * CRLF is outside it.
+ *
+ * A space, not a deletion: two words that were on two lines are two words.
+ */
+function oneLine(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ')
+}
+
+/**
  * A header value that may hold anything, as ASCII. RFC 2047.
  *
  * Split by CHARACTER and not by byte. A Vietnamese letter is up to three bytes, and an encoded
@@ -109,13 +130,14 @@ const WORD_BYTES = 39
  * below is therefore a budget that whole characters are fitted into.
  */
 export function encodeHeader(value: string): string {
+  const text = oneLine(value)
   // eslint-disable-next-line no-control-regex
-  if (!/[^\x20-\x7e]/.test(value)) return value
+  if (!/[^\x20-\x7e]/.test(text)) return text
   const encoder = new TextEncoder()
   const words: string[] = []
   let chunk = ''
   let used = 0
-  for (const ch of value) {
+  for (const ch of text) {
     const size = encoder.encode(ch).length
     if (used + size > WORD_BYTES) {
       words.push(chunk)
@@ -166,7 +188,8 @@ function displayName(name: string): string {
  *
  * nodemailer quoted these; it went when the mail half became ours (2.2.10).
  */
-export function encodeAddress(address: string): string {
+export function encodeAddress(addressIn: string): string {
+  const address = oneLine(addressIn)
   const match = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(address)
   if (!match) return address.trim()
   const quoted = /^"(.*)"$/.exec(match[1]!)
@@ -178,7 +201,7 @@ export function encodeAddress(address: string): string {
 
 /** Just the `user@host` out of either spelling, for the `MAIL FROM` and `RCPT TO` commands. */
 export function bareAddress(address: string): string {
-  return (/<([^>]+)>/.exec(address)?.[1] ?? address).trim()
+  return oneLine(/<([^>]+)>/.exec(address)?.[1] ?? address).trim()
 }
 
 export type Message = {

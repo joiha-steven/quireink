@@ -126,6 +126,65 @@ describe('addresses', () => {
   })
 })
 
+describe('a line ending inside a value', () => {
+  // ⚠️ A HEADER ENDS AT THE FIRST CRLF, so a value holding one writes the next header itself:
+  // `To: Reader\r\nBcc: evil@…` is two headers and a copy of the letter to a third party. The
+  // same characters in an envelope address are a second SMTP COMMAND, because `smtp.ts` writes
+  // `MAIL FROM:<…>` and `RCPT TO:<…>` around what `bareAddress` hands it.
+  //
+  // Nothing reachable puts one there — a subscriber's address is checked on the way in and
+  // every other recipient is the owner's own — so these hold the sink rather than close a hole.
+  const CRLF = '\r\n'
+
+  it('never lets an address write a header of its own', () => {
+    for (const address of [
+      `Reader${CRLF}Bcc: evil@example.com <r@example.com>`,
+      `Reader <r@example.com>${CRLF}Bcc: evil@example.com`,
+      `<r@example.com${CRLF}Bcc: evil@example.com>`,
+      `r@example.com${CRLF}Bcc: evil@example.com`,
+      `Reader <r@example.com\nevil>`,
+    ]) {
+      expect(encodeAddress(address)).not.toMatch(/[\r\n]/)
+      expect(bareAddress(address)).not.toMatch(/[\r\n]/)
+    }
+  })
+
+  it('never lets a subject write one either', () => {
+    // Already true before the rule existed, and by accident: anything outside printable ASCII
+    // forces the encoded form and a CRLF is outside it. Pinned so it stays true on purpose.
+    expect(encodeHeader(`Chào${CRLF}Bcc: evil@example.com`)).not.toMatch(/[\r\n](?! )/)
+    expect(encodeHeader(`Hello${CRLF}Bcc: evil@example.com`)).toBe('Hello Bcc: evil@example.com')
+  })
+
+  it('still folds a long header, which is the one CRLF that belongs', () => {
+    const folded = encodeHeader('ế'.repeat(200))
+    expect(folded).toContain('\r\n ')
+    // Every line ending in a header is a fold: it is followed by whitespace.
+    expect(folded.split('\r\n').slice(1).every((line) => line.startsWith(' '))).toBe(true)
+  })
+
+  it('builds a message with exactly the headers it meant to', () => {
+    const out = buildMessage({
+      from: 'Blog <hi@example.com>',
+      to: `Reader${CRLF}Bcc: evil@example.com <r@example.com>`,
+      subject: `Chào${CRLF}Bcc: evil@example.com`,
+      text: 'thân bài',
+      html: '<p>thân bài</p>',
+      date: new Date('2026-01-01T00:00:00Z'),
+      boundary: 'B',
+      messageId: 'M',
+    })
+    const head = out.slice(0, out.indexOf('\r\n\r\n'))
+    expect([...head.matchAll(/^([A-Za-z-]+):/gm)].map((m) => m[1])).toEqual([
+      'From', 'To', 'Subject', 'Date', 'Message-ID', 'MIME-Version', 'Content-Type',
+    ])
+    // By the START of a line, not by the substring: `Bcc:` sitting inside the quoted display
+    // name is the injection defeated, not the injection working.
+    expect(head).not.toMatch(/^Bcc:/m)
+    expect(head).toContain('"Reader Bcc: evil@example.com" <r@example.com>')
+  })
+})
+
 describe('the whole message', () => {
   const built = buildMessage({
     from: 'Nhật ký <hi@example.com>',
