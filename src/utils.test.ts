@@ -96,6 +96,45 @@ describe('deriveExcerpt', () => {
   it('strips markdown image/link syntax from the excerpt', () => {
     expect(deriveExcerpt('![alt](media/x.jpg) real [text](/l) here')).toBe('real text here')
   })
+
+  // ⚠️ FOUR SURFACES READ THIS ONE STRING: the deck over the title, the meta description, the
+  // OG card and the RSS summary. Every shape below put its own notation into all four.
+  it('keeps a bracket inside a link label out of the summary', () => {
+    // The old pattern said a label holds no `]` and a URL holds no `)`, so neither of these
+    // matched AT ALL and the whole line went out as the characters somebody typed.
+    expect(deriveExcerpt('Xem [Theo nghiên cứu [1]](https://e.com) nhé.')).toBe('Xem Theo nghiên cứu [1] nhé.')
+    expect(deriveExcerpt('Đọc [bài](https://en.wikipedia.org/wiki/A_(b)) đi.')).toBe('Đọc bài đi.')
+  })
+
+  it('leaves a footnote at the foot of the piece, not in the summary of it', () => {
+    expect(deriveExcerpt('Nguồn[^1] nói vậy.\n\n[^1]: Wikipedia')).toBe('Nguồn nói vậy.')
+    expect(deriveExcerpt('Nguồn[^ghi-chú] nói vậy.')).toBe('Nguồn nói vậy.')
+  })
+
+  it("drops a callout's tag, which is a marker and not a sentence", () => {
+    expect(deriveExcerpt('> [!NOTE]\n> Lời nhắc.')).toBe('Lời nhắc.')
+  })
+
+  it('reads a table as its cells', () => {
+    // The rule row is notation entire and the pipes are a grid: counted as words, a four-cell
+    // table read fifteen, so the reading time and the panel beside the editor were both wrong.
+    expect(deriveExcerpt('| a | b |\n| --- | --- |\n| 1 | 2 |')).toBe('a b 1 2')
+    expect(wordCount('| a | b |\n| --- | --- |\n| 1 | 2 |')).toBe(4)
+  })
+
+  it('reads a divider as a divider, in all three spellings', () => {
+    for (const rule of ['---', '***', '___']) {
+      expect(deriveExcerpt(`${rule}\n\nThân bài.`)).toBe('Thân bài.')
+      expect(wordCount(`${rule}\n\nThân bài.`)).toBe(2)
+    }
+  })
+
+  it('still keeps a hyphen, a pipe and a bracket that belong to the prose', () => {
+    // The rules above are anchored for a reason: every one of these is ordinary writing.
+    expect(deriveExcerpt('một blog self-hosted, 2020-2026.')).toBe('một blog self-hosted, 2020-2026.')
+    expect(deriveExcerpt('Dùng a | b để ngăn cách.')).toBe('Dùng a | b để ngăn cách.')
+    expect(deriveExcerpt('Theo [1] thì vậy.')).toBe('Theo [1] thì vậy.')
+  })
 })
 
 describe('clampExcerpt', () => {

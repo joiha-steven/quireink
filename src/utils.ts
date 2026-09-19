@@ -98,8 +98,19 @@ export const EXCERPT_MAX_CHARS = 280
 export function toPlainText(markdown: string): string {
   return markdown
     .replace(/```[\s\S]*?```/g, ' ') // code blocks
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ') // images
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // links -> text
+    // ⚠️ BOTH BRACKETS AND BOTH PARENS NEST ONE LEVEL, because a label may hold a pair and
+    // a URL may hold a pair, and the flat versions matched NEITHER — they simply did not fire,
+    // and the whole of `[Theo nghiên cứu [1]](https://e.com)` went into the deck, the meta
+    // description, the OG card and the RSS summary as the characters somebody typed.
+    // Wikipedia's own addresses carry the second shape: `…/wiki/A_(b)`.
+    .replace(/!\[(?:[^\][]|\[[^\][]*\])*\]\((?:[^()]|\([^()]*\))*\)/g, ' ') // images
+    .replace(/\[((?:[^\][]|\[[^\][]*\])*)\]\((?:[^()]|\([^()]*\))*\)/g, '$1') // links -> text
+    // A footnote, both halves. The definition is a line of its own and belongs at the foot of
+    // the piece, not in a summary of it; the reference is a number the summary cannot use.
+    .replace(/^[ \t]*>?[ \t]*\[\^[^\]\s]+\]:.*$/gm, ' ')
+    .replace(/\[\^[^\]\s]+\]/g, '')
+    // A callout's tag, which is a marker and not a sentence: `> [!NOTE]` on its own line.
+    .replace(/^[ \t]*>?[ \t]*\[![A-Za-z]+\][ \t]*$/gm, ' ')
     .replace(/<[^>]+>/g, ' ') // html tags (e.g. video iframes)
     // Highlights -> the words inside them. BEFORE the bare-character strip below, which
     // would otherwise eat the `#` of a colour suffix and leave the colour NAME in the prose.
@@ -134,6 +145,15 @@ export function toPlainText(markdown: string): string {
     // OG card and the RSS summary, so a post opening with a hyphen list had the hyphens in
     // all four. Anchored and followed by space, so nothing mid-sentence matches.
     .replace(/^[ \t]*(?:[-+]|\d+[.)])[ \t]+/gm, '')
+    // A TABLE, anchored the same way and for the same reason as the list marker above. The
+    // rule row is notation entire; the pipes are a grid, not words. Both were counted: a post
+    // holding one four-cell table read fifteen words instead of four, so its reading time and
+    // the panel beside the editor were wrong, and a post OPENING with a table put `| --- |`
+    // into all four summaries.
+    // The first line also takes a `---` divider, which is the same shape and counted as a word
+    // of its own; `***` and `___` are taken by the bare-character strip below.
+    .replace(/^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)*\|?[ \t]*$/gm, ' ')
+    .replace(/^([ \t]*>?[ \t]*)\|(.*)$/gm, (_m, head: string, rest: string) => head + rest.replace(/\|/g, ' '))
     .replace(/[#>*_`~]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
