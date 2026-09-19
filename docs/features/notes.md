@@ -11,6 +11,19 @@ Written like a post, kept apart from the posts ([ADR 0044](../decisions/0044-a-n
   words. No comments, no series, no table of contents, no related posts.
 - **Never in the post feed, the front page, the archive or the newsletter.** In the sitemap
   and in `llms.txt` under its own heading. A draft is private to the owner and answers 404.
+- **Its own two feeds** — `/notes/feed.xml` (RSS 2.0) and `/notes/feed.json`
+  ([JSON Feed 1.1](https://www.jsonfeed.org/version/1.1/)), both on `settings.seo.rss`, both
+  advertised from `/notes` beside the site's own pair. Being out of the post feed is the point
+  of ADR 0044, and until 2.2.13 it also meant the notebook could not be subscribed to at all:
+  the one kind of writing here that speaks Micropub and Webmention was the one kind with no
+  way in. An entry's title falls back `title || sourceTitle || slug` and its summary is the
+  kept passage — the same two choices `llms.txt` and the notebook's own cards already make,
+  so the three describe a note identically. **No body in the summary**, deliberately:
+  `getPublicNotes` returns metadata, and filling one would mean a read per note on a document
+  a crawler fetches precisely because it is cheap.
+- **`clip`, `feed.xml` and `feed.json` are refused as note slugs** (`NOTE_RESERVED`). Only
+  `clip` can actually arrive there, because `slugify` strips the dot — the set is named all
+  the same, so that widening `slugify` cannot silently let a note shadow a subscription.
 - **Its own slug namespace.** A note and a page may share a name; `notes` is reserved so no
   post can shadow the notebook (`RESERVED_SLUGS`). A rename leaves a 301 under `/notes/`.
 

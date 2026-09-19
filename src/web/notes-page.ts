@@ -50,6 +50,10 @@ export async function renderNotesIndex(): Promise<string> {
     canonicalPath: '/notes',
     cardTitle: s.notesTitle,
     activeHref: '/notes',
+    // The notebook's own two feeds, beside the site's. A note is never in the post feed
+    // (ADR 0044), so this page is the only place a reader can find out that subscribing to
+    // the notebook is possible at all.
+    feed: { path: '/notes/feed.xml', title: `${s.notesTitle} · ${settings.title}`, json: '/notes/feed.json' },
   })
 }
 

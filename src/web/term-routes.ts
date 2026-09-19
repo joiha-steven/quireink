@@ -24,7 +24,7 @@ import { cached, listingPage, notFoundPage, renderFeedBody } from '@/web/listing
 import { parsePathPage } from '@/content/paginate'
 import { renderArchive } from '@/web/archive-page'
 import { renderArticle } from '@/web/article'
-import { renderFeed } from '@/web/feeds'
+import { postItems, renderFeed } from '@/web/feeds'
 
 /**
  * The RSS document for one archive, or a 404.
@@ -42,7 +42,7 @@ async function termFeed(
   if (!settings.seo.rss || !name) return notFoundPage()
   const site = resolveSiteUrl(settings)
   const s = t(settings.language)
-  const body = renderFeed(posts, settings, site, {
+  const body = renderFeed(postItems(posts, site), settings, site, {
     // "Kinh tế · edcmeo" — the term leads, because this is what the subscriber picked and
     // what will show in the list of feeds they subscribe to.
     title: `${name} · ${settings.title}`,

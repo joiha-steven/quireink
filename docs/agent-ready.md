@@ -18,7 +18,7 @@ already exists.
 | `/.well-known/oauth-authorization-server` | OAuth AS metadata (RFC 8414) | `src/web/admin/mcp.ts` |
 | `/.well-known/oauth-protected-resource` | OAuth protected-resource metadata (RFC 9728) | `src/web/admin/mcp.ts` |
 | `/api/mcp` | The MCP transport itself | `src/web/admin/mcp-transport.ts`, see [`mcp.md`](./mcp.md) |
-| `/llms.txt` `/sitemap.xml` `/feed.xml` | Content index / sitemap / RSS | see [`seo-pwa.md`](./seo-pwa.md) |
+| `/llms.txt` `/sitemap.xml` `/feed.xml` `/feed.json` | Content index / sitemap / RSS / JSON Feed | see [`seo-pwa.md`](./seo-pwa.md) |
 
 The negotiation lives in the router rather than in a config file, which is the only place
 it can be read next to the route it affects. Both `.well-known` documents answer `OPTIONS`

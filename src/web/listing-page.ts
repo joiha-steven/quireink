@@ -55,7 +55,7 @@ export type ListingPage = {
    * Suppressed with the same setting the routes are, so a site with RSS off never points at
    * a document that answers 404.
    */
-  feed?: { path: string; title: string }
+  feed?: { path: string; title: string; json?: string }
   /**
    * Drop the discovery rail and run the body full width.
    *
@@ -73,9 +73,15 @@ export async function listingPage(
 ): Promise<string> {
   const settings = await getSettings()
   const site = resolveSiteUrl(settings)
+  // `json` is optional because only some archives have one: the notebook does, a tag does
+  // not (`feed-routes.ts` says why). An archive with no JSON document must not advertise one.
   const feedLink = feed && settings.seo.rss
     ? `<link rel="alternate" type="application/rss+xml"`
       + ` title="${escapeAttr(feed.title)}" href="${escapeAttr(feed.path)}">`
+      + (feed.json
+        ? `<link rel="alternate" type="application/feed+json"`
+          + ` title="${escapeAttr(feed.title)}" href="${escapeAttr(feed.json)}">`
+        : '')
     : ''
   const [{ configured: mailConfigured }, rail] = await Promise.all([
     getMailStatus(), renderSidebar(settings, activeHref),

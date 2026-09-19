@@ -84,7 +84,7 @@ bun src/index.ts
 | 🔍&nbsp;**Reading** | Search that answers as you type and respects the accents you typed. A rail with your categories, or the contents of the post. Related posts, reading time, a progress bar. Book mode sets a post in two columns and keeps your place |
 | 📈&nbsp;**Numbers** | Analytics without cookies: who read what, how far they got, where they came from, per post as well as per site. Nothing is ever deleted. Plus an activity log and a trash you can undo |
 | 💬&nbsp;**Comments** | Readers comment without an account. The page signs its own spam challenge, so no third party sees them; Turnstile takes over only if you add its keys |
-| 🔎&nbsp;**Search&nbsp;engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working |
+| 🔎&nbsp;**Search&nbsp;engines** | Sitemap, `robots.txt`, `llms.txt`, and an OG image drawn per post. RSS and JSON Feed, for the blog and for the notebook. Rename a slug and the old URL keeps working |
 | 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP |
 | 💾&nbsp;**Backups** | One button downloads the whole install. Scheduled snapshots stay on the server and are shipped to your own R2 or S3 bucket. [Details](./docs/backups.md) |
 | 📥&nbsp;**Moving&nbsp;in** | A WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you; the server works out whose it is. Everything becomes Markdown, old URLs answer with redirects, images land in your library |

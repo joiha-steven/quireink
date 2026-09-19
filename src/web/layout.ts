@@ -339,9 +339,14 @@ export function renderDocument(
       + '<link rel="authorization_endpoint" href="/api/mcp/authorize">'
       + '<link rel="token_endpoint" href="/api/mcp/token"><link rel="micropub" href="/micropub">'
     : '')
+  // BOTH formats, because both are documents a reader's app may subscribe to and neither is
+  // discoverable without a link element. The type attribute is the whole of how an aggregator
+  // tells them apart, so the two lines differ in nothing else.
   const feed = settings.seo.rss
     ? `<link rel="alternate" type="application/rss+xml"`
       + ` title="${escapeAttr(settings.title)}" href="/feed.xml">`
+      + `<link rel="alternate" type="application/feed+json"`
+      + ` title="${escapeAttr(settings.title)}" href="/feed.json">`
     : ''
 
   // `data-motion` and `data-chrome-font` are both read by CSS, not by script: the motion

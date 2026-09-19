@@ -93,7 +93,7 @@ bun src/index.ts
 | 🔍&nbsp;**Đọc** | Tìm kiếm hiện kết quả trong lúc gõ, và gõ dấu nào thì ra đúng chữ đó. Mục lục bài, bài liên quan, thời gian đọc. Chế độ sách: hai cột trên nền giấy ở máy bàn, một cột cuộn trên điện thoại, nhớ chỗ đang đọc |
 | 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie: ai đọc bài nào, đọc tới đâu, đến từ đâu. Không có gì bị xoá, nên bảng theo năm lùi được tới người đọc đầu tiên. Kèm nhật ký hoạt động và thùng rác hoàn tác được |
 | 💬&nbsp;**Bình&nbsp;luận** | Người đọc bình luận không cần tài khoản. Chống spam bằng cách tự ký thử thách, không qua bên thứ ba nào |
-| 🔎&nbsp;**Máy&nbsp;tìm&nbsp;kiếm** | Sitemap, RSS, `robots.txt`, `llms.txt`, ảnh chia sẻ vẽ riêng cho từng bài. Đổi đường dẫn thì link cũ vẫn chạy |
+| 🔎&nbsp;**Máy&nbsp;tìm&nbsp;kiếm** | Sitemap, `robots.txt`, `llms.txt`, ảnh chia sẻ vẽ riêng cho từng bài. RSS và JSON Feed, cho blog và cho sổ tay. Đổi đường dẫn thì link cũ vẫn chạy |
 | 📬&nbsp;**Bản&nbsp;tin** | Đăng ký có email xác nhận, một số tự gửi khi bạn đăng bài. SMTP của riêng bạn |
 | 💾&nbsp;**Sao&nbsp;lưu** | Nút tải cả blog về máy, snapshot theo lịch, mỗi snapshot gửi thêm một bản lên bucket R2 hay S3 của bạn. [Chi tiết](./docs/backups.md) |
 | 📥&nbsp;**Dọn&nbsp;nhà&nbsp;sang** | Nhập từ WordPress, Ghost, Substack, Medium. Ảnh được tải về, URL cũ được chuyển hướng sẵn |

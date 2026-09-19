@@ -6,11 +6,12 @@
 
 - `settings.seo` = `{ autoSchema, sitemap, llms, robots, rss, ogImage, ogFallbackImage }` +
   `settings.siteUrl` (canonical; '' → localhost via `resolveSiteUrl()`).
-- **The four machine surfaces are one code path.** `feedRoute()` in `src/web/app.ts` mounts
-  `/feed.xml`, `/sitemap.xml`, `/robots.txt` and `/llms.txt`; each is gated on its own
-  `settings.seo` flag and **404s when off** rather than serving an empty document, because an
-  empty feed looks like a broken site to an aggregator and a 404 looks like what it is. The
-  bodies are built by `src/web/feeds.ts`. All four send
+- **The machine surfaces are one code path.** `feedRoute()` in `src/web/feed-routes.ts`
+  mounts `/feed.xml`, `/feed.json`, `/notes/feed.xml`, `/notes/feed.json`, `/sitemap.xml`,
+  `/robots.txt` and `/llms.txt`; each is gated on a `settings.seo` flag and **404s when off**
+  rather than serving an empty document, because an empty feed looks like a broken site to an
+  aggregator and a 404 looks like what it is. The bodies are built by `src/web/feeds.ts` and
+  `src/web/feed-json.ts`. All of them send
   `public, s-maxage=300, stale-while-revalidate=600` — a write purges the zone anyway, so a
   subscriber never waits on the window.
 - `renderRobots` — **three groups**, restored from 1.x on 2026-08-29. Search engines and AI
@@ -22,6 +23,19 @@
   own writing. Turning it into a block needs a `seo` setting and a switch in the admin
   beside the others — not a default. Only the tier that crawls heavily, sends no readers and
   resells the blog's links is turned away.
+- **FOUR SUBSCRIPTION DOCUMENTS, one switch.** The blog and the notebook, each as RSS 2.0
+  and as [JSON Feed 1.1](https://www.jsonfeed.org/version/1.1/), all four on `seo.rss` — the
+  same argument the per-archive feeds settle below. The notebook needs its own pair because a
+  note is never in the post feed ([ADR 0044](./decisions/0044-a-note-is-not-a-post.md)), so
+  until 2.2.13 the one kind of writing that speaks Micropub and Webmention was the one kind
+  nobody could subscribe to. Both formats are fed by ONE builder through a neutral
+  `FeedItem`: two RSS builders would drift, and the one that drifted would be the notebook's.
+  The per-archive feeds stay RSS-only, because JSON Feed earns its place on a document a
+  reader's app subscribes to and sixty tag feeds in two formats is a hundred and twenty
+  documents to keep in step for a format nothing polls.
+  **`escapeXml` sweeps the characters XML forbids; the JSON builder does not and must not** —
+  JSON forbids none of them, `JSON.stringify` escapes a lone surrogate since ES2019, and a
+  sweep here would make the two feeds disagree about what the owner actually wrote.
 - **A feed per archive** — `/category/:slug/feed.xml`, `/tag/:slug/feed.xml` and
   `/series/:slug/feed.xml`, in `src/web/term-routes.ts` rather than beside the four above,
   because a term feed cannot be built until the term is resolved and that is what that file

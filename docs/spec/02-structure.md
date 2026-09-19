@@ -111,7 +111,7 @@ needed:
 
 **Public (`src/web`):** `/`, `/page/:n`, `/:slug`, `/category/:slug` (+`/page/:n`),
 `/tag/:slug` (+`/page/:n`), `/series/:slug`, `/archive`, `/search`, `/preview/:slug`, `/login`,
-`/setup`, `/sw.js`, `/assets/:file`, `/feed.xml` (and a feed per archive),
+`/setup`, `/sw.js`, `/assets/:file`, `/feed.xml`, `/feed.json` (and a feed per archive),
 `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/manifest.webmanifest`, `/og`, `/uploads/*`,
 `/.well-known/*`, `/api/md/:slug`. Server-rendered HTML built as strings, not JSX.
 

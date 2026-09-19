@@ -47,18 +47,55 @@ const isoDay = (iso: string) => new Date(iso).toISOString().slice(0, 10)
  */
 export type FeedChannel = { title: string; description: string; path: string }
 
+/**
+ * ONE ENTRY, in the few fields RSS and JSON Feed both need.
+ *
+ * The builders take this rather than a `Post`, because a note is not a post (ADR 0044) and
+ * yet subscribes exactly the same way. Two RSS builders would drift, and the one that
+ * drifted would be the notebook's — the one nobody is looking at while testing the other.
+ */
+export type FeedItem = { title: string; url: string; date: string; summary: string }
+
+/** How many entries a feed carries. One number, so the two formats cannot disagree. */
+export const FEED_MAX = 50
+
+export const postItems = (posts: Post[], site: string): FeedItem[] =>
+  posts.map((p) => ({
+    title: p.title, url: `${site}/${p.slug}`, date: p.date, summary: p.excerpt ?? '',
+  }))
+
+/**
+ * A note's title, and its kept passage as the summary.
+ *
+ * Both fall back exactly as the notebook's own cards and `llms.txt` already do —
+ * `title || sourceTitle || slug`, and the quote when there is one. Three places describe a
+ * note and they describe it the same way; a fourth opinion here is how a subscriber ends up
+ * reading a different notebook from the one on the site.
+ *
+ * There is no body in a note's summary, and deliberately: `getPublicNotes` returns metadata,
+ * so filling one would mean a read per note on a document a crawler fetches BECAUSE it is
+ * cheap. The sitemap's image rule turns down the same trade for the same reason.
+ */
+export const noteItems = (notes: Note[], site: string): FeedItem[] =>
+  notes.map((n) => ({
+    title: n.title || n.sourceTitle || n.slug,
+    url: `${site}/notes/${n.slug}`,
+    date: n.date,
+    summary: n.quote ? clampExcerpt(n.quote) : '',
+  }))
+
 /** RSS 2.0. Bodies are deliberately NOT included: a description is the excerpt. */
 export function renderFeed(
-  posts: Post[], settings: SiteSettings, site: string, channel?: FeedChannel,
+  entries: FeedItem[], settings: SiteSettings, site: string, channel?: FeedChannel,
 ): string {
   const { title, description, path } = channel
     ?? { title: settings.title, description: settings.description, path: '/feed.xml' }
-  const items = posts.slice(0, 50).map((p) => `    <item>
-      <title>${escapeXml(p.title)}</title>
-      <link>${escapeXml(`${site}/${p.slug}`)}</link>
-      <guid isPermaLink="true">${escapeXml(`${site}/${p.slug}`)}</guid>
-      <pubDate>${rfc822(p.date)}</pubDate>
-      <description>${escapeXml(p.excerpt ?? '')}</description>
+  const items = entries.slice(0, FEED_MAX).map((e) => `    <item>
+      <title>${escapeXml(e.title)}</title>
+      <link>${escapeXml(e.url)}</link>
+      <guid isPermaLink="true">${escapeXml(e.url)}</guid>
+      <pubDate>${rfc822(e.date)}</pubDate>
+      <description>${escapeXml(e.summary)}</description>
     </item>`).join('\n')
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">

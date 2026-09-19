@@ -309,7 +309,8 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 ## 9. SEO, feeds, agent surface
 
 - `sitemap.xml` and `sitemaps.xml`
-- `feed.xml` (RSS), toggleable
+- `feed.xml` (RSS), toggleable — and, beyond 1.x: `feed.json` (JSON Feed 1.1) plus the
+  notebook's own pair at `/notes/feed.xml` and `/notes/feed.json`, on the same switch
 - `robots.txt`
 - `llms.txt`
 - OG images via satori, per post, with the cover fallback chain

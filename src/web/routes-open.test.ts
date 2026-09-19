@@ -58,6 +58,8 @@ const PUBLIC_EXACT = new Set([
   // A browser hint file, and the endpoint a sending site GETs to confirm it is there.
   '/speculation-rules.json', '/webmention',
   '/feed.xml', '/robots.txt', '/llms.txt', '/manifest.webmanifest', '/sitemap.xml',
+  // The notebook subscribes like the blog does, and both do it in two formats.
+  '/feed.json', '/notes/feed.xml', '/notes/feed.json',
   '/api/health', '/api/search', '/api/search/index', '/api/md/bai',
   '/api/comments', '/api/comments/me', '/api/comments/stamp', '/api/pen/me',
   '/api/newsletter/confirm', '/api/newsletter/open', '/api/newsletter/unsubscribe',
