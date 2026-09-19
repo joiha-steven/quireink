@@ -945,6 +945,16 @@ input[type='color']::-moz-color-swatch {
 .rail-strip-end { margin-left: auto; }
 :root[data-rail-collapsed='1'] #admin-rail .rail-strip-end { margin-left: 0; }
 
+/* ⚠️ A CHORD IS TWO SPELLINGS AND THIS PICKS, before the first paint, off the `data-mac` the
+   boot script writes on `<html>`. It used to be a `textContent` swap on `DOMContentLoaded` —
+   one beat after the paint — so every admin page opened printing `Ctrl+Shift+K` and then
+   narrowed to `⌘⇧K`. The search key shares its row with the wordmark and the wordmark's box is
+   `min-w-0 truncate`, so the wider chord squeezed the logo and the swap let it spring back:
+   filmed on a navigation between two admin screens, the logo jumps size on every load. */
+.chord-mac { display: none; }
+:root[data-mac='1'] .chord-mac { display: inline; }
+:root[data-mac='1'] .chord-other { display: none; }
+
 /* The wordmark is `Q.` at 72px and `quireINK` above it: the same logo at the size where the
    word would be a smear. Both are in the markup; this picks. */
 #admin-rail .rail-mark,
@@ -1429,4 +1439,3 @@ tr[data-piece][data-last] {
 [data-pal-head][data-pal-first] {
   padding-top: 0.375rem;
 }
-

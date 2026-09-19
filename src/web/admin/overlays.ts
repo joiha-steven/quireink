@@ -16,7 +16,7 @@ import { APP_VERSION } from '@/version'
 import { REPO } from '@/admin-shared/help'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { buttonClass, CONTROL, OVERLAY } from '@/admin-shared/kit'
-import { printChord } from '@/admin-shared/rail'
+import { chordSpellings } from '@/web/admin/rail-rows'
 import { BUILTIN, SHORTCUTS, type Shortcut } from '@/admin-shared/keys'
 import { SETTINGS_INDEX } from '@/admin-shared/settings-index'
 import { lanes } from '@/accent'
@@ -103,9 +103,9 @@ function shortcutSheet(t: AdminStrings): string {
     + ` dark:border-neutral-800">`
     // The CHORD leads, in a fixed column: a sheet is read by running a finger down the keys,
     // not by reading the sentences.
-    + `<kbd data-chord data-mac="${escapeAttr(printChord(s.chord, true))}"`
+    + `<kbd data-chord`
     + ` class="w-24 shrink-0 whitespace-nowrap font-sans text-sm font-semibold tabular-nums`
-    + ` text-neutral-900 dark:text-white">${escapeHtml(printChord(s.chord, false))}</kbd>`
+    + ` text-neutral-900 dark:text-white">${chordSpellings(s.chord)}</kbd>`
     + `<span class="min-w-0 text-sm leading-[1.5] text-neutral-600 dark:text-neutral-400">`
     + `${escapeHtml(s.does)}</span></li>`
   // Two groups, and the split is honest: the first are chords this product invented, the

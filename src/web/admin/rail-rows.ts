@@ -136,16 +136,35 @@ export function renderRow(row: RailRow, path: string): string {
  * one that knows what has just been dragged where.
  */
 /**
+ * A chord in BOTH spellings, as two spans for the stylesheet to pick between.
+ *
+ * The server has no platform to ask, so it writes both — and until 2026-09-19 the PICKING was a
+ * `textContent` swap the boot script ran on `DOMContentLoaded`, which is a beat after the first
+ * paint. So every admin page opened showing `Ctrl+Shift+K`, then swapped to `⌘⇧K`, and the row
+ * reflowed: the search key is on the wordmark's row and the wordmark's box is `min-w-0
+ * truncate`, so the wider Windows chord squeezed the logo, and the swap let it spring back.
+ * Filmed on a navigation between two admin screens — the logo visibly jumps size, which is what
+ * "the logo flickers when you click to another page" was.
+ *
+ * `data-mac` is on `<html>` BEFORE the first paint, written by the same boot script, so CSS can
+ * answer this with no JavaScript and no second layout. It is the arrangement the search control
+ * beside it already uses for its own two shapes, and the one the wordmark uses for its own two
+ * sizes: always both, and the stylesheet decides.
+ */
+export const chordSpellings = (chord: string): string =>
+  `<span class="chord-other">${escapeHtml(printChord(chord, false))}</span>`
+  + `<span class="chord-mac">${escapeHtml(printChord(chord, true))}</span>`
+
+/**
  * The chord badge, in BOTH spellings.
  *
  * Printing a chord on the thing the mouse clicks is the whole reason this control is visible: a
- * chord cannot be discovered, and a shortcut sheet on another screen teaches nobody. The server
- * has no platform to ask, so it writes both and the boot script picks — see `printChord`.
+ * chord cannot be discovered, and a shortcut sheet on another screen teaches nobody.
  */
 export const chordBadge = (extra = ''): string =>
-  `<span data-chord data-mac="${escapeAttr(printChord(PALETTE_CHORD, true))}"`
+  `<span data-chord`
   + ` class="rail-chord rounded border border-neutral-200 px-1 py-px text-xs tabular-nums leading-none dark:border-neutral-700${extra ? ` ${extra}` : ''}">`
-  + `${escapeHtml(printChord(PALETTE_CHORD, false))}</span>`
+  + `${chordSpellings(PALETTE_CHORD)}</span>`
 
 /** Search as chrome, on the wordmark's row. */
 export const searchKey = (t: AdminStrings): string =>

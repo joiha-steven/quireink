@@ -181,9 +181,7 @@ h.setAttribute('data-rail-collapsed',shut?'1':'0');
 h.setAttribute('data-rail-icons',icons?'1':'0');
 h.setAttribute('data-rail-more',more?'1':'0');
 h.style.setProperty('--admin-nav-w',shut?${JSON.stringify(RAIL_WIDTH.shut)}:${JSON.stringify(RAIL_WIDTH.open)});
-if(/mac|iphone|ipad/i.test(navigator.platform||'')){h.setAttribute('data-mac','1');
-var c=document.currentScript;addEventListener('DOMContentLoaded',function(){
-var n=document.querySelectorAll('[data-chord]');for(var i=0;i<n.length;i++)n[i].textContent=n[i].getAttribute('data-mac');},{once:true});void c}
+if(/mac|iphone|ipad/i.test(navigator.platform||''))h.setAttribute('data-mac','1');
 var hr=new Date().getHours();
 h.setAttribute('data-daypart',hr<5?'night':hr<12?'morning':hr<18?'afternoon':hr<22?'evening':'night');
 var m=S.getItem('theme')||'system';

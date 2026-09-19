@@ -19,8 +19,8 @@ import {
   A, CODE, P, SHEET, TABLE_FRAME, TABLE_SCROLL, THEAD, TROW,
 } from '@/admin-shared/kit'
 import { SECTION } from '@/admin-shared/scale'
+import { chordSpellings } from '@/web/admin/rail-rows'
 import { BUILTIN, SHORTCUTS } from '@/admin-shared/keys'
-import { printChord } from '@/admin-shared/rail'
 import { firstRunSteps } from '@/admin-shared/first-run'
 import {
   HELP_INDEX, HELP_SECTIONS, MARKDOWN_ROWS, REPO, TROUBLE_ROWS, doc, type HelpRow,
@@ -80,8 +80,8 @@ function shortcuts(): string {
     + `<th class="px-4 py-2.5 font-medium">And it does</th></tr></thead><tbody>`
     + rows.map((s) =>
       `<tr class="${TROW}"><td class="px-4 py-2.5 align-top">`
-      + `<code data-chord data-mac="${escapeAttr(printChord(s.chord, true))}" class="${CODE}">`
-      + `${escapeHtml(printChord(s.chord, false))}</code></td>`
+      + `<code data-chord class="${CODE}">`
+      + `${chordSpellings(s.chord)}</code></td>`
       + `<td class="px-4 py-2.5 align-top ${P}">${escapeHtml(s.does)}</td></tr>`).join('')
     + `</tbody></table></div></div>`
 }
