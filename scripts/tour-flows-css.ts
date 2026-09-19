@@ -243,35 +243,84 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       return 'every segment on the tab is a place, not a choice'
     })()`, 900))
 
-  // THE PEN'S LOOP ARRIVES WITH THE POINTER, and is not on the page before it.
+  // THE BOOK BUTTON HOVERS THE WAY THE HEADER HOVERS, and there is nothing drawn on it at rest.
   //
-  // It is the product's own mark and the only decoration on a very quiet meta line, so drawn
-  // at rest it reads as a permanent oval around two words. The fault was pure cascade:
-  // `.book-mode-toggle svg` sets the BOOK GLYPH to .75 and outranks `.book-loop{opacity:0}`,
-  // which the loop walked into on the day it stopped being a pseudo-element and became a real
-  // svg in the document. Every rule was right and the page was still wrong, so the assertion
-  // is on the computed number at rest — and on the glyph still being dimmed, which is what
-  // the excluding selector could quietly take away.
+  // It wore a hand-drawn pen loop until 2026-09-20 - the product's own mark, and the only
+  // control on the reading site that answered a pointer with a circle while every other one
+  // filled. The flow that stood here guarded the loop against a cascade bug that inked it at
+  // rest; what needs guarding now is that the two controls say the same thing, which is a
+  // property of the SERVED STYLESHEET rather than of either element.
+  //
+  // Read out of the CSSOM rather than by hovering: a script cannot raise a real :hover, and a
+  // dispatched mouseover does not either. The rule text is what the browser was given.
   //
   // NOTE: this body is a template literal. No backticks, no backslashes.
-  flow('the pen loop round the book button waits for the pointer', () => expect('/the-reed-pen-in-van-goghs-letters', `
-    (async () => {
+  flow('the book button hovers the way the header buttons hover', () => expect('/the-reed-pen-in-van-goghs-letters', `
+    (() => {
       const buttons = Array.from(document.querySelectorAll('[data-book-open]'))
       if (!buttons.length) return 'skip: book mode is off'
+
+      // Nothing is drawn on it until a pointer arrives.
       for (const btn of buttons) {
-        const loop = btn.querySelector('.book-loop')
-        if (!loop) return 'a book button carries no pen loop'
-        const rest = Number(getComputedStyle(loop).opacity)
-        if (rest > 0.01) return 'the loop is inked at ' + rest + ' with nothing pointing at it'
-        const glyph = btn.querySelector('svg:not(.book-loop)')
-        if (glyph && Number(getComputedStyle(glyph).opacity) > 0.9) return 'the book glyph lost its resting dim'
+        if (btn.querySelector('.book-loop')) return 'a book button still carries the pen loop'
+        const at = getComputedStyle(btn)
+        const bg = at.backgroundColor
+        if (bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+          return 'the button is filled at rest with ' + bg
+        }
+        if (parseFloat(at.borderTopLeftRadius) <= 0) return 'the fill would have square corners'
       }
-      buttons[0].focus()
-      await new Promise((r) => setTimeout(r, 80))
-      if (!buttons[0].matches(':focus-visible')) return 'ok invisible at rest on ' + buttons.length + ' button(s)'
-      const lit = Number(getComputedStyle(buttons[0].querySelector('.book-loop')).opacity)
-      if (lit < 0.5) return 'the loop stays at ' + lit + ' when the button is asked for'
-      return 'ok invisible at rest, ' + lit + ' when it is asked for'
+
+      // Every rule the page was served, @media blocks included.
+      const rules = []
+      // ⚠️ NOT if/else. Since CSS nesting shipped, a plain CSSStyleRule ALSO has a cssRules
+      // list - empty, and truthy - so an if/else took the recursing branch every time and the
+      // collection came back empty. The first run of this flow reported that the header key
+      // had no hover rule, which was a fact about this walker.
+      const walk = (list) => {
+        for (const r of Array.from(list || [])) {
+          if (r.selectorText) rules.push(r)
+          if (r.cssRules && r.cssRules.length) walk(r.cssRules)
+        }
+      }
+      for (const sheet of Array.from(document.styleSheets)) {
+        try { walk(sheet.cssRules) } catch (e) { return 'a stylesheet could not be read: ' + e.message }
+      }
+      // ⚠️ OUT OF cssText, NOT off the style object. A declaration whose value is a var() is a
+      // pending substitution: getPropertyValue('background') and .backgroundColor both come
+      // back EMPTY, and the first run of this flow reported that the header key had no hover
+      // fill at all. The text is what the sheet says.
+      const decl = (text, prop) => {
+        const at = text.indexOf(prop + ':')
+        if (at < 0) return ''
+        const rest = text.slice(at + prop.length + 1)
+        let end = rest.length
+        for (const ch of [';', '}']) {
+          const j = rest.indexOf(ch)
+          if (j >= 0 && j < end) end = j
+        }
+        return rest.slice(0, end).trim()
+      }
+      // ⚠️ THE LAST RULE THAT ACTUALLY SETS A FILL, not the last rule that matches. Both of
+      // these controls have a DESCENDANT hover rule after their own - .book-mode-toggle:hover
+      // svg{opacity:1} - which starts with the same name and carries no background, so taking
+      // the last match read the glyph's rule and reported no fill at all.
+      const fill = (needle) => {
+        const hits = rules
+          .filter((r) => r.selectorText.split(',').some((sel) =>
+            sel.trim().indexOf(needle) === 0 && sel.indexOf(':hover') > 0))
+          .map((r) => decl(r.cssText, 'background') || decl(r.cssText, 'background-color'))
+          .filter((v) => v !== '')
+        return hits.length ? hits[hits.length - 1] : ''
+      }
+      const header = fill('.icon-btn')
+      const book = fill('.book-mode-toggle')
+      if (!header) return 'the header key has no hover fill to match'
+      if (!book) return 'the book button has no hover fill at all'
+      if (book !== header) {
+        return 'the book button fills with ' + book + ' where the header key fills with ' + header
+      }
+      return 'ok nothing at rest, and both fill with ' + book
     })()`, 600))
 
   // THE BASELINE GRID, and the two columns of a spread only read as one page while it holds.

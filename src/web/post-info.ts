@@ -24,7 +24,7 @@ import type { Dict } from '@/locales/types'
 import { formatCount, formatDate, zonedDay } from '@/i18n/i18n'
 import { tagText, termSlug } from '@/content/taxonomy'
 import { escapeAttr, escapeHtml, minutesFor } from '@/utils'
-import { ICONS, INK_LOOP_SVG } from '@/icons'
+import { ICONS } from '@/icons'
 import { TOC_ANCHORS } from '@/render/toc'
 
 /**
@@ -34,9 +34,15 @@ import { TOC_ANCHORS } from '@/render/toc'
  * information at two widths, and a divergence between them is a difference the reader would
  * see when they turned their phone sideways.
  */
-/** The one button that opens the book, with the pen loop it wears on hover, for both places it is drawn. */
+/**
+ * The one button that opens the book, for both places it is drawn.
+ *
+ * It carried a hand-drawn pen loop until 2026-09-20 — an `<svg>` in the document, faded in on
+ * hover. It now fills the way the header's own keys fill (`book.css.ts`), so there is nothing
+ * to place over the words and nothing to ship with them.
+ */
 export const bookToggle = (inner: string): string =>
-  `<button type="button" class="book-mode-toggle" data-book-open>${inner}${INK_LOOP_SVG}</button>`
+  `<button type="button" class="book-mode-toggle" data-book-open>${inner}</button>`
 
 export function termLinks(list: string[], kind: 'category' | 'tag', lower = false): string {
   return list

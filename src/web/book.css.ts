@@ -17,56 +17,38 @@ export const BOOK_CSS = `
    palette, and the same on a dark site as a light one. Carried over from the frozen tree.
    The columns come from column-width, so the BROWSER paginates and turning a page is one
    transform on the flow rather than a measurement loop fighting the layout engine. */
-/* Still WORDS, on a page made of words — a bordered box in the gutter of an article is
+/* Still WORDS, on a page made of words - a bordered box in the gutter of an article is
    furniture, and this panel is the quietest thing on the page. What it gains is a TARGET:
    the row is padded to a hand's height and pulled back out with a negative margin, so the
-   hit area is 36px tall while the layout is exactly where it was. The icon says it does
-   something; the ink says it is not another fact; the press comes from the shared click. */
+   hit area is 36px tall while the layout is exactly where it was. */
+/* THE HOVER IS THE HEADER'S HOVER, and it used to be a hand-drawn pen loop (2026-09-20).
+   The loop was the product's own mark and the argument for it was that a tinted rectangle
+   behind a line of type is interface furniture. What it actually drew, on a panel written as
+   source with a // opening the row, was a scribbled ellipse around two words that matched
+   nothing else on the page: the header's own [/tim] and [toi] fill quietly and this one
+   circled. One control answering the pointer in a vocabulary no other control speaks is not
+   a signature, it is an exception, so it now fills like .icon-btn and the loop is gone from
+   the tree along with INK_LOOP_SVG, which nothing else used.
+   .2rem OF SIDE PADDING, which is the header button's own under the IDE chrome, and it is
+   measured rather than picked: the // marker's glyphs end 7px left of where these words
+   start, and the .5rem this row once carried on all four sides put the fill 8px out - into
+   the marker's cell, with no air between the two. At .2rem the fill stops 3.8px clear of it.
+   The negative margin keeps the words exactly where they were. */
 .book-mode-toggle{position:relative;display:inline-flex;align-items:center;gap:.4rem;font:inherit;
   font-weight:500;color:var(--c-heading);background:none;border:0;cursor:pointer;
-  /* Vertical padding ONLY. It used to pad and negative-margin on all four sides, which put
-     the hover box 8px to the LEFT of where the words start: under the IDE chrome, where the
-     row opens with a // marker, the box ran straight into it with no air between the two.
-     Height is what a thumb needs; the width is the words, and they were already wide enough. */
-  padding:.5rem 0;margin:-.5rem 0}
-/* THE BOOK GLYPH, and not the pen loop beside it. The loop became a real <svg> in the
-   document on 2026-09-06 and walked straight into this descendant selector, which outranks
-   the loop's own opacity:0 by one element name. So the mark that is meant to arrive with the
-   pointer was inked at .75 on every article, on the meta line and in the panel alike. */
-.book-mode-toggle svg:not(.book-loop){flex-shrink:0;opacity:.75}
-.book-mode-toggle:hover svg:not(.book-loop){opacity:1}
-/* CIRCLED, not boxed. A grey rounded rectangle behind a line of type is interface furniture,
-   and this panel is the quietest thing on the page — it was also the only rectangle in a
-   column of writing. A pen goes round a word instead, so the mark is the one this whole
-   product is named after.
-   It is drawn as a MASK rather than as a background image, because a data URI cannot say
-   currentColor: the loop is cut out of a fill that already is the palette's heading ink, so
-   every palette circles in its own colour and nothing here names one. The path overshoots
-   its own start, the way a real one does. */
-/* A REAL SVG (INK_LOOP_SVG, icons.ts), placed over the words. It was a data-URI mask on a
-   pseudo-element until 2026-09-06, and Safari drew a faint dotted rectangle round the mask's
-   box on every hover - WebKit rasterises a scaled SVG mask and shows its edges; Chrome does
-   not, which is why it shipped. A path in the document has no edges to show. */
-.book-loop{position:absolute;pointer-events:none;
-  /* Asymmetric: the loop closes with a tail on the RIGHT, so that side needs the room,
-     and the left has a // marker sitting beside it under the IDE chrome. */
-  inset:.26rem -.52rem .26rem -.36rem;width:auto;height:auto;opacity:0;
-  transition:opacity var(--dur-fast)}
-.book-mode-toggle:hover .book-loop,.book-mode-toggle:focus-visible .book-loop{opacity:.85}
-/* AND THE PRESS IS THE SAME MARK, PRESSED HARDER. This control took the shared carved
-   shadow off the key vocabulary until 2026-09-01, and the two did not belong together: the
-   hover draws a round pen loop and the carve is a rectangle across the padded row, so one
-   control answered a pointer with a circle and a click with a square. The loop going to
-   full ink is the surface change the click convention asks for, in the vocabulary this
-   control already speaks. */
-.book-mode-toggle:active .book-loop{opacity:1;transition-duration:0s}
-/* The travel stays, because it is the shared click and it has no shape of its own: 1px down,
-   instantly, sprung back on the release. Outside the @supports block on purpose — an engine
-   that cannot mask gets no loop, and taking its press away as well would leave the click
-   with nothing at all. */
-.book-mode-toggle:active{transform:translateY(1px);transition-duration:0s}
-html[data-motion=off] .book-mode-toggle:active{transform:none}
-@media (prefers-reduced-motion:reduce){.book-mode-toggle:active{transform:none}}
+  border-radius:var(--radius,.5rem);
+  padding:.5rem .2rem;margin:-.5rem -.2rem}
+.book-mode-toggle:hover,.book-mode-toggle:focus-visible{background:var(--c-rule)}
+/* THE BOOK GLYPH. It was svg:not(.book-loop) while the loop shared this box - one element
+   name of specificity was enough to ink the loop at .75 on every article, which is the bug
+   that put it in the tour. With one svg left there is nothing to exclude. */
+.book-mode-toggle svg{flex-shrink:0;opacity:.75}
+.book-mode-toggle:hover svg{opacity:1}
+/* AND THE PRESS IS THE SHARED ONE NOW (motion.css.ts). This control was taken out of that
+   list on 2026-09-01 for a reason that has just stopped being true: the carve is a rectangle
+   across the padded row and the hover was a circle, so one control answered a pointer with a
+   circle and a click with a square. The hover is a rounded rectangle today and the two agree,
+   so the key vocabulary is one key vocabulary again. */
 @media (max-width:767px){.meta-book,.book-mode-toggle{display:none}}
 
 /* The phone's doorway into the reader. The desktop entries (the meta line, the info

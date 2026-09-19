@@ -66,16 +66,17 @@ ${MOTION_TOKENS}
    and under reduced motion the shadow stays and the travel goes: the state must still be
    legible without the movement, so relief is never the only cue. */
 .icon-btn:active,.code-copy:active,form.subscribe button:active,.theme-menu button:active,
-.lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active{
+.lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active,
+.book-mode-toggle:active{
   transform:translateY(1px);transition-duration:0s;
   box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-heading) 22%,transparent)}
 .resume-pill:active{transform:translateX(-50%) translateY(1px);transition-duration:0s;
   box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-heading) 22%,transparent)}
 .book-arrow:active{color:var(--c-heading)}
-html[data-motion=off] :is(.icon-btn,.code-copy,form.subscribe button,.theme-menu button,.lightbox button,.to-top,.book-x,.comment-form button):active{transform:none}
+html[data-motion=off] :is(.icon-btn,.code-copy,form.subscribe button,.theme-menu button,.lightbox button,.to-top,.book-x,.comment-form button,.book-mode-toggle):active{transform:none}
 html[data-motion=off] .resume-pill:active{transform:translateX(-50%)}
 @media (prefers-reduced-motion:reduce){
-  :is(.icon-btn,.code-copy,form.subscribe button,.theme-menu button,.lightbox button,.to-top,.book-x,.comment-form button):active{transform:none}
+  :is(.icon-btn,.code-copy,form.subscribe button,.theme-menu button,.lightbox button,.to-top,.book-x,.comment-form button,.book-mode-toggle):active{transform:none}
   .resume-pill:active{transform:translateX(-50%)}
 }
 

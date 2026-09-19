@@ -63,7 +63,6 @@ export const UTILITY_CSS = `
    dark in EVERY palette, so a token would LIGHT the inside of a field on the dark ones. */
 :root{--lift:0 16px 32px -12px rgba(0,0,0,.22),0 3px 8px -4px rgba(0,0,0,.12);
   --well:inset 0 1px 1.5px rgba(0,0,0,.07)}
-/* The pen's loop round a word is INK_LOOP_SVG in icons.ts, a real path, since 2026-09-06. */
 
 
 /* THE CLICK - the press every control shares - is in motion.css.ts with the rest of the engine. */
