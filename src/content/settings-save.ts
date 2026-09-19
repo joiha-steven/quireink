@@ -16,7 +16,7 @@ import { sanitizeNavOrder } from '@/content/nav-order'
 import { isPresetId, isFontPresetId, isChromeFontId, isScheme } from '@/content/themes'
 import {
   sanitizeMenu, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures,
-  sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeApi, sanitizeMotion, sanitizeCache,
+  sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeApi, sanitizeActivityPub, sanitizeMotion, sanitizeCache,
   sanitizeDashboard, sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeSnippet,
   sanitizeUrl, clampNumber, sanitizeFeatured, sanitizeTimezone, sanitizeAi, sanitizeInks,
 } from '@/content/settings-sanitize'
@@ -222,6 +222,7 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
     comments: sanitizeComments(input.comments, current.comments),
     mcp: sanitizeMcp(input.mcp, current.mcp),
     api: sanitizeApi(input.api, current.api),
+    activitypub: sanitizeActivityPub(input.activitypub, current.activitypub),
     ai: sanitizeAi(input.ai, current.ai),
     inks: sanitizeInks(input.inks, current.inks),
     motion: sanitizeMotion(input.motion, current.motion),

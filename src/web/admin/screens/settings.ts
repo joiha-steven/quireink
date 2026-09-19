@@ -31,6 +31,7 @@ import { peopleTab } from '@/web/admin/screens/settings-people'
 import { serverTab } from '@/web/admin/screens/settings-server'
 import { accountTab } from '@/web/admin/screens/settings-account'
 import { getRedirects } from '@/server/redirects'
+import { followerCount } from '@/ap/store'
 
 /**
  * The words the island can need to SAY, and only those.
@@ -101,7 +102,12 @@ function words(t: AdminStrings): string {
 
 type View = Awaited<ReturnType<typeof settingsView>>
 
-type Extra = { redirects: Awaited<ReturnType<typeof getRedirects>>; origin: string }
+type Extra = {
+  redirects: Awaited<ReturnType<typeof getRedirects>>
+  origin: string
+  /** How many servers follow this blog (ADR 0059). A count; the list is never published. */
+  followers: number
+}
 
 /** The seven panels, in the order the strip shows them. */
 function panels(t: AdminStrings, s: SiteSettings, view: View, extra: Extra, open: Tab): string {
@@ -114,7 +120,7 @@ function panels(t: AdminStrings, s: SiteSettings, view: View, extra: Extra, open
     + panel('people', t, peopleTab(t, s, { commentEnv: view.commentEnv }), open)
     + panel('server', t, serverTab(t, s, {
       integrations: view.integrations, update: view.update,
-      redirects: extra.redirects, origin: extra.origin,
+      redirects: extra.redirects, origin: extra.origin, followers: extra.followers,
     }), open)
     + panel('account', t, accountTab(t, s), open)
 }
@@ -125,6 +131,10 @@ export async function settingsScreen(settings: SiteSettings, query: URLSearchPar
   // The redirects are the one list on this screen the server can read and React fetched; they
   // ride along rather than opening a round trip the page does not need.
   const [view, redirects] = await Promise.all([settingsView(), getRedirects()])
+  // A COUNT, read here rather than fetched: it is one indexed row count, the card draws it
+  // in its first paint, and a number that arrives a moment later reads as a number that
+  // was wrong. `ap-routes.ts` says why the LIST is never published anywhere.
+  const followers = followerCount()
   // With no site address set the server derives one from the environment, which no page can
   // read — React fell back to `window.location.origin` for that reason.
   const origin = settings.siteUrl || ''
@@ -132,6 +142,6 @@ export async function settingsScreen(settings: SiteSettings, query: URLSearchPar
   return `<div data-screen="settings" data-settings-tab="${escapeAttr(open)}"`
     + ` data-lang="${escapeAttr(settings.language)}" data-settings-words="${words(t)}">`
     + pageHeader({ title: t.settingsTitle })
-    + sheetAround(t, open, panels(t, view.settings, view, { redirects, origin }, open))
+    + sheetAround(t, open, panels(t, view.settings, view, { redirects, origin, followers }, open))
     + `</div>`
 }

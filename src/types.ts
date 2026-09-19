@@ -1,5 +1,5 @@
 import type {
-  AiSettings, McpSettings, ApiSettings, HomeSettings, GallerySettings, FigureSettings,
+  AiSettings, McpSettings, ApiSettings, ActivityPubSettings, HomeSettings, GallerySettings, FigureSettings,
   CacheSettings, DashboardSettings, InkSettings, MotionSettings, BackupSettings,
   PostImageSettings, ShapeSettings, TableSettings, AuthorSettings,
 } from '@/types-settings'
@@ -237,6 +237,7 @@ export type SiteSettings = {
   comments: CommentSettings // reader comment system (off by default)
   mcp: McpSettings // MCP server toggle (tokens are managed separately)
   api: ApiSettings // the read-only Content API at /api/v1 (ADR 0057). Off at install and on upgrade
+  activitypub: ActivityPubSettings // the blog as a followable actor (ADR 0059). Off at install; the handle and the site address together ARE its identity
   ai: AiSettings // which jobs the AI model does automatically (the key lives server-only)
   inks: InkSettings // the pen's own colours, and what a text selection looks like
   motion: MotionSettings // site-wide motion/animation engine toggle

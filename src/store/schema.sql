@@ -578,3 +578,36 @@ create table if not exists link_cards (
 );
 create index if not exists link_cards_pending_idx on link_cards (url) where fetched_at is null;
 
+-- ADR 0059: the ActivityPub tables. `migrations.sql` (018-activitypub) carries the reasoning for
+-- each in full; these are the same four, created fresh. In short: the keypair is its own table
+-- because it is the one credential nobody may read back, `ap_sent` is what lets the announcer be
+-- a state comparison rather than a hook in three save paths, and `ap_queue` is one row per
+-- delivery so one unreachable server does not hold up the rest.
+create table if not exists ap_keys (
+  id          integer primary key check (id = 1),
+  private_pem text not null,
+  public_pem  text not null,
+  created_at  integer not null
+);
+create table if not exists ap_followers (
+  actor        text primary key,
+  inbox        text not null,
+  shared_inbox text,
+  followed_at  integer not null
+);
+create table if not exists ap_sent (
+  object_id text primary key,
+  slug      text not null,
+  digest    text not null,
+  sent_at   integer not null
+);
+create table if not exists ap_queue (
+  id         integer primary key autoincrement,
+  inbox      text not null,
+  body       text not null,
+  attempts   integer not null default 0,
+  next_at    integer not null,
+  last_error text
+);
+create index if not exists ap_queue_next_idx on ap_queue (next_at);
+

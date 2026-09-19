@@ -354,3 +354,67 @@ create table if not exists link_cards (
 -- A PARTIAL index, so the minute tick's "is there anything to do" costs one lookup in an index
 -- holding only the rows that are waiting — on a blog with nothing pending it is empty.
 create index if not exists link_cards_pending_idx on link_cards (url) where fetched_at is null;
+
+-- migration: 018-activitypub
+-- ADR 0059: the blog can be followed from Mastodon and its neighbours.
+--
+-- THE KEYPAIR IS ITS OWN TABLE, not two more columns on `integration_keys`. Every other
+-- credential in this product is one the OWNER pasted in and may read back; this one is generated
+-- here, is never shown to anybody, and is the single thing whose leak would let a stranger post
+-- as this blog to every follower it has. A table nothing else reads is a table nothing else can
+-- serialise by accident — and `integration_keys` is read whole by the settings screen's status
+-- call, which is exactly the kind of place a new column gets swept into a payload.
+create table if not exists ap_keys (
+  id          integer primary key check (id = 1),
+  private_pem text not null,
+  public_pem  text not null,
+  created_at  integer not null
+);
+
+-- Who follows this blog. `actor` is their id and the primary key, so a Follow arriving twice is
+-- one follower and an Undo is one delete — which is what lets the inbox be idempotent, and what
+-- lets the signature window be an hour wide without a replay meaning anything.
+--
+-- `shared_inbox` is how one delivery reaches a thousand followers on one server. It is nullable
+-- because plenty of implementations do not offer one, and a personal inbox is then the address.
+create table if not exists ap_followers (
+  actor        text primary key,
+  inbox        text not null,
+  shared_inbox text,
+  followed_at  integer not null
+);
+
+-- WHAT HAS ALREADY BEEN ANNOUNCED, and the reason this feature needs no hook in `savePost`.
+--
+-- A post can become public three ways: a save that publishes it, the minute tick flipping a
+-- scheduled one live, and an MCP call. Hooking all three is three places to forget. Instead the
+-- sweep compares the public posts against the rows here: a post with no row is a `Create`, a row
+-- whose digest no longer matches is an `Update`, and a row whose post is no longer public is a
+-- `Delete`. Self-healing, and it covers a path nobody has written yet.
+--
+-- `digest` is over what the NOTE would say, not over the post: an edit that changes nothing a
+-- follower can see is not worth an Update, and an Update that says nothing new is noise in
+-- somebody else's timeline.
+create table if not exists ap_sent (
+  object_id text primary key,
+  slug      text not null,
+  digest    text not null,
+  sent_at   integer not null
+);
+
+-- One row per (activity, inbox) still owed. A `Create` to four hundred followers is four hundred
+-- rows, because the failure of one server must not hold up the other three hundred and ninety
+-- nine, and because a retry has to know which one it is retrying.
+--
+-- `next_at` carries the backoff. A server that is down for a day should be tried a handful of
+-- times over that day, not sixty times an hour — the far end experiences the difference as a
+-- flood, and its operator experiences it as this blog attacking them.
+create table if not exists ap_queue (
+  id         integer primary key autoincrement,
+  inbox      text not null,
+  body       text not null,
+  attempts   integer not null default 0,
+  next_at    integer not null,
+  last_error text
+);
+create index if not exists ap_queue_next_idx on ap_queue (next_at);

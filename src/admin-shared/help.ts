@@ -27,6 +27,7 @@ export const HELP_INDEX: [string, string][] = [
   ['cache', 'Cache'],
   ['mcp', 'MCP'],
   ['api', 'Content API'],
+  ['fediverse', 'Fediverse'],
   ['markdown', 'Markdown'],
   ['keys', 'Keyboard'],
   ['trouble', 'Troubleshooting'],
@@ -154,6 +155,22 @@ export const HELP_SECTIONS: HelpSection[] = [
     </p>
     <p class="${LINKS}"><a href="${doc('docs/content-api.md')}" target="_blank" rel="noopener noreferrer" class="${A}">Content API docs</a>
     <a href="/admin/settings?tab=server" class="${A}">Server &amp; connections</a></p>`,
+  },
+  {
+    id: 'fediverse',
+    title: 'Fediverse — let people follow the blog',
+    body: `<p class="${P}">
+    Switch this on and your blog becomes an <b>account</b> that anyone on Mastodon — or any of its neighbours — can follow. A new post arrives in their timeline as its title, its standfirst and a link back here; the writing itself stays on your blog, where you can still edit it. Editing one sends a correction; moving one to the Trash withdraws it.
+    </p>
+    <p class="${P}">
+    <b>Choose your handle once.</b> It is the <i>@name</i> half of <i>@name@yourdomain</i>, and it is not your sign-in name — that one stays private. Your handle and your site address <b>together are your identity</b> out there: change either one later and every follower is lost, because their server goes on looking for the old name and nothing tells it where you went.
+    </p>
+    <p class="${P}">
+    Two things it deliberately does <b>not</b> do yet. It publishes but does not read: replies, likes and boosts reach your blog and are dropped, so a reply in Mastodon does not become a comment here. And nothing you wrote <i>before</i> you switched this on is ever sent — turning it on does not push your archive into anybody\u2019s timeline.
+    </p>
+    <p class="${LINKS}"><a href="${doc('docs/fediverse.md')}" target="_blank" rel="noopener noreferrer" class="${A}">Fediverse docs</a>
+    <a href="/admin/settings?tab=server" class="${A}">Server &amp; connections</a>
+    <a href="/admin/log" class="${A}">Activity log</a></p>`,
   },
 ]
 

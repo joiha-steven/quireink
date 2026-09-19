@@ -42,6 +42,9 @@ export const KIND_OF: Record<string, LogKind> = {
   content: 'writing', trash: 'writing',
   media: 'media', file: 'media', font: 'media', icon: 'media', import: 'media',
   comment: 'people', subscriber: 'people', newsletter: 'people', mail: 'people',
+  // A follower in the fediverse is a reader, and the question they answer is the one this
+  // heading is for: who is out there. Not `system`, where a machine door would file itself.
+  ap: 'people',
   settings: 'settings', redirect: 'settings',
   // `export` is the Markdown bundle, beside the backup it sits next to in the admin.
   cache: 'system', backup: 'system', mcp: 'system', export: 'system',

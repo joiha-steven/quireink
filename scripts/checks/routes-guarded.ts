@@ -41,6 +41,7 @@ const PUBLIC_WRITES = new Map<string, string>([
   ['/webmention', 'another site saying it linked here (ADR 0046). Public by definition, like a comment form without a comment: rate limited per address, the target must be on this site, and what is kept is two URLs plus a pending flag the owner alone can read. Verified afterwards by fetching the source through the SSRF guard.'],
   ['/api/pen/code', 'a reader minting a notebook code for their own marks (ADR 0047). Five per address per hour; a code grants nothing but the marks later stored under it.'],
   ['/api/pen', 'a reader saving or forgetting their own marks (ADR 0047). Authorised by the code header or the SameSite commenter cookie, neither of which a cross-site page can supply; rate limited per address; 404 while the pen is off.'],
+  ['/ap/inbox', 'the ActivityPub inbox (ADR 0059). Public by protocol: it is written to by servers this blog has never heard of. Authorised by an HTTP Signature checked against a key fetched from the actor the activity claims to be, and the signer and the actor must be the SAME party before anything is recorded — a signature proves who sent a thing, and that check is what makes it prove who the thing is about. Rate limited per address, and 404 while ActivityPub is off.'],
   ['/micropub', 'a Micropub client posting into the notebook (ADR 0046). Authorised by a bearer token from the OAuth flow, exactly like /api/mcp, and refused with insufficient_scope unless that token may write.'],
 ])
 

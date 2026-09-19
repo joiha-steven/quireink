@@ -25,7 +25,7 @@ export function markFor(action: string): IconName {
     post: 'page', page: 'page', file: 'page',
     media: 'image', icon: 'image', font: 'image',
     comment: 'comment',
-    newsletter: 'mail', mail: 'mail', subscriber: 'mail',
+    newsletter: 'mail', mail: 'mail', subscriber: 'mail', ap: 'mail',
     settings: 'settings', auth: 'settings', mcp: 'settings',
     cache: 'cache',
     backup: 'download', import: 'download',

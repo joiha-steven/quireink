@@ -1237,6 +1237,8 @@ export type AdminStrings = {
   cardMcp: string
   // The read-only Content API (ADR 0057), on the same tab and off by default
   cardApi: string
+  // ActivityPub (ADR 0059): the blog as a followable actor, on the same tab, also off
+  cardActivityPub: string
   cardCloudflare: string
   cardAi: string
   cardInk: string
@@ -1327,6 +1329,15 @@ export type AdminStrings = {
   importImages: string
   importImagesDone: string
   importImagesFailed: string
+  apEnable: string
+  apEnableDesc: string
+  apHandle: string
+  apHandleHint: string
+  apAddress: string
+  apAddressHint: string
+  apWarning: string
+  apFollowers: string
+  apNeedsAddress: string
   apiEnable: string
   apiEnableDesc: string
   apiUrlLabel: string

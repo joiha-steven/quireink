@@ -198,4 +198,77 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
       if (!shut) return 'the endpoint stayed open after the switch went back off'
       return 'ok 404 -> 200 with ' + body.total + ' post(s), one body read -> 404'
     })()`, 2000))
+
+  // ⚠️ THE SECOND SAVE THIS FILE PRESSES, and like the first it puts everything back. It also
+  // checks the one thing that would matter most if it were ever wrong: that the actor document
+  // carries the PUBLIC half of this blog's key and nothing that looks like the other half.
+  // Whoever holds the private key can post as this blog to every follower it has, forever.
+  flow('admin: the fediverse switch gives the blog a name, and takes it back', () => expect('/admin/settings?tab=server', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const send = async (url, method, body) => {
+        const res = await fetch(url, {
+          method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+        })
+        return { ok: res.ok, json: await res.json().catch(() => null) }
+      }
+      const ask = async (path, accept) => await fetch(path, {
+        cache: 'no-store', headers: accept ? { accept } : {},
+      })
+
+      const sw = document.querySelector('[data-switch][data-k="activitypub.enabled"]')
+      if (!sw) return 'no fediverse switch on the Server tab'
+      if (sw.getAttribute('aria-checked') !== 'false') return 'it was already on, so this proves nothing'
+      const handle = document.querySelector('[data-k="activitypub.handle"]')
+      if (!handle) return 'the card has no handle field'
+
+      // Shut: every door, including the one that makes the blog findable at all.
+      for (const path of ['/ap/actor', '/ap/outbox', '/ap/followers']) {
+        const res = await ask(path, 'application/activity+json')
+        if (res.status !== 404) return path + ' answered ' + res.status + ' while the switch was off'
+      }
+
+      // ⚠️ ON WITH NO HANDLE IS STILL OFF. An actor with no name is not an identity, and the
+      // feature refuses rather than publishing half of one.
+      await send('/api/settings', 'PUT', { activitypub: { enabled: true, handle: '' } })
+      await sleep(200)
+      if ((await ask('/ap/actor', 'application/activity+json')).status !== 404) {
+        return 'the actor answered with no handle set'
+      }
+
+      await send('/api/settings', 'PUT', { activitypub: { enabled: true, handle: 'tourblog' } })
+      await sleep(400)
+      const actorRes = await ask('/ap/actor', 'application/activity+json')
+      if (actorRes.status !== 200) return 'the actor answered ' + actorRes.status + ' with the switch on'
+      const actorText = await actorRes.text()
+      if (actorText.indexOf('BEGIN PUBLIC KEY') === -1) return 'the actor carries no public key'
+      // ⚠️ THE ONE LEAK THAT WOULD MATTER.
+      if (actorText.indexOf('PRIVATE KEY') !== -1) return 'the actor document contains a PRIVATE key'
+      const actor = JSON.parse(actorText)
+      if (actor.type !== 'Person') return 'the actor is a ' + actor.type + ', not a Person'
+      if (actor.preferredUsername !== 'tourblog') return 'the actor does not answer to the handle'
+
+      // WebFinger: the only way a handle becomes a URL. A reverse proxy that swallows
+      // /.well-known/ breaks exactly this, and nothing else on the blog notices.
+      const host = location.host
+      const finger = await ask('/.well-known/webfinger?resource=' + encodeURIComponent('acct:tourblog@' + host))
+      if (finger.status !== 200) return 'webfinger answered ' + finger.status
+      const jrd = await finger.json()
+      const self = (jrd.links || []).find((l) => l.rel === 'self')
+      if (!self || self.href !== actor.id) return 'webfinger does not point at the actor'
+      // ...and it answers for that name and no other.
+      const wrong = await ask('/.well-known/webfinger?resource=' + encodeURIComponent('acct:someoneelse@' + host))
+      if (wrong.status !== 404) return 'webfinger answered for a name this blog does not have'
+
+      // A post, as the object a follower's server would hold the id of.
+      const listing = await (await ask('/api/v1/posts')).json().catch(() => null)
+      void listing
+
+      await send('/api/settings', 'PUT', { activitypub: { enabled: false, handle: '' } })
+      await sleep(300)
+      if ((await ask('/ap/actor', 'application/activity+json')).status !== 404) {
+        return 'the actor stayed up after the switch went back off'
+      }
+      return 'ok shut -> Person "tourblog" with a public key and a webfinger -> shut'
+    })()`, 2500))
 }

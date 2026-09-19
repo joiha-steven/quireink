@@ -21,6 +21,7 @@ import { maybeRunBackup } from '@/server/backup'
 import { purgeEdge } from '@/server/edge-cache'
 import { clearCache } from '@/server/cache'
 import { sweepLinkCards } from '@/server/link-fetch'
+import { apTick } from '@/ap/tick'
 
 export type FullTick = {
   purged: boolean
@@ -45,6 +46,10 @@ export type FullTick = {
  * Its lookback matches its cadence. One indexed query when there is nothing due, which is
  * why it can afford to run every minute on a clock the operator did not have to configure.
  *
+ * The link sweep and the fediverse sweep are both here rather than on the hour, and for one
+ * reason each: a card that took an hour would read as broken, and a post that took an hour
+ * to reach a follower would read as a blog nobody maintains.
+ *
  * ⚠️ THE LINK SWEEP IS HERE AND NOT ON THE HOUR because of what it is for: an owner publishes
  * a post with a link in it and looks at the page. An hour is long enough that the card would
  * read as broken rather than as coming. It keeps the tick's character — its "anything to do?"
@@ -66,6 +71,16 @@ export async function publishTick(): Promise<number> {
     await sweepLinkCards()
   } catch (error) {
     console.error(`[ERROR] tick.linkCards: ${(error as Error).message}`)
+  }
+  // ⚠️ THE FEDIVERSE IS ON THE MINUTE TICK, NOT THE HOUR, and it has to be: a post published now
+  // should be in a follower's timeline in a minute or two, which is what everyone else on that
+  // network does. It declines in one settings read while the feature is off, and its own step is
+  // isolated for the same reason the one above is — somebody else's server being unreachable
+  // must not stop a scheduled post going live here.
+  try {
+    await apTick()
+  } catch (error) {
+    console.error(`[ERROR] tick.activitypub: ${(error as Error).message}`)
   }
   return published
 }

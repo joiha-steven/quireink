@@ -9,7 +9,7 @@ import { one } from '@/store/query'
 import { EMPTY_NAV_ORDER, sanitizeNavOrder } from '@/content/nav-order'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, isScheme, getFontPreset } from '@/content/themes'
 import {
-  DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_FIGURE, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeApi, sanitizeMotion, sanitizeCache, sanitizeDashboard,
+  DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_FIGURE, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeApi, sanitizeActivityPub, sanitizeMotion, sanitizeCache, sanitizeDashboard,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeSnippet, sanitizeUrl, clampNumber, sanitizeFeatured,
   sanitizeTimezone, sanitizeAi, sanitizeInks,
 } from '@/content/settings-sanitize'
@@ -130,6 +130,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // Off, and an upgrade must not turn it on. ADR 0057: what it serves is already public,
   // what it changes is how cheaply all of it can be taken at once.
   api: { enabled: false },
+  // Off, and the handle empty: the feature cannot work without one, and a default name would
+  // be an identity chosen for the owner in a network of strangers (ADR 0059).
+  activitypub: { enabled: false, handle: '' },
   ai: { altText: true, excerpt: true, commentGuard: true },
   // Every ink empty: the built-ins are measured values (ADR 0018) and belong in the code
   // where they can still be corrected, not copied into every install's database.
@@ -313,6 +316,7 @@ export async function getSettings(): Promise<SiteSettings> {
       comments: sanitizeComments(stored.comments, DEFAULT_COMMENTS),
       mcp: sanitizeMcp(stored.mcp, DEFAULT_SETTINGS.mcp),
       api: sanitizeApi(stored.api, DEFAULT_SETTINGS.api),
+      activitypub: sanitizeActivityPub(stored.activitypub, DEFAULT_SETTINGS.activitypub),
       ai: sanitizeAi(stored.ai, DEFAULT_SETTINGS.ai),
       inks: sanitizeInks(stored.inks, DEFAULT_SETTINGS.inks),
       motion: sanitizeMotion(stored.motion, DEFAULT_SETTINGS.motion),

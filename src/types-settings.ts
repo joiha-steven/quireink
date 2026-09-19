@@ -43,6 +43,30 @@ export type ApiSettings = {
 }
 
 /**
+ * ActivityPub (ADR 0059): the blog as somebody a Mastodon reader can follow.
+ *
+ * OFF at install and on every upgrade, like every other machine door here — and this one has a
+ * second reason beyond the usual. Switching it on gives this blog an IDENTITY in a network of
+ * other people's servers: a name, a keypair, and a list of strangers who asked to hear from it.
+ * That is not a display option, and it is not something to acquire by updating.
+ *
+ * ⚠️ `handle` IS NOT THE LOGIN USERNAME, deliberately. The owner signs in as themselves; the
+ * blog is followed as itself, and the two are different names for different audiences. Tying
+ * them would also publish the username of the only account on this install to everyone who
+ * looks up the actor — an invitation to guess the other half.
+ *
+ * ⚠️ AND IT CANNOT CHANGE WITHOUT LOSING EVERY FOLLOWER. The handle and the site address
+ * together ARE the actor's id, which every server that follows this blog has cached. Change
+ * either and the old actor simply stops existing for them; nothing anywhere tells them where it
+ * went. The settings card says so before the switch, not after.
+ */
+export type ActivityPubSettings = {
+  enabled: boolean
+  /** The `@name` in `@name@host`. Lower-case letters, digits and underscore. */
+  handle: string
+}
+
+/**
  * What `/` serves. ADR 0014.
  *
  * `list` is what this has always been and stays the default, byte for byte: an install that

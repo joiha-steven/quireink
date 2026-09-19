@@ -2,7 +2,7 @@
 // back-compat shims). No DB, no Blob, no React. settings.ts depends on this ONE
 // WAY (settings -> settings-sanitize, never back) for its getSettings/saveSettings merge.
 
-import type { BackupSettings, CacheSettings, DashboardSettings, CommentSettings, FeatureSettings, GallerySettings, FigureSettings, HomeSettings, McpSettings, ApiSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings, KeyFeedback } from '@/types'
+import type { BackupSettings, CacheSettings, DashboardSettings, CommentSettings, FeatureSettings, GallerySettings, FigureSettings, HomeSettings, McpSettings, ApiSettings, ActivityPubSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings, KeyFeedback } from '@/types'
 import { DEFAULT_PRESET_ID, isPresetId, defaultThemes, THEME_PRESETS } from '@/content/themes'
 import { withHolesFilled } from '@/content/settings-partial'
 // The value scrubbers, re-exported so that every caller of this module keeps working:
@@ -164,6 +164,29 @@ export function sanitizeMcp(input: unknown, fallback: McpSettings): McpSettings 
 export function sanitizeApi(input: unknown, fallback: ApiSettings): ApiSettings {
   const o = (input ?? {}) as Partial<ApiSettings>
   return { enabled: bool(o.enabled, fallback.enabled) }
+}
+
+/**
+ * The ActivityPub switch and the handle (ADR 0059).
+ *
+ * ⚠️ THE HANDLE IS NARROWED HARD, and not out of tidiness. It goes into a WebFinger resource
+ * (`acct:name@host`), into an actor id URL, and into `preferredUsername`, and the fediverse's
+ * own convention for all three is the same small alphabet. A handle with a dot in it collides
+ * with the domain half; one with a slash changes the URL's shape; one with a capital is matched
+ * case-sensitively by some servers and not others, so the same blog answers two names.
+ *
+ * Anything outside the alphabet is DROPPED rather than refusing the whole save: the owner is
+ * typing a name, not a regular expression, and a save that silently keeps the old handle would
+ * be worse — it is the one field here that cannot be changed later without consequence.
+ */
+export function sanitizeActivityPub(
+  input: unknown, fallback: ActivityPubSettings,
+): ActivityPubSettings {
+  const o = (input ?? {}) as Partial<ActivityPubSettings>
+  const handle = typeof o.handle === 'string'
+    ? o.handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30)
+    : fallback.handle
+  return { enabled: bool(o.enabled, fallback.enabled), handle }
 }
 
 /**

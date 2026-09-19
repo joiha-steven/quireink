@@ -17,6 +17,8 @@ already exists.
 | `/api/md/:slug` | The same document at an explicit path | `src/web/markdown.ts` |
 | `/.well-known/oauth-authorization-server` | OAuth AS metadata (RFC 8414) | `src/web/admin/mcp.ts` |
 | `/.well-known/oauth-protected-resource` | OAuth protected-resource metadata (RFC 9728) | `src/web/admin/mcp.ts` |
+| `/.well-known/webfinger?resource=acct:…` | Who this blog is in the fediverse, when ActivityPub is on ([ADR 0059](./decisions/0059-the-blog-can-be-followed.md)) | `src/web/ap-routes.ts`, see [`fediverse.md`](./fediverse.md) |
+| `/:slug` + `Accept: application/activity+json` | The same post as an ActivityStreams `Note` | `src/web/ap-routes.ts` |
 | `/api/mcp` | The MCP transport itself | `src/web/admin/mcp-transport.ts`, see [`mcp.md`](./mcp.md) |
 | `/llms.txt` `/sitemap.xml` `/feed.xml` `/feed.json` | Content index / sitemap / RSS / JSON Feed | see [`seo-pwa.md`](./seo-pwa.md) |
 
@@ -37,12 +39,18 @@ the homepage RFC 8288 `Link:` header, and the `Content-Signal` line in `robots.t
 
 ## ⚠️ Reverse-proxy requirement — `/.well-known/*` must reach the app
 
-The OAuth/MCP discovery routes are served by the app, so a proxy in front MUST forward
+The OAuth/MCP discovery routes are served by the app — **and so is WebFinger, which is what
+makes this blog findable in the fediverse at all** — so a proxy in front MUST forward
 `/.well-known/*` to it rather than serve it from disk. A CloudPanel/nginx vhost ships a
 `location ~ /.well-known { … }` block (for ACME) with **no `proxy_pass`** — it swallows
 ALL `/.well-known/*` and returns a disk 404, so discovery silently breaks. Narrow it to
 `location ^~ /.well-known/acme-challenge/` so everything else falls through to the
 proxy. (Also purge the CDN once — a cached 404 outlives the fix.)
+
+⚠️ **WebFinger fails in a worse way than OAuth discovery does**: nothing on this blog ever asks
+for it, so nothing here logs a miss. The blog federates perfectly in testing, and in production
+`@handle@host` simply cannot be found — with no error on either side. If a follow never
+completes, check this block first.
 
 ## Skills that ship in the repository
 

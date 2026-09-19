@@ -25,6 +25,9 @@ export type ActivityAction =
   | 'trash.empty'
   // MCP access tokens (Admin → Settings → Advanced).
   | 'mcp.token.create' | 'mcp.token.delete'
+  // The fediverse (ADR 0059). Somebody following a blog is an audience event, not a system one,
+  // which is why `KIND_OF` files `ap` beside comments and subscribers rather than beside caches.
+  | 'ap.follow' | 'ap.unfollow'
   // Content import (Admin → Settings → Integrations).
   | 'import.wordpress' | 'import.posts' | 'import.images'
   // URL redirects (Admin → Settings → SEO).

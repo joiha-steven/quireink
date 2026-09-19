@@ -28,6 +28,7 @@ import { importCard, redirectsCard, siteCard } from '@/web/admin/screens/setting
 import { aiCard, cloudflareCard, offsiteCard } from '@/web/admin/screens/settings-server-keys'
 import { mcpCard } from '@/web/admin/screens/settings-server-mcp'
 import { apiCard } from '@/web/admin/screens/settings-server-api'
+import { activityPubCard } from '@/web/admin/screens/settings-server-ap'
 import { backupsCard, installCard, type UpdateStatus } from '@/web/admin/screens/settings-server-ops'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
 
@@ -50,6 +51,8 @@ export type ServerTabView = {
    * answer from the request itself, and it is reachable by definition.
    */
   origin: string
+  /** How many servers follow this blog (ADR 0059). A count, never a list — see `ap-routes.ts`. */
+  followers: number
 }
 
 /**
@@ -78,6 +81,8 @@ export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView)
     + mcpCard(t, s, endpoint)
     // Under MCP: the two machine doors read as a pair, and this is the smaller one.
     + apiCard(t, s, `${origin}/api/v1`)
+    // The third machine door, and the only one that gives this blog a name out there.
+    + activityPubCard(t, s, { origin: view.origin, followers: view.followers })
     + backupsCard(t, s)
     // The snapshot that leaves the machine (ADR 0035): a copy beside the data does not survive
     // the disk. It sits under the backups it ships.
