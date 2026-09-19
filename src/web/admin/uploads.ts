@@ -250,8 +250,11 @@ export function uploadRoutes() {
     const file = form?.get('file')
     if (!(file instanceof File)) return fail(c, 'No file provided', 400)
 
+    // The kind is the stored name's prefix and nothing more, so the list is closed: anything
+    // else files itself as `icon` rather than letting a caller choose the filename.
     const kindRaw = String(form?.get('kind') ?? 'icon')
-    const kind = kindRaw === 'favicon' || kindRaw === 'app-icon' ? kindRaw : 'icon'
+    const KINDS = ['favicon', 'app-icon', 'avatar']
+    const kind = KINDS.includes(kindRaw) ? kindRaw : 'icon'
 
     // Trust the browser's MIME, but fall back to the extension when it sends nothing —
     // which is common for `.ico`, the one format this route most exists to accept.

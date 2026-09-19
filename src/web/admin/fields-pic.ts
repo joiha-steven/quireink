@@ -83,18 +83,28 @@ export function pickedImage(f: {
  */
 export function iconUpload(f: {
   k: string
-  kind: 'favicon' | 'app-icon'
+  /** Also the `kind` the upload is filed under, so the stored name says what it is. */
+  kind: 'favicon' | 'app-icon' | 'avatar'
   value: string
   previewClass: string
   chooseLabel: string
   removeLabel: string
   emptyLabel: string
+  /**
+   * A PHOTOGRAPH FILLS ITS FRAME; AN ICON SITS ON A PLATE.
+   *
+   * A favicon is usually a small mark on transparency, so it gets a tint behind it and room to
+   * breathe. A portrait is a photograph and wants neither: padded and letterboxed it reads as a
+   * stamp of somebody rather than a picture of them.
+   */
+  photo?: boolean
 }): string {
+  const fit = f.photo ? 'object-cover' : 'bg-neutral-100 object-contain p-1'
   return `<div class="flex items-center gap-3" data-icon="${escapeAttr(f.kind)}">`
     + hiddenField(f.k, f.value)
     + `<span class="flex h-16 w-16 shrink-0 items-center">`
     + `<img src="${escapeAttr(f.value)}" alt="" data-icon-preview`
-    + ` class="bg-neutral-100 object-contain p-1 ${f.previewClass}"${f.value ? '' : ' hidden'}>`
+    + ` class="${fit} ${f.previewClass}"${f.value ? '' : ' hidden'}>`
     + `<span aria-hidden="true" data-icon-slot class="${EMPTY_SLOT} shrink-0 ${f.previewClass}"`
     + `${f.value ? ' hidden' : ''}></span></span>`
     // "No image" is worth saying rather than implying, and it goes beside the slot because a

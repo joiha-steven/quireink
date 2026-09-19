@@ -60,9 +60,18 @@ export async function usedMediaKeys(): Promise<Set<string>> {
       console.error(`[ERROR] media-usage.usedMediaKeys revision: ${(error as Error).message}`)
     }
   }
-  const s = await getSettings()
-  add(s.logoUrl)
-  add(s.seo.ogFallbackImage)
+  // ⚠️ THE WHOLE SETTINGS OBJECT, not a list of the fields somebody remembered. It read
+  // `logoUrl` and `seo.ogFallbackImage` and nothing else, so SEVEN other pictures the owner had
+  // chosen were reported as referenced nowhere: the author's avatar, the favicon, the app icon,
+  // the dark logo, and the three derived twins the logo pipeline writes. Reported by eye about
+  // the avatar; the favicon and the app icon were in the same list, and this audit exists to
+  // tell somebody what is safe to delete.
+  //
+  // A list of fields is a list that goes stale the next time a setting holds a picture, and
+  // nothing would say so — the sweep would simply start naming that one too. `refsIn` already
+  // finds `media/…` anywhere in a string, and JSON puts a quote either side of every value,
+  // which is where the pattern stops. So the rule is the object.
+  add(JSON.stringify(await getSettings()))
   return used
 }
 

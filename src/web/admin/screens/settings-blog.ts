@@ -149,11 +149,15 @@ function author(t: AdminStrings, s: SiteSettings): string {
   // SLOT · WORDS · KEYS, on one line — the shape every picture in the admin is picked with.
   // This one put its keys on a line of their own, which was a fourth arrangement of the same
   // three pieces on a screen that already had three.
-  const avatar = pickedImage({
-    k: 'author.avatarUrl', value: a.avatarUrl, row: true,
+  // ⚠️ THE PORTRAIT IS A FILE, NOT A LIBRARY PICTURE, since 2026-09-19. It was picked out of
+  // the image library, which put the owner's face in the grid beside the pictures in their
+  // posts — sorted among them, counted with them, and offered by the picker every time they
+  // reached for an illustration. It belongs where the favicon and the app icon already live:
+  // uploaded straight to the file store, kept in Files, out of the way of the writing.
+  const avatar = iconUpload({
+    k: 'author.avatarUrl', kind: 'avatar', value: a.avatarUrl, photo: true,
+    previewClass: 'h-16 w-16 shrink-0 rounded-lg',
     chooseLabel: t.chooseImage, removeLabel: t.removeSelection, emptyLabel: t.authorNoAvatar,
-    alt: '', previewClass: 'h-16 w-16 shrink-0 rounded-lg object-cover',
-    slotClass: 'h-16 w-16 shrink-0 rounded-lg',
   })
 
   return `<div class="${SETTING_GAP}">`
