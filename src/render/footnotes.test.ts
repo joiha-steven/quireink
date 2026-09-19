@@ -2,6 +2,8 @@ import { describe, it, expect } from '@/test/vitest'
 import { beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { prepareFootnotes, applyFootnotes } from '@/render/footnotes'
+import { parse } from '@/md/index'
+import { toMarkdown } from '@/md/to-markdown'
 import { renderPostContent } from '@/render/post-content'
 
 // A DOM, because the question below is what a BROWSER makes of the string, and the string is
@@ -112,5 +114,39 @@ describe('a footnote id cannot invent an attribute', () => {
       const html = await renderPostContent({ markdown: `Claim[^${id}].\n\n[^${id}]: the note.\n` })
       expect(`${id}: ${html.includes('class="fnref"') ? 'linked' : 'LOST'}`).toBe(`${id}: linked`)
     }
+  })
+})
+
+describe('the two halves agree on what a footnote definition is', () => {
+  // This file lifts definitions out of the SOURCE before the engine reads it, so the engine
+  // never learned that `[^1]` is a footnote label — and by CommonMark, which has no footnotes,
+  // `[^1]: Wikipedia` is a link reference definition. The reader's page was right either way.
+  // The editor was not: it opens the source through the engine, so a footnote whose text was a
+  // single token came back as a link and its definition was deleted from the author's file.
+  //
+  // Neither half can hold this rule alone, so the property is tested rather than the wording:
+  // a line this file takes out is a line the engine must refuse to read as a link.
+  const LINES = [
+    '[^1]: Wikipedia',
+    '[^1]: Sđd.',
+    '[^1]: https://example.com/a',
+    '[^ghi-chú]: Wikipedia',
+    '[^1]: two words here',
+  ]
+
+  for (const line of LINES) {
+    it(`both refuse it as a link: ${line}`, () => {
+      const source = `Nguồn[^1] và [^ghi-chú].\n\n${line}\n`
+      // This half takes the line out of the source.
+      expect(prepareFootnotes(source).markdown).not.toContain(line)
+      // The engine leaves it where it is, and a save writes it back unchanged.
+      expect(toMarkdown(parse(source))).toBe(source)
+    })
+  }
+
+  it('leaves an ordinary link reference definition to the engine', () => {
+    const source = '[one][ref]\n\n[ref]: https://example.com\n'
+    expect(prepareFootnotes(source).markdown).toContain('[ref]: https://example.com')
+    expect(parse(source).children.length).toBe(1)
   })
 })

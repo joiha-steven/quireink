@@ -156,3 +156,30 @@ export function inlineChildren(node: Inline): Inline[] {
       return []
   }
 }
+
+/**
+ * Adjacent text nodes as ONE run of text.
+ *
+ * The parser can cut a single run into several: `**Nguồn[^1]**` comes back as `Nguồn`, `[`,
+ * `^1]`, because the bracket opens a link that never closes and the opener is left standing as
+ * a node of its own. Anything that reads text NODE BY NODE then sees three strings where the
+ * author wrote one — and `to-markdown.ts` is the one that cares, because its repair for `[^1]`
+ * and `[!NOTE]` matches a COMPLETE shape and no single one of those three holds it. A footnote
+ * inside bold came back `\[^1]` on one save and `[^1]` on the next, for ever.
+ *
+ * ProseMirror merges adjacent text with the same marks by itself, which is why the editor never
+ * showed this and the engine on its own did — the importer being the one path that meets it.
+ *
+ * ⚠️ THE SPAN IS DROPPED. A merged run's two ends come from two nodes, so there is no honest
+ * span to give it; nothing that merges text reads one.
+ */
+export function mergeText(nodes: readonly Inline[]): Inline[] {
+  const out: Inline[] = []
+  for (const node of nodes) {
+    const last = out[out.length - 1]
+    if (node.type === 'text' && last?.type === 'text') {
+      out[out.length - 1] = { type: 'text', value: last.value + node.value }
+    } else out.push(node)
+  }
+  return out
+}

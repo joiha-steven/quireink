@@ -94,12 +94,22 @@ export const INK_SYNTAX_GLOBAL = new RegExp(INK_SYNTAX_SOURCE, 'g')
  * cached bodies carry the number.
  */
 export function penSeed(raw: string): number {
+  // ⚠️ THE SPELLING IS NORMALISED FIRST, because the same words reach this twice spelled two
+  // ways. `==5*3==` is what the author typed; a save writes `==5\*3==`, since the serializer
+  // escapes `*` wherever it stands. Hashing the raw source made those two different gestures,
+  // so the stroke under an unchanged phrase changed shape on the first save — measured as
+  // `data-pen="71"` becoming `data-pen="79"` with the text identical. It also crossed the
+  // short/long line, because a backslash counts toward the length and a reader never sees it.
+  //
+  // Resolving the escapes costs nothing for the gestures that have none, which is nearly all
+  // of them: the number under every phrase without a backslash in it is the number it was.
+  const text = raw.replace(/\\([!-/:-@[-`{-~])/g, '$1')
   let h = 0x811c9dc5
-  for (let i = 0; i < raw.length; i++) {
-    h ^= raw.charCodeAt(i)
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i)
     h = Math.imul(h, 0x01000193)
   }
-  const inner = raw.replace(/^(==|\+\+|@@)/, '').replace(/(==|\+\+|@@)(#[a-z]+)?$/, '')
+  const inner = text.replace(/^(==|\+\+|@@)/, '').replace(/(==|\+\+|@@)(#[a-z]+)?$/, '')
   const half = inner.length <= PEN_SHORT_CHARS ? PEN_SHORT_FROM : 0
   return half + (h >>> 0) % PEN_SHORT_FROM
 }

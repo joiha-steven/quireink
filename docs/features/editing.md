@@ -173,7 +173,10 @@ all from one parse. Four libraries used to answer those five questions separatel
   function that turns TeX into markup. What this blog answers is `render/page-rules.ts`.
 - **A save may not change the reader's page.** Two laws hold it: serializing twice gives the
   same text, and rendering the source and rendering what a save would write give the same
-  HTML. Both run over `golden/corpus` on every test run (`src/md/round-trip.test.ts`).
+  HTML. Both run over `golden/corpus` on every test run (`src/md/round-trip.test.ts`), and
+  over the shapes the corpus does NOT hold — a bracket inside a link's text, two lists in a
+  row, a footnote whose definition is one word — each of which broke one of the two laws and
+  is named there with what it broke.
 - **A hostile document has a bounded cost** (`src/md/complexity.test.ts`). The suite measures
   rates against ordinary prose rather than a clock, because a wall-clock ceiling measures the
   machine: three quadratic shapes were found and fixed that way.

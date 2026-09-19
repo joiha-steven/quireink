@@ -22,6 +22,8 @@
 // rule here is: escape a character only where it could START something on the way back in.
 
 import type { Block, Document, Inline, ListItem } from './ast'
+import { mergeText } from './ast'
+import { labelText, loneBrackets } from './label'
 import { mathToMarkdown } from './math-syntax'
 import { INK_SYNTAX_GLOBAL, RING_SYNTAX_GLOBAL, UNDER_SYNTAX_GLOBAL } from '@/pen/grammar'
 import { entityStarts } from './entity'
@@ -64,6 +66,30 @@ function penOpeners(text: string): Set<number> {
 }
 
 /**
+ * The pairing decided for the label being written, consumed by `escapeText` as it reaches each
+ * bracket. ⚠️ A LABEL ENDS AT THE FIRST UNESCAPED `]`, so the rule below — escape the opening
+ * bracket, never the closing one — destroyed any link whose text held one. `md/label.ts` has
+ * the measurement, and why escaping both is the trap next door rather than the repair.
+ */
+let labelMarks: { lone: Set<number>; seen: number } | null = null
+
+/**
+ * A link's label or an image's alt text, with only its unpartnered brackets escaped.
+ *
+ * Held and restored rather than cleared, because a label can hold an image whose alt is a label
+ * of its own: the inner one must give the outer its count back, not a fresh one.
+ */
+function labelToMarkdown(nodes: Inline[]): string {
+  const held = labelMarks
+  labelMarks = { lone: loneBrackets(labelText(nodes)), seen: 0 }
+  try {
+    return inlineToMarkdown(nodes, false)
+  } finally {
+    labelMarks = held
+  }
+}
+
+/**
  * Escape what would otherwise be read as syntax on the way back in.
  *
  * POSITIONAL, not blanket. A `#` is a heading only at the start of a line; a `-` is a bullet
@@ -97,6 +123,10 @@ function escapeText(value: string, atLineStart: boolean): string {
   for (let i = 0; i < value.length; i++) {
     if (strokes.has(i) || entities.has(i)) out += '\\'
     const ch = value[i]!
+    if (labelMarks !== null && (ch === '[' || ch === ']')) {
+      out += labelMarks.lone.has(labelMarks.seen++) ? `\\${ch}` : ch
+      continue
+    }
     out += /[\\`*_[<]/.test(ch) ? `\\${ch}` : ch
   }
   if (atLineStart) {
@@ -141,7 +171,9 @@ function delimited(open: string, close: string, inner: string): string {
 function inlineToMarkdown(nodes: Inline[], atLineStart = true): string {
   let out = ''
   let first = atLineStart
-  for (const node of nodes) {
+  // Merged first: the repairs in `escapeText` match a complete shape, and the parser can hand
+  // one run of text over in pieces. See `mergeText`.
+  for (const node of mergeText(nodes)) {
     out += oneInline(node, first)
     first = false
   }
@@ -180,7 +212,7 @@ function oneInline(node: Inline, atLineStart: boolean): string {
       // it is worse than noise: `render/post-content.ts` turns a lone video URL into a player,
       // and the expanded form carries an escaped `\_` in its LABEL where the author's line had
       // none. Measured on this blog: one post per bare URL, every save.
-      const label = inlineToMarkdown(node.children, false)
+      const label = labelToMarkdown(node.children)
       const plainLabel = node.children.length === 1 && node.children[0]!.type === 'text'
         ? node.children[0]!.value
         : null
@@ -190,7 +222,7 @@ function oneInline(node: Inline, atLineStart: boolean): string {
       return `[${label}](${url(node.url)}${title(node.title)})`
     }
     case 'image':
-      return `![${inlineToMarkdown(node.alt, false)}](${url(node.url)}${title(node.title)})`
+      return `![${labelToMarkdown(node.alt)}](${url(node.url)}${title(node.title)})`
     case 'ink':
       return delimited('==', `==${node.ink && node.ink !== 'yellow' ? `#${node.ink}` : ''}`, inlineToMarkdown(node.children, false))
     case 'underline':
@@ -230,12 +262,29 @@ function indent(text: string, prefix: string): string {
 
 function blocksToMarkdown(blocks: Block[], ctx: Context): string {
   const parts: string[] = []
-  for (const block of blocks) parts.push(oneBlock(block, ctx))
+  // ⚠️ TWO LISTS IN A ROW NEED TWO DIFFERENT MARKERS, because Markdown has no other way to say
+  // where one ends and the next begins: same marker, blank line between, and what comes back is
+  // ONE list — and a loose one, since the blank line is now between items rather than lists.
+  //
+  //     - a        ->   - a        ->   - a        three lists became one, and the second
+  //     * b             - b             - b        list's numbering went with them:
+  //     + c             - c             - c
+  //     1. a / 1) b  ->  1. a / 1. b  ->  1. a / 2. b
+  //
+  // Reachable from the editor, which is where it was measured: both settle on a different
+  // document than the author's, and neither is even a fixed point on the way there.
+  let apart = false
+  for (const [i, block] of blocks.entries()) {
+    const before = blocks[i - 1]
+    apart = block.type === 'list' && before?.type === 'list' && before.ordered === block.ordered && !apart
+    parts.push(oneBlock(block, ctx, apart))
+  }
   // A tight list's items are one line each; everything else is separated by a blank line.
   return parts.join(ctx.tight ? '\n' : '\n\n')
 }
 
-function oneBlock(node: Block, ctx: Context): string {
+/** `apart` asks for the ALTERNATE list marker, so this list does not merge with the one above. */
+function oneBlock(node: Block, ctx: Context, apart = false): string {
   switch (node.type) {
     case 'paragraph':
       return inlineToMarkdown(node.children)
@@ -256,7 +305,7 @@ function oneBlock(node: Block, ctx: Context): string {
     case 'callout':
       return indent(`[!${node.kind}]\n${blocksToMarkdown(node.children, { ...ctx, tight: false })}`, '> ')
     case 'list':
-      return listToMarkdown(node, ctx)
+      return listToMarkdown(node, ctx, apart)
     case 'mathBlock':
       return mathToMarkdown(node.value, true, node.delim)
     case 'table':
@@ -266,8 +315,8 @@ function oneBlock(node: Block, ctx: Context): string {
   }
 }
 
-function listToMarkdown(node: Extract<Block, { type: 'list' }>, ctx: Context): string {
-  const items = node.items.map((item, i) => itemToMarkdown(item, node, i, ctx))
+function listToMarkdown(node: Extract<Block, { type: 'list' }>, ctx: Context, apart: boolean): string {
+  const items = node.items.map((item, i) => itemToMarkdown(item, node, i, ctx, apart))
   return items.join(node.tight ? '\n' : '\n\n')
 }
 
@@ -276,8 +325,11 @@ function itemToMarkdown(
   list: Extract<Block, { type: 'list' }>,
   index: number,
   ctx: Context,
+  apart: boolean,
 ): string {
-  const marker = list.ordered ? `${list.start + index}. ` : '- '
+  // `*` and `)` are the second spelling of each marker, used only to keep this list off the
+  // back of the one above it. Both are CommonMark; neither changes what the reader sees.
+  const marker = list.ordered ? `${list.start + index}${apart ? ')' : '.'} ` : apart ? '* ' : '- '
   const check = item.checked === null ? '' : item.checked ? '[x] ' : '[ ] '
   const body = blocksToMarkdown(item.children, { prefix: '', tight: list.tight })
   // Continuation lines line up under the content, not under the marker: that is what keeps a

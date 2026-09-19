@@ -88,6 +88,23 @@ function matchDefinition(text: string): Matched | null {
     i++
   }
   if (!closed || label.length > 999 || label.trim() === '') return null
+  // ⚠️ `[^1]` IS A FOOTNOTE LABEL AND NEVER A LINK ONE. CommonMark has no footnotes, so this
+  // scan was right by its own spec and wrong about the product: `[^1]: Wikipedia` is a perfectly
+  // good link reference definition, and a footnote whose text is ONE TOKEN — a name, `Sđd.`, a
+  // bare URL, which is most citations — was eaten here before anything could read it as a note.
+  //
+  // The reader never saw it, because `render/footnotes.ts` pulls definitions out of the source
+  // BEFORE the engine runs. The EDITOR opens the source through this scan, so it saw a link:
+  //
+  //     Nguồn[^1].  /  [^1]: Wikipedia     →  saved as  Nguồn[^1](Wikipedia).
+  //
+  // The definition gone from the author's file, the note gone from the published page. A
+  // definition holding two words survived only because a space makes an invalid destination.
+  //
+  // The shape refused is the one `render/footnotes.ts` claims, so both halves now agree; it is
+  // refused at any indent, where that file's own rule reaches only column zero — a definition
+  // it leaves as literal text has to stay literal text here too.
+  if (/^\^\S+$/.test(label)) return null
   if (text[i] !== ':') return null
   i++
 

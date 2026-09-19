@@ -11,6 +11,7 @@
 // character-at-a-time scanner cannot do.
 
 import type { Inline } from './ast'
+import { mergeText } from './ast'
 
 /**
  * Where a link may begin: the start of a run, or after whitespace or one of `*_~(`.
@@ -147,7 +148,13 @@ export function isBareAutolink(url: string): boolean {
 
 export function linkifyAll(nodes: Inline[]): Inline[] {
   const out: Inline[] = []
-  for (const node of nodes) {
+  // ⚠️ MERGED FIRST, because a URL is found in ONE text node and the parser does not always
+  // leave one. `**https://vi.wikipedia.org/wiki/Trang_Chính**` comes out of emphasis as three
+  // nodes — the link's text, `_`, `Chính` — since an underscore that opened no emphasis is left
+  // standing as a node of its own. This pass then found the URL only as far as the underscore,
+  // so a bolded link went to `…/wiki/Trang` and the rest of the address was printed as text.
+  // The same address in plain prose was one node and worked, which is why nothing caught it.
+  for (const node of mergeText(nodes)) {
     switch (node.type) {
       case 'text': {
         const split = splitText(node.value)
