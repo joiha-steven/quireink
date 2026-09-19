@@ -122,6 +122,20 @@ describe('deriveExcerpt', () => {
     expect(wordCount('| a | b |\n| --- | --- |\n| 1 | 2 |')).toBe(4)
   })
 
+  it('reads a table written with ONE hyphen per cell the same way', () => {
+    // GFM's delimiter row is "one or more hyphens", so all four of these are the same table.
+    // The rule here asked for two or more, and every fixture in this file happened to use
+    // three — which is what an editor produces and not what a person typing a small table by
+    // hand does. So a post opening with `| - | - |` had `- -` in its excerpt, its meta
+    // description, its OG card and its RSS summary, and nothing here could see it.
+    // Found 2026-09-19 by reading an exported post, not by a test.
+    for (const rule of ['| - | - |', '| -- | -- |', '| :- | -: |', '|-|-|']) {
+      const table = `| a | b |\n${rule}\n| 1 | 2 |`
+      expect(deriveExcerpt(table), rule).toBe('a b 1 2')
+      expect(wordCount(table), rule).toBe(4)
+    }
+  })
+
   it('reads a divider as a divider, in all three spellings', () => {
     for (const rule of ['---', '***', '___']) {
       expect(deriveExcerpt(`${rule}\n\nThân bài.`)).toBe('Thân bài.')

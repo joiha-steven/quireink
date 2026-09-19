@@ -152,7 +152,15 @@ export function toPlainText(markdown: string): string {
     // into all four summaries.
     // The first line also takes a `---` divider, which is the same shape and counted as a word
     // of its own; `***` and `___` are taken by the bare-character strip below.
-    .replace(/^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)*\|?[ \t]*$/gm, ' ')
+    //
+    // ⚠️ `-+`, NOT `-{2,}`. GFM's delimiter row is "one or more hyphens" per cell, so `| - | - |`
+    // is a table and `| --- | --- |` is the same table — and the two-or-more form read the first
+    // one as CONTENT. The pipes then came off on the next line and the excerpt, the meta
+    // description, the OG card and the RSS summary of any post opening with such a table all
+    // began "a b - - 1 2". Found 2026-09-19 by reading an exported post rather than by a test:
+    // every fixture here happened to be written with three hyphens, which is what an editor
+    // produces and not what a person typing a small table by hand does.
+    .replace(/^[ \t]*\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$/gm, ' ')
     .replace(/^([ \t]*>?[ \t]*)\|(.*)$/gm, (_m, head: string, rest: string) => head + rest.replace(/\|/g, ' '))
     .replace(/[#>*_`~]/g, ' ')
     .replace(/\s+/g, ' ')
