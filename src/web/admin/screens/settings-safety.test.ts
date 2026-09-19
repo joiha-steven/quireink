@@ -15,9 +15,10 @@
 //      `data-k` it finds, so a password box wearing one would be written into the settings record.
 import { describe, it, expect, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { getSettings } from '@/content/settings'
+import { getSettings, saveSettings } from '@/content/settings'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 import { settingsScreen } from './settings'
+import { adminT } from '@/i18n/admin-i18n'
 
 const DIR = './.tmp/test-settings-safety'
 freshDatabase(DIR)
@@ -115,5 +116,109 @@ describe('only a setting wears a setting name', () => {
     }
     expect(clash).toEqual([])
     expect(held.size).toBeGreaterThan(10)
+  })
+})
+
+// A LAMP MAY NOT CLAIM A REPLY THE SERVER NEVER ASKED FOR (2026-09-20).
+//
+// `connectionOk` reads "Saved, and the far end answered". Four cards printed it because a
+// SWITCH was on — the read-only API, the fediverse, the MCP server and scheduled backups, none
+// of which has a far end at all — and three more printed it because a credential was stored,
+// which `getIntegrationStatus` computes as `!!key` and never as "something replied". Measured
+// on a seeded blog: the MCP card was green and saying the far end had answered while
+// `mcp_tokens` held nothing and no request had ever been made.
+//
+// Nothing the SERVER draws can know that a far end answered — no test result is persisted
+// anywhere, so the sentence is only ever true in the island, in the moment a test route comes
+// back. That is the rule this asserts, and it is one string in one document.
+describe('what a lamp may say about a far end', () => {
+  const t = adminT('en')
+  /**
+   * Every lamp's own tag, which is where its sentence lives.
+   *
+   * ⚠️ NOT THE WHOLE DOCUMENT. `connectionOk` is legitimately IN the page — the island is
+   * handed the whole dictionary in `data-settings-words`, because it is the one thing that may
+   * print that sentence once a test route has answered. A first cut asserted the string was
+   * absent from the page and failed on the dictionary, which would have been the wrong fix.
+   */
+  const lamps = (html: string): string[] => html.match(/<[^>]*data-card-lamp[^>]*>/g) ?? []
+
+  it('never claims a reply on a lamp the server drew', async () => {
+    const html = await drawn()
+    expect(lamps(html).length).toBeGreaterThan(4)
+    expect(lamps(html).filter((l) => l.includes(t.connectionOk))).toEqual([])
+  })
+
+  /**
+   * ⚠️ EACH CARD SWITCHED ON AND COUNTED SEPARATELY, because a fresh blog has all four of these
+   * switched OFF and an off lamp says `connectionOff`. A first cut asserted only that the
+   * sentence appeared SOMEWHERE on the screen: the backup schedule is the one thing on by
+   * default, so it satisfied the assertion by itself and putting the old claim back on the
+   * other three left this green. Five of seven mutations survived.
+   */
+  const lampCount = (html: string, sentence: string): number =>
+    lamps(html).filter((l) => l.includes(sentence)).length
+
+  it('says a card with no far end is simply on, each of the four', async () => {
+    const before = await drawn()
+    // The backup schedule ships on, so it is already saying it.
+    expect(lampCount(before, t.connectionOn)).toBe(1)
+
+    await saveSettings({ api: { enabled: true } } as never)
+    expect(lampCount(await drawn(), t.connectionOn)).toBe(2)
+
+    await saveSettings({ mcp: { enabled: true } } as never)
+    expect(lampCount(await drawn(), t.connectionOn)).toBe(3)
+
+    await saveSettings({
+      siteUrl: 'https://example.com',
+      activitypub: { enabled: true, handle: 'blog' },
+    } as never)
+    expect(lampCount(await drawn(), t.connectionOn)).toBe(4)
+
+    // And not one of the four has claimed anybody answered it.
+    expect(lamps(await drawn()).filter((l) => l.includes(t.connectionOk))).toEqual([])
+  })
+
+  it('hands the island the sentence a card with no far end needs', async () => {
+    // ⚠️ THE WIRE, not the lamp. `goodTitle` falls back to '' for a word the dictionary is
+    // missing, so dropping `connectionOn` from `settings.ts` would empty every lamp the island
+    // repaints and no other assertion here would notice: the server's own markup is unchanged.
+    const words = (await drawn()).match(/data-settings-words="([^"]*)"/)?.[1] ?? ''
+    expect(words).toContain('connectionOn')
+    expect(words).toContain('connectionOk')
+    expect(words).toContain('connectionUntested')
+  })
+
+  it('says a far end with no credentials is not set up, rather than saved', async () => {
+    const html = await drawn()
+    // ⚠️ THE COUNTER-TEST, and the reason this `it` exists apart from the one above: the amber
+    // lamp used to read "Saved, but not tried yet" on a card where nothing had been saved. Both
+    // sentences are honest somewhere, so asserting only that the page HAS an amber lamp would
+    // pass on either of them.
+    expect(lamps(html).some((l) => l.includes(t.connectionUnset))).toBe(true)
+    expect(lamps(html).some((l) => l.includes(t.connectionUntested))).toBe(false)
+  })
+
+  it('says a stored credential is saved and untried, not answered — each far end', async () => {
+    // Counted per card again, and for the same reason: three of these live on one screen, so
+    // "the sentence is somewhere" is satisfied by whichever one happens to be configured.
+    await saveIntegrationKeys({ cloudflareApiToken: 'tok', cloudflareZoneId: 'zone' })
+    expect(lampCount(await drawn(), t.connectionUntested)).toBe(1)
+
+    await saveIntegrationKeys({ s3Bucket: 'b', s3AccessKeyId: 'k', s3SecretAccessKey: 's' })
+    expect(lampCount(await drawn(), t.connectionUntested)).toBe(2)
+
+    // The AI card is `off` until a provider is named, and `off` is its own sentence.
+    await saveIntegrationKeys({ aiProvider: 'anthropic', aiApiKey: 'k' })
+    expect(lampCount(await drawn(), t.connectionUntested)).toBe(3)
+
+    // The comment card only has a far end when Turnstile is asked for.
+    await saveSettings({ comments: { enabled: true, turnstile: true } } as never)
+    await saveIntegrationKeys({ turnstileSecretKey: 'sk', turnstileSiteKey: 'pk' })
+    expect(lampCount(await drawn(), t.connectionUntested)).toBe(4)
+
+    // Not one of the four claims a reply, with every credential on the machine stored.
+    expect(lamps(await drawn()).filter((l) => l.includes(t.connectionOk))).toEqual([])
   })
 })

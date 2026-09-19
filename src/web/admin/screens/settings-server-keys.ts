@@ -97,7 +97,7 @@ export function cloudflareCard(t: AdminStrings, i: IntegrationStatus): string {
     // unconfigured connection read amber with "Saved, but not tried yet". Measured against it
     // 2026-09-15: this lamp was the wrong colour on both of these cards.
     state: on ? 'good' : 'attention',
-    lampTitle: on ? t.connectionOk : t.connectionUntested,
+    lampTitle: on ? t.connectionUntested : t.connectionUnset,
     saveLabel: t.save,
     body: `<div class="space-y-3">`
       + `<p class="${NOTE_TEXT}">${escapeHtml(t.cfHelp)} `
@@ -192,7 +192,7 @@ export function aiCard(t: AdminStrings, s: SiteSettings, i: IntegrationStatus): 
     // `settings-cards.ts` sends the route first, then the keys.
     route: '/api/integrations/ai',
     state: off ? 'off' : i.aiConfigured ? 'good' : 'attention',
-    lampTitle: off ? t.connectionOff : i.aiConfigured ? t.connectionOk : t.connectionUntested,
+    lampTitle: off ? t.connectionOff : i.aiConfigured ? t.connectionUntested : t.connectionUnset,
     saveLabel: off ? t.save : t.saveAndTest,
     body: `<div class="${SETTING_GAP}">`
       + `<p class="${NOTE_TEXT}">${escapeHtml(t.aiHelp)}</p>`
@@ -276,7 +276,7 @@ export function offsiteCard(t: AdminStrings, i: IntegrationStatus): string {
     // unconfigured connection read amber with "Saved, but not tried yet". Measured against it
     // 2026-09-15: this lamp was the wrong colour on both of these cards.
     state: on ? 'good' : 'attention',
-    lampTitle: on ? t.connectionOk : t.connectionUntested,
+    lampTitle: on ? t.connectionUntested : t.connectionUnset,
     saveLabel: t.saveAndTest,
     body: `<div class="space-y-3">`
       + `<p class="${NOTE_TEXT}">${escapeHtml(t.offsiteHelp)}</p>`

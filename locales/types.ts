@@ -767,11 +767,22 @@ export type AdminStrings = {
   cssNamesNote: string
   cssStructure: string
   saveSettings: string
-  /** A card that owns its own keys: its button, and the five things its lamp can mean. */
+  /** A card that owns its own keys: its button, and the seven things its lamp can mean. */
   save: string
   saveAndTest: string
+  /**
+   * ⚠️ ONLY AFTER SOMETHING WAS ACTUALLY ASKED. This sentence claims a reply, so it belongs to
+   * the island and to the moment a test route came back — never to a page the server has just
+   * drawn, which has asked nobody anything. Four cards used it for "a switch is on" and one
+   * more for "a credential is stored"; both of those now say what they mean (2026-09-20).
+   */
   connectionOk: string
+  /** A far end that IS set up and has not been tried in this page's life. */
   connectionUntested: string
+  /** A card with a far end and no credentials for it: a thing to do, so amber rather than off. */
+  connectionUnset: string
+  /** A card with NO far end, switched on. There is nothing here that could answer. */
+  connectionOn: string
   connectionUnsaved: string
   connectionFailed: string
   /**

@@ -148,6 +148,31 @@ character and none of its typographic rules **except one**, below.
   one over afterwards, and nothing said so — `check:admin-kit` compares class STRINGS, so a
   primitive whose own recipe computes wrong passes it. A **tour flow** measures every key and
   field on the settings screen now, because a computed height fails no unit test.
+- **A LAMP MAY NOT CLAIM A REPLY NOBODY ASKED FOR (2026-09-20).** `connectionOk` reads "Saved,
+  and the far end answered", and seven cards printed it without contacting anything. Four have
+  no far end at all — the read-only API, the fediverse, the MCP server and the backup schedule
+  are a switch each — and three more printed it because a credential was *stored*, which
+  `getIntegrationStatus` computes as `!!key`. No test result is persisted anywhere, so **nothing
+  the server draws can honestly say a far end answered**. Measured on a seeded blog: the MCP
+  card was green and saying the far end had answered while `mcp_tokens` held nothing.
+  The vocabulary now says what is true, and the colour did not have to move:
+  | what is so | lamp | sentence |
+  |---|---|---|
+  | a switch, and nothing behind it, on | green | `connectionOn` — *Switched on* |
+  | a switch, off | hidden | `connectionOff` |
+  | a far end with credentials, untried this page | green | `connectionUntested` — *Saved, but not tried yet* |
+  | a far end with no credentials | amber | `connectionUnset` — *Not set up yet* |
+  | a test route that answered | green | `connectionOk` — **island only** |
+  | a test route that refused, or a failed save | amber | `connectionFailed` |
+  | edits not yet saved | amber | `connectionUnsaved` (amber beats green) |
+  ⚠️ Amber for "not set up" rather than grey is the older decision (2026-09-15) and it stands:
+  these cards have no switch, so "off" could only mean "never set up", which is a thing to do.
+  What changed is the SENTENCE beside it — it used to read "Saved, but not tried yet" on a card
+  where nothing had been saved.
+  ⚠️ `connectionOk` is handed to the island in `data-settings-words` and printed only when
+  `tried()` reports `asked`. Two of its three answers are successes that contacted nobody: a
+  card with no test route, and one whose gate found nothing to try. `goodTitle` and `tried` are
+  both exported so that choice can be asserted without a page.
 - **Enclosure weakens inward, and settings is built from three ranks.** The sheet's edge, then
   the card's, then whatever is in the card — each line lighter than the one around it. It ran
   backwards until 2026-09-01: the sheet `neutral-200/80`, the card `neutral-100`, and a box

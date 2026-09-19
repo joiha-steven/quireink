@@ -249,7 +249,7 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
     title: t.backupTitle,
     keys: ['backups'],
     state: b.enabled ? 'good' : 'off',
-    lampTitle: b.enabled ? t.connectionOk : t.connectionOff,
+    lampTitle: b.enabled ? t.connectionOn : t.connectionOff,
     body,
   })
 }

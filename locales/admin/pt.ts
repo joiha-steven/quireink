@@ -495,6 +495,8 @@ const pt = {
   saveAndTest: 'Guardar e testar',
   connectionOk: 'Guardado, e o outro lado respondeu',
   connectionUntested: 'Guardado, mas ainda sem teste',
+  connectionUnset: 'Ainda sem configuração',
+  connectionOn: 'Ligado',
   connectionUnsaved: 'Alterado, por guardar',
   connectionFailed: 'A última tentativa falhou',
   mailSwitchedOff: 'O envio de e-mail está desligado nesta máquina (SMTP_OFF=1)',

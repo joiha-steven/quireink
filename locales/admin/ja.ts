@@ -494,6 +494,8 @@ const ja = {
   saveAndTest: '保存して確認',
   connectionOk: '保存済み。相手側からの応答あり',
   connectionUntested: '保存済み。まだ確認していません',
+  connectionUnset: 'まだ設定していません',
+  connectionOn: 'オン',
   connectionUnsaved: '変更あり、未保存',
   connectionFailed: '前回の試行は失敗しました',
   mailSwitchedOff: 'このマシンではメール送信が無効です（SMTP_OFF=1）',

@@ -43,6 +43,22 @@ const show = (el: Element | null, message: string): void => {
  * twenty-two cards and still send only what moved. A card that stores a CREDENTIAL posts to its
  * own route instead, because a credential is not a setting and does not live in that record.
  */
+/**
+ * WHAT A GREEN LAMP MAY SAY, once a card's own Save has come back without an error.
+ *
+ * Three different silences end the same colour, and only one of them is a reply:
+ *  - `asked` — a test route was called and it answered. The ONLY case anything may say so.
+ *  - a far end nobody asked (the gate found nothing to try, or the card stores a credential
+ *    without testing it) — saved, not tried.
+ *  - no far end at all (a switch, and nothing behind it) — on.
+ *
+ * Extracted and named because the choice is the whole of the fix and the alternative was a
+ * ternary buried in a click handler, which needs a DOM and a network to assert.
+ */
+export const goodTitle = (
+  w: CardWords, asked: boolean, hasFarEnd: boolean,
+): string => (asked ? w.connectionOk : hasFarEnd ? w.connectionUntested : w.connectionOn) ?? ''
+
 export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWords, after: () => void): void {
   screen.addEventListener('click', (e) => {
     const key = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-card-save]')
@@ -65,7 +81,10 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
       // own comment said "the card's Save now writes both, credentials first" while the code
       // wrote whichever one the route decided. Credentials go first, because a job switched on
       // against a key that did not store is a switch pointing at nothing.
-      const sent = route ? await postCard(card, route) : { ok: true }
+      const sent = route ? await postCard(card, route) : { ok: true, asked: false }
+      // Kept before the next line, which is allowed to replace `sent` with the settings save's
+      // own answer and would drop it.
+      const asked = sent.asked === true
       const res = sent.ok ? await saveKeys(card, fields()) : sent
       if (res.ok) {
         settle(ownFields(card, fields()))
@@ -76,9 +95,12 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
         // And the blocks that wait for a SAVED answer can open now, for the same reason: this
         // is the moment the form and the record agree. See `applyLiveGates`.
         applyLiveGates(card)
-        // A card that TESTED and passed is green; one that only stored is green too, because
-        // there was nothing at the far end to be wrong about.
-        setLamp(lamp, 'good', w.connectionOk ?? '')
+        // ⚠️ GREEN EITHER WAY, BUT NOT THE SAME SENTENCE. A card that tested and passed is the
+        // one case anything here may say the far end answered. A card that only stored is green
+        // too — there was nothing at the far end to be wrong about — and it says which of the
+        // two silences it is: a card that HAS a far end nobody asked is "saved, not tried yet",
+        // and a card with no far end at all is simply on.
+        setLamp(lamp, 'good', goodTitle(w, asked, card.dataset.cardTest !== undefined))
         after()
       } else {
         setLamp(lamp, 'attention', w.connectionBad ?? '')
@@ -128,7 +150,9 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
    * `saveIntegrationKeys` reads an empty string as "clear it" — so sending every box would wipe
    * a key the moment anybody saved a card without retyping it.
    */
-  async function postCard(card: HTMLElement, route: string): Promise<{ ok: boolean; error?: string }> {
+  async function postCard(
+    card: HTMLElement, route: string,
+  ): Promise<{ ok: boolean; error?: string; asked?: boolean }> {
     const body: Record<string, unknown> = {}
     for (const el of card.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-card-field]')) {
       const name = el.dataset.cardField
@@ -154,45 +178,7 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
       for (const el of card.querySelectorAll<HTMLInputElement>('[data-card-field][type=password]')) el.value = ''
     }
     if (!json.success) return { ok: false, error: json.error }
-    return tried(card)
-  }
-
-  /**
-   * STORING IS NOT SENDING (ADR 0041), so a card that can try its far end does.
-   *
-   * "Why did my newsletter not send" was the question the SMTP card could not answer: it had a
-   * Save key, a success toast, and no way to find out that port 587 was blocked or that the
-   * password had gone stale. The test route's own sentence is what gets shown — "535
-   * authentication failed" is a password and "ENOTFOUND" is a hostname, and neither survives
-   * being renamed "Could not save".
-   *
-   * ⚠️ ONLY WITH SOMETHING TO TRY. `data-card-test-when` names the field that has to be filled
-   * in first: an install with no mail host is not broken, it is a blog with no newsletter, and
-   * lighting the lamp for it would be a lie.
-   */
-  async function tried(card: HTMLElement): Promise<{ ok: boolean; error?: string }> {
-    const route = card.dataset.cardTest
-    if (!route) return { ok: true }
-    // ⚠️ AND A STORED CREDENTIAL SHIPS AS AN EMPTY BOX. The gate asks whether the field is
-    // filled in, which is right for a card nobody has configured and wrong for every card that
-    // already works: blank means KEEP, so on an install with a bucket the gate field was empty,
-    // the test never ran, and the key that says "Save and test" went green saying the far end
-    // had answered. A rotated secret would be reported as verified and discovered at the one
-    // moment it matters. `data-card-test-stored` is the server's answer to "is there something
-    // at the far end already", which is the question the gate meant to ask.
-    const needs = card.dataset.cardTestWhen
-    if (needs && card.dataset.cardTestStored === undefined) {
-      const gateField = card.querySelector<HTMLInputElement>(`[data-card-field="${needs}"]`)
-      if (!gateField?.value.trim()) return { ok: true }
-    }
-    const res = await fetch(route, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: card.dataset.cardTestBody ?? '{}',
-    })
-    if (res.status === 401) { toLogin(); return { ok: false } }
-    const json = await res.json().catch(() => null) as { success?: boolean; error?: string } | null
-    return { ok: Boolean(json?.success), error: json?.error }
+    return tried(card, toLogin)
   }
 
   const toLogin = (): void => {
@@ -249,4 +235,41 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
       }
     }
   }
+}
+
+/**
+ * STORING IS NOT SENDING (ADR 0041), so a card that can try its far end does — and this reports
+ * whether it actually did. `toLogin` is an argument rather than a closed-over helper so that the
+ * three answers below can be asserted without a page: they are the whole of what the lamp's
+ * sentence turns on, and two of them are successes that asked nobody anything.
+ */
+export async function tried(
+  card: HTMLElement, toLogin: () => void,
+): Promise<{ ok: boolean; error?: string; asked?: boolean }> {
+  const route = card.dataset.cardTest
+  // ⚠️ `asked` IS WHAT THE LAMP'S SENTENCE TURNS ON, and the two `{ ok: true }` answers below
+  // are the ones that make it necessary: both mean "nothing went wrong", and neither means
+  // anybody replied. Reported as green with "the far end answered" they were a claim about a
+  // service this code had not contacted.
+  if (!route) return { ok: true, asked: false }
+  // ⚠️ AND A STORED CREDENTIAL SHIPS AS AN EMPTY BOX. The gate asks whether the field is
+  // filled in, which is right for a card nobody has configured and wrong for every card that
+  // already works: blank means KEEP, so on an install with a bucket the gate field was empty,
+  // the test never ran, and the key that says "Save and test" went green saying the far end
+  // had answered. A rotated secret would be reported as verified and discovered at the one
+  // moment it matters. `data-card-test-stored` is the server's answer to "is there something
+  // at the far end already", which is the question the gate meant to ask.
+  const needs = card.dataset.cardTestWhen
+  if (needs && card.dataset.cardTestStored === undefined) {
+    const gateField = card.querySelector<HTMLInputElement>(`[data-card-field="${needs}"]`)
+    if (!gateField?.value.trim()) return { ok: true, asked: false }
+  }
+  const res = await fetch(route, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: card.dataset.cardTestBody ?? '{}',
+  })
+  if (res.status === 401) { toLogin(); return { ok: false } }
+  const json = await res.json().catch(() => null) as { success?: boolean; error?: string } | null
+  return { ok: Boolean(json?.success), error: json?.error, asked: true }
 }

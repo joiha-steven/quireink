@@ -494,6 +494,8 @@ const ru = {
   saveAndTest: 'Сохранить и проверить',
   connectionOk: 'Сохранено, и сервис ответил',
   connectionUntested: 'Сохранено, но ещё не проверялось',
+  connectionUnset: 'Ещё не настроено',
+  connectionOn: 'Включено',
   connectionUnsaved: 'Изменено, не сохранено',
   connectionFailed: 'Последняя попытка не удалась',
   mailSwitchedOff: 'Отправка почты отключена на этой машине (SMTP_OFF=1)',

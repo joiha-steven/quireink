@@ -494,6 +494,8 @@ const de = {
   saveAndTest: 'Speichern und testen',
   connectionOk: 'Gespeichert, und die Gegenstelle hat geantwortet',
   connectionUntested: 'Gespeichert, aber noch nicht versucht',
+  connectionUnset: 'Noch nicht eingerichtet',
+  connectionOn: 'Eingeschaltet',
   connectionUnsaved: 'Geändert, nicht gespeichert',
   connectionFailed: 'Der letzte Versuch ist fehlgeschlagen',
   mailSwitchedOff: 'Auf diesem Rechner ist der Mailversand abgeschaltet (SMTP_OFF=1)',

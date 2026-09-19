@@ -49,7 +49,7 @@ export function activityPubCard(
     title: t.cardActivityPub,
     keys: ['activitypub'],
     state: live ? 'good' : 'off',
-    lampTitle: live ? t.connectionOk : t.connectionOff,
+    lampTitle: live ? t.connectionOn : t.connectionOff,
     body: panelList(`<div>`
       + switchRow({
         k: 'activitypub.enabled', label: t.apEnable, note: t.apEnableDesc, on: s.activitypub.enabled,

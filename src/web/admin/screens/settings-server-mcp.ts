@@ -175,7 +175,7 @@ export function mcpCard(t: AdminStrings, s: SiteSettings, endpoint: string): str
     title: t.cardMcp,
     keys: ['mcp'],
     state: live ? 'good' : 'off',
-    lampTitle: live ? t.connectionOk : t.connectionOff,
+    lampTitle: live ? t.connectionOn : t.connectionOff,
     // NO stack gap on this box: its last child is the one that can be hidden, and `space-y-*`
     // is `& > :not(:last-child)` — so the list above would keep a margin it only earns while
     // the manager is showing. The 20px rides on the gated block instead, where a `display:none`

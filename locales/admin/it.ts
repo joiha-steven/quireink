@@ -494,6 +494,8 @@ const it = {
   saveAndTest: 'Salva e prova',
   connectionOk: 'Salvato, e il servizio ha risposto',
   connectionUntested: 'Salvato, ma non ancora provato',
+  connectionUnset: 'Non ancora configurato',
+  connectionOn: 'Attivato',
   connectionUnsaved: 'Modificato, non salvato',
   connectionFailed: 'L’ultimo tentativo è fallito',
   mailSwitchedOff: 'L’invio di email è disattivato su questa macchina (SMTP_OFF=1)',

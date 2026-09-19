@@ -494,6 +494,8 @@ const es = {
   saveAndTest: 'Guardar y probar',
   connectionOk: 'Guardado, y el otro extremo respondió',
   connectionUntested: 'Guardado, pero aún sin probar',
+  connectionUnset: 'Aún sin configurar',
+  connectionOn: 'Activado',
   connectionUnsaved: 'Cambiado, sin guardar',
   connectionFailed: 'El último intento falló',
   mailSwitchedOff: 'El envío de correo está desactivado en esta máquina (SMTP_OFF=1)',

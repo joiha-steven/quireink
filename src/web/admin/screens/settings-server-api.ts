@@ -43,7 +43,7 @@ export function apiCard(t: AdminStrings, s: SiteSettings, base: string): string 
     title: t.cardApi,
     keys: ['api'],
     state: live ? 'good' : 'off',
-    lampTitle: live ? t.connectionOk : t.connectionOff,
+    lampTitle: live ? t.connectionOn : t.connectionOff,
     // ⚠️ THE WARNING SITS ABOVE THE ADDRESS AND OUTSIDE EVERYTHING, because it is what somebody
     // needs in order to DECIDE: a caution that appears only once the thing is already on is a
     // caution nobody read in time.

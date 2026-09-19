@@ -494,6 +494,8 @@ const vi = {
   saveAndTest: 'Lưu và thử',
   connectionOk: 'Đã lưu, đầu kia có trả lời',
   connectionUntested: 'Đã lưu, chưa thử lần nào',
+  connectionUnset: 'Chưa thiết lập',
+  connectionOn: 'Đang bật',
   connectionUnsaved: 'Có thay đổi, chưa lưu',
   connectionFailed: 'Lần thử gần nhất thất bại',
   mailSwitchedOff: 'Máy này đã tắt gửi thư (SMTP_OFF=1)',

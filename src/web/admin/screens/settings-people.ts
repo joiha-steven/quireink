@@ -338,7 +338,7 @@ export function peopleTab(t: AdminStrings, s: SiteSettings, view: PeopleTabView)
       title: t.cardCommentIntegrations,
       keys: ['comments'],
       state: !c.enabled ? 'off' : ready ? 'good' : 'attention',
-      lampTitle: !c.enabled ? t.connectionOff : ready ? t.connectionOk : t.connectionUntested,
+      lampTitle: !c.enabled ? t.connectionOff : ready ? t.connectionUntested : t.connectionUnset,
       saveLabel: t.save,
       body: commentKeys(t, c, env),
       attrs: 'data-card-route="/api/comments/keys"',

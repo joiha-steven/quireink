@@ -494,6 +494,8 @@ const fr = {
   saveAndTest: 'Enregistrer et tester',
   connectionOk: 'Enregistré, et le service a répondu',
   connectionUntested: 'Enregistré, mais pas encore testé',
+  connectionUnset: 'Pas encore configuré',
+  connectionOn: 'Activé',
   connectionUnsaved: 'Modifié, non enregistré',
   connectionFailed: 'La dernière tentative a échoué',
   mailSwitchedOff: 'L’envoi d’e-mails est désactivé sur cette machine (SMTP_OFF=1)',

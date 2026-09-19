@@ -48,7 +48,11 @@ function words(t: AdminStrings): string {
     listTaken: t.listPathTaken,
     leaveTitle: t.leaveUnsavedTitle, leaveBody: t.leaveUnsavedBody,
     leaveSave: t.leaveUnsavedSave, leaveDiscard: t.leaveUnsavedDiscard, leaveStay: t.leaveUnsavedStay,
+    // ⚠️ `connectionOk` CLAIMS A REPLY, so only the island may ever print it: it is the one
+    // thing here that knows whether a test route actually came back. `connectionOn` is what a
+    // card with nothing at the far end says instead.
     connectionOk: t.connectionOk, connectionBad: t.connectionFailed, connectionDirty: t.connectionUnsaved,
+    connectionOn: t.connectionOn,
     // The SMTP card fills itself from `/api/mail`, and both of these are facts only that reply
     // carries: whether the far end has credentials, and whether there is anything to try.
     connectionOff: t.connectionOff, connectionUntested: t.connectionUntested,

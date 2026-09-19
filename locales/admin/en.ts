@@ -494,6 +494,8 @@ const en = {
   saveAndTest: 'Save and test',
   connectionOk: 'Saved, and the far end answered',
   connectionUntested: 'Saved, but not tried yet',
+  connectionUnset: 'Not set up yet',
+  connectionOn: 'Switched on',
   connectionUnsaved: 'Changed, not saved',
   connectionFailed: 'The last attempt failed',
   mailSwitchedOff: 'Mail is switched off on this machine (SMTP_OFF=1)',
