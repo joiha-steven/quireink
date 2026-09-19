@@ -119,6 +119,13 @@ img{max-width:100%!important;height:auto}
 /* A code block scrolls on a screen and cannot on paper, so it wraps instead of losing the
    right-hand end of every long line. */
 pre{white-space:pre-wrap;word-wrap:break-word;border:.5pt solid var(--c-rule)}
+/* A LINK CARD ON PAPER is a link: it keeps its words and loses its frame, its picture and its
+   kind badge. The address itself is already printed by the rule for anchors in the prose, so a
+   reader holding the sheet can still reach what it pointed at (ADR 0058). */
+.link-card,.file-card{border:0;margin:1em 0}
+.link-card-pic,.file-card-kind{display:none!important}
+.link-card-text,.file-card-text{padding:0}
 table{width:100%;border-collapse:collapse}
 }
+
 `

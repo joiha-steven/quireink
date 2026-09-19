@@ -180,3 +180,122 @@ export function registerLanguageFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'at
     return `ok language ${back.lang} and group kept through a save and a reload`
   })
 }
+
+/**
+ * THE CARD A STANDALONE LINK BECOMES, and the switch that decides (ADR 0058).
+ *
+ * ⚠️ IT MAKES ITS OWN POST rather than leaning on the seed, because the thing under test is a
+ * paragraph of a particular SHAPE — one link, alone — and a flow that depended on some seeded
+ * body still having that shape would go quietly green the day somebody edited the seed.
+ *
+ * It tests the FILE card end to end and not the bookmark card, and the difference is the point:
+ * a file card is built from this blog's own `files` table and needs nothing outside the box,
+ * where a bookmark card needs a page fetched from the internet. A tour that reached the network
+ * would fail on a runner that cannot, and one that stubbed the fetch would be testing the stub.
+ * What the bookmark half shares with this one — the paragraph rule, the escaping, the switch —
+ * is held by `content/link-cards.test.ts` in milliseconds.
+ */
+export function registerCardFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
+  flow('a link alone on its line becomes a card, and the switch decides', () => expect('/admin', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const send = async (url, method, body) => {
+        const res = await fetch(url, {
+          method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+        })
+        return { ok: res.ok, json: await res.json().catch(() => null) }
+      }
+      // The seeded attachment, found rather than assumed: the upload slugifies a filename, so
+      // the stored address is not the one the seed typed.
+      const files = await (await fetch('/api/files')).json()
+      const pdf = (files.data || []).find((f) => /\\.pdf$/.test(f.url))
+      if (!pdf) return 'no seeded PDF to link at'
+
+      const slug = 'tour-link-cards'
+      // ⚠️ A REAL MARKDOWN LINK, not the bare path. Both become a card — the paragraph rule
+      // takes a bare token too, which is how a standalone .mp4 path has been a player since the
+      // port — but only the link spelling has something to fall BACK to. A bare path is not a
+      // link in Markdown at all, so with the switch off it is the plain text it already was,
+      // and the promise worth testing here is the other one: turn the card off and the link the
+      // author wrote is exactly what is left.
+      const body = 'A line of prose first.\\n\\n[The practice sheet](' + pdf.url + ')'
+        + '\\n\\nhttps://nothing-known-about-this.test/page\\n\\nAnd a closing line.'
+      const made = await send('/api/posts', 'POST', {
+        title: 'Tour: link cards', slug, content: body, status: 'published',
+        date: new Date(Date.now() - 60000).toISOString(),
+      })
+      if (!made.ok) return 'could not make the post: ' + JSON.stringify(made.json)
+
+      // ⚠️ THE ARTICLE, NOT THE DOCUMENT. Every page carries the whole stylesheet inline, and
+      // that stylesheet names both card classes — so a search of the page TEXT for a class name
+      // is true whether or not any element wears it. The first cut of this flow did exactly
+      // that: three of its assertions passed against the CSS, and the fourth then failed saying
+      // an unknown URL had become a card when nothing of the kind had happened.
+      //
+      // (And no backticks in here: this whole script is one template literal. That is the same
+      // fault check:css-literal exists for, in a file that check does not read.)
+      // ⚠️ no-store, AND THAT IS ABOUT THE HARNESS RATHER THAN THE PRODUCT. A public page is
+      // served cache-control: public with a shared-cache window, so this tab is free to answer
+      // the second and third fetches of the same URL out of its own HTTP cache — which it did,
+      // and the flow reported that a card had survived its switch being turned off when what
+      // had survived was a copy of the page from two seconds earlier.
+      const read = async () => {
+        const res = await fetch('/' + slug, { cache: 'no-store' })
+        const text = await res.text()
+        const doc = new DOMParser().parseFromString(text, 'text/html')
+        const article = doc.querySelector('article')
+        return {
+          status: res.status,
+          bytes: text.length,
+          files: article ? article.querySelectorAll('.file-card').length : -1,
+          marks: article ? article.querySelectorAll('.link-card').length : -1,
+          links: article ? [...article.querySelectorAll('a')].map((a) => a.getAttribute('href')) : [],
+          kind: article ? article.querySelector('.file-card-kind')?.textContent?.trim() ?? '' : '',
+          name: article ? article.querySelector('.file-card-name')?.textContent?.trim() ?? '' : '',
+          // Carried so a failure says what the page actually held. A flow that reports only
+          // "expected one" sends the next reader back to the browser to find out what it got.
+          // ⚠️ ONE LINE. The tour prints a verdict per flow, so a message carrying a newline is
+          // a message cut off at it — which is how the first three attempts at this reported
+          // nothing but the opening tag. String.fromCharCode(10) rather than an escape: this
+          // whole script is a template literal, and a backslash-n in it is a real newline in
+          // the source the browser is handed, which is a syntax error inside a string.
+          // The LAST occurrence of this flow's own opening words: the first is in the meta
+          // description, and reporting that one says nothing about what the body rendered as.
+          saw: text.slice(Math.max(0, text.lastIndexOf('prose first')), text.lastIndexOf('prose first') + 400)
+            .split(String.fromCharCode(10)).join(' '),
+        }
+      }
+      let page = await read()
+      if (page.files === -1) return 'the published page has no article element'
+      if (page.files !== 1) {
+        return page.files + ' file card(s), expected one (HTTP ' + page.status + ', '
+          + page.bytes + ' bytes): ' + page.saw
+      }
+      if (!page.kind || !page.name) return 'the card is missing its kind or its name'
+      // ⚠️ THE OTHER LINK STAYS A LINK. Nothing is known about it, and that renders exactly as
+      // the feature being switched off renders — one fallback, not two.
+      if (page.marks !== 0) return page.marks + ' bookmark card(s) for a URL nothing is known about'
+      if (!page.links.some((h) => h && h.includes('nothing-known-about-this.test'))) {
+        return 'the unknown link vanished from the article'
+      }
+
+      // Now the switch, through the real settings route the admin's Save uses.
+      const off = await send('/api/settings', 'PUT', { features: { fileCards: false } })
+      if (!off.ok) return 'the settings save was refused'
+      await sleep(200)
+      page = await read()
+      if (page.files !== 0) return 'the card survived its switch being turned off'
+      if (!page.links.some((h) => h === pdf.url)) return 'turning the card off lost the link as well'
+
+      await send('/api/settings', 'PUT', { features: { fileCards: true } })
+      await sleep(200)
+      if ((await read()).files !== 1) return 'the card did not come back'
+      // ⚠️ PURGED, NOT TRASHED. A DELETE is a SOFT delete, so a flow that made a post and
+      // 'deleted' it leaves a row in the Trash for every flow after it — measured: the trash
+      // screen went from 28 rows to 29 the first time this ran. A flow that changes the shared
+      // instance puts it back, which is why the settings switch above is restored too.
+      await fetch('/api/posts/' + slug, { method: 'DELETE' })
+      await send('/api/trash', 'POST', { kind: 'posts', action: 'purge', ids: [slug] })
+      return 'ok card -> plain link -> card, and the unknown URL stayed a link throughout'
+    })()`, 2500))
+}

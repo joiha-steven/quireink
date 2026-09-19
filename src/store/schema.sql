@@ -561,3 +561,20 @@ create table if not exists reader_keys (
   created_at   integer not null,
   last_used_at integer not null
 );
+
+-- ADR 0058: what a link card says, one row per URL. `fetched_at` NULL is a row a save recorded
+-- and the minute tick has not reached yet; `ok = 0` after a fetch is one that was tried and
+-- yielded nothing, which renders exactly as a pending row does — the plain link. `image` is a
+-- path into this blog's own store, never a remote URL. `migrations.sql` (017-link-cards) has
+-- the reasoning in full; this is the same table, created fresh.
+create table if not exists link_cards (
+  url         text primary key,
+  title       text not null default '',
+  description text not null default '',
+  site        text not null default '',
+  image       text not null default '',
+  fetched_at  integer,
+  ok          integer not null default 0
+);
+create index if not exists link_cards_pending_idx on link_cards (url) where fetched_at is null;
+

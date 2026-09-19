@@ -60,6 +60,15 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   // like one. An install that already has a settings row keeps what it looked like — the
   // asymmetry is in `fromStored`, with its reasoning.
   bookText: true,
+  // ON for a new blog, OFF for one that already has a settings row — the same asymmetry
+  // `bookText` has, and `NEW_SINCE_INSTALLS_EXISTED` in `settings.ts` is now the one list
+  // of defaults that changed after this software had users (ADR 0058).
+  //
+  // The bookmark card is the one that reaches OUT: turning it on means a save fetches the
+  // page behind each new link, once, to learn its title and take a copy of its picture.
+  // That is a thing to be asked rather than told, which is what the asymmetry is for.
+  bookmarkCards: true,
+  fileCards: true,
   bookMode: true,
   readNext: true,
   resume: true,

@@ -185,6 +185,24 @@ function resolveLook(stored: Partial<SiteSettings> & { ideChrome?: unknown }): S
 let cachedRaw: string | null = null
 let cachedSettings: SiteSettings | null = null
 
+
+/**
+ * The feature defaults that CHANGED after this software already had installs.
+ *
+ * A blog with a settings row answered these questions by never being asked them, so it keeps
+ * the old answer; a blog with no row at all is one nobody has configured, and gets today's.
+ * `fromStored` is where the two meet.
+ *
+ * ⚠️ THE VALUES HERE ARE THE OLD ANSWERS, not the new ones. `DEFAULT_FEATURES` holds what a
+ * new blog gets; this holds what an existing blog is left alone with, which is why every entry
+ * reads `false` and why adding one is a decision rather than a rename.
+ */
+const NEW_SINCE_INSTALLS_EXISTED = {
+  bookText: false,
+  bookmarkCards: false,
+  fileCards: false,
+} as const
+
 /** Only for tests that swap the database file under a live process. */
 export function resetSettingsCache(): void {
   cachedRaw = null
@@ -270,12 +288,16 @@ export async function getSettings(): Promise<SiteSettings> {
       })(),
       seo: { ...seo, ogFallbackImage: expandBlob(seo.ogFallbackImage) },
       /**
-       * `bookText` is the one feature whose DEFAULT changed after installs existed, and a
-       * default that changes is a redesign of every blog that never answered the question.
-       * So the new answer is for new blogs: no settings row at all is an install nobody has
-       * configured, and a row is a blog with a look of its own to keep.
+       * THE DEFAULTS THAT CHANGED AFTER INSTALLS EXISTED, and a default that changes is a
+       * redesign of every blog that never answered the question. So the new answer is for new
+       * blogs: no settings row at all is an install nobody has configured, and a row is a blog
+       * with a look of its own to keep.
+       *
+       * It was one key inline (`bookText`) until the link cards arrived. A list with a name is
+       * the difference between "this feature had a reason" and "somebody added a key to an
+       * object literal" — and the next one goes here rather than beside it.
        */
-      features: sanitizeFeatures(stored.features, had ? { ...DEFAULT_FEATURES, bookText: false } : DEFAULT_FEATURES),
+      features: sanitizeFeatures(stored.features, had ? { ...DEFAULT_FEATURES, ...NEW_SINCE_INSTALLS_EXISTED } : DEFAULT_FEATURES),
       home: sanitizeHome(stored.home, DEFAULT_SETTINGS.home),
       figure: sanitizeFigure(stored.figure, DEFAULT_FIGURE),
       gallery: sanitizeGallery(stored.gallery, DEFAULT_GALLERY),

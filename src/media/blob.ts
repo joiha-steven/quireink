@@ -27,9 +27,20 @@ const STORE_PREFIX_ATTR_RE = new RegExp(`((?:src|href)=["'])${STORE_PREFIX}`, 'g
 // external links + body text outside link/src/href positions untouched).
 function expandWith(base: string, s: string): string {
   if (/^(media|files)\//.test(s)) return `${base}/${s}`
+  // ⚠️ `files/` AS WELL AS `media/`, and this line said `media/` alone until 2026-09-19 while
+  // the comment above it named both. `collapseBlob` strips the prefix from ANY `/uploads/…`,
+  // so a post carrying `[the sheet](/uploads/files/report.pdf)` was STORED as
+  // `](files/report.pdf)` and read back exactly that way: a relative href, resolved by the
+  // browser against the post's own address, pointing at a file that is not there. Every
+  // download link an owner wrote into a post was broken, on every install, and nothing said so
+  // — a link that 404s looks like a link until somebody presses it.
+  //
+  // Found by a tour flow for the file card (ADR 0058), which asked for the link back after
+  // switching the card off and got a path instead. The single-URL branch above always handled
+  // both, which is why `FileItem.url` reads correctly everywhere and only bodies were wrong.
   return s
-    .replace(/(\]\()(media\/[^)\s]+)/g, (_m, a, p) => `${a}${base}/${p}`)
-    .replace(/((?:src|href)=["'])(media\/[^"']+)/g, (_m, a, p) => `${a}${base}/${p}`)
+    .replace(/(\]\()((?:media|files)\/[^)\s]+)/g, (_m, a, p) => `${a}${base}/${p}`)
+    .replace(/((?:src|href)=["'])((?:media|files)\/[^"']+)/g, (_m, a, p) => `${a}${base}/${p}`)
 }
 
 // --- Public URL helpers (pure) ---------------------------------------------------

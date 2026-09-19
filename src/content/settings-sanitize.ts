@@ -123,6 +123,8 @@ export function sanitizeFeatures(input: unknown, fallback: FeatureSettings): Fea
     categoryLabel: bool(o.categoryLabel, fallback.categoryLabel),
     deck: bool(o.deck, fallback.deck),
     bookText: bool(o.bookText, fallback.bookText),
+    bookmarkCards: bool(o.bookmarkCards, fallback.bookmarkCards),
+    fileCards: bool(o.fileCards, fallback.fileCards),
     penUnderline: bool(o.penUnderline, fallback.penUnderline),
     penRing: bool(o.penRing, fallback.penRing),
     penLists: bool(o.penLists, fallback.penLists),

@@ -15,19 +15,13 @@ import { CHECK } from '@/admin-shared/kit'
 import { NOTE_TEXT, TAP } from '@/admin-shared/scale'
 import { emptyState, selectionBar } from '@/web/admin/kit'
 import { dropWell } from '@/web/admin/screens/media-images'
+import { fileKind } from '@/media/files'
 
 const FRAME = 'divide-y divide-neutral-200 overflow-hidden rounded-lg border border-neutral-200'
   + ' dark:divide-neutral-800 dark:border-neutral-800'
 
 const QUIET = 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white'
 
-/** Short uppercase tag from the filename extension, or the MIME subtype when it has none. */
-function ext(f: FileItem): string {
-  const dot = f.filename.lastIndexOf('.')
-  if (dot >= 0 && dot < f.filename.length - 1) return f.filename.slice(dot + 1).toUpperCase()
-  const sub = f.contentType.split('/')[1]
-  return (sub || 'FILE').toUpperCase().slice(0, 5)
-}
 
 const meta = (f: FileItem, lang: SiteLang): string =>
   `${escapeHtml(formatBytes(f.size))} · ${escapeHtml(formatDate(f.uploadedAt, lang))}`
@@ -55,7 +49,7 @@ function fileRow(t: AdminStrings, lang: SiteLang, f: FileItem, managed: boolean)
     + ` data-file="${escapeAttr(f.url)}">`
     + (managed ? '' : tickBox(f, ''))
     + `<span class="flex h-9 w-12 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-xs`
-    + ` font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">${escapeHtml(ext(f))}</span>`
+    + ` font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">${escapeHtml(fileKind(f))}</span>`
     + `<div class="min-w-0 flex-1">`
     + `<p class="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200"`
     + ` title="${escapeAttr(f.filename)}">${escapeHtml(f.filename)}</p>`

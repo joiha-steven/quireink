@@ -75,7 +75,7 @@ bun src/index.ts
 
 | The part | What it does |
 |:---|:---|
-| 🖋️&nbsp;**Writing** | A real editor over Markdown, and the Markdown engine is ours: one parse renders the page, opens the editor, saves it back and cuts the excerpt. Tables, video, footnotes, callouts, mathematics. A dropped image is cut for every screen and can hold the column, float, join a gallery or wear a paper mat. Saves as you type, keeps three versions, holds a post until Tuesday |
+| 🖋️&nbsp;**Writing** | A real editor over Markdown, and the Markdown engine is ours: one parse renders the page, opens the editor, saves it back and cuts the excerpt. Tables, video, footnotes, callouts, mathematics. A link alone on its own line becomes a preview card — the page's title, what it is about, its picture kept as your own copy — or, for one of your own uploads, a card naming the file and its size. A dropped image is cut for every screen and can hold the column, float, join a gallery or wear a paper mat. Saves as you type, keeps three versions, holds a post until Tuesday |
 | 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. [How it works](./docs/homepage.md) |
 | 🎨&nbsp;**Looks** | Four: plain paper, source code, a newspaper that numbers its own sections, a notebook ruled at your leading. Over that, six palettes in light and dark and four reading fonts. Every size comes from a role, so one change moves the whole page |
 | 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint, from a seeded hand that inks unevenly so no two strokes share a shape. Any site may link `/pen.css` and write with your inks |

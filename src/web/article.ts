@@ -17,6 +17,8 @@ import { heroImage, byline, authorBox } from '@/web/article-blocks'
 import { getSeriesForPost } from '@/content/series'
 import { collapseBlob } from '@/media/blob'
 import { renderPostContent } from '@/render/post-content'
+import { standaloneUrls } from '@/render/link-cards'
+import { cardFacts, noteLinks } from '@/content/link-cards'
 import type { ImageDims, ReadyOriginals } from '@/render/figures'
 import { extractHeadings } from '@/utils'
 import { langOf, siblingsOf } from '@/content/translations'
@@ -80,9 +82,16 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   if (!item) return null
 
   const { ready, dims } = await mediaFacts()
+  const cards = await cardFacts(settings)
   const body = await renderPostContent({
-    markdown: item.content, readyOriginals: ready, imageDims: dims,
+    markdown: item.content, readyOriginals: ready, imageDims: dims, cards,
   })
+  // ⚠️ THE FINISHED BODY, not the markdown, and that is what makes this self-selecting: every
+  // link that BECAME a card is gone from it, so what is left is exactly the links nothing is
+  // known about yet. They are written down (no network, one `insert or ignore` each) and the
+  // minute tick reads them — ADR 0058. A page render is itself cached (Invariant 1), so this
+  // runs once per piece per write rather than once per reader.
+  noteLinks(standaloneUrls(body), settings.siteUrl)
 
   // The other languages this piece exists in, and the line a reader presses. Read once, used
   // by both headers below and by `articleHead` further down.

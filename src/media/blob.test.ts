@@ -76,3 +76,37 @@ describe('blob store-relative refs (collapse <-> expand)', () => {
     expect(blobUrl('media/x.webp')).toBe(`${BASE}/media/x.webp`)
   })
 })
+
+describe('a link to an uploaded FILE survives the round trip', () => {
+  // ⚠️ THE BUG THIS PINS SHIPPED, and it was silent. `collapseBlob` strips the `/uploads/`
+  // prefix from any store path, so `[the sheet](/uploads/files/report.pdf)` was STORED as
+  // `](files/report.pdf)` — and `expandBlob` only put `media/` back. What a reader got was a
+  // relative href resolved against the post’s own address: `/an-essay/files/report.pdf`,
+  // which is not a file. Every download link written into a post was broken on every install.
+  //
+  // The pair is tested as a ROUND TRIP rather than as two behaviours, because that is the
+  // property Invariant 3 actually promises: what goes in comes back out, whatever the store
+  // prefix is today.
+  const trip = (s: string): string => expandBlob(collapseBlob(s))
+
+  it('brings a markdown link back, for a file and for an image alike', () => {
+    expect(trip('See [the sheet](/uploads/files/report.pdf) for more.'))
+      .toBe('See [the sheet](/uploads/files/report.pdf) for more.')
+    expect(trip('![alt](/uploads/media/photo.jpg)')).toBe('![alt](/uploads/media/photo.jpg)')
+  })
+
+  it('brings an href and a src back', () => {
+    expect(trip('<a href="/uploads/files/report.pdf">x</a>'))
+      .toBe('<a href="/uploads/files/report.pdf">x</a>')
+    expect(trip('<img src="/uploads/media/photo.jpg">')).toBe('<img src="/uploads/media/photo.jpg">')
+  })
+
+  it('leaves somebody else\u2019s uploads path alone, which is what anchoring is for', () => {
+    // The counter-test, and the reason the patterns are anchored at all: every WordPress site
+    // serves its pictures from `/wp-content/uploads/…`, and an unanchored rule rewrote imported
+    // posts to point at files that do not exist.
+    const theirs = 'See [a photo](https://theirs.example/wp-content/uploads/2024/x.jpg).'
+    expect(trip(theirs)).toBe(theirs)
+  })
+})
+

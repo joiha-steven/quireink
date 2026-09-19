@@ -29,6 +29,47 @@ describe('the print sheet', () => {
     expect(PRINT).toContain('@page{')
   })
 
+  it('is the ONLY print block, which is what lets the rest of this file work', () => {
+    // ⚠️ THIS TEST'S METHOD IS THE ASSUMPTION. `AT` is an `indexOf`, so a second `@media print`
+    // written into a component sheet earlier in the file silently redefines PRINT as "everything
+    // from there to the end" — every screen rule after it, and every COMMENT, read as a print
+    // rule. Measured 2026-09-19: `card.css.ts` shipped six print rules of its own and this file
+    // reported nine unused selectors, three of which were sentences.
+    //
+    // So the rule is one print block, last, and it is asserted rather than described. Print is
+    // the one kind of rule that fails in silence — nobody prints a page to check a refactor —
+    // and keeping every such rule in one file is what makes it possible to read them all.
+    // The COUNT, not the absence of the words: a comment may well discuss print, and this file's
+    // own `card.css.ts` note does. What must be unique is the block.
+    expect([...PUBLIC_CSS.matchAll(/@media print\{/g)].length).toBe(1)
+  })
+
+  it('has NOTHING outside its own media block, which is how a print rule reaches a screen', () => {
+    // ⚠️ MEASURED 2026-09-19. Six card rules were appended to `print.css.ts` and landed AFTER
+    // the `}` that closes its media block — so `border:0` and two `display:none!important`
+    // applied to every reader on every screen, and the card they were written for was drawn
+    // flat, with no frame and no picture, in every browser. Nothing failed: the sheet is valid
+    // CSS, the selectors are all in use, and the test above was satisfied.
+    //
+    // A print sheet is the one file where appending to the end is the natural thing to do and
+    // the wrong thing to do, so the shape is asserted rather than described in a comment.
+    // The media block's OWN closing brace, found by balancing from its `{`. The first cut of
+    // this test read the LAST `}` in the sheet and asked what followed it — which is empty
+    // whatever you append, because what you appended ends in a brace too. It passed against the
+    // very mutation it was written for.
+    let depth = 0
+    let end = -1
+    for (let i = AT; i < PUBLIC_CSS.length; i++) {
+      if (PUBLIC_CSS[i] === '{') depth += 1
+      else if (PUBLIC_CSS[i] === '}') {
+        depth -= 1
+        if (depth === 0) { end = i; break }
+      }
+    }
+    expect(end).toBeGreaterThan(AT)
+    expect(PUBLIC_CSS.slice(end + 1).trim()).toBe('')
+  })
+
   it('silences only selectors this site actually uses', async () => {
     await savePost({
       title: 'On paper', content: 'A body, and [a link](https://example.com/x).',

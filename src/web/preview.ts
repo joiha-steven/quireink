@@ -14,6 +14,8 @@ import { getSettings } from '@/content/settings'
 import { verifyPreview } from '@/content/preview'
 import { formatDate, t } from '@/i18n/i18n'
 import { renderPostContent } from '@/render/post-content'
+import { standaloneUrls } from '@/render/link-cards'
+import { cardFacts, noteLinks } from '@/content/link-cards'
 import { renderDocument, pageStyles } from '@/web/layout'
 import { PUBLIC_SHEET } from '@/web/assets'
 
@@ -32,7 +34,10 @@ export async function handlePreview(c: Context): Promise<Response> {
   const entry = post ?? page
   if (!entry) return c.text('Not found', 404)
 
-  const body = await renderPostContent({ markdown: entry.content })
+  // A DRAFT's links are noted too, so the cards are already fetched by the time it publishes
+  // — the same reason the preview renders through the same pipeline as the published page.
+  const body = await renderPostContent({ markdown: entry.content, cards: await cardFacts(settings) })
+  noteLinks(standaloneUrls(body), settings.siteUrl)
   const meta = post
     ? `<p class="meta"><time datetime="${escapeAttr(post.date)}">${
         escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time></p>`

@@ -16,6 +16,10 @@ import { buildFigures, groupGalleries, type ImageDims, type ReadyOriginals } fro
 import { toHtml as mdToHtml } from '@/md/index'
 import { PAGE } from '@/render/page-rules'
 import { videoEmbed, videoFileUrl } from '@/render/video'
+import {
+  bookmarkCard, fileCard, NO_CARDS, ownPath, standalone, type CardFacts,
+} from '@/render/link-cards'
+import { formatBytes } from '@/i18n/format'
 import { highlightCode } from '@/render/highlight'
 import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
 import { prepareFootnotes, applyFootnotes } from '@/render/footnotes'
@@ -124,13 +128,15 @@ function dedupeHeadingIds(html: string): string {
 // has run; videoFileUrl only passes http(s)/root-relative URLs, and the quote
 // strip keeps the (already-escaped) URL from breaking out of the src attribute.
 function buildVideos(html: string): string {
-  return html.replace(
-    /<p>\s*(?:<a\b[^>]*href="([^"]+)"[^>]*>[^<]*<\/a>|([^<\s]+))\s*<\/p>/g,
-    (whole, hrefUrl?: string, textUrl?: string) => {
-      const raw = (hrefUrl || textUrl || '').trim()
-      // A trailing `#wide` fragment sizes the player like an img-wide figure (nose into
-      // the gutter on wide screens); strip it before URL detection. Mirrors image sizing.
-      const [url, frag = ''] = raw.split('#')
+  // ⚠️ THE PARAGRAPH RULE LIVES IN `render/link-cards.ts` NOW, and is read from there by this
+  // pass and by both card passes. Three regular expressions over one shape agree on the day
+  // they are written: a fragment or a spelling handled in one and not the others is a URL that
+  // becomes a player and never a card, with nothing failing anywhere to say so.
+  //
+  // A trailing `#wide` sizes the player like an img-wide figure (nose into the gutter on wide
+  // screens), which is why the rule hands the fragment over separately.
+  return standalone(html, (url, frag, whole) => {
+    {
       const wide = /wide/.test(frag) ? ' video-wide' : ''
       const f = videoFileUrl(url)
       if (f) {
@@ -143,8 +149,34 @@ function buildVideos(html: string): string {
       if (v.kind === 'spotify' || v.kind === 'applemusic')
         return `<div class="audio-embed"><iframe src="${v.embed}" loading="lazy" allow="encrypted-media; clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
       return `<div class="video-embed${wide}"><iframe src="${v.embed}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
-    },
-  )
+    }
+  })
+}
+
+/**
+ * A standalone link that is NOT a player: a bookmark card, a download card, or left alone.
+ *
+ * ⚠️ AFTER `buildVideos`, and the order is the whole of the priority rule. A YouTube URL is a
+ * player and has been since the port; reaching it first here would replace an embed with a
+ * preview card on every existing blog that had one, which is not a feature anybody switched on.
+ *
+ * NOTHING HERE READS A SETTING. A switch that is off arrives as an empty map, which is the same
+ * thing as "nobody has looked this URL up yet" and the same thing as "the fetch found nothing" —
+ * one fallback, the plain link, reached three ways.
+ */
+function buildCards(html: string, facts: CardFacts): string {
+  if (facts.bookmarks.size === 0 && facts.files.size === 0) return html
+  return standalone(html, (url, _frag, whole) => {
+    const own = ownPath(url, facts.site)
+    if (own) {
+      // One of this blog's own addresses. An upload gets a download card; a link to another
+      // POST stays a link, because a card is for leaving and that one is not.
+      const file = facts.files.get(own)
+      return file ? fileCard(url, file, formatBytes(file.size)) : whole
+    }
+    const mark = facts.bookmarks.get(url)
+    return mark ? bookmarkCard(url, mark) : whole
+  })
 }
 
 /**
@@ -167,19 +199,42 @@ function buildVideos(html: string): string {
  * per post per deploy, which the cache warmer absorbs in the background. A hand-maintained
  * version constant would have been free and would eventually have been forgotten.
  */
-function bodyKey(markdown: string, ready: ReadyOriginals, dims: ImageDims): string {
+/**
+ * The cards this body actually mentions, and nothing else.
+ *
+ * ⚠️ NARROWED, WHERE THE MEDIA FACTS ARE NOT, and the difference is how often each changes. The
+ * image maps are passed whole and digested whole, so an upload re-renders every body — a cost
+ * the cache warmer absorbs because uploads are occasional. A link is not: a URL is noted on
+ * nearly every save, and a whole-table digest would mean every post on the blog re-rendering
+ * each time any post gained a link. So the key sees only the rows this markdown names.
+ */
+function usedCards(markdown: string, facts: CardFacts): CardFacts {
+  const keep = <T>(map: ReadonlyMap<string, T>): Map<string, T> =>
+    new Map([...map].filter(([url]) => markdown.includes(url)))
+  return { bookmarks: keep(facts.bookmarks), files: keep(facts.files), site: facts.site }
+}
+
+function bodyKey(markdown: string, ready: ReadyOriginals, dims: ImageDims, cards: CardFacts): string {
   const media = [...dims].map(([k, v]) => `${k}:${v.width}x${v.height}`).sort().join(',')
   // The VERSION is part of the key, not just the membership: an image upgraded from two
   // widths to three changes the srcset this body prints, and a cached body keyed only on
   // "has variants" would go on serving the old one until something unrelated evicted it.
   const variants = [...ready].map(([k, v]) => `${k}:${v}`).sort().join(',')
-  return renderKey('body', buildSha() ?? 'dev', variants, media, markdown)
+  // What each card would SAY, not merely which URLs are known: a title corrected on the far
+  // side changes the words on this page, and a key that only counted the rows would go on
+  // printing the old one until something unrelated evicted it. Same reasoning as `variants`
+  // carrying the version rather than the membership, two lines up.
+  const marks = [...cards.bookmarks]
+    .map(([u, b]) => `${u}|${b.title}|${b.description}|${b.site}|${b.image}`).sort().join(',')
+  const files = [...cards.files].map(([u, f]) => `${u}|${f.name}|${f.size}|${f.kind}`).sort().join(',')
+  return renderKey('body', buildSha() ?? 'dev', variants, media, cards.site, marks, files, markdown)
 }
 
 export async function renderPostContent({
   markdown,
   readyOriginals = new Map(),
   imageDims = new Map(),
+  cards = NO_CARDS,
 }: {
   markdown: string
   // Collapsed pathnames (media/x.jpg) whose AVIF/WebP variants exist. Images not
@@ -187,14 +242,18 @@ export async function renderPostContent({
   readyOriginals?: ReadyOriginals
   // Intrinsic width/height per collapsed pathname (for CLS-free rendering).
   imageDims?: ImageDims
+  // What a standalone link may become (ADR 0058). Empty maps = every link stays a link,
+  // which is what an install with both switches off hands over.
+  cards?: CardFacts
 }): Promise<string> {
-  const key = bodyKey(markdown, readyOriginals, imageDims)
+  const used = usedCards(markdown, cards)
+  const key = bodyKey(markdown, readyOriginals, imageDims, used)
   const hit = readRendered(key)
   if (hit !== null) return hit
   // Pull footnote refs/defs out of the markdown FIRST (references become placeholders
   // that survive marked), then re-insert the <sup> links + list after rendering.
   const fn = prepareFootnotes(markdown)
-  const parsed = dedupeHeadingIds(wrapTables(buildVideos(groupGalleries(buildFigures(buildCallouts(markTaskItems(mdToHtml(fn.markdown, PAGE))), readyOriginals, imageDims)))))
+  const parsed = dedupeHeadingIds(wrapTables(buildCards(buildVideos(groupGalleries(buildFigures(buildCallouts(markTaskItems(mdToHtml(fn.markdown, PAGE))), readyOriginals, imageDims))), used)))
   const html = applyFootnotes(await highlightBlocks(parsed), fn.refs, fn.defs)
   writeRendered(key, html)
   return html

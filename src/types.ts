@@ -107,6 +107,8 @@ export type FeatureSettings = {
   categoryLabel: boolean // category name in the meta line of cards and post headers
   deck: boolean // the excerpt shown as a standfirst under a post title
   bookText: boolean // running text set like a book: first-line indent, justified >=600px
+  bookmarkCards: boolean // a paragraph holding nothing but a link becomes a preview card: the target's title, its description and its picture, all fetched ONCE at save time and kept in this blog's own store, so a reader still loads nothing from anybody else (ADR 0058)
+  fileCards: boolean // a paragraph holding nothing but a link to an uploaded file becomes a download card: the name, the kind and the size, read from this blog's own `files` table. No fetch, nothing remote
   penUnderline: boolean // ++text++ drawn as a hand-drawn pen line; off = the browser's straight underline
   penRing: boolean // @@word@@ drawn as a ballpoint ring; off = the words stay plain
   penLists: boolean // list markers by the pen: ink dots, level dashes, handwritten numerals; off = the browser's disc and decimal

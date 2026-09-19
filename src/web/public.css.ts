@@ -35,6 +35,7 @@ import { FRONT_CSS } from '@/web/front.css'
 import { UTILITY_CSS } from '@/web/utility.css'
 import { ARCHIVE_CSS } from '@/web/archive.css'
 import { FIGURE_CSS } from '@/web/figure.css'
+import { CARD_CSS } from '@/web/card.css'
 import { POST_IMAGE_CSS } from '@/web/postimage.css'
 import { PRINT_CSS } from '@/web/print.css'
 
@@ -240,6 +241,7 @@ article > header .post-langs{margin-top:.75rem}
 article + .subscribe-card,article + #comments{margin-top:2.5rem}
 
 ${PROSE_CSS}
+${CARD_CSS}
 
 /* An archive heading is chrome, not the reader's words: it stays in --font-sans and it is
    BOLD, where a post title is 600. Both come from the frozen tree's own markup. */
@@ -318,13 +320,6 @@ aside.series li[aria-current]::after{content:"";position:absolute;left:-2.75rem;
   width:2px;background:var(--c-accent)}
 p.tags{margin-top:1.5rem;font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small);color:var(--c-meta)}
-
-
-.video-embed,.video-file{margin:calc(var(--sp) * 2) 0}
-.video-embed{position:relative;padding-top:56.25%}
-.video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.video-file video{width:100%;display:block}
-.audio-embed iframe{width:100%;height:9.25rem;border:0}
 
 .callout{border-left:2px solid var(--c-accent);
   padding:calc(var(--sp) * .75) 0 calc(var(--sp) * .75) var(--sp);

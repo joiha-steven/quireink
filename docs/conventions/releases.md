@@ -54,6 +54,15 @@ On any behavior change, update the matching doc in the SAME change:
   bug, and it surprises somebody. A paragraph that lists only what was added is an advertisement; the limits are what make it a
   release note.
 
+- **A feature that arrives SWITCHED OFF has to be named in the release note.** Some defaults
+  change after this software already has installs, and an existing blog is deliberately left
+  with the old answer (`NEW_SINCE_INSTALLS_EXISTED` in `content/settings.ts` is the list). That
+  asymmetry is right — an upgrade must not silently redraw somebody's writing — and it has one
+  cost: **the default they were given is the only answer they will ever have unless something
+  tells them there was a question.** So a release carrying one of these says, in the feature's
+  own `###`, that it is off on an existing blog and where the switch is. Checkable: every key in
+  that constant was introduced by some release, and that release's note should name it.
+
 - **The shape of a release note.** Owner's instruction, 2026-09-10, after all 37 past releases
   were rewritten to it. Both halves are checkable, so check them.
 

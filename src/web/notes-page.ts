@@ -11,6 +11,8 @@
 import { getSettings } from '@/content/settings'
 import { getNote, getPublicNotes } from '@/content/notes'
 import { renderPostContent } from '@/render/post-content'
+import { standaloneUrls } from '@/render/link-cards'
+import { cardFacts, noteLinks } from '@/content/link-cards'
 import { listingPage } from '@/web/listing-page'
 import { formatDate, t } from '@/i18n/i18n'
 import { clampExcerpt, escapeAttr, escapeHtml, fill, isPublicallyVisible, toPlainText } from '@/utils'
@@ -63,7 +65,10 @@ export async function renderNotePage(slug: string): Promise<string | null> {
   const s = t(settings.language)
   const note = await getNote(slug)
   if (!note || !isPublicallyVisible(note.status, note.date)) return null
-  const body = await renderPostContent({ markdown: note.content })
+  const body = await renderPostContent({ markdown: note.content, cards: await cardFacts(settings) })
+  // A clip is a passage kept FROM somewhere, so a note is the piece most likely to hold a
+  // standalone link. Same rule as an article's: what is still a plain link gets written down.
+  noteLinks(standaloneUrls(body), settings.siteUrl)
   const title = note.title || note.sourceTitle || note.slug
   // The passage a clip kept, before the owner's words: a blockquote in the reading face,
   // so the pen's marks can land on it like on any paragraph.

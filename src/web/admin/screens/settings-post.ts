@@ -59,6 +59,10 @@ const body = (t: AdminStrings, f: FeatureSettings): string => switches(f, [
   { k: 'penRing', label: t.featPenRing, note: t.featPenRingDesc },
   { k: 'penLists', label: t.featPenLists, note: t.featPenListsDesc },
   { k: 'bookText', label: t.featBookText, note: t.featBookTextDesc },
+  // ADR 0058. Both are ON for a new blog and OFF for one that already had a settings row, so an
+  // upgrade never silently redraws somebody's writing — `NEW_SINCE_INSTALLS_EXISTED`.
+  { k: 'bookmarkCards', label: t.featBookmarkCards, note: t.featBookmarkCardsDesc },
+  { k: 'fileCards', label: t.featFileCards, note: t.featFileCardsDesc },
   { k: 'bookMode', label: t.featBookMode, note: t.featBookModeDesc },
 ])
 

@@ -256,6 +256,28 @@ all from one parse. Four libraries used to answer those five questions separatel
   differs from `date`, so a post that was never saved again does not claim it was edited on
   the day it appeared. See [`seo-pwa.md`](../seo-pwa.md).
 
+## A link alone on its line — `src/render/link-cards.ts`, ADR 0058
+
+- **One rule finds the paragraph:** a `<p>` whose whole content is one link, or one bare URL.
+  Three passes read it — the video embed, the bookmark card and the file card — in that order,
+  because a YouTube URL has been a player since the port and must not become a thumbnail.
+- **Bookmark card** (`features.bookmarkCards`): the target's title, description and picture. The
+  markdown stays a bare URL. A render that meets an unknown link writes the URL down; the minute
+  tick reads five pages at a time, **once ever**, through `safeFetch`; the picture is re-encoded
+  to one 400px WebP under `cards/` in this blog's own store, so a reader still loads nothing from
+  a third party. Everything the far server said is escaped on the way OUT, in
+  [`render/link-cards.ts`](../../src/render/link-cards.ts), never on the way in.
+- **File card** (`features.fileCards`): a link to one of this blog's own `/uploads/files/…`
+  becomes the file's name, `fileKind` and size, read from the `files` table. Nothing is fetched,
+  and no `download` attribute is set — `web/uploads.ts` already decides that in its
+  `content-disposition`.
+- **The switch stops the FETCH, not just the drawing.** `sweepLinkCards` declines outright while
+  `features.bookmarkCards` is off; noting a URL stays unconditional, so switching it on later
+  fills in the backlog with no re-saving.
+- **Both OFF on a blog that already has a settings row** (`NEW_SINCE_INSTALLS_EXISTED`), ON for a
+  new one. A URL nobody has read, a page that refused, and the switch being off all render the
+  same way: the plain link the paragraph already was.
+
 ## Library: Videos tab + self-hosted video — `screens/media-files.ts`, `src/render/video.ts`
 
 - The Library page has THREE tabs ([`screens/media.ts`](../../src/web/admin/screens/media.ts),

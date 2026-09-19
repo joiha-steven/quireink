@@ -59,7 +59,8 @@ held up and are the working account.
 | File | Holds |
 |---|---|
 | [spec/00-rationale.md](spec/00-rationale.md) | Why 2.0 exists, the non-goals, the numbered parity exceptions, the risks taken |
-| [spec/01-schema.md](spec/01-schema.md) | The SQLite schema and the full Postgres → SQLite mapping. **Reference** |
+| [spec/01-schema.md](spec/01-schema.md) | The SQLite schema as it stands: conventions, every table, the migration ledger. **Reference** |
+| [spec/01-schema-port.md](spec/01-schema-port.md) | What the Postgres features became: the array columns, the `tsvector` search, the six SQL functions |
 | [spec/02-structure.md](spec/02-structure.md) | Module layout, request flow, the seven invariants in full. **Reference** |
 | [spec/03-golden.md](spec/03-golden.md) | The rendering contract: fixtures, capture, and what a diff means |
 | [spec/04-frontend.md](spec/04-frontend.md) | Server-rendered HTML, the island model, the CSS split. **Reference** |

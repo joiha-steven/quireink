@@ -316,3 +316,41 @@ alter table posts add column lang text;
 alter table posts add column tr_group text;
 alter table pages add column lang text;
 alter table pages add column tr_group text;
+
+-- migration: 017-link-cards
+-- ADR 0058: a paragraph holding nothing but a link becomes a card, and what the card SAYS is
+-- kept here rather than in the post. The markdown stays a bare URL — portable, exportable, and
+-- the same line every other renderer in the world reads as a link — which is the same bargain
+-- the video embed has made since the port.
+--
+-- ONE ROW PER URL, NOT PER MENTION. Two posts linking the same article share the fetch, the
+-- stored picture and the title. The url IS the key, so nothing has to be cleaned up when a post
+-- that mentioned it is edited or deleted; a row costs a few hundred bytes and answers for every
+-- post that ever links there again.
+--
+-- `fetched_at` NULL MEANS PENDING, and that is the whole scheduling design. A save does not
+-- reach out — it writes the URLs it saw with `insert or ignore` and returns, so saving a post
+-- never waits on somebody else's server and a test never touches the network. The minute tick
+-- takes the pending rows and fetches them, exactly as media variants are finalised off the
+-- upload path. A card therefore appears within a minute of the save rather than during it.
+--
+-- `ok = 0` after a fetch means it was tried and yielded nothing useful — a 404, a page with no
+-- title, a refusal. The row STAYS, so the fetch is not retried on every save forever, and the
+-- paragraph renders as the plain link it already was. That is also exactly what the renderer
+-- does for a row that has not been fetched yet, so there is one fallback and not two.
+--
+-- `image` is a path into THIS blog's own store, never a remote URL. A card that hotlinked its
+-- picture would put a third-party request on a reader's page, which is the one thing the
+-- reading side of this product does not do.
+create table if not exists link_cards (
+  url         text primary key,
+  title       text not null default '',
+  description text not null default '',
+  site        text not null default '',
+  image       text not null default '',
+  fetched_at  integer,
+  ok          integer not null default 0
+);
+-- A PARTIAL index, so the minute tick's "is there anything to do" costs one lookup in an index
+-- holding only the rows that are waiting — on a blog with nothing pending it is empty.
+create index if not exists link_cards_pending_idx on link_cards (url) where fetched_at is null;

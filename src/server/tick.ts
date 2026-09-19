@@ -20,6 +20,7 @@ import { sweepScheduled, PUBLISH_TICK_LOOKBACK_MS, HOURLY_LOOKBACK_MS } from '@/
 import { maybeRunBackup } from '@/server/backup'
 import { purgeEdge } from '@/server/edge-cache'
 import { clearCache } from '@/server/cache'
+import { sweepLinkCards } from '@/server/link-fetch'
 
 export type FullTick = {
   purged: boolean
@@ -39,10 +40,19 @@ export type FullTick = {
 }
 
 /**
- * The frequent tick: flip due scheduled posts live, and nothing else.
+ * The frequent tick: flip due scheduled posts live, and read a few link cards.
  *
  * Its lookback matches its cadence. One indexed query when there is nothing due, which is
  * why it can afford to run every minute on a clock the operator did not have to configure.
+ *
+ * ⚠️ THE LINK SWEEP IS HERE AND NOT ON THE HOUR because of what it is for: an owner publishes
+ * a post with a link in it and looks at the page. An hour is long enough that the card would
+ * read as broken rather than as coming. It keeps the tick's character — its "anything to do?"
+ * is one lookup in a PARTIAL index holding only rows nobody has read yet, so on a blog with
+ * nothing waiting it is empty and the query costs what the one above costs.
+ *
+ * It is deliberately NOT in `FullTick`'s report. A count of pages read is not a maintenance
+ * figure the owner is being shown, and the hourly summary is that report.
  */
 export async function publishTick(): Promise<number> {
   // The cheapest possible read, which doubles as a liveness probe for whoever called this
@@ -50,6 +60,13 @@ export async function publishTick(): Promise<number> {
   one<{ id: number }>(`select id from settings limit 1`)
   const published = await sweepScheduled(PUBLISH_TICK_LOOKBACK_MS)
   if (published > 0) clearCache()
+  // Isolated: a link nobody can reach must not stop a post going live at the minute it was
+  // scheduled for, which is the one thing this tick exists to do.
+  try {
+    await sweepLinkCards()
+  } catch (error) {
+    console.error(`[ERROR] tick.linkCards: ${(error as Error).message}`)
+  }
   return published
 }
 

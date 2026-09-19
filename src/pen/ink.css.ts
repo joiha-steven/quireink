@@ -276,8 +276,16 @@ export const LINK_INK_CSS = `
 .dark .prose a{background-image:${penDash(PEN_AUX_DARK.graphite)}}
 .dark .prose a:hover,.dark .prose a:focus-visible{background-image:${penSolidRule(PEN_AUX_DARK.graphite)}}
 /* A footnote marker and a heading anchor are not prose links and must not be underlined:
-   the first is a superscript numeral, the second is the heading itself. */
-.prose a.fn-ref,.prose sup a,.prose h1 a,.prose h2 a,.prose h3 a,.prose h4 a,.prose h5 a{
+   the first is a superscript numeral, the second is the heading itself.
+   
+   A LINK CARD IS THE THIRD (ADR 0058), and it was found by looking rather than by a test. The
+   card is one anchor around a whole bordered block, so the hand drew its dashes straight across
+   the card, through the title, and added .42em under the bottom edge -- and .prose a is (0,1,1)
+   against .link-card at (0,1,0), so the card's own rules lost without anything failing. The
+   underline is for a link in running prose: the thing it marks is a few words inside a
+   sentence, and a block that is already drawn as a link needs no second mark saying so. */
+.prose a.fn-ref,.prose sup a,.prose h1 a,.prose h2 a,.prose h3 a,.prose h4 a,.prose h5 a,
+.prose a.link-card,.prose a.file-card{
   background-image:none;padding-bottom:0}
 `.trim()
 
