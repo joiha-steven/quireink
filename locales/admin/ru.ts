@@ -970,6 +970,7 @@ const ru = {
     'mcp.token.create': 'Создан токен «{t}»',
     'mcp.token.delete': 'Удалён токен «{t}»',
     'import.wordpress': 'Импорт из WordPress',
+    'import.posts': 'Импорт из другого блога',
     'import.images': 'Внешние изображения перенесены',
     'font.upload': 'Загружен шрифт {t}',
     'icon.upload': 'Загружен значок {t}',

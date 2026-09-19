@@ -970,6 +970,7 @@ const ko = {
     'mcp.token.create': '토큰 “{t}”을(를) 만들었습니다',
     'mcp.token.delete': '토큰 “{t}”을(를) 지웠습니다',
     'import.wordpress': 'WordPress에서 가져왔습니다',
+    'import.posts': '다른 블로그에서 가져왔습니다',
     'import.images': '바깥 이미지를 가져왔습니다',
     'font.upload': '글꼴 {t}을(를) 올렸습니다',
     'icon.upload': '아이콘 {t}을(를) 올렸습니다',

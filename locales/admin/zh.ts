@@ -970,6 +970,7 @@ const zh = {
     'mcp.token.create': '建了令牌《{t}》',
     'mcp.token.delete': '删了令牌《{t}》',
     'import.wordpress': '从 WordPress 导入',
+    'import.posts': '从其他博客导入',
     'import.images': '把外部图片搬了回来',
     'font.upload': '上传了字体 {t}',
     'icon.upload': '上传了图标 {t}',

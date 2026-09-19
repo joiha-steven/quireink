@@ -971,6 +971,7 @@ const pt = {
     'mcp.token.create': 'Criou o token «{t}»',
     'mcp.token.delete': 'Apagou o token «{t}»',
     'import.wordpress': 'Importou do WordPress',
+    'import.posts': 'Importou de outro blog',
     'import.images': 'Trouxe imagens remotas',
     'font.upload': 'Carregou o tipo de letra {t}',
     'icon.upload': 'Carregou o ícone {t}',

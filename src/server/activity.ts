@@ -23,7 +23,7 @@ export type ActivityAction =
   // MCP access tokens (Admin → Settings → Advanced).
   | 'mcp.token.create' | 'mcp.token.delete'
   // Content import (Admin → Settings → Integrations).
-  | 'import.wordpress' | 'import.images'
+  | 'import.wordpress' | 'import.posts' | 'import.images'
   // URL redirects (Admin → Settings → SEO).
   | 'redirect.save' | 'redirect.delete'
   // The account itself (Admin → Settings → System → Security). Logged because these are the

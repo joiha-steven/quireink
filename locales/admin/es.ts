@@ -970,6 +970,7 @@ const es = {
     'mcp.token.create': 'Creaste el token «{t}»',
     'mcp.token.delete': 'Borraste el token «{t}»',
     'import.wordpress': 'Importaste desde WordPress',
+    'import.posts': 'Importaste desde otro blog',
     'import.images': 'Trajiste imágenes remotas',
     'font.upload': 'Subiste la tipografía {t}',
     'icon.upload': 'Subiste el icono {t}',

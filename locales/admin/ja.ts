@@ -970,6 +970,7 @@ const ja = {
     'mcp.token.create': 'トークン「{t}」を作りました',
     'mcp.token.delete': 'トークン「{t}」を削除しました',
     'import.wordpress': 'WordPress から取り込みました',
+    'import.posts': 'ほかのブログから取り込みました',
     'import.images': '外部の画像を取り込みました',
     'font.upload': '書体 {t} をアップロードしました',
     'icon.upload': 'アイコン {t} をアップロードしました',

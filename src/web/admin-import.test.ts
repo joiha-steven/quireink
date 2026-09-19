@@ -93,6 +93,27 @@ describe('the WordPress import', () => {
     expect(new Set(list.map((p) => p.slug)).size).toBe(2)
   })
 
+  it('is recorded under the blog it actually came from', async () => {
+    // ⚠️ THE KIND IS WHAT THE ACTIVITY LOG PRINTS, and there was one kind for four importers.
+    // A Ghost, Substack or Medium import was filed as `import.wordpress`, which the log renders
+    // as "Imported from WordPress" in eleven languages; the detail line said `ghost:` under a
+    // heading nobody reads twice.
+    await send(wxr(item('From WordPress')))
+    const ghost = new FormData()
+    const doc = { db: [{ data: { posts: [{
+      id: 'g1', title: 'From Ghost', slug: 'from-ghost', status: 'published', type: 'post',
+      html: '<p>Body.</p>',
+    }], tags: [], posts_tags: [] } }] }
+    ghost.append('file', new File([JSON.stringify(doc)], 'ghost.json', { type: 'application/json' }), 'ghost.json')
+    expect((await asOwner('/api/import/ghost', { method: 'POST', body: ghost })).status).toBe(200)
+
+    const rows = db().query<{ action: string; detail: string }, []>(
+      `select action, detail from activity_log where action like 'import%' order by id`,
+    ).all()
+    expect(rows.find((r) => r.detail.startsWith('wordpress'))?.action).toBe('import.wordpress')
+    expect(rows.find((r) => r.detail.startsWith('ghost'))?.action).toBe('import.posts')
+  })
+
   it('rejects a file that is not a WordPress export, with a specific message', async () => {
     const res = await send('<html><body>not an export</body></html>')
     expect(res.status).toBe(400)

@@ -970,6 +970,7 @@ const vi = {
     'mcp.token.create': 'Tạo token “{t}”',
     'mcp.token.delete': 'Xoá token “{t}”',
     'import.wordpress': 'Nhập từ WordPress',
+    'import.posts': 'Nhập từ blog khác',
     'import.images': 'Kéo ảnh ngoài về máy',
     'font.upload': 'Tải lên phông chữ {t}',
     'icon.upload': 'Tải lên icon {t}',

@@ -970,6 +970,7 @@ const en = {
     'mcp.token.create': 'Made the token “{t}”',
     'mcp.token.delete': 'Deleted the token “{t}”',
     'import.wordpress': 'Imported from WordPress',
+    'import.posts': 'Imported from another blog',
     'import.images': 'Brought remote pictures home',
     'font.upload': 'Uploaded the typeface {t}',
     'icon.upload': 'Uploaded the icon {t}',

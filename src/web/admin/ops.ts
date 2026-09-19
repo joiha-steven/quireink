@@ -136,7 +136,14 @@ export function opsRoutes() {
       importedPages += 1
     }
     if (importedPosts + importedPages > 0) clearCache()
-    void logActivity('import.wordpress', `${source}: ${importedPosts} posts + ${importedPages} pages`)
+    // ⚠️ THE KIND IS WHAT THE LOG PRINTS, and there was one kind for four importers: a Ghost,
+    // Substack or Medium import was recorded as `import.wordpress`, which the activity log
+    // renders as "Imported from WordPress" in eleven languages. The detail line said `ghost:`
+    // underneath it and nobody reads a detail line to check a heading.
+    void logActivity(
+      source === 'wordpress' ? 'import.wordpress' : 'import.posts',
+      `${source}: ${importedPosts} posts + ${importedPages} pages`,
+    )
     return { posts: importedPosts, pages: importedPages, skipped: result.skipped, redirects }
   }
 

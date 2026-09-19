@@ -970,6 +970,7 @@ const fr = {
     'mcp.token.create': 'Jeton « {t} » créé',
     'mcp.token.delete': 'Jeton « {t} » supprimé',
     'import.wordpress': 'Importé depuis WordPress',
+    'import.posts': 'Importé depuis un autre blog',
     'import.images': 'Images distantes rapatriées',
     'font.upload': 'Police {t} téléversée',
     'icon.upload': 'Icône {t} téléversée',
