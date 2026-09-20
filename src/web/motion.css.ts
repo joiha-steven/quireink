@@ -59,24 +59,52 @@ ${MOTION_TOKENS}
    and the carved-in shadow arrive with transition-duration:0 - and only the release is
    sprung, on whatever transition the control already carries (the floor, for most). A
    control that eases both ways feels like a screen; a key that drops now and springs back
-   is what a hand expects of a pressed thing. The shadow is the palette's own heading ink
-   diluted (an engine without color-mix loses the shading, never the button), so every
-   palette carves with its own ink. The book arrows keep their translateY centring (colour
-   only, no travel) and the resume pill composes its centring with the dip. With motion off
-   and under reduced motion the shadow stays and the travel goes: the state must still be
-   legible without the movement, so relief is never the only cue. */
+   is what a hand expects of a pressed thing. With motion off and under reduced motion the
+   shadow stays and the travel goes: the state must still be legible without the movement,
+   so relief is never the only cue.
+
+   THE LIST WAS HAND-KEPT AND HAD DRIFTED (2026-09-20). "Everything a finger can press" was
+   the rule in this comment and an enumeration underneath it, and five boxes had never been
+   added: the overlay's close key (a 2rem round key that fills with --c-rule, which is
+   .icon-btn's own shape and fill), the phone's book key, the quote's copy pill, the book
+   toolbar's size keys, and the pen bar's keys. Each one answered a pointer and then took a
+   click in silence.
+
+   ⚠️ A CARVE NEEDS A BOX. The controls left out below are not oversights: .pen-del,
+   .pen-send, .comment-reply and .comment-signout have padding:0 and no surface - they are
+   words, underlined or not, and a shadow across a word is a smudge. They answer with colour,
+   which is what a word can do. .pen-swatch is left out for the opposite reason: its
+   box-shadow IS its ring, and a second inset would fight the first. .book-arrow keeps its
+   centring (colour only) and .resume-pill composes its own. */
 .icon-btn:active,.code-copy:active,form.subscribe button:active,.theme-menu button:active,
-.lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active,
-.book-mode-toggle:active{
+.to-top:active,.book-x:active,.comment-form button:not(.comment-signout):active,
+.book-mode-toggle:active,.overlay-close:active,.book-fab:active,
+.book-size:not([disabled]):active{
   transform:translateY(1px);transition-duration:0s;
   box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-heading) 22%,transparent)}
+/* THE SAME PRESS, CARVED IN THE PAPER INSTEAD. The shadow is the palette's own heading ink
+   diluted, which is right on a page and wrong on the two surfaces made OF that ink: the pen
+   bar and the quote's copy pill both set background:var(--c-heading) with color:var(--c-bg),
+   so the standard carve is ink on ink. Measured on a live page: --c-heading is #121212, so
+   the shared rule paints rgb(18,18,18) at 22% - on the pen bar, nothing at all. */
+.quote-copy:active,.pen-bar button:not(.pen-swatch):active{
+  transform:translateY(1px);transition-duration:0s;
+  box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-bg) 22%,transparent)}
+/* AND THE LIGHTBOX IS DARK WHATEVER THE PALETTE - rgba(0,0,0,.9), with its own white hover
+   for that reason - so neither token is right for it: --c-bg follows the theme and goes dark
+   with it. A literal white, like the hover two rules above it. It was in the list at the top
+   until today, carving 22% of #121212 onto a black scrim, which is a press nobody could see
+   in any palette. */
+.lightbox button:active{
+  transform:translateY(1px);transition-duration:0s;
+  box-shadow:inset 0 1.5px 2.5px rgba(255,255,255,.22)}
 .resume-pill:active{transform:translateX(-50%) translateY(1px);transition-duration:0s;
   box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-heading) 22%,transparent)}
 .book-arrow:active{color:var(--c-heading)}
-html[data-motion=off] :is(.icon-btn,.code-copy,form.subscribe button,.theme-menu button,.lightbox button,.to-top,.book-x,.comment-form button,.book-mode-toggle):active{transform:none}
+html[data-motion=off] :is(.icon-btn,.code-copy,form.subscribe button,.theme-menu button,.lightbox button,.to-top,.book-x,.comment-form button,.book-mode-toggle,.overlay-close,.book-fab,.book-size,.quote-copy,.pen-bar button):active{transform:none}
 html[data-motion=off] .resume-pill:active{transform:translateX(-50%)}
 @media (prefers-reduced-motion:reduce){
-  :is(.icon-btn,.code-copy,form.subscribe button,.theme-menu button,.lightbox button,.to-top,.book-x,.comment-form button,.book-mode-toggle):active{transform:none}
+  :is(.icon-btn,.code-copy,form.subscribe button,.theme-menu button,.lightbox button,.to-top,.book-x,.comment-form button,.book-mode-toggle,.overlay-close,.book-fab,.book-size,.quote-copy,.pen-bar button):active{transform:none}
   .resume-pill:active{transform:translateX(-50%)}
 }
 

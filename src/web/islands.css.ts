@@ -18,6 +18,12 @@ export const ISLANDS_CSS = `
   border:1px solid var(--c-rule);background:var(--c-bg);color:var(--c-meta);cursor:pointer;opacity:0;transition:opacity var(--dur-fast)}
 .prose pre{position:relative}
 .prose pre:hover .code-copy,.code-copy:focus-visible{opacity:1}
+/* AND A HOVER OF ITS OWN. The rule above is the REVEAL - it belongs to the block, and it
+   fires when the pointer is anywhere over the code. Once the key is showing, moving onto the
+   key itself did nothing: it has a border and a paper fill, it is the only bordered key on
+   the page that answered a pointer with silence, and its twin on a pull-quote dims. The
+   header's own fill, because this is a key on paper like the rest of them. */
+.code-copy:hover{color:var(--c-heading);background:var(--c-rule)}
 
 /* The reading-progress bar has NO script behind it: a scroll-driven animation reads the
    document's own scroll position. It therefore works with JavaScript off, and runs off the
