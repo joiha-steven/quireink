@@ -9,28 +9,6 @@ import { registerReadingFlows } from './tour-flows-reading'
 
 export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
 
-  // A drawer slid off-screen used to stay in the document: 44 links in the Tab order on a
-  // listing page, none of them visible. Closed means out of the tab order; open means the
-  // first link takes focus; Escape hands focus back to the button that opened it. All three
-  // are read from the live page rather than from the class list, because the class was
-  // always right and the page was still wrong.
-  flow('shell: the phone drawer leaves the tab order when it closes', () => atWidth(375, '/', `
-    (async () => {
-      const rail = document.querySelector('.rail')
-      const button = document.querySelector('[data-rail-toggle]')
-      if (!rail || !button) return 'skip: this page has no drawer'
-      if (getComputedStyle(rail).visibility !== 'hidden') return 'closed, and still visible to the tab order'
-      button.click()
-      await new Promise((r) => setTimeout(r, 350))
-      if (getComputedStyle(rail).visibility !== 'visible') return 'opened, and still hidden'
-      if (!rail.contains(document.activeElement)) return 'opened, and focus stayed outside it'
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-      await new Promise((r) => setTimeout(r, 350))
-      if (getComputedStyle(rail).visibility !== 'hidden') return 'Escape did not close it'
-      if (document.activeElement !== button) return 'closed, and focus went to ' + document.activeElement.tagName
-      return 'ok ' + rail.querySelectorAll('a').length + ' link(s) behind one button'
-    })()`, 600))
-
   // THE NAME SITS AT THE LEFT EDGE, on a page whose heading it IS.
   //
   // The bar is end-justified with one auto margin on the name, which is what keeps the
@@ -76,30 +54,6 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       if (!target.contains(body)) return 'the skip link lands outside the article body'
       const before = focusable.filter((el) => body.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING)
       return 'ok skip link first, ' + before.length + ' stop(s) it steps over'
-    })()`, 600))
-
-  // What the drawer SAYS it is, and what it does to the page behind it. Three of these were
-  // missing: it was an <aside> a screen reader walked straight past into the article, and
-  // the article kept scrolling under a finger that reached the end of the drawer's own
-  // scroll. The rail it decorates is the LAST one, which is the two-rail case: there the
-  // first `.rail` is display:none below this width, so focus went into a hidden subtree.
-  flow('shell: the drawer is a dialog, and the page behind it holds still', () => atWidth(375, '/', `
-    (async () => {
-      const rails = document.querySelectorAll('.rail')
-      const rail = rails[rails.length - 1]
-      const button = document.querySelector('[data-rail-toggle]')
-      if (!rail || !button) return 'skip: this page has no drawer'
-      if (rail.getAttribute('role') !== 'dialog') return 'the drawer does not say it is a dialog'
-      if (rail.getAttribute('aria-modal') !== 'true') return 'the drawer is not modal'
-      if (button.getAttribute('aria-controls') !== rail.id) return 'the button names ' + button.getAttribute('aria-controls')
-      button.click()
-      await new Promise((r) => setTimeout(r, 350))
-      const locked = getComputedStyle(document.body).overflow
-      if (locked !== 'hidden') return 'open, and the page behind still scrolls (' + locked + ')'
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-      await new Promise((r) => setTimeout(r, 350))
-      if (getComputedStyle(document.body).overflow === 'hidden') return 'closed, and the page is still locked'
-      return 'ok dialog #' + rail.id + ', page locked while open'
     })()`, 600))
 
   // The contents list's last row, at the width where it was wrong. Above the rail

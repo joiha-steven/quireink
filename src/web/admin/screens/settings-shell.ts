@@ -115,10 +115,14 @@ function search(t: AdminStrings): string {
   //
   // `data-find` carries the label AND the note, accent-folded, because people describe a
   // setting rather than name it. `fold` is the same folding the log and the trash search use.
-  const rows = SETTINGS_INDEX.map((r) => {
+  // ⚠️ EACH OPTION CARRIES AN ID because the input names the active one through
+  // `aria-activedescendant`. Without it the box declared `role="combobox"` over a list that
+  // could only be clicked: a keyboard user typed, got results they could not reach, and Tab
+  // walked past them to the save key.
+  const rows = SETTINGS_INDEX.map((r, i) => {
     const label = String(t[r.label] ?? '')
     const note = r.note ? String(t[r.note] ?? '') : ''
-    return `<li role="option" aria-selected="false" data-found="${escapeAttr(r.tab)}"`
+    return `<li id="settings-found-${i}" role="option" aria-selected="false" data-found="${escapeAttr(r.tab)}"`
       + ` data-label="${escapeAttr(label)}" data-find="${escapeAttr(fold(`${label} ${note}`))}" hidden>`
       + `<button type="button" class="flex w-full items-baseline justify-between gap-4 px-4 py-2.5`
       + ` text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/60">`

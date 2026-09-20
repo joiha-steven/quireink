@@ -22,6 +22,7 @@ import { registerBackupFlows } from './tour-flows-backup'
 import { registerNewsFlows } from './tour-flows-news'
 import { registerStatsFlows } from './tour-flows-stats'
 import { registerShellFlows } from './tour-flows-shell'
+import { registerReachFlows } from './tour-flows-reach'
 import { registerCssFlows, registerSecurityFlows } from './tour-flows-css'
 import { registerAccountFlows } from './tour-flows-security'
 import { registerGuardFlows } from './tour-flows-guard'
@@ -324,6 +325,8 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
   registerAiFlows({ flow, expect })
   registerMediaFlows({ flow, expect })
   registerSettings2Flows({ flow, expect })
+  // What a keyboard and a screen reader can reach (2026-09-21).
+  registerReachFlows({ flow, atWidth })
   registerWiredFlows({ flow, expect })
   registerEvenFlows({ flow, atWidth })
   registerBackupFlows({ flow, expect, atWidth })

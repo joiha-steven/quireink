@@ -323,18 +323,27 @@ export function rail(): void {
   }
 
   const html = document.documentElement
-  // A dialog, said out loud: without this the drawer was an `<aside>` that happened to be
-  // on top, and a screen reader walked straight past it into the page behind.
-  rail.setAttribute('role', 'dialog')
-  rail.setAttribute('aria-modal', 'true')
   rail.id ||= 'site-rail'
   button.setAttribute('aria-controls', rail.id)
+  // The NAME is set once and kept: on a desktop page the rail is a complementary landmark, and
+  // a named one is better than an unnamed one. Only the two attributes that make it MODAL come
+  // and go with the drawer.
+  rail.setAttribute('aria-label', button.getAttribute('aria-label') ?? '')
   const set = (open: boolean) => {
     const was = html.dataset.rail === 'open'
     if (open) html.dataset.rail = 'open'
     else delete html.dataset.rail
     button.setAttribute('aria-expanded', String(open))
     scrim.hidden = !open
+    // ⚠️ A DIALOG ONLY WHILE IT IS ONE. Without these two the drawer was an `<aside>` that
+    // happened to be on top and a screen reader walked straight past it into the page behind —
+    // but they were stamped on at INIT, and the same element is the ordinary sidebar on a
+    // desktop page. So every desktop page announced an open, unnamed modal dialog that the
+    // reader could not leave, on a page where nothing was modal at all.
+    for (const [k, v] of [['role', 'dialog'], ['aria-modal', 'true']]) {
+      if (open) rail.setAttribute(k!, v!)
+      else rail.removeAttribute(k!)
+    }
     // Focus goes where the drawer goes. Opening it left focus on the menu button, so the
     // next Tab landed on the palette control behind the drawer rather than on the first
     // link inside it; closing it with Escape while a link was focused dropped focus on the

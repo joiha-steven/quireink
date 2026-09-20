@@ -222,3 +222,20 @@ describe('what a lamp may say about a far end', () => {
     expect(lamps(await drawn()).filter((l) => l.includes(t.connectionOk))).toEqual([])
   })
 })
+
+describe('every id on the screen is its own', () => {
+  it('has no duplicate id, which a label would resolve to the wrong control', async () => {
+    // ⚠️ ALL SEVEN TABS SHIP IN ONE DOM (ADR 0054), so two controls drawn on two tabs are two
+    // elements on one page. `comments.enabled` is drawn twice on purpose — beside the posts it
+    // affects and beside the card about the people who use it — and shared one id until
+    // 2026-09-21: invalid HTML, and a `for` resolves to the FIRST match, so the People tab's
+    // label pointed at the Posts tab's switch and clicking it moved the wrong thing.
+    const html = await drawn()
+    const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]!)
+    const seen = new Set<string>()
+    const twice = ids.filter((id) => (seen.has(id) ? true : (seen.add(id), false)))
+    expect({ duplicates: [...new Set(twice)] }).toEqual({ duplicates: [] })
+    // The counter-test: the same search actually found ids to check.
+    expect(ids.length).toBeGreaterThan(50)
+  })
+})

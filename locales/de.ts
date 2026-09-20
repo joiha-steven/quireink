@@ -46,7 +46,7 @@ const de = {
   search: 'Suche',
   searchHint: 'Tippen, um Beiträge zu suchen.',
   searchEmpty: 'Keine passenden Beiträge gefunden.',
-  searchResults: '{n} Ergebnisse für „{q}“',
+  searchResults: 'Ergebnisse für „{q}“: {n}',
   pagerNewer: 'Neuer',
   pagerOlder: 'Älter',
   pagerLabel: 'Seitennavigation',

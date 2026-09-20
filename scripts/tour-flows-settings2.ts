@@ -344,4 +344,51 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
       }
       return 'ok ' + seen + ' control(s), all of them 36 or 32'
     })()`, 900))
+
+  // ── The list a keyboard could not reach ─────────────────────────────────────────────────
+  //
+  // The settings search declares `role="combobox"` over a `role="listbox"` of `role="option"`
+  // rows, which promises arrow keys. There were none: the rows answered a click and nothing
+  // else, so somebody typing two characters got a list of results and then Tab walked them past
+  // it to the save key. A promise in an ARIA attribute is a promise a screen-reader user acts
+  // on, and this is the class of gap no unit test sees — the markup was correct the whole time.
+  //
+  // NOTE: a template literal. No backticks.
+  flow('admin: the settings search can be walked with the arrow keys', () => expect('/admin/settings', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const find = document.querySelector('[data-settings-find]')
+      if (!find) return 'there is no settings search on this screen'
+      if (find.getAttribute('role') !== 'combobox') return 'the box no longer claims to be a combobox'
+
+      find.focus()
+      find.value = 'backup'
+      find.dispatchEvent(new Event('input', { bubbles: true }))
+      await sleep(200)
+      const shown = () => [...document.querySelectorAll('[data-found]')].filter((r) => !r.hidden)
+      if (shown().length === 0) return 'typing found nothing, so there is nothing to walk'
+      if (find.getAttribute('aria-expanded') !== 'true') return 'the box did not say it was expanded'
+      if (find.getAttribute('aria-activedescendant')) return 'something was already active before any key'
+
+      const down = () => find.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }))
+      down()
+      await sleep(50)
+      const first = find.getAttribute('aria-activedescendant')
+      if (!first) return 'ArrowDown named no option, so a screen reader is told nothing moved'
+      const firstRow = document.getElementById(first)
+      if (!firstRow || firstRow.getAttribute('aria-selected') !== 'true') return 'the named option is not the selected one'
+
+      down()
+      await sleep(50)
+      const second = find.getAttribute('aria-activedescendant')
+      if (shown().length > 1 && second === first) return 'a second ArrowDown did not move'
+      // And it stops at the end rather than walking off it.
+      for (let i = 0; i < 40; i++) down()
+      await sleep(50)
+      const last = find.getAttribute('aria-activedescendant')
+      if (!last) return 'walking to the end lost the active option'
+      const selected = shown().filter((r) => r.getAttribute('aria-selected') === 'true')
+      if (selected.length !== 1) return selected.length + ' options are selected at once'
+      return 'ok ' + shown().length + ' results, arrows move one at a time and stop at the end'
+    })()`, 900))
 }

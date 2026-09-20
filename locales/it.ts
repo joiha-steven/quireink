@@ -46,7 +46,7 @@ const it = {
   search: 'Cerca',
   searchHint: 'Scrivi per cercare tra gli articoli.',
   searchEmpty: 'Nessun articolo corrispondente.',
-  searchResults: '{n} risultati per «{q}»',
+  searchResults: 'Risultati per «{q}»: {n}',
   pagerNewer: 'Più recenti',
   pagerOlder: 'Più vecchi',
   pagerLabel: 'Paginazione',

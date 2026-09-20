@@ -46,7 +46,7 @@ const fr = {
   search: 'Rechercher',
   searchHint: 'Tapez pour chercher parmi les articles.',
   searchEmpty: 'Aucun article ne correspond.',
-  searchResults: '{n} résultats pour « {q} »',
+  searchResults: 'Résultats pour « {q} » : {n}',
   pagerNewer: 'Plus récents',
   pagerOlder: 'Plus anciens',
   pagerLabel: 'Pagination',

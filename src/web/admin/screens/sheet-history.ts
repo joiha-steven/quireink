@@ -16,7 +16,9 @@ const QUIET_CENTRE = 'py-10 text-center text-neutral-500 dark:text-neutral-400'
 export function historyDialog(t: AdminStrings): string {
   return `<div data-history hidden class="fixed inset-0 z-50 flex items-center justify-center`
     + ` bg-black/40 p-4">`
-    + `<div data-history-box role="dialog" aria-modal="true"`
+    // `tabindex="-1"` so the box can hold focus: `aria-modal` promises the page behind is out
+    // of reach, and without a tab stop the very next Tab proves otherwise.
+    + `<div data-history-box role="dialog" aria-modal="true" tabindex="-1"`
     + ` aria-label="${escapeHtml(t.timeMachine)}"`
     + ` class="flex max-h-[85vh] w-full max-w-2xl flex-col p-5 ${OVERLAY}">`
     + `<div class="mb-1 flex items-center justify-between">`

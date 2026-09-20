@@ -46,7 +46,7 @@ const es = {
   search: 'Buscar',
   searchHint: 'Escribe para buscar entradas.',
   searchEmpty: 'No se encontraron entradas que coincidan.',
-  searchResults: '{n} resultados para «{q}»',
+  searchResults: 'Resultados para «{q}»: {n}',
   pagerNewer: 'Más recientes',
   pagerOlder: 'Más antiguas',
   pagerLabel: 'Paginación',

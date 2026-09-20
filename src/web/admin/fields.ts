@@ -172,8 +172,17 @@ export function textArea(f: SettingText & {
  * jobs with no model connected — has to look unavailable rather than off, or the owner flips it,
  * sees it flip back, and concludes the admin is broken.
  */
-export function switchControl(f: { k: string; on: boolean; label: string; disabled?: boolean }): string {
-  return `<button type="button" role="switch" id="${idOf(f.k)}" data-k="${escapeAttr(f.k)}"`
+/**
+ * ⚠️ `idSuffix` IS FOR A KEY DRAWN TWICE, and one key is: `comments.enabled` appears on the
+ * Posts tab, where comments are the last thing on a post, and again on People, where the card
+ * about commenters lives. All seven tabs ship in one DOM (ADR 0054), so both exist at once and
+ * shared one `id` — invalid HTML, and a `for` resolves to the FIRST match, so the People tab's
+ * label pointed at the Posts tab's switch.
+ */
+export function switchControl(
+  f: { k: string; on: boolean; label: string; disabled?: boolean; idSuffix?: string },
+): string {
+  return `<button type="button" role="switch" id="${idOf(f.k)}${f.idSuffix ?? ''}" data-k="${escapeAttr(f.k)}"`
     + ` data-switch data-was="${f.on ? '1' : '0'}" aria-checked="${f.on}"`
     + ` aria-label="${escapeAttr(f.label)}"${f.disabled ? ' disabled' : ''}`
     + ` class="${f.on ? SWITCH_ON : SWITCH_OFF}">`
@@ -193,6 +202,8 @@ export function switchRow(f: SettingText & {
   disabled?: boolean
   className?: string
   attrs?: string
+  /** A second rendering of the same key. See `switchControl`. */
+  idSuffix?: string
 }): string {
   return settingRow({
     ...f,

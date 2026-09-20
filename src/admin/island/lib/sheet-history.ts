@@ -111,6 +111,11 @@ export function wireHistory(
       list.hidden = true
       list.replaceChildren()
       box.hidden = false
+      // ⚠️ AND FOCUS GOES IN WITH IT. `shut()` already hands focus back to the opener; nothing
+      // took it in the first place, so `aria-modal="true"` was a promise the very next Tab
+      // broke — the keyboard walked into the editor behind the scrim. The box carries
+      // `tabindex="-1"` so it can hold it.
+      box.querySelector<HTMLElement>('[data-history-box]')?.focus()
       void load()
     },
     destroy: () => window.removeEventListener('keydown', escape),

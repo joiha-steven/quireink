@@ -108,7 +108,11 @@ function series(t: AdminStrings, posts: Post[]): string {
  */
 export function writeDrawers(t: AdminStrings, posts: Post[]): string {
   const panel = (name: string, title: string, body: string): string =>
-    `<section data-drawer="${escapeAttr(name)}" hidden role="dialog" aria-modal="true"`
+    // ⚠️ `tabindex="-1"` IS WHAT MAKES `aria-modal` TRUE. Without it the panel cannot take
+    // focus, so the first Tab after it opens lands on whatever is behind the scrim — a screen
+    // reader is told the page is modal and the keyboard then walks straight out of it. The four
+    // dialogs in `overlays.ts` have carried it since they were written; these two did not.
+    `<section data-drawer="${escapeAttr(name)}" hidden role="dialog" aria-modal="true" tabindex="-1"`
     + ` aria-label="${escapeAttr(title)}"`
     + ` class="admin-sheet ${OVERLAY_LIFT} fixed inset-y-0 right-0 z-50 flex w-full flex-col`
     + ` border-l border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950">`

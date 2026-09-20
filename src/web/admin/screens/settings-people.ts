@@ -324,9 +324,12 @@ export function peopleTab(t: AdminStrings, s: SiteSettings, view: PeopleTabView)
     // far end answered — and this card has no far end.
     + panelCard({
       title: t.cardComments,
+      // ⚠️ THE SAME KEY AS THE POSTS TAB, ON PURPOSE — the switch belongs beside the posts it
+      // affects, and it belongs here beside the card about the people who use it. Because every
+      // tab ships in one DOM, both exist at once, so this one takes its own id.
       body: switchList([switchRow({
         k: 'comments.enabled', label: t.commentsEnable, note: t.commentsEnableDesc,
-        on: c.enabled,
+        on: c.enabled, idSuffix: '-people',
       })]),
     })
     // `data-card-route` is the endpoint this card's `[data-card-field]` boxes POST to once the

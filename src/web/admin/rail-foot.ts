@@ -166,9 +166,15 @@ export function ownerMenu(t: AdminStrings, avatar: string): string {
     + `<button type="button" data-nav-arrange="off" class="${item}">${escapeHtml(t.navArrange)}</button>`
     // Never offered on the collapsed rail, where switching the glyphs off would leave a column
     // of nothing at all — hidden by CSS rather than left out, so the markup stays one shape.
+    // ⚠️ NEITHER SPAN CARRIES `hidden`, AND THAT IS THE FIX RATHER THAN AN OMISSION. The pair
+    // in `admin.css` decides which one shows from `data-rail-icons`, which the boot script
+    // always writes before the first paint — but `hidden` on the second span beat it, because
+    // `[hidden]` is the one `!important` in the whole sheet. So switching the icons OFF hid the
+    // "Hide icons" label by CSS and left "Show icons" hidden by the attribute: the control
+    // became a blank, unnamed button, and the only way back was to know it was still there.
     + `<button type="button" data-rail-key="icons" class="${item} rail-icons-switch">`
     + `<span class="rail-icons-on">${escapeHtml(t.navIconsHide)}</span>`
-    + `<span class="rail-icons-off" hidden>${escapeHtml(t.navIconsShow)}</span></button>`
+    + `<span class="rail-icons-off">${escapeHtml(t.navIconsShow)}</span></button>`
     + `<button type="button" data-rail-key="signout" class="${item} border-t border-neutral-100 dark:border-neutral-800">${escapeHtml(t.signOut)}</button>`
     + `</div></div>`
 }

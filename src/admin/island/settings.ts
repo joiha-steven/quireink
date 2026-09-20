@@ -234,6 +234,47 @@ if (root) {
     if (none) none.hidden = hits > 0
     if (found) found.hidden = hits === 0
     find.setAttribute('aria-expanded', String(asking))
+    mark(-1)
+  })
+
+  /**
+   * ⚠️ THE HALF `role="combobox"` PROMISES AND DID NOT KEEP. The markup declared a combobox
+   * over a listbox of `role="option"` rows, and the only way into them was a mouse: a keyboard
+   * user typed two characters, got a list they could not reach, and Tab walked past it to the
+   * save key. Arrow keys move through what is SHOWN, Enter takes it, Escape gives the field
+   * back, and `aria-activedescendant` names the current row so a screen reader reads it out.
+   */
+  let at = -1
+  const shown = (): HTMLElement[] =>
+    [...(found?.querySelectorAll<HTMLElement>('[data-found]') ?? [])].filter((r) => !r.hidden)
+
+  function mark(next: number): void {
+    const rows = shown()
+    // ⚠️ A NEGATIVE INDEX MEANS **NOTHING** IS ACTIVE, not "the first one". Clamping it to 0
+    // named an option the moment two characters were typed, so a screen reader announced a
+    // selection the reader had not made and every fresh search opened pre-committed. Found by
+    // the tour flow on its first run.
+    at = rows.length === 0 || next < 0 ? -1 : Math.min(next, rows.length - 1)
+    for (const [i, row] of rows.entries()) {
+      row.setAttribute('aria-selected', String(i === at))
+      row.classList.toggle('bg-neutral-100', i === at)
+      row.classList.toggle('dark:bg-neutral-800', i === at)
+    }
+    const active = at >= 0 ? rows[at] : null
+    if (active) {
+      find?.setAttribute('aria-activedescendant', active.id)
+      active.scrollIntoView({ block: 'nearest' })
+    } else {
+      find?.removeAttribute('aria-activedescendant')
+    }
+  }
+
+  find?.addEventListener('keydown', (e) => {
+    if (results?.hidden !== false) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); mark(at + 1) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); mark(at - 1) }
+    else if (e.key === 'Enter' && at >= 0) { e.preventDefault(); shown()[at]?.querySelector('button')?.click() }
+    else if (e.key === 'Escape' && find) { find.value = ''; find.dispatchEvent(new Event('input', { bubbles: true })) }
   })
 
   /** One row is one jump: it names the setting AND the tab, and clicking it does both halves. */
