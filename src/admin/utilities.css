@@ -1951,6 +1951,12 @@
   .text-\[var\(--pen-edge\)\] {
     color: var(--pen-edge);
   }
+  .text-\[var\(--ink-danger\)\] {
+    color: var(--ink-danger);
+  }
+  .border-\[var\(--ink-danger\)\] {
+    border-color: var(--ink-danger);
+  }
   .text-\[var\(--pen-red\)\] {
     color: var(--pen-red);
   }

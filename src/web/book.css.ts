@@ -351,7 +351,14 @@ body:has(.book-overlay[open]){overflow:hidden}
 .comment-form button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
   background:var(--c-bg);color:var(--c-heading);font:inherit;font-weight:500;cursor:pointer}
 .comment-form button:hover{background:var(--c-rule)}
-.comment-status:empty{display:none}
+/* ⚠️ A ZERO MARGIN, NOT display:none. This is a live region (role=status), and an element that
+   is display:none is not in the accessibility tree at all — so the text and the element's first
+   appearance land in the same frame and a screen reader has no region to have been watching.
+   The empty paragraph has no content and therefore no height; zeroing its margin is the whole
+   of what the old rule was buying, and it stays where a reader's software can see it. Found in
+   the 2026-09-19 audit; both public status lines had it.
+   NOTE: no backticks in this file. It is one template literal (check:css holds the rule). */
+.comment-status:empty{margin:0}
 .comment-status{color:var(--c-meta);margin:.75rem 0 0}
 /* The identity strip. The sign-in control is an anchor and the sign-out control a button,
    so both are given the surrounding type explicitly rather than a UA default. */

@@ -43,7 +43,7 @@ export function markFor(action: string): IconName {
  */
 export const inkFor = (action: string): string =>
   action.endsWith('.delete') || action.startsWith('trash.')
-    ? 'text-[var(--pen-red)]'
+    ? 'text-[var(--ink-danger)]'
     : 'text-neutral-500 dark:text-neutral-400'
 
 /** The 28px tile the mark sits in. */

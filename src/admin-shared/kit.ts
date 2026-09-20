@@ -67,7 +67,7 @@ const STYLES: Record<ButtonVariant, string> = {
   // the loudest thing on a screen should be the thing you came to do — not the thing that
   // destroys work. It fills on hover, when the pointer is already committed to it.
   danger:
-    'border text-[var(--pen-red)] border-[var(--pen-red)] bg-transparent hover:bg-[var(--pen-red)] hover:text-white active:shadow-[inset_0_2px_3px_rgba(0,0,0,.3)]',
+    'border text-[var(--ink-danger)] border-[var(--ink-danger)] bg-transparent hover:bg-[var(--pen-red)] hover:text-white active:shadow-[inset_0_2px_3px_rgba(0,0,0,.3)]',
   // THE ARMED FACE of a two-stage latch: the first press turns the button this colour, the
   // second press fires. Amber is the admin's needs-you hue (the version dot, NOTE_ALERT) —
   // a control wearing it is half-way through something that cannot be undone, which is why

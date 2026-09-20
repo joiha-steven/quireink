@@ -67,6 +67,13 @@
      real pen box. Not re-typed by eye: the values are the product's own. */
   --pen-red: #c23b2b;
   --pen-red-soft: #fbeceb;
+  /* THE DESTRUCTIVE INK, and it is a SECOND token rather than a change to the one above.
+     `--pen-red` is a LINE — the ring and the underline the pen draws — and the dark value is
+     deliberately brighter than a naive darkening for exactly that reason, which the comment
+     beside it explains. This one is TEXT: the Delete button's label, the bin glyph in the log.
+     Measured on 2026-09-21: the pen's dark red reads 3.30:1 on the admin's dark surface and
+     2.78:1 on the hover one, where text wants 4.5. Light passes as it is, so only dark moves. */
+  --ink-danger: #c23b2b;
   --pen-graphite: #5b574f;
 }
 .dark {
@@ -79,6 +86,10 @@
      rather than a text-contrast ceiling — the same argument `pen.ts` makes for the underline. */
   --pen-red: #a3524a;
   --pen-red-soft: #2a1a18;
+  /* 4.66:1 on the hover surface, 5.51 on the card, 6.09 on the page — the closest red to the
+     pen's own that clears 4.5 on all three. The hover FILL stays `--pen-red` with white on it,
+     which is 5.44: filling with this lighter ink would take white down to 3.25. */
+  --ink-danger: #d97066;
   --pen-graphite: #8f8a80;
 }
 /* Two newspaper columns inside a sheet, with the rule a paper would draw between them.
