@@ -35,7 +35,7 @@ export const ISLANDS_CSS = `
 .progress-fill{height:100%;background:var(--c-heading);transform:scaleX(0);transform-origin:0 50%}
 @supports (animation-timeline:scroll()){
   .progress{display:block}
-  .progress-fill{animation:read-progress linear both;animation-timeline:scroll(root block)}
+  .progress-fill{animation:read-progress linear;animation-timeline:scroll(root block)}
 }
 @keyframes read-progress{to{transform:scaleX(1)}}
 
@@ -173,9 +173,27 @@ export const ISLANDS_CSS = `
    A fixed distance (entry 320px) was tried and is worse: inside an entry range a length is measured
    along a range that is only as long as the card, so on a short card the animation never
    reaches its end at all and the card stays permanently dimmed. */
+/* ⚠️ NO FILL ON EITHER SCROLL-DRIVEN FADE, and it is the difference between an effect that
+   fails to happen and a page that cannot be read. A scroll-driven animation's value is written
+   in the frame; when the frame is late — a long task on the main thread, or a range an engine
+   resolved once and never resolved again — the element goes on painting the animation's FILL.
+   Measured in headless Chrome on 2026-09-20 by reading style after a scroll with no frame in
+   between: with the both keyword, running text came back at opacity 0.35 and three cards at
+   opacity 0, which is a card with real height, real gaps around it and no words in it. Without
+   it, 1. That is the state reported three times and patched three times from the other end.
+
+   And the fill was buying nothing. Both ranges end where the element stops being visible:
+   outside cover 0%..100% the block has not touched the window or has already left it, and past
+   entry 100% the animation's own end — opacity 1, no transform — IS the base rule. So the fill
+   only ever described the page in a state nobody can see, and painted it over the page in the
+   one state everybody can. The bar above lost its fill in the same pass, where the keyword was
+   merely inert — its range is normal, so there is no before or after phase to fill, and its
+   from is its base rule; measured at five scroll positions, its scale is identical to six
+   places with the keyword and without it. It goes because check:motion-drift keeps this rule
+   with no exemption list, and an exemption list is how the first three fixes wore off. */
 @supports (animation-timeline:view()){
   @media (prefers-reduced-motion:no-preference){
-    html[data-scroll-fade=on][data-motion=on] .reveal{animation:reveal-in linear both;animation-timeline:view();
+    html[data-scroll-fade=on][data-motion=on] .reveal{animation:reveal-in linear;animation-timeline:view();
       animation-range:entry 0% entry 100%}
   }
 }
@@ -233,7 +251,7 @@ export const ISLANDS_CSS = `
     html[data-scroll-fade=on][data-motion=on] .book-reader .book-flow>ul,
     html[data-scroll-fade=on][data-motion=on] .book-reader .book-flow>ol,
     html[data-scroll-fade=on][data-motion=on] .book-reader .book-flow>blockquote{
-      animation:edge-fade linear both;animation-timeline:view();animation-range:cover 0% cover 100%}
+      animation:edge-fade linear;animation-timeline:view();animation-range:cover 0% cover 100%}
   }
 }
 /* Never to nothing: 0.35 keeps the line legible for anyone who reads at the edge of the

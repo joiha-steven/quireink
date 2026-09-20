@@ -28,6 +28,17 @@ four values for three intents.
   had been chosen (the rail's FLIP slide, then every entrance); the scroll-driven animations
   do NOT use it and must stay `linear` — a timeline a reader scrubs with a thumb is linear
   or it is wrong.
+- ⚠️ **A scroll-driven animation may not declare a FILL** (`both`, `forwards`, `backwards`).
+  Its value is written IN the frame, so where the frame is late — a long task, or a range an
+  engine resolved once and never resolved again — the element goes on painting the fill.
+  Measured 2026-09-20 by reading style after a scroll with no frame in between: with `both`,
+  running text came back at opacity 0.35 and cards at opacity 0, a card with real height, real
+  gaps around it and no words in it, held until something else moved the page. It had been
+  reported three times over five weeks and patched three times at the geometry end. The fill
+  buys nothing either way: a `view()` range is bounded by visibility at both ends, so its fill
+  only ever describes the page in a state nobody can see, and a `scroll()` animation on the
+  default range has no before or after phase to fill. `check:motion-drift` holds the rule with
+  no exemption list, and `scripts/tour-flows-reading.ts` reproduces the late frame in a browser.
 - **ONE switch gates ALL motion, on both sides.** `<html data-motion>` is server-rendered from
   `settings.motion.enabled` (no flash, no client JS) on the reading site, the sign-in page and
   the admin. `html[data-motion=off]` AND `@media (prefers-reduced-motion: reduce)` each set

@@ -284,4 +284,93 @@ export function registerReadingFlows({ flow, atWidth, expect }: Pick<Tour, 'flow
       }
       return 'ok the Korean headline resolves a reading face the page round it does not'
     })()`, 400))
+
+  // A LATE FRAME MUST LEAVE THE PAGE READABLE. Both scroll fades are written IN the frame, so
+  // where the frame is late — a long task on the main thread, or a range an engine resolved
+  // once and never resolved again — the element goes on painting whatever it last had. Until
+  // 2026-09-20 both carried a fill, and the fill is what it painted: running text at opacity
+  // 0.35 and cards at opacity 0. Reported from the reading page three times over five weeks and
+  // patched three times at the geometry end, because the geometry was never what was wrong.
+  //
+  // The late frame is REPRODUCED rather than waited for: scroll, let one frame land, jump again,
+  // and read style with no frame in between. That is the state a busy main thread paints from,
+  // and it is the same on every run.
+  //
+  // ⚠️ ONLY THE BLOCKS THE EFFECT LEAVES ALONE ARE JUDGED, and the range is read from the
+  // GEOMETRY rather than from the engine — which is the whole point, because a stale range
+  // shows up here as geometry saying solid while the paint says otherwise. The fade is a band
+  // at each end of the cover range, so anything between a quarter and three quarters of the way
+  // through its own range is solid by design at any block height and any window, and the
+  // assertion needs no fudge factor. NOTE: a template literal. No backticks.
+  flow('a late frame leaves the running text solid', () => atWidth(390, '/what-a-subsetter-removes', `
+    (async () => {
+      const html = document.documentElement
+      if (html.dataset.scrollFade !== 'on' || html.dataset.motion === 'off') return 'skip: the scroll fade is off'
+      if (!CSS.supports('animation-timeline', 'view()')) return 'skip: this engine has no view() timelines'
+      const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+      const vh = innerHeight
+      const max = document.documentElement.scrollHeight - vh
+      if (max < vh * 2) return 'skip: this piece is under three windows tall'
+      const blocks = '.prose > p, .prose > ul, .prose > ol, .prose > h2, .prose > h3, .prose > blockquote'
+      const dim = []
+      let judged = 0
+      for (const jump of [[0.15, 0.55], [0.55, 0.9], [0.9, 0.3], [0.3, 0.75], [0.75, 0.1]]) {
+        scrollTo({ top: Math.round(max * jump[0]), behavior: 'instant' })
+        await frame()
+        // No frame between these two lines. That is the fault being reproduced.
+        scrollTo({ top: Math.round(max * jump[1]), behavior: 'instant' })
+        for (const el of document.querySelectorAll(blocks)) {
+          const r = el.getBoundingClientRect()
+          const at = (vh - r.top) / (r.height + vh)
+          if (at < 0.25 || at > 0.75) continue
+          judged++
+          const op = Number(getComputedStyle(el).opacity)
+          if (op < 0.99) dim.push(el.tagName + ' ' + Math.round(at * 100) + '% through its range at ' + op.toFixed(2))
+        }
+        await frame()
+      }
+      scrollTo({ top: 0, behavior: 'instant' })
+      if (!judged) return 'skip: no block sat mid-range at any of the five jumps'
+      if (dim.length) return dim.length + ' of ' + judged + ' block-readings painted dim: ' + dim.slice(0, 3).join('; ')
+      return 'ok ' + judged + ' block-readings across five jumps, none under 0.99'
+    })()`, 500))
+
+  // THE SAME QUESTION OF THE FEED, where the fill was opacity 0 rather than 0.35 — a card with
+  // real height, real gaps around it and no words in it, which is the shape the fallback path
+  // was already known to produce and which the fill produced on every engine.
+  //
+  // A card FULLY inside the window is past entry 100% by arithmetic — the entry range is the
+  // card's own height, and a card whose foot is above the window's foot has travelled at least
+  // that far — at any card height and any window. So it must be solid, whatever the engine
+  // thinks its range is. That is the instant the is-set backstop picks; this asserts it instead
+  // of trusting it.
+  flow('a late frame leaves an arrived card solid', () => atWidth(390, '/', `
+    (async () => {
+      const html = document.documentElement
+      if (html.dataset.scrollFade !== 'on' || html.dataset.motion === 'off') return 'skip: the scroll fade is off'
+      if (!CSS.supports('animation-timeline', 'view()')) return 'skip: this engine has no view() timelines'
+      const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+      const vh = innerHeight
+      const max = document.documentElement.scrollHeight - vh
+      if (max < vh) return 'skip: the feed is shorter than one window'
+      const faint = []
+      let judged = 0
+      for (const jump of [[0.1, 0.5], [0.5, 0.85], [0.85, 0.2], [0.2, 0.7], [0.7, 0.05]]) {
+        scrollTo({ top: Math.round(max * jump[0]), behavior: 'instant' })
+        await frame()
+        scrollTo({ top: Math.round(max * jump[1]), behavior: 'instant' })
+        for (const el of document.querySelectorAll('.reveal')) {
+          const r = el.getBoundingClientRect()
+          if (r.top < 0 || r.bottom > vh) continue
+          judged++
+          const op = Number(getComputedStyle(el).opacity)
+          if (op < 0.99) faint.push(Math.round(r.height) + 'px card wholly in the window at ' + op.toFixed(2))
+        }
+        await frame()
+      }
+      scrollTo({ top: 0, behavior: 'instant' })
+      if (!judged) return 'skip: no card sat wholly inside the window at any of the five jumps'
+      if (faint.length) return faint.length + ' of ' + judged + ' card-readings painted faint: ' + faint.slice(0, 3).join('; ')
+      return 'ok ' + judged + ' card-readings across five jumps, none under 0.99'
+    })()`, 500))
 }

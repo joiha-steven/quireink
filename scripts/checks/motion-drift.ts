@@ -11,6 +11,16 @@
 // The engine files may hold literals: they are where a duration is DECLARED, and the ambient
 // keyframes (a caret blink, a lamp's breath) are their own intents with no token. Everywhere
 // else, a duration or a curve is written as the token or it is drift.
+//
+// AND A SECOND RULE, about the animations nothing can time: a SCROLL-DRIVEN animation may not
+// declare a fill. Its value is written in the frame, so when the frame is late the element goes
+// on painting the fill — and on 2026-09-20, read after a scroll with no frame in between, that
+// meant running text at opacity 0.35 and cards at opacity 0 with their gaps still around them.
+// A view() range is bounded by visibility at both ends, so its fill only ever describes the
+// page in a state nobody can see; a scroll() animation on the default range has no before or
+// after phase, so it has nothing to fill. Either way the keyword buys nothing and holds the
+// page dim when the engine blinks. No exemption list: three fixes aimed at the geometry wore
+// off, and this is the one line that cannot.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -40,6 +50,10 @@ const DURATION = /(?:transition[a-z-]*\s*:[^;}'"`]*|animation[a-z-]*\s*:[^;}'"`]
 const TAILWIND_DURATION = /\bduration-\[([0-9][0-9.]*m?s)\]/g
 /** A raw curve where the token belongs. */
 const CURVE = /cubic-bezier\([^)]*\)/g
+/** A scroll-driven animation, and the two ways a fill can reach it. */
+const TIMELINE = /animation-timeline\s*:\s*(view|scroll)\(/g
+const FILL = /animation\s*:[^;}]*\b(both|forwards|backwards)\b/
+const FILL_MODE = /animation-fill-mode\s*:\s*(?!none)([a-z-]+)/
 
 const drift: string[] = []
 for (const file of files) {
@@ -57,6 +71,21 @@ for (const file of files) {
     drift.push(`${rel}: ${m[1]} in ${m[0].slice(0, 44)}`)
   }
   for (const m of text.matchAll(CURVE)) drift.push(`${rel}: ${m[0]} — write var(--ease-out)`)
+  // A fill on a scroll-driven animation. The whole declaration block is read, because the
+  // timeline and the shorthand that carries the fill are two properties on the same rule.
+  for (const m of text.matchAll(TIMELINE)) {
+    // The @supports PRELUDE spells the same property, so a match inside parentheses is a
+    // feature query rather than a declaration. Without this the block read back from the
+    // prelude is whatever happened to precede the at-rule.
+    const before = text.slice(0, m.index)
+    const paren = before.lastIndexOf('(')
+    if (paren > Math.max(before.lastIndexOf('{'), before.lastIndexOf('}'), before.lastIndexOf(';'))) continue
+    const open = text.lastIndexOf('{', m.index)
+    const close = text.indexOf('}', m.index)
+    const block = text.slice(open + 1, close === -1 ? text.length : close)
+    const fill = FILL.exec(block) ?? FILL_MODE.exec(block)
+    if (fill) drift.push(`${rel}: ${m[1]} animation carries a fill (${fill[1]}) — a late frame paints it`)
+  }
 }
 
 // The two token declarations must agree; no other guard can see a drift between them.
