@@ -182,8 +182,9 @@ the activity log. One press was fifty flushes, fifty purges and fifty rows.
 - **The image carries 4.1 MB less.** The runtime stage copies `src` whole, so it was copying
   the workshop with it: 291 test files, the admin's browser half as TypeScript beside the
   bundle built from it, and the reader's islands likewise. Measured inside the published
-  2.2.12: `src` is 10.9 MB of which none of that 4.1 MB is reachable at runtime. 2.03 MB
-  compressed where it was 2.97, off every pull and every upgrade.
+  2.2.12: `src` is 10.9 MB of which none of that 4.1 MB is reachable at runtime. The layer
+  goes 2.97 MB compressed to 2.03, and the published image 85.8 MB to 85.1, read off Docker
+  Hub once 2.2.13 was pushed.
 - The pager moved into the shared admin kit, so the three screens that have one cannot disagree
   about what it looks like.
 - Eleven languages, four sets of quotation marks and one apostrophe spelled two ways: 193 strings
