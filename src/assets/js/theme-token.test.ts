@@ -91,6 +91,31 @@ describe('the word on the theme key', () => {
     expect(word()).toBe('light')
   })
 
+  it('gives each button back its OWN sun, not the first one this process saw', () => {
+    // ⚠️ THE ONE THAT WENT RED IN CI AND GREEN HERE, for four commits. The sun was kept in a
+    // module variable, so the first theme button any process drew donated its drawing to every
+    // button after it. One page carries one button, so the product never saw it; a test process
+    // carries as many as its files build, and module state is shared across files in one run.
+    // Two assertions in `palette.test.ts` failed on the Linux runner, where the file order put
+    // this file first, and passed on macOS, where it did not. This reproduces it in one file
+    // and in one order: two pages, two suns, and the second must come back as itself.
+    withKey()
+    theme()
+    page(
+      `<button data-theme-toggle data-theme-words="${WORDS}" aria-haspopup="true"`
+      + ` aria-expanded="false"><svg><rect width="8" height="8"/></svg>`
+      + `<span class="btn-token">dark</span></button>`,
+      { theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'By time' },
+    )
+    document.documentElement.removeAttribute('data-scheme')
+    document.documentElement.classList.remove('dark')
+    theme()
+    choose('dark')
+    choose('light')
+    expect(glyph()).toContain('rect')
+    expect(glyph()).not.toContain('circle')
+  })
+
   it('leaves the word alone when the server sent no pair', () => {
     // An older cached page, or a look that never draws the token. Nothing may throw, and the
     // word must not become 'undefined'.

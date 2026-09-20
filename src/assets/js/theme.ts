@@ -76,8 +76,17 @@ const MOON = 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'
  * changed under the reader the moment the bundle ran. Keeping the server's markup means the
  * icon set is the single place a shape is drawn, which is that file's whole premise, and it
  * takes fewer bytes out of a budget measured in bytes than the duplicate path did.
+ *
+ * ⚠️ PER BUTTON, not per module, and that is not hypothetical tidiness. It was one module
+ * variable until 2026-09-20, which means the FIRST theme button any process ever draws donates
+ * its sun to every button after it. One page carries one such button, so the product never saw
+ * it; a test process carries as many as its files build, and module state is shared across
+ * files in one Bun run. Two assertions in `palette.test.ts` went red in CI and green on the
+ * machine they were written on, for four commits, because the file order differs between a
+ * Linux runner and macOS: where `theme-token.test.ts` ran first its fixture's circle became
+ * the sun, and where it ran second the real one did.
  */
-let sun = ''
+const suns = new WeakMap<HTMLElement, string>()
 
 /**
  * Repaint the button to match what the reader is looking at.
@@ -93,8 +102,8 @@ let sun = ''
 function drawIcon(button: HTMLElement, dark: boolean): void {
   const svg = button.querySelector('svg')
   if (svg) {
-    if (!sun) sun = svg.innerHTML
-    svg.innerHTML = dark ? `<path d="${MOON}"/>` : sun
+    if (!suns.has(button)) suns.set(button, svg.innerHTML)
+    svg.innerHTML = dark ? `<path d="${MOON}"/>` : suns.get(button) ?? ''
   }
   const token = button.querySelector('.btn-token')
   const words = (button.dataset.themeWords ?? '').split('|')
