@@ -286,3 +286,47 @@ describe('a pen stroke over a phrase the serializer escapes', () => {
     expect(pen('==chào==\n')).not.toBe('')
   })
 })
+
+describe('a text node that carries its own newline', () => {
+  /** A paragraph built by hand, because nothing in the tree produces this shape. */
+  const para = (value: string) =>
+    ({ type: 'root', children: [{ type: 'paragraph', children: [{ type: 'text', value }] }] })
+
+  const blocks = (md: string): number =>
+    (parse(md) as unknown as { children: unknown[] }).children.length
+
+  it('keeps one paragraph one paragraph, whatever its second line begins with', () => {
+    // ⚠️ NOTHING REACHABLE PUTS A NEWLINE IN A TEXT NODE TODAY, and this says so rather than
+    // implying a live bug. Checked on 2026-09-21: the parser emits `softbreak` nodes,
+    // `from-editor.ts` splits on the newline before serializing, and `import/convert.ts`
+    // collapses HTML whitespace to spaces. The rule is held here anyway, because it belongs to
+    // the code that WRITES the format rather than to three callers that happen to be careful —
+    // the same argument `news/smtp.ts` makes about a CRLF in a header.
+    //
+    // Without the escaping, four of these six came back as TWO blocks: the author's one
+    // paragraph split into a paragraph and a heading, a quote, or a list.
+    for (const second of ['# not a heading', '> not a quote', '- not a bullet',
+      '+ not a bullet', '1. not a list', '--- not a rule']) {
+      const md = toMarkdown(para(`A sentence that wraps\n${second}`) as never)
+      expect({ second, blocks: blocks(md) }).toEqual({ second, blocks: 1 })
+    }
+  })
+
+  it('escapes a setext underline, which would otherwise eat the line above it', () => {
+    for (const under of ['===', '---']) {
+      const md = toMarkdown(para(`A sentence that wraps\n${under}`) as never)
+      expect({ under, blocks: blocks(md) }).toEqual({ under, blocks: 1 })
+      // And what it produced is still a paragraph rather than a heading.
+      expect((parse(md) as unknown as { children: { type: string }[] }).children[0]!.type)
+        .toBe('paragraph')
+    }
+  })
+
+  it('and the counter-test: a line that begins with nothing special keeps no backslash', () => {
+    // Every assertion above is satisfied by a serializer that escapes EVERYTHING, which is the
+    // failure this file's `&` rule was written about: a backslash the author never typed.
+    const md = toMarkdown(para('A sentence that wraps\nand carries on normally') as never)
+    expect(md).not.toContain('\\')
+    expect(blocks(md)).toBe(1)
+  })
+})

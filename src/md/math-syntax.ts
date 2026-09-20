@@ -49,18 +49,42 @@
 const INLINE_DOLLAR = '\\$(?![\\s$])((?:\\\\[^\\n]|[^\\\\$\\n])+?)(?<!\\s)\\$(?!\\d)'
 
 /**
+ * The body of a multi-character formula: anything, lazily, but never across another OPENER.
+ *
+ * ⚠️ THE LOOKAHEAD IS A PERFORMANCE FIX, and it is the same family as the ReDoS note above.
+ * A plain `[\s\S]+?` scans from every opener to the END OF THE TEXT when there is no closer,
+ * so a document with N unmatched openers costs N times its own length.
+ *
+ * That is the ORDINARY shape here, not a contrived one. `to-markdown.ts` escapes `[` and
+ * deliberately does not escape `]` — there is a paragraph there explaining why, and a golden
+ * fixture behind it — so one pass through the editor turns every citation like `[1]` into
+ * `\[1]`: an opener with no closer. Measured on a 90 KB post of ordinary prose carrying 2,800
+ * citations: `toPlainText` went from 3 ms as typed to 990 ms after one save, and that function
+ * feeds the excerpt, the meta description, the OG card and the RSS summary, so it runs on every
+ * listing rather than once per post.
+ *
+ * With the lookahead a failed scan stops at the next opener instead of at the end, which makes
+ * the whole sweep linear. It is also more correct: a display formula containing another display
+ * opener is not something LaTeX has.
+ */
+const until = (opener: string): string => `((?:(?!${opener})[\\s\\S])+?)`
+
+/**
  * `\(…\)` — the unambiguous inline form, and the one to prefer in new writing.
  *
  * It carries no guards because it needs none: nobody types `\(` by accident. It is offered
  * because it is what LaTeX itself uses and what most tools emit, and because a writer who
  * has been bitten once by the dollar rules above wants a form with no rules at all.
  */
-const INLINE_PAREN = '\\\\\\(([\\s\\S]+?)\\\\\\)'
+const PAREN_OPEN = '\\\\\\('
+const INLINE_PAREN = `${PAREN_OPEN}${until(PAREN_OPEN)}\\\\\\)`
 
 /** `$$…$$` and `\[…\]`, the display forms. Both may span lines; a formula on its own line is
  *  the common case and is why the block tokenizer exists at all. */
-const DISPLAY_DOLLAR = '\\$\\$([\\s\\S]+?)\\$\\$'
-const DISPLAY_BRACKET = '\\\\\\[([\\s\\S]+?)\\\\\\]'
+const DOLLAR_OPEN = '\\$\\$'
+const DISPLAY_DOLLAR = `${DOLLAR_OPEN}${until(DOLLAR_OPEN)}${DOLLAR_OPEN}`
+const BRACKET_OPEN = '\\\\\\['
+const DISPLAY_BRACKET = `${BRACKET_OPEN}${until(BRACKET_OPEN)}\\\\\\]`
 
 /**
  * The three forms that are safe to fire a TYPING rule on, exported one at a time.

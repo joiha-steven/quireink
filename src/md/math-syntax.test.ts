@@ -39,3 +39,36 @@ describe('the js/redos regression (CodeQL alert #22)', () => {
     expect(performance.now() - t0).toBeLessThan(500)
   })
 })
+
+describe('the quadratic scan after one save', () => {
+  test('a post full of escaped citations does not scan the whole text from every one', () => {
+    // ⚠️ THE ORDINARY SHAPE, NOT A CONTRIVED ONE. `to-markdown.ts` escapes `[` and deliberately
+    // does not escape `]` — there is a paragraph there and a golden fixture behind it — so one
+    // pass through the editor turns every citation like `[1]` into `\[1]`: an opening display
+    // delimiter with no closer. With the content group written `[\s\S]+?` each of them scanned
+    // to the END of the post, so the cost was the number of citations times the length.
+    //
+    // Measured on a 90 KB post of ordinary prose carrying 2,800 citations: `toPlainText` went
+    // from 3 ms as typed to 990 ms after one save, and 7 ms with the lookahead. That function
+    // feeds the excerpt, the meta description, the OG card and the RSS summary, so it runs on
+    // every listing rather than once per post.
+    const afterOneSave = 'Theo nghien cuu \\[1] va cac tai lieu \\[2] thi dieu nay da duoc chi ra.\n\n'.repeat(1400)
+    expect(afterOneSave.length).toBeGreaterThan(80_000)
+    const t0 = performance.now()
+    MATH_SYNTAX_GLOBAL.lastIndex = 0
+    expect(afterOneSave.match(MATH_SYNTAX_GLOBAL)).toBeNull()
+    // Generous by 30x against the measured 7 ms, because a CI box under load is not a stopwatch
+    // — and still two orders of magnitude under the 990 ms this is here to prevent.
+    expect(performance.now() - t0).toBeLessThan(250)
+  })
+
+  test('and the counter-test: a real display formula is still found', () => {
+    // Every assertion above is that a match came back NULL, which a broken pattern also returns.
+    MATH_SYNTAX_GLOBAL.lastIndex = 0
+    expect('before \\[x^2 + y^2\\] after'.match(MATH_SYNTAX_GLOBAL)).toEqual(['\\[x^2 + y^2\\]'])
+    MATH_SYNTAX_GLOBAL.lastIndex = 0
+    expect('a $$E = mc^2$$ b'.match(MATH_SYNTAX_GLOBAL)).toEqual(['$$E = mc^2$$'])
+    MATH_SYNTAX_GLOBAL.lastIndex = 0
+    expect('a \\(x\\) b'.match(MATH_SYNTAX_GLOBAL)).toEqual(['\\(x\\)'])
+  })
+})

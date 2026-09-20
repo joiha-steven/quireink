@@ -129,6 +129,33 @@ function escapeText(value: string, atLineStart: boolean): string {
     }
     out += /[\\`*_[<]/.test(ch) ? `\\${ch}` : ch
   }
+  // ⚠️ EVERY LINE INSIDE THE VALUE, not only the first — and ⚠️ NOTHING REACHABLE PUTS ONE
+  // THERE TODAY, which is said out loud rather than left for the next reader to discover.
+  //
+  // `atLineStart` answers "does this NODE begin a line", which is a different question from
+  // "is this position a line start". A text node holding its own newline would have its
+  // continuation escaped by neither, so a paragraph whose second line began `#`, `>`, `-`, `+`
+  // or `1.` came back as TWO BLOCKS on the next parse: the author's one paragraph split into a
+  // paragraph and a heading. Reproduced by building the node by hand — four of six shapes broke
+  // it, and the two that survived did so only by having trailing text on the line.
+  //
+  // All three real callers avoid the shape, and each was checked on 2026-09-21 rather than
+  // assumed: the parser emits `softbreak` nodes (`parse('a\nb')` has three children, not one),
+  // `from-editor.ts` splits on `\n` before it ever reaches here, and `import/convert.ts`
+  // collapses HTML whitespace to spaces. So this is the SMTP-header argument rather than a
+  // live fix: the rule belongs to the code that writes the format, not to the three callers
+  // that happen to be careful. A fourth — a paste handler, another importer — gets it free.
+  //
+  // Guarded on a `\n` being there at all, so the ordinary text node pays one `includes` and
+  // not three global regexes.
+  if (out.includes('\n')) {
+    out = out.replace(/\n(\s*)([#>+-])/g, '\n$1\\$2')
+    out = out.replace(/\n(\s*)(\d+)([.)])/g, '\n$1$2\\$3')
+    // A RUN OF `=` ON ITS OWN LINE is a setext underline, which would eat the line above it.
+    // Escaped only in that exact shape: `=` is ordinary punctuation everywhere else, and a
+    // backslash the author never typed is the failure the `&` rule above was written to avoid.
+    out = out.replace(/\n(\s*)(=+)(?=\n|$)/g, '\n$1\\$2')
+  }
   if (atLineStart) {
     out = out.replace(/^(\s*)([#>+-])/, '$1\\$2')
     out = out.replace(/^(\s*)(\d+)([.)])/, '$1$2\\$3')
