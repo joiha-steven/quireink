@@ -58,7 +58,7 @@ read from disk at runtime, so they have to exist before the service starts.
 ## 3. Configure
 
 Environment only, no config file. The full list is in the
-[README](../README.md#environment-variables); the five that matter:
+[README](../README.md#environment-variables); the six that matter:
 
 ```ini
 DATA_DIR=/var/lib/quire/data
@@ -66,8 +66,14 @@ STORAGE_LOCAL_DIR=/var/lib/quire/uploads
 SITE_URL=https://example.com
 MAX_UPLOAD_MB=64
 STORAGE_QUOTA_GB=5
+PAGE_CACHE_MB=8
 HOST=127.0.0.1
 ```
+
+**`PAGE_CACHE_MB` is how much memory this process may spend holding rendered pages**, 8 MB by
+default — the number to lower on a small box and raise on a generous one. Measured in a 128 MB
+container with 1,000 posts: 2 MB leaves the process at 75 MB, 8 MB at 90. An ordinary blog
+fits its whole archive inside the default. `0` keeps nothing ([delivery](delivery.md)).
 
 **`MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` are the app's own limits, 64 MB and 5 GB by
 default.** Keep the proxy's number and this one in step: the proxy refuses first and more

@@ -9,7 +9,7 @@ import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { savePost } from '@/content/posts'
-import { pageCache, clearCache, onFlush } from '@/server/cache'
+import { pageCache, clearCache, onFlush, budgetChars, rereadBudget } from '@/server/cache'
 import { warmCache, warmThenPurge, purgeAfterWrite } from '@/server/warm'
 import { purgeEdge } from '@/server/edge-cache'
 import { saveIntegrationKeys } from '@/store/integration-keys'
@@ -48,7 +48,7 @@ describe('the flush', () => {
 })
 
 describe('warming', () => {
-  it('renders every public post back into the page cache, and the homepage', async () => {
+  it('renders every public post back into the page cache when they all fit, and the homepage', async () => {
     await savePost({ title: 'One', content: 'body text', status: 'published', date: PAST })
     await savePost({ title: 'Two', content: 'body text', status: 'published', date: PAST })
     clearCache()
@@ -74,6 +74,120 @@ describe('warming', () => {
     expect(warmed).toBe(2) // the one live post, plus `/`
     expect(pageCache.has('/draft')).toBe(false)
     expect(pageCache.has('/later')).toBe(false)
+  })
+})
+
+describe('the budget', () => {
+  // An eighth of the budget each, so seven fit and the eighth is the one that cannot. Derived
+  // rather than typed: `PAGE_CACHE_MB` moves the number, and a test that hardcodes today's
+  // default is a test that goes red on a deployment choice rather than on a defect. Nothing in
+  // this block renders anything — the budget is a property of the container, and mixing it
+  // with the renderer would test neither.
+  const SLICE = 'x'.repeat(Math.floor(budgetChars() / 8))
+
+  it('keeps everything a blog under the budget stores, and evicts nothing', () => {
+    for (let i = 0; i < 7; i++) pageCache.set(`/p${i}`, SLICE)
+    expect(pageCache.size).toBe(7)
+    expect(pageCache.get('/p0')).toBe(SLICE)
+    expect(pageCache.chars).toBeLessThan(budgetChars())
+  })
+
+  it('drops the oldest READ page, not the oldest stored one', () => {
+    for (let i = 0; i < 7; i++) pageCache.set(`/p${i}`, SLICE)
+    // `/p0` was stored first and would be the first to go on insertion order alone. Reading
+    // it is what a reader asking for the front page does, and it has to survive that.
+    expect(pageCache.get('/p0')).toBe(SLICE)
+    pageCache.set('/p7', SLICE) // the eighth slice: something has to go
+    expect(pageCache.has('/p0')).toBe(true)
+    expect(pageCache.has('/p1')).toBe(false)
+    expect(pageCache.chars).toBeLessThanOrEqual(budgetChars())
+  })
+
+  it('refunds what an overwritten page cost, so re-warming the same paths evicts nothing', () => {
+    // The counter rising on every store and never falling is the shape that would make a
+    // site re-warming its own 7 paths evict itself down to one.
+    for (let round = 0; round < 4; round++) {
+      for (let i = 0; i < 7; i++) pageCache.set(`/p${i}`, SLICE)
+    }
+    expect(pageCache.size).toBe(7)
+  })
+
+  it('stores a page bigger than the whole budget rather than evicting it on the way in', () => {
+    pageCache.set('/huge', 'y'.repeat(budgetChars() + 10))
+    // Evicting until under budget would reach the page just stored and leave nothing at all,
+    // so an 8 MB post would be uncacheable AND would empty the cache on every request for it.
+    expect(pageCache.has('/huge')).toBe(true)
+    expect(pageCache.size).toBe(1)
+  })
+})
+
+describe('what the warmer is offered, against what a reader stores', () => {
+  const SLICE = 'x'.repeat(Math.floor(budgetChars() / 8))
+
+  it('refuses a page that would evict, where a reader request takes one', () => {
+    for (let i = 0; i < 7; i++) pageCache.set(`/p${i}`, SLICE)
+    const before = pageCache.size
+    // THE WARM MUST NOT EVICT: it renders in priority order, so the first thing thrown away
+    // would be `/`. `set` is the reader's path and evicting there is right — that page was
+    // asked for.
+    expect(pageCache.offer('/offered', SLICE)).toBe(false)
+    expect(pageCache.has('/offered')).toBe(false)
+    expect(pageCache.size).toBe(before)
+    pageCache.set('/asked-for', SLICE)
+    expect(pageCache.has('/asked-for')).toBe(true)
+    expect(pageCache.size).toBe(before)
+  })
+
+  it('keeps nothing at all when the operator has set the budget to zero', () => {
+    // `0` is NO CACHE, which is not how `env.ts`'s other two sizes read `0` — there it means no
+    // limit. A box with nothing to spare has to be able to say so, and the difference is
+    // written out in `set`.
+    const before = process.env.PAGE_CACHE_MB
+    process.env.PAGE_CACHE_MB = '0'
+    rereadBudget()
+    try {
+      pageCache.set('/nothing', 'a rendered page')
+      expect(pageCache.size).toBe(0)
+      expect(pageCache.has('/nothing')).toBe(false)
+      expect(pageCache.offer('/nothing', 'a rendered page')).toBe(false)
+    } finally {
+      if (before === undefined) delete process.env.PAGE_CACHE_MB
+      else process.env.PAGE_CACHE_MB = before
+      rereadBudget()
+    }
+    // And back to normal for every test after this one, which is the half of a seam like this
+    // that is easy to leave out. Bun runs a file's tests in one process.
+    pageCache.set('/again', 'a rendered page')
+    expect(pageCache.has('/again')).toBe(true)
+  })
+
+  it('takes the offer again once the flush has emptied the cache', () => {
+    for (let i = 0; i < 7; i++) pageCache.set(`/p${i}`, SLICE)
+    expect(pageCache.offer('/late', SLICE)).toBe(false)
+    clearCache()
+    expect(pageCache.chars).toBe(0)
+    expect(pageCache.offer('/late', SLICE)).toBe(true)
+  })
+})
+
+describe('warming an archive too big for the budget', () => {
+  it('stops at the cache, reports it, and keeps the home page it started with', async () => {
+    // Nine posts, each with a body over a megabyte: the budget is reached partway through, and
+    // what must not happen is the loop running to the end with every post evicting the last.
+    const BIG = 'word '.repeat(220_000)
+    for (let i = 0; i < 9; i++) {
+      await savePost({ title: `Big ${i}`, content: BIG, status: 'published', date: PAST })
+    }
+    clearCache()
+
+    const { warmed, capped } = await warmCache()
+    expect(capped).toBe(true)
+    expect(warmed).toBeLessThan(10) // `/` plus nine posts is what the old loop would render
+    // ⚠️ THE ASSERTION THE OFFER EXISTS FOR. With `set` in the loop this was false: `/` goes in
+    // first, so it is the least recently used and the first page the warm threw away — the one
+    // page certain to be asked for, evicted by the warm meant to have it ready.
+    expect(pageCache.has('/')).toBe(true)
+    expect(pageCache.chars).toBeLessThanOrEqual(budgetChars())
   })
 })
 

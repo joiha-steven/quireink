@@ -22,8 +22,19 @@
 // A grammar arrives in 2 to 3ms, once per language per process, and the answer is cached
 // afterwards. The output is byte-identical either way, which is the only reason this was
 // allowed to change at all.
+//
+// AND NEITHER IS SHIKI ITSELF, since 2026-09-21. The paragraph above was true of the grammars
+// and false of the engine and the bundle index that finds them: `import ... from 'shiki'` at
+// the top of this file put both on the BOOT path of every install. Measured inside a
+// container, which is where the number means something: +20.7 MB and 151 ms, before a single
+// request, on a process whose whole resident floor is 44.8 MB. A blog that writes no code paid
+// it forever and got nothing.
+//
+// It arrives on the first fence that names a language this process has not answered yet — and
+// on a restart, usually never: the rendered BODY is cached in `render-cache.ts` and survives
+// the process, so a boot that serves from that cache never reaches this file at all.
 
-import { bundledLanguages, bundledLanguagesInfo, createHighlighter, type Highlighter } from 'shiki'
+import type { Highlighter } from 'shiki'
 import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
 import { detectLang } from '@/render/detect-lang'
 import { plainCode } from '@/render/plain-code'
@@ -35,7 +46,8 @@ const THEME_KEY = `${THEMES.light}/${THEMES.dark}`
 // grammar until one is asked for.
 let hl: Promise<Highlighter> | null = null
 function highlighter(): Promise<Highlighter> {
-  hl ??= createHighlighter({ themes: [THEMES.light, THEMES.dark], langs: [] })
+  hl ??= import('shiki')
+    .then((shiki) => shiki.createHighlighter({ themes: [THEMES.light, THEMES.dark], langs: [] }))
   return hl
 }
 
@@ -47,11 +59,18 @@ function highlighter(): Promise<Highlighter> {
  * what keeps the cache honest — `bash`, `sh`, `zsh` and `shell` are one grammar, and without
  * this they would be four rows of identical HTML under four keys.
  */
-const CANON = new Map<string, string>()
-for (const id of Object.keys(bundledLanguages)) CANON.set(id, id)
-for (const info of bundledLanguagesInfo) {
-  CANON.set(info.id, info.id)
-  for (const alias of info.aliases ?? []) CANON.set(alias, info.id)
+let canon: Promise<Map<string, string>> | null = null
+function canonical(): Promise<Map<string, string>> {
+  canon ??= import('shiki').then(({ bundledLanguages, bundledLanguagesInfo }) => {
+    const map = new Map<string, string>()
+    for (const id of Object.keys(bundledLanguages)) map.set(id, id)
+    for (const info of bundledLanguagesInfo) {
+      map.set(info.id, info.id)
+      for (const alias of info.aliases ?? []) map.set(alias, info.id)
+    }
+    return map
+  })
+  return canon
 }
 
 /**
@@ -80,11 +99,11 @@ const EXTRA: Record<string, string> = {
 }
 
 /** The grammar this fence names, under any spelling — or null if it names none. */
-const resolve = (lang: string): string | null => {
-  const direct = CANON.get(lang)
+const resolve = (table: Map<string, string>, lang: string): string | null => {
+  const direct = table.get(lang)
   if (direct) return direct
   const alias = EXTRA[lang]
-  return alias ? CANON.get(alias) ?? null : null
+  return alias ? table.get(alias) ?? null : null
 }
 
 // One load per language per process, and one PROMISE per language: two code blocks in the
@@ -121,8 +140,13 @@ export async function highlightCode(code: string, lang: string): Promise<string 
   // to `detectLang`, whose Python rule matches a line opening `def ` or `class ` — so ```ruby
   // and ```elixir were published COLOURED AS PYTHON. Measured 2026-09-16, both of them.
   // A name the reader typed is now answered or left alone, never reinterpreted.
-  const named = lang === 'text' ? null : resolve(lang)
-  const language = lang === 'text' ? (resolve(detectLang(code)) ?? 'text') : (named ?? 'text')
+  //
+  // ⚠️ THE GUESS RUNS BEFORE SHIKI IS LOADED, which is the order that keeps a blog with no code
+  // from ever paying for a syntax highlighter. `detectLang` is this repository's own and needs
+  // nothing; only turning its answer into a grammar id does.
+  const spelling = lang === 'text' ? detectLang(code) : lang
+  if (spelling === 'text') return plainCode(code)
+  const language = resolve(await canonical(), spelling) ?? 'text'
 
   // Nothing to highlight WITH, so nothing pretends to. `plain-code.ts` marks the two things
   // that are true in any notation and leaves the rest alone; it needs no grammar and no cache

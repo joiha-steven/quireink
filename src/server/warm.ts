@@ -54,30 +54,46 @@ let running = false
 let again = false
 
 /**
- * Render every public article back into the page cache, plus `/`.
+ * Render public articles back into the page cache, plus `/`, until the cache is full.
  *
  * Articles and the homepage. A taxonomy listing re-renders in about 6ms because it never
  * touches a body, and warming 200 of them to save 6ms each would cost more than it saves.
+ *
+ * ⚠️ IT USED TO SAY "EVERY", and on a large archive that was the sentence that killed small
+ * boxes: `cache.ts` carries the measurement. It stops at the budget now, which is a change
+ * nothing under the budget can observe.
  *
  * `/` is the exception, and it was CLAIMED here long before it was true: this comment said
  * the home page was included and the loop below only ever walked posts and pages, so the
  * first reader after every single write paid for it. It also matters more than 6ms now that
  * `/` may be a page with a body to render (ADR 0014).
  */
-export async function warmCache(): Promise<{ warmed: number; ms: number }> {
+export async function warmCache(): Promise<{ warmed: number; ms: number; capped: boolean }> {
   const t0 = performance.now()
   // Nothing to fill when the owner has switched the cache off, and filling it anyway would
   // leave a full set of pages waiting to be served the moment it comes back on.
-  if (!(await getSettings()).cache.enabled) return { warmed: 0, ms: 0 }
+  if (!(await getSettings()).cache.enabled) return { warmed: 0, ms: 0, capped: false }
   const posts = (await getPublicPosts()).filter((p) => isPublicallyVisible(p.status, p.date))
   const pages = (await getPublicPages()).filter((p) => p.status === 'published')
   let warmed = 0
+  // Reported so the LOG says why, rather than an operator with 1,000 posts reading "warmed
+  // 330" and going looking for the 670 that failed. Nothing failed; the cache is full.
+  let capped = false
   const homeHtml = await renderHome()
-  if (homeHtml !== null) {
-    pageCache.set('/', homeHtml)
-    warmed += 1
-  }
-  for (const { slug } of [...posts, ...pages]) {
+  if (homeHtml !== null && pageCache.offer('/', homeHtml)) warmed += 1
+  // ⚠️ PAGES BEFORE POSTS, and newest post first (`getPublicPosts` is `order by date desc`).
+  // The order did not matter while everything rendered fit; under a budget it decides what an
+  // archive too big for the cache keeps. About, Contact and the like are a handful of paths
+  // that every visitor may reach from the footer, so they must not be the ones crowded out by
+  // the nine hundredth post from 2019.
+  //
+  // THIS LOOP USED TO RUN TO THE END OF THE ARCHIVE. Measured 2026-09-21, 1,000 posts in a
+  // `--memory=128m --cpus=0.25` container: it rendered 977 pages, took 74.6 seconds of a
+  // quarter CPU, and the process was OOM-killed on restart. What it was buying is one render
+  // per page per deploy — with the body cache in `render-cache.ts` behind it, an uncached
+  // article on that same box answers in 46 to 98 ms, which is a price the reader of the
+  // four-hundredth post can pay. It stops at the budget now; see the `offer` below.
+  for (const { slug } of [...pages, ...posts]) {
     // One at a time, on purpose. The point is to use the idle time BETWEEN requests, and a
     // Promise.all over seventy 360ms renders would block the loop for the whole burst.
     //
@@ -90,12 +106,17 @@ export async function warmCache(): Promise<{ warmed: number; ms: number }> {
     // between posts.
     await new Promise((resolve) => setTimeout(resolve, 0))
     const html = await renderArticle(slug)
-    if (html !== null) {
-      pageCache.set(`/${slug}`, html)
-      warmed += 1
+    if (html === null) continue
+    // `offer`, not `set`: it refuses rather than evicting, so a warm can never throw away a
+    // page an earlier lap of the same warm just rendered. `cache.ts` has the two wrong
+    // versions this replaced.
+    if (!pageCache.offer(`/${slug}`, html)) {
+      capped = true
+      break
     }
+    warmed += 1
   }
-  return { warmed, ms: Math.round(performance.now() - t0) }
+  return { warmed, ms: Math.round(performance.now() - t0), capped }
 }
 
 /**
@@ -153,8 +174,9 @@ export async function warmThenPurge(reason: string): Promise<void> {
       // Cleared BEFORE the work, so a write arriving mid-pass sets it again and earns
       // another lap. Clearing it after would swallow exactly that write.
       again = false
-      const { warmed, ms } = await warmCache()
-      console.log(`cache: warmed ${warmed} page(s) in ${ms}ms (${reason})`)
+      const { warmed, ms, capped } = await warmCache()
+      const cap = capped ? ', cache full' : ''
+      console.log(`cache: warmed ${warmed} page(s) in ${ms}ms (${reason}${cap})`)
       // Unconditional. `purgeAfterWrite`'s gap does not apply here: this is the purge that
       // carries the LAST write of a burst, and skipping it is the 2026-08-19 data-staleness
       // bug the `again` flag above exists to prevent.

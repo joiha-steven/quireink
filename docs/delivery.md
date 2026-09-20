@@ -35,6 +35,35 @@ body cache warm, and the full 74-page warm sweep **3,948 ms → 203 ms**.
   slow way. Tested with the table dropped.
 - **`clearCache()` does not touch it.** It is content-addressed; a stale row is inert.
 
+### The budget
+
+The page cache holds rendered HTML in memory and had no ceiling: the warmer renders every
+public post into it at boot and after every write, so a big archive kept every page whether
+or not anybody ever asked for one. Measured 2026-09-21 in a container, 1,000 posts,
+`--memory=128m --cpus=0.25`:
+
+| | memory | boot warm | an article |
+|---|---|---|---|
+| unbounded, as it shipped | **117.6 MB of 128**, OOM-killed on 2 of 3 restarts | 74.6 s | ~10 ms |
+| the same box, cache off | 44.8 MB idle, 66.3 MB after reads | none | 46–98 ms |
+| `PAGE_CACHE_MB=8` (the default) | 89.5 MB, 330 pages warmed | 23.3 s | ~10 ms warm, 46–98 ms cold |
+| `PAGE_CACHE_MB=2` | 74.9 MB, 82 pages warmed | 6.3 s | as above |
+
+So the cache is a budget in bytes now, `PAGE_CACHE_MB` (`env.ts`), 8 MB by default. Three
+rules, each pinned by a test in `src/server/cache.test.ts`:
+
+- **Eviction is least-recently-READ.** Insertion order alone would let a crawler walking a
+  900-post archive push the front page out, which is the one page certain to be asked for
+  again.
+- **A warm never evicts.** It renders in priority order — `/`, then the static pages, then
+  posts newest first — and `offer()` refuses a page rather than throwing away one an earlier
+  lap already paid for. `set()`, the reader's path, does evict: that page was asked for.
+- **`0` means no cache**, unlike `MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB`, where `0` means no
+  limit. A cache with no room is not a cache with an infinite one.
+
+A blog of ordinary size never reaches the budget — 100 posts of that fixture come to 2.4 MB —
+so nothing about it is observable until an archive outgrows the memory it is running on.
+
 ### The switch
 
 Both layers can be turned off together in **Settings → Server & connections → This install**

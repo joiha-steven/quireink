@@ -61,6 +61,18 @@ export type Env = {
    * uploaded.
    */
   storeQuotaBytes: number
+  /**
+   * How much rendered HTML the in-process page cache may hold, in bytes.
+   *
+   * THE DEPLOYMENT'S CEILING, like the two above, and for the same reason: how much memory
+   * this process may spend is a fact about the machine, not a preference about the blog. The
+   * owner's switch beside it (`settings.cache.enabled`) decides WHETHER there is a cache;
+   * this decides how big it may get. `server/cache.ts` carries the measurements.
+   *
+   * It is not a page count. Pages are not the same size, and a cap counted in pages is a cap
+   * that means something different on every blog.
+   */
+  pageCacheBytes: number
 }
 
 const MB = 1024 * 1024
@@ -103,5 +115,12 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
     // being the only thing that does.
     maxUploadBytes: readSize(source, 'MAX_UPLOAD_MB', MB, 64 * MB),
     storeQuotaBytes: readSize(source, 'STORAGE_QUOTA_GB', GB, 5 * GB),
+    // 8 MB, chosen for the SMALLEST box this is meant to run on rather than the largest.
+    // Measured 2026-09-21, 1,000 posts in a `--memory=128m --cpus=0.25` container: 8 MB of
+    // HTML is about 315 of those pages and leaves the process at 90 MB of 128. Unbounded, the
+    // same corpus reached 117.6 MB and was OOM-killed on restart. A blog of ordinary size is
+    // nowhere near it and behaves exactly as it always did; an operator with memory to spare
+    // raises it and gets the old behaviour back.
+    pageCacheBytes: readSize(source, 'PAGE_CACHE_MB', MB, 8 * MB),
   }
 }

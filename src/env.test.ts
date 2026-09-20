@@ -22,10 +22,14 @@ describe('readEnv', () => {
     expect(readEnv({ HOST: '' }).host).toBe('127.0.0.1')
   })
 
-  it('defaults the two size caps to 64 MB and 5 GB', () => {
+  it('defaults the three size caps to 64 MB, 5 GB and 8 MB', () => {
     const env = readEnv({})
     expect(env.maxUploadBytes).toBe(64 * MB)
     expect(env.storeQuotaBytes).toBe(5 * GB)
+    // The page cache is chosen for the smallest box this runs on, not the largest:
+    // `server/cache.ts` has the container measurements the 8 comes from.
+    expect(env.pageCacheBytes).toBe(8 * MB)
+    expect(readEnv({ PAGE_CACHE_MB: '64' }).pageCacheBytes).toBe(64 * MB)
   })
 
   it('reads 0 as no cap, and a fraction as itself', () => {
@@ -37,6 +41,7 @@ describe('readEnv', () => {
   it('throws on a size that is not a number', () => {
     expect(() => readEnv({ STORAGE_QUOTA_GB: 'five' })).toThrow(/STORAGE_QUOTA_GB/)
     expect(() => readEnv({ MAX_UPLOAD_MB: '-1' })).toThrow(/MAX_UPLOAD_MB/)
+    expect(() => readEnv({ PAGE_CACHE_MB: 'lots' })).toThrow(/PAGE_CACHE_MB/)
   })
 
   it('still refuses a bad PORT', () => {

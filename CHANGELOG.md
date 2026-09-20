@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+### It fits on a small machine
+
+A 1,000-post blog in a 128 MB container was **OOM-killed on two of three restarts**, and the
+cause was the cache warmer: it rendered every public post into memory at boot and after every
+write, whether or not anybody had ever asked for one. Measured at `--memory=128m --cpus=0.25`
+— 977 pages held, 117.6 MB of 128, and 74.6 seconds of a quarter CPU spent on every boot.
+
+- **The page cache is a budget now**, `PAGE_CACHE_MB`, 8 MB by default. The same box now sits
+  at 90 MB and survives restarts. `0` keeps nothing; raise it if the machine is generous.
+- **A blog of ordinary size cannot tell the difference.** 100 posts of that fixture come to
+  2.4 MB — the whole archive still fits, and nothing is ever evicted.
+- **What it gives up is stated rather than hidden:** an article the cache no longer holds is
+  rendered on request, which measured 46 to 98 ms on that same quarter of a CPU, against about
+  10 ms from the cache. The rendered body is still cached on disk (`render_cache`), so what a
+  reader pays for is the page around it, not the Markdown.
+- Eviction is least-recently-**read**, so a crawler walking the archive cannot push the front
+  page out, and the warm refuses a page rather than evicting one it already rendered.
+- **Shiki is no longer loaded at boot.** The grammars were already on demand; the engine and
+  the language index were not, so every install paid 20.7 MB and 151 ms for a syntax
+  highlighter before serving a request, and a blog that writes no code paid it forever. It
+  arrives on the first fence that names a language — and after a restart usually never, since
+  the rendered body comes back from disk.
+
 ### The archive can leave sealed (ADR 0060)
 
 The backup archive is the one thing here that leaves the machine, and it is a `VACUUM INTO` of

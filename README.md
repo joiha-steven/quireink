@@ -331,6 +331,7 @@ These are the only things that live outside the admin. Two matter; the rest have
 | `SETUP_CODE` | Twelve characters or more; then `/setup` asks for it instead of the log link. For installs where nobody reads a log: cloud-init, a hosting panel |
 | `MAX_UPLOAD_MB` | Largest single upload. Defaults to `64`, matching the `client_max_body_size` in the recommended vhost so the two refuse the same file. `0` = no limit |
 | `STORAGE_QUOTA_GB` | Largest the uploads folder may grow, counting the smaller copies of each image. Defaults to `5`, and an upload that would go past it is refused. `0` = no limit |
+| `PAGE_CACHE_MB` | How much rendered HTML this process keeps in memory. Defaults to `8`, which is chosen for the smallest box this runs on: an ordinary blog fits its whole archive inside it and never notices, and a 1,000-post archive stops at about 330 pages instead of holding all of them. Raise it if you have memory to spare; `0` = no cache kept in memory |
 | `CRON_SECRET` | Guards `/api/cron`, which publishes scheduled posts and tidies image variants |
 | `CRON_INTERNAL` | `0` stops the process running its own maintenance clock, for when you would rather schedule `/api/cron` yourself. On by default since [ADR 0031](./docs/decisions/0031-the-blog-winds-its-own-clock.md) |
 | `PURGE_WEBHOOK_URL` | A URL the blog POSTs to whenever it flushes its own cache, for a CDN that is not Cloudflare ([ADR 0033](./docs/decisions/0033-purging-an-edge-that-is-not-cloudflare.md)). Normally a setting instead |
