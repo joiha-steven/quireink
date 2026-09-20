@@ -127,6 +127,24 @@ COPY scripts ./scripts
 # what this stage used to install for, and all three left in September 2026.
 RUN bun run build:assets && bun run build:admin
 
+# WHAT THE SERVER OPENS, and nothing that only the BUILD opened. The runtime stage copies
+# `src` whole, so until now it copied the workshop with it. Measured inside the published
+# image on 2026-09-20: `src` is 10.9 MB, of which 291 test files are 2.5 MB, the admin's
+# browser half is 1.6 MB of TypeScript already bundled into `src/admin/dist`, and the
+# reader's islands are 316 KB already bundled into `src/assets/dist`.
+#
+# None of it is reachable at runtime, and that is three separate facts rather than an
+# impression: no file outside those two trees imports `@/admin/...` or `@/assets/js/...`,
+# `web/admin/spa.ts` serves `admin/dist`, and `web/assets.ts` imports `assets/dist/*.js` as
+# text. `src/admin/admin.css` and `utilities.css` go the same way: `build-admin.ts`
+# concatenates them INTO `dist/admin.css`, which is the one the fingerprinted route reads.
+#
+# Deleted HERE rather than in the runtime stage, because a delete in a later layer does not
+# take the bytes out of an earlier one. The COPY below has to never carry them at all.
+RUN find src -name '*.test.ts' -delete \
+ && find src/admin -mindepth 1 -maxdepth 1 ! -name dist -exec rm -rf {} + \
+ && rm -rf src/assets/js
+
 # --- runtime -----------------------------------------------------------------------------
 FROM oven/bun:1-slim
 WORKDIR /app
@@ -179,6 +197,36 @@ RUN mkdir -p "$DATA_DIR" "$STORAGE_LOCAL_DIR" && chown -R bun:bun /var/lib/quire
 # `no-new-privileges` on top of that.
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+# WHAT THIS IMAGE IS, in the fields every tool reads.
+#
+# The base image sets nine of these and until 2026-09-20 this one inherited all nine, so a
+# published Quire Ink container described itself as title `bun`, version `1.4.2-slim`, source
+# `https://github.com/oven-sh/bun`, licence NOASSERTION, and a build date belonging to
+# somebody else's build. Read off the published 2.2.12 manifest, both architectures.
+#
+# Not cosmetic for the audience this image is for. `image.source` is the field a registry
+# reads to link a package to its repository, so the GHCR page for this image pointed at Bun's;
+# and Watchtower, Diun and a NAS container UI read these same labels to tell an owner what
+# they are running and whether it has moved. An upgrade notifier comparing `image.version`
+# was comparing Bun's.
+#
+# `image.version` is now one of the places the release checklist names, and `check:docs`
+# holds it to `package.json`. `revision` and `created` are facts about one build rather than
+# about the source, so they arrive as build arguments; a local `docker compose up --build`
+# leaves them empty, which is honest, where inheriting was not.
+ARG SOURCE_COMMIT=""
+ARG BUILD_DATE=""
+LABEL org.opencontainers.image.title="Quire Ink" \
+      org.opencontainers.image.description="A self-hosted blog: one Bun process, two SQLite files, no build step." \
+      org.opencontainers.image.version="2.2.13" \
+      org.opencontainers.image.url="https://quireink.com" \
+      org.opencontainers.image.source="https://github.com/joiha-steven/quireink" \
+      org.opencontainers.image.documentation="https://github.com/joiha-steven/quireink#readme" \
+      org.opencontainers.image.licenses="PolyForm-Noncommercial-1.0.0" \
+      org.opencontainers.image.vendor="Quire Ink" \
+      org.opencontainers.image.revision="${SOURCE_COMMIT}" \
+      org.opencontainers.image.created="${BUILD_DATE}"
 
 # How the official MCP registry proves this image is ours: the value must match `name` in
 # `server.json`, and the registry reads it off the published manifest. It is a label and

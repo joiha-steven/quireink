@@ -125,6 +125,31 @@ jobs:
       - uses: actions/checkout@v5
       - run: docker build -t quireink:ci .
 
+      # THE IMAGE SAYS WHAT IT IS. Every one of these was the BASE image's value until
+      # 2026-09-20, so a published Quire Ink container called itself `bun`, version
+      # `1.4.2-slim`, source `github.com/oven-sh/bun`. A registry reads `image.source` to link
+      # a package to its repository and an upgrade notifier reads `image.version`, so the
+      # regression is silent and lands on the people least able to diagnose it. A base bump
+      # can reintroduce every one of them, which is exactly why this is a check and not a
+      # paragraph.
+      - name: it says what it is, not what it was built on
+        run: |
+          set -euo pipefail
+          for want in \
+            'org.opencontainers.image.title=Quire Ink' \
+            'org.opencontainers.image.source=https://github.com/${{ github.repository }}' \
+            'org.opencontainers.image.licenses=PolyForm-Noncommercial-1.0.0' \
+            'io.modelcontextprotocol.server.name=com.quireink/blog'
+          do
+            key=${want%%=*}; expected=${want#*=}
+            got=$(docker inspect quireink:ci --format "{{index .Config.Labels \"${key}\"}}")
+            [ "$got" = "$expected" ] || { echo "${key} is '${got}', expected '${expected}'"; exit 1; }
+          done
+          v=$(docker inspect quireink:ci --format '{{index .Config.Labels "org.opencontainers.image.version"}}')
+          pkg=$(jq -r .version package.json)
+          [ "$v" = "$pkg" ] || { echo "image.version is '${v}', package.json says '${pkg}'"; exit 1; }
+          echo "labels: title, source, licences, version ${v}, MCP name"
+
       # A root-owned bind mount: what a NAS container UI produces, and what used to crash.
       - name: it boots on a root-owned bind mount
         run: |

@@ -1,89 +1,416 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-09-20 · Quire Ink 2.2.13
 
-The last two admin lists that drew their whole table. The library and the write column were
-paged in 2.2.12; these are the same shape, found by looking for the rest of them. The comments
-queue and the activity log were already capped at 200 and are untouched.
+The largest release since 2.2.10, and most of it is about letting the writing out: the blog can
+be followed from Mastodon, read by a program, and downloaded as Markdown another tool can open.
+A piece can also say what language it is written in, which is the first time anything here could
+say that an essay is in English while the blog is in Vietnamese. Two of the new doors ship
+switched off on every install and two more ship off on an upgrade; each says so below.
 
-- **The Trash draws 100 rows of the open kind**, with the same pager and the page in the
-  address. A single bulk delete is how this screen gets big. The counts beside the tabs stay the
-  whole kind, because "how many" is what the screen is opened for.
-- **The people list draws 200 subscribers.** A newsletter is the one list here that grows
-  without anybody deciding to grow it, and the screen drew every row plus a second copy of each
-  for the phone layout. The three counts above the table are still the whole list.
-- The pager itself moved into the shared admin kit, so the three screens that have one cannot
-  disagree about what it looks like. It needs no island: it is three links, and the browser is
-  the handler, which is now written down in the wiring guard's own list of reasons.
+### The blog can be followed, from anywhere that speaks ActivityPub (ADR 0059)
+
+WebFinger, an actor, an inbox taking Follow and Undo, an outbox, HTTP Signatures both ways, and
+a delivery to every follower when a post is published, changed or withdrawn. A reader on
+Mastodon can follow this blog where they already read, which is a different act from subscribing
+to a feed rather than a worse one.
+
+- ⚠️ **Off at install and off on every upgrade.** Settings, Server and connections, Fediverse.
+  This door differs in kind from the others: switching it on gives the blog an identity in a
+  network of other people's servers, with a name, a keypair, and a list of strangers who asked
+  to hear from it. That is not a display option to acquire because the software updated
+  overnight.
+- It refuses to run with no handle and with no site address. A default handle would be an
+  identity chosen for the owner; with no site address the actor's id would say `localhost`, and
+  every signed delivery would be verified against a key fetched from the follower's own machine.
+- The handle is not the login username, and it cannot change. The handle and the address
+  together are the actor's id, cached by every server that follows the blog: change either and
+  the old actor stops existing for them, with nothing anywhere saying where it went.
+- Nothing hooks `savePost`. A post can become public three ways and stop being public two more,
+  so a sweep compares the public posts against a ledger instead: no row is a Create, a changed
+  digest an Update, a missing post a Delete. The cutoff is the moment the keypair was made, so a
+  blog with ten years of writing does not hand a decade of posts to whoever follows it that
+  afternoon.
+- The inbox takes a signature or nothing, checked against a key fetched from the actor it claims
+  to be, and the signer and the actor must be the same party. Without that second check anybody
+  holding a valid key could add or remove any follower they liked.
+- The followers collection is a count. The people who follow a blog did not agree to appear in a
+  list on it.
+- Switching the feature off does not delete the key. An identity in the fediverse is its key;
+  off means the doors stop answering, which the owner can take back. Losing four hundred
+  followers is not.
+- ⚠️ **WebFinger fails in a way nothing here can see.** It lives under `/.well-known/`, and the
+  common nginx ACME recipe claims that whole prefix with no `proxy_pass`, so the blog federates
+  perfectly in testing and is unfindable in production with no error on either side.
+  `docs/agent-ready.md` carries the narrowed form and now names the symptom.
+- v1 publishes and does not read. Replies, likes and boosts reach the inbox and are dropped: a
+  reply becoming a comment is a moderation question before it is a protocol one, and the comment
+  system here has answers for its own readers and none for the fediverse.
+
+### The blog can be read by a program (ADR 0057)
+
+`/api/v1` answers with posts, pages, notes and the terms as JSON, carrying the Markdown each
+piece was written in. Until now the only way to build a second front end, a search index, a
+static export or a link checker was to fetch every page as HTML and parse it back out, which is
+worse for the client and worse for the server.
+
+- ⚠️ **Off at install and off on every upgrade.** Settings, Server and connections, Content API.
+  The API publishes no new fact, since everything it serves is already fetchable by browsing. It
+  publishes a shape: the whole blog in as many requests as it has pages instead of as many as it
+  has readers. Whether that suits a particular blog is the owner's judgement.
+- 404 while off rather than 403, so nothing confirms the feature exists on this install.
+- Read only, so the file appears nowhere in the write gate's exception list, and no route reads
+  the session: the owner is served byte for byte what a stranger is served.
+- The projection names every field it emits rather than spreading a stored row, so a column
+  added next year reaches the public API only when somebody writes its name there. `deletedAt`,
+  `metaTitle`, `metaDescription` and the raw translation key stay behind, and so does `status`,
+  because a field that always reads the same is a field a future leak could hide behind.
+
+### A piece can say what language it is written in (ADR 0056)
+
+The admin speaks eleven languages and the reading site speaks eleven languages. A post spoke
+none: one setting went into `<html lang>` on every page. That attribute picks the hyphenation
+dictionary, the quote marks a browser draws, the CJK face a system falls back to, and the voice
+a screen reader reads in, so the reader it was most wrong for was the one listening.
+
+- Two columns on posts and pages: the language, and the group a piece's translations share. From
+  them come `<html lang>`, an hreflang set, the sitemap's alternates, and one line under the
+  title linking to the other languages.
+- ⚠️ **A piece with no language is not English.** It is "nobody has said", which is what every
+  row written before this has, and those rows render exactly as they always did. Only a piece
+  that names its language can be half of a pair, so a blog that has never touched this cannot be
+  given a wrong pair by accident.
+- A group, not a pointer. A pointer stored as a slug breaks the day that slug is renamed, and
+  three languages are a graph rather than a chain.
+- The switcher's label is in the piece's language and every link carries `lang` as well as
+  `hreflang`. A screen reader in a Vietnamese document pronounces "English" as Vietnamese unless
+  the element says otherwise, which is the one way a language switcher is worse than none.
+- A listing marks each piece too, so a Korean headline in a Vietnamese feed is set in the right
+  face and read aloud in the right voice. On the piece's own words only: the date, the category
+  and the reading time beside them stay the site speaking.
+- **What this is not: a site that follows its pieces.** The menu, the footer, the dates and the
+  reading times stay in the site's language on every page, because making a whole page follow
+  its piece means a route, a listing, a feed, a sitemap and a front page per language. ADR 0056
+  says why half of that would be worse than neither.
+
+### The writing leaves as Markdown, and comes back the same way (ADR 0055)
+
+This software imported from WordPress, Ghost, Substack and Medium and exported to none of them.
+The only way out was a tar.gz of two SQLite files, which restores this blog and which nothing
+else on earth can read. That is lock-in arrived at by omission.
+
+- A ZIP beside the backup, in the same card: every post, page and note as a Markdown file with
+  front matter, the uploads file for file, the settings whole, and a README saying what the
+  bundle is for whoever opens it in ten years.
+- There is a reader for it, and that is the point. An export whose losslessness is nobody's job
+  stops being lossless quietly, so the bundle is a fourth shape the importer recognises and a
+  test exports a blog, empties it, and imports the file back through the route the owner presses.
+- No credential leaves. The settings go in whole rather than as a hand-picked list of fields, and
+  a test plants three secrets and looks for them.
+- Image paths are left exactly as the body holds them. The bundle's README says the one thing
+  that needs saying: put `uploads/` at a web root.
+
+### A paragraph holding nothing but a link becomes a card (ADR 0058)
+
+A YouTube link has been a player here since the port, and every other link alone on its line
+stayed a line of blue text with an address in it, which is what a citation looks like when the
+author meant go and look at this. Now a link to writing elsewhere gets a title, a description
+and a picture, and a link to an uploaded PDF looks like a download instead of like a web page.
+
+- ⚠️ **On for a new blog, off for a blog that already exists.** Settings, Posts, What is on a
+  post. The bookmark card is the one that reaches out: turning it on means a save notes the URL
+  and a background tick reads that page once, to learn its title and take a copy of its picture.
+  That is a thing to be asked rather than told.
+- The Markdown does not change. The line the author wrote stays a bare URL, portable and read as
+  a link by every other renderer, which is what lets either card be switched off without
+  touching a piece of writing.
+- The picture is brought home and re-encoded, never hotlinked, so no third party learns who is
+  reading this blog. It is written under `cards/` rather than into the media library, because
+  fifty links would otherwise be fifty things to scroll past that the owner never uploaded.
+- A row is fetched once, ever. This blog does not quietly re-crawl a list of other people's
+  pages every week on the owner's behalf.
+
+### The notebook can be subscribed to, and every feed comes in two formats
+
+A note is never in the post feed, which is the point of it, and it also meant the one kind of
+writing here that speaks IndieAuth, Micropub and Webmention was the one kind nobody could
+subscribe to. There are four subscription documents now: `/feed.xml`, `/feed.json`,
+`/notes/feed.xml` and `/notes/feed.json`, all on the one existing feed switch. The per-archive
+feeds stay RSS only: sixty tag feeds in two formats is a hundred and twenty documents to keep in
+step for a format nothing polls.
+
+### Several pieces at once, in one request instead of fifty
+
+The write column has had a selection mode since the port with nowhere to send it, so fifty ticks
+were fifty parallel deletes, each flushing the page cache, purging the CDN and leaving a row in
+the activity log. One press was fifty flushes, fifty purges and fifty rows.
+
+- One request now, with Publish and Draft beside the bin. A blog that has been away for a season
+  is a column of drafts, and the way to put six of them live was to open six posts.
+- Shift fills the range and select all is one key. Both mean what is shown, because the rows all
+  ship and the island hides them: "all" taken literally would publish two hundred rows of which
+  the owner can see twelve.
+- ⚠️ A status flip pushes no revision. Only three revisions are kept per post, so publishing
+  fifty drafts would have replaced the owner's real earlier drafts with three copies of the
+  current body differing by one word, silently, on fifty posts at once.
+
+### A few improvements
+
+- **The library shows each kind as a grid or as a list, and remembers which.** Pictures were a
+  grid and files were a list with no way to ask for the other. Each kind keeps its own key and
+  its own default, because a PDF's useful facts are its name, its size and its date, which is a
+  row.
+- **The analytics screen says which days of the week readers come.** It could say what happened
+  on a given day, and how one year compared with the last, and nothing in between, so an owner
+  deciding when to publish had the answer in front of them thirty times over with no way to add
+  it up. Folded out of the chart's own buckets, so it costs no query, and the week opens on the
+  day the reader's language opens it on.
+- **The chart no longer reads as a collapse every morning.** Every window ends at now, so the
+  last column held a few hours against neighbours holding a whole day: 65, 65, 64 and then 3.
+  The bucket still being counted is reached by a dashed segment and named in the legend.
+- **Every piece now lists the pieces that are not in the top ten**, which is what that table
+  exists for. Its first ten rows were the ten titles printed directly above it.
+- **The Trash draws 100 rows of the open kind and the people list draws 200 subscribers**, with
+  the page in the address. A single bulk delete is how the Trash gets big, and a newsletter is
+  the one list here that grows without anybody deciding to grow it. The counts beside the tabs
+  and above the table stay the whole list, because "how many" is what the screen is opened for.
+- **The activity log opens on a hundred rows** rather than fifty. They were already in the
+  markup, so this is no round trip and no second query.
+- **The owner's portrait moved out of the picture library** into Files, where the favicon and the
+  app icon already are. It had been sorted among the photographs in their posts and offered by
+  the picker every time they reached for an illustration.
+- **The image carries 4.1 MB less.** The runtime stage copies `src` whole, so it was copying
+  the workshop with it: 291 test files, the admin's browser half as TypeScript beside the
+  bundle built from it, and the reader's islands likewise. Measured inside the published
+  2.2.12: `src` is 10.9 MB of which none of that 4.1 MB is reachable at runtime. 2.03 MB
+  compressed where it was 2.97, off every pull and every upgrade.
+- The pager moved into the shared admin kit, so the three screens that have one cannot disagree
+  about what it looks like.
+- Eleven languages, four sets of quotation marks and one apostrophe spelled two ways: 193 strings
+  across 18 files, each language to its own convention rather than to one rule. A thirteenth
+  static guard holds it, and nothing else in this repository would ever have gone red over any
+  of it.
+- The Vietnamese admin lost four English words it was using in a file that says "thanh bên"
+  thirteen times, and a radio button that read "as before" to readers who never saw before.
 
 ### Fixed
 
+#### Writing and readers
+
+- **One post's title could stop every subscriber's reader.** XML 1.0 admits tab, newline and
+  carriage return and nothing else below U+0020, and a conforming reader rejects the document
+  rather than the item. So a single post whose title carried a stray vertical tab took the whole
+  feed off the air, and the owner saw nothing wrong: HTML takes the same character without
+  complaint, so the post's own page looked perfect and only the subscribers stopped receiving
+  anything. They arrive by import, over MCP and off a clipboard. Measured on a fixture of ten
+  posts: eight such characters in `/feed.xml`, and the category and tag feeds carried them too.
+- **A download link in a post was broken on every install.** Storing a post strips the
+  `/uploads/` prefix from a store path and expanding it only ever put `media/` back, so
+  a link written to `/uploads/files/report.pdf` came back as a relative address resolved against the
+  post's own. A link that 404s looks like a link until somebody presses it.
+- **Six print rules shipped outside their own media block**, landing after the `}` that closes
+  `@media print`, so two `display:none!important` and a `border:0` applied on every screen. Valid
+  CSS, every selector in use, and the existing print test satisfied.
 - **A blog whose tags or series are not written in Latin or Cyrillic had no archive at all.**
   `slugify` folds those two scripts and drops everything else, and the taxonomy slug had no
-  fallback of any kind, so a tag in Japanese, Chinese, Korean, Thai, Arabic, Hebrew, Hindi or
-  Greek came back as the empty string. Every taxonomy link on every page pointed at `/tag/`,
-  which is a 404; the sitemap advertised that same dead URL and collapsed every such tag into
-  one entry; and `/tag/日本語` worked right up until the canonical check compared it against the
-  empty slug and redirected the working address into the dead one. Three of those scripts are
-  languages this admin is translated into. A post slug has had a fallback for this since the
-  Russian locale arrived; taxonomy never got one. A SERIES had it worse and was found while
-  bringing the docs in line with the taxonomy fix: `docs/features/reading.md` says a series slug
-  is made "like categories/tags", and it was, except that `resolveSeries` compared slugs only.
-  So where `/tag/日本語` at least resolved until the canonical check took it away, a series in
-  that script had no address at all, in either spelling.
+  fallback, so a tag in Japanese, Chinese, Korean, Thai, Arabic, Hebrew, Hindi or Greek came back
+  as the empty string. Every taxonomy link on every page pointed at `/tag/`, which is a 404; the
+  sitemap advertised that same dead URL and collapsed every such tag into one entry; and
+  `/tag/日本語` worked right up until the canonical check compared it against the empty slug and
+  redirected the working address into the dead one. Three of those scripts are languages this
+  admin is translated into.
+- **A series in one of those scripts had no address in either spelling**, and the admin's series
+  drawer had been printing `href="/series/"` from a second copy of the same arithmetic that was
+  never fixed. No series was in the sitemap either, so a crawler could reach one only by
+  following a link from a post inside it.
 - **A visitor's comment could become permanently unsendable.** The proof-of-work stamp is spent
-  when the comment is sent, and a refusal the reader can FIX — a mistyped address, a body over
-  the limit, a reply too deep, the minute's allowance — returned without arming a new one. The
-  next press then sent no stamp at all, which is a 400 rather than the 409 the retry knows how
-  to recover from, so the form was dead until a reload threw away what they had written. This is
-  the path every fresh install takes, since Turnstile ships off and the stamp is what stands in
-  for it.
+  when the comment is sent, and a refusal the reader can fix, a mistyped address or a body over
+  the limit, returned without arming a new one. The next press sent no stamp at all, so the form
+  was dead until a reload threw away what they had written. This is the path every fresh install
+  takes, since Turnstile ships off.
+- **Two redirects pointing at each other were accepted in silence**, and a visitor walked between
+  them until the browser gave up, twelve hops. These are 301s and a browser caches a permanent
+  redirect hard, so a reader who met the loop once kept meeting it after the owner had fixed the
+  rule.
+- **A post's summary carried its own notation into four places.** A link whose label holds a
+  bracket, a footnote, a callout tag and a table all went into the deck, the meta description,
+  the OG card and the RSS summary as the characters somebody typed. A post holding one four-cell
+  table counted fifteen words instead of four, so its reading time was wrong on the page and in
+  the panel beside the editor.
+- **A table written with one hyphen per cell was read as content.** GFM's delimiter row is one or
+  more hyphens, and the rule asked for two or more, so `| - | - |` left `- -` in all four
+  summaries. Every table fixture in the tests happens to use three hyphens, which is what an
+  editor produces and not what a person typing a small table by hand does.
+- **Six shapes the Markdown engine was wrong about**, found by feeding it what the corpus does
+  not hold: a bracket inside a link's label destroyed the link, a footnote whose definition is
+  one token was deleted, a bare URL with an underscore inside bold went to the wrong address, two
+  lists in a row became one, a footnote reference inside a pen mark flickered between saves, and
+  a pen stroke re-rolled its shape.
+- **An imported table lost its widest rows**, because GFM reads the column count off the header
+  row and HTML gets narrow first rows honestly. And the second untitled post of a blog with no
+  Latin in its titles was filed under `-2`, then `-3`, `-4`.
+
+#### Security
+
 - **A footnote could put a working event handler on the page.** A footnote's id is the author's
   own text and it goes into four HTML attributes, unescaped, with a charset that allowed quotes
   and slashes. `[^n"/onmouseover="alert(1)]` closed the `id="` attribute and opened one of its
   own; parsed into a DOM, the list item came back carrying a real `onmouseover`, on the reader's
-  page and on the owner's preview. The slash removes the need for a space, because HTML reads a
-  slash after a quoted value as an attribute separator, which is why the string looks harmless.
-  This is the one rendering path that does not go through the Markdown engine, so it broke the
-  promise that file opens with: raw HTML is escaped and shown, never rendered. Anything that can
-  write a post it did not author reaches it: the MCP door, both importers, the assistant. The id
-  is escaped now rather than narrowed, because `[^ghi-chú]` is an id people write and a stricter
-  charset would have taken it with the hole. Found in the same pass: an id containing `&` lost
-  its reference from the sentence while its note stayed in the list.
+  page and on the owner's preview. This is the one rendering path that does not go through the
+  Markdown engine. The id is escaped rather than narrowed, because `[^ghi-chú]` is an id people
+  write.
 - **The second factor could be guessed at about eighty tries a second.** The rate-limit pair on
-  the 2FA step is gated on the code NOT looking like a TOTP, so a six-digit guess was never
+  the 2FA step is gated on the code not looking like a TOTP, so a six-digit guess was never
   counted and never charged; the only cost was five tries per ticket, and a ticket costs one
-  correct password, which is exactly what an attacker at this step already has. Measured against
-  the real app from one address, sequentially: 645 guesses in 8 seconds, no 429, the account not
-  locked afterwards. With the drift window three codes are live at any instant, so that is an
-  even chance of being inside within the hour. Now counted per account and per address, the same
-  shape the password step has used all along, and cleared when the owner gets it right.
-- **Switching the MCP server on and saving left its address and its token manager invisible**
-  until the page was reloaded. Those two blocks are gated on the SAVED setting rather than on
-  the switch, deliberately and for a measured reason: this card has its own Save, so opening
-  them on the flip handed out a URL and a freshly minted token for a door that still answered
-  404. The other half of that rule was never written, and the hook was drawn twice and read by
-  nobody, so the blocks stayed shut after the save that should have opened them.
-- **A `From:` name in quotes went out as two mailboxes.** `encodeAddress` unquoted a display
-  name and never re-quoted it, so `"Blog, Inc"` was sent as `From: Blog, Inc <hi@example.com>`,
-  which RFC 5322 reads as a list of two addresses with no `Sender:`; a colon in the name made a
-  malformed group instead. The quoted spelling is the correct thing for an owner to type into
-  `smtp_from`, so this broke the input that was right, and the comment above the function had
-  been promising the opposite behaviour since the mail half became ours in 2.2.10. A non-ASCII
-  name escaped it by accident, because that one goes out as an encoded word.
-- **Two lines that went past the length a mail server allows.** A trailing space is rewritten as
-  `=20` after the encoder has decided the line fits, so 74 characters and a space came out at 77
-  where RFC 2045 allows 76; and an encoded `Subject:` was sized to 76 on its own, which is 81
-  once the header name in front of it is counted. Decoders tolerate both, which is why nothing
-  had noticed. Measured, fixed, and pinned by a sweep that tries every length around the cap.
-- **The SMTP reader cut a reply where the text first appeared rather than where the match was.**
-  A multi-line reply whose continuation carried the same characters as its final line would be
-  cut in the wrong place, leaving half of it in the buffer to be read as the answer to the next
-  command. One token: `end.index` instead of `indexOf(end[0])`.
+  correct password, which is what an attacker at this step already has. Measured against the real
+  app from one address, sequentially: 645 guesses in 8 seconds, no 429, the account not locked
+  afterwards. With the drift window three codes are live at any instant, so that is an even
+  chance of being inside within the hour.
+- **An address could write a header of its own, and a second SMTP command.** A recipient holding
+  a CRLF emitted a real `Bcc:` header, and the same characters in an envelope address are a
+  second command. Nothing reachable puts one there, so this closes no hole; it makes the rule
+  true of the code that writes RFC 5322 rather than of the four callers that happen to be
+  careful.
 - **The OAuth consent token did not pin the scope it was minted for**, so the signature for a
-  `read` consent verified against a `full` one. Only the owner's own browser can submit that
-  form and the scope is printed on it, so nothing was exploitable; but "pinning the parameters"
-  is what the function's own comment promises, and the scope is one of them.
+  `read` consent verified against a `full` one. Only the owner's own browser can submit that form
+  and the scope is printed on it, so nothing was exploitable; pinning the parameters is what the
+  function's own comment promises, and the scope is one of them.
+- **Two sweeps now ask the running app what it answers** rather than reading what it was told to.
+  Every route is asked without a session, 212 of them today, and the answer has to be not-200 or
+  a path on a list that reads like the reader's own site. A post dated an hour ahead, a draft and
+  a post in the Trash are each asked for on eighteen public surfaces at once. Both carry a
+  counter-test, because every assertion in them is that something is absent, and it is absent
+  from a page that failed to render too.
+
+#### Mail
+
+- **A `From:` name in quotes went out as two mailboxes.** `"Blog, Inc"` was sent as
+  `From: Blog, Inc <hi@example.com>`, which RFC 5322 reads as a list of two addresses with no
+  `Sender:`, and a colon in the name made a malformed group instead. The quoted spelling is the
+  correct thing for an owner to type, so this broke the input that was right.
+- **Two lines went past the length a mail server allows.** A trailing space is rewritten as `=20`
+  after the encoder has decided the line fits, so 74 characters and a space came out at 77 where
+  RFC 2045 allows 76; and an encoded subject was sized to 76 on its own, which is 81 once the
+  header name in front of it is counted.
+- **The SMTP reader cut a reply where the text first appeared rather than where the match was**,
+  leaving half of it in the buffer to be read as the answer to the next command.
+
+#### The admin
+
+- **A tab left open across a release drew the admin with no stylesheet at all.** The shell
+  carries the sheet's fingerprint and the route resolved exactly one such name, this build's, so
+  an older tab asked for its own and got a 404. Any fingerprinted name now answers with the
+  current sheet: styles one release out of step are a nudge out of place, a 404 is a bare page.
+- **The settings screen carried two Save keys for one save.** Eleven cards drew a key meant for a
+  card that can try the far end, and six of them had no route and no test behind it. Three went
+  further and printed a green lamp reporting a connection that does not exist.
+- **Seven lamps said the far end had answered, having asked nobody.** Four of them are a switch
+  with nothing behind it that could reply, and three more went green because a credential was
+  stored. The colour was never the bug, the sentence was: the vocabulary now separates "switched
+  on" from "saved, but not tried yet" from "not set up yet".
+- **Four of eleven languages printed the Save key on top of the tabs.** The group holding the key
+  and the search box could be laid out narrower than its contents, so instead of the row wrapping
+  it printed over the strip to its left. Measured at 1400px across all eleven locales: German and
+  Portuguese buried their last tab, French and Russian buried two each. The tour runs in one
+  language, which is why 213 flows were green over a header broken in four.
+- **The logo flickered on every admin page.** The server prints both spellings of every keyboard
+  chord and the picking was a text swap one beat after the first paint, so every page opened
+  wide enough to squeeze the wordmark out of its own box and then sprang back. Both spellings are
+  in the markup now and the stylesheet decides.
+- **Switching the MCP server on and saving left its address and its token manager invisible**
+  until the page was reloaded. The blocks are gated on the saved setting for a measured reason,
+  and the other half of that rule was never written.
+- **The empty state scrolled a phone sideways**, on the two screens a phone is most likely to
+  reach by accident: the empty Write sheet and the 404. Measured in a 375px window at 388 against
+  375.
+- **A migration could add a column that a fresh install never gets.** A fresh database records
+  every step as applied without running it, precisely so a duplicate column cannot throw, so the
+  column was simply missing and nothing errored. A test now reads the migrations file for every
+  `alter table add column` and asks a fresh database for each: twenty and one today.
+- **The activity log said WordPress whichever blog the posts came from.** One save loop serves
+  four importers and logged one kind, and the detail line underneath said `ghost:`.
+- **Check unused named the owner's own avatar, favicon and app icon.** The sweep only reports,
+  but the owner deletes on its word. It read two fields where a blog can hold nine pictures.
+- **A distribution with a quartile missing.** `group by` drops empty buckets, so a page everybody
+  finishes returned three rows and the screen drew them as the whole shape: the quartile that
+  mattered most, where nobody stopped, was the one not on the page.
+- **Four families of activity log row had no home**, so a sign-in, a failed sign-in, a wrong
+  authenticator code and a recovery code spent were filed under the heading for cache flushes,
+  with the cache glyph beside them.
+- **The token endpoint said it was not there** to a discovery probe the site's own markup had
+  pointed at that address a moment earlier. 405 with `Allow:` says the door is here and names the
+  knock.
+
+#### The image
+
+- **A Quire Ink container said it was Bun.** All nine OCI labels were the base image's,
+  inherited and never overridden, so a published image described itself as title `bun`,
+  version `1.4.2-slim`, source `github.com/oven-sh/bun`, licence NOASSERTION, and a build date
+  belonging to somebody else's build. Read off the published 2.2.12 manifest, both
+  architectures. That is not cosmetic for the people this image is for: a registry reads
+  `image.source` to link a package to its repository, so the GHCR page pointed at Bun's, and
+  Watchtower, Diun and a NAS container UI read the same labels to say what is running and
+  whether it has moved. An upgrade notifier comparing versions was comparing Bun's. The eight
+  fixed labels are literals in the Dockerfile, so every build shape carries them including a
+  local `docker compose up --build`; `check:docs` holds the version to `package.json` as an
+  eighth tracked place, and CI fails if the title, the source, the licence or the version ever
+  comes back wrong.
+
+#### The reading page
+
+- **The scroll fade could leave a chunk of an article or a run of cards dim, and hold it there.**
+  A scroll-driven animation's value is written in the frame, and where the frame is late, a long
+  task or a range an engine resolved once and never resolved again, the element goes on painting
+  the animation's fill. All three of them carried one. Measured by reading style after a scroll
+  with no frame in between: running text came back at opacity 0.35 and three cards at opacity 0,
+  which is a card with real height, real gaps around it and no words in it. The fill bought
+  nothing, because both ranges end where the element stops being visible. Reported three times
+  over five weeks and patched three times at the geometry end, which was never what was wrong.
+- **Five keys answered a pointer and then took the click in silence**, and one press was carved
+  in the heading ink over a surface made of the same ink, so it could not be seen at all. The
+  rule is a ledger now: a key with a hover has a press, or is named with the reason it has none.
+- **The theme key offered "dark" to a page that was already dark.** It printed the mode it would
+  switch to only when the mode had been chosen by hand; under "follow the system" or "by the
+  hour" it printed the setting instead. It now always names the opposite of what is on screen.
+- **The book button drew a scribbled ellipse on hover**, in a vocabulary no other control on the
+  page speaks. It fills with the same paper the header keys fill with.
+- **A scrolling box could not be focused.** Wide tables and display formulas take their own
+  horizontal scrollbar and neither was a tab stop, so what sat past the right edge was reachable
+  by dragging and by nothing else. Measured at 320px on a seeded blog: four of six tables
+  overflow, and seven of seven formulas.
+- **Three curves were doing the floor's one job**, and the admin's default easing was the CSS
+  framework's rather than the one this product chose, so speeds matched while shapes did not. The
+  pen's bar and its popup simply appeared where every other surface arrives. A fourteenth static
+  guard holds the rule.
+- **A small key with a border was 33.5px** against a rule that allows two heights and no others.
+  The box is `border-box`, so a bordered variant pays for its hairline out of the height it is
+  trying to keep. Thirty-one keys, measured by reading the running admin back through a browser
+  one tab at a time.
+
+### Guards
+
+- A tour flow presses the key rather than calling the endpoint, on the Markdown export, the bulk
+  bar, the language panel and the Content API card. Three of the four found a wiring bug on their
+  first run that the unit tests could not see, and issue #60 is why they exist: the Trash spent
+  thirteen days with a working endpoint and no control that called it.
+- A test that archived a backup was tarring the developer's own upload folder, 895 files, and had
+  been going green in the morning and red by midnight with nothing in the repository changed
+  between. 93 seconds and a timeout, to 739ms.
+- The i18n typography guard is the thirteenth; the motion drift guard is the fourteenth.
+
+### What 2.2.13 does not do
+
+- **ActivityPub publishes; it does not read.** Replies, likes and boosts are dropped. Following
+  other accounts, a reply becoming a comment, and boosts are not here.
+- **The Content API is read only, and it has no key.** It is all or nothing, gated by one switch:
+  there is no per-client token and no private field behind it.
+- **A piece names its language; the site does not follow it.** There is no per-language route,
+  listing, feed, sitemap or front page, and a piece can only name one of the eleven languages the
+  interface speaks.
+- **The Markdown bundle is an export, not a sync.** It is a download, and importing one back is a
+  separate press.
+- **A link card is fetched once and never refreshed**, so a title that changes on the far end
+  stays as it was read.
 
 ## 2026-09-19 · Quire Ink 2.2.12
 

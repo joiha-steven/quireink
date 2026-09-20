@@ -75,7 +75,7 @@ services:
 |---|---|
 | `latest` | The newest release. **The one to install**, because the newest release is the one carrying the fixes. |
 | `2.2` | Fixes within the 2.2 line, no feature surprises. For anyone who would rather step up a major version by hand. |
-| `2.2.12` | One exact release. Nothing moves, ever. |
+| `2.2.13` | One exact release. Nothing moves, ever. |
 
 `linux/amd64` and `linux/arm64`, each built on its own native runner. The same image is on
 GHCR as `ghcr.io/joiha-steven/quireink`, pushed by the same run with the same digest.
@@ -108,6 +108,20 @@ comments, a newsletter, and analytics without cookies. An article page costs abo
 
 An AI agent can write and publish for you over MCP, through exactly the rules the admin
 follows, and you can take its access away at any moment.
+
+Three more doors, each switched off until you turn it on: the blog can be **followed from
+Mastodon** and anywhere else that speaks ActivityPub, **read by a program** over a read-only
+JSON API, and **downloaded as Markdown** in a ZIP that another blog engine can import. Nothing
+here holds your writing hostage.
+
+## Upgrading
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Or `docker pull quireink/quireink:latest` and start the container again. The schema is applied
+at boot, inside a transaction, so there is no migration command to run. Take a backup first.
 
 ## Backups
 

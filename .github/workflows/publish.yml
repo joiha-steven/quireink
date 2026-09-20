@@ -128,6 +128,13 @@ jobs:
           # manifest a puller cannot resolve. Signing the release is worth doing and is not
           # worth doing badly on the first tag; it is a follow-up, not a silent omission.
           provenance: false
+          # The two labels that are facts about THIS build rather than about the source. The
+          # other eight are literals in the Dockerfile, so every build shape carries them,
+          # including a `docker compose up --build` on somebody's NAS; these two are empty
+          # there, which is honest, and filled here.
+          build-args: |
+            SOURCE_COMMIT=${{ github.sha }}
+            BUILD_DATE=${{ github.event.repository.updated_at }}
           outputs: type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Save the digest for the merge step

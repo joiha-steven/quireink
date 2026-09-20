@@ -23,7 +23,7 @@ On any behavior change, update the matching doc in the SAME change:
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (do NOT auto-bump):** the version is **`2.2.12`**, cut 2026-09-19, the release that gave Gemini back to the assistant and paged two admin screens (2.2.11 was the repair release for 2.2.10, both 2026-09-16). From 2.0
+- **Versioning (do NOT auto-bump):** the version is **`2.2.13`**, cut 2026-09-20, the release that let the writing out: followable over ActivityPub, readable by a program, downloadable as Markdown, and a piece that can say what language it is written in (2.2.12 was 2026-09-19). From 2.0
   the number is semver and means something (the 1.5.x `x` was a running counter): MAJOR for a
   break in how the thing is installed or run, MINOR for a feature, PATCH for a fix. The owner
   picks the number, and has taken the patch slot for minor-sized work nine releases running;
@@ -36,16 +36,19 @@ On any behavior change, update the matching doc in the SAME change:
   (there is no binary: [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "<version> - <tagline>" --notes-file <file>`,
   written to the **shape a release note has to have**, below.
-  The version lives in exactly **seven** tracked places: `package.json`, the version chip
+  The version lives in exactly **eight** tracked places: `package.json`, the version chip
   right under the wordmark at the top of **both** READMEs (a line that is just `` `<version>` ``
   and is the text title left when the wordmark image arrived, 2026-08-27), this line, and
   `server.json`, the manifest the MCP registry publishes from (added 2026-08-30, found two
   releases behind at `2.2.1` because nothing had ever named it), and the image pin in
   `deploy/kubernetes/statefulset.yaml` (the one manifest that pins an exact tag) and the tag
-  table in `docs/dockerhub-overview.md`, plus
+  table in `docs/dockerhub-overview.md`, and `org.opencontainers.image.version` in the
+  `Dockerfile` (added 2026-09-20: until then the image carried the BASE image's nine OCI
+  labels unchanged, so a published container said its title was `bun` and its version
+  `1.4.2-slim`, which is the field every upgrade notifier reads), plus
   the CHANGELOG entry heading and each README's release-note paragraph, which is rewritten
   per release anyway.
-  This line has lagged the product three times; `grep -rn '<old>' package.json server.json README.md README.vi.md docs/conventions/releases.md`
+  This line has lagged the product three times; `grep -rn '<old>' package.json server.json README.md README.vi.md Dockerfile docs/conventions/releases.md`
   before tagging, and `check:docs` now fails on a stale pin.
   **The release-note paragraph says what the version CANNOT do, not only what it can.**
   Owner's instruction, 2026-09-01: a reader deciding whether to install this needs the limits

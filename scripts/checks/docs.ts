@@ -226,7 +226,7 @@ for (const file of files) {
 
 // 7. The version, everywhere it is written down, is the version in package.json.
 //
-// The release checklist's step one is bumping SEVEN tracked places, and
+// The release checklist's step one is bumping EIGHT tracked places, and
 // `docs/conventions/releases.md` records the number going out inconsistent THREE times.
 // A checklist that has failed three times is not a checklist problem, it is a missing
 // guard — the same lesson as every other file in this directory. The chip is the line
@@ -249,6 +249,12 @@ for (const [file, pattern, what] of [
   // exact pin means and must show the current one to mean anything.
   ['deploy/kubernetes/statefulset.yaml', `image: quireink/quireink:${pkgVersion}`, 'the image pin'],
   ['docs/dockerhub-overview.md', `| \`${pkgVersion}\` |`, 'the tag table'],
+  // The image's own OCI label, added 2026-09-20. Every tool that watches a container for an
+  // upgrade reads this field, and until that date it carried the BASE image's value: a
+  // published Quire Ink said `org.opencontainers.image.version=1.4.2-slim`, which is Bun's.
+  // The label is a literal in the Dockerfile, so it is the eighth place a release has to move
+  // and the eighth this rule holds.
+  ['Dockerfile', `org.opencontainers.image.version="${pkgVersion}"`, 'the image label'],
 ] as const) {
   if (!readFileSync(join(ROOT, file), 'utf8').includes(pattern)) {
     violations.push(`${file}: ${what} does not say ${pkgVersion} (package.json does)`)
