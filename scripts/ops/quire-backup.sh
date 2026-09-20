@@ -37,6 +37,12 @@ set -uo pipefail
 DATA="${QUIRE_DATA:-/var/lib/quire/data}"
 UPLOADS="${QUIRE_UPLOADS:-/var/lib/quire/uploads}"
 BUN="${QUIRE_BUN:-$HOME/.bun/bin/bun}"
+# Where the checkout is, needed only to reach `scripts/backup-decrypt.ts` when sealing.
+APP="${QUIRE_APP:-/home/quire/app}"
+# One or more PUBLIC keys, space separated, as the Backups card printed them. Empty means the
+# archive goes up in the clear, which is what this script has always done. Only public halves
+# belong here: this box can then lock an archive and cannot open one (ADR 0060).
+BACKUP_TO="${QUIRE_BACKUP_TO:-}"
 # An rclone remote and a path under it: `rclone config` names the remote, this points into
 # it. There is no default worth guessing, so an unset value stops the run.
 REMOTE="${QUIRE_BACKUP_REMOTE:?set QUIRE_BACKUP_REMOTE, e.g. r2:my-bucket/my-blog}"
@@ -87,8 +93,33 @@ for db in "$DATA"/*.db; do
 done
 [ -n "$(ls -A "$TMP")" ] || fail "no databases found in $DATA"
 
-tar -C "$TMP" -czf "$ARCHIVE" . 2>>"$LOG" || fail "tar"
-rclone copyto "$ARCHIVE" "$REMOTE/db/quire-${TAG}.tar.gz" 2>>"$LOG" || fail "rclone db"
+# SEALED, WHEN THE OPERATOR HAS SAID SO (ADR 0060).
+#
+# QUIRE_BACKUP_TO holds one or more public keys, space separated, exactly as the admin's
+# Backups card printed them. Only PUBLIC halves are ever named here: this script can lock an
+# archive and cannot open one, which is the property worth having on a box running cron.
+#
+# A PIPE, not a second file. The tar is the whole blob store and this runs on the machine that
+# is already short of disk; staging a plaintext copy first would also leave one lying in $STAGE
+# for as long as the encrypt took.
+#
+# ⚠️ `set -o pipefail` IS ALREADY ON at the top of this file, which is what makes `|| fail`
+# below see a tar that died mid-stream. Without it the exit status would be bun's alone and a
+# truncated archive would ship reporting success.
+if [ -n "$BACKUP_TO" ]; then
+  ARCHIVE="$STAGE/quire-${TAG}.tar.gz.enc"
+  REMOTE_NAME="quire-${TAG}.tar.gz.enc"
+  # shellcheck disable=SC2086
+  TO=""; for k in $BACKUP_TO; do TO="$TO --to $k"; done
+  # shellcheck disable=SC2086
+  tar -C "$TMP" -cz . 2>>"$LOG" \
+    | "$BUN" "$APP/scripts/backup-decrypt.ts" --encrypt $TO > "$ARCHIVE" 2>>"$LOG" \
+    || fail "tar | encrypt"
+else
+  REMOTE_NAME="quire-${TAG}.tar.gz"
+  tar -C "$TMP" -czf "$ARCHIVE" . 2>>"$LOG" || fail "tar"
+fi
+rclone copyto "$ARCHIVE" "$REMOTE/db/$REMOTE_NAME" 2>>"$LOG" || fail "rclone db"
 log "db ($TAG) -> $(du -h "$ARCHIVE" | cut -f1)"
 
 if [ -d "$UPLOADS" ]; then

@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { saveSettings } from '@/content/settings'
+import { DEFAULT_BACKUPS } from '@/content/settings-defaults'
 import {
   normalizePrefix, replicateSnapshot, offsiteTest, offsiteTarget, type OffsiteClient,
 } from '@/server/backup-offsite'
@@ -40,7 +41,7 @@ describe('normalizePrefix', () => {
 
 describe('replicateSnapshot', () => {
   it('ships under the prefix and prunes only our own shape past keep', async () => {
-    await saveSettings({ backups: { enabled: true, intervalDays: 1, keep: 2 } })
+    await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 1, keep: 2 } })
     const holding = [
       'blog/quire-2026-08-01T0100.tar.gz',
       'blog/quire-2026-08-02T0100.tar.gz',

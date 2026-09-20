@@ -200,6 +200,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'account', label: 'featActivityLog', note: 'featActivityLogDesc' },
   { tab: 'server', label: 'clearCache' },
   { tab: 'server', label: 'backupAuto' },
+  { tab: 'server', label: 'backupEncrypt', note: 'backupEncryptDesc' },
+  { tab: 'server', label: 'backupKeysPass', note: 'backupKeysPassHint' },
   { tab: 'server', label: 'offsiteTitle', note: 'offsiteHelp' },
   { tab: 'server', label: 's3Bucket' },
   { tab: 'server', label: 'offsiteTest' },

@@ -2,13 +2,17 @@
 // back-compat shims). No DB, no Blob, no React. settings.ts depends on this ONE
 // WAY (settings -> settings-sanitize, never back) for its getSettings/saveSettings merge.
 
-import type { BackupSettings, CacheSettings, DashboardSettings, CommentSettings, FeatureSettings, GallerySettings, FigureSettings, HomeSettings, McpSettings, ApiSettings, ActivityPubSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings, KeyFeedback } from '@/types'
+import type { CacheSettings, DashboardSettings, CommentSettings, FeatureSettings, GallerySettings, FigureSettings, HomeSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, InkSettings, KeyFeedback } from '@/types'
 import { DEFAULT_PRESET_ID, isPresetId, defaultThemes, THEME_PRESETS } from '@/content/themes'
 import { withHolesFilled } from '@/content/settings-partial'
 // The value scrubbers, re-exported so that every caller of this module keeps working:
 // `clampNumber` alone has five import sites. See `settings-scrub.ts` for the seam.
-export { clampNumber, sanitizeCss, sanitizeSnippet, sanitizeUrl } from '@/content/settings-scrub'
-import { clampNumber } from '@/content/settings-scrub'
+export { bool, clampNumber, isRecipient, sanitizeCss, sanitizeSnippet, sanitizeUrl } from '@/content/settings-scrub'
+// The doors moved to `settings-doors.ts` (2026-09-20), on the seam `types-doors.ts` takes.
+export {
+  sanitizeAi, sanitizeApi, sanitizeActivityPub, sanitizeBackups, sanitizeMcp,
+} from '@/content/settings-doors'
+import { bool, clampNumber } from '@/content/settings-scrub'
 
 // Keep only well-formed menu items (label + href both present).
 export function sanitizeMenu(input: unknown, fallback: MenuItem[]): MenuItem[] {
@@ -88,8 +92,6 @@ export function sanitizeEnabledPalettes(input: unknown, defaultId: string): stri
   return THEME_PRESETS.map((p) => p.id).filter((id) => want.has(id))
 }
 
-export const bool = (v: unknown, fallback: boolean): boolean => (typeof v === 'boolean' ? v : fallback)
-
 export function sanitizeSeo(input: unknown, fallback: SeoSettings): SeoSettings {
   const o = (input ?? {}) as Partial<SeoSettings>
   return {
@@ -149,45 +151,8 @@ export function sanitizeComments(input: unknown, fallback: CommentSettings): Com
   }
 }
 
-export function sanitizeMcp(input: unknown, fallback: McpSettings): McpSettings {
-  const o = (input ?? {}) as Partial<McpSettings>
-  return { enabled: bool(o.enabled, fallback.enabled) }
-}
 
-/**
- * The Content API switch (ADR 0057).
- *
- * Its own function rather than a second call to `sanitizeMcp`, which happens to take the same
- * shape today. Two switches that are equal by coincidence are a shared function waiting to be
- * given a second field for one of them — and then the other silently grows it too.
- */
-export function sanitizeApi(input: unknown, fallback: ApiSettings): ApiSettings {
-  const o = (input ?? {}) as Partial<ApiSettings>
-  return { enabled: bool(o.enabled, fallback.enabled) }
-}
 
-/**
- * The ActivityPub switch and the handle (ADR 0059).
- *
- * ⚠️ THE HANDLE IS NARROWED HARD, and not out of tidiness. It goes into a WebFinger resource
- * (`acct:name@host`), into an actor id URL, and into `preferredUsername`, and the fediverse's
- * own convention for all three is the same small alphabet. A handle with a dot in it collides
- * with the domain half; one with a slash changes the URL's shape; one with a capital is matched
- * case-sensitively by some servers and not others, so the same blog answers two names.
- *
- * Anything outside the alphabet is DROPPED rather than refusing the whole save: the owner is
- * typing a name, not a regular expression, and a save that silently keeps the old handle would
- * be worse — it is the one field here that cannot be changed later without consequence.
- */
-export function sanitizeActivityPub(
-  input: unknown, fallback: ActivityPubSettings,
-): ActivityPubSettings {
-  const o = (input ?? {}) as Partial<ActivityPubSettings>
-  const handle = typeof o.handle === 'string'
-    ? o.handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30)
-    : fallback.handle
-  return { enabled: bool(o.enabled, fallback.enabled), handle }
-}
 
 /**
  * A colour the owner typed, or '' — and '' is a DECISION, not an absence: it means "use the
@@ -214,14 +179,6 @@ export function sanitizeInks(input: unknown, fallback: InkSettings): InkSettings
   return out
 }
 
-export function sanitizeAi(input: unknown, fallback: AiSettings): AiSettings {
-  const o = (input ?? {}) as Partial<AiSettings>
-  return {
-    altText: bool(o.altText, fallback.altText),
-    excerpt: bool(o.excerpt, fallback.excerpt),
-    commentGuard: bool(o.commentGuard, fallback.commentGuard),
-  }
-}
 
 /**
  * A mount path for the post list: one leading slash, one segment, no trailing slash.
@@ -372,14 +329,6 @@ export function sanitizeMotion(input: unknown, fallback: MotionSettings): Motion
   }
 }
 
-export function sanitizeBackups(input: unknown, fallback: BackupSettings): BackupSettings {
-  const o = (input ?? {}) as Partial<BackupSettings>
-  return {
-    enabled: bool(o.enabled, fallback.enabled),
-    intervalDays: clampNumber(o.intervalDays, 1, 30, fallback.intervalDays),
-    keep: clampNumber(o.keep, 1, 30, fallback.keep),
-  }
-}
 
 // Featured-post slugs: trimmed, de-duped, capped. Non-array (or absent) → the fallback.
 // Existence/visibility is enforced at render time, not here (a slug can be featured before

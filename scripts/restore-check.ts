@@ -23,7 +23,10 @@
 // was started with, because the comparison is against ITS files.
 
 import { Database } from 'bun:sqlite'
-import { existsSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, renameSync, rmSync, statSync } from 'node:fs'
+import { createPrivateKey } from 'node:crypto'
+import { MAGIC, decodeSecret } from '@/server/backup-crypt'
+import { decryptFile } from './backup-decrypt'
 import { join, relative } from 'node:path'
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:3399'
@@ -181,6 +184,31 @@ if (!res.ok) {
 const archive = join(WORK, 'backup.tar.gz')
 await Bun.write(archive, await res.arrayBuffer())
 say(true, `the archive downloaded (${Math.round(statSync(archive).size / 1024)} KB)`)
+
+// SEALED OR NOT, DECIDED BY THE BYTES (ADR 0060).
+//
+// ⚠️ SNIFFED RATHER THAN ASKED. This script does not read the instance's settings — it only
+// has a session and a base URL — and the file it was handed is named by the route, not by it.
+// The first nine bytes say what the archive is, which is the whole reason the envelope opens
+// with a word instead of with a length.
+//
+// ⚠️ AND IT REFUSES TO PASS QUIETLY. An encrypted archive with no key here is not "nothing to
+// check": it is the one case where this harness could report a clean restore having restored
+// nothing. `QUIRE_BACKUP_IDENTITY` is the key the tour's own instance was set up with.
+if (Buffer.from(await Bun.file(archive).slice(0, 9).arrayBuffer()).toString() === MAGIC) {
+  const secret = (process.env.QUIRE_BACKUP_IDENTITY ?? '').trim()
+  if (!secret) {
+    console.log('✗ the archive is encrypted and QUIRE_BACKUP_IDENTITY is not set — cannot check it')
+    process.exit(1)
+  }
+  const sealed = join(WORK, 'backup.sealed')
+  renameSync(archive, sealed)
+  await decryptFile(sealed, archive, createPrivateKey({
+    key: Buffer.concat([Buffer.from('302e020100300506032b656e04220420', 'hex'), decodeSecret(secret)]),
+    format: 'der', type: 'pkcs8',
+  }))
+  say(true, `the archive decrypted (${Math.round(statSync(archive).size / 1024)} KB)`)
+}
 
 // BSD tar and GNU tar both extract this; only the deploy's `--transform` needs GNU.
 const extract = await Bun.$`tar -xzf ${archive} -C ${WORK}`.quiet().nothrow()

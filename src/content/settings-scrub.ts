@@ -48,3 +48,19 @@ export function clampNumber(value: unknown, min: number, max: number, fallback: 
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
   return Math.min(max, Math.max(min, Math.round(value)))
 }
+
+/**
+ * A backup recipient, as it is written down: the prefix and 32 base64url bytes (ADR 0060).
+ *
+ * A VALUE rule and not a group one, which is why it is here: it knows nothing about backups,
+ * only about the shape of a key. Checked rather than parsed, so `content/` does not reach into
+ * `server/` for something it can describe in one line — `server/backup-crypt.ts` is what
+ * actually decodes it, and refuses anything this would have let through.
+ */
+export const isRecipient = (v: unknown): v is string =>
+  typeof v === 'string' && /^quire-backup-pub-1[A-Za-z0-9_-]{43}$/.test(v)
+
+/** A boolean, or the fallback. Moved here from `settings-sanitize.ts` when the doors split
+ * out of it: both files need it, and a door importing it back from the group file would be a
+ * cycle for the sake of one line. */
+export const bool = (v: unknown, fallback: boolean): boolean => (typeof v === 'boolean' ? v : fallback)

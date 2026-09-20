@@ -1396,7 +1396,7 @@ export type AdminStrings = {
   maxUploadHint: string
   storageQuotaLabel: string
   storageQuotaHint: string
-  // backups (Google Drive)
+  // backups, and the envelope
   backupTitle: string
   offsiteTitle: string
   offsiteHelp: string
@@ -1423,6 +1423,15 @@ export type AdminStrings = {
   backupNever: string
   backupToastOk: string
   backupToastFail: string
+  // the envelope an archive travels in (ADR 0060)
+  backupEncrypt: string
+  backupEncryptDesc: string
+  backupEncryptWarn: string
+  backupKeysPass: string
+  backupKeysPassHint: string
+  backupKeysMake: string
+  backupKeysShown: string
+  backupKeysReady: string
   // redirects (Settings → SEO)
   redirectsTitle: string
   redirectsHint: string

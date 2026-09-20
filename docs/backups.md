@@ -13,7 +13,9 @@ my writing somewhere else" and is [its own section below](#the-markdown-export-n
 | **Off-server, ops script** | R2, hourly + daily tiers | the same, for a fleet running its own shipping | [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) |
 
 All four take the same `VACUUM INTO` snapshot of both databases plus the uploads tree. They
-differ only in where the file ends up and who decides when.
+differ only in where the file ends up and who decides when — and, since 2.2.13, in whether it
+is [sealed](#encryption) on the way out, which the first three inherit from one switch and the
+ops script takes as a variable.
 
 A sibling under the same env-var convention, [`scripts/ops/quire-uptime.sh`](../scripts/ops/quire-uptime.sh),
 watches a list of URLs from cron and announces DOWN/UP through the same webhook file the
@@ -112,6 +114,65 @@ brings its own sessions and its own mail server back with it.
 > `/var/lib/quire`. If you named your service something else, everything here is an
 > environment variable; see [Instance configuration](#instance-configuration).
 
+## Encryption
+
+Off at install and off on upgrade. **Settings → Server & connections → Backups.**
+[ADR 0060](./decisions/0060-the-archive-leaves-sealed.md) has the format and the argument.
+
+### What it is for, and what it is not for
+
+The paragraph above is the case for it: the session secret and the SMTP password are *inside*
+the snapshot, and so are `users.totp_secret`, the AI key, the Cloudflare token, the S3 pair, the
+fediverse actor's private key and every subscriber's address. The archive is also the one thing
+here that leaves the machine — into a bucket, onto a laptop, into a cloud drive.
+
+It is not encryption at rest for the blog. The live database is untouched, and a reader with
+root on the box reads it whether this switch is on or off. What this closes is the copy that
+travels.
+
+### The two keys
+
+Both are X25519 **public** halves, so this server can lock an archive and cannot open one. That
+is the point rather than a detail: a passphrase kept on the box so that the schedule can run
+unattended is a passphrase whoever owns the box now also has.
+
+| | What it is | Where it lives |
+|:--|:--|:--|
+| **Identity** | generated when you set encryption up | shown **once**, on screen. Save it. Nothing on the server keeps a copy |
+| **Passphrase** | typed once, at setup | nowhere. A keypair is derived from it with scrypt; the public half and the salt are kept, the words are not |
+
+**Either one opens any sealed archive.** There are two because a file can be lost and a memory
+can be forgotten, and one recipient would have introduced exactly the failure this feature
+exists to prevent.
+
+⚠️ **Lose both and a sealed archive cannot be opened, by you or by anybody.** There is no
+recovery path, no support address and no back door. That is what makes it worth switching on.
+
+### Opening one
+
+Encrypted archives are named `quire-<tag>.tar.gz.enc` and begin with the word `QUIREBAK1`.
+
+```sh
+bun scripts/backup-decrypt.ts quire-<tag>.tar.gz.enc --identity key.txt
+bun scripts/backup-decrypt.ts quire-<tag>.tar.gz.enc --passphrase
+```
+
+Either writes `quire-<tag>.tar.gz` beside it, and from there the restore below is unchanged.
+The script ships inside the image and needs nothing running. If it is gone too, ADR 0060
+describes the format completely enough to rebuild a reader from it — which is why it is written
+out there rather than pointed at in code.
+
+### The ops script
+
+[`quire-backup.sh`](../scripts/ops/quire-backup.sh) takes its recipients from
+`QUIRE_BACKUP_TO`, one or more public keys separated by spaces, exactly as the admin printed
+them. Unset means it ships in the clear, as it always has. Only public halves belong in that
+variable: the box can then seal an archive and cannot open one.
+
+⚠️ It seals the **database tar** only. That script syncs uploads as a tree with `rclone` rather
+than putting them in the archive, so the images go up as themselves. Use `rclone crypt` for those
+if they matter, or use the built-in off-site copy, which puts everything in the one sealed file.
+
 ## Schedule and retention
 
 - **Hourly** (`:17`) and **daily** (`20:40`). Both take the same snapshot; only the tag
@@ -129,6 +190,8 @@ has to stop: copying a database under a running process is the torn-state proble
 backup itself avoids, in the other direction. That is also why there is no restore button.
 
 ```sh
+# If the name ends .enc, open it first (see Encryption above):
+#   bun scripts/backup-decrypt.ts quire-<tag>.tar.gz.enc --passphrase
 tar -xzf quire-<tag>.tar.gz -C /tmp/restore
 sqlite3 /tmp/restore/quire.db 'pragma integrity_check;'   # expect: ok
 sqlite3 /tmp/restore/quire.db 'select count(*) from posts;'

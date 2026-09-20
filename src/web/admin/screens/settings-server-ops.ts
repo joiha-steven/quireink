@@ -25,7 +25,7 @@ import type { UpdateState } from '@/server/update-check'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { SHEET_TOOL, SHEET_TOOL_DANGER, buttonClass } from '@/admin-shared/kit'
 import { META, NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
-import { group, panelCard, settingRow, switchList, switchRow, textField } from '@/web/admin/fields'
+import { group, panelCard, settingRow, switchList, switchRow, textControl, textField } from '@/web/admin/fields'
 import { PANEL_LIST, connectionCard, loadFailure, pairGrid } from '@/web/admin/fields-box'
 import { gate } from '@/web/admin/fields-pic'
 import { lamp } from '@/web/admin/kit'
@@ -185,6 +185,7 @@ const snapshotRow = (t: AdminStrings): string =>
  */
 export function backupsCard(t: AdminStrings, s: SiteSettings): string {
   const b = s.backups
+  const hasKeys = b.pubKey !== '' && b.passPub !== ''
   // ⚠️ THE NUMBER'S OWN WIDTH, which is `textField`'s default for `type="number"` and not an
   // oversight. `width: 'full'` stretched a box holding the digit 4 to 380px in a 503px column —
   // measured 2026-09-15, where React drew 112px. A SHORT ANSWER SITS IN A SHORT FIELD: the
@@ -205,6 +206,46 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
     + `<p class="${NOTE_TEXT}">${escapeHtml(t.exportWritingHint)}</p>`
     + `<button type="button" data-writing-export class="${buttonClass('secondary', 'sm')}">`
     + `${escapeHtml(t.exportWritingNow)}</button>`
+    + `</div>`
+    // ----- the envelope (ADR 0060) ---------------------------------------------------
+    //
+    // ⚠️ IT SITS ABOVE THE SCHEDULE AND BELOW THE TWO DOWNLOAD KEYS, because it is a fact about
+    // WHAT those keys hand over rather than about when a snapshot is taken. `docs/backups.md`
+    // is ordered the same way and for the same reason: what is copied, then what form it is in,
+    // then how often.
+    //
+    // ⚠️ THE WARNING IS `META`, NOT `NOTE_TEXT`. The latter carries `admin-note`, which the
+    // explanations switch hides — and this is the sentence somebody needs in order to DECIDE.
+    // A caution that only appears once the thing is on is a caution nobody read in time.
+    + `<div class="space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
+    + `<p class="${META}">${escapeHtml(t.backupEncryptWarn)}</p>`
+    // BOTH FACES SHIP, ONE HIDDEN — the arrangement the lamps below already use, and for the
+    // same reason: the island may not draw markup, so the server draws each answer and the
+    // island picks. Setting the keys up swaps which one is showing, with no reload.
+    + `<div data-backup-keys-setup${hasKeys ? ' hidden' : ''} class="space-y-3">`
+    + settingRow({
+      label: t.backupKeysPass,
+      note: t.backupKeysPassHint,
+      forId: 'f-backup-pass',
+      // ⚠️ NO `data-k`, and that is the rule rather than an omission: a passphrase must never
+      // be a field the settings sheet collects and PUTs. It goes to `/api/backup/keys`, once,
+      // and what comes back is a public key. `settings-people.ts` states the same rule.
+      control: textControl({
+        value: '', type: 'password', attrs: 'id="f-backup-pass" data-backup-pass autocomplete="new-password"',
+      }),
+    })
+    + `<button type="button" data-backup-keys class="${buttonClass('secondary', 'sm')}">`
+    + `${escapeHtml(t.backupKeysMake)}</button></div>`
+    + `<p class="${NOTE_TEXT}" data-backup-keys-done${hasKeys ? '' : ' hidden'}>`
+    + `${escapeHtml(t.backupKeysReady)}</p>`
+    // The identity, once. It is not in the markup the server sends — the island writes it in
+    // from the one response that carries it, and nothing on this machine keeps a copy.
+    + `<div data-backup-secret hidden class="space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800/60 dark:bg-amber-950/20">`
+    + `<p class="${META}">${escapeHtml(t.backupKeysShown)}</p>`
+    + `<code data-backup-secret-value class="block break-all font-mono text-xs"></code></div>`
+    + switchList(switchRow({
+      k: 'backups.encrypt', label: t.backupEncrypt, note: t.backupEncryptDesc, on: b.encrypt,
+    }))
     + `</div>`
     + `<div class="space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
     + switchList(switchRow({

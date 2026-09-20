@@ -25,6 +25,8 @@ import { Database } from 'bun:sqlite'
 import { db, analyticsDb } from '@/store/db'
 import { getSettings } from '@/content/settings'
 import { replicateSnapshot } from '@/server/backup-offsite'
+import { sealer } from '@/server/backup-crypt'
+import type { SiteSettings } from '@/types'
 
 export type Snapshot = {
   name: string
@@ -41,14 +43,28 @@ export const snapshotsDir = (): string =>
 export const uploadsDir = (): string => resolve(process.env.STORAGE_LOCAL_DIR || './uploads')
 
 /**
+ * Whether an archive written now would be sealed (ADR 0060).
+ *
+ * Three parts and not one boolean, the shape `ap/actor.ts` settled on: a switch with no
+ * recipient behind it would be a green control over plaintext archives, which is worse than
+ * an off switch because the owner stops worrying about it. The sanitiser refuses the flip too;
+ * this is what everything downstream asks.
+ */
+export const encryptReady = (s: SiteSettings): boolean =>
+  s.backups.encrypt && s.backups.pubKey !== '' && s.backups.passPub !== ''
+
+/**
  * `quire-2026-07-29T2040.tar.gz` — sortable, and unambiguous in a Downloads folder a year
  * later. The minute is in it because a schedule can produce more than one a day and two
  * files named for the same date would be one file.
+ *
+ * `.enc` when sealed, because the extension is the only thing telling somebody a year later
+ * that `tar -xzf` is not going to work and what to reach for instead.
  */
-export function snapshotName(now = new Date()): string {
+export function snapshotName(now = new Date(), sealed = false): string {
   const p = (n: number) => String(n).padStart(2, '0')
   return `quire-${now.getUTCFullYear()}-${p(now.getUTCMonth() + 1)}-${p(now.getUTCDate())}`
-    + `T${p(now.getUTCHours())}${p(now.getUTCMinutes())}.tar.gz`
+    + `T${p(now.getUTCHours())}${p(now.getUTCMinutes())}.tar.gz${sealed ? '.enc' : ''}`
 }
 
 /**
@@ -59,8 +75,15 @@ export function snapshotName(now = new Date()): string {
  * reach. An allowlist pattern rather than a check for `..`, because normalising a path and
  * then trusting it is how that check gets got.
  */
+/**
+ * ⚠️ AND IT IS THREE THINGS AT ONCE, which is why `.enc` had to be added here in the same
+ * breath it was added to the name. It is the path-traversal allowlist for the download and
+ * delete routes, AND the filter `backup-offsite.ts` prunes the bucket with. Miss the new
+ * extension there and remote retention matches nothing, for ever, with no error anywhere:
+ * `replicateSnapshot` swallows its failures by design, so the bucket would simply grow.
+ */
 export const isSnapshotName = (name: string): boolean =>
-  /^quire-\d{4}-\d{2}-\d{2}T\d{4}\.tar\.gz$/.test(name)
+  /^quire-\d{4}-\d{2}-\d{2}T\d{4}\.tar\.gz(\.enc)?$/.test(name)
 
 /**
  * The rendered-HTML cache does not go in the archive.
@@ -148,14 +171,28 @@ export async function buildArchive(dest: string): Promise<number> {
     // Handing `proc.stdout` straight to `Bun.write` is what deadlocks on Windows, and this
     // is not that: the loop below reads every chunk as it arrives, so tar is never left
     // blocked on a full pipe, and the writer applies backpressure the other way.
+    // SEALED HERE OR NOWHERE (ADR 0060). This is the one builder, shared by the download route
+    // and the schedule and read back off disk by the off-site copy, so an envelope applied in
+    // this loop reaches all three and cannot be forgotten by the fourth caller somebody adds.
+    // It is also the only place with the plaintext in hand a chunk at a time: anywhere later
+    // would mean a second pass over the owner's whole blob store.
+    const settings = await getSettings()
+    const seal = encryptReady(settings)
+      ? sealer([settings.backups.pubKey, settings.backups.passPub], settings.backups.passSalt)
+      : null
+
     const writer = Bun.file(dest).writer()
     const reader = proc.stdout.getReader()
     try {
+      if (seal) await writer.write(seal.header())
       for (;;) {
         const { done, value } = await reader.read()
         if (done) break
-        await writer.write(value)
+        await writer.write(seal ? seal.push(value) : value)
       }
+      // NOT optional and not merely the tail: `end()` writes the final frame with the flag
+      // that says it is final, which is what stops a truncated archive opening as a whole one.
+      if (seal) await writer.write(seal.end())
     } finally {
       reader.releaseLock()
       await writer.end()
@@ -210,7 +247,7 @@ export async function runBackup(): Promise<Snapshot> {
   const dir = snapshotsDir()
   await mkdir(dir, { recursive: true })
 
-  const name = snapshotName()
+  const name = snapshotName(new Date(), encryptReady(await getSettings()))
   const dest = join(dir, name)
   let size: number
   try {

@@ -8,6 +8,7 @@
 //   GET  /api/backup/download   fetch one that is already here
 //   POST /api/backup/delete     remove one
 //   POST /api/backup/offsite-test  prove the bucket paste works, while the owner is still here
+//   POST /api/backup/keys       make the two recipients an archive is sealed to (ADR 0060)
 //
 // All owner-gated by where they are mounted (Invariant 4). What a snapshot IS, and why it
 // is built the way it is, lives in `src/server/backup.ts`.
@@ -16,9 +17,12 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  buildArchive, deleteSnapshot, isSnapshotName, lastRunAt, listSnapshots, runBackup,
-  snapshotName, snapshotsDir,
+  buildArchive, deleteSnapshot, encryptReady, isSnapshotName, lastRunAt, listSnapshots,
+  runBackup, snapshotName, snapshotsDir,
 } from '@/server/backup'
+import { newIdentity, passphraseRecipient } from '@/server/backup-crypt'
+import { getSettings } from '@/content/settings'
+import { saveSettings } from '@/content/settings-save'
 import { offsiteTest } from '@/server/backup-offsite'
 import { buildExportZip, exportName } from '@/server/export-md'
 import { logActivity } from '@/server/activity'
@@ -93,9 +97,15 @@ export function backupRoutes() {
     }
   }
 
-  router.get('/api/backup/export', async (c) =>
-    streamed(c, 'backup.export', snapshotName(), 'application/gzip',
-      (path) => buildArchive(path), (size) => logActivity('backup.export', mb(size))))
+  router.get('/api/backup/export', async (c) => {
+    // Asked BEFORE the build rather than sniffed after it, because `streamed` needs the name
+    // and the type up front. `buildArchive` reads the same settings a moment later, and the
+    // settings cache is what keeps the two answers the same.
+    const sealed = encryptReady(await getSettings())
+    return streamed(c, 'backup.export', snapshotName(new Date(), sealed),
+      sealed ? 'application/octet-stream' : 'application/gzip',
+      (path) => buildArchive(path), (size) => logActivity('backup.export', mb(size)))
+  })
 
   /**
    * THE WRITING, NOT THE INSTALL.
@@ -138,7 +148,7 @@ export function backupRoutes() {
     if (!(await file.exists())) return fail(c, 'Unknown snapshot', 404)
     return new Response(file, {
       headers: {
-        'content-type': 'application/gzip',
+        'content-type': name.endsWith('.enc') ? 'application/octet-stream' : 'application/gzip',
         'content-disposition': `attachment; filename="${name}"`,
         'content-length': String(file.size),
       },
@@ -161,6 +171,40 @@ export function backupRoutes() {
     } catch (error) {
       return fail(c, (error as Error).message, 400)
     }
+  })
+
+  /**
+   * Make the two recipients, and hand the identity over ONCE.
+   *
+   * ⚠️ THE SECRET IS IN THE ANSWER AND NOWHERE ELSE. It is generated here, returned in this
+   * one response and never written down — the `mcp/tokens.ts` bargain, for the same reason:
+   * a copy the server keeps is a copy that travels in the very archive it would open.
+   *
+   * ⚠️ AND THE PASSPHRASE IS NOT STORED EITHER. It is used once, here, to derive a keypair;
+   * what is kept is the PUBLIC half and the salt. That is what makes this feature worth having
+   * on a machine somebody else might get root on — with the words on disk, an attacker with the
+   * box would have the backups too, and the switch would be decoration.
+   *
+   * Writing both recipients at once is deliberate: an archive sealed to one of them and not the
+   * other is an archive with one way in, and the second way in is the whole reason there are two.
+   */
+  router.post('/api/backup/keys', async (c) => {
+    const { passphrase } = (await c.req.json().catch(() => ({}))) as { passphrase?: string }
+    if (typeof passphrase !== 'string' || passphrase.trim().length < 12) {
+      return fail(c, 'The passphrase needs at least 12 characters', 400)
+    }
+    const identity = newIdentity()
+    const pass = passphraseRecipient(passphrase)
+    // The switch is NOT turned on here. Making the keys and deciding to use them are two
+    // acts, and the owner has not yet been shown the identity they are about to depend on.
+    await saveSettings({
+      backups: {
+        ...(await getSettings()).backups,
+        pubKey: identity.publicKey, passPub: pass.publicKey, passSalt: pass.salt,
+      },
+    })
+    logActivity('backup.keys', 'new recipients')
+    return json({ secret: identity.secret, publicKey: identity.publicKey })
   })
 
   return router

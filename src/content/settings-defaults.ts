@@ -32,6 +32,14 @@ export const DEFAULT_BACKUPS: BackupSettings = {
   enabled: true,
   intervalDays: 4,
   keep: 4,
+  // OFF at install and off on every upgrade, which is the opposite of the switch above and for
+  // the opposite reason. A snapshot nobody asked for costs disk; an ENVELOPE nobody asked for
+  // costs an archive they cannot open, because the keys that open it are handed over once and
+  // the software cannot hand them over again. This is a door, not a default (ADR 0060).
+  encrypt: false,
+  pubKey: '',
+  passPub: '',
+  passSalt: '',
 }
 
 export const DEFAULT_FEATURES: FeatureSettings = {

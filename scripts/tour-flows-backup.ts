@@ -95,4 +95,53 @@ export function registerBackupFlows({ flow, expect }: Tour): void {
       if (!handedOver.includes('/api/export/markdown')) return 'handed over the wrong URL: ' + handedOver
       return 'ok "' + label + '" handed ' + handedOver + ' to the browser'
     })()`, 1200))
+
+  // ── The key that makes the keys ─────────────────────────────────────────────────────────
+  //
+  // The same lesson as the two flows above, on a newer control: `POST /api/backup/keys` has a
+  // route test and a unit test for the envelope it feeds, and neither can see whether anything
+  // on screen reaches it. Issue #60 is what that costs — the Trash spent thirteen days with a
+  // working endpoint and no control that called it.
+  //
+  // ⚠️ WHAT IT LEAVES BEHIND, said plainly. Keys cannot be un-set, by design: a save is not
+  // allowed to erase a recipient, because a half-erased one would silently un-seal every future
+  // archive. So this flow leaves the instance holding a pair, and that is harmless — it does NOT
+  // switch encryption on, the route does not either, and the archive flow above still gets its
+  // gzip. What the instance keeps is the ABILITY to encrypt, not the act.
+  //
+  // ⚠️ AND IT CHECKS THE IDENTITY IS SHOWN, which is the half a route test cannot reach. The
+  // secret exists in exactly one response; if the island drops it on the floor the owner has
+  // keys they can never use and nothing anywhere says so. NOTE: a template literal. No backticks.
+  flow('admin: setting up backup encryption shows the identity once', () => expect('/admin/settings', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const tab = [...document.querySelectorAll('button, a')].find((n) => /server|máy chủ/i.test(n.textContent || ''))
+      if (tab) { tab.click(); await sleep(500) }
+      const box = document.querySelector('[data-backup-pass]')
+      const key = document.querySelector('[data-backup-keys]')
+      const panel = document.querySelector('[data-backup-secret]')
+      const shown = document.querySelector('[data-backup-secret-value]')
+      if (!box || !key || !panel || !shown) return 'the encryption block is not on the Backups card'
+      if (box.getAttribute('data-k')) return 'the passphrase box carries data-k, so the settings save would collect it'
+      if (box.type !== 'password') return 'the passphrase box is not a password field'
+      if (!panel.hidden) return 'the identity panel is showing before anything was made'
+
+      box.value = 'a passphrase somebody would actually type'
+      key.click()
+      for (let i = 0; i < 40 && panel.hidden; i++) await sleep(100)
+      if (panel.hidden) return 'pressing it never showed an identity'
+      const secret = (shown.textContent || '').trim()
+      if (!secret.startsWith('quire-backup-key-1')) return 'what it showed is not an identity: ' + secret.slice(0, 24)
+      if (box.value !== '') return 'the passphrase was left in the box after it was sent'
+      const setup = document.querySelector('[data-backup-keys-setup]')
+      const done = document.querySelector('[data-backup-keys-done]')
+      if (setup && !setup.hidden) return 'the setup block is still showing after the keys were made'
+      if (done && done.hidden) return 'the card never said the keys are set up'
+
+      // And the switch stays where it was: making keys is not agreeing to use them.
+      const sw = document.querySelector('[data-k="backups.encrypt"]')
+      if (!sw) return 'there is no encryption switch on the card'
+      if (sw.checked || sw.getAttribute('aria-checked') === 'true') return 'making keys switched encryption on by itself'
+      return 'ok identity shown once (' + secret.length + ' chars), box cleared, switch untouched'
+    })()`, 1500))
 }

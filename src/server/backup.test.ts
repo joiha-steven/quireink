@@ -7,6 +7,7 @@ import { readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { saveSettings } from '@/content/settings'
+import { DEFAULT_BACKUPS } from '@/content/settings-defaults'
 import { savePost } from '@/content/posts'
 import {
   buildArchive, isSnapshotName, lastRunAt, listSnapshots, maybeRunBackup, runBackup,
@@ -77,7 +78,7 @@ describe('runBackup', () => {
   })
 
   it('prunes to the retention count, newest kept', async () => {
-    await saveSettings({ backups: { enabled: true, intervalDays: 1, keep: 2 } })
+    await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 1, keep: 2 } })
     await runBackup()
 
     // Same-minute names would collide, so the older ones are placed by hand. They are only
@@ -140,13 +141,13 @@ describe('deleteSnapshot', () => {
 
 describe('maybeRunBackup', () => {
   it('does nothing while automatic backups are off', async () => {
-    await saveSettings({ backups: { enabled: false, intervalDays: 1, keep: 4 } })
+    await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: false, intervalDays: 1, keep: 4 } })
     expect(await maybeRunBackup()).toEqual({ ran: false })
     expect(await listSnapshots()).toHaveLength(0)
   })
 
   it('runs when there is nothing yet, then not again until the interval has passed', async () => {
-    await saveSettings({ backups: { enabled: true, intervalDays: 7, keep: 4 } })
+    await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 7, keep: 4 } })
     expect((await maybeRunBackup()).ran).toBe(true)
     expect((await maybeRunBackup()).ran).toBe(false)
   })
@@ -154,7 +155,7 @@ describe('maybeRunBackup', () => {
   // Due-ness comes from the newest file rather than a recorded run time, so a machine
   // restored from a copy does not believe it already has today's.
   it('is due again once the newest snapshot is older than the interval', async () => {
-    await saveSettings({ backups: { enabled: true, intervalDays: 1, keep: 4 } })
+    await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 1, keep: 4 } })
     mkdirSync(SNAPSHOTS, { recursive: true })
     const old = join(SNAPSHOTS, 'quire-2020-01-01T0000.tar.gz')
     await writeFile(old, 'x')

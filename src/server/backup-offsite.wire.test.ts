@@ -7,6 +7,7 @@ import { describe, it, expect, afterAll } from 'bun:test'
 import { replicateSnapshot, offsiteTest } from '@/server/backup-offsite'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { saveSettings } from '@/content/settings'
+import { DEFAULT_BACKUPS } from '@/content/settings-defaults'
 
 const DIR = './.tmp/test-offsite-wire'
 freshDatabase(DIR)
@@ -60,7 +61,7 @@ const target = () => ({
 
 describe('the offsite path over a real wire', () => {
   it('ships the archive bytes, lists, and prunes through actual S3 answers', async () => {
-    await saveSettings({ backups: { enabled: true, intervalDays: 1, keep: 2 } })
+    await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 1, keep: 2 } })
     // Two older snapshots already in the bucket, plus a neighbour that is not ours.
     held.set('blog/quire-2026-08-01T0100.tar.gz', new Uint8Array([1]))
     held.set('blog/quire-2026-08-02T0100.tar.gz', new Uint8Array([2]))

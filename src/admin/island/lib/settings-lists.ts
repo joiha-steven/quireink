@@ -82,10 +82,61 @@ function wireBackupKeys(screen: HTMLElement, w: ListWords): void {
     const run = target.closest<HTMLButtonElement>('[data-backup-run]')
     if (run) { void take(screen, run, w); return }
 
+    const keys = target.closest<HTMLButtonElement>('[data-backup-keys]')
+    if (keys) { void makeKeys(screen, keys, w); return }
+
     const gone = target.closest<HTMLElement>('[data-backup-delete]')
     const row = gone?.closest<HTMLElement>('[data-backup]')
     if (gone && row?.dataset.backup) void dropBackup(row, row.dataset.backup, w)
   })
+}
+
+/**
+ * Make the two recipients an archive is sealed to, and show the identity ONCE (ADR 0060).
+ *
+ * ⚠️ THE ANSWER IS THE ONLY COPY. The route generates the identity, returns it here and keeps
+ * nothing — so this must not throw it away on the way to the screen, and must not be tempted
+ * into `localStorage` either. It goes into the element the server already drew for it, the
+ * passphrase box is emptied, and the two faces swap over. No reload, because a reload is
+ * exactly when the one copy would be lost.
+ *
+ * ⚠️ AND THE SWITCH IS NOT TOUCHED. Making keys and deciding to use them are two acts: an owner
+ * who has not yet written the identity down has not yet agreed to depend on it.
+ */
+async function makeKeys(screen: HTMLElement, key: HTMLButtonElement, w: ListWords): Promise<void> {
+  const box = screen.querySelector<HTMLInputElement>('[data-backup-pass]')
+  const passphrase = box?.value ?? ''
+  const label = key.textContent ?? ''
+  key.disabled = true
+  key.textContent = w.backupBusy ?? label
+  try {
+    const res = await fetch('/api/backup/keys', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ passphrase }),
+    })
+    // ⚠️ `json.data`, NOT `json`. Every route here answers through the envelope
+    // (`web/api.ts`: `{ success, data }`), and reading the bare payload is the exact mismatch
+    // that file's own comment was written about — it type-checks, it passes a route test, and
+    // on screen the identity simply never appears. The tour flow found this on its first run.
+    const body = await res.json().catch(() => null) as
+      { success?: boolean; data?: { secret?: string }; error?: string } | null
+    const secret = body?.data?.secret
+    if (!res.ok || !secret) throw new Error(body?.error ?? 'failed')
+    const panel = screen.querySelector<HTMLElement>('[data-backup-secret]')
+    const value = screen.querySelector<HTMLElement>('[data-backup-secret-value]')
+    if (value) value.textContent = secret
+    if (panel) panel.hidden = false
+    if (box) box.value = ''
+    screen.querySelector<HTMLElement>('[data-backup-keys-setup]')?.toggleAttribute('hidden', true)
+    screen.querySelector<HTMLElement>('[data-backup-keys-done]')?.toggleAttribute('hidden', false)
+    say(w.backupDone ?? '')
+  } catch (error) {
+    say((error as Error).message === 'failed' ? (w.backupFailed ?? '') : (error as Error).message, 'error')
+  } finally {
+    key.disabled = false
+    key.textContent = label
+  }
 }
 
 /**

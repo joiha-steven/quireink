@@ -173,8 +173,11 @@ COPY --from=build /app/locales ./locales
 # every person pulls. Nothing in `src/` reads any of it and the entrypoint never seeds.
 #
 # What stays is what the docs tell an operator to run: the backup and uptime scripts
-# (`docs/self-host.md`), the owner-account CLI (`bun run user`), and the pen sheet. The BUILD
-# stage still gets the whole directory, because that is where `build:assets` and
+# (`docs/self-host.md`), the owner-account CLI (`bun run user`), the pen sheet, and — since
+# 2.2.13 — `backup-decrypt.ts`, which is the one that has to be here on the worst day. ADR 0035
+# keeps the restore a shell act on a STOPPED service, so a tool for opening a sealed archive
+# that only existed in a git checkout would be a tool nobody has when they need it.
+# The BUILD stage still gets the whole directory, because that is where `build:assets` and
 # `build:admin` live.
 #
 # `ops/` is named file by file rather than copied whole, because two of its six are
@@ -182,7 +185,7 @@ COPY --from=build /app/locales ./locales
 # and `tour.ts`, none of which is in the image. Shipping a script that cannot run is how an
 # operator ends up reporting a bug against a tool nobody meant them to have.
 COPY --from=build /app/scripts/ops/quire-backup.sh /app/scripts/ops/quire-uptime.sh ./scripts/ops/
-COPY --from=build /app/scripts/user.ts /app/scripts/pen-sheet.ts ./scripts/
+COPY --from=build /app/scripts/user.ts /app/scripts/pen-sheet.ts /app/scripts/backup-decrypt.ts ./scripts/
 COPY package.json bun.lock tsconfig.json ./
 
 # See note 3 above. Both paths are ENV defaults, so overriding them in compose without
