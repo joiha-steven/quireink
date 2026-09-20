@@ -1,5 +1,40 @@
 # CHANGELOG
 
+## Unreleased
+
+### The archive can leave sealed (ADR 0060)
+
+The backup archive is the one thing here that leaves the machine, and it is a `VACUUM INTO` of
+both databases: it carries `smtp_pass`, the AI key, the Cloudflare token, the S3 pair,
+`users.totp_secret`, the fediverse actor's private key and every subscriber's address. It goes
+up into somebody else's bucket and down onto a laptop. Nothing said so.
+
+- ⚠️ **Off at install and off on every upgrade.** Settings, Server and connections, Backups. It
+  cannot be switched on until there are keys to seal to.
+- **The server cannot open what it seals.** Both recipients are public halves: an identity shown
+  once and never stored, and a second keypair derived from a passphrase that is also never
+  stored. A passphrase kept on the box so the schedule can run unattended is a passphrase
+  whoever owns the box now also has, and the switch would have looked identical while protecting
+  nothing.
+- **Two keys, because a file can be lost and a memory can be forgotten.** Either opens any
+  archive. ⚠️ Lose both and a sealed archive cannot be opened, by anyone. The card says so in a
+  warning that survives the explanations being switched off.
+- One switch covers all three copies: the snapshots on disk, the off-site object, and the
+  download. The Markdown export stays in the clear, because it carries no credential by design
+  and is the path for "I just want my writing".
+- `bun scripts/backup-decrypt.ts <archive> --identity <file>` or `--passphrase` opens one with
+  nothing running, and the tool ships inside the image: a restore is a shell act on a stopped
+  service (ADR 0035), so a decrypt tool that only existed in a git checkout would be a tool
+  nobody has when they need it. The format is written out in ADR 0060 completely enough to
+  rebuild a reader from the document alone.
+- Our own envelope rather than `age`, and the reason was measured: **Bun ships no
+  ChaCha20-Poly1305**, in `node:crypto` or in WebCrypto, so an age-compatible payload would need
+  a hand-written stream cipher over the owner's whole blob store. AES-256-GCM in 64 KiB frames
+  is 5.5 GB/s against 87 ms of the gzip that already happens. Measured through the real route on
+  a 101 MB archive: 2,455 ms sealed against 2,444 ms in the clear.
+- The ops script takes its recipients from `QUIRE_BACKUP_TO`. ⚠️ It seals the database tar only;
+  that script syncs uploads as a tree with `rclone` rather than putting them in the archive.
+
 ## 2026-09-20 · Quire Ink 2.2.13
 
 The largest release since 2.2.10, and most of it is about letting the writing out: the blog can
