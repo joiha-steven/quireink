@@ -362,8 +362,8 @@ export const LAMP_HUES: Record<LampState, string> = {
   off: 'bg-neutral-300 dark:bg-neutral-600',
 }
 
-/** The lamp's own shape, without its hue: a 8px round mark that never shrinks in a flex row. */
-export const LAMP_SHAPE = 'inline-block h-2 w-2 shrink-0 rounded-full'
+/** An 8px round mark that never shrinks, and it EASES: a lamp is a span, so the floor missed it. */
+export const LAMP_SHAPE = 'inline-block h-2 w-2 shrink-0 rounded-full transition-colors'
 
 /**
  * THE NATIVE TICK. No `accent-color` does not mean unstyled, it means the OS accent, which is

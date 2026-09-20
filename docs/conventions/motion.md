@@ -18,7 +18,13 @@ four values for three intents.
   them, so a change to one is a change to both in the same commit. The captured
   `transition*` utilities in `src/admin/utilities.css` read `--dur-fast` through
   `--default-transition-duration`, so a `transition` in a `class` attribute and one in the
-  sheet run at one speed. `--ease-out` is the one curve, introduced only once a real curve
+  sheet run at one speed — and `--default-transition-timing-function` now reads `--ease-out`
+  for the same reason. ⚠ It did not until 2026-09-20, and that one line was most of the
+  admin's motion: speeds matched while shapes did not. Three curves were doing one job — the
+  reading site's floor on the keyword `ease`, the admin's on `cubic-bezier(0.4,0,0.2,1)`
+  (the framework's own), the token on a third value — and `utilities.css` declared a SECOND
+  `--ease-out` at Tailwind's value, shadowed only by the concatenation order. All four say
+  the one curve now. `--ease-out` is the one curve, introduced only once a real curve
   had been chosen (the rail's FLIP slide, then every entrance); the scroll-driven animations
   do NOT use it and must stay `linear` — a timeline a reader scrubs with a thumb is linear
   or it is wrong.
@@ -49,6 +55,11 @@ four values for three intents.
 - **The floor.** Every pressable thing (`:where(a,button,summary,input,select,textarea,
   [role=button])`) eases its colour, opacity and shadow at `--dur-fast`, at specificity zero, so
   a component's own `transition` wins outright and nothing snaps beside a neighbour that eases.
+  ⚠ **The floor lists the things a FINGER uses**, so every span and div the island repaints
+  falls outside it. Two of those carry a state rather than decoration and were changing by
+  jumping: the pilot lamp (`LAMP_SHAPE` carries `transition-colors`) and a row that goes dead
+  when the feature behind it has no engine (`[data-dim-when]`, one rule in `admin.css`). A new
+  mark that reports a state needs one of the two, and neither is the floor's job.
   Only the properties a hover changes, never `all`: a transition on a layout property re-lays
   out on every frame, which is why the settings switch travels on a transform and the upload
   bars scale rather than widen.
@@ -66,6 +77,12 @@ four values for three intents.
   on it would make it the containing block for anything fixed inside it during the entrance,
   and the child would jump when the transform came off. An engine without `@starting-style`
   shows and hides instantly, which is the state every entrance rule starts from.
+  ⚠ **The pen's bar and its note popup arrive too**, since 2026-09-20. They were the last two
+  surfaces on the reading site that simply appeared — every other one that hides itself had an
+  entrance — and the bar is the one a reader summons by hand, over their own selection. It
+  RISES where the theme menu descends, because it is placed above what it belongs to. The
+  blocks inside the popup (`.pen-ask`, `.pen-keep`) deliberately have none: a second entrance
+  inside an entrance is two things moving where one moved.
 - **Cheap properties only** (`opacity`/`transform`/`translate`/colour/shadow) so motion never
   causes layout or CLS. **Nothing may hide content it cannot reveal**: an entrance starts from
   the visible state where unsupported; `.reveal` is gated behind `@supports

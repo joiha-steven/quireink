@@ -26,7 +26,7 @@ export const CARD_CSS = `
 .link-card,.file-card{display:flex;gap:1rem;align-items:stretch;
   margin:1.6em 0;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
   overflow:hidden;text-decoration:none;color:var(--c-text);
-  transition:border-color .15s ease,background-color .15s ease}
+  transition:border-color var(--dur-fast) var(--ease-out),background-color var(--dur-fast) var(--ease-out)}
 .link-card:hover,.file-card:hover{border-color:var(--c-meta);
   background:color-mix(in srgb, var(--c-text) 3%, var(--c-bg));color:var(--c-text)}
 .link-card:focus-visible,.file-card:focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}

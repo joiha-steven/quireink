@@ -18,3 +18,28 @@ export function motionOn(): boolean {
 
 /** The `behavior` for a programmatic scroll: smooth only where motion is on. */
 export const scrollBehavior = (): ScrollBehavior => (motionOn() ? 'smooth' : 'auto')
+
+/**
+ * A token off the document, so a scripted move and a CSS transition read one source.
+ *
+ * ⚠️ READ FOR A SHAPE, NEVER FOR A DECISION. The gates zero every transition and leave
+ * `--dur-*` at their values (measured), so a script that asked a duration whether to move
+ * would move with the switch off. `motionOn()` above is the only thing that decides.
+ */
+const token = (name: string): string =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
+/** A duration token, in milliseconds. The reading site's half has had this; this one had not. */
+export function dur(name: 'fast' | 'base' | 'slow'): number {
+  return parseFloat(token(`--dur-${name}`)) * 1000 || 0
+}
+
+/**
+ * The one curve, for a scripted move.
+ *
+ * Two call sites wrote a cubic-bezier by hand because this module offered nothing to read,
+ * and by 2026-09-20 they had drifted apart: the rail's FLIP carried the house curve spelled
+ * out — the very move the token was introduced for — and the editor's caret carried a fourth
+ * curve nothing else used. `ease` only where the sheet is not loaded, which is the test DOM.
+ */
+export const ease = (): string => token('--ease-out') || 'ease'

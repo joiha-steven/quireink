@@ -16,7 +16,7 @@
     "test": "bun run build:assets && bun test",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src/assets/js && tsc --noEmit -p src/admin",
     "check:filesize": "bun scripts/checks/file-size.ts",
-    "check:all": "bun run build:assets && bun run build:admin && bun run typecheck && bun run check:filesize && bun run check:css && bun run check:nul && bun run check:routes && bun run check:type && bun run check:admin-kit && bun run check:bundle && bun run check:contract && bun run check:docs && bun run check:i18n && bun run check:deps && bun run check:admin-css && bun run check:admin-wired && bun test",
+    "check:all": "bun run build:assets && bun run build:admin && bun run typecheck && bun run check:filesize && bun run check:css && bun run check:nul && bun run check:routes && bun run check:type && bun run check:admin-kit && bun run check:bundle && bun run check:contract && bun run check:docs && bun run check:motion && bun run check:i18n && bun run check:deps && bun run check:admin-css && bun run check:admin-wired && bun test",
     "check:css": "bun scripts/checks/css-literal.ts",
     "check:nul": "bun scripts/checks/no-nul.ts",
     "check:routes": "bun scripts/checks/routes-guarded.ts",
@@ -33,7 +33,8 @@
     "shot": "bun scripts/shot.ts",
     "drive": "bun scripts/drive.ts",
     "tour": "scripts/ops/tour.sh",
-    "restore-check": "bun scripts/restore-check.ts"
+    "restore-check": "bun scripts/restore-check.ts",
+    "check:motion": "bun scripts/checks/motion-drift.ts"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^20.14.0",

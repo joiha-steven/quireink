@@ -683,10 +683,23 @@ input[type='color']::-moz-color-swatch {
    Only the properties a hover actually changes. Not `all`: transitioning layout is how a
    list starts sliding about when a row is added, and this admin has lists that grow.
    The gates at the foot of this file switch it off with everything else. */
+/* AND THE TWO STATE MARKS THAT ARE NOT CONTROLS. The floor below lists the things a finger
+   uses, which is right for a floor and leaves out every span and div the island repaints. Two
+   of those carry a STATE rather than decoration, so both were changing by jumping (2026-09-20):
+   the pilot lamp — `LAMP_SHAPE` in `admin-shared/kit.ts` carries `transition-colors` for it —
+   and a row that goes dead when the feature behind it has no engine, which the island dims by
+   toggling one utility on a div. */
+[data-dim-when] {
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
 .admin-shell :where(a, button, select, input, textarea, summary, label, [role='button'], [role='switch']) {
   transition-property: color, background-color, border-color, text-decoration-color, outline-color, fill, stroke, opacity, box-shadow;
   transition-duration: var(--dur-fast);
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ⚠️ var(--ease-out), the token this product declares, NOT the framework's own default.
+     This read cubic-bezier(0.4, 0, 0.2, 1) while the reading site's floor read the keyword
+     `ease` and the token said a third thing — one job, three curves (2026-09-20). */
+  transition-timing-function: var(--ease-out);
 }
 
 /* The fader. A native range wears the OS accent and a pill thumb; this one is the hi-fi
@@ -1233,7 +1246,7 @@ html.admin [role='dialog'] {
 .admin-toast[data-leaving] {
   opacity: 0;
   translate: 0 8px;
-  transition-duration: .15s;
+  transition-duration: var(--dur-fast);
 }
 
 /* THE PEN ANSWERING THE HAND (ADR 0049). A mark the writer has JUST applied draws itself
@@ -1247,9 +1260,9 @@ html.admin [role='dialog'] {
 @keyframes pen-draw { from { background-size: 0 var(--ink-h, 1.05em); } }
 @keyframes pen-under { from { background-size: 0 var(--u-h, .42em); } }
 @keyframes pen-ring { from { background-size: 0 100%, 0 100%, 0 100%; } }
-.prose mark.pen-fresh { animation: pen-draw 200ms cubic-bezier(.2, .7, .3, 1) both; }
-.prose u.pen-fresh { animation: pen-under 160ms cubic-bezier(.2, .7, .3, 1) both; }
-.prose mark[data-form=o].pen-fresh { animation: pen-ring 240ms cubic-bezier(.2, .7, .3, 1) both; }
+.prose mark.pen-fresh { animation: pen-draw 200ms var(--ease-out) both; }
+.prose u.pen-fresh { animation: pen-under 160ms var(--ease-out) both; }
+.prose mark[data-form=o].pen-fresh { animation: pen-ring 240ms var(--ease-out) both; }
 
 /* THE TWO GATES. The owner's one switch (server-rendered as data-motion on <html>) and the
    OS preference each set every animation and transition to none in one rule, exactly as

@@ -68,7 +68,7 @@ export const rowClass = (isActive: boolean): string =>
  * into the markup — see the file header.
  */
 export const leaning = (body: string, isActive: boolean): string =>
-  `<span class="rail-glyph flex shrink-0 transition-transform duration-[120ms]${isActive ? '' : ' group-hover:translate-x-0.5'}">${body}</span>`
+  `<span class="rail-glyph flex shrink-0 transition-transform${isActive ? '' : ' group-hover:translate-x-0.5'}">${body}</span>`
 
 /** The label, which the collapsed rail hides and the island copies into a tooltip. */
 export const labelOf = (row: RailRow): string =>

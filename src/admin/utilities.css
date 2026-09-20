@@ -88,12 +88,19 @@
     --radius-md: 0.375rem;
     --radius-lg: 0.5rem;
     --radius-2xl: 1rem;
-    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    /* The HOUSE curve, not the framework's. `admin.css` declares this token too and goes
+       second, so its value was already winning — but two declarations of one name at two
+       values is a trap for whoever loads these files in another order. They agree now. */
+    --ease-out: cubic-bezier(.2, .7, .3, 1);
     --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     --blur-xl: 24px;
     --aspect-video: 16 / 9;
     --default-transition-duration: var(--dur-fast);
-    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    /* ⚠️ THE CURVE EVERY `transition-*` UTILITY IN THE ADMIN RUNS ON, and it was the
+       framework's standard one while the sheet beside it declared a curve of its own.
+       The duration on the line above was pointed at the token long ago; the curve was
+       not, so speeds matched and shapes did not (2026-09-20). */
+    --default-transition-timing-function: var(--ease-out);
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
   }

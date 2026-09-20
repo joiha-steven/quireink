@@ -116,7 +116,12 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
     + `<span class="text-xs tabular-nums text-neutral-500 dark:text-neutral-400">`
     + `${escapeHtml(t.firstRunProgress.replace('{done}', String(finished)).replace('{total}', String(flags.length)))}</span>`
     + `<span aria-hidden="true" class="h-1.5 w-16 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">`
-    + `<span class="block h-full rounded-full bg-[var(--pen-edge)] transition-[width] duration-300" style="width:${(finished / flags.length) * 100}%"></span>`
+    // ⚠️ NO TRANSITION HERE, and the one that was here could never have run: this band is
+    // drawn once by the server and the island only shows or hides the whole of it, so the
+    // width never changes on a live page. It was `transition-[width] duration-300` — a
+    // layout property, which the engine's own rule says bars must not take (the upload bars
+    // scale, `media-images.ts`), at a fourth duration literal nothing else in the tree used.
+    + `<span class="block h-full rounded-full bg-[var(--pen-edge)]" style="width:${(finished / flags.length) * 100}%"></span>`
     + `</span></span>`
   const band = `<div data-first-run-progress="${finished}/${flags.length}"${done ? ' hidden' : ''}>`
     + card({

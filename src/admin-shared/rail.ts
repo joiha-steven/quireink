@@ -313,7 +313,7 @@ export const SIDEBAR_NAV_QUIET =
 // pointer crosses most often on the way to somewhere else, and the shorter curve is what
 // keeps a sweep down the column from lighting up behind the cursor like a trail.
 const SIDEBAR_NAV_HOVER =
-  'duration-[120ms] hover:bg-neutral-200/70 hover:text-neutral-900 hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.12)] dark:hover:bg-neutral-800 dark:hover:text-white dark:hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.4)]'
+  'hover:bg-neutral-200/70 hover:text-neutral-900 hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.12)] dark:hover:bg-neutral-800 dark:hover:text-white dark:hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.4)]'
 
 export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 
@@ -369,7 +369,7 @@ export const SIDEBAR_UTIL =
 // rail it is a page you can go to. A control that fits in its own glyph should be one, and a
 // strip of them says "these are the tool's own switches" by being a different shape entirely.
 const SIDEBAR_ICON_SHAPE =
-  'relative grid h-8 w-8 shrink-0 place-items-center text-neutral-500 transition-colors duration-[120ms] hover:bg-neutral-200/70 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0'
+  'relative grid h-8 w-8 shrink-0 place-items-center text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0'
 
 export const SIDEBAR_ICON = `${SIDEBAR_ICON_SHAPE} rounded-md`
 

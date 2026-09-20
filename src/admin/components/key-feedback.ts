@@ -15,7 +15,7 @@
 import type { Editor } from '@/admin/editor/editor'
 import { playKey, type KeySound } from './key-sound'
 import type { Strike } from './key-voices'
-import { motionOn } from '@/admin/motion'
+import { motionOn, dur, ease } from '@/admin/motion'
 
 /**
  * How long the caret holds still after the last keystroke before it starts blinking again.
@@ -110,6 +110,9 @@ export function pulseInput(
     deleting
       ? [{ transform: 'translateX(-2px) scaleY(0.86)' }, { transform: 'translateX(0) scaleY(1)' }]
       : [{ transform: 'translateY(1px) scaleY(0.9)' }, { transform: 'translateY(0) scaleY(1)' }],
-    { duration: 110, easing: 'cubic-bezier(.2,.8,.2,1)' },
+    // ⚠️ THE ENGINE'S FAST, not a fourth curve and a fourth number. This was 110ms on
+    // cubic-bezier(.2,.8,.2,1), which nothing else in the product used; the settle is 40ms
+    // longer now and on the one curve everything else settles on.
+    { duration: dur('fast'), easing: ease() },
   )
 }

@@ -50,10 +50,14 @@ ${MOTION_TOKENS}
    makes this selector specificity ZERO, so any rule a component states for itself wins
    outright - the to-top button keeps its opacity fade, the rail its slide. Only the
    properties a hover or a focus actually changes, never all: transitioning layout is how a
-   list starts sliding about when a row is added. */
+   list starts sliding about when a row is added.
+   ⚠️ var(--ease-out), NOT the keyword ease. The floor predates the token and kept the browser
+   default for a year after a curve had been chosen; the admin's own floor had drifted further
+   still, to cubic-bezier(0.4,0,0.2,1) - the framework default, which is a different curve
+   again. Three curves were doing one job (2026-09-20). One is the whole point of a token. */
 :where(a,button,summary,input,select,textarea,[role=button]){
   transition-property:color,background-color,border-color,text-decoration-color,outline-color,fill,stroke,opacity,box-shadow;
-  transition-duration:var(--dur-fast);transition-timing-function:ease}
+  transition-duration:var(--dur-fast);transition-timing-function:var(--ease-out)}
 
 /* THE CLICK, for everything a finger can press. Pressing lands at once - the 1px of travel
    and the carved-in shadow arrive with transition-duration:0 - and only the release is
@@ -125,6 +129,19 @@ dialog:not([open]),dialog:not([open])::backdrop{opacity:0}
 .theme-menu{transition:opacity var(--dur-fast) var(--ease-out),translate var(--dur-fast) var(--ease-out),display var(--dur-fast) allow-discrete}
 .theme-menu[hidden]{opacity:0;translate:0 -4px}
 @starting-style{.theme-menu:not([hidden]){opacity:0;translate:0 -4px}}
+/* THE PEN'S TWO FLOATING SURFACES, which were the last things on the reading site that simply
+   appeared (2026-09-20). Every other surface that hides itself arrives - the dialog, its
+   backdrop, the theme and palette menus, the quote's copy key - and the bar that opens over a
+   selection, the one surface a reader summons by hand, snapped into place.
+   IT RISES, where the menu descends: the bar is placed ABOVE the selection it belongs to
+   (below it only when there is no room), so it starts under its place and settles up into it.
+   The script sets left/top and nothing else, so translate is free.
+   ⚠️ .pen-ask AND .pen-keep ARE NOT HERE. They are blocks INSIDE .pen-pop that the panel
+   swaps between - a second entrance inside an entrance is two things moving where one thing
+   moved, and the surface carrying them is already arriving. */
+.pen-bar,.pen-pop{transition:opacity var(--dur-fast) var(--ease-out),translate var(--dur-fast) var(--ease-out),display var(--dur-fast) allow-discrete}
+.pen-bar[hidden],.pen-pop[hidden]{opacity:0;translate:0 4px}
+@starting-style{.pen-bar:not([hidden]),.pen-pop:not([hidden]){opacity:0;translate:0 4px}}
 
 ${MOTION_GATES}
 `.trim()

@@ -20,7 +20,7 @@
 // something is an arrangement that gets lost by the second click.
 import { ZONES, findSpot, moveTo, step, type Spot, type Zone } from '@/admin-shared/rail'
 import { reconcileNavOrder } from '@/content/nav-order'
-import { motionOn } from '@/admin/motion'
+import { motionOn, dur, ease } from '@/admin/motion'
 import type { NavOrder } from '@/types'
 import type { RailData } from './rail'
 
@@ -134,8 +134,10 @@ export function enterArrangeMode(data: RailData, publishWidth: () => void): void
       const dy = was - el.getBoundingClientRect().top
       // Sub-pixel differences are layout noise, not movement.
       if (Math.abs(dy) < 1) continue
+      // The engine's own numbers. This slide is the move `--ease-out` was introduced for, and
+      // it spelled the curve out by hand anyway — 140ms beside a token that says 150.
       el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }],
-        { duration: 140, easing: 'cubic-bezier(.2,.7,.3,1)' })
+        { duration: dur('fast'), easing: ease() })
     }
   }
 
