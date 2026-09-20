@@ -50,7 +50,7 @@ reach the script — a mistake worth catching before you hand the line to somebo
 git clone https://github.com/joiha-steven/quireink.git /home/quire/app
 cd /home/quire/app && bun install && bun run build:assets && bun run build:admin
 DATA_DIR=/var/lib/quire/data STORAGE_LOCAL_DIR=/var/lib/quire/uploads \
-  SITE_URL=https://example.com bun src/index.ts
+  SITE_URL=https://example.com bun --smol src/index.ts
 ```
 
 `bun run build` produces those two artefacts and nothing else. **There is no compiled

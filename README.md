@@ -68,7 +68,7 @@ To start you need a domain and a rented server, and the cheapest tier is enough.
 Nothing to deploy and no database to install:
 
 ```bash
-bun src/index.ts
+bun --smol src/index.ts
 ```
 
 ## What you get
@@ -217,7 +217,7 @@ curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.
 git clone https://github.com/joiha-steven/quireink.git && cd quireink
 bun install
 bun run build:assets && bun run build:admin     # the islands, then the admin
-DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
+DATA_DIR=./data SITE_URL=https://example.com bun --smol src/index.ts
 ```
 
 Put a reverse proxy with TLS in front of the port, `3000` by default.

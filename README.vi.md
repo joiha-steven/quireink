@@ -77,7 +77,7 @@ Màu, font, cỡ chữ, bố cục trang chủ, menu: đổi hết trong trang q
 Không có gì phải deploy, không phải cài cơ sở dữ liệu nào:
 
 ```bash
-bun src/index.ts
+bun --smol src/index.ts
 ```
 
 ## Bạn được gì

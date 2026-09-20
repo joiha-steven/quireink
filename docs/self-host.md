@@ -8,6 +8,9 @@ Commands assume Ubuntu/Debian and `root` (or `sudo`). Adjust the paths. If you w
 not install Bun on the host, [Docker](#docker-instead-of-systemd) is the same install in
 two commands, and sections 5 to 8 still apply to it.
 
+**What it needs: 256 MB of memory and any one CPU** — measured, and why that number rather
+than the 56 MB serving costs, in [delivery](delivery.md#the-budget).
+
 ```
 Internet → CDN (optional) → nginx (TLS) → 127.0.0.1:3000  quire (systemd)
                                                 │
@@ -48,7 +51,7 @@ curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.
 The variables go in front of `bash`, not in front of `curl`: on this side of a pipe they
 would belong to the download and never reach the script.
 
-**Quire Ink runs from source: `bun src/index.ts`.** The checkout is the deployment, not a build
+**Quire Ink runs from source: `bun --smol src/index.ts`.** The checkout is the deployment, not a build
 input. `build:assets` produces the reader's island bundles and `build:admin` the admin's; both are
 read from disk at runtime, so they have to exist before the service starts.
 
@@ -71,9 +74,8 @@ HOST=127.0.0.1
 ```
 
 **`PAGE_CACHE_MB` is how much memory this process may spend holding rendered pages**, 8 MB by
-default — the number to lower on a small box and raise on a generous one. Measured in a 128 MB
-container with 1,000 posts: 2 MB leaves the process at 75 MB, 8 MB at 90. An ordinary blog
-fits its whole archive inside the default. `0` keeps nothing ([delivery](delivery.md)).
+default — lower it on a small box, raise it on a generous one. An ordinary blog fits its whole
+archive inside the default; `0` keeps nothing ([delivery](delivery.md#the-budget)).
 
 **`MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` are the app's own limits, 64 MB and 5 GB by
 default.** Keep the proxy's number and this one in step: the proxy refuses first and more
@@ -170,7 +172,7 @@ User=quire
 Environment=NODE_ENV=production
 WorkingDirectory=/home/quire/app
 EnvironmentFile=/home/quire/app/.env
-ExecStart=/home/quire/.bun/bin/bun src/index.ts
+ExecStart=/home/quire/.bun/bin/bun --smol src/index.ts
 Restart=always
 RestartSec=2
 NoNewPrivileges=true

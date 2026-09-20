@@ -252,4 +252,25 @@ HEALTHCHECK --interval=60s --timeout=5s --start-period=20s --retries=3 \
 
 # `bun:sqlite` is synchronous and single-threaded by design (one writer by construction),
 # so this is one process and never a cluster. Scale the box, not the process count.
-CMD ["bun", "src/index.ts"]
+#
+# `--smol` IS NOT A CONCESSION, IT IS FASTER, and this container is the reason it has to be
+# here rather than left to the operator: JavaScriptCore sizes its heap from the MACHINE's
+# memory and cannot see a cgroup limit, so inside `--memory=128m` on an 8 GB host it believes
+# it has 8 GB and lets garbage pile up until the limit stops it. Measured 2026-09-21 on the
+# demo fixture, 33 posts and 18 images, `--memory=128m --cpus=0.25`:
+#
+#   default   121.5 MB of 128, pinned at 100% of its CPU, the boot warm STILL UNFINISHED
+#             after twenty minutes, and the home page taking 16.5 seconds
+#   --smol     55.1 MB, 0.05% CPU, the warm done in 379 ms, the home page in 5 ms
+#
+# The failure is worse than a crash: it is never OOM-killed, so nothing restarts it and the
+# site is down while the container reports healthy. The same fixture given 512 MB and the same
+# quarter CPU warms in 1.6 seconds, which is what says the work was never the problem.
+#
+# And it costs nothing where there is room. 3,000 requests at 32 concurrent, 2 GB and 2 CPUs:
+# 4,995 and 5,115 req/s by default against 5,962 and 6,234 with `--smol`, p50 5.4 ms against
+# 4.3 ms. A compact heap collects less and fits in cache; the flag is 20% FASTER here.
+#
+# Nothing reads it: `clockBlockedBy` and the update check scan `process.execArgv` for
+# `--watch` and `--hot` only, so the clock still winds (ADR 0031).
+CMD ["bun", "--smol", "src/index.ts"]

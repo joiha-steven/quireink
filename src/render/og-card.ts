@@ -21,6 +21,7 @@
 // shared link is opened.
 
 import type { SatoriOptions } from 'satori'
+import { sharp as sharpModule } from '@/media/sharp'
 import { DEFAULT_THEME } from '@/content/themes'
 import { PEN_LIGHT, penStrokeFlat } from '@/pen/pigments'
 import interLatin from '@/render/fonts/inter-latin.woff' with { type: 'file' }
@@ -225,6 +226,6 @@ export async function renderOgCard(card: OgCard): Promise<Uint8Array> {
   // import that happens during boot and the server never starts — a blog that serves
   // nothing because it cannot draw a social card. Deferred, the same broken install serves
   // every page and fails only `/og`, which the caller turns into a 500 for that one URL.
-  const { default: sharp } = await import('sharp')
-  return new Uint8Array(await sharp(Buffer.from(svg), { density: DENSITY }).png().toBuffer())
+  const draw = await sharpModule()
+  return new Uint8Array(await draw(Buffer.from(svg), { density: DENSITY }).png().toBuffer())
 }

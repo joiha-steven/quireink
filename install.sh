@@ -122,7 +122,7 @@ step "Something else already terminating TLS? Skip it: docs/self-host.md has ngi
 
 if [ "${NO_RUN:-}" = "1" ]; then
   say "Not starting it (NO_RUN=1). To start:"
-  step "cd $DIR_ABS && DATA_DIR=./data STORAGE_LOCAL_DIR=./uploads bun src/index.ts"
+  step "cd $DIR_ABS && DATA_DIR=./data STORAGE_LOCAL_DIR=./uploads bun --smol src/index.ts"
   exit 0
 fi
 
@@ -134,4 +134,4 @@ DATA_DIR=./data \
 STORAGE_LOCAL_DIR=./uploads \
 SITE_URL="$SITE_URL" \
 PORT="$PORT" \
-exec bun src/index.ts
+exec bun --smol src/index.ts

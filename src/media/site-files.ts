@@ -16,6 +16,7 @@
 import { uploadFile, collapseBlob, readBlob } from '@/media/blob'
 import { safeFetch } from '@/server/safe-fetch'
 import { readCapped, uploadLimits } from '@/media/limits'
+import { sharp as sharpDoor } from '@/media/sharp'
 
 // contentType -> extension. `.ico` arrives as x-icon / vnd.microsoft.icon.
 const EXT: Record<string, string> = {
@@ -99,12 +100,14 @@ export async function renderLogo(
     if ('tooLarge' in read) return null // caller serves the original untouched
     src = Buffer.from(read.body)
   }
-  // PORT NOTE: sharp is imported here rather than at the top of the file. It is the only
-  // sharp user reachable from `content/settings.ts`, which every request touches, so a
-  // top-level import put it on the BOOT path — and `bun build --compile` bundles sharp's
-  // JavaScript but not its native module, so the compiled binary refused to start at all.
-  // Deferred, the same install serves every page and fails only when a logo is rendered.
-  const { default: sharp } = await import('sharp')
+  // PORT NOTE: sharp arrives HERE, not at the top of the file. It is the only sharp user
+  // reachable from `content/settings.ts`, which every request touches, so a top-level import
+  // put it on the BOOT path — and `bun build --compile` bundles sharp's JavaScript but not
+  // its native module, so the compiled binary refused to start at all. Deferred, the same
+  // install serves every page and fails only when a logo is rendered. `@/media/sharp` IS a
+  // top-level import and is not a hole in that: it holds nothing but a type and a memoised
+  // `await import`, so the codec still arrives on this line.
+  const sharp = await sharpDoor()
   try {
     // @2x for retina; withoutEnlargement never upscales past the source.
     const out = await sharp(src, { failOn: 'none' })

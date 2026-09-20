@@ -1,25 +1,11 @@
 // Image encoding — pure sharp pipeline (Buffer -> Buffer / dimensions). No DB, no
 // storage, no app state. media.ts depends on this ONE WAY (media -> image, never back).
 
-/**
- * sharp is loaded on the FIRST image operation, not at boot.
- *
- * `og-card.ts` already deferred it and said why (a compiled binary bundles sharp's
- * JavaScript but not its native module, so a top-level import killed the boot rather than
- * one route). That deferral bought nothing while THIS file imported it statically: media.ts
- * is reachable from the route table, so every process loaded sharp at boot anyway and the
- * comment over there described a protection that was not in force.
- *
- * The second reason is the hosted tier. sharp is the largest single import in the tree, and
- * a blog whose owner has not uploaded an image since the process started should not be
- * holding an image codec resident. Every export below was already `async`, so deferring it
- * costs one `await` per call and changes no signature.
- */
-type Sharp = typeof import('sharp')['default']
-let mod: Sharp | null = null
-async function sharp(): Promise<Sharp> {
-  return (mod ??= (await import('sharp')).default)
-}
+// sharp is loaded on the FIRST image operation and not at boot, and `media/sharp.ts` is the
+// one place that does it: the reasons for deferring it were written out in three files that
+// each deferred it separately, and libvips' own settings are process-global and so could not
+// belong to any of them. Every export below was already `async`, so it costs one `await`.
+import { sharp } from '@/media/sharp'
 
 export const RASTER = /^image\/(jpeg|png)$/ // full responsive pipeline
 export const PASSTHROUGH = /^image\/(svg\+xml|gif|webp|avif)$/ // stored as-is, no variants (avif is already efficient)

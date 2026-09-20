@@ -61,6 +61,29 @@ rules, each pinned by a test in `src/server/cache.test.ts`:
 - **`0` means no cache**, unlike `MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB`, where `0` means no
   limit. A cache with no room is not a cache with an infinite one.
 
+**What the machine has to be, then.** Same fixture, same quarter of a CPU, memory alone varied:
+
+| the box | serving | cutting an upload's smaller copies |
+|---|---|---|
+| 128 MB | 56 MB resident, a page in 5–37 ms | **OOM-killed** |
+| 160 MB · 192 MB | fine | **OOM-killed** |
+| 256 MB | 143 MB resident, a page in 5–6 ms | finishes |
+
+So **256 MB and any one CPU**, and the floor is set by libvips encoding AVIF rather than by
+anything this code does per request: a blog with no pictures, or one whose pictures are already
+cut, runs in half of it. The failure is worth knowing by shape — it lands two minutes after a
+boot that looked healthy, because that is when the first full tick sweeps for pending variants.
+
+The serving half fits because the image runs `bun --smol`. JavaScriptCore sizes its heap from
+the MACHINE's memory and cannot see a cgroup limit, so inside `--memory=128m` on an 8 GB host it
+believes it has 8 GB: measured on that fixture, the default heap sat at 121.5 MB of 128 pinned
+at 100% of its CPU with the boot warm **still unfinished after twenty minutes** and the home
+page taking 16.5 seconds, against 55.1 MB, 0.05% CPU and 379 ms with `--smol`. It is never
+OOM-killed in that state, so nothing restarts it. The flag costs nothing where there is room —
+3,000 requests at 32 concurrent on 2 GB and 2 CPUs ran 4,995 and 5,115 req/s by default against
+5,962 and 6,234 with it, p50 5.4 ms against 4.3 — so it is the default everywhere the process is
+started: the image, `bun start`, `install.sh` and the systemd unit.
+
 A blog of ordinary size never reaches the budget — 100 posts of that fixture come to 2.4 MB —
 so nothing about it is observable until an archive outgrows the memory it is running on.
 

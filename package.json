@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "bun run build:assets && bun --watch src/index.ts",
-    "start": "bun src/index.ts",
+    "start": "bun --smol src/index.ts",
     "build": "bun run build:assets && bun run build:admin",
     "build:assets": "bun scripts/build-assets.ts",
     "build:admin": "bun scripts/build-admin.ts",

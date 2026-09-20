@@ -4,6 +4,33 @@
 
 ### It fits on a small machine
 
+**It runs `bun --smol` now**, everywhere the process is started: the image, `bun start`,
+`install.sh` and the systemd unit. JavaScriptCore sizes its heap from the MACHINE's memory and
+cannot see a container limit, so inside `--memory=128m` on an 8 GB host it believed it had 8 GB
+and let garbage pile up until the limit stopped it. Measured on the demo fixture, 33 posts and
+18 pictures, at `--memory=128m --cpus=0.25`:
+
+| | memory | boot warm | the home page |
+|---|---|---|---|
+| before | 121.5 MB of 128, pinned at 100% CPU | **unfinished after twenty minutes** | 16.5 s |
+| now | **55.1 MB**, 0.05% CPU | 379 ms | 5 ms |
+
+⚠️ It was never OOM-killed in that state, so nothing restarted it: the container reported
+healthy while the site was effectively down. The same fixture given 512 MB and the same quarter
+CPU warmed in 1.6 seconds, which is what says the work was never the problem.
+
+It is not a concession either. 3,000 requests at 32 concurrent on 2 GB and 2 CPUs: 4,995 and
+5,115 req/s before, **5,962 and 6,234 after**, p50 5.4 ms against 4.3. A compact heap collects
+less and fits in cache.
+
+**What the machine has to be: 256 MB and any one CPU.** Serving costs 56 MB and answers a page
+in 5 to 37 ms on a quarter of a CPU. What needs the rest is cutting the smaller copies of an
+uploaded picture — 128, 160 and 192 MB were each OOM-killed during that sweep, two minutes after
+a boot that had looked healthy. A blog with no pictures runs in half of it. Written down in
+[self-host](docs/self-host.md) and [delivery](docs/delivery.md#the-budget), where it was not
+written down before.
+
+
 A 1,000-post blog in a 128 MB container was **OOM-killed on two of three restarts**, and the
 cause was the cache warmer: it rendered every public post into memory at boot and after every
 write, whether or not anybody had ever asked for one. Measured at `--memory=128m --cpus=0.25`
