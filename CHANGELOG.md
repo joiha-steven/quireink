@@ -396,6 +396,16 @@ the activity log. One press was fifty flushes, fifty purges and fifty rows.
 - A test that archived a backup was tarring the developer's own upload folder, 895 files, and had
   been going green in the morning and red by midnight with nothing in the repository changed
   between. 93 seconds and a timeout, to 739ms.
+- **CI was red for four commits while the same suite was green on the machine the code was
+  written on**, which is the shape worth naming rather than retrying. The theme button keeps
+  the server's sun so it can put it back when the reader returns to light, and it kept it in a
+  module variable, so the first such button any process drew donated its drawing to every
+  button after it. One page carries one button, so the product never saw it; a test process
+  carries as many as its files build, and module state is shared across files in one run. The
+  runner's file order decided which fixture won, and that order differs between Linux and
+  macOS. Kept per button now, and the mutation is pinned in one file and one order, because a
+  bug that only appears under a particular file order is a bug nothing can be relied on to
+  catch again.
 - The i18n typography guard is the thirteenth; the motion drift guard is the fourteenth.
 
 ### What 2.2.13 does not do
