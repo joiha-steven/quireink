@@ -9,6 +9,12 @@
 // So the rule under test is not "these nine fields". It is that a picture NAMED ANYWHERE in
 // the settings is used, whichever field happens to hold it — because a list of fields is a
 // list that goes stale the next time a setting holds a picture, silently.
+//
+// ⚠️ AND THE SAME LIST WENT STALE AGAIN ON THE TABLES, which is why the block at the foot of
+// this file exists. The scan read `content` and `featured_image` and nothing else, so three
+// live references were reported as orphans: a post's SECOND picture (`cover_image`), every
+// picture in the NOTEBOOK, and the cover inside a revision snapshot. Proved with the real
+// routes on 2026-09-19 — reported unused, purged 200, blob gone.
 
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
@@ -33,7 +39,7 @@ const unused = async (): Promise<string[]> =>
   (await findUnusedMedia()).map((u) => u.replace(/^.*media\//, '')).sort()
 
 beforeEach(() => {
-  for (const t of ['media', 'posts', 'pages', 'post_revisions', 'settings']) db().run(`delete from ${t}`)
+  for (const t of ['media', 'posts', 'pages', 'notes', 'post_revisions', 'settings']) db().run(`delete from ${t}`)
 })
 
 describe('a picture the settings point at', () => {
@@ -68,6 +74,52 @@ describe('a picture the settings point at', () => {
       title: 'Bai', slug: 'bai', status: 'published', date: new Date().toISOString(),
       content: 'Anh: ![x](/uploads/media/in-a-post.webp)',
     } as Parameters<typeof savePost>[0])
+    expect(await unused()).toEqual(['orphan.webp'])
+  })
+})
+
+describe('a picture a TABLE points at, in any column', () => {
+  it('counts a post cover, which lives in its own column beside the featured image', async () => {
+    upload('cover.webp')
+    upload('featured.webp')
+    db().run(
+      `insert into posts (slug, title, content, date, status, created_at, updated_at,`
+      + ` featured_image, cover_image) values (?, ?, '', 1, 'published', 1, 1, ?, ?)`,
+      ['p', 'A post', 'media/featured.webp', 'media/cover.webp'],
+    )
+    expect(await unused()).toEqual([])
+  })
+
+  it('counts a picture in a note, which the sweep never read at all', async () => {
+    upload('in-a-note.webp')
+    db().run(
+      `insert into notes (slug, title, content, date, status, created_at, updated_at)`
+      + ` values (?, '', ?, 1, 'published', 1, 1)`,
+      ['n', 'look at ![this](/uploads/media/in-a-note.webp)'],
+    )
+    expect(await unused()).toEqual([])
+  })
+
+  it('counts a cover kept only in a revision, because restoring it needs the bytes', async () => {
+    upload('old-cover.webp')
+    db().run(
+      `insert into post_revisions (slug, data, saved_at) values (?, ?, 1)`,
+      ['p', JSON.stringify({ title: 'was', content: '', coverImage: 'media/old-cover.webp' })],
+    )
+    expect(await unused()).toEqual([])
+  })
+
+  it('and the counter-test: the same search names a picture nothing holds', async () => {
+    // ⚠️ THE LOAD-BEARING HALF. Every assertion above is that a list came back EMPTY, which is
+    // also what a broken sweep returns, what an empty library returns, and what a query that
+    // threw and was swallowed returns. This proves the three rows above were actually read.
+    upload('orphan.webp')
+    upload('cover.webp')
+    db().run(
+      `insert into posts (slug, title, content, date, status, created_at, updated_at, cover_image)`
+      + ` values (?, '', '', 1, 'published', 1, 1, ?)`,
+      ['p', 'media/cover.webp'],
+    )
     expect(await unused()).toEqual(['orphan.webp'])
   })
 })

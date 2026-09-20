@@ -46,16 +46,52 @@ const say = (ok: boolean, line: string) => {
   if (!ok) failures.push(line)
 }
 
-/** Rows the owner would notice missing. Analytics is counted separately, in its own file. */
-// `notes` and `webmentions` arrived with the notebook in 2.2.10 and were not added here, so a
-// restored archive could have lost every note the owner wrote and this check would still pass.
-// The rows were always IN the archive (`VACUUM INTO` copies the whole file); what was missing
-// was anybody counting them, which is the difference between a backup and a backup nobody has
-// opened. A new table that holds the owner's own writing belongs in this list the same day.
-const TABLES = [
-  'posts', 'pages', 'post_revisions', 'notes', 'media', 'files', 'comments', 'redirects',
-  'subscribers', 'newsletter_sends', 'webmentions', 'settings', 'users', 'activity_log',
-] as const
+/**
+ * ⚠️ THE LIST IS NOT WRITTEN DOWN ANY MORE, and that is the fix rather than the tidying.
+ *
+ * It was fourteen names by hand. `notes` and `webmentions` arrived with the notebook in 2.2.10
+ * and nobody added them, so a restored archive could have lost every note the owner wrote and
+ * this check would still have passed. They were added; then the fediverse, the reader's pen,
+ * the link cards and the assistant all arrived with tables of their own, and by 2026-09-19 the
+ * list counted **14 of 29**. Among the fifteen it could not see: `post_terms` — every category
+ * and tag on the blog, and the only table whose rows vanish by CASCADE — `integration_keys`,
+ * which is every credential, and `server_secrets`, which is the salt every analytics visitor
+ * identity is built from, so losing it reads as a traffic collapse rather than a bad restore.
+ *
+ * A list somebody has to remember to extend is a list that goes stale, and this one went stale
+ * three times in six weeks. So it asks the database. A table added next year is counted next
+ * year, by nobody.
+ */
+const SHADOW = /_fts($|_)/
+
+/**
+ * The tables deliberately NOT counted, each with the reason it would otherwise go red on a
+ * perfectly good restore. This is the list to argue with; the one above is derived.
+ */
+const TRANSIENT: Record<string, string> = {
+  // Deleted from the copy on purpose: `backup.ts` drops it before tarring, because it was 530
+  // of the 538 MB. Counting it would fail every single run.
+  render_cache: 'dropped from the archive on purpose',
+  // These drain, expire or are rewritten in the ordinary course of a minute, so "fewer rows
+  // than before" is their normal state and says nothing about the archive.
+  ap_queue: 'a delivery queue, drains as it is delivered',
+  mcp_used_codes: 'a replay guard, expires by design',
+  sessions: 'made and pruned continuously',
+  update_check: 'a one-row cache of the last look',
+}
+
+function contentTables(dbPath: string): string[] {
+  const db = new Database(dbPath, { readonly: true, strict: true })
+  try {
+    return (db.query(
+      `select name from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name`,
+    ).all() as { name: string }[])
+      .map((r) => r.name)
+      .filter((n) => !SHADOW.test(n) && !(n in TRANSIENT))
+  } finally {
+    db.close()
+  }
+}
 
 const ANALYTICS_TABLES = ['analytics_events', 'analytics_scroll'] as const
 
@@ -162,6 +198,9 @@ await Bun.$`mkdir -p ${WORK}`.quiet()
 // looked, and may never hold less.
 const liveContent = join(DATA_DIR, 'quire.db')
 const liveAnalytics = join(DATA_DIR, 'analytics.db')
+// Derived from the LIVE database, before the archive exists. Taking it from the archive
+// instead would mean a table the restore lost is a table nobody thought to count.
+const TABLES = existsSync(liveContent) ? contentTables(liveContent) : []
 const before = existsSync(liveContent) ? counts(liveContent, TABLES) : null
 const beforeAnalytics = existsSync(liveAnalytics)
   ? counts(liveAnalytics, ANALYTICS_TABLES)
@@ -246,7 +285,7 @@ if (before === null) {
   const kept = counts(join(WORK, 'quire.db'), TABLES)
   const lost = TABLES.filter((t) => (kept[t] ?? 0) < (before[t] ?? 0))
   say(lost.length === 0, lost.length === 0
-    ? `every row survived (${TABLES.map((t) => `${t} ${kept[t]}`).join(', ')})`
+    ? `every row survived (${TABLES.length} tables: ${TABLES.map((t) => `${t} ${kept[t]}`).join(', ')})`
     : `rows lost: ${lost.map((t) => `${t} ${before[t]}→${kept[t]}`).join(', ')}`)
 }
 
