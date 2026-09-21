@@ -13,6 +13,7 @@
 
 import type { Tour } from './tour'
 import { registerSheetFlows } from './tour-flows-sheet'
+import { registerSourceFlows } from './tour-flows-source'
 import { registerPictureFlows } from './tour-flows-picture'
 import { registerAttributeFlows, registerCardFlows, registerLanguageFlows } from './tour-flows-attributes'
 import { registerKeepFlows } from './tour-flows-keep'
@@ -359,6 +360,7 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
   // The furniture AROUND the form: the button strip and the attributes panel. Their own file,
   // this one being a dozen lines from the 400-line rule.
   registerSheetFlows({ flow, atWidth })
+  registerSourceFlows({ flow, atWidth })
   registerPictureFlows({ flow, atWidth })
   registerAttributeFlows({ flow, atWidth })
   registerLanguageFlows({ flow, atWidth })

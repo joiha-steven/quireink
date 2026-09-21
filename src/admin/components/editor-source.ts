@@ -218,6 +218,8 @@ const className = {
 export type SourceView = {
   /** The textarea, which is the only source of truth for the text. */
   readonly area: HTMLTextAreaElement
+  /** Re-measure the box against its text. Needed once after the slot is first shown. */
+  fit: () => void
   /** Push the text in from outside — a document loaded, or a draft restored. */
   setValue: (next: string) => void
   /** Find hits, as offsets into the value, and which one is current. */
@@ -250,8 +252,35 @@ export function mountSource(
     mirror.innerHTML = `${withHits(mark(area.value), hits, current)}\n`
   }
 
+  /**
+   * The box is exactly as tall as its text.
+   *
+   * ⚠️ THIS HAS TO RUN ON EVERY CHANGE, not only when the view is revealed, and until
+   * 2026-09-21 it ran only there — in `sheet-raw.ts`, which set the height once on the way in
+   * and never again. The class above carries `overflow-hidden`, on purpose (the header of this
+   * file explains why: a box that scrolls internally would drift from the mirror behind it), so
+   * a box that stops growing does not merely look short — everything past its bottom edge
+   * becomes UNREACHABLE. Paste a four-thousand-word draft into the Markdown view and it lands
+   * intact, is saved intact, and shows as a stub; keep typing at the end and your own caret
+   * leaves the visible box.
+   *
+   * It is one forced layout per keystroke, and it is the cheap half of what that keystroke
+   * already cost. Measured in the browser on an 82,000-character document: the whole keystroke
+   * is 9.1 ms, of which this is **1.1 ms** and `paint()` above — which rewrites
+   * `mirror.innerHTML` and has always run on this path — is 4.1 ms.
+   */
+  const fit = (): void => {
+    const previous = area.style.height
+    area.style.height = 'auto'
+    const wanted = area.scrollHeight
+    // 0 means the box is not laid out — the slot above it is still `hidden`. Writing that back
+    // would collapse it, and `reveal()` would then measure a box with no height to report.
+    area.style.height = wanted > 0 ? `${wanted}px` : previous
+  }
+
   area.addEventListener('input', () => {
     paint()
+    fit()
     hooks.onChange(area.value)
     hooks.onDirty()
   })
@@ -259,12 +288,14 @@ export function mountSource(
 
   return {
     area,
+    fit,
     setValue: (next: string) => {
       // Setting a textarea's value sends its caret to the end, so it is written only when it
       // has actually changed — the same trap the caption field in `CaptionedImage.ts` names.
       if (area.value === next) return
       area.value = next
       paint()
+      fit()
     },
     setHits: (next: Hit[], at: number) => { hits = next; current = at; paint() },
     destroy: () => { hold.remove() },

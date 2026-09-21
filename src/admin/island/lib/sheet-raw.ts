@@ -52,8 +52,12 @@ export function wireRaw(
     const ta = source.area
     // The text first, and the mirror with it: everything below measures the box.
     source.setValue(text)
-    ta.style.height = 'auto'
-    ta.style.height = `${ta.scrollHeight}px`
+    // The height belongs to `editor-source.ts` and is asked for here rather than computed:
+    // it used to be computed HERE and nowhere else, so the box was measured once on the way in
+    // and never again, and anything typed or pasted afterwards fell outside an
+    // `overflow-hidden` box. `setValue` above already fits when the text changed; this covers
+    // the reveal where it did not.
+    source.fit()
     // AFTER the box has its real height, and not before: focusing a textarea scrolls the page
     // to its caret, and a caret placed while the box is still one line tall scrolls to the
     // wrong line and then the box grows underneath it.
