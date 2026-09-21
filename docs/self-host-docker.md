@@ -8,12 +8,14 @@ do from [`self-host.md`](self-host.md): **nginx** (section 5), **your account** 
 a link the log prints, not a shell command), **the CDN note** (section 7), **the cron ticks**
 (section 8), and taking a backup before an upgrade.
 
-**Give the container 256 MB.** Measured in containers on a real blog with pictures, serving
-costs 56 MB and a quarter of a CPU is enough; what needs the rest is encoding the smaller copies
-of an upload, and `--memory=128m`, `160m` and `192m` were each OOM-killed during that sweep two
-minutes after a boot that had looked healthy. The image runs `bun --smol`, which is what makes
-the serving half fit — JavaScriptCore sizes its heap from the HOST's memory and cannot see a
-cgroup limit ([delivery](delivery.md#the-budget)).
+**Give the container 256 MB; 192 MB is the floor.** Measured on a real blog with pictures,
+serving costs 56 MB and a quarter of a CPU is enough. What needs the rest is encoding the
+smaller copies of an upload, which runs on the tick two minutes after boot: `--memory=128m` and
+`160m` are killed there, and at `192m` it runs but an encode may be killed and retried on the
+next tick. Two things make that fit — the image runs `bun --smol`, because JavaScriptCore sizes
+its heap from the HOST's memory and cannot see a cgroup limit, and each variant is encoded in a
+child process ([ADR 0061](decisions/0061-the-image-codec-runs-in-a-child-process.md)), so a
+killed encoder no longer takes the blog with it ([delivery](delivery.md#the-budget)).
 
 There are two ways in. **Pull the published image** if you just want it running — nothing to
 clone, no Bun on the host, no build step, and `linux/amd64` and `linux/arm64` both exist:

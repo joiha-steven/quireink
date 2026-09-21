@@ -66,13 +66,21 @@ rules, each pinned by a test in `src/server/cache.test.ts`:
 | the box | serving | cutting an upload's smaller copies |
 |---|---|---|
 | 128 MB | 56 MB resident, a page in 5–37 ms | **OOM-killed** |
-| 160 MB · 192 MB | fine | **OOM-killed** |
-| 256 MB | 143 MB resident, a page in 5–6 ms | finishes |
+| 160 MB | fine | **OOM-killed** |
+| 192 MB | fine | runs at 90–93 MB; an encode may be killed and retried |
+| 256 MB | 119 MB resident, a page in 5–6 ms | finishes |
 
-So **256 MB and any one CPU**, and the floor is set by libvips encoding AVIF rather than by
-anything this code does per request: a blog with no pictures, or one whose pictures are already
-cut, runs in half of it. The failure is worth knowing by shape — it lands two minutes after a
-boot that looked healthy, because that is when the first full tick sweeps for pending variants.
+So **192 MB is the floor and 256 MB is what to give it**, and the floor is set by libvips
+encoding AVIF rather than by anything this code does per request: a blog with no pictures, or
+one whose pictures are already cut, runs in a third of it. The failure is worth knowing by
+shape — it lands two minutes after a boot that looked healthy, because that is when the first
+full tick sweeps for pending variants.
+
+That sweep encodes each variant in a child process ([ADR 0061](decisions/0061-the-image-codec-runs-in-a-child-process.md)),
+which is what moved the floor from 256 and, more usefully, changed what happens when it is
+reached: one run at 192 MB logged `encode 1600.avif exited null (SIGKILL)` while `/api/health`
+went on answering 200 and the pending rows waited for the next tick. The kernel killed the
+encoder instead of the blog.
 
 The serving half fits because the image runs `bun --smol`. JavaScriptCore sizes its heap from
 the MACHINE's memory and cannot see a cgroup limit, so inside `--memory=128m` on an 8 GB host it

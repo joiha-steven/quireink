@@ -4,6 +4,36 @@
 
 ### It fits on a small machine
 
+**The image codec runs in a child process now, one per variant** ([ADR 0061](docs/decisions/0061-the-image-codec-runs-in-a-child-process.md)).
+libvips does not hand memory back: six variants from one photograph climb a process from 51 MB
+to 136 and leave it there, permanently, in a server that runs for months. That climb, not
+serving, is what killed small installations — a blog of 33 posts and 18 pictures was OOM-killed
+at 128, 160 **and** 192 MB, two minutes after a boot that had looked healthy, because two
+minutes is when the first tick sweeps for pending variants.
+
+| | before | after |
+|---|---|---|
+| the floor | 256 MB | **192 MB** |
+| at 192 MB | OOM-killed | runs, 90 to 93 MB |
+| six variants | 1,708 ms | 1,821 ms |
+
+⚠️ **The shape of the failure changed, and that is worth more than the 64 MB.** A run that still
+hit the limit logged `encode 1600.avif exited null (SIGKILL)` while `/api/health` answered 200,
+the database and store both fine, and the pending pictures waited for the next tick. The kernel
+killed the encoder; the blog kept serving. Before this the same pressure killed the server and
+left nothing in the log to say why.
+
+**AVIF is encoded at effort 3 rather than sharp's default of 4.** Measured over twelve
+photographs, the 1600px copy: 6,888 ms against 28,528 ms, the same number of bytes, and 0.24 dB
+of PSNR. Four times the work for a quarter of a decibel. ⚠️ Read that as the PSNR column and not
+the size column: on bytes alone effort **1** looks best of all and is in fact 1.05 dB worse on
+every image, which is a wrong conclusion this nearly shipped.
+
+Four cheaper answers were measured and rejected: `sequentialRead` (worse), `VIPS_DISC_THRESHOLD`
+(no change), a file path instead of a buffer (2 MB), and `sharp.concurrency(1)` — which is a
+no-op, because libvips already reports concurrency 1 inside a container.
+
+
 **It runs `bun --smol` now**, everywhere the process is started: the image, `bun start`,
 `install.sh` and the systemd unit. JavaScriptCore sizes its heap from the MACHINE's memory and
 cannot see a container limit, so inside `--memory=128m` on an 8 GB host it believed it had 8 GB

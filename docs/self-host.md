@@ -8,8 +8,8 @@ Commands assume Ubuntu/Debian and `root` (or `sudo`). Adjust the paths. If you w
 not install Bun on the host, [Docker](#docker-instead-of-systemd) is the same install in
 two commands, and sections 5 to 8 still apply to it.
 
-**What it needs: 256 MB of memory and any one CPU** — measured, and why that number rather
-than the 56 MB serving costs, in [delivery](delivery.md#the-budget).
+**What it needs: 192 MB of memory and any one CPU, and 256 MB is what to give it** — measured,
+and why that rather than the 56 MB serving costs, in [delivery](delivery.md#the-budget).
 
 ```
 Internet → CDN (optional) → nginx (TLS) → 127.0.0.1:3000  quire (systemd)

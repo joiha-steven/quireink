@@ -5,6 +5,7 @@
 // one place that does it: the reasons for deferring it were written out in three files that
 // each deferred it separately, and libvips' own settings are process-global and so could not
 // belong to any of them. Every export below was already `async`, so it costs one `await`.
+import { join } from 'node:path'
 import { sharp } from '@/media/sharp'
 
 export const RASTER = /^image\/(jpeg|png)$/ // full responsive pipeline
@@ -90,17 +91,80 @@ export async function makeThumb(original: Buffer): Promise<Buffer> {
     .toBuffer()
 }
 
+/**
+ * How hard the AVIF encoder searches. sharp's scale is 0 (fastest) to 9; the default is 4.
+ *
+ * ⚠️ 4 IS THE WRONG END OF A CURVE THAT HAS ALREADY FLATTENED. Measured 2026-09-21 in a
+ * container, over twelve real photographs, for the 1600px copy of each:
+ *
+ *   effort  time      size      PSNR
+ *   4       28,528ms  1,790 KB  33.46 dB   the default
+ *   3        6,888ms  1,785 KB  33.22 dB   <- here
+ *   2        3,564ms  1,793 KB  33.02 dB
+ *   1        2,111ms  1,740 KB  32.41 dB
+ *
+ * Four times the work for a quarter of a decibel, at the same number of bytes. A quarter of
+ * a decibel is not a thing anybody can see; 22 seconds is a thing a small box feels, and on a
+ * quarter of a CPU that figure is eight times larger again. Peak memory moves with it, 135 MB
+ * to 111 MB for one 1600px encode in a fresh process.
+ *
+ * ⚠️ READ THE PSNR COLUMN, NOT THE SIZE COLUMN. On bytes alone effort 1 looks best of all —
+ * it produced SMALLER files than the default on ten of those twelve images, which reads as
+ * fourteen times the CPU bought nothing. It is not: effort 1 is 1.05 dB worse, on every
+ * image, because at a fixed `quality` a cheaper search spends fewer bits AND gets less for
+ * them. This constant was nearly set to 1 on the strength of the size column alone.
+ *
+ * 2 is available and costs 0.44 dB for eight times the speed. 3 is chosen because it is the
+ * largest step that costs nothing measurable.
+ */
+const AVIF_EFFORT = 3
+
+/**
+ * One variant, encoded in a process of its own. `encode-variant.ts` says why.
+ *
+ * NO FALLBACK TO ENCODING IT HERE, and that is deliberate rather than missing. A child that
+ * exits non-zero has usually been KILLED for memory, and answering that by doing the same
+ * work in the server is how the failure this arrangement exists to prevent arrives anyway.
+ * The sweep already retries: `finalize.ts` selects on `variants < VARIANT_VERSION`, so a
+ * variant that failed is simply still pending on the next tick.
+ *
+ * Spawning is not a new requirement either — `server/backup.ts` has spawned `tar` for real
+ * since the port, so an installation that cannot start a child process already cannot take a
+ * backup.
+ *
+ * `process.execPath` rather than the name `bun`: the parent is already running under the
+ * interpreter the child needs, and PATH is not guaranteed to be anything in a unit file or a
+ * container entrypoint.
+ */
+async function encodeElsewhere(original: Buffer, width: number, format: 'webp' | 'avif'): Promise<Buffer> {
+  const child = Bun.spawn(
+    [process.execPath, '--smol', join(import.meta.dir, 'encode-variant.ts'),
+      String(width), format, String(AVIF_EFFORT)],
+    { stdin: new Blob([new Uint8Array(original)]), stdout: 'pipe', stderr: 'pipe' },
+  )
+  // BOTH PIPES ARE DRAINED BEFORE THE EXIT IS AWAITED. A child blocked writing into a pipe
+  // nobody is reading never exits, and `backup.ts` carries the same note about `tar`.
+  const [encoded, complaint] = await Promise.all([
+    Bun.readableStreamToArrayBuffer(child.stdout),
+    new Response(child.stderr).text(),
+  ])
+  await child.exited
+  if (child.exitCode !== 0) {
+    throw new Error(
+      `encode ${width}.${format} exited ${child.exitCode}${
+        child.signalCode ? ` (${child.signalCode})` : ''}: ${complaint.trim().slice(0, 200)}`,
+    )
+  }
+  return Buffer.from(encoded)
+}
+
 // The heavy display set (AVIF + WebP @ each size) — deferred to AFTER save so the
 // save request never blocks on the AVIF encode (the original always renders).
 export async function makeDisplay(original: Buffer): Promise<Variant[]> {
-  const { width: ow } = await imageSize(original)
   const files: Variant[] = []
   for (const w of SIZES) {
-    const pipe = (await sharp())(original, { failOn: 'none' })
-      .rotate()
-      .resize({ width: ow ? Math.min(w, ow) : w, withoutEnlargement: true })
-    files.push({ suffix: `-${w}.webp`, data: await pipe.clone().webp({ quality: 80 }).toBuffer(), contentType: 'image/webp' })
-    files.push({ suffix: `-${w}.avif`, data: await pipe.clone().avif({ quality: 50 }).toBuffer(), contentType: 'image/avif' })
+    files.push({ suffix: `-${w}.webp`, data: await encodeElsewhere(original, w, 'webp'), contentType: 'image/webp' })
+    files.push({ suffix: `-${w}.avif`, data: await encodeElsewhere(original, w, 'avif'), contentType: 'image/avif' })
   }
   return files
 }
