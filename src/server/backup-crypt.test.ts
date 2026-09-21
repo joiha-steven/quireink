@@ -11,10 +11,21 @@
 
 import { describe, expect, it } from 'bun:test'
 import {
-  CHUNK, MAGIC, decodePublic, decodeSecret, encodePublic, newIdentity, opener,
+  CHUNK, COST, MAGIC, costFrom, decodePublic, decodeSecret, encodePublic, newIdentity, opener,
   passphraseIdentity, passphraseRecipient, sealer, unseal,
 } from '@/server/backup-crypt'
-import { createPrivateKey, randomBytes } from 'node:crypto'
+import { createPrivateKey, createPublicKey, randomBytes, type KeyObject } from 'node:crypto'
+
+/**
+ * The raw 32 bytes of a key's public half, which the module keeps to itself. Written out here
+ * rather than exported, because the only caller is a test building an archive BY HAND — and a
+ * door opened for a test is a door.
+ *
+ * ⚠️ `createPublicKey` ON AN ALREADY-PUBLIC KeyObject THROWS IN BUN (`ERR_CRYPTO_INVALID_KEY_
+ * OBJECT_TYPE`) where Node allows it. This is only ever handed a private key.
+ */
+const rawPublicOf = (key: KeyObject): Buffer =>
+  Buffer.from(createPublicKey(key).export({ type: 'spki', format: 'der' })).subarray(12)
 
 const PKCS8 = Buffer.from('302e020100300506032b656e04220420', 'hex')
 const identityOf = (secret: string) =>
@@ -50,6 +61,51 @@ function unsealAll(archive: Buffer, identity: ReturnType<typeof identityOf>): Bu
 
 const SALT = Buffer.from(randomBytes(16)).toString('base64')
 const SMALL = Buffer.from('two databases and somebody\'s photographs')
+
+describe('the cost comes out of the archive, not out of this build', () => {
+  /**
+   * ⚠️ THE HEADER CARRIED `n`, `r` AND `p` FROM THE START AND THE READER USED ITS OWN. The salt
+   * was read out of the archive and the other three came from a module constant, so the format
+   * described itself on paper and was pinned to one build in fact. Raising `N` — the ordinary
+   * answer as hardware gets faster — would have orphaned every archive already written, and the
+   * failure is `no-matching-key`, which reads as "wrong passphrase" to somebody who typed the
+   * right one, on the worst day, about the one file that was supposed to survive it.
+   *
+   * 2^14 is used here because it is CHEAP, and cheap is what makes this test a test: it is not
+   * the default, so an opener that reaches for the default cannot open what it writes.
+   */
+  const LOW = { n: 1 << 14, r: 8, p: 1 }
+
+  it('opens an archive written at a cost this build does not use', () => {
+    const salt = randomBytes(16)
+    const words = 'nam chu va mot dau cham'
+    // Derived at the low cost, and the header is told so — which is the whole contract.
+    const low = passphraseIdentity(words, salt, LOW)
+    const archive = seal(SMALL, [encodePublic(rawPublicOf(low))], Buffer.from(salt).toString('base64'))
+
+    expect(unsealAll(archive, passphraseIdentity(words, salt, LOW))).toEqual(SMALL)
+    // The same passphrase and salt at the DEFAULT cost is a different key, which is exactly
+    // why the reader has to be told: this is what every old archive would have become.
+    expect(() => unsealAll(archive, passphraseIdentity(words, salt))).toThrow('no-matching-key')
+  })
+
+  it('refuses a cost a header asks for and no honest archive would', () => {
+    // Read before the MAC can be checked, so a hostile header is asking the person restoring to
+    // allocate whatever it names. 2^30 at r=8 is a terabyte and scrypt would try.
+    expect(() => costFrom({ n: 2 ** 30, r: 8, p: 1 })).toThrow('bad-kdf')
+    expect(() => costFrom({ n: 65_536, r: 4096, p: 1 })).toThrow('bad-kdf')
+    expect(() => costFrom({ n: 100_000, r: 8, p: 1 })).toThrow('bad-kdf') // not a power of two
+    expect(() => costFrom({ r: 8, p: 1 })).toThrow('bad-kdf')
+    expect(costFrom({ n: 65_536, r: 8, p: 1 })).toEqual({ n: 65_536, r: 8, p: 1 })
+  })
+
+  it('writes the cost it actually spent into the header', () => {
+    const pass = passphraseRecipient('sau chu va mot con so 7')
+    const archive = seal(SMALL, [pass.publicKey], pass.salt)
+    const header = JSON.parse(archive.toString('latin1').split('\n')[1]!) as { kdf: Record<string, number> }
+    expect(costFrom(header.kdf)).toEqual(COST)
+  })
+})
 
 describe('the archive opens for either recipient', () => {
   it('round-trips through the identity, byte for byte', () => {

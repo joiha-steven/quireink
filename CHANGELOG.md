@@ -2,6 +2,61 @@
 
 ## Unreleased
 
+### Fixed: the Markdown view showed a long piece as a stub
+
+Paste a four-thousand-word draft into the Markdown view and it landed intact, saved intact, and
+showed as a stub. Switching to the writing showed every word, so nothing was lost — the box
+simply kept the height it had when the view opened.
+
+⚠️ **It was not only a short box.** The textarea has no scrollbar by design, so everything past
+its bottom edge was unreachable by any means: typing at the end walked your own caret out of
+sight. The height is measured on every change now. The flow that holds it reports, without the
+fix, `after a paste, 9072px of the piece is unreachable below the box`.
+
+### Fixed: the writing list stretched its lines to 140 characters
+
+The list of everything written had no maximum width below 1280px, so it took whatever the window
+gave it. Measured in a browser, walking the excerpt's own font:
+
+| 390px | 600px | 768px | 900px | 1100px | 1279px |
+|---|---|---|---|---|---|
+| 41ch | 68ch | 86ch | 101ch | 116ch | **140ch** |
+
+`docs/conventions/type.md` puts the reading measure at 45 to 75. It was worst between 1024 and
+1279 — a 13-inch laptop — where the rail is forced shut and hands the list every pixel it gave
+up, so the window that makes the chrome smallest made the text longest. It holds at 80
+characters now, centred.
+
+### Fixed: the settings refusal line was drawn in the body colour
+
+The sentence that says a value was rejected used two classes that have no rule behind them, so
+it rendered `oklch(0.205 0 none)` — the body colour, to the last digit, on the one line whose
+whole job is to look unlike ordinary prose. It uses the admin's own danger token now: 4.87:1 in
+light, 6.09:1 in dark.
+
+`check:admin-css` exists to catch exactly that and was green throughout, because it reads
+`className=` and `class="…"` and this file keeps its classes in a named constant. It reads those
+too now — 641 class names checked before, 783 after — behind a gate that keeps URLs, storage keys
+and event names out of it. Its first run found one more: `write-row`, on every row of the list,
+styled by no rule and selected by nothing.
+
+### Fixed: a sealed archive was pinned to the build that wrote it
+
+The encrypted archive's header has always carried the key-stretching cost — `n`, `r` and `p` —
+and the reader took only the salt out of it and the other three from its own constants. So the
+format described itself and was pinned to one build in fact: **raising the cost would have
+orphaned every archive already written**, failing with `no-matching-key`, which reads to whoever
+is holding it as "wrong passphrase". On the worst day, about the one file meant to survive it.
+
+The reader takes all four from the archive now, and bounds them, because that header is parsed
+before any key exists and so cannot have been authenticated: `n` must be a power of two in
+2^14…2^20, `r` and `p` in 1…16. An archive asking for `n: 2^30` is asking the person restoring
+it to allocate a terabyte.
+
+The cost this build writes is unchanged at N=65536. Measured in a container, scrypt wants 64 MB
+there and 128 MB at N=2^17; the floor this software is documented to run on is 192 MB and the
+server is 56 MB of it, so the larger number would leave nothing for anything else.
+
 ### It fits on a small machine
 
 **The image codec runs in a child process now, one per variant** ([ADR 0061](docs/decisions/0061-the-image-codec-runs-in-a-child-process.md)).

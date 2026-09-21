@@ -19,7 +19,7 @@
 import { createInterface } from 'node:readline'
 import { createPrivateKey } from 'node:crypto'
 import {
-  CHUNK, decodeSecret, opener, passphraseIdentity, sealer, unseal,
+  CHUNK, costFrom, decodeSecret, opener, passphraseIdentity, sealer, unseal, type Cost,
 } from '@/server/backup-crypt'
 
 const PKCS8 = Buffer.from('302e020100300506032b656e04220420', 'hex')
@@ -141,12 +141,22 @@ async function decrypt(): Promise<void> {
     const head = Buffer.from(await Bun.file(src).slice(0, 8192).arrayBuffer())
     const line = head.toString('latin1').split('\n')[1] ?? ''
     let salt: Buffer
+    let cost: Cost
     try {
-      salt = Buffer.from((JSON.parse(line) as { kdf: { salt: string } }).kdf.salt, 'base64')
-    } catch {
-      return die(`${src} is not a Quire Ink encrypted archive`)
+      const kdf = (JSON.parse(line) as { kdf: { salt: string } }).kdf
+      salt = Buffer.from(kdf.salt, 'base64')
+      // ⚠️ THE COST COMES OUT OF THE ARCHIVE, not out of this build. The header has always
+      // carried `n`, `r` and `p` and this line took only the salt, so an archive written by a
+      // version with different numbers would fail with `no-matching-key` — which reads as
+      // "wrong passphrase" to somebody who typed the right one. `costFrom` bounds them,
+      // because nothing here has authenticated the header yet.
+      cost = costFrom(kdf)
+    } catch (error) {
+      return die((error as Error).message === 'bad-kdf'
+        ? `${src} asks for a key-stretching cost this tool will not spend`
+        : `${src} is not a Quire Ink encrypted archive`)
     }
-    identity = passphraseIdentity(await askPassphrase(), salt)
+    identity = passphraseIdentity(await askPassphrase(), salt, cost)
   } else {
     return die('pass --identity <file> or --passphrase')
   }

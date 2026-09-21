@@ -68,8 +68,22 @@ QUIREBAK1\n
   with the frame number big-endian at offset 7 and **byte 11 set to 1 on the final frame only**.
   That last byte is what stops a truncated archive opening as a whole one, which is the failure
   a full disk or a killed upload actually produces.
-* The passphrase recipient's private half is `scrypt(passphrase, salt, N=65536, r=8, p=1)` read
-  as a 32-byte X25519 seed. The salt is in the header because recovery may have nothing else.
+* The passphrase recipient's private half is `scrypt(passphrase, salt, N, r, p)` read as a
+  32-byte X25519 seed, **with all four taken from the header's `kdf` and none from the reader's
+  own build**. The salt is there because recovery may have nothing else; the other three are
+  there so the cost can ever be raised. Amended 2026-09-21: they were written from the start and
+  the reader used its own constants, so raising `N` — the ordinary answer as hardware gets
+  faster — would have orphaned every archive already written, failing with `no-matching-key`,
+  which reads to the person holding it as "wrong passphrase".
+* ⚠️ **A reader bounds what that header may ask of it.** `kdf` is parsed before any key exists,
+  so the MAC cannot have been checked: an archive claiming `n: 2^30` is asking whoever is
+  restoring it to allocate a terabyte, and scrypt would try. Accepted: `n` a power of two in
+  2^14…2^20, `r` and `p` in 1…16. 2^20 at r=8 is 1 GB, past anything this product runs on.
+* **This build writes N=65536, r=8, p=1**, and the number is bounded by the machine rather than
+  by patience: scrypt at N=2^16 wants 64 MB and at N=2^17 wants 128 MB, measured in a container
+  at 98 ms and 190 ms. The floor this software is documented to run on is 192 MB
+  ([delivery](../delivery.md#the-budget)) and the server itself is 56 MB, so 2^17 would leave
+  8 MB for everything else on the smallest supported box.
 
 ## Why not age, and why no dependency
 

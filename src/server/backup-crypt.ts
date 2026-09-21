@@ -118,9 +118,59 @@ export function passphraseRecipient(
   return { publicKey: encodePublic(rawPublic(secretFromSeed(seed))), salt: b64(salt) }
 }
 
-/** The private half of that same recipient, months later, from the passphrase and the salt. */
-export const passphraseIdentity = (passphrase: string, salt: Uint8Array): KeyObject =>
-  secretFromSeed(scryptSync(passphrase, Buffer.from(salt), 32, KDF))
+/**
+ * The cost an archive was WRITTEN with, as its own header states it.
+ *
+ * ⚠️ THE HEADER CARRIED THESE THREE FROM THE START AND NOTHING READ THEM. `unseal` took the
+ * salt out of the header and the other three out of the module constant above, so the format
+ * was self-describing on paper and pinned to one build in fact: the day anybody raised `N` —
+ * which is the ordinary answer as hardware gets faster — every archive already written would
+ * have stopped opening by passphrase, and the error it fails with is `no-matching-key`, which
+ * reads to the person holding it as "wrong passphrase". On the worst day, about the one file
+ * that was supposed to survive it.
+ */
+export type Cost = { n: number; r: number; p: number }
+
+/**
+ * A cost this reader is willing to spend, from a header it has not authenticated yet.
+ *
+ * ⚠️ THE HEADER IS NOT TRUSTED AND CANNOT BE AT THIS POINT. The passphrase path reads `kdf`
+ * out of the JSON BEFORE any key exists, so the MAC has not been checked — an archive that
+ * asks for `n: 2 ** 30` is asking the person restoring it to allocate a terabyte, and scrypt
+ * would try. The bounds are the whole defence: 2^14 is below anything this has ever written
+ * and 2^20 is 1 GB at r=8, which is past what this product runs on (`docs/delivery.md`: the
+ * floor is 192 MB) and far past what it will ever write.
+ */
+export function costFrom(kdf: unknown): Cost {
+  const k = kdf as Partial<Record<'n' | 'r' | 'p', unknown>>
+  const num = (v: unknown, lo: number, hi: number): number => {
+    if (typeof v !== 'number' || !Number.isInteger(v) || v < lo || v > hi) throw new Error('bad-kdf')
+    return v
+  }
+  const n = num(k?.n, 1 << 14, 1 << 20)
+  // scrypt requires a power of two and reports it as an obscure OpenSSL error; say so here.
+  if ((n & (n - 1)) !== 0) throw new Error('bad-kdf')
+  return { n, r: num(k?.r, 1, 16), p: num(k?.p, 1, 16) }
+}
+
+/** What this build writes. Readers take the archive's word instead (`costFrom`). */
+export const COST: Cost = { n: KDF.N, r: KDF.r, p: KDF.p }
+
+/**
+ * The private half of that same recipient, months later, from the passphrase and the salt.
+ *
+ * `maxmem` is DERIVED rather than fixed, because it has to move with `n` and `r` or a lawful
+ * archive written at a higher cost throws instead of opening — scrypt needs `128 * n * r` and
+ * refuses when that is over the ceiling. Twice the requirement, not more: the constant above
+ * records that `512 << 20` killed the Bun process outright, exit 0 and no exception, so this is
+ * a number to keep proportional rather than generous.
+ */
+export const passphraseIdentity = (
+  passphrase: string, salt: Uint8Array, cost: Cost = COST,
+): KeyObject =>
+  secretFromSeed(scryptSync(passphrase, Buffer.from(salt), 32, {
+    N: cost.n, r: cost.r, p: cost.p, maxmem: 256 * cost.n * cost.r,
+  }))
 
 type Stanza = { t: 'x25519'; eph: string; key: string; tag: string }
 type Header = { v: 1; recipients: Stanza[]; kdf: { n: number; r: number; p: number; salt: string }; chunk: number }
@@ -192,7 +242,9 @@ export function sealer(recipients: string[], saltB64: string): {
   const head: Header = {
     v: 1,
     recipients: recipients.map((r) => seal(fileKey, decodePublic(r))),
-    kdf: { n: KDF.N, r: KDF.r, p: KDF.p, salt: saltB64 },
+    // `COST` and not the three fields again: the number a reader is handed has to be the
+    // number the writer spent, and two copies of it are two things to keep in step.
+    kdf: { ...COST, salt: saltB64 },
     chunk: CHUNK,
   }
   let held = Buffer.alloc(0)
