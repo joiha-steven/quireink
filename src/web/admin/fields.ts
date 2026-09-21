@@ -105,7 +105,20 @@ export function settingRow(t: SettingText & {
  *
  * It ships DRAWN and hidden: a line that is not in the page cannot be filled in by an island.
  */
-const CHECK = 'mt-1 text-sm text-red-700 dark:text-red-400'
+/**
+ * ⚠️ IT WAS `text-red-700 dark:text-red-400`, AND NEITHER HAS A RULE. Tailwind's CLI used to
+ * invent one for any class it found in the tree; nothing scans since ADR 0053, so both survived
+ * as words in an attribute. Measured in the browser on 2026-09-21: this line renders
+ * `oklch(0.205 0 none)`, which is the body colour to the last digit — a refusal drawn in
+ * ordinary prose, on the one line whose whole job is to look unlike ordinary prose.
+ *
+ * It is the second half of the fault the paragraph above describes. That one was a refusal with
+ * no sentence; this was the sentence with no refusal in it.
+ *
+ * `--ink-danger` is the admin's own token, defined light and dark in `admin.css`, and the
+ * utility for it was already in `utilities.css` with nothing reaching for it.
+ */
+const CHECK = 'mt-1 text-sm text-[var(--ink-danger)]'
 function refusal(k: string, type: string, attrs: string): string {
   const constrained = type === 'number' || type === 'url' || type === 'email'
     || /\b(?:min|max|step|pattern|required)\b/.test(attrs)

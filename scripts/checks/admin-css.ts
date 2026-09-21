@@ -255,13 +255,63 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
   return out
 }
 
+/**
+ * CLASS LISTS HELD IN A NAMED CONSTANT, which `used()` above cannot see.
+ *
+ * ⚠️ THE BLIND SPOT THIS CLOSES SHIPPED A DEFECT. `used()` looks for `className=`, `class="…"`
+ * and `className:` — the three ways a class reaches an element — and a file that writes
+ * `const CHECK = 'mt-1 text-sm text-red-700 dark:text-red-400'` and interpolates it later has
+ * none of them. `web/admin/fields.ts` did exactly that, neither red class has a rule, and the
+ * settings refusal line rendered in `oklch(0.205 0 none)`: the body colour, to the last digit,
+ * on the one line whose whole job is to look unlike ordinary prose. Measured in a browser on
+ * 2026-09-21, and green here the whole time.
+ *
+ * ⚠️ THE GATE IS WHAT MAKES THIS SAFE, and the file header says why it has to be: a false
+ * positive in this direction is a build somebody has to argue with. A named constant holds
+ * plenty of strings that are not class lists — storage keys, event names, URLs, fixtures — so a
+ * literal is admitted only when it is ALREADY MOSTLY CLASSES: two tokens or more, and at least
+ * half of them defined by the stylesheet. A URL is one token and never qualifies; a key like
+ * `quireink-admin-focus` is one token; `'mt-1 text-sm text-red-700 dark:text-red-400'` is four
+ * of which two are defined, so it qualifies and the other two are reported.
+ *
+ * Measured over this tree when it was written: 955 utility-shaped tokens live in such constants,
+ * and the gate admits the class lists while rejecting all fifteen of the keys and URLs among
+ * them.
+ */
+function constants(files: readonly string[], rulesOf: ReadonlySet<string>): Map<string, string[]> {
+  const out = new Map<string, string[]>()
+  for (const file of files) {
+    const text = readFileSync(file, 'utf8')
+    for (const decl of text.matchAll(/\bconst\s+[A-Za-z_$][\w$]*\s*(?::[^=\n]+)?=\s*((?:\s*'[^'\n]*'\s*\+?)+)/g)) {
+      // ESCAPE-AWARE, because a real class needs it: `before:content-[\'\']` in `rail.ts`
+      // carries two escaped quotes, and a naive literal pattern ends the string inside the
+      // class and reports the half it kept.
+      for (const literal of decl[1]!.matchAll(/'((?:[^'\\\n]|\\.)*)'/g)) {
+        const tokens = literal[1]!.split(/\s+/).filter(Boolean)
+        if (tokens.length < 2) continue
+        if (tokens.filter((t) => rulesOf.has(t)).length * 2 < tokens.length) continue
+        for (const token of tokens) {
+          const seen = out.get(token) ?? []
+          if (!seen.includes(file)) seen.push(file)
+          out.set(token, seen)
+        }
+      }
+    }
+  }
+  return out
+}
+
 if (!existsSync(SHEET)) {
   console.error(`admin-css: ${SHEET} does not exist — run \`bun run build:admin\` first`)
   process.exit(1)
 }
 
 const rulesOf = defined(readFileSync(SHEET, 'utf8'))
-const classes = used(SOURCES.flatMap(sources), rulesOf)
+const files = SOURCES.flatMap(sources)
+const classes = used(files, rulesOf)
+for (const [token, where] of constants(files, rulesOf)) {
+  if (!classes.has(token)) classes.set(token, where)
+}
 const missing: string[] = []
 for (const [token, files] of classes) {
   if (rulesOf.has(token) || ELSEWHERE.has(token)) continue

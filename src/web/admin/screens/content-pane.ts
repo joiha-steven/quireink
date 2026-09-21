@@ -38,8 +38,39 @@ import { isQueued, needsOf, type WriteItem, type WriteNeeds } from '@/web/admin/
  */
 const PANE_BESIDE = 'hidden w-80 min-[1640px]:flex'
 
-/** On the write screen itself the pane IS the page: full width, then a column from 1280 up. */
-const PANE_ALONE = 'flex w-full xl:w-80'
+/**
+ * On the write screen itself the pane IS the page: a capped column, then a sidebar from 1280 up.
+ *
+ * ⚠️ `w-full` WITH NO CEILING IS WHAT THIS REPLACES, and the number it reached is the argument.
+ * Measured 2026-09-21 in a browser, walking the excerpt's own font to characters:
+ *
+ *   390px  41ch      768px  86ch      1100px  116ch
+ *   600px  68ch      900px  101ch     1279px  140ch
+ *
+ * `docs/conventions/type.md` puts the reading measure at 45 to 75 characters and records this
+ * project's own reading column landing at 67 to 72. A hundred and forty is not a near miss. It
+ * is worst in the 1024–1279 band, where the rail is FORCED shut by `NARROW` and hands the list
+ * every pixel it gave up — so the window that makes the chrome smallest makes the text longest.
+ *
+ * `max-w-prose` is 65ch of the COLUMN's own font, which holds the 12px excerpt at **80
+ * characters** at every width from 600 up — measured, not derived, because the two fonts are
+ * different sizes and the arithmetic between them is not worth trusting. 80 is over the band's
+ * 75 and stays there deliberately: this line is clamped to two and scanned, not read, and the
+ * width buys a second line of excerpt that a stricter cap would cut. The fault was 140 growing
+ * without limit, not the last five characters.
+ *
+ * ⚠️ IT IS `max-w-prose` AND NOT `max-w-[38rem]`, which is what this was written as first.
+ * `utilities.css` is a CAPTURED file, not a scan — an arbitrary value that is not already in it
+ * produces no rule, the class lands in the markup and does nothing, and `check:admin-css` is
+ * green either way. It was caught by measuring the page and finding the number unchanged.
+ *
+ * `mx-auto` because a capped column hugging the left with 400px of nothing beside it reads as a
+ * layout that broke, not one that chose. It needs no `xl:` reset and was written with two:
+ * above 1280 the column is 320px inside a flex row whose sibling grows, so the free space is
+ * already spoken for and both margins measure 0 there. A reset for a margin that is not
+ * applied is a class that has to be kept true forever for no effect.
+ */
+const PANE_ALONE = 'flex w-full max-w-prose mx-auto xl:w-80'
 
 const PANE = 'shrink-0 flex-col self-start overflow-hidden rounded-[10px] border'
   + ' border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:max-h-[calc(100dvh-1.5rem)]'
@@ -51,7 +82,11 @@ const PANE = 'shrink-0 flex-col self-start overflow-hidden rounded-[10px] border
  * pulled the eye on every keystroke, so the ground went quiet again. The carve says "held
  * down"; the pen stays on the small marks (the draft dot, the rail, the tabs).
  */
-const ROW = 'write-row relative block border-b border-neutral-100 px-4 py-3 dark:border-neutral-800'
+// ⚠️ `write-row` WAS THE FIRST NAME IN THIS LIST AND NOTHING READ IT. The island, the CSS and
+// four tour flows all reach for `[data-write-row]`, the attribute set on the link below; the
+// CLASS was styled by no rule and selected by nothing. Found on 2026-09-21 by teaching
+// `check:admin-css` to read class lists out of named constants, which is where it was hiding.
+const ROW = 'relative block border-b border-neutral-100 px-4 py-3 dark:border-neutral-800'
 
 /** The words a row's second line needs, and the third line's two states. */
 type RowWords = Pick<AdminStrings,
