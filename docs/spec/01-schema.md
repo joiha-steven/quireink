@@ -69,9 +69,16 @@ journal_mode = WAL          readers never block the writer
 synchronous  = NORMAL       safe under WAL; FULL only for the content DB if desired
 busy_timeout = 5000
 foreign_keys = ON
-cache_size   = -64000       64 MB page cache
+cache_size   = -16000       16 MB page cache, PER CONNECTION and there are two
 temp_store   = MEMORY
 ```
+
+`cache_size` was `-64000` until 2026-09-23, when it was measured for the first time: inside a
+128 MB container, against a 314 MB database, 64 MB was **the slowest of four settings in every
+run** — SQLite's private cache and the kernel's page cache come out of the same allowance, so
+the large one buys a second copy of pages it has just pushed the kernel into dropping. The
+table and the reason it is 16 rather than 2 are in
+[delivery.md](../delivery.md#the-third-ceiling-sqlites-own-cache).
 
 ### Two database files
 
