@@ -122,6 +122,13 @@ test('an OLD database gets the columns it was created without', () => {
              created_at integer not null, updated_at integer not null, deleted_at integer)`)
   old.run(`insert into pages (slug, title, content, created_at, updated_at)
            values ('kept-page', 'Kept', 'body', 1, 1)`)
+  // The render cache as it stood when it held the bodies as well (before ADR 0062), with a
+  // row in it. On the blogs this shipped to that table was HALF A GIGABYTE of renders no
+  // reader could reach, and the upgrade is what has to take it away — an upgrade that leaves
+  // it behind is an upgrade that did nothing about the thing it was written for.
+  old.run(`create table render_cache (key text primary key, html text not null,
+             created_at integer not null) without rowid`)
+  old.run(`insert into render_cache (key, html, created_at) values ('old-body', '<p>x</p>', 1)`)
   old.close()
 
   const { db } = openDatabases(dir)
@@ -149,6 +156,13 @@ test('an OLD database gets the columns it was created without', () => {
   expect(db.query<{ scope: string }, []>(
     `select scope from mcp_tokens where name = 'Old connector'`,
   ).get()!.scope).toBe('full')
+
+  // 019: the body cache is a table of its own, and the superseded renders are GONE rather
+  // than merely unreachable. ⚠️ Both halves of that step are in one migration, so this also
+  // asserts that a step of several statements runs all of them — the create alone would pass
+  // every other test in this file while leaving the disk exactly as full as it was.
+  expect(columns(db, 'body_cache')).toEqual(['slot', 'key', 'html', 'created_at'])
+  expect(db.query<{ n: number }, []>(`select count(*) as n from render_cache`).get()!.n).toBe(0)
 
   // Booting the same database again must not try to add the columns a second time.
   expect(() => openDatabases(dir)).not.toThrow()
