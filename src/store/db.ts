@@ -11,6 +11,7 @@
 import { Database } from 'bun:sqlite'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { compactIfMostlyFree, copyBeforeMigrating } from './upgrade'
 
 // Imported as text so both files compile into the standalone executable. A schema the
 // binary cannot find is a boot failure on a machine that has no repository checkout.
@@ -35,7 +36,7 @@ let content: Database | null = null
 let analytics: Database | null = null
 
 function open(
-  path: string, schema: string, synchronous: 'FULL' | 'NORMAL',
+  path: string, schema: string, synchronous: 'FULL' | 'NORMAL', migrations: string,
 ): { db: Database; fresh: boolean } {
   const db = new Database(path, { create: true, strict: true })
   for (const p of PRAGMAS) db.run(`pragma ${p};`)
@@ -45,8 +46,36 @@ function open(
   // Whether this file already held tables decides what migrations mean for it, and the
   // only moment that is knowable is BEFORE the schema is applied.
   const fresh = isEmpty(db)
+  // And this is the other thing only knowable here: what the operator had before this boot
+  // changed anything. The copy is taken ahead of the schema as well as the migrations —
+  // `schema.sql` only ever adds what is missing, but a copy of "before" that was taken after
+  // something is not a copy of before (ADR 0063).
+  if (!fresh) {
+    const step = firstPending(db, migrations)
+    if (step) copyBeforeMigrating(db, path, step)
+  }
   db.transaction(() => db.run(schema))()
   return { db, fresh }
+}
+
+/**
+ * The first step this database has not recorded, or null when it is up to date.
+ *
+ * A database old enough to have no ledger AT ALL answers with the first step of the file: the
+ * query throws, and every step is pending by definition. Guessing the other way would skip
+ * the copy on the oldest database anybody could be holding, which is the one most worth
+ * copying.
+ */
+function firstPending(db: Database, source: string): string | null {
+  let applied: Set<string>
+  try {
+    applied = new Set(
+      db.query<{ name: string }, []>(`select name from schema_migrations`).all().map((r) => r.name),
+    )
+  } catch {
+    applied = new Set()
+  }
+  return parseMigrations(source).find((step) => !applied.has(step.name))?.name ?? null
 }
 
 /** No tables at all — a database this process is about to create rather than open. */
@@ -84,21 +113,27 @@ export function parseMigrations(source: string): Migration[] {
  * them would fail on a duplicate column. An existing database runs the ones it has not seen.
  * Each step is its own transaction, so a failure leaves the steps before it applied and the
  * ledger honest about where it stopped.
+ *
+ * Returns whether anything RAN, which is not the same as whether anything was recorded: a
+ * fresh database records every step and runs none, and has nothing to compact afterwards.
  */
-function applyMigrations(db: Database, source: string, fresh: boolean): void {
+function applyMigrations(db: Database, source: string, fresh: boolean): boolean {
   const applied = new Set(
     db.query<{ name: string }, []>(`select name from schema_migrations`).all().map((r) => r.name),
   )
   const record = db.query<never, [string, number]>(
     `insert or ignore into schema_migrations (name, applied_at) values (?, ?)`,
   )
+  let ran = false
   for (const step of parseMigrations(source)) {
     if (applied.has(step.name)) continue
     db.transaction(() => {
       if (!fresh) db.run(step.sql)
       record.run(step.name, Date.now())
     })()
+    ran = ran || !fresh
   }
+  return ran
 }
 
 /**
@@ -113,10 +148,16 @@ export function openDatabases(dir: string): { db: Database; analyticsDb: Databas
   // purpose to prove the schema is idempotent.
   closeDatabases()
   mkdirSync(dir, { recursive: true })
-  const opened = open(join(dir, 'quire.db'), contentSchema, 'FULL')
+  const contentPath = join(dir, 'quire.db')
+  const opened = open(contentPath, contentSchema, 'FULL', contentMigrations)
   content = opened.db
-  applyMigrations(content, contentMigrations, opened.fresh)
-  const openedAnalytics = open(join(dir, 'analytics.db'), analyticsSchema, 'NORMAL')
+  if (applyMigrations(content, contentMigrations, opened.fresh)
+      && compactIfMostlyFree(content, contentPath)) {
+    // The compaction closed it and replaced the file underneath. Opening it again runs a
+    // schema of `if not exists` against the shape it already has, and finds nothing pending.
+    content = open(contentPath, contentSchema, 'FULL', contentMigrations).db
+  }
+  const openedAnalytics = open(join(dir, 'analytics.db'), analyticsSchema, 'NORMAL', analyticsMigrations)
   analytics = openedAnalytics.db
   // Analytics has its own ledger and its own steps. It went without one until 2026-08-29,
   // which was fine while the table never changed shape and stopped being fine the moment

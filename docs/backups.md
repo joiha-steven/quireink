@@ -94,6 +94,12 @@ not know about each other; running both against one bucket is harmless but point
 | `quire.db`, `analytics.db` | `VACUUM INTO` a temporary file, then `tar -czf` | **Never a file copy.** A live SQLite database has a write-ahead log, and copying the file can capture a torn state that only reveals itself on restore |
 | `uploads/` | `rclone sync` with `--backup-dir` | A deleted or overwritten file stays recoverable for 7 days instead of vanishing on the next run |
 
+**An upgrade takes one of its own, and it is not one of these four.** A boot with a pending
+migration writes `backups/pre-<step>-<stamp>-quire.db` before it changes anything, keeps the
+two most recent, and refuses to migrate if it cannot ([ADR 0063](decisions/0063-an-upgrade-copies-first-and-gives-the-space-back.md)).
+It is a bare `VACUUM INTO` of the database — no uploads, no archive, no encryption — so it is
+a floor under an upgrade rather than a backup, and it does not replace any of the four below.
+
 **Both render caches are emptied out of the copy, not backed up** (2026-09-13;
 `body_cache` joined `render_cache` there with ADR 0062). Each is a pure function of the
 Markdown beside it, keyed by a hash of that Markdown, so a restore rebuilds them on the first

@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### An upgrade copies your database before it changes it, and hands the space back after
+
+Until now the only thing standing between a migration and your data was a line in the
+documentation asking you to take a backup first. A boot with a pending migration writes one
+itself now — `data/backups/pre-<step>-<stamp>-quire.db`, named for the step it is about to
+run — and **if it cannot write that copy it exits instead of migrating**, telling you which
+path and why. Nothing in your database changes until the copy exists. Two are kept; older
+ones go as new ones are made, so this does not pile up.
+
+Measured on a real 618 MB database: the copy takes 85 ms and is 8.8 MB, because it holds what
+you wrote rather than what was cached.
+
+And the disk comes back. SQLite gives freed pages to its own freelist rather than to the
+operating system, so the change above would have left a 618 MB file holding 8.9 MB of content
+and no way for you to tell it had worked. When a migration leaves a file mostly empty — over a
+quarter free and more than 64 MB of it, so an ordinary upgrade does nothing — the boot
+compacts it once: a verified copy is written, checked, and moved into place, never a `VACUUM`
+over a live file.
+
 ### Fixed: half a gigabyte of rendered HTML nobody could reach
 
 The cache that holds a rendered post was keyed by the render rather than by the post, and the

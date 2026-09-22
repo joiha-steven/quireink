@@ -121,7 +121,10 @@ Four things worth knowing before you change anything in `docker-compose.yml`:
   the two directories only when the ownership is actually wrong, and drops to that user
   before the app starts. `docker run --user 1000:1000` skips all of it.
 - **Upgrades are `git pull && docker compose up -d --build`.** The schema is applied at boot
-  as usual. Your content is in the volumes and is not touched by a rebuild.
+  as usual. Your content is in the volumes and is not touched by a rebuild. Since ADR 0063 a
+  pending migration writes a copy of the database into `data/backups/` before it runs anything
+  — named for the step it is about to apply — and **if that copy cannot be written the
+  container exits instead of migrating**, saying which path and why. Two are kept.
 
 To get data out without a bind mount, use the backup button in the admin (it hands you both
 databases plus every upload), or `docker compose cp quire:/var/lib/quire/data ./data`.
