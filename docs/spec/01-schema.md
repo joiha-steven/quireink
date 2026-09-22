@@ -137,7 +137,7 @@ Two areas needed real design work, and a table was added for a third.
 
 ---
 
-## 4. New table: `render_cache` (content-addressed highlighting)
+## 4. Two new tables: `render_cache` and `body_cache`
 
 `shiki` is the heaviest dependency on the read path and the only one whose absence a
 reader would notice. It moves off that path into a content-addressed cache:
@@ -160,7 +160,8 @@ database renders correctly and merely slower.
 Write path: a post save pre-warms every block it contains, so the miss case is rare in
 practice and absent after an import.
 
-The rendered **body** is in here too, on the same terms: keyed by the build commit, the
+The rendered **body** was in here too, on the same terms, and that turned out to be the one
+place those terms did not fit — see below. It is keyed by the build commit, the
 media facts and the markdown. This section used to say the opposite — that only
 highlighting is cached, because "`marked` is fast and a body cache would have to key on
 media variants, theme and locale". No renderer is fast at that size, and `marked`, which ran
@@ -174,6 +175,39 @@ The build commit is part of the body key so a deploy that changes any transform 
 `post-content.ts` cannot serve yesterday's HTML out of a cache with no way to tell. That
 costs one re-render per post per deploy, absorbed in the background by the cache warmer
 (`server/warm.ts`).
+
+### The body moved out: `body_cache`, one row per piece (ADR 0062)
+
+Content-addressing has no way to say **replace**. The only identifying column is a hash, so
+when a render is stored there is no question "which row does this supersede" to ask, and the
+answer is that nothing ever superseded anything. With the build commit in the key, every
+deploy stranded a full generation of bodies for the 30-day sweep to find — and the blog was
+deploying about seven times a day.
+
+Measured on manhhung.me, 2026-09-22: `quire.db` was **618,434,560 B**, of which
+`render_cache` was **501,981,656 B** across 20,001 rows, holding about **5.6 MB** of distinct
+HTML. One body of 88,084 characters was present **204 times**, byte for byte. Everything
+anybody had ever written — 93 posts, revisions, FTS, settings, log — came to **8 MB**.
+
+```sql
+create table body_cache (
+  slot       text primary key,   -- 'post:<slug>', 'page:<slug>', 'note:<slug>', 'preview:<slug>'
+  key        text not null,      -- the same hash, compared rather than looked up
+  html       text not null,
+  created_at integer not null
+) without rowid;
+```
+
+Read by slot, compare the key, use the row when it matches; on a miss render and take the
+row. **The hash still decides hit from miss on exactly the inputs it decided on before**, so
+the bytes a reader receives did not change. The table's size is the number of pieces.
+
+Highlighting stays where it is: a code block is shared between pieces, has no slot to belong
+to, is small, and age is the right collector for it.
+
+⚠️ A slot is correct only while a piece has one valid rendering at a time. Every input in
+`bodyKey` is server-global or piece-global; put a theme, a locale or anything the reader
+decides into it and content-addressing becomes the right shape again.
 
 ## Migrations
 

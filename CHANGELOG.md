@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+### Fixed: half a gigabyte of rendered HTML nobody could reach
+
+The cache that holds a rendered post was keyed by the render rather than by the post, and the
+build commit is part of that key — so every deploy made every cached body unreachable and left
+it there for a thirty-day sweep to find. Measured on a blog that deploys about seven times a
+day:
+
+| | |
+|---|---|
+| The database | 618 MB |
+| The cache inside it | 20,001 rows, **502 MB** |
+| Distinct HTML in those rows | about **5.6 MB** |
+| Everything anybody had written — 93 posts, revisions, settings, log | **8 MB** |
+
+One rendered post of 88,084 characters was in there **204 times**, byte for byte.
+
+Nothing was wrong with the renders and nothing was wrong with the sweep. The shape had no way
+to say *replace*: the only identifying column was a hash, so a new render had no old row to
+address. A post keeps one row now, and a fresh render takes it. The same hash still decides
+whether a render is reused, on exactly the inputs it used before, so a reader receives the
+same bytes as before — the table simply stops growing with deploys.
+
+Highlighted code blocks are unchanged: a block is shared between posts, so it has no post to
+belong to, and age remains the right way to retire one.
+
+
 ### Fixed: the Markdown view showed a long piece as a stub
 
 Paste a four-thousand-word draft into the Markdown view and it landed intact, saved intact, and

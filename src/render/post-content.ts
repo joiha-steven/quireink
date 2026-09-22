@@ -21,7 +21,7 @@ import {
 } from '@/render/link-cards'
 import { formatBytes } from '@/i18n/format'
 import { highlightCode } from '@/render/highlight'
-import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
+import { readBody, renderKey, writeBody } from '@/render/render-cache'
 import { prepareFootnotes, applyFootnotes } from '@/render/footnotes'
 import { buildSha } from '@/server/build-info'
 
@@ -254,6 +254,7 @@ export async function renderPostContent({
   readyOriginals = new Map(),
   imageDims = new Map(),
   cards = NO_CARDS,
+  slot,
 }: {
   markdown: string
   // Collapsed pathnames (media/x.jpg) whose AVIF/WebP variants exist. Images not
@@ -264,16 +265,23 @@ export async function renderPostContent({
   // What a standalone link may become (ADR 0058). Empty maps = every link stays a link,
   // which is what an install with both switches off hands over.
   cards?: CardFacts
+  // Which piece this body belongs to — 'post:<slug>', 'note:<slug>', 'preview:<slug>' — and
+  // therefore the row it may take. WITHOUT ONE THERE IS NO CACHE, deliberately (ADR 0062): a
+  // body that belongs to nothing is a body nobody can ask for twice, and the shape that tried
+  // to cache it anyway is what left 502 MB of unreachable renders on a production blog.
+  slot?: string
 }): Promise<string> {
   const used = usedCards(markdown, cards)
-  const key = bodyKey(markdown, readyOriginals, imageDims, used)
-  const hit = readRendered(key)
-  if (hit !== null) return hit
+  const key = slot ? bodyKey(markdown, readyOriginals, imageDims, used) : ''
+  if (slot) {
+    const hit = readBody(slot, key)
+    if (hit !== null) return hit
+  }
   // Pull footnote refs/defs out of the markdown FIRST (references become placeholders
   // that survive marked), then re-insert the <sup> links + list after rendering.
   const fn = prepareFootnotes(markdown)
   const parsed = dedupeHeadingIds(wrapTables(buildCards(buildVideos(groupGalleries(buildFigures(buildCallouts(markTaskItems(mdToHtml(fn.markdown, PAGE))), readyOriginals, imageDims))), used)))
   const html = applyFootnotes(await highlightBlocks(parsed), fn.refs, fn.defs)
-  writeRendered(key, html)
+  if (slot) writeBody(slot, key, html)
   return html
 }

@@ -86,7 +86,8 @@ export const isSnapshotName = (name: string): boolean =>
   /^quire-\d{4}-\d{2}-\d{2}T\d{4}\.tar\.gz(\.enc)?$/.test(name)
 
 /**
- * The rendered-HTML cache does not go in the archive.
+ * The rendered-HTML caches do not go in the archive. Both of them: the body's table and
+ * the highlighter's (ADR 0062).
  *
  * MEASURED ON A REAL BLOG, 2026-09-13: `quire.db` was 538 MB, of which `render_cache` was
  * 530.3 MB. Everything a reader has ever written — 90 posts, their revisions, every setting —
@@ -107,11 +108,18 @@ export const isSnapshotName = (name: string): boolean =>
 function dropRenderCache(snapshot: string): void {
   const copy = new Database(snapshot)
   try {
-    const exists = copy
-      .query("select 1 from sqlite_master where type='table' and name='render_cache'")
-      .get()
-    if (!exists) return
-    copy.exec('delete from render_cache')
+    // BOTH cache tables, since ADR 0062 split the body out of `render_cache`, and both
+    // spelled OUT: a loop over table names would have to build its `delete` from a variable,
+    // which is the one thing this file already does once and says not to generalise from.
+    // An archive from before that split has only the first table, and one from before either
+    // has neither — hence the existence check per table rather than one for the pair.
+    const has = (table: string): boolean =>
+      copy.query("select 1 from sqlite_master where type='table' and name = ?").get(table) !== null
+    const hadRenderCache = has('render_cache')
+    const hadBodyCache = has('body_cache')
+    if (!hadRenderCache && !hadBodyCache) return
+    if (hadRenderCache) copy.exec('delete from render_cache')
+    if (hadBodyCache) copy.exec('delete from body_cache')
     // Without this the file keeps the pages the rows used to sit in and the archive is no
     // smaller. VACUUM is what actually gives the space back.
     copy.exec('vacuum')

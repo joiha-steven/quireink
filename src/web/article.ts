@@ -85,6 +85,10 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   const cards = await cardFacts(settings)
   const body = await renderPostContent({
     markdown: item.content, readyOriginals: ready, imageDims: dims, cards,
+    // Posts and pages share one slug namespace (Invariant 2) and at most one of them matched,
+    // so the prefix is not what keeps these apart — it is what keeps the slot readable when
+    // somebody is looking at the table wondering where a row came from.
+    slot: post ? `post:${item.slug}` : `page:${item.slug}`,
   })
   // ⚠️ THE FINISHED BODY, not the markdown, and that is what makes this self-selecting: every
   // link that BECAME a card is gone from it, so what is left is exactly the links nothing is

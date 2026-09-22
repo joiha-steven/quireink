@@ -19,9 +19,16 @@ away every page on any write (Invariant 1) without a second thought. It does not
 | An 85,000-character post | **364 ms**, of which `renderPostContent` is **359 ms** |
 | Inside that, `marked.parse` | **360 ms** — marked itself, not our renderer or our options: a plain `Marked` with no configuration measures 375 ms on the same input |
 
-So the rendered body is cached in `render_cache` alongside the highlighter, keyed by the
-**build commit + the media facts + the markdown**. Nothing invalidates it: a change is a
-different key. See `docs/spec/01-schema.md` §4 for why the argument against it was wrong.
+So the rendered body is cached, keyed by the **build commit + the media facts + the
+markdown**. Nothing invalidates it: a change is a different key, and a different key misses.
+See `docs/spec/01-schema.md` §4 for why the argument against caching it was wrong.
+
+It sat in `render_cache` beside the highlighter until ADR 0062, on the same content-addressed
+terms, and that is how a production blog came to hold **502 MB of HTML that no reader could
+reach** — the build commit is in the key, so every deploy stranded a whole generation and only
+age could collect it. The body lives in `body_cache` now, **one row per piece**: the same hash
+still decides hit from miss, but it is a column, so a fresh render takes the row the last one
+had. Highlighting stays content-addressed, being shared between pieces.
 
 Measured after, same server, same post: **383 ms → 1 ms** with the page cache cold and the
 body cache warm, and the full 74-page warm sweep **3,948 ms → 203 ms**.

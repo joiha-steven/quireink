@@ -418,3 +418,20 @@ create table if not exists ap_queue (
   last_error text
 );
 create index if not exists ap_queue_next_idx on ap_queue (next_at);
+
+-- migration: 019-body-cache
+-- ADR 0062: the rendered body moves out of `render_cache` into a table with one row per piece.
+--
+-- The delete is the point as much as the table is. Bodies and highlighted code blocks are
+-- INDISTINGUISHABLE inside `render_cache` — two producers, one hash column, no marker — so the
+-- bodies cannot be removed selectively and the 502 MB measured on 2026-09-22 would otherwise
+-- sit there for another thirty days. Emptying it costs what a deploy already costs: this cache
+-- is self-healing, and every deploy already invalidates every body in it.
+create table if not exists body_cache (
+  slot       text primary key,
+  key        text not null,
+  html       text not null,
+  created_at integer not null
+) without rowid;
+
+delete from render_cache;

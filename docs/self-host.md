@@ -326,7 +326,7 @@ server), not the public URL.
 **The process runs its own clock** ([ADR 0031](decisions/0031-the-blog-winds-its-own-clock.md)):
 every minute it flips due scheduled posts into the caches in front of them, and hourly it
 finalises image variants, purges expired sessions and unconfirmed sign-ups, prunes
-`render_cache` and takes the on-server snapshot from [`backups.md`](backups.md). There is
+both render caches and takes the on-server snapshot from [`backups.md`](backups.md). There is
 nothing to install and nothing to remember. Skip to section 9.
 
 What it protects you from is not "posts publish late" — a post with a future date is public

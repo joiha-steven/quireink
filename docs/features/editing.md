@@ -99,9 +99,9 @@
   with a non-default site setting out loud. **The default is applied as CSS, never as markup**
   (`galleryCss` in `web/layout.ts` emits `--gallery-ratio` / `--gallery-w` / `--gallery-cap` on
   `:root`; `public.css.ts` reads them with the old behaviour as the `var()` fallback). That is not
-  a style preference: rendered Markdown is content-addressed in `render_cache` under a hash of its
-  INPUT, so a default that changed the HTML would leave every already-rendered body serving the old
-  shape until something unrelated evicted it. The per-gallery override wins on specificity (tile
+  a style preference: a rendered body is kept under a hash of its INPUT (`body_cache`), so a
+  default that changed the HTML without changing that input would leave every already-rendered
+  body serving the old shape. The per-gallery override wins on specificity (tile
   class beats `:root`), not on source order.
 - **Frame default, site-wide** (*Settings → Posts → Pictures*, `screens/settings-post.ts`): the mat every
   picture wears when it has no opinion of its own — `settings.figure` = a weight

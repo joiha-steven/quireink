@@ -36,7 +36,13 @@ export async function handlePreview(c: Context): Promise<Response> {
 
   // A DRAFT's links are noted too, so the cards are already fetched by the time it publishes
   // — the same reason the preview renders through the same pipeline as the published page.
-  const body = await renderPostContent({ markdown: entry.content, cards: await cardFacts(settings) })
+  // ⚠️ ITS OWN SLOT, never the published piece's. A preview renders a draft — different
+  // markdown, same slug — so sharing the row would let every refresh here evict what the
+  // readers are being served and make them pay the render back. One row per piece previewed,
+  // which is what keeps the owner's refresh as fast as it is today (ADR 0062).
+  const body = await renderPostContent({
+    markdown: entry.content, cards: await cardFacts(settings), slot: `preview:${entry.slug}`,
+  })
   noteLinks(standaloneUrls(body), settings.siteUrl)
   const meta = post
     ? `<p class="meta"><time datetime="${escapeAttr(post.date)}">${

@@ -65,7 +65,9 @@ export async function renderNotePage(slug: string): Promise<string | null> {
   const s = t(settings.language)
   const note = await getNote(slug)
   if (!note || !isPublicallyVisible(note.status, note.date)) return null
-  const body = await renderPostContent({ markdown: note.content, cards: await cardFacts(settings) })
+  const body = await renderPostContent({
+    markdown: note.content, cards: await cardFacts(settings), slot: `note:${note.slug}`,
+  })
   // A clip is a passage kept FROM somewhere, so a note is the piece most likely to hold a
   // standalone link. Same rule as an article's: what is still a plain link gets written down.
   noteLinks(standaloneUrls(body), settings.siteUrl)

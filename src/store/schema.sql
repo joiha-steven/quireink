@@ -451,6 +451,29 @@ create table if not exists render_cache (
   created_at integer not null
 ) without rowid;
 
+-- ----- body_cache (one row per piece) -----------------------------------------
+-- ADR 0062. The rendered BODY used to live in `render_cache` beside the highlighting, on the
+-- same content-addressed terms, and that shape had no way to say "replace". `buildSha` is in
+-- the key, so every deploy made every cached body unreachable and left it there for the
+-- 30-day sweep to find. MEASURED on manhhung.me 2026-09-22: `render_cache` was 20,001 rows
+-- and 502 MB holding about 5.6 MB of DISTINCT HTML, one body of 88,084 characters present
+-- 204 times, while everything anybody had ever written came to 8 MB.
+--
+-- So the body is keyed by the PIECE and the hash is a column. The hash still decides hit from
+-- miss on exactly the inputs it decided on before; what changed is that a piece owns one row
+-- and a fresh render takes it. The table's size is the number of pieces.
+--
+-- ⚠️ A SLOT IS ONLY CORRECT WHILE A PIECE HAS ONE VALID RENDERING AT A TIME. Every input in
+-- `bodyKey` is server-global or piece-global today. Put a theme, a locale or anything the
+-- READER decides into that key and two renderings become valid at once, this row starts
+-- thrashing between them, and content-addressing is the right shape again.
+create table if not exists body_cache (
+  slot       text primary key,                -- 'post:<slug>', 'page:<slug>', 'note:<slug>', 'preview:<slug>'
+  key        text not null,                   -- the same sha256 as before, now compared rather than looked up
+  html       text not null,
+  created_at integer not null
+) without rowid;
+
 -- ----- server_secrets ---------------------------------------------------------
 -- Values the SERVER generates for itself, as opposed to `integration_keys`, which holds
 -- what the owner pastes in. Generated on first use and never shown in any UI, so a
