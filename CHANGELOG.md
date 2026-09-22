@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+### The database cache stops promising more memory than the box has
+
+SQLite was told it could keep 64 MB of pages per connection, and there are two connections —
+so a blog this software also ships in a 128 MB container was promised 128 MB by one setting
+alone. It is now 16 MB, which on a small box is **faster as well as smaller**. Measured against
+a 314 MB database, 20,000 reads, three runs each, in a 128 MB container:
+
+| Cache | Memory added | Time |
+|---|---|---|
+| 64 MB | +57 MB | 181 / 189 / 188 ms |
+| **16 MB** | **+43 MB** | **142 / 146 / 132 ms** |
+| 8 MB | +26 to +35 MB | 142 / 81 / 104 ms |
+
+Not a paradox: inside a memory limit, SQLite's own cache and the operating system's page cache
+come out of the same allowance, so a large private cache buys a second copy of pages it has
+just pushed the system into dropping. On a machine with room, all four settings were
+indistinguishable, so nothing is given up on a big server either.
+
+If your database is smaller than the cache — which it is, for almost every blog — nothing about
+this is observable: the whole file was held before and is held now.
+
 ### Fixed: a stranger scanning your blog stopped filling your error log
 
 Every request that answered 4xx was written to the error stream. On a blog reachable from the

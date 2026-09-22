@@ -24,11 +24,37 @@ export type Db = Database
 
 // Set on EVERY connection. WAL lets readers never block the writer; NORMAL is safe under
 // WAL; foreign_keys is OFF by default in SQLite and has to be asked for.
+//
+// ⚠️ `cache_size` WAS -64000, AND 64 MB WAS THE ONE NUMBER HERE NOBODY HAD MEASURED. It is a
+// ceiling per CONNECTION and there are two of them, so it promised 128 MB to a process this
+// project also ships in a 128 MB container. Measured 2026-09-23 against a 314 MB database,
+// 20,000 point lookups, three runs each, in `--memory=128m --cpus=0.5` with the file on
+// native container storage:
+//
+//   -64000   +57.0 / +56.8 / +56.9 MB resident   181 / 189 / 188 ms
+//   -16000   +43.1 / +43.0 / +43.3 MB            142 / 146 / 132 ms
+//    -8000   +26.4 / +34.5 / +33.8 MB            142 /  81 / 104 ms
+//    -2000   +27.4 / +27.5 / +27.5 MB            141 / 126 / 108 ms
+//
+// 64 MB WAS THE SLOWEST OF THE FOUR, in every run and by about 30%. That is not a paradox:
+// inside a cgroup, SQLite's private cache and the kernel's page cache come out of the SAME
+// 128 MB, so a big private cache buys a second copy of pages it has just pushed the kernel
+// into dropping. On an unconstrained machine the four are indistinguishable (121 / 127 / 120 /
+// 121 ms), so nothing is given up on a large box either.
+//
+// 16 MB rather than the 2 MB that measured just as well: WHAT WAS MEASURED IS POINT LOOKUPS
+// BY PRIMARY KEY, and the request path also runs FTS search, taxonomy joins and the analytics
+// join across the ATTACHed file. Those are the shapes a page cache actually helps and none of
+// them is in the number above, so the headroom stays until something measures them.
+//
+// It changes NOTHING for a blog whose database fits under the ceiling, which is every blog
+// this project runs: after the 0062 migration the two largest are 11.2 MB and 4.6 MB, so the
+// cache holds the whole file at either setting.
 const PRAGMAS = [
   'journal_mode = WAL',
   'busy_timeout = 5000',
   'foreign_keys = ON',
-  'cache_size = -64000', // 64 MB page cache
+  'cache_size = -16000', // 16 MB page cache per connection, measured above
   'temp_store = MEMORY',
 ] as const
 
