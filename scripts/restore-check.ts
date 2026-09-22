@@ -72,6 +72,10 @@ const TRANSIENT: Record<string, string> = {
   // Deleted from the copy on purpose: `backup.ts` drops it before tarring, because it was 530
   // of the 538 MB. Counting it would fail every single run.
   render_cache: 'dropped from the archive on purpose',
+  // The other half of the same cache since ADR 0062, dropped by the same code for the same
+  // reason. It went red the first run after the split, which is the list doing its job: a
+  // table that empties itself into the archive has to be argued for out loud, once.
+  body_cache: 'dropped from the archive on purpose',
   // These drain, expire or are rewritten in the ordinary course of a minute, so "fewer rows
   // than before" is their normal state and says nothing about the archive.
   ap_queue: 'a delivery queue, drains as it is delivered',
