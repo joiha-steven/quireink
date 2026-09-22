@@ -102,6 +102,39 @@ started: the image, `bun start`, `install.sh` and the systemd unit.
 A blog of ordinary size never reaches the budget — 100 posts of that fixture come to 2.4 MB —
 so nothing about it is observable until an archive outgrows the memory it is running on.
 
+### The third ceiling: SQLite's own cache
+
+The page cache is a measured budget and the heap has `--smol`, and until 2026-09-23 the
+`cache_size` PRAGMA beside them was a number nobody had measured. It is a ceiling **per
+connection** and `openDatabases` opens two, so one line offered 128 MB to a process this
+project also ships in a 128 MB container.
+
+Measured against a 314 MB database, 20,000 point lookups, three runs each, in
+`--memory=128m --cpus=0.5` with the file on native container storage — through a bind mount
+the same work ran 377 to 1,731 ms and said nothing, which is worth knowing before anybody
+repeats this:
+
+| `cache_size` | Resident added | Time |
+|---|---|---|
+| `-64000` (64 MB) | +57.0 / +56.8 / +56.9 MB | 181 / 189 / 188 ms |
+| **`-16000` (16 MB)** | +43.1 / +43.0 / +43.3 MB | **142 / 146 / 132 ms** |
+| `-8000` | +26.4 / +34.5 / +33.8 MB | 142 / 81 / 104 ms |
+| `-2000` | +27.4 / +27.5 / +27.5 MB | 141 / 126 / 108 ms |
+
+**64 MB was the slowest of the four, in every run, by about 30%.** Inside a memory limit
+SQLite's private cache and the kernel's page cache come out of the same allowance, so a large
+private cache buys a second copy of pages it has just pushed the kernel into dropping. On an
+unconstrained machine the four are indistinguishable (121 / 127 / 120 / 121 ms), so a large
+server gives up nothing either.
+
+It is 16 MB and not the 2 MB that measured as well, because what was measured is point lookups
+by primary key: the request path also runs FTS search, taxonomy joins and the analytics join
+across the ATTACHed file, and those are the shapes a page cache actually helps. None of them is
+in the table above, so the headroom stays until something measures them.
+
+A database smaller than the cache — which is nearly every blog — behaves identically either
+way; the whole file was held before and is held now.
+
 ### The switch
 
 Both layers can be turned off together in **Settings → Server & connections → This install**
