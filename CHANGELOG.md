@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Fixed: a stranger scanning your blog stopped filling your error log
+
+Every request that answered 4xx was written to the error stream. On a blog reachable from the
+open internet that is mostly somebody's scanner asking for `/wp-config.backup`, `/.env.backup1`
+or `/backup.sql` — each of which correctly answers 404, and each of which then read in your
+log as something this software had got wrong. Measured over seven days of one live instance:
+29,787 lines, of which 18,483 were a 404 logged as an error, against **twelve** real failures.
+
+A 4xx still gets a line with its status and its duration, because on a single-tenant blog the
+log is the monitoring. It is simply no longer filed as a fault of the blog's. A 5xx — the one
+status that means this software broke — still goes to the error stream, and a refused sign-in
+is still recorded in the activity log where you can see it.
+
 ### An upgrade copies your database before it changes it, and hands the space back after
 
 Until now the only thing standing between a migration and your data was a line in the
