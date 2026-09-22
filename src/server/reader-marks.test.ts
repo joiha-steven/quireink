@@ -80,11 +80,20 @@ describe('keeping marks', () => {
     expect(getMarks('k:one', '/a')).toBeNull()
   })
 
+  // ⚠️ THE SETUP IS ONE TRANSACTION, AND THAT IS NOT TIDINESS. Filling the cap means 503
+  // pages, each written and then back-dated — 1,006 write transactions, and the content
+  // database runs `synchronous = FULL`, so that is 1,006 fsyncs. On this machine the whole
+  // file runs in 190 ms and on a CI runner's disk the same work took 6,578 ms against a
+  // 5,000 ms per-test timeout, which is how CI #846 went red on a commit that changed a
+  // PRAGMA it does not touch. The fsyncs are not what is being tested: the cap is. The last
+  // write, the one that actually pushes a page out, stays outside where it can be seen.
   it('keeps the newest pages and drops the oldest past the cap', () => {
-    for (let i = 0; i < MAX_PAGES + 3; i++) {
-      putMarks('k:one', `/p${i}`, marks(1))
-      db().run(`update reader_marks set updated_at = ? where reader = 'k:one' and path = ?`, [1000 + i, `/p${i}`])
-    }
+    db().transaction(() => {
+      for (let i = 0; i < MAX_PAGES + 3; i++) {
+        putMarks('k:one', `/p${i}`, marks(1))
+        db().run(`update reader_marks set updated_at = ? where reader = 'k:one' and path = ?`, [1000 + i, `/p${i}`])
+      }
+    })()
     putMarks('k:one', '/last', marks(1))
     const pages = pagesOf('k:one')
     expect(pages).toHaveLength(MAX_PAGES)
