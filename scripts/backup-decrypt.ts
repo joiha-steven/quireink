@@ -91,7 +91,11 @@ export async function decryptFile(
     for (;;) {
       // A frame is only the LAST one when the source is exhausted and this is all that is
       // left. Anything else and a slow read would look like the end of the archive.
-      while (held.length < framed && !done) await pull()
+      // `<=` and not `<`: exactly one whole frame in hand may BE the last one — the sealer
+      // flags a full final frame when the archive is a multiple of 64 KiB — and only a read
+      // past it can tell. With `<` those archives opened their last frame as a middle one and
+      // failed authentication: one archive in 65,536, found in the release review of 2026-09-23.
+      while (held.length <= framed && !done) await pull()
       const last = done && held.length <= framed
       const frame = held.subarray(0, last ? held.length : framed)
       const plain = open(Buffer.from(frame), last, i++)

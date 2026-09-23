@@ -127,10 +127,17 @@ export function trendChart({ points, peakLabel, viewsLabel, visitorsLabel, parti
   const legendMark = (cls: string, label: string): string =>
     `<span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-sm ${cls}"></i>${escapeHtml(label)}</span>`
 
+  // An HOURLY bucket keeps its hour on the axis: the 24-hour range is labelled
+  // `2026-09-22 15:00`, and the date alone printed both ends as two dates a day apart with
+  // no time on either (release review, 2026-09-23).
+  const axis = (day: string): string => {
+    const hour = /\d{2}:\d{2}$/.exec(day)
+    return hour ? `${formatDateShort(day)} ${hour[0]}` : formatDateShort(day)
+  }
   const ends = n > 1 && drawn[0] && drawn[n - 1]
     ? `<div class="mt-1.5 flex justify-between text-xs text-neutral-500 dark:text-neutral-400">`
-      + `<span class="tabular-nums">${escapeHtml(formatDateShort(drawn[0].day))}</span>`
-      + `<span class="tabular-nums">${escapeHtml(formatDateShort(drawn[n - 1].day))}</span></div>`
+      + `<span class="tabular-nums">${escapeHtml(axis(drawn[0].day))}</span>`
+      + `<span class="tabular-nums">${escapeHtml(axis(drawn[n - 1].day))}</span></div>`
     : ''
 
   return `<div class="w-full">`
@@ -148,7 +155,10 @@ export function trendChart({ points, peakLabel, viewsLabel, visitorsLabel, parti
     + `<polyline points="${viewsPts}" fill="none" class="stroke-neutral-400 dark:stroke-neutral-500" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`
     + `<polyline points="${visitorPts}" fill="none" class="stroke-neutral-800 dark:stroke-neutral-200" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`
     + drawn.map((p, i) => {
-      const said = `${p.day} · ${p.views} ${viewsLabel} · ${p.visitors} ${visitorsLabel}`
+      // A short window is drawn whole, so its last point is the one still being counted, and
+      // its tooltip is the only place left to say so.
+      const still = !split && i === n - 1 ? ` · ${partialLabel}` : ''
+      const said = `${p.day} · ${p.views} ${viewsLabel} · ${p.visitors} ${visitorsLabel}${still}`
       return `<rect x="${x(i) - colW / 2}" y="0" width="${colW}" height="${H}" fill="transparent">`
         + `<title>${escapeHtml(said)}</title></rect>`
     }).join('')

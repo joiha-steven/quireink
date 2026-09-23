@@ -107,8 +107,10 @@ export function toPlainText(markdown: string): string {
   for (const m of markdown.matchAll(LINK_DEFINITION)) defined.add(m[1]!.trim().toLowerCase())
   return markdown
     .replace(LINK_DEFINITION, ' ')
-    .replace(/\[([^\][\n]+)\]\[([^\][\n]*)\]/g, (all, text: string, label: string) =>
-      defined.has((label || text).trim().toLowerCase()) ? text : all)
+    // `!` in front makes it a PICTURE by reference, which leaves nothing in the words, the
+    // same as an inline one; it printed "!logo" into the summary (release review, 2026-09-23).
+    .replace(/(!?)\[([^\][\n]+)\]\[([^\][\n]*)\]/g, (all, bang: string, text: string, label: string) =>
+      defined.has((label || text).trim().toLowerCase()) ? (bang ? ' ' : text) : all)
     .replace(/\[([^\][\n]+)\](?![[(:])/g, (all, text: string) => (defined.has(text.trim().toLowerCase()) ? text : all))
     .replace(/```[\s\S]*?```/g, ' ') // code blocks
     // ⚠️ BOTH BRACKETS AND BOTH PARENS NEST ONE LEVEL, because a label may hold a pair and
@@ -177,7 +179,15 @@ export function toPlainText(markdown: string): string {
     // produces and not what a person typing a small table by hand does.
     .replace(/^[ \t]*\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$/gm, ' ')
     .replace(/^([ \t]*>?[ \t]*)\|(.*)$/gm, (_m, head: string, rest: string) => head + rest.replace(/\|/g, ' '))
+    // A BACKSLASH ESCAPE IS THE CHARACTER IT ESCAPES, and the serializer writes one in front of
+    // every `_`, `*` and `[` it saves. Left as they were, `TBWA\\Chiat\\Day` reached the excerpt,
+    // the meta description, the OG card and the RSS summary with both backslashes doubled, and
+    // `snake\_case` as `snake\ case` (release review, 2026-09-23). Done LAST, after every rule
+    // above has read the source as written, and parked in the private-use area across the one
+    // strip below, so a character the author escaped on purpose is the one it keeps.
+    .replace(/\\([!-/:-@[-`{-~])/g, (_m, c: string) => String.fromCharCode(0xe000 + c.charCodeAt(0)))
     .replace(/[#>*_`~]/g, ' ')
+    .replace(/[\ue021-\ue07e]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xe000))
     .replace(/\s+/g, ' ')
     .trim()
 }

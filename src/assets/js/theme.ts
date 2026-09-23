@@ -325,10 +325,12 @@ export function rail(): void {
   const html = document.documentElement
   rail.id ||= 'site-rail'
   button.setAttribute('aria-controls', rail.id)
-  // The NAME is set once and kept: on a desktop page the rail is a complementary landmark, and
-  // a named one is better than an unnamed one. Only the two attributes that make it MODAL come
-  // and go with the drawer.
-  rail.setAttribute('aria-label', button.getAttribute('aria-label') ?? '')
+  // THE NAME COMES AND GOES WITH THE DRAWER, like the two attributes that make it modal. It
+  // was set once and kept, which named every desktop rail "Menu" - on an article, a landmark
+  // holding the contents announced as the menu, and on the newspaper look it shared that name
+  // with the masthead's real one (release review, 2026-09-23). Open, the rail IS the menu the
+  // button opened, and a dialog needs a name; closed, it is a sidebar and says nothing.
+  const name = button.getAttribute('aria-label') ?? ''
   const set = (open: boolean) => {
     const was = html.dataset.rail === 'open'
     if (open) html.dataset.rail = 'open'
@@ -340,7 +342,7 @@ export function rail(): void {
     // but they were stamped on at INIT, and the same element is the ordinary sidebar on a
     // desktop page. So every desktop page announced an open, unnamed modal dialog that the
     // reader could not leave, on a page where nothing was modal at all.
-    for (const [k, v] of [['role', 'dialog'], ['aria-modal', 'true']]) {
+    for (const [k, v] of [['role', 'dialog'], ['aria-modal', 'true'], ['aria-label', name]]) {
       if (open) rail.setAttribute(k!, v!)
       else rail.removeAttribute(k!)
     }

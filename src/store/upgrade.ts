@@ -50,16 +50,37 @@ export function copyBeforeMigrating(db: Database, path: string, step: string): s
   const dest = join(dir, `pre-${step}-${stamp}-${basename(path)}`)
   try {
     mkdirSync(dir, { recursive: true })
+    emptyCaches(db)
     db.exec(`vacuum into ${quoted(dest)}`)
   } catch (error) {
     throw new Error(
       `could not write the pre-upgrade copy at ${dest} (${(error as Error).message}). `
-      + 'The migration has NOT run and nothing in the database has changed. Free some space '
+      + 'The migration has NOT run and nothing in the database has changed but its rebuildable '
+      + 'caches. Free some space '
       + 'or fix the ownership of that directory, then start again.',
     )
   }
   keepNewest(dir, basename(path))
   return dest
+}
+
+/**
+ * THE CACHES ARE EMPTIED BEFORE THE COPY, in the live database, and that is the one change a
+ * boot makes ahead of the copy existing. `VACUUM INTO` copies every table, and on a v2.2.13
+ * blog `render_cache` WAS the database: found in the release review of 2026-09-23, a 154 MB
+ * database migrated to a 426 KB one beside a 154 MB "copy of before" - the space the upgrade
+ * handed back was sitting in `data/backups/`, and a disk without room for a second whole
+ * database refused the boot, which under `restart: always` is a loop.
+ *
+ * Emptying them is safe for the same reason the backup drops them (`server/backup.ts`): both
+ * are rebuilt on demand, and step 019 empties `render_cache` anyway. Both spelled out, each
+ * behind its own existence check, since a database from before 019 has only the first.
+ */
+function emptyCaches(db: Database): void {
+  const has = (table: string): boolean =>
+    db.query("select 1 from sqlite_master where type='table' and name = ?").get(table) !== null
+  if (has('render_cache')) db.exec('delete from render_cache')
+  if (has('body_cache')) db.exec('delete from body_cache')
 }
 
 /**

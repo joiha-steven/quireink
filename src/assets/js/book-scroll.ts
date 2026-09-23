@@ -76,6 +76,15 @@ export function sizeControl(limits: { min: number; max: number; step: number; ke
  */
 export function renameAnchors(clone: HTMLElement): void {
   for (const node of clone.querySelectorAll<HTMLElement>('[id]')) node.id = `bk-${node.id}`
+  // The lightbox makes each picture a Tab stop that promises a dialog, and it listens on the
+  // ARTICLE, not on this copy: cloned, the promise came along with nothing to keep it, and
+  // focusing a picture on a later page scrolled the book off its spread (release review,
+  // 2026-09-23). The copy's pictures are pictures again.
+  for (const img of clone.querySelectorAll<HTMLElement>('img[aria-haspopup]')) {
+    img.removeAttribute('tabindex')
+    img.removeAttribute('aria-haspopup')
+    img.style.cursor = ''
+  }
   for (const a of clone.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {
     a.setAttribute('href', `#bk-${a.getAttribute('href')!.slice(1)}`)
   }

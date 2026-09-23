@@ -184,12 +184,16 @@ A masthead, a lead headline, column rules, and a piece printed as an offprint.
   `listing-page.ts` when the look is `paper`), and the rail's copy is hidden. On a phone it is
   one strip that scrolls sideways, painted here because the base paints it only above 60rem.
   Inline on a piece it had been a block headed MENU between the series box and the contents,
-  and the first line of text sat at y=980 on a 1000px screen; it is at 683 now.
+  and the first line of text sat at y=980 on a 1000px screen; it is at 832 now.
 - **The contents are one run of numbered sections**, not a column of rows, and the piece's
   own title is dropped from them.
-- **The series box stands at the FOOT of the piece**, one run of numbered parts, moved there
-  by making the article a flex column (`order`). A flex column does not collapse margins, so
-  the prose's top margin goes to zero after the contents.
+- **The series box stays where the markup puts it**, above the text, as one head band and one
+  run of numbered parts. It was moved to the foot with a flex column and `order` for one
+  build: drawn at y=4050, read by Tab and a screen reader straight after the byline. A visual
+  order that is not the reading order fails WCAG 1.3.2 and 2.4.3; moving it is a markup
+  decision, never a sheet's.
+- **A shelf with nothing left on it is hidden** — a page, or a piece with its contents off,
+  whose rail held only the menu.
 - **The first letter is a drop cap**, `initial-letter:3` only, with no float fallback. Three
 front-page shapes are dressed, not one: `list`, `grid` (the reader's own toggle) and the
 composed `front`.

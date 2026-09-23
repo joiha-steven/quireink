@@ -314,3 +314,16 @@ describe('toPlainText and reference links', () => {
     expect(toPlainText('Start [a\n\nb](x) end')).toBe('Start [a b](x) end')
   })
 })
+
+describe('toPlainText reads a backslash escape as the character it escapes', () => {
+  // The serializer writes `\_`, `\*` and `\[` on every save, so every saved post carried them
+  // into its excerpt, meta description, OG card and RSS summary (release review, 2026-09-23).
+  it('keeps what was escaped and drops the backslash', () => {
+    expect(toPlainText('TBWA\\\\Chiat\\\\Day')).toBe('TBWA\\Chiat\\Day')
+    expect(toPlainText('snake\\_case and 2\\*3')).toBe('snake_case and 2*3')
+    expect(toPlainText('Theo \\[1] as cited')).toBe('Theo [1] as cited')
+  })
+  it('still strips the markers nobody escaped', () => {
+    expect(toPlainText('# Head\n\n**bold** and _it_')).toBe('Head bold and it')
+  })
+})

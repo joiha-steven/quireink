@@ -41,6 +41,10 @@ html[data-look=paper] article .rail h2{margin:0;padding-left:0}
    paper does not print its section list in the middle of a story, and it pushed the first
    line of the text to y=980 on a 1000px screen. */
 html[data-look=paper] .rail-inner > nav:not(.toc){display:none}
+/* AND A SHELF LEFT WITH NOTHING ON IT GOES. On a page, or a piece with its contents switched
+   off, the menu was the rail's only content: with it hidden the rail still drew its margins
+   and its rule, an empty 19px box and a hairline between the title and the text. */
+html[data-look=paper] article .rail:not(:has(.rail-inner > :not(nav:not(.toc)))){display:none}
 html[data-look=paper] article .rail ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}
 html[data-look=paper] article .rail li,
 html[data-look=paper] article .toc li{margin-top:0}
@@ -94,22 +98,15 @@ html[data-look=paper] article .toc li:not(:first-child):not(:has(.toc-end)) .rai
    convention rather than a borrowed web one - so it moves to the column edge and takes
    heading ink. It was the accent, which in this look is the link blue, and a blue bar
    beside a line of black type says the line is a link. */
-/* AND IT STANDS AT THE FOOT OF THE PIECE, where a paper prints "more in this series". At
-   the head it was the second block between the byline and the first word, and with the
-   contents under it the text began at y=850 on a 1000px screen. The kicker still says
-   which part this is (Part 2/4 lives in the box's own head, now read at the end), and the
-   read-next card below it names the next part.
-   A flex column is the only way to move it without touching the markup, and a flex column
-   does not collapse margins - the header's bottom margin and the shelf's top one now add
-   up, which is why the shelf's top margin is taken to zero in the shelf sheet. */
-html[data-look=paper] main > article{display:flex;flex-direction:column}
-html[data-look=paper] main > article > .rail + #post-body{margin-top:0}
-html[data-look=paper] main > article > aside.series{order:1;margin-top:2.5rem}
-html[data-look=paper] main > article > :is(.anchor,.post-taxo,.taxo-rule,.author-box,
-  .read-next,.related,section,footer,hr){order:2}
+/* AND IT STAYS WHERE THE MARKUP PUTS IT, over the text. For one build it was moved to the foot
+   of the piece with a flex column and 'order', and the release review of 2026-09-23 measured
+   what that costs: the box was drawn at y=4050 while Tab and a screen reader still met it
+   straight after the byline, then jumped back up to the contents - a reading order that is not
+   the visual one (WCAG 1.3.2, 2.4.3). Moving it is a markup decision, not a sheet's. What this
+   sheet can do is make it short: one head band and one run of numbered parts. */
 html[data-look=paper] aside.series{border:0;border-radius:0;padding:0 0 1rem;
   border-top:2px solid var(--c-heading);border-bottom:1px solid var(--c-rule)}
-html[data-look=paper] aside.series .series-head{margin:0 0 1rem;padding:.45rem 0;
+html[data-look=paper] aside.series .series-head{margin:0 0 .7rem;padding:.45rem 0;
   line-height:1;color:var(--c-heading);border-bottom:1px solid var(--c-rule);
   font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
   text-transform:uppercase;letter-spacing:.08em;font-weight:600}

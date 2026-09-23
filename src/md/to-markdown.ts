@@ -85,8 +85,19 @@ function inlineToMarkdown(nodes: Inline[], atLineStart = true): string {
   let first = atLineStart
   // Merged first: the repairs in `escapeText` match a complete shape, and the parser can hand
   // one run of text over in pieces. See `mergeText`.
+  let prev: Inline | null = null
   for (const node of mergeText(nodes)) {
-    out += oneInline(node, first)
+    let piece = oneInline(node, first)
+    // TWO DOLLARS THAT MEET ACROSS A SEAM are a display opener neither side wrote. A text node
+    // is escaped on its own, so a `$` at the end of one and a formula's `$x$` after it came out
+    // as `$$x$…` and read back as display maths (release review, 2026-09-23). The dollar on the
+    // TEXT side of the seam takes the backslash; a formula's own delimiter never does.
+    if (piece.startsWith('$') && out.endsWith('$') && !out.endsWith('\\$')) {
+      if (prev?.type === 'text') out = `${out.slice(0, -1)}\\$`
+      else if (node.type === 'text') piece = `\\${piece}`
+    }
+    out += piece
+    prev = node
     // ⚠️ A LINE STARTS AFTER EVERY BREAK, not only at the paragraph's first node. This was
     // `first = false` and the escape rules in `escapeText` never saw the second line of a
     // paragraph: `first line` / `\---` saved as `first line` / `---`, which the next open reads

@@ -301,3 +301,22 @@ describe('the edge purge', () => {
     expect(await purgeEdge()).toBe('skipped')
   })
 })
+
+describe('storing a page again', () => {
+  // ⚠️ Found in the release review of 2026-09-23. `Map.set` on a present key keeps its place,
+  // so the page just refreshed stayed the OLDEST, was the next one evicted, and the eviction
+  // loop stopped at it with the cache still over budget.
+  it('makes it the newest, so the next eviction takes the least recently used instead', () => {
+    clearCache()
+    const third = Math.floor(budgetChars() / 3) - 4
+    const body = (c: string) => c.repeat(third)
+    pageCache.set('/a', body('a'))
+    pageCache.set('/b', body('b'))
+    pageCache.set('/c', body('c'))
+    pageCache.set('/a', body('A'))
+    pageCache.set('/d', body('d'))
+    expect(pageCache.has('/a')).toBe(true)
+    expect(pageCache.has('/b')).toBe(false)
+    clearCache()
+  })
+})

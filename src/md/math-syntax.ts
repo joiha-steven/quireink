@@ -66,8 +66,14 @@ const INLINE_DOLLAR = '\\$(?![\\s$])((?:\\\\[^\\n]|[^\\\\$\\n])+?)(?<!\\s)\\$(?!
  * With the lookahead a failed scan stops at the next opener instead of at the end, which makes
  * the whole sweep linear. It is also more correct: a display formula containing another display
  * opener is not something LaTeX has.
+ *
+ * ⚠️ AN OPENER AFTER A BACKSLASH IS NOT AN OPENER. `\\[2pt]` is LaTeX's line break with extra
+ * space, and it CONTAINS `\[`: without the lookbehind the formula round it failed to match,
+ * rendered as text, and one save wrote its closer escaped - the formula gone for good (found in
+ * the release review of 2026-09-23). `\\(` inside an inline formula is the same case. The sweep
+ * stays linear: a real opener still stops it.
  */
-const until = (opener: string): string => `((?:(?!${opener})[\\s\\S])+?)`
+const until = (opener: string): string => `((?:(?!(?<!\\\\)${opener})[\\s\\S])+?)`
 
 /**
  * `\(…\)` — the unambiguous inline form, and the one to prefer in new writing.
@@ -77,14 +83,14 @@ const until = (opener: string): string => `((?:(?!${opener})[\\s\\S])+?)`
  * has been bitten once by the dollar rules above wants a form with no rules at all.
  */
 const PAREN_OPEN = '\\\\\\('
-const INLINE_PAREN = `${PAREN_OPEN}${until(PAREN_OPEN)}\\\\\\)`
+const INLINE_PAREN = `(?<!\\\\)${PAREN_OPEN}${until(PAREN_OPEN)}\\\\\\)`
 
 /** `$$…$$` and `\[…\]`, the display forms. Both may span lines; a formula on its own line is
  *  the common case and is why the block tokenizer exists at all. */
 const DOLLAR_OPEN = '\\$\\$'
 const DISPLAY_DOLLAR = `${DOLLAR_OPEN}${until(DOLLAR_OPEN)}${DOLLAR_OPEN}`
 const BRACKET_OPEN = '\\\\\\['
-const DISPLAY_BRACKET = `${BRACKET_OPEN}${until(BRACKET_OPEN)}\\\\\\]`
+const DISPLAY_BRACKET = `(?<!\\\\)${BRACKET_OPEN}${until(BRACKET_OPEN)}\\\\\\]`
 
 /**
  * The three forms that are safe to fire a TYPING rule on, exported one at a time.

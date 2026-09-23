@@ -13,6 +13,8 @@ import type { Inline } from './ast'
 import { entityStarts } from './entity'
 import { INK_SYNTAX_GLOBAL, RING_SYNTAX_GLOBAL, UNDER_SYNTAX_GLOBAL } from '@/pen/grammar'
 import { labelText, loneBrackets } from './label'
+import { MATH_SYNTAX_SOURCE } from './math-syntax'
+import { parseInline } from './inline'
 
 /**
  * Where a pen stroke WOULD be found on the way back in — the only places worth a backslash.
@@ -36,6 +38,48 @@ export function penOpeners(text: string): Set<number> {
     for (let m = re.exec(text); m !== null; m = re.exec(text)) at.add(m.index)
   }
   return at
+}
+
+/**
+ * The `$` signs that would OPEN A FORMULA on the next parse, found on the raw text the way the
+ * pen's openers are. Only those: a price is a price, and `$5 and $6` stays as typed because the
+ * dollar rules already refuse it. A match is escaped at its opener and the search resumes one
+ * character on, which is what the next parse does once that opener is text (release review,
+ * 2026-09-23: `\$x\$` saved as `$x$` and came back a formula). The backslash forms need
+ * nothing here, since every backslash is escaped already.
+ */
+function dollarOpeners(text: string): Set<number> {
+  const at = new Set<number>()
+  if (!text.includes('$')) return at
+  const re = new RegExp(MATH_SYNTAX_SOURCE, 'g')
+  for (let from = 0; ;) {
+    re.lastIndex = from
+    const m = re.exec(text)
+    if (m === null) break
+    if (text[m.index] !== '$') { from = m.index + m[0].length; continue }
+    at.add(m.index)
+    const pair = text[m.index + 1] === '$'
+    if (pair) at.add(m.index + 1)
+    from = m.index + (pair ? 2 : 1)
+  }
+  return at
+}
+
+const hasStrike = (nodes: Inline[]): boolean => nodes.some((n) =>
+  n.type === 'strike' || ('children' in n && Array.isArray(n.children) && hasStrike(n.children as Inline[])))
+
+/**
+ * Whether the tildes in this text would STRIKE on the next parse, asked of the parser itself.
+ * One `~` strikes in this dialect, so escaping them all would put a backslash in front of every
+ * "~5 minutes"; the flanking rules decide, and they are the parser's, so the parser answers.
+ * Every other marker is flattened to `.` first — the same punctuation class for flanking — so
+ * only a strike can come of it. Two tildes at the least, or there is nothing to pair.
+ */
+function strikeForms(text: string): boolean {
+  let tildes = 0
+  for (const ch of text) if (ch === '~' && ++tildes === 2) break
+  if (tildes < 2) return false
+  return hasStrike(parseInline(text.replace(/[\\`*_[\]<>!&$]/g, '.')))
 }
 
 /**
@@ -98,15 +142,17 @@ export function escapeText(value: string, atLineStart: boolean): string {
   // ampersand means nothing in Markdown, and `M&A` coming back as `M\&A` is a backslash the
   // author never typed, in 44 of this blog's 92 posts.
   const entities = entityStarts(value)
+  const dollars = dollarOpeners(value)
+  const strike = strikeForms(value)
   let out = ''
   for (let i = 0; i < value.length; i++) {
-    if (strokes.has(i) || entities.has(i)) out += '\\'
+    if (strokes.has(i) || entities.has(i) || dollars.has(i)) out += '\\'
     const ch = value[i]!
     if (labelMarks !== null && (ch === '[' || ch === ']')) {
       out += labelMarks.lone.has(labelMarks.seen++) ? `\\${ch}` : ch
       continue
     }
-    out += /[\\`*_[<]/.test(ch) ? `\\${ch}` : ch
+    out += /[\\`*_[<]/.test(ch) || (strike && ch === '~') ? `\\${ch}` : ch
   }
   // ⚠️ EVERY LINE INSIDE THE VALUE, not only the first — and ⚠️ NOTHING REACHABLE PUTS ONE
   // THERE TODAY, which is said out loud rather than left for the next reader to discover.
@@ -134,9 +180,13 @@ export function escapeText(value: string, atLineStart: boolean): string {
     // Escaped only in that exact shape: `=` is ordinary punctuation everywhere else, and a
     // backslash the author never typed is the failure the `&` rule above was written to avoid.
     out = out.replace(/\n(\s*)(=+)(?=\n|$)/g, '\n$1\\$2')
+    // Three tildes open a fence, the same as three backticks — and backticks are always
+    // escaped, tildes are not.
+    out = out.replace(/\n(\s*)(~{3,})/g, '\n$1\\$2')
   }
   if (atLineStart) {
     out = out.replace(/^(\s*)([#>+-])/, '$1\\$2')
+    out = out.replace(/^(\s*)(~{3,})/, '$1\\$2')
     out = out.replace(/^(\s*)(\d+)([.)])/, '$1$2\\$3')
     // The same setext rule as above, for a node that begins its line after a break.
     out = out.replace(/^(\s*)(=+)(?=\n|$)/, '$1\\$2')

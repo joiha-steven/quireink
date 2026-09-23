@@ -2,15 +2,29 @@
 
 ## Unreleased
 
+### Fixed: a save no longer turns a literal dollar or tilde into maths or strikethrough
+
+Text you had escaped — `\$x\$`, `\~~b~~`, or three tildes at the start of a line after a line
+break — was saved without its backslash, so the next open read it as a formula, a strikethrough
+or a code fence. It is now escaped exactly where it would otherwise change meaning, so a price
+like `$5 and $6` or an approximate `~5 minutes` is still saved as you typed it.
+
+### Fixed: summaries show escaped characters without the backslash
+
+Excerpts, meta descriptions, social cards and RSS summaries printed the backslashes a saved post
+carries: `snake\_case` as `snake\ case`, `TBWA\Chiat\Day` with each backslash doubled. They
+now show the character that was escaped. Existing summaries update the next time a post is
+saved.
+
 ### The four looks each read as their own kind of publication
 
 - **Source code**: headlines — the piece's title, the titles in a feed and on the front page,
   and the section heads — are set in the monospace, bold. The paragraphs stay in the book face.
   Highlighted code blocks get line numbers, which a copy does not pick up.
 - **Newspaper**: the section menu moves into the masthead on every page, including on a phone,
-  where it scrolls sideways. On a piece, the contents become one line of numbered sections, the
-  series box moves to the end of the piece, and the first letter is a drop cap. At 1440 × 1000
-  the first line of text moves up from y=980 to y=683.
+  where it scrolls sideways. On a piece, the contents and the series box each become one run of
+  numbered entries, and the first letter is a drop cap. At 1440 × 1000 the first line of text
+  moves up from y=980 to y=832.
 - **Notebook**: the sheet is dot-grid paper, links are marked with a highlighter in the
   palette's accent, and the text is ragged right. The panel beside the piece is a square
   index card.

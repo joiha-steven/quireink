@@ -48,22 +48,27 @@ export function registerReachFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
       if (!rail || !button) return 'skip: this page has no drawer'
       // ⚠️ AND IT IS NOT ONE UNTIL IT OPENS. These two were stamped on at init until
       // 2026-09-21, and the same element is the ordinary sidebar on a desktop page — so every
-      // desktop page announced an open, unnamed modal that the reader could not leave. The
-      // name stays either way, because a complementary landmark is better named than not.
+      // desktop page announced an open, unnamed modal that the reader could not leave.
+      // ⚠️ AND THE NAME GOES WITH THEM since 2026-09-23. It was kept on the closed rail as
+      // "Menu", which on an article announced the landmark holding the contents as the menu,
+      // and on the newspaper look repeated the masthead's own. The dialog needs a name; the
+      // sidebar does not need a wrong one.
       if (rail.getAttribute('role') === 'dialog') return 'closed, and it already claims to be a dialog'
       if (rail.getAttribute('aria-modal')) return 'closed, and it already claims to be modal'
-      if (!rail.getAttribute('aria-label')) return 'the rail has no name at all'
+      if (rail.getAttribute('aria-label')) return 'closed, and it already calls itself ' + rail.getAttribute('aria-label')
       if (button.getAttribute('aria-controls') !== rail.id) return 'the button names ' + button.getAttribute('aria-controls')
       button.click()
       await new Promise((r) => setTimeout(r, 350))
       if (rail.getAttribute('role') !== 'dialog') return 'open, and it does not say it is a dialog'
       if (rail.getAttribute('aria-modal') !== 'true') return 'open, and it is not modal'
+      if (!rail.getAttribute('aria-label')) return 'open, and the dialog has no name'
       const locked = getComputedStyle(document.body).overflow
       if (locked !== 'hidden') return 'open, and the page behind still scrolls (' + locked + ')'
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
       await new Promise((r) => setTimeout(r, 350))
       if (getComputedStyle(document.body).overflow === 'hidden') return 'closed, and the page is still locked'
       if (rail.getAttribute('role') === 'dialog') return 'closed again, and it still claims to be a dialog'
-      return 'ok #' + rail.id + ' is a dialog only while it is open, and named throughout'
+      if (rail.getAttribute('aria-label')) return 'closed again, and it still carries the dialog name'
+      return 'ok #' + rail.id + ' is a named dialog only while it is open'
     })()`, 600))
 }

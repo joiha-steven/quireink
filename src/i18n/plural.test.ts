@@ -2,6 +2,27 @@ import { describe, expect, it } from 'bun:test'
 import { plural, pluralOrder } from '@/i18n/plural'
 import { SITE_LANGS } from '../../locales/langs'
 
+describe('an engine with older plural data', () => {
+  // FIRST IN THE FILE, on purpose: the helper keeps one PluralRules per locale, so once any
+  // test below has asked for Spanish the stand-in engine here would never be consulted.
+  it('still picks the plural by its name, not by where it falls in the engine list', () => {
+    // A browser from before about 2022 has no "many" for Spanish, so it answers "other" for 5;
+    // by POSITION that was the middle form. The forms are keyed on the table now.
+    const Real = Intl.PluralRules
+    class Old extends Real {
+      override resolvedOptions() { return { ...super.resolvedOptions(), pluralCategories: ['one', 'other'] as Intl.LDMLPluralRule[] } }
+      override select(n: number) { return n === 1 ? 'one' : 'other' as Intl.LDMLPluralRule }
+    }
+    ;(Intl as { PluralRules: unknown }).PluralRules = Old
+    try {
+      expect(plural('{n} palabra|{n} de palabras|{n} palabras', 5, 'es')).toBe('5 palabras')
+      expect(plural('{n} palabra|{n} de palabras|{n} palabras', 1, 'es')).toBe('1 palabra')
+    } finally {
+      ;(Intl as { PluralRules: unknown }).PluralRules = Real
+    }
+  })
+})
+
 describe('plural', () => {
   it('picks one and other in English', () => {
     expect(plural('{n} word|{n} words', 1, 'en')).toBe('1 word')
@@ -28,3 +49,4 @@ describe('plural', () => {
     for (const { value } of SITE_LANGS) expect(pluralOrder(value)).toContain('other')
   })
 })
+

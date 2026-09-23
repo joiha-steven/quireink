@@ -181,7 +181,10 @@ const BUDGET: Record<string, number> = {
   // rather than merely different: the helper reads the flow's LIVE transform, so a turn
   // asked for while one is still running starts from where the pages actually are instead
   // of snapping to the last destination first. A held arrow key is the common case.
-  'book-mode.js': 7_800,
+  // 7,900 since 2026-09-23, for the copy's pictures to stop promising the lightbox: cloned
+  // with the article, each was a Tab stop announcing a dialog nothing would open, and
+  // focusing one on a later page scrolled the book off its spread (renameAnchors).
+  'book-mode.js': 7_900,
   'comment-thread.js': 6_700,
   // The reader's pen: the selection bar, the anchor maths (a text-quote selector, found
   // again by its surroundings), the store, the note card and the copy gesture it absorbed

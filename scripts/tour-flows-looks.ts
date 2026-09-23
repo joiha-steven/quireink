@@ -51,7 +51,8 @@ export function registerLookFlows({ flow, expect, atWidth }: Tour): void {
   })()`))
 
   // The newspaper: the menu is in the masthead, not in the middle of the story, and the story
-  // starts on the first screen. Inline, the menu block put the first line at y=980 of 1000.
+  // starts on the first screen. Inline, the menu block put the first line at y=980 of 1000;
+  // it is 832 with the series box kept above the text, where the markup puts it.
   flow('the newspaper puts its menu in the masthead and the story on the first screen', () =>
     wearing({ expect, atWidth }, 'paper', '/a-type-scale-you-can-defend', `() => {
       const doc = document
@@ -60,10 +61,12 @@ export function registerLookFlows({ flow, expect, atWidth }: Tour): void {
       const inline = doc.querySelector('article .rail-inner > nav:not(.toc)')
       if (inline && inline.checkVisibility()) return 'the menu is still printed inside the piece'
       const first = doc.querySelector('.prose > p').getBoundingClientRect().top
-      if (first > 750) return 'the first line of the story sits at y=' + Math.round(first)
+      if (first > 850) return 'the first line of the story sits at y=' + Math.round(first)
+      // The series box stays where the markup puts it: moved to the foot with 'order' it was
+      // drawn at y=4050 while Tab and a screen reader met it after the byline.
       const series = doc.querySelector('aside.series')
-      if (series && series.getBoundingClientRect().top < doc.querySelector('.prose').getBoundingClientRect().top)
-        return 'the series box is still above the story'
+      if (series && series.getBoundingClientRect().top > doc.querySelector('.prose').getBoundingClientRect().top)
+        return 'the series box is drawn below the story but read before it'
       return 'ok first line at y=' + Math.round(first)
     }`))
 

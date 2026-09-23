@@ -140,7 +140,9 @@ export async function dashboardView() {
       storageStats(),
       systemInfo(),
       commentsOn ? countsByPosts() : Promise.resolve({} as Record<string, number>),
-      activityOn ? getActivity(6) : Promise.resolve([]),
+      // SIXTY, for six lines: a run is folded into one line with a count, and a count taken
+      // from a six-entry fetch could never say more than six (release review, 2026-09-23).
+      activityOn ? getActivity(60) : Promise.resolve([]),
       getDashboardTraffic(30),
       getViewTotals(),
     ])

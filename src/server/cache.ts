@@ -134,7 +134,13 @@ class PageCache {
     // An overwrite refunds what the old body cost. Without this the count would only ever
     // rise, and a site that re-warms the same 100 paths would evict itself down to nothing.
     const previous = this.#pages.get(key)
-    if (previous !== undefined) this.#chars -= key.length + previous.length
+    // And it moves to the NEWEST end: `Map.set` on a present key keeps its old place, so a page
+    // just stored again stayed the oldest and was the next one evicted, while the loop below
+    // stopped at it and left the cache over budget (release review, 2026-09-23).
+    if (previous !== undefined) {
+      this.#chars -= key.length + previous.length
+      this.#pages.delete(key)
+    }
     this.#pages.set(key, html)
     this.#chars += key.length + html.length
     // Oldest read first, and never the page just stored: a body bigger than the whole budget

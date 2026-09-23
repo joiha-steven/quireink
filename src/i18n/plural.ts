@@ -15,7 +15,25 @@
 import type { SiteLang } from '@/types'
 import { dateLocale } from '@/i18n/format'
 
-const ORDER = ['zero', 'one', 'two', 'few', 'many', 'other'] as const
+/**
+ * The categories each language's strings were WRITTEN for, in the order they are written.
+ *
+ * Fixed here rather than asked of the engine, because the engine's answer depends on how old
+ * its plural data is: a browser from before about 2022 reports only one/other for es, it and
+ * pt (no "many"), and French before about 2020 the same. Asked by position, that browser picked
+ * the MIDDLE form for "other" and the editor printed "5 de palabras" (release review,
+ * 2026-09-23). Asked by name, an old engine that says "other" where a new one says "many" gets
+ * the "other" form, which for these languages is the right plural anyway.
+ *
+ * A language added to SiteLang must be added here, and the type makes that a compile error.
+ */
+const WRITTEN: Record<SiteLang, readonly string[]> = {
+  en: ['one', 'other'], de: ['one', 'other'],
+  es: ['one', 'many', 'other'], fr: ['one', 'many', 'other'],
+  it: ['one', 'many', 'other'], pt: ['one', 'many', 'other'],
+  ru: ['one', 'few', 'many', 'other'],
+  vi: ['other'], ja: ['other'], ko: ['other'], zh: ['other'],
+}
 
 const rules = new Map<string, Intl.PluralRules>()
 const ruleFor = (locale: string): Intl.PluralRules => {
@@ -26,8 +44,7 @@ const ruleFor = (locale: string): Intl.PluralRules => {
 
 /** The categories a language uses, in the order its forms are written. */
 export function pluralOrder(lang: SiteLang): string[] {
-  const have = new Set<string>(ruleFor(dateLocale(lang)).resolvedOptions().pluralCategories)
-  return ORDER.filter((c) => have.has(c))
+  return [...(WRITTEN[lang] ?? ['one', 'other'])]
 }
 
 /** `template` with the form for `n` chosen and `{n}` replaced by `shown` (default: `n`). */
@@ -35,6 +52,9 @@ export function plural(template: string, n: number, lang: SiteLang, shown: strin
   const forms = template.split('|')
   const form = forms.length === 1
     ? forms[0]!
-    : forms[pluralOrder(lang).indexOf(ruleFor(dateLocale(lang)).select(n))] ?? forms[forms.length - 1]!
+    : forms[pluralOrder(lang).indexOf(ruleFor(dateLocale(lang)).select(n))]
+      // A category the strings were not written for (an engine newer than this table) takes
+      // the last form, which is "other" in every language here.
+      ?? forms[forms.length - 1]!
   return form.replace('{n}', shown)
 }

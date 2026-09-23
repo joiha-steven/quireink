@@ -259,3 +259,28 @@ describe('what a sealed archive gives away', () => {
     expect(() => decodeSecret(me.publicKey)).toThrow('not-an-identity')
   })
 })
+
+describe('the streaming reader the owner restores with', () => {
+  // ⚠️ FOUND IN THE RELEASE REVIEW OF 2026-09-23. `unsealAll` above knows the whole length, so
+  // it always knew which frame was last; `decryptFile` reads a stream and has to decide. With
+  // exactly one whole frame in hand it decided "middle", and an archive whose plaintext was a
+  // multiple of 64 KiB — the sealer flags a FULL final frame then — failed to authenticate.
+  it('opens every size around a frame boundary, the exact multiples included', async () => {
+    const { decryptFile } = await import('../../scripts/backup-decrypt')
+    const { secret, publicKey } = newIdentity()
+    const dir = './.tmp/test-decrypt-stream'
+    const { mkdirSync, rmSync } = await import('node:fs')
+    mkdirSync(dir, { recursive: true })
+    try {
+      for (const size of [0, 1, CHUNK - 1, CHUNK, CHUNK + 1, 2 * CHUNK, 3 * CHUNK + 5]) {
+        const plain = randomBytes(size)
+        await Bun.write(`${dir}/a.enc`, seal(plain, [publicKey], SALT, 3))
+        const n = await decryptFile(`${dir}/a.enc`, `${dir}/a.out`, identityOf(secret))
+        expect(`${size}: ${n}`).toBe(`${size}: ${size}`)
+        expect(Buffer.from(await Bun.file(`${dir}/a.out`).arrayBuffer()).equals(plain)).toBe(true)
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})

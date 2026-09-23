@@ -144,3 +144,27 @@ test('a file that is merely in use is left alone', () => {
   expect(db.query(`select count(*) as n from t`).get()).toEqual({ n: 1 })
   db.close()
 })
+
+// ⚠️ FOUND IN THE RELEASE REVIEW OF 2026-09-23: `VACUUM INTO` copies every table, and on a blog
+// one release behind the render cache WAS most of the file. A 154 MB database migrated to 426 KB
+// beside a 154 MB copy of before — the space the upgrade handed back sat in `data/backups/`, and
+// a disk without room for a second whole database refused the boot.
+test('the copy of before carries the writing, not the cache', () => {
+  const backups = aDatabaseOneReleaseBehind()
+  const wound = new Database(join(DIR, 'quire.db'))
+  const blob = 'x'.repeat(64 * 1024)
+  const put = wound.prepare('insert into render_cache (key, html, created_at) values (?, ?, 1)')
+  for (let i = 0; i < 160; i++) put.run(`h${i}`, blob)
+  wound.close()
+  expect(statSync(join(DIR, 'quire.db')).size).toBeGreaterThan(10 * 1024 * 1024)
+
+  openDatabases(DIR)
+  closeDatabases()
+  const [made] = copies(backups)
+  expect(made).toBeDefined()
+  const copy = join(backups, made!)
+  expect(statSync(copy).size).toBeLessThan(2 * 1024 * 1024)
+  const kept = new Database(copy, { readonly: true })
+  expect(kept.query("select title from posts where slug = 'kept'").get()).toEqual({ title: 'Kept' })
+  kept.close()
+})

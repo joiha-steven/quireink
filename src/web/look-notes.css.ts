@@ -200,13 +200,16 @@ html[data-look=notes] .prose a[href^="/"]::after{content:"]]";color:var(--c-meta
    heading's own anchor) is not marked: it is apparatus, not a thing to follow.
    It REPLACES the base sheet's drawn underline, which is a background too (an SVG stroke
    tiled along the baseline, .prose a in prose.css.ts): size, position and repeat are all
-   reset here, or the band is cut into that underline's 4.6em by 0.3em tiles. */
-html[data-look=notes] .prose a:not([href^="#"]){color:var(--c-heading);text-decoration:none;
+   reset here, or the band is cut into that underline's 4.6em by 0.3em tiles.
+   NOT ON A CARD: a link card and a file card are links too, and this selector outranks the
+   base rule that takes the underline off them (pen/ink.css.ts), so the band was painted
+   across the lower third of every card. */
+html[data-look=notes] .prose a:not([href^="#"],.link-card,.file-card){color:var(--c-heading);text-decoration:none;
   background-image:linear-gradient(transparent 55%,
     color-mix(in srgb,var(--c-accent) 26%,transparent) 55% 92%,transparent 92%);
   background-size:100% 100%;background-position:0 0;background-repeat:no-repeat;
   padding-bottom:0;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-html[data-look=notes] .prose a:not([href^="#"]):hover{background-image:linear-gradient(
+html[data-look=notes] .prose a:not([href^="#"],.link-card,.file-card):hover{background-image:linear-gradient(
   transparent 20%,color-mix(in srgb,var(--c-accent) 34%,transparent) 20% 92%,transparent 92%)}
 
 /* RAGGED RIGHT, whatever the book-typography switch says. Justified lines are a compositor's
