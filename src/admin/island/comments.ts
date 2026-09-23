@@ -58,10 +58,15 @@ if (root && cardHost) {
    * string in one assignment; then the marks are inserted over it. An empty needle therefore
    * costs one write per span and leaves the span exactly as the server sent it.
    */
+  const drawn = new WeakMap<HTMLElement, string>()
   function paint(span: HTMLElement, needle: string): void {
+    // The server's markup comes back when there is nothing to find: a comment body is rendered
+    // (its emphasis is markup), and writing `data-text` over it would strip that on every
+    // keystroke that cleared the box.
+    if (!drawn.has(span)) drawn.set(span, span.innerHTML)
     const text = span.dataset.text ?? ''
+    if (!needle || !text) { span.innerHTML = drawn.get(span) ?? ''; return }
     span.textContent = text
-    if (!needle || !text) return
     const hay = lanesOf(span, text)
     const span_ = lanes(needle).text.length
     const parts: (string | HTMLElement)[] = []

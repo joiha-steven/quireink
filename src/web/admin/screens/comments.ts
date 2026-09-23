@@ -23,6 +23,7 @@ import { SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
 import { emptyState, pageHeader, selectionBar, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
 import { numBand } from '@/web/admin/kit-figures'
 import { commentsView } from '@/web/admin/views'
+import { commentPlainText, renderCommentMarkdown } from '@/comments/comment-md'
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -67,7 +68,11 @@ function comment(t: AdminStrings, c: AdminComment, title: string): string {
     + `${escapeHtml(t.commentsColDelete)}</button></div>`
     + `<button type="button" data-comment-expand aria-expanded="false"`
     + ` class="mt-0.5 block w-full text-left text-sm text-neutral-800 dark:text-neutral-200">`
-    + mark(c.content, 'line-clamp-3')
+    // RENDERED, the way the reader's page renders it: a moderator read `*wrong*` with the
+    // asterisks while the published comment showed the word in italics (seen 2026-09-23). The
+    // highlighter works on `data-text`, the same words with the markers off.
+    + `<span data-mark data-text="${escapeAttr(commentPlainText(c.content))}" class="line-clamp-3">`
+    + `${renderCommentMarkdown(c.content)}</span>`
     + `</button>`
     // The forensics, one line, and only where it exists: the third question a moderator asks.
     + (c.email || c.ip

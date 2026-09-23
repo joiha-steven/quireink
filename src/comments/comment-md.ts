@@ -20,3 +20,17 @@ export function renderCommentMarkdown(input: string): string {
     .replace(/\r\n|\r|\n/g, '<br>')
     .trim()
 }
+
+/**
+ * The same comment as the words a reader sees, with the emphasis markers taken off and nothing
+ * escaped: what the admin searches and highlights. Same four patterns, so a `*word*` that
+ * renders as emphasis is the word here, and one that does not render keeps its asterisk.
+ */
+export function commentPlainText(input: string): string {
+  return input.slice(0, MAX_LEN)
+    .replace(/\*\*([^\n]+?)\*\*/g, '$1')
+    .replace(/__([^\n]+?)__/g, '$1')
+    .replace(/\*([^\n]+?)\*/g, '$1')
+    .replace(/_([^\n]+?)_/g, '$1')
+    .trim()
+}
