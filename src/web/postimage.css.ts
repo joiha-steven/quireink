@@ -71,11 +71,18 @@ export const POST_IMAGE_CSS = `
    every standfirst on the front page one left edge. */
 .post-list article[data-thumb=side] > :is(h2,h3) + p{clear:left}
 
-/* A phone has ~230px left beside a 96px picture, which is not a column for a headline.
-   Smaller picture, tighter gutter: the words still wrap under it, just sooner. */
+/* A PHONE GETS A GRID, NOT A FLOAT. Beside a floated picture the kind line wrapped to three
+   lines and the headline started halfway across, then ran back under the picture ("The reed
+   pen, in Van / Gogh's letters") — measured at 390 on 2026-09-23 on the home, category and tag
+   pages. Two columns hold the picture to the right of the kind line and the headline, each of
+   which now has one left edge, and the standfirst runs the full width beneath them. */
 @media (max-width:559px){
-  .post-list article[data-thumb=side] .card-thumb{width:72px;
-    margin:.2rem calc(var(--sp) * .8) calc(var(--sp) * .4) 0}
+  .post-list article[data-thumb=side]{display:grid;grid-template-columns:minmax(0,1fr) 72px;
+    column-gap:calc(var(--sp) * .8);align-items:start}
+  .post-list article[data-thumb=side] > *{grid-column:1}
+  .post-list article[data-thumb=side] .card-thumb{grid-column:2;grid-row:1 / span 2;float:none;
+    width:72px;margin:.2rem 0 0}
+  .post-list article[data-thumb=side] > :is(h2,h3) + p{grid-column:1 / -1}
 }
 
 /* --- the author box ------------------------------------------------------------

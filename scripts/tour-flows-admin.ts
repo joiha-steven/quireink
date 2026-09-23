@@ -9,6 +9,7 @@ import type { Tour } from './tour'
 import { registerEditorFlows } from './tour-flows-editor'
 import { registerTrashFromEditorFlows, registerBulkBarFlows } from './tour-flows-bin'
 import { registerDrawerFlows } from './tour-flows-terms'
+import { registerEdgeFlows } from './tour-flows-edges'
 import { registerSettingsFlows } from './tour-flows-settings'
 import { registerHomeFlows } from './tour-flows-home'
 import { registerAutosaveFlows, registerKeyFlows, registerPaneFlows } from './tour-flows-pane'
@@ -180,6 +181,7 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   registerTrashFromEditorFlows({ flow, expect, atWidth })
   registerBulkBarFlows({ flow, expect, atWidth })
   registerDrawerFlows({ flow, expect, atWidth })
+  registerEdgeFlows({ flow, expect, atWidth })
 
   // The home screen and the rail (ADR 0024 step 6), likewise.
   registerHomeFlows({ flow, expect, atWidth })

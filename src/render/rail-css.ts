@@ -45,8 +45,13 @@ const GUTTER =
   // visibility:visible undoes the closed-drawer rule in rail.css.ts: in the gutter the rail is
   // always open, and without this the promoted rail would be invisible above the breakpoint.
   'height:calc(100% - var(--rail-top));padding:0;background:none;border:0;overflow:visible;transform:none;display:block;visibility:visible'
+// ⚠️ TWO CEILINGS, and the second is the one a short page needs. The rail is as tall as the
+// column beside it; the viewport is not the limit on a tag page holding one post. Capped by the
+// viewport alone, the index ran on past the column and the footer landed in the middle of the
+// tag list (measured 2026-09-23 at 1440×900 on a one-post tag page). `100%` is the rail's own
+// height, which is definite because the rail is absolutely placed.
 const INNER =
-  '.rail-inner{max-height:calc(100dvh - 2.5rem - 1.5rem);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}'
+  '.rail-inner{max-height:min(calc(100dvh - 2.5rem - 1.5rem),100%);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}'
 
 // Single left-gutter rail (post ToC + the default). Text ranged RIGHT toward the column;
 // the freed right gutter lets a "large" image nose right by one rail width.

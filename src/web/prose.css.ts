@@ -209,12 +209,14 @@ ${LISTS_INK_CSS}
    there is nothing to continue from. */
 .book-text .prose p{margin-top:.65em;text-indent:1.6em}
 .book-text .prose > p:first-child{text-indent:0}
-.book-text .prose :is(blockquote,figure,pre,ul,ol,hr,table,.table-scroll,.gallery,.video-embed) + p{
+.book-text .prose :is(blockquote,figure,pre,ul,ol,hr,table,.table-scroll,.gallery,.video-embed,.callout) + p{
   text-indent:0;margin-top:1.4em}
 /* A heading keeps the tighter lead the rhythm rules give it: restating 1.4em here would
    undo, in book mode only, the one thing that binds a heading to its own section. */
 .book-text .prose :is(h1,h2,h3,h4,h5) + p{text-indent:0}
-.book-text .prose li p,.book-text .prose blockquote p{text-indent:0}
+/* A callout is a box, not a continuation: its label and its first line were indented 1.6em
+   while the lines after sat flush, which read as a layout fault (found 2026-09-23). */
+.book-text .prose li p,.book-text .prose blockquote p,.book-text .prose .callout p{text-indent:0}
 @media (min-width:600px){
   .book-text .prose p,.book-text .prose li{text-align:justify;hyphens:auto;
     hyphenate-limit-chars:6 3 3;

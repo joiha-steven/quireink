@@ -26,8 +26,8 @@ export const BOOK_TEXT_CSS = `
    57-character justified measure it was saying it under its breath. Two ems is the top of
    the range a printed book uses and about four characters here. */
 .book-flow.prose p{text-indent:2em}
-.book-flow.prose :is(h1,h2,h3,h4,h5,blockquote,figure,pre,ul,ol,hr,table,.table-scroll,.gallery,.video-embed) + p{text-indent:0}
-.book-flow.prose li p,.book-flow.prose blockquote p{text-indent:0}
+.book-flow.prose :is(h1,h2,h3,h4,h5,blockquote,figure,pre,ul,ol,hr,table,.table-scroll,.gallery,.video-embed,.callout) + p{text-indent:0}
+.book-flow.prose li p,.book-flow.prose blockquote p,.book-flow.prose .callout p{text-indent:0}
 @media (min-width:600px){
   /* The viewport, not the column: below this the overlay is one narrow page and justifying
      it opens rivers no hyphen can close. The limits are the article's own, and their
