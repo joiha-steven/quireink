@@ -23,7 +23,7 @@
 import type { SiteLang } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { formatCount } from '@/i18n/format'
+import { dateLocale, formatCount } from '@/i18n/format'
 import { CONTROL_SM, ICON_KEY, TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
 
 import { emptyState, icon, lamp, selectionBar, tabs, tick } from '@/web/admin/kit'
@@ -32,12 +32,21 @@ import { numBand } from '@/web/admin/kit-figures'
 // show, and it reads the same constant so the two cannot disagree about what a page is.
 import { SUBSCRIBERS_PER_PAGE as PER_PAGE } from '@/admin-shared/analytics'
 import type { subscribersView } from '@/web/admin/views-news'
+import { formatDateShort } from '@/admin-shared/when'
 
 type People = Awaited<ReturnType<typeof subscribersView>>
 type Row = People['subscribers'][number]
 
 
-const shortDate = (iso?: string): string => (iso ? iso.slice(0, 10) : '—')
+const shortDate = (iso?: string): string => (iso ? formatDateShort(iso) : '—')
+
+/**
+ * A status word as a HEADING — a tab or a figure's label — beside "All" and "Subscribers".
+ * The strings are lower case because their first job is the badge inside a row, where a
+ * capital reads as shouting; standing alone at the top of a column they read as a typo.
+ */
+const titled = (word: string, lang: SiteLang): string =>
+  word.charAt(0).toLocaleUpperCase(dateLocale(lang)) + word.slice(1)
 
 /**
  * Confirmed is the only state that is DONE. Pending is waiting on the reader and unsubscribed
@@ -60,15 +69,15 @@ export function peoplePanel(
   }
 
   const band = numBand([
-    { n: formatCount(counts.confirmed, lang), label: t.nlConfirmed },
+    { n: formatCount(counts.confirmed, lang), label: titled(t.nlConfirmed, lang) },
     {
       n: formatCount(counts.pending, lang),
       // The pen's own mark in front of it, the same one the write list puts against an
       // unfinished piece: pending is not a fault, it is something still in motion.
       labelHtml: `<span aria-hidden="true" class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-[var(--pen-edge)] align-middle"></span>`
-        + escapeHtml(t.nlPending),
+        + escapeHtml(titled(t.nlPending, lang)),
     },
-    { n: formatCount(counts.unsubscribed, lang), label: t.nlUnsub },
+    { n: formatCount(counts.unsubscribed, lang), label: titled(t.nlUnsub, lang) },
   ])
 
   if (subscribers.length === 0) {
@@ -148,9 +157,9 @@ export function peoplePanel(
     + tabs({
       items: [
         { key: 'all', label: t.filterAll },
-        { key: 'confirmed', label: t.nlConfirmed },
-        { key: 'pending', label: t.nlPending },
-        { key: 'unsubscribed', label: t.nlUnsub },
+        { key: 'confirmed', label: titled(t.nlConfirmed, lang) },
+        { key: 'pending', label: titled(t.nlPending, lang) },
+        { key: 'unsubscribed', label: titled(t.nlUnsub, lang) },
       ],
       value: 'all',
       attrs: 'data-sub-scope',

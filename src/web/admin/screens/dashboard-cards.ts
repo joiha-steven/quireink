@@ -176,6 +176,22 @@ function sourcesCard(t: AdminStrings, lang: SiteLang, sources: DashboardData['so
 }
 
 /**
+ * The same thing done again and again is ONE line with a count. Six tiles of "Changed settings:
+ * language" read as a feed that had stuck (seen 2026-09-23); the newest of a run stands for it.
+ * Only neighbours fold: a thing done, then something else, then the first again is three lines,
+ * because that is what happened.
+ */
+function runs(entries: ActivityEntry[]): { e: ActivityEntry; times: number }[] {
+  const out: { e: ActivityEntry; times: number }[] = []
+  for (const e of entries) {
+    const last = out[out.length - 1]
+    if (last && last.e.action === e.action && last.e.detail === e.detail) last.times += 1
+    else out.push({ e, times: 1 })
+  }
+  return out
+}
+
+/**
  * The recent-activity card: a FEED rather than a sparse table.
  *
  * ONE clock for the whole list, read once: eight rows each asking the time can straddle a
@@ -185,9 +201,9 @@ function activityCard(t: AdminStrings, lang: SiteLang, entries: ActivityEntry[],
   const now = Date.now()
   const body = !enabled || entries.length === 0
     ? `<p class="${QUIET}">${escapeHtml(t.logEmpty)}</p>`
-    : `<ul class="${FEED_LIST}">` + entries.slice(0, 10).map((e) => {
+    : `<ul class="${FEED_LIST}">` + runs(entries).slice(0, 10).map(({ e, times }) => {
       const title = `${formatDateTimeShort(e.at)} · ${e.action}${e.detail ? ` — ${e.detail}` : ''}`
-      const when = ago(e.at, now, lang) || formatDateTimeShort(e.at)
+      const when = (ago(e.at, now, lang) || formatDateTimeShort(e.at)) + (times > 1 ? ` · ×${times}` : '')
       return `<li class="${FEED_ROW}" title="${escapeAttr(title)}">`
         + `<span class="${FEED_MARK} ${inkFor(e.action)}">`
         + `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"`

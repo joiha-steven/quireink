@@ -99,7 +99,9 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
   const flags = [setup.named, setup.published, setup.styled, setup.mail, setup.readers]
   const finished = flags.filter(Boolean).length
   if (finished === flags.length) return ''
-  const steps = `<ol class="grid gap-x-6 gap-y-4 sm:grid-cols-2">`
+  // `steps-down`: two columns that read DOWN, 1–3 then 4–5, so the order the steps are meant to
+  // be taken in is the order the eye meets them. Row by row, a half-done list read 1, ✓, ✓, 4, ✓.
+  const steps = `<ol class="steps-down grid gap-x-6 gap-y-4 sm:grid-cols-2">`
     + firstRunSteps(t).map((s, i) => `<li class="flex gap-3">`
       + (flags[i]
         // A DONE step trades its number for a tick and takes the pen: the number was the thing
@@ -203,11 +205,12 @@ function systemLine(t: AdminStrings, settings: SiteSettings, d: Awaited<ReturnTy
     system.os,
     `${t.sysStartedPrefix} ${sinceStart(system.startedAt, Date.now(), settings.language)}`,
   ].filter(Boolean).join(' · ')
-  return `<div class="flex flex-wrap items-center justify-between gap-3 px-1 ${META_ON_CANVAS}"><span>`
-    // Desktop-only at rest — on a phone the four facts after it are what somebody is standing
-    // there for — but an install that is BEHIND shows at every width.
-    + `<span class="${behind ? 'inline' : 'hidden sm:inline'}">${build} · </span>`
-    + `${escapeHtml(facts)}`
+  // THE MACHINE IS IN THE TOOLTIP, since 2026-09-23. "Bun 1.3.14 · SQLite 3.54.0 · Darwin 27.2
+  // (arm64)" at the foot of the first screen a blog owner sees read as a developer console; the
+  // version and whether it is current are the two facts an owner acts on, and the rest is still
+  // one hover away for whoever is helping them. A database that is DOWN still shows in words.
+  return `<div class="flex flex-wrap items-center justify-between gap-3 px-1 ${META_ON_CANVAS}"><span title="${escapeAttr(facts)}">`
+    + build
     + (system.dbReachable ? '' : `<span class="ml-1.5 font-medium text-[var(--pen-red)]">· offline</span>`)
     + `</span>`
     + (system.siteHref ? `<a href="${escapeAttr(system.siteHref)}" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-900 dark:hover:text-white">${escapeHtml(t.viewSite)} ↗</a>` : '')

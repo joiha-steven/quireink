@@ -56,10 +56,13 @@ describe('the trend arrow', () => {
     expect(trendOf(1005, 1000)).toEqual({ up: true, label: '1%' })
   })
 
-  it('caps rather than printing a four-digit percentage', () => {
-    expect(trendOf(12_584, 100)).toEqual({ up: true, label: '>999%' })
-    expect(trendOf(1_099, 100)).toEqual({ up: true, label: '999%' })
-    expect(trendOf(1_100, 100)).toEqual({ up: true, label: '>999%' })
+  // It capped at ">999%" until 2026-09-23, which read as a broken counter. From three times up a
+  // rise is said the way anybody says it.
+  it('says a large rise as a multiple, never a four-digit percentage', () => {
+    expect(trendOf(299, 100)).toEqual({ up: true, label: '199%' })
+    expect(trendOf(300, 100)).toEqual({ up: true, label: '×3' })
+    expect(trendOf(450, 100)).toEqual({ up: true, label: '×4.5' })
+    expect(trendOf(12_584, 100)).toEqual({ up: true, label: '×126' })
   })
 
   // A fall can never pass -100%, so the cap is a one-sided rule and the sign is carried by

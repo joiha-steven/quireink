@@ -24,6 +24,7 @@ import { NOTE_TEXT, SETTING_LABEL } from '@/admin-shared/scale'
 import { buttonClass } from '@/admin-shared/kit'
 import { card } from '@/web/admin/kit-figures'
 import type { newsletterView } from '@/web/admin/views-news'
+import { formatDateShort } from '@/admin-shared/when'
 
 type Letter = Awaited<ReturnType<typeof newsletterView>>
 type Post = Letter['posts'][number]
@@ -44,7 +45,7 @@ function pick(t: AdminStrings, p: Post, first: boolean): string {
     + `<span class="min-w-0 flex-1">`
     + `<span class="block truncate text-sm text-neutral-800 dark:text-neutral-100">${escapeHtml(p.title)}</span>`
     + `<span class="mt-0.5 block text-xs tabular-nums text-neutral-500 dark:text-neutral-400">`
-    + `${escapeHtml(p.date.slice(0, 10))}${done ? ` · ${escapeHtml(t.nlAlreadySentShort)}` : ''}</span>`
+    + `${escapeHtml(formatDateShort(p.date))}${done ? ` · ${escapeHtml(t.nlAlreadySentShort)}` : ''}</span>`
     + `</span></label>`
 }
 

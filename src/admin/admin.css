@@ -1586,3 +1586,9 @@ tr[data-piece][data-last] {
 @media (min-width: 1280px) {
   [data-write-fit='alone'] { width: clamp(20rem, 24vw, 28rem); }
 }
+
+/* A short numbered list in two columns that reads DOWN each column, not across — the order of
+   the steps is the order the eye meets them. Rows are the half of the list, rounded up. */
+@media (min-width: 640px) {
+  .steps-down { grid-auto-flow: column; grid-template-rows: repeat(3, auto); }
+}

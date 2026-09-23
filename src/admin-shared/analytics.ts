@@ -44,7 +44,12 @@ export function trendOf(cur: number, prev?: number): Trend | null {
   if (prev == null || prev === 0) return null
   const pct = Math.round(((cur - prev) / prev) * 100)
   if (pct === 0) return null
-  return { up: pct > 0, label: pct > 999 ? '>999%' : `${Math.abs(pct)}%` }
+  // Three times or more is said as a MULTIPLE. From a quiet week to a busy one the percentage ran
+  // into four figures and was clipped to ">999%", which reads as a broken counter; "×15" is the
+  // same fact in the form anybody says it.
+  const ratio = cur / prev
+  if (ratio >= 3) return { up: true, label: `×${ratio < 10 ? ratio.toFixed(1).replace(/\.0$/, '') : Math.round(ratio)}` }
+  return { up: pct > 0, label: `${Math.abs(pct)}%` }
 }
 
 /**

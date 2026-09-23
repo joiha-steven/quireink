@@ -140,6 +140,23 @@ export function formatDateTimeShort(at: string | number): string {
 }
 
 /**
+ * The date half of `formatDateTimeShort`, for the lines that carry no time: "19/9/26".
+ *
+ * ONE SHAPE FOR A DATE ACROSS THE ADMIN. The newsletter printed "2026-09-19" and the Analytics
+ * axis "2026-08-25" beside tables printing "23/9/26 - 11:42" — four formats on as many screens
+ * (counted 2026-09-23). A calendar DAY (`2026-09-19`) is read as that day wherever the reader
+ * is, never shifted by a timezone; a MONTH (`2026-09`) comes out as "9/26". Anything else is
+ * returned as it came, which is the honest answer to a shape this does not know.
+ */
+export function formatDateShort(at: string): string {
+  const day = /^(\d{4})-(\d{2})-(\d{2})/.exec(at)
+  if (day) return `${Number(day[3])}/${Number(day[2])}/${day[1]!.slice(-2)}`
+  const month = /^(\d{4})-(\d{2})$/.exec(at)
+  if (month) return `${Number(month[2])}/${month[1]!.slice(-2)}`
+  return at
+}
+
+/**
  * An ISO time as `HH:mm`, on the reader's own clock.
  *
  * The autosave line's clock. Here rather than in `utils.ts` because the writing sheet's island

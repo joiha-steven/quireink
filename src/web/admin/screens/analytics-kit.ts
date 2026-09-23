@@ -19,6 +19,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount } from '@/i18n/format'
 import { CARD } from '@/admin-shared/kit'
 import { trendOf } from '@/admin-shared/analytics'
+import { formatDateShort } from '@/admin-shared/when'
 
 /** The trend arrow that sits inside a figure. Empty when an arrow would be a lie — see `trendOf`. */
 export function trendMark(cur: number, prev?: number): string {
@@ -128,8 +129,8 @@ export function trendChart({ points, peakLabel, viewsLabel, visitorsLabel, parti
 
   const ends = n > 1 && drawn[0] && drawn[n - 1]
     ? `<div class="mt-1.5 flex justify-between text-xs text-neutral-500 dark:text-neutral-400">`
-      + `<span class="tabular-nums">${escapeHtml(drawn[0].day)}</span>`
-      + `<span class="tabular-nums">${escapeHtml(drawn[n - 1].day)}</span></div>`
+      + `<span class="tabular-nums">${escapeHtml(formatDateShort(drawn[0].day))}</span>`
+      + `<span class="tabular-nums">${escapeHtml(formatDateShort(drawn[n - 1].day))}</span></div>`
     : ''
 
   return `<div class="w-full">`
