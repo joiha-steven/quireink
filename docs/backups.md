@@ -13,7 +13,7 @@ my writing somewhere else" and is [its own section below](#the-markdown-export-n
 | **Off-server, ops script** | R2, hourly + daily tiers | the same, for a fleet running its own shipping | [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) |
 
 All four take the same `VACUUM INTO` snapshot of both databases plus the uploads tree. They
-differ only in where the file ends up and who decides when — and, since 2.2.13, in whether it
+differ only in where the file ends up and who decides when — and, since 2.2.14, in whether it
 is [sealed](#encryption) on the way out, which the first three inherit from one switch and the
 ops script takes as a variable.
 
@@ -95,14 +95,15 @@ not know about each other; running both against one bucket is harmless but point
 | `uploads/` | `rclone sync` with `--backup-dir` | A deleted or overwritten file stays recoverable for 7 days instead of vanishing on the next run |
 
 **An upgrade takes one of its own, and it is not one of these four.** A boot with a pending
-migration writes `backups/pre-<step>-<stamp>-quire.db` before it changes anything, keeps the
+migration writes `backups/pre-<step>-<stamp>-quire.db` before it migrates anything, keeps the
 two most recent, and refuses to migrate if it cannot ([ADR 0063](decisions/0063-an-upgrade-copies-first-and-gives-the-space-back.md)).
-It is a bare `VACUUM INTO` of the database — no uploads, no archive, no encryption — so it is
+It empties both render caches in the live database first, then takes a bare `VACUUM INTO` —
+no uploads, no archive, no encryption — so it is
 a floor under an upgrade rather than a backup, and it does not replace any of the four below.
 
 **Both render caches are emptied out of the copy, not backed up** (2026-09-13;
 `body_cache` joined `render_cache` there with ADR 0062). Each is a pure function of the
-Markdown beside it, keyed by a hash of that Markdown, so a restore rebuilds them on the first
+Markdown beside it, checked against a hash of that Markdown, so a restore rebuilds them on the first
 read of each post. What it cost to carry was not small: measured on the
 author's blog, `quire.db` was 538 MB of which the cache was 530.3 MB, so **98.5% of every
 archive was a derived artifact** and the archives had grown 185 → 229 → 253 → 263 MB over
@@ -172,9 +173,17 @@ out there rather than pointed at in code.
 ### The ops script
 
 [`quire-backup.sh`](../scripts/ops/quire-backup.sh) takes its recipients from
-`QUIRE_BACKUP_TO`, one or more public keys separated by spaces, exactly as the admin printed
-them. Unset means it ships in the clear, as it always has. Only public halves belong in that
-variable: the box can then seal an archive and cannot open one.
+`QUIRE_BACKUP_TO`. Set it to **`blog`** and the script seals to the keys this blog's Backups
+card set up, reading their public halves and the passphrase's salt from the database on every
+run, so either key opens the archive exactly as it opens one the admin wrote. That is the form
+to use: the card shows the identity once and prints no public key, so there is nothing to copy.
+Unset means it ships in the clear, as it always has. Only public halves are ever read: the box
+can seal an archive and cannot open one.
+
+It also takes one or more public keys, space separated, for a recipient the blog does not hold.
+A passphrase key needs its salt beside it in `QUIRE_BACKUP_SALT`, or the passphrase cannot
+open the archive and only the identity can. Until 2026-09-23 the script passed no salt at all,
+so an archive it sealed opened with the identity alone.
 
 Or `QUIRE_BACKUP_AGE_TO`, a file holding one [`age`](https://age-encryption.org) recipient,
 for an operator whose private key already lives with `age`. The archive is then
@@ -245,7 +254,8 @@ crontab, or in a systemd `EnvironmentFile` — whichever the machine already use
 | `QUIRE_BUN` | `$HOME/.bun/bin/bun` |
 | `QUIRE_BACKUP_REMOTE` | **none — the run stops without it.** An rclone remote and a path, e.g. `r2:my-bucket/my-blog` |
 | `QUIRE_BACKUP_STAGE` / `_LOG` / `_LOCK` | `/var/tmp/quire-backup`, `/var/log/quire-backup.log`, `/var/lock/quire-backup.lock` |
-| `QUIRE_BACKUP_TO` | empty — the archive ships in the clear. Public keys from the Backups card, space separated |
+| `QUIRE_BACKUP_TO` | empty — the archive ships in the clear. `blog` seals to this blog's own keys; or public keys, space separated |
+| `QUIRE_BACKUP_SALT` | empty. The passphrase key's salt, needed only when `QUIRE_BACKUP_TO` lists keys by hand |
 | `QUIRE_BACKUP_AGE_TO` | empty. A file holding one `age` recipient; the alternative to the line above, never both |
 | `QUIRE_APP` | `/home/quire/app` — the checkout, needed only to reach `scripts/backup-decrypt.ts` when `QUIRE_BACKUP_TO` is set |
 | `QUIRE_ALERT_HOOK_FILE` | `/etc/quire/alert-webhook` — a file holding one URL. Absent, a failure is logged and not announced |

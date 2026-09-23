@@ -27,8 +27,8 @@ sideways by 47px. `min-w-0` on the title span was already there and could not he
 the FLEX item shrink, and it was shrinking; the TRACK was not. Same failure as the analytics
 table, one level up. `bun run tour` now checks the dashboard at 375px (`atWidth`).
 
-**Two gaps, and there is no third.** `SECTION_GAP` (28px) separates the bands of a page;
-`CARD_GAP` / `CARD_STACK` (20px) separates two cards side by side or stacked. One Overview
+**Two gaps, and there is no third.** `SECTION_GAP` (40px) separates the bands of a page;
+`CARD_GAP` (24px) separates two cards side by side or stacked. One Overview
 column measured 12, 16, 20 and 28 in a single scroll, which reads as a page assembled from
 four screens. A component that wants a third number wants one of these two.
 
@@ -136,6 +136,6 @@ failed:
   full-width fields already end. Measured on the Blog tab at 1440 on 2026-09-12, before the
   rule held: 294, 502 and 753 in six rows of one card, and 137px of nothing between a 55px
   label and the box it belonged to.
-- **One control style per kind.** `ui/Tick` is the box — a real `input[type=checkbox]` under
+- **One control style per kind.** `tick()` (`web/admin/kit.ts`) is the box — a real `input[type=checkbox]` under
   `appearance-none`, drawn, since `accent-` colours a fill and leaves the platform's border.
 

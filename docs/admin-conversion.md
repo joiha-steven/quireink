@@ -63,7 +63,8 @@ through `:has(> figure.img-grid)` and six siblings. `:has()` runs on Safari and 
 well: WebKit has no de-duplication cache for it, and thirteen of these rules took a product page
 from 0.75s to 4.19s and crashed the render process outright on another site. Chrome was unaffected
 throughout, which is what makes it easy to ship. The figure is the node view's own element now
-and the rules key on it directly. **There is no `:has()` left in the admin.**
+and the rules key on it directly. **No `:has()` reaches a figure any more**; the one left in the
+admin is `.paper-cols:has(> :only-child)`, which looks one level down.
 
 **Two differences from the outgoing build are deliberate:**
 
@@ -225,8 +226,8 @@ the build the owner was running.
 The fix was one word of markup. What went with it, and had to be taken back out, was a CSS rule
 written on a belief this repository states twice in `admin.css`: that "a `hidden` attribute
 against a display utility is a tie the utility wins, because preflight writes
-`[hidden]{display:none}` first". **It is not true in this build.** `utilities.css` line 248 is
-the only `!important` in the entire sheet and it is on `[hidden]`, so the attribute beats `flex`,
+`[hidden]{display:none}` first". **It is not true in this build.** `utilities.css` line 255 is
+the only `!important` on a `display` in the entire sheet and it is on `[hidden]`, so the attribute beats `flex`,
 `contents` and `inline-block` outright — which is exactly why every drawn-and-hidden part of this
 sheet works with no rule at all. Both comments now say so, with the line number, because a belief
 that is wrong and written down twice is how a third copy gets written.

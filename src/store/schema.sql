@@ -435,9 +435,10 @@ create table if not exists redirects (
 -- is simply a different key and stale rows are inert. A read miss re-renders and stores, so
 -- a cold database renders correctly and merely slower. Not emptied by `clearCache()`.
 --
--- Two producers:
---   • Shiki highlighting, keyed by lang + theme pair + code.
---   • The rendered post BODY, keyed by build commit + media facts + markdown.
+-- One producer since migration 019: Shiki highlighting, keyed by lang + theme pair + code.
+-- The rendered post BODY was the second, keyed by build commit + media facts + markdown; it
+-- moved to `body_cache` below, one row per piece, because keyed only by that hash a new render
+-- had no old row to replace and every deploy left the last one behind (ADR 0062).
 --
 -- This comment used to say the body was deliberately NOT cached, because it "would have to
 -- key on media variants, theme and locale". Two thirds of that was wrong — the theme is CSS

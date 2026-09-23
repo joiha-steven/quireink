@@ -45,7 +45,7 @@ between a line here and the running software is either a bug or an unrecorded `â
 
 ## 11. Editor
 
-- Markdown with a toolbar; `md/from-editor.ts` serialises everything (ADR 0052)
+- Markdown with a toolbar; `md/from-editor.ts` and `md/to-markdown.ts` serialise everything (ADR 0052)
 - StarterKit, underline, inline code, bullet / numbered / task lists, quote, code block, hr,
   link, captioned image, tables, video
 - `âš ` Local autosave to `localStorage` every 8s while dirty, **never to the server**, so

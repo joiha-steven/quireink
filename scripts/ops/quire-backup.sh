@@ -39,10 +39,16 @@ UPLOADS="${QUIRE_UPLOADS:-/var/lib/quire/uploads}"
 BUN="${QUIRE_BUN:-$HOME/.bun/bin/bun}"
 # Where the checkout is, needed only to reach `scripts/backup-decrypt.ts` when sealing.
 APP="${QUIRE_APP:-/home/quire/app}"
-# One or more PUBLIC keys, space separated, as the Backups card printed them. Empty means the
-# archive goes up in the clear, which is what this script has always done. Only public halves
-# belong here: this box can then lock an archive and cannot open one (ADR 0060).
+# `blog` to seal to the keys this blog's own Backups card set up, read from its database on
+# every run: the identity's public half, the passphrase's public half and the passphrase's salt.
+# That is the form to use; the card shows the identity once and prints no public key, so there
+# is nothing to copy by hand. OR one or more public keys, space separated, with
+# QUIRE_BACKUP_SALT set when one of them is a passphrase key (without the salt a passphrase
+# cannot open the archive: only the identity can). Empty means the archive goes up in the
+# clear, which is what this script has always done. Only public halves are ever read: this box
+# can lock an archive and cannot open one (ADR 0060).
 BACKUP_TO="${QUIRE_BACKUP_TO:-}"
+BACKUP_SALT="${QUIRE_BACKUP_SALT:-}"
 # OR a file holding one `age` recipient (`age1…`), for an operator whose private key already
 # lives with `age` and who would rather not hold a second kind. The box keeps only the public
 # half here too. Setting both is refused: an archive sealed to one of two schemes, depending on
@@ -110,9 +116,13 @@ done
 
 # SEALED, WHEN THE OPERATOR HAS SAID SO (ADR 0060).
 #
-# QUIRE_BACKUP_TO holds one or more public keys, space separated, exactly as the admin's
-# Backups card printed them. Only PUBLIC halves are ever named here: this script can lock an
-# archive and cannot open one, which is the property worth having on a box running cron.
+# QUIRE_BACKUP_TO is `blog` (the keys the Backups card set up, read from the database) or a
+# list of public keys. Only PUBLIC halves are ever named here: this script can lock an archive
+# and cannot open one, which is the property worth having on a box running cron.
+#
+# ⚠️ THE SALT TRAVELS WITH THE PASSPHRASE KEY. Until 2026-09-23 this passed no `--salt`, so the
+# header recorded an empty one and the passphrase could not open what the script sealed: only
+# the identity could, which is half of the promise "either key opens any archive".
 #
 # A PIPE, not a second file. The tar is the whole blob store and this runs on the machine that
 # is already short of disk; staging a plaintext copy first would also leave one lying in $STAGE
@@ -135,7 +145,16 @@ elif [ -n "$BACKUP_TO" ]; then
   ARCHIVE="$STAGE/quire-${TAG}.tar.gz.enc"
   REMOTE_NAME="quire-${TAG}.tar.gz.enc"
   # shellcheck disable=SC2086
-  TO=""; for k in $BACKUP_TO; do TO="$TO --to $k"; done
+  KEYS="$BACKUP_TO"
+  if [ "$BACKUP_TO" = "blog" ]; then
+    # Read from the live database with a read-only handle: three strings out of the settings row.
+    KEYS="$(DB="$DATA/quire.db" "$BUN" -e 'import{Database}from"bun:sqlite";const d=new Database(process.env.DB,{readonly:true});const r=d.query("select data from settings where id=1").get();const b=(r?JSON.parse(r.data):{}).backups??{};console.log([b.pubKey,b.passPub].filter(Boolean).join(" "));console.error(b.passSalt??"")' 2>"$TMP.salt")" \
+      || fail "read the blog's backup keys"
+    BACKUP_SALT="$(cat "$TMP.salt")"; rm -f "$TMP.salt"
+    [ -n "$KEYS" ] || fail "QUIRE_BACKUP_TO=blog, and this blog has no backup keys yet: set them up in Settings, Backups"
+  fi
+  TO=""; for k in $KEYS; do TO="$TO --to $k"; done
+  [ -n "$BACKUP_SALT" ] && TO="$TO --salt $BACKUP_SALT"
   # shellcheck disable=SC2086
   tar -C "$TMP" -cz . 2>>"$LOG" \
     | "$BUN" "$APP/scripts/backup-decrypt.ts" --encrypt $TO > "$ARCHIVE" 2>>"$LOG" \

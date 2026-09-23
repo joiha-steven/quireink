@@ -61,7 +61,7 @@ read from disk at runtime, so they have to exist before the service starts.
 ## 3. Configure
 
 Environment only, no config file. The full list is in the
-[environment page](./environment.md); the six that matter:
+[environment page](./environment.md); the seven that matter:
 
 ```ini
 DATA_DIR=/var/lib/quire/data
@@ -283,9 +283,9 @@ shows does not say so.
 `journalctl -u quire | grep -A4 'no owner'`, or `docker logs quire` for a container. Open it
 and the rest is a browser: the language first (so the screens after it are in it), then
 username, email, password, then the QR code for an authenticator and the ten recovery codes,
-once. **Store the recovery codes somewhere that is not the machine.** Three short questions
+once. **Store the recovery codes somewhere that is not the machine.** Four short questions
 follow — what the site is called, where it lives and what clock it reads; the front page;
-and whether readers get a pen — and then you are in the editor.
+whether readers get a pen; and the look — and then you are in the editor.
 
 The token lives in memory, so a restart mints a new one and the old line stops being a
 secret. Reading it proves you have the machine, which is why setup is not simply a page
@@ -337,7 +337,7 @@ serving the version without that post in it, **while the admin shows it publishe
 Two minutes after it starts, the log says so once:
 
 ```
-clock: first sweep done (published 0, variants 0, sessions 3, cached rows 0)
+clock: first sweep done (published 0, variants 0, sessions 3, log rows 0, reader rows 0, mention rows 0, cached rows 0)
 ```
 
 That line is how you know the clock is running rather than merely un-disabled. It is printed

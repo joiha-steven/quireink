@@ -40,7 +40,7 @@ body cache warm, and the full 74-page warm sweep **3,948 ms → 203 ms**.
   hand-maintained version constant would have been free and would eventually be forgotten.
 - **It is never load-bearing.** A read that throws returns null and the page renders the
   slow way. Tested with the table dropped.
-- **`clearCache()` does not touch it.** It is content-addressed; a stale row is inert.
+- **`clearCache()` does not touch it.** Its hash decides hit from miss; a stale row is inert.
 
 ### The budget
 
@@ -189,8 +189,9 @@ button all call it.
 ## Compression
 
 `Bun.serve` sends exactly what a handler returns and nothing set `content-encoding`, so the
-stylesheet, every page and every feed left the origin raw. `web/compress.ts` gzips text
-responses over 1 KB when the client asked, and sets `Vary: Accept-Encoding`.
+stylesheet, every page and every feed left the origin raw. `web/compress.ts` compresses text
+responses over 1 KB when the client asked, and sets `Vary: Accept-Encoding`. Nothing under
+`/api/` is compressed except the search index (`/api/search/index`).
 
 Ratio, not size, is the point: **61 KB → 19.5 KB** when it shipped, and `site.css` is about
 **10 KB compressed** today, after the minifier and ADR 0027 took the pen's ink out of it. On the hashed immutable assets a reader sees this DIRECTLY, because a CDN passes
@@ -282,7 +283,8 @@ And **q11 stopped applying above 192 KB**, which is a
 judgement about who pays: q11 buys 12.5% over q5 on that bundle and 14.2% on the admin sheet,
 and it spends most of a CPU second on a machine that may only have one, for an artefact one
 person downloads once. 192 KB sits above every public asset (the largest is a pen sheet at
-138,375 bytes raw) and below every admin chunk. It is a gap, not a knife-edge, and
+138,375 bytes raw) and below the admin's two large files, the editor's `sheet` island and
+`admin-ink.css`; `admin.css`, 136 KB since the pen left it, now takes q11. It is a gap, not a knife-edge, and
 `qualityFor` is exported so a test pins both ends of it.
 
 The map holds the PROMISE rather than the bytes, which the asynchronous compressor made

@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.13`
+`2.2.14`
 
 **Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc. Tên bạn trên đó, không phải tên chúng tôi.
@@ -78,7 +78,7 @@ Nó cũng chạy trên droplet DigitalOcean từ [một file dán vào](./deploy
 | Đọc bài từ chương trình khác | [Content API](./docs/content-api.md) |
 | Biết nó được dựng thế nào, vì sao | [docs/](./docs/README.md) · [các quyết định](./docs/decisions/README.md) |
 
-Một dòng "powered by Quire Ink" nằm cuối footer của blog mới; đó là một dòng bình thường trong Cài đặt → Home & menu, sửa hay xoá đều được. Mỗi ngày một lần blog hỏi xem có bản mới chưa, chỉ gửi phiên bản đang chạy; tắt bằng `UPDATE_CHECK=0` hoặc trong Cài đặt ([toàn bộ nội dung cú gọi](./docs/update-check.md)).
+Một dòng "powered by Quire Ink" nằm cuối footer của blog mới; đó là một dòng bình thường trong Cài đặt → Home & menu, sửa hay xoá đều được. Mỗi ngày một lần blog hỏi xem có bản mới chưa, gửi phiên bản đang chạy cùng vài con số ước lượng thô, không có địa chỉ hay bài viết nào; tắt bằng `UPDATE_CHECK=0` hoặc trong Cài đặt ([toàn bộ nội dung cú gọi](./docs/update-check.md)).
 
 ## Bản dịch
 

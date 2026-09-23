@@ -46,8 +46,8 @@ Stated so a report can say which of these is wrong, which is more useful than a 
 - Every write route is protected by **where it is mounted**, not by a check inside the
   handler, and a static guard (`bun run check:routes`) fails the build if a route escapes
   that group. See `docs/invariants.md`.
-- Every SQL statement is a literal with bound parameters. There is no query string
-  building anywhere in the request path.
+- Every SQL value is a bound parameter. The few statements assembled from a variable take a
+  fixed identifier from a closed set, or a file path the server made itself, never input.
 - Raw HTML in markdown and in comments is escaped, never executed, and `javascript:`,
   `data:` and `vbscript:` hrefs are dropped.
 - Readers' words never drive the assistant unattended: once a conversation has read comments,

@@ -29,17 +29,19 @@
   is injected from `src/render/rail-css.ts` (`singleRailCss` for the layout's default/post ToC rail,
   `listingRailCss` for the two rails — the latter uses higher-specificity `.rail.rail-left|right` so it
   wins without ordering games). Each block self-hides when empty. **Post/page reading views show ONLY the
-  `toc`** in a single left rail (full width; the free right gutter stays for wide images). **Between
+  menu and the `toc`** in a single left rail (full width; the free right gutter stays for wide images). **Between
   60rem and the rail breakpoint the rail is a BAND** under the title (`singleRailCss`): the menu and
   the index as wrapped rows on a hairline, the index folding on its heading (`details`/`summary` in
   `article.ts`, inert everywhere else). Measured at 1024 with the default 672px column the breakpoint
   is 1272, so an iPad on its side had no index and a drawer over the article. Below 60rem the drawer
   opens from the **header menu button** (`rail()` in `assets/js/theme.ts`, mobile only; self-hides
   on pages with no rail) — no separate header dropdown. **The menu is on the header row ONLY where no
-  rail can hold it** — today the composed front page alone (`siteMenu` in `web/chrome.ts` behind
-  `ChromeOptions.menuInHeader`, `.site-menu` from 60rem up). It briefly rendered on every page, which
-  doubled the links on every listing; reverted 2026-08-03. Trade: a desktop ARTICLE has no menu, its
-  rail being the ToC. Below 60rem only the drawer has it. Menu + most-viewed count + featured are edited in
+  rail can hold it** — the composed front page (`siteMenu` in `web/chrome.ts` behind
+  `ChromeOptions.menuInHeader`, `.site-menu` from 60rem up) — and on every page of the newspaper
+  look, whose masthead is where a paper lists its sections (the rail's copy is hidden there). It
+  briefly rendered on every page, which doubled the links on every listing; reverted 2026-08-03.
+  An article's rail leads with the menu above its contents (`menuBlock` in `article.ts`). Below
+  60rem only the drawer has it, except in the newspaper look's sideways-scrolling strip. Menu + most-viewed count + featured are edited in
   **Admin → Settings → Home & menu**; `getViewTotals` (`src/analytics/summary.ts`) reads
   `analytics.db` directly and returns `{}` on any error, so a broken analytics database costs the
   block, not the page.

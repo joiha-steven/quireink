@@ -125,7 +125,9 @@
   cursor is in a table) adds/removes columns + rows or deletes the table. The header row + left
   column are shaded with `--c-rule` (the table's own border colour) as a visual spine — the
   left-column shade is CSS-only (GFM has no header-column), so it never changes the saved Markdown.
-  **GOTCHA:** list items wrap content in `<p>`; `.prose li > p{margin:0}` keeps them tight.
+  **GOTCHA:** list items wrap content in `<p>`; they stay tight because the reset zeroes every
+  margin and `PROSE_CSS` spaces only `.prose > * + *`. A spaced list carries `loose`
+  (`data-loose`, `schema-nodes.ts`) so it SAVES spaced, but no rule draws it: it looks tight here.
 - **Autosave is TWO copies** (`island/lib/sheet-safety.ts`; [admin-editor.md](../admin-editor.md)): unsaved
   edits go to `localStorage` on this device and to `posts.autosave_json` on the server (since
   2026-08-30), on the `autosaveSeconds` tick while dirty. Neither is the published body — only

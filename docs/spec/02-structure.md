@@ -104,7 +104,8 @@ needed:
   200 rows, whichever comes first, in one transaction against `analytics.db`. This is
   Invariant 7 and it is the only deferred write in the system.
 - Long CPU work (image variants via `sharp`, OG rendering via `satori`) must not run on
-  the event loop. Both are already async and offloaded by their libraries; the deferred
+  the event loop. `satori` is async; each image variant is encoded in a child process of
+  its own since [ADR 0061](../decisions/0061-the-image-codec-runs-in-a-child-process.md); the deferred
   `-1024` / `-1600` variant generation keeps its cron sweep.
 
 ## Route mapping

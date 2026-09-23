@@ -72,7 +72,7 @@ that file first; this one only adds what is true here.
   references and callout tags were escaped into `\[^1\]` and `\[!NOTE\]` — which the maths
   extension then claimed, so the reader got an empty formula mid-sentence rather than even the
   literal text. Table column alignment was dropped. Consecutive pictures lost the blank line
-  between them and landed inside one `<p>`. `ReaderSyntax.ts` and `TableMarkdown.ts` hold the
+  between them and landed inside one `<p>`. `md/to-markdown-escape.ts` and `md/from-editor.ts` hold the
   repairs; `editor-corpus.test.ts` holds the contract, by rendering every fixture before and
   after and comparing the HTML.
   ⚠️ **A fixed point is not the contract.** That file's original law — serialize twice, compare
@@ -85,7 +85,7 @@ that file first; this one only adds what is true here.
   would have said ok. Each now carries a BEHAVIOUR it belongs to, both counts are bounded, and
   what it publishes after a save is pinned in `golden/editor/` and compared byte for byte —
   the same shape `src/render/golden.test.ts` uses for its divergences from 1.x.
-- **Keyboard: one table, in `editorKeys.ts`**, read by the handlers AND by the Help screen, so a
+- **Keyboard: one table, in `admin-shared/keys.ts`**, read by the handlers AND by the Help screen, so a
   chord cannot move without the printed sheet following it. The editor's own table is
   [`editor/keymap.ts`](../src/admin/editor/keymap.ts) — every chord it answers, in one place,
   where twenty-one extensions each declared their own until ADR 0054's step 7. What this product
@@ -195,7 +195,7 @@ that file first; this one only adds what is true here.
   a highlight, up and back around a ring), at `motion.penSqueak` — heard only with an
   instrument chosen and the slider above zero, and held at 0.45 of a key because it sits in
   the ear's loudest octave and lasts five times as long.
-- **The writer is dealt the same forty pens the page is** (2026-09-14): the published page
+- **The writer is dealt the same eighty pens the page is** (2026-09-14): the published page
   hashes every gesture's Markdown into `data-pen="0".."79"` and `pen/ink.css.ts` gives each
   variant its own grip and die. The editor wrote no `data-pen` at all — the attribute does not
   appear anywhere in the history of `src/admin` — so every stroke in the writing surface came

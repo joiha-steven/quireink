@@ -11,7 +11,7 @@
 # Plain HTTP against the bare IP is the most a machine with no domain can
 # honestly do. When you point a domain at the droplet, the reverse-proxy
 # section of docs/self-host.md (or docker-compose.caddy.yml) upgrades it to
-# HTTPS, and Settings -> Site moves the address with you.
+# HTTPS, and Settings -> Blog moves the address with you.
 set -euo pipefail
 
 # ── THE ONE LINE WORTH EDITING BEFORE YOU PASTE THIS ──────────────────────────
@@ -82,7 +82,7 @@ when it booted. To give it HTTPS once DNS points here:
   docker compose -f docker-compose.image.yml up -d
 
 The data volumes above are bind mounts, so the blog keeps its posts across that
-swap. Then change the address in Settings -> Site to match.
+swap. Then change the address in Settings -> Blog to match.
 NOTE
 fi
 

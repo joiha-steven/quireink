@@ -38,7 +38,7 @@ browser plumbing is [`scripts/tour.ts`](./scripts/tour.ts).
 
 It then runs [`scripts/restore-check.ts`](./scripts/restore-check.ts), because a browser
 cannot untar an archive or open a SQLite file. The tour proves the backup BUILDS; this opens
-it — `integrity_check` on both databases, no table with fewer rows than before the snapshot,
+it — `integrity_check` on both databases, no table with fewer rows than before the snapshot except the rebuildable ones it skips on purpose,
 every upload byte-identical. A backup nobody has restored is not a backup.
 
 For one page, looked at rather than asserted: [`scripts/drive.ts`](./scripts/drive.ts) and

@@ -15,7 +15,7 @@ INTEGER epoch. Chosen: **INTEGER milliseconds**.
 - Unambiguous. No parsing, no format drift, no accidental local-time storage.
 - Cheap to compare and index, which matters for `analytics_events`.
 - All timezone logic already has to move into application code (see "The six SQL functions"
-  below; this said "five RPCs" until 2026-09-10), so keeping ISO strings for the sake of SQLite's date functions buys nothing.
+  in [01-schema-port.md](01-schema-port.md); this said "five RPCs" until 2026-09-10), so keeping ISO strings for the sake of SQLite's date functions buys nothing.
 
 Cost: hand-inspecting the DB is less pleasant. Mitigated by a `quire db` CLI
 subcommand that renders timestamps for humans. (Never built, as of 2026-09-10: `sqlite3`
@@ -59,7 +59,7 @@ Checked on `bun:sqlite` (Bun 1.3.14, SQLite 3.53.0) before any code was written:
 
 The missing `generate_series` costs nothing, because the design already avoids it: bucket
 boundaries are computed in TypeScript and inserted into a temp table (see "The six SQL
-functions" below). It is recorded here so nobody tries the shorter path and discovers this
+functions" in [01-schema-port.md](01-schema-port.md)). It is recorded here so nobody tries the shorter path and discovers this
 halfway through the analytics port.
 
 ### PRAGMAs (set on every connection)
@@ -122,7 +122,10 @@ Unchanged tables (straight translation, only the type mapping above applies):
 `pages`, `notes` (added 2026-09-09, migration `012-notes` — the notebook, [ADR 0044](../decisions/0044-a-note-is-not-a-post.md): a post's shape less taxonomy, plus `source_url`, `source_title` and `quote` for a clip), `webmentions` (added 2026-09-09, migration `013-webmentions`, [ADR 0046](../decisions/0046-the-notebook-speaks-the-open-standards.md)), `reader_marks` and `reader_keys` (added 2026-09-09, migration `014-reader-marks`, [ADR 0047](../decisions/0047-a-readers-marks-travel-by-a-code.md): a reader's marks per page under an opaque id, and the hashed notebook codes that name a reader), `post_revisions`, `media`, `files`, `settings`, `mcp_tokens` (rebuilt 2026-09-13, migration `015-mcp-admin-scope`, to let `scope` hold `admin` as well: SQLite cannot alter a CHECK constraint), `mcp_clients`,
 `mcp_used_codes`, `backup_state`, `integration_keys`, `subscribers`, `link_cards` (added 2026-09-19, migration `017-link-cards`, [ADR 0058](../decisions/0058-a-link-alone-becomes-a-card.md): one row per URL for what a bookmark card says — `fetched_at` NULL is a row a render noted and the minute tick has not read yet, and `ok = 0` after a fetch is one that was tried and yielded nothing, which renders exactly as an unread row does. Its index is PARTIAL, over the pending rows alone, so the tick's "anything to do?" is empty on a blog with nothing waiting),
 `newsletter_sends`, `activity_log`, `redirects`, `analytics_scroll`,
-`schema_migrations`.
+`schema_migrations`. The rest are described where they are used: `users`, `sessions`,
+`recovery_codes` in [06-auth.md](06-auth.md), `post_terms` and the `*_fts` tables in
+[01-schema-port.md](01-schema-port.md), and the `ap_*` tables, `assistant_chats`,
+`server_secrets` and `update_check` in the comments of `schema.sql` and `migrations.sql`.
 
 `comments` is unchanged apart from `AUTOINCREMENT` (above) and `smallint` becoming
 `INTEGER`.
@@ -140,7 +143,8 @@ read them.** `content` is what the reader is served and only an explicit Save mo
 two hold the in-progress draft so a dead laptop does not cost the morning, and a real save
 clears them. `src/content/autosave.test.ts` asserts both halves.
 
-Two areas needed real design work, and a table was added for a third.
+Three areas needed real design work, now in [01-schema-port.md](01-schema-port.md) §1–3, and
+two tables were added for a fourth.
 
 ---
 
@@ -158,7 +162,8 @@ create table render_cache (
 ```
 
 The key **is** the input, so there is no invalidation problem: a changed code block is a
-different key, and stale rows are inert. A janitor sweeps rows unreferenced for 90 days.
+different key, and stale rows are inert. A janitor sweeps rows older than 30 days, by age
+rather than use, since nothing records a read (`render/render-cache.ts`).
 
 Read path: look up, use it. On a miss, highlight, store, serve. That makes the cache
 self-healing rather than a correctness dependency, so a cold or partially-imported
@@ -208,6 +213,8 @@ create table body_cache (
 Read by slot, compare the key, use the row when it matches; on a miss render and take the
 row. **The hash still decides hit from miss on exactly the inputs it decided on before**, so
 the bytes a reader receives did not change. The table's size is the number of pieces.
+Migration `019-body-cache` created it and emptied `render_cache`, because a body and a
+highlighted block are indistinguishable there; `render_cache` holds highlighting alone now.
 
 Highlighting stays where it is: a code block is shared between pieces, has no slot to belong
 to, is small, and age is the right collector for it.
@@ -231,7 +238,10 @@ Schema and migrations are imported as text (`with { type: 'text' }`) so they com
 the executable, and applied at boot inside a transaction. (There is no executable since
 [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md); the text import
 still means the SQL ships with the source and needs no file path at runtime.) A failed migration aborts
-startup rather than degrading.
+startup rather than degrading. Before a pending step touches an existing database,
+`store/upgrade.ts` empties `render_cache` and `body_cache` and writes a `VACUUM INTO` copy to
+`backups/pre-<step>-<stamp>-<file>` beside it, two kept; if the copy fails, the boot stops
+([ADR 0063](../decisions/0063-an-upgrade-copies-first-and-gives-the-space-back.md)).
 
 **The accepted risk from the frozen tree does not carry over.** There, `schema.sql` was
 hand-maintained and the app never ran it, so drift was possible and review-enforced. Here

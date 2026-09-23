@@ -1,6 +1,6 @@
 # Environment variables
 
-Everything that configures Quire Ink from outside the admin, in one place. These are the only things that live outside the admin. Two matter; the rest have working defaults.
+Everything that configures Quire Ink from outside the admin, in one place. Two matter; the rest have working defaults, and a last group only stands in for keys the admin holds.
 
 | Variable | What it does |
 |---|---|
@@ -8,7 +8,7 @@ Everything that configures Quire Ink from outside the admin, in one place. These
 | `SITE_URL` | Your public address, used in feeds, OG images and email. Left empty, all of them say `http://localhost:3000`, so the site still reads fine and only crawlers and mail clients notice. It is deliberately not guessed from the request |
 
 <details>
-<summary><b>The other seventeen</b> &nbsp;ports, limits, storage, cron, mail, proxying</summary>
+<summary><b>The other eighteen</b> &nbsp;ports, limits, storage, cron, mail, proxying</summary>
 
 | Variable | What it does |
 |---|---|
@@ -29,8 +29,18 @@ Everything that configures Quire Ink from outside the admin, in one place. These
 | `CSP` | A Content-Security-Policy to send on every response. Empty by default, and leave it that way behind the shipped `Caddyfile` or the documented nginx block: both send one already, and a browser enforces the intersection, so a second could only narrow theirs. Set it where neither is in front, such as a NAS proxy, a PaaS, or a Kubernetes ingress |
 | `SMTP_OFF` | Stops this machine sending mail at all: the newsletter, the confirmation, the comment notice. For a staging or development copy of a real blog: copy the `.env`, set this, and nothing reaches a real address. It fails SAFE, so any value other than `0`, `false`, `no` or empty means off. The subscribe form disappears from the reader's page with it, on purpose: a form that can never send its confirmation leaves somebody waiting for an email that was never coming |
 | `TRUST_PROXY` | Set to `1` only when the proxy in front reaches you over a PUBLIC address. Rate limits key on the socket address; `CF-Connecting-IP`/`X-Forwarded-For` are believed automatically from loopback or a private network |
-| `UPDATE_CHECK` | `0` stops the one request this software makes on its own: once a day it asks what the newest release is, and by asking is counted as a blog in use. It sends the version you run and four coarse facts, never your address, posts, readers or an exact number. Also a switch in Settings. [The whole call](./update-check.md) |
+| `UPDATE_CHECK` | `0` stops the one request this software makes on its own: once a day it asks what the newest release is, and by asking is counted as a blog in use. It sends the version you run, a token that changes daily and a few coarse facts, never your address, posts, readers or an exact number. Also a switch in Settings. [The whole call](./update-check.md) |
 
 </details>
+
+**And a fallback for keys the admin normally holds.** Each of these is read only when the
+matching field in the admin is empty, so a key typed into Settings always wins. They exist for
+an install that is configured before anyone signs in, such as a container built from a
+template: mail (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`), the comment
+challenge (`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`), the cache purge
+(`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`, `PURGE_WEBHOOK_URL`), Google sign-in
+(`AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`) and the assistant (`AI_PROVIDER`, `AI_API_KEY`,
+`AI_MODEL`). A value set this way lives in the environment, not in the database, so a backup
+does not carry it.
 
 SMTP, Turnstile and CDN credentials go in **Settings → Comments & mail** and **Server & connections**, and stay on the server. Your posts live in `DATA_DIR` and your uploads folder, never in git.

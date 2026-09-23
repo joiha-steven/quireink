@@ -1,203 +1,13 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-09-23 · Quire Ink 2.2.14
 
-### Fixed: a list mixing bullets and checkboxes stays one list when saved
-
-`- a` followed by `- [ ] b` is one list. Opening and saving it wrote two lists instead, and on a
-spaced list each item lost its paragraph spacing. It is now saved as the one list it was, tight
-or spaced; two lists with something written between them stay two.
-
-### Fixed: a save no longer turns a literal dollar or tilde into maths or strikethrough
-
-Text you had escaped — `\$x\$`, `\~~b~~`, or three tildes at the start of a line after a line
-break — was saved without its backslash, so the next open read it as a formula, a strikethrough
-or a code fence. It is now escaped exactly where it would otherwise change meaning, so a price
-like `$5 and $6` or an approximate `~5 minutes` is still saved as you typed it.
-
-### Fixed: summaries show escaped characters without the backslash
-
-Excerpts, meta descriptions, social cards and RSS summaries printed the backslashes a saved post
-carries: `snake\_case` as `snake\ case`, `TBWA\Chiat\Day` with each backslash doubled. They
-now show the character that was escaped. Existing summaries update the next time a post is
-saved.
-
-### The four looks each read as their own kind of publication
-
-- **Source code**: headlines — the piece's title, the titles in a feed and on the front page,
-  and the section heads — are set in the monospace, bold. The paragraphs stay in the book face.
-  Highlighted code blocks get line numbers, which a copy does not pick up.
-- **Newspaper**: the section menu moves into the masthead on every page, including on a phone,
-  where it scrolls sideways. On a piece, the contents and the series box each become one run of
-  numbered entries, and the first letter is a drop cap. At 1440 × 1000 the first line of text
-  moves up from y=980 to y=832.
-- **Notebook**: the sheet is dot-grid paper, links are marked with a highlighter in the
-  palette's accent, and the text is ragged right. The panel beside the piece is a square
-  index card.
-- **Fixed in Notebook**: the grey used for dates, the rail and small labels was broken for
-  every blog wearing this look, so all of it printed in the full text colour. It had also
-  hidden the hand-drawn series box and the section ticks, which show again now.
-- **Settings → Appearance → Looks like** shows the four as drawn tiles, each with a line saying
-  who it is for, in place of four names in a strip.
-
-### Fixed: opening and saving a post no longer closes up a spaced list
-
-A list with a blank line between its items shows every item as a paragraph, with a paragraph's
-space around it. Opening such a post in the editor and saving it wrote the list without the blank
-lines, and the space went with them. Measured over 142 published posts opened and saved: two
-changed on the page, both for this reason. The editor now remembers that a list was spaced.
-
-### The keyboard reaches two pictures it could not
-
-A picture in a post opens its full-size viewer with Enter or Space, not only with a click, and the
-library's full-size picture is a real dialog: focus goes into it, the page behind stops taking
-Tab, and closing puts focus back where it was.
-
-### The admin stops sending the pen to screens that have no paper
-
-The pen's stylesheet — most of the admin's CSS — now loads only on the three writing screens. On
-every other screen the stylesheet drops from 55 KB to 23 KB gzipped.
-
-### The ops backup script leaves the caches out, and keeps its daily copies when sealed
-
-`scripts/ops/quire-backup.sh` now empties the rebuildable caches in its snapshot, as the in-app
-backup already did. If you set `QUIRE_BACKUP_TO`, your daily copies were being deleted after
-three days instead of thirty; that is fixed. `QUIRE_BACKUP_AGE_TO` seals the archive with `age`
-instead (see `docs/backups.md`).
-
-### The database cache stops promising more memory than the box has
-
-SQLite was told it could keep 64 MB of pages per connection, and there are two connections —
-so a blog this software also ships in a 128 MB container was promised 128 MB by one setting
-alone. It is now 16 MB, which on a small box is **faster as well as smaller**. Measured against
-a 314 MB database, 20,000 reads, three runs each, in a 128 MB container:
-
-| Cache | Memory added | Time |
-|---|---|---|
-| 64 MB | +57 MB | 181 / 189 / 188 ms |
-| **16 MB** | **+43 MB** | **142 / 146 / 132 ms** |
-| 8 MB | +26 to +35 MB | 142 / 81 / 104 ms |
-
-Not a paradox: inside a memory limit, SQLite's own cache and the operating system's page cache
-come out of the same allowance, so a large private cache buys a second copy of pages it has
-just pushed the system into dropping. On a machine with room, all four settings were
-indistinguishable, so nothing is given up on a big server either.
-
-If your database is smaller than the cache — which it is, for almost every blog — nothing about
-this is observable: the whole file was held before and is held now.
-
-### Fixed: a stranger scanning your blog stopped filling your error log
-
-Every request that answered 4xx was written to the error stream. On a blog reachable from the
-open internet that is mostly somebody's scanner asking for `/wp-config.backup`, `/.env.backup1`
-or `/backup.sql` — each of which correctly answers 404, and each of which then read in your
-log as something this software had got wrong. Measured over seven days of one live instance:
-29,787 lines, of which 18,483 were a 404 logged as an error, against **twelve** real failures.
-
-A 4xx still gets a line with its status and its duration, because on a single-tenant blog the
-log is the monitoring. It is simply no longer filed as a fault of the blog's. A 5xx — the one
-status that means this software broke — still goes to the error stream, and a refused sign-in
-is still recorded in the activity log where you can see it.
-
-### An upgrade copies your database before it changes it, and hands the space back after
-
-Until now the only thing standing between a migration and your data was a line in the
-documentation asking you to take a backup first. A boot with a pending migration writes one
-itself now — `data/backups/pre-<step>-<stamp>-quire.db`, named for the step it is about to
-run — and **if it cannot write that copy it exits instead of migrating**, telling you which
-path and why. Nothing in your database changes until the copy exists. Two are kept; older
-ones go as new ones are made, so this does not pile up.
-
-Measured on a real 618 MB database: the copy takes 85 ms and is 8.8 MB, because it holds what
-you wrote rather than what was cached.
-
-And the disk comes back. SQLite gives freed pages to its own freelist rather than to the
-operating system, so the change above would have left a 618 MB file holding 8.9 MB of content
-and no way for you to tell it had worked. When a migration leaves a file mostly empty — over a
-quarter free and more than 64 MB of it, so an ordinary upgrade does nothing — the boot
-compacts it once: a verified copy is written, checked, and moved into place, never a `VACUUM`
-over a live file.
-
-### Fixed: half a gigabyte of rendered HTML nobody could reach
-
-The cache that holds a rendered post was keyed by the render rather than by the post, and the
-build commit is part of that key — so every deploy made every cached body unreachable and left
-it there for a thirty-day sweep to find. Measured on a blog that deploys about seven times a
-day:
-
-| | |
-|---|---|
-| The database | 618 MB |
-| The cache inside it | 20,001 rows, **502 MB** |
-| Distinct HTML in those rows | about **5.6 MB** |
-| Everything anybody had written — 93 posts, revisions, settings, log | **8 MB** |
-
-One rendered post of 88,084 characters was in there **204 times**, byte for byte.
-
-Nothing was wrong with the renders and nothing was wrong with the sweep. The shape had no way
-to say *replace*: the only identifying column was a hash, so a new render had no old row to
-address. A post keeps one row now, and a fresh render takes it. The same hash still decides
-whether a render is reused, on exactly the inputs it used before, so a reader receives the
-same bytes as before — the table simply stops growing with deploys.
-
-Highlighted code blocks are unchanged: a block is shared between posts, so it has no post to
-belong to, and age remains the right way to retire one.
-
-
-### Fixed: the Markdown view showed a long piece as a stub
-
-Paste a four-thousand-word draft into the Markdown view and it landed intact, saved intact, and
-showed as a stub. Switching to the writing showed every word, so nothing was lost — the box
-simply kept the height it had when the view opened.
-
-⚠️ **It was not only a short box.** The textarea has no scrollbar by design, so everything past
-its bottom edge was unreachable by any means: typing at the end walked your own caret out of
-sight. The height is measured on every change now. The flow that holds it reports, without the
-fix, `after a paste, 9072px of the piece is unreachable below the box`.
-
-### Fixed: the writing list stretched its lines to 140 characters
-
-The list of everything written had no maximum width below 1280px, so it took whatever the window
-gave it. Measured in a browser, walking the excerpt's own font:
-
-| 390px | 600px | 768px | 900px | 1100px | 1279px |
-|---|---|---|---|---|---|
-| 41ch | 68ch | 86ch | 101ch | 116ch | **140ch** |
-
-`docs/conventions/type.md` puts the reading measure at 45 to 75. It was worst between 1024 and
-1279 — a 13-inch laptop — where the rail is forced shut and hands the list every pixel it gave
-up, so the window that makes the chrome smallest made the text longest. It holds at 80
-characters now, centred.
-
-### Fixed: the settings refusal line was drawn in the body colour
-
-The sentence that says a value was rejected used two classes that have no rule behind them, so
-it rendered `oklch(0.205 0 none)` — the body colour, to the last digit, on the one line whose
-whole job is to look unlike ordinary prose. It uses the admin's own danger token now: 4.87:1 in
-light, 6.09:1 in dark.
-
-`check:admin-css` exists to catch exactly that and was green throughout, because it reads
-`className=` and `class="…"` and this file keeps its classes in a named constant. It reads those
-too now — 641 class names checked before, 783 after — behind a gate that keeps URLs, storage keys
-and event names out of it. Its first run found one more: `write-row`, on every row of the list,
-styled by no rule and selected by nothing.
-
-### Fixed: a sealed archive was pinned to the build that wrote it
-
-The encrypted archive's header has always carried the key-stretching cost — `n`, `r` and `p` —
-and the reader took only the salt out of it and the other three from its own constants. So the
-format described itself and was pinned to one build in fact: **raising the cost would have
-orphaned every archive already written**, failing with `no-matching-key`, which reads to whoever
-is holding it as "wrong passphrase". On the worst day, about the one file meant to survive it.
-
-The reader takes all four from the archive now, and bounds them, because that header is parsed
-before any key exists and so cannot have been authenticated: `n` must be a power of two in
-2^14…2^20, `r` and `p` in 1…16. An archive asking for `n: 2^30` is asking the person restoring
-it to allocate a terabyte.
-
-The cost this build writes is unchanged at N=65536. Measured in a container, scrypt wants 64 MB
-there and 128 MB at N=2^17; the floor this software is documented to run on is 192 MB and the
-server is 56 MB of it, so the larger number would leave nothing for anything else.
+Three days after 2.2.13, and most of it is about the machine underneath. The smallest box this
+runs on went from 256 MB to 192 MB, and a blog of 1,000 posts no longer gets killed for memory
+on a 128 MB container. The backup archive, which carries every credential the blog holds, can
+now leave the machine sealed. An upgrade copies the database before it changes it. And the four
+looks stop reading as one page in four costumes. Sealed backups ship switched off on every
+install and on this upgrade; the section says where the switch is.
 
 ### It fits on a small machine
 
@@ -250,10 +60,10 @@ It is not a concession either. 3,000 requests at 32 concurrent on 2 GB and 2 CPU
 5,115 req/s before, **5,962 and 6,234 after**, p50 5.4 ms against 4.3. A compact heap collects
 less and fits in cache.
 
-**What the machine has to be: 256 MB and any one CPU.** Serving costs 56 MB and answers a page
-in 5 to 37 ms on a quarter of a CPU. What needs the rest is cutting the smaller copies of an
-uploaded picture — 128, 160 and 192 MB were each OOM-killed during that sweep, two minutes after
-a boot that had looked healthy. A blog with no pictures runs in half of it. Written down in
+**What the machine has to be: 192 MB and any one CPU, and 256 MB is what to give it.** Serving
+costs 56 MB and answers a page in 5 to 37 ms on a quarter of a CPU. What needs the rest is
+cutting the smaller copies of an uploaded picture, which at 192 MB may have one encode killed
+and retried (the table above). A blog with no pictures runs in half of it. Written down in
 [self-host](docs/self-host.md) and [delivery](docs/delivery.md#the-budget), where it was not
 written down before.
 
@@ -309,8 +119,219 @@ up into somebody else's bucket and down onto a laptop. Nothing said so.
   a hand-written stream cipher over the owner's whole blob store. AES-256-GCM in 64 KiB frames
   is 5.5 GB/s against 87 ms of the gzip that already happens. Measured through the real route on
   a 101 MB archive: 2,455 ms sealed against 2,444 ms in the clear.
-- The ops script takes its recipients from `QUIRE_BACKUP_TO`. ⚠️ It seals the database tar only;
-  that script syncs uploads as a tree with `rclone` rather than putting them in the archive.
+- The ops script takes its recipients from `QUIRE_BACKUP_TO`: `blog` seals to the keys the
+  Backups card set up, read from the database, so either key opens the archive. ⚠️ It seals the
+  database tar only; that script syncs uploads as a tree with `rclone` rather than putting them
+  in the archive.
+
+### An upgrade copies your database before it changes it, and hands the space back after
+
+Until now the only thing standing between a migration and your data was a line in the
+documentation asking you to take a backup first. A boot with a pending migration writes one
+itself now — `data/backups/pre-<step>-<stamp>-quire.db`, named for the step it is about to
+run — and **if it cannot write that copy it exits instead of migrating**, telling you which
+path and why. Nothing in your database changes until the copy exists. Two are kept; older
+ones go as new ones are made, so this does not pile up.
+
+Measured on a real 618 MB database: the copy takes 85 ms and is 8.8 MB, because it holds what
+you wrote rather than what was cached.
+
+And the disk comes back. SQLite gives freed pages to its own freelist rather than to the
+operating system, so the change above would have left a 618 MB file holding 8.9 MB of content
+and no way for you to tell it had worked. When a migration leaves a file mostly empty — over a
+quarter free and more than 64 MB of it, so an ordinary upgrade does nothing — the boot
+compacts it once: a verified copy is written, checked, and moved into place, never a `VACUUM`
+over a live file.
+
+### The four looks each read as their own kind of publication
+
+- **Source code**: headlines — the piece's title, the titles in a feed and on the front page,
+  and the section heads — are set in the monospace, bold. The paragraphs stay in the book face.
+  Highlighted code blocks get line numbers, which a copy does not pick up.
+- **Newspaper**: the section menu moves into the masthead on every page, including on a phone,
+  where it scrolls sideways. On a piece, the contents and the series box each become one run of
+  numbered entries, and the first letter is a drop cap. At 1440 × 1000 the first line of text
+  moves up from y=980 to y=832.
+- **Notebook**: the sheet is dot-grid paper, links are marked with a highlighter in the
+  palette's accent, and the text is ragged right. The panel beside the piece is a square
+  index card.
+- **Fixed in Notebook**: the grey used for dates, the rail and small labels was broken for
+  every blog wearing this look, so all of it printed in the full text colour. It had also
+  hidden the hand-drawn series box and the section ticks, which show again now.
+- **Settings → Appearance → Looks like** shows the four as drawn tiles, each with a line saying
+  who it is for, in place of four names in a strip.
+
+### The keyboard reaches two pictures it could not
+
+A picture in a post opens its full-size viewer with Enter or Space, not only with a click, and the
+library's full-size picture is a real dialog: focus goes into it, the page behind stops taking
+Tab, and closing puts focus back where it was.
+
+### The admin stops sending the pen to screens that have no paper
+
+The pen's stylesheet — most of the admin's CSS — now loads only on the three writing screens. On
+every other screen the stylesheet drops from 55 KB to 23 KB gzipped.
+
+### The ops backup script leaves the caches out, and keeps its daily copies when sealed
+
+`scripts/ops/quire-backup.sh` now empties the rebuildable caches in its snapshot, as the in-app
+backup already did. If you set `QUIRE_BACKUP_TO`, your daily copies were being deleted after
+three days instead of thirty; that is fixed. `QUIRE_BACKUP_AGE_TO` seals the archive with `age`
+instead (see `docs/backups.md`).
+
+### The database cache stops promising more memory than the box has
+
+SQLite was told it could keep 64 MB of pages per connection, and there are two connections —
+so a blog this software also ships in a 128 MB container was promised 128 MB by one setting
+alone. It is now 16 MB, which on a small box is **faster as well as smaller**. Measured against
+a 314 MB database, 20,000 reads, three runs each, in a 128 MB container:
+
+| Cache | Memory added | Time |
+|---|---|---|
+| 64 MB | +57 MB | 181 / 189 / 188 ms |
+| **16 MB** | **+43 MB** | **142 / 146 / 132 ms** |
+| 8 MB | +26 to +35 MB | 142 / 81 / 104 ms |
+
+Not a paradox: inside a memory limit, SQLite's own cache and the operating system's page cache
+come out of the same allowance, so a large private cache buys a second copy of pages it has
+just pushed the system into dropping. On a machine with room, all four settings were
+indistinguishable, so nothing is given up on a big server either.
+
+If your database is smaller than the cache — which it is, for almost every blog — nothing about
+this is observable: the whole file was held before and is held now.
+
+### Fixed: half a gigabyte of rendered HTML nobody could reach
+
+The cache that holds a rendered post was keyed by the render rather than by the post, and the
+build commit is part of that key — so every deploy made every cached body unreachable and left
+it there for a thirty-day sweep to find. Measured on a blog that deploys about seven times a
+day:
+
+| | |
+|---|---|
+| The database | 618 MB |
+| The cache inside it | 20,001 rows, **502 MB** |
+| Distinct HTML in those rows | about **5.6 MB** |
+| Everything anybody had written — 93 posts, revisions, settings, log | **8 MB** |
+
+One rendered post of 88,084 characters was in there **204 times**, byte for byte.
+
+Nothing was wrong with the renders and nothing was wrong with the sweep. The shape had no way
+to say *replace*: the only identifying column was a hash, so a new render had no old row to
+address. A post keeps one row now, and a fresh render takes it. The same hash still decides
+whether a render is reused, on exactly the inputs it used before, so a reader receives the
+same bytes as before — the table simply stops growing with deploys.
+
+Highlighted code blocks are unchanged: a block is shared between posts, so it has no post to
+belong to, and age remains the right way to retire one.
+
+### Fixed: a sealed archive was pinned to the build that wrote it
+
+The encrypted archive's header has always carried the key-stretching cost — `n`, `r` and `p` —
+and the reader took only the salt out of it and the other three from its own constants. So the
+format described itself and was pinned to one build in fact: **raising the cost would have
+orphaned every archive already written**, failing with `no-matching-key`, which reads to whoever
+is holding it as "wrong passphrase". On the worst day, about the one file meant to survive it.
+
+The reader takes all four from the archive now, and bounds them, because that header is parsed
+before any key exists and so cannot have been authenticated: `n` must be a power of two in
+2^14…2^20, `r` and `p` in 1…16. An archive asking for `n: 2^30` is asking the person restoring
+it to allocate a terabyte.
+
+The cost this build writes is unchanged at N=65536. Measured in a container, scrypt wants 64 MB
+there and 128 MB at N=2^17; the floor this software is documented to run on is 192 MB and the
+server is 56 MB of it, so the larger number would leave nothing for anything else.
+
+### Fixed: opening and saving a post no longer closes up a spaced list
+
+A list with a blank line between its items shows every item as a paragraph, with a paragraph's
+space around it. Opening such a post in the editor and saving it wrote the list without the blank
+lines, and the space went with them. Measured over 142 published posts opened and saved: two
+changed on the page, both for this reason. The editor now remembers that a list was spaced.
+
+### Fixed: a list mixing bullets and checkboxes stays one list when saved
+
+`- a` followed by `- [ ] b` is one list. Opening and saving it wrote two lists instead, and on a
+spaced list each item lost its paragraph spacing. It is now saved as the one list it was, tight
+or spaced; two lists with something written between them stay two.
+
+### Fixed: a save no longer turns a literal dollar or tilde into maths or strikethrough
+
+Text you had escaped — `\$x\$`, `\~~b~~`, or three tildes at the start of a line after a line
+break — was saved without its backslash, so the next open read it as a formula, a strikethrough
+or a code fence. It is now escaped exactly where it would otherwise change meaning, so a price
+like `$5 and $6` or an approximate `~5 minutes` is still saved as you typed it.
+
+### Fixed: summaries show escaped characters without the backslash
+
+Excerpts, meta descriptions, social cards and RSS summaries printed the backslashes a saved post
+carries: `snake\_case` as `snake\ case`, `TBWA\Chiat\Day` with each backslash doubled. They
+now show the character that was escaped. Existing summaries update the next time a post is
+saved.
+
+### Fixed: the Markdown view showed a long piece as a stub
+
+Paste a four-thousand-word draft into the Markdown view and it landed intact, saved intact, and
+showed as a stub. Switching to the writing showed every word, so nothing was lost — the box
+simply kept the height it had when the view opened.
+
+⚠️ **It was not only a short box.** The textarea has no scrollbar by design, so everything past
+its bottom edge was unreachable by any means: typing at the end walked your own caret out of
+sight. The height is measured on every change now. The flow that holds it reports, without the
+fix, `after a paste, 9072px of the piece is unreachable below the box`.
+
+### Fixed: a stranger scanning your blog stopped filling your error log
+
+Every request that answered 4xx was written to the error stream. On a blog reachable from the
+open internet that is mostly somebody's scanner asking for `/wp-config.backup`, `/.env.backup1`
+or `/backup.sql` — each of which correctly answers 404, and each of which then read in your
+log as something this software had got wrong. Measured over seven days of one live instance:
+29,787 lines, of which 18,483 were a 404 logged as an error, against **twelve** real failures.
+
+A 4xx still gets a line with its status and its duration, because on a single-tenant blog the
+log is the monitoring. It is simply no longer filed as a fault of the blog's. A 5xx — the one
+status that means this software broke — still goes to the error stream, and a refused sign-in
+is still recorded in the activity log where you can see it.
+
+### Fixed: the writing list stretched its lines to 140 characters
+
+The list of everything written had no maximum width below 1280px, so it took whatever the window
+gave it. Measured in a browser, walking the excerpt's own font:
+
+| 390px | 600px | 768px | 900px | 1100px | 1279px |
+|---|---|---|---|---|---|
+| 41ch | 68ch | 86ch | 101ch | 116ch | **140ch** |
+
+`docs/conventions/type.md` puts the reading measure at 45 to 75. It was worst between 1024 and
+1279 — a 13-inch laptop — where the rail is forced shut and hands the list every pixel it gave
+up, so the window that makes the chrome smallest made the text longest. It holds at 80
+characters now, centred.
+
+### Fixed: the settings refusal line was drawn in the body colour
+
+The sentence that says a value was rejected used two classes that have no rule behind them, so
+it rendered `oklch(0.205 0 none)` — the body colour, to the last digit, on the one line whose
+whole job is to look unlike ordinary prose. It uses the admin's own danger token now: 4.87:1 in
+light, 6.09:1 in dark.
+
+`check:admin-css` exists to catch exactly that and was green throughout, because it reads
+`className=` and `class="…"` and this file keeps its classes in a named constant. It reads those
+too now — 641 class names checked before, 783 after — behind a gate that keeps URLs, storage keys
+and event names out of it. Its first run found one more: `write-row`, on every row of the list,
+styled by no rule and selected by nothing.
+
+### What 2.2.14 does not do
+
+- **A sealed archive with both keys lost cannot be opened by anyone**, including this software.
+  The ops script seals the database tar only; it copies uploads as a tree and does not seal them.
+- **The pre-upgrade copy sits on the same disk as the database.** It protects against a
+  migration, not against losing the machine: that is still what an off-site backup is for.
+- **At 192 MB an image encode can be killed** and is retried on the next tick, so a new picture's
+  smaller copies may arrive a few minutes late. 256 MB is what to give it.
+- **A look carries no colour of its own**, by design: the palette decides. The newspaper's section
+  and figure numbers exist on the page only, not in the feed, a newsletter or a copied quote.
+- **A code block shows no file name or language label**, and one holding a single blank line is
+  saved as an empty block: the editor cannot tell the two apart.
 
 ## 2026-09-20 · Quire Ink 2.2.13
 

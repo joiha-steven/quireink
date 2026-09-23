@@ -36,7 +36,7 @@ docker logs quire
   https://example.com/setup?token=…
 ```
 
-Open it and the rest is a browser: username, email, password, then two-factor. **No `docker
+Open it and the rest is a browser: username, email, password, two-factor, then four short questions about the site. **No `docker
 exec` and no interactive terminal**, because a NAS log panel is enough on its own. The token
 lives in memory, so a restart mints a new one, and `/setup` answers 404 the moment an account
 exists. Anyone who would rather use the shell still can:
@@ -75,7 +75,7 @@ services:
 |---|---|
 | `latest` | The newest release. **The one to install**, because the newest release is the one carrying the fixes. |
 | `2.2` | Fixes within the 2.2 line, no feature surprises. For anyone who would rather step up a major version by hand. |
-| `2.2.13` | One exact release. Nothing moves, ever. |
+| `2.2.14` | One exact release. Nothing moves, ever. |
 
 `linux/amd64` and `linux/arm64`, each built on its own native runner. The same image is on
 GHCR as `ghcr.io/joiha-steven/quireink`, pushed by the same run with the same digest.
@@ -104,12 +104,12 @@ A real editor over Markdown, with tables, footnotes, callouts, mathematics and v
 saves as you type and can hold a post until Tuesday. Six palettes in light and dark, four reading
 fonts, a book mode set in two columns like paper, and a five-ink highlighter whose strokes are
 grown rather than drawn, so no two on a page share a shape. Search that answers as you type,
-comments, a newsletter, and analytics without cookies. An article page costs about 100 KB.
+comments, a newsletter, and analytics without cookies. An article page costs about 120 KB.
 
 An AI agent can write and publish for you over MCP, through exactly the rules the admin
 follows, and you can take its access away at any moment.
 
-Three more doors, each switched off until you turn it on: the blog can be **followed from
+Three more doors, the first two switched off until you turn them on: the blog can be **followed from
 Mastodon** and anywhere else that speaks ActivityPub, **read by a program** over a read-only
 JSON API, and **downloaded as Markdown** in a ZIP that another blog engine can import. Nothing
 here holds your writing hostage.
@@ -126,7 +126,8 @@ at boot, inside a transaction, so there is no migration command to run. Take a b
 ## Backups
 
 There is a button in the admin that hands you the whole blog as one archive: both databases
-and every upload. Nobody backs it up for you, so pressing it is your job.
+and every upload. Scheduled snapshots are on by default but stay on the same disk, so getting a
+copy off the machine is your job.
 
 ## Licence
 

@@ -101,7 +101,7 @@ docker compose up -d --build
 docker compose logs quire            # the claim link, same as above
 ```
 
-The image builds from source and runs `bun src/index.ts`, which is what the server in section 4
+The image builds from source and runs `bun --smol src/index.ts`, which is what the server in section 4
 runs too. It is deliberately NOT the compiled binary: `bun build --compile` does not bundle
 sharp's native module, so a compiled image has to keep a binary and a native addon agreed
 about libc across every base bump, and this way `bun install` resolves sharp for the
@@ -122,9 +122,10 @@ Four things worth knowing before you change anything in `docker-compose.yml`:
   before the app starts. `docker run --user 1000:1000` skips all of it.
 - **Upgrades are `git pull && docker compose up -d --build`.** The schema is applied at boot
   as usual. Your content is in the volumes and is not touched by a rebuild. Since ADR 0063 a
-  pending migration writes a copy of the database into `data/backups/` before it runs anything
-  — named for the step it is about to apply — and **if that copy cannot be written the
-  container exits instead of migrating**, saying which path and why. Two are kept.
+  pending migration empties the two rebuildable render caches, then writes a copy of the
+  database into `data/backups/` before it runs anything — named for the step it is about to
+  apply — and **if that copy cannot be written the container exits instead of migrating**,
+  saying which path and why. Two are kept.
 
 To get data out without a bind mount, use the backup button in the admin (it hands you both
 databases plus every upload), or `docker compose cp quire:/var/lib/quire/data ./data`.

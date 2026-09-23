@@ -119,7 +119,7 @@ calling the client) and the job repeats:
 - **`get_update_status`** tells the agent which version you run and whether a newer release
   exists — the same amber/green dot the admin wears — so "is my blog up to date?" is a
   question your assistant can answer.
-- **Appearance is a menu, not a palette.** No hex colors, no CSS over MCP — preset ids
+- **Appearance is a menu, not a palette.** `update_appearance` takes no hex colors and no CSS — preset ids
   only, because every preset is already a good screen.
 - **The newsletter's send button stays human.** The agent can draft and can send a test
   to you alone; the broadcast to your readers is yours to press.

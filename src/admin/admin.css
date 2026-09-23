@@ -1396,8 +1396,8 @@ tr[data-piece][data-last] {
 
    ⚠️ NOT because the attribute would lose. It was written here that a `hidden` attribute
    against a display utility is a tie the utility wins; that is not true in this build, and
-   acting on it nearly cost a rule nobody needed. `utilities.css` line 248 is the ONLY
-   `!important` in the whole sheet, and it is on `[hidden]` — so the attribute beats `flex`,
+   acting on it nearly cost a rule nobody needed. `utilities.css` puts `!important` on
+   `[hidden]` (its only other ones are the reduced-motion rules) — so the attribute beats `flex`,
    `contents`, `inline-block` and every other display utility outright. Checked 2026-09-15. */
 [data-ai-chat]:not([data-ai-confirming]) [data-ai-confirm] { display: none; }
 [data-ai-chat][data-ai-confirming] [data-ai-del] { display: none; }

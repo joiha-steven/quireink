@@ -15,7 +15,7 @@
   `DEFAULT_TYPOGRAPHY` in [`src/content/fonts.ts`](../../src/content/fonts.ts) — which is the
   BASE each preset spreads over, not what a new install starts on: a fresh install takes the
   DEFAULT FACE's tuned numbers through `INSTALL_TYPOGRAPHY` in `src/content/settings.ts`, and
-  the default face is **Literata** (with **JetBrains Mono** chrome) since 2026-08-21 (re-exported by
+  the default face is **Literata** since 2026-08-21, with **Inter** chrome since 2026-09-13 (re-exported by
   `themes.ts`, so either import path works). The owner's
   `settings.typography` is emitted by `typographyToCss()` (also applies in the admin editor
   `.prose` = WYSIWYG). `smoothing` adds `-webkit-font-smoothing` on `body`.
@@ -212,11 +212,11 @@ re-substitutes it there. Pinned by `web/typography.test.ts`.
   body + title, list cards, comment body, the editor `.prose`) and is what `fontPresetCss` /
   `fontToCss` point (custom upload wins). `--font-sans` is the system-chrome face (dates/reading-time,
   related/taxonomy, header, footer, rail — **the PUBLIC page only**), driven INDEPENDENTLY by the `chromeFont` selector
-  (`CHROME_FONTS` in `src/content/fonts.ts`, Admin → Appearance): `inter` (the stack's own
-  fallback, and what `getChromeFont` returns for an unknown id) · `reading` (points `--font-sans`
+  (`CHROME_FONTS` in `src/content/fonts.ts`, Admin → Appearance): `inter` (**the install default**
+  since 2026-09-13, the stack's own fallback, and what `getChromeFont` returns for an unknown id) · `reading` (points `--font-sans`
   at `--font-reading` so the chrome follows the reading font) · `plex-mono` (self-hosted IBM Plex
-  Mono — a "code" chrome while the body stays readable) · `jetbrains-mono` (**the install
-  default** since 2026-08-21). Both monos are declared per unicode-range in
+  Mono — a "code" chrome while the body stays readable) · `jetbrains-mono` (the install
+  default from 2026-08-21 to 2026-09-13). Both monos are declared per unicode-range in
   `src/render/font-faces.ts`, are preloaded when active, and take the tracking correction
   `MONO_TRACKING` applies to chrome surfaces only.
   `chromeFontCss` emits the override LAST in the layout (after the reading font resolves); the legacy

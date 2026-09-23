@@ -6,7 +6,7 @@
 // so nothing reachable over MCP is anything the owner's screens could not already do
 // (`tools-library.ts` carries that reasoning).
 //
-// It holds for 150 of the 154 paths. It does not hold for these, because for them the
+// It holds for every setting path but the four below. It does not hold for these, because for them the
 // sanitiser's job is to keep the text INTACT: they exist to put the owner's own markup on
 // their own pages, and `customHead` and `customBodyEnd` are written verbatim into the
 // `<head>` and before `</body>` of every public page (`web/layout.ts`). Same origin as the

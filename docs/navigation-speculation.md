@@ -44,7 +44,7 @@ is governed by `script-src` like any other. The header keeps both.
 > 338ms inline** — no cost, it is fetched beside the stylesheet that blocks paint anyway. The
 > rule is now **no inline script anywhere**; the account is in `web/admin/spa.ts`.
 
-Excluded from BOTH rules: `/admin/*`, `/api/*`, `/uploads/*`, `/preview/*`, `/og*`, plus
+Excluded from BOTH rules: `/admin/*`, `/api/*`, `/uploads/*`, `/preview/*`, `/og*`, `/search*`, plus
 `[rel~=nofollow]` and `[download]` links. A prefetch of `/preview` burns a token exactly as a
 prerender does. The header itself is only set on a public HTML 200, so the owner's surfaces
 never offer it at all.

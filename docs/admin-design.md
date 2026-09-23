@@ -39,7 +39,7 @@ character and none of its typographic rules **except one**, below.
   a `<span>`, so the Site tab shipped *"Changes the interface language and date format."* in
   Literata four lines above *"Words auto-used as the excerpt…"* in JetBrains Mono — one card,
   one kind of thing, two faces, and neither call site was wrong. Every type decision travels on
-  a role from `components/scale.ts`, never on an element; `check:admin-kit` fails a screen that
+  a role from `admin-shared/scale.ts`, never on an element; `check:admin-kit` fails a screen that
   hand-types a hint or names a typeface at all. `data-prose`, the page-level escape hatch, is
   GONE with the second face — there is nothing left for it to switch to. The one place a
   `fontFamily` may still appear is a `data-specimen` surface, which paints itself in the family
@@ -277,7 +277,7 @@ character and none of its typographic rules **except one**, below.
   — and the charts, the ranges and the per-page breakdown are one click further, from the
   cards that show the headline figures. Taxonomy, integrations and system information still do
   not compete on the home page.
-- **The home hands back the unfinished writing before it shows anything else.** A count of
+- **The home hands back the unfinished writing straight after the numbers.** A count of
   drafts is not the same fact as the drafts; the band names them and opens the editor on one.
   Administration counts (posts, pages, comments, images, storage) sit BELOW the widgets.
 
@@ -315,8 +315,8 @@ primitives in `admin-shared/kit.ts` (`SHEET`, `SHEET_TOP`, `SHEET_FOOT`,
    PANELS (`Card panel`), one radius step down, title on a ruled header row.
 4. **Lists of short rows fill two newspaper columns** (`.paper-cols`, with the rule a paper
    would draw between them) — one column left half the sheet blank, which the owner read
-   as a hole. Comments, subscribers, trash and the activity log all flow this way; the
-   columns collapse to one below `lg`.
+   as a hole. Comments flow this way; the log and the trash left it on 2026-09-23, since a
+   list in time order read down one column and then the next. One column below `lg`.
 
 ## One of each · One setting
 

@@ -20,7 +20,7 @@ costs a round trip on the one image the page is judged by.
 **The rule: exactly one image per page gets `fetchpriority="high"`, everything else gets
 `loading="lazy"`** — `fetchpriority` on everything is `fetchpriority` on nothing. Three places
 decide it and they now agree: the front page lead (`front-card.ts`, image kind only), the
-first body image (`render/post-content.ts`, `seen === 0`), and the light site logo
+first body image (`render/figures.ts`, `seen === 0`), and the light site logo
 (`chrome.ts`; never the dark mark, since both ship and only one can be the LCP element).
 
 ## Fonts — preload ONLY what the LCP text needs
@@ -262,8 +262,9 @@ The split is now by implementation, not by a scanner's `@source` list, which is 
   `@layer utilities`, which is what lets the chrome win. A reader never requests that path, so
   its size is the owner's problem alone.
 
-`PROSE_CSS` is the one sheet both need, so it is defined once in `src/web/prose.css.ts` and
-appended to the admin bundle by the build (a CSS file cannot import a TypeScript module).
+`PROSE_CSS` and the pen's `INK_CSS` are the sheets both need, so each is defined once in a
+`.ts` module (a CSS file cannot import one). The build appends `PROSE_CSS` to `admin.css` and
+writes the ink to `admin-ink.css`, linked only on the three writing screens (`Screen.pen`).
 
 **Rule:** an admin-only rule never goes in a `src/web/*.css.ts` sheet.
 
@@ -278,8 +279,8 @@ again every time". Two things were wrong and both are cheap:
   shipped. The SHEET's is computed from the bytes in `web/admin/spa.ts` (`build-admin.ts`
   writes that file with `Bun.write` rather than emitting it from `Bun.build`, so there is no
   bundler hash to use) and the bare `admin.css` still serves and still revalidates. The
-  ENTRY's is the BUNDLER's: `build-admin.ts` names it
-  `admin.<hash>.js`, with a dot, so it stays distinguishable from the `main-<hash>.js` chunks.
+  ENTRY's is the BUNDLER's: `build-admin.ts` names each island
+  `<name>.<hash>.js`, with a dot, so it stays distinguishable from the `island-*` chunks.
 
   ⚠️ The entry used to be fingerprinted the same way as the sheet — served as `main.<hash>.js`
   over a file the bundler had called `main.js` — and 2.2.8 shipped a blank admin because of
@@ -288,12 +289,12 @@ again every time". Two things were wrong and both are cheap:
   browser held the entry twice: once as the shell's `main.<hash>.js`, once as the chunk's
   `main.js`. Two module records are two copies of React, and the first lazy screen to call a
   hook threw React error #321 against a dispatcher belonging to the other copy. A name the
-  server invents is safe for a stylesheet and never safe for a module. `check:admin-bundle`
-  now reads the built directory for exactly one entry and no dangling import.
+  server invents is safe for a stylesheet and never safe for a module. `check:bundle`
+  now reads the built directory for exactly one rail entry and no dangling import.
 - The shell linked the entry and nothing else, so the browser found the module graph one
   level at a time. Measured on the dashboard: **four waves, at 4 / 13 / 24 / 31 ms** — on
   localhost, where a hop costs a millisecond; on a real connection, four round trips of blank
-  screen. `spa.ts` now walks the entry's STATIC imports transitively at startup and emits a
+  screen. `spa.ts` now walks the rail entry's STATIC imports transitively at startup and emits a
   `modulepreload` for each. **Three waves**, and the six boot chunks start with the entry
   rather than after it. The two that remain are the lazy route and its own deps, which is
   what code-splitting by route means.
@@ -301,10 +302,10 @@ again every time". Two things were wrong and both are cheap:
 - The static graph carried two things nobody asked for: all eleven READER dictionaries, through
   a type import that pulled the module, and Tiptap through a `PostSettings` type. **1,063 KB
   before the first frame became 375 KB** (2026-09-07); the other ten dictionaries arrive on
-  demand, and `check:admin-bundle` fails on a translation back in the entry's static graph.
+  demand, and `check:bundle` fails on a reader dictionary back in any admin bundle.
 
-Dynamic imports are deliberately NOT preloaded: `import("./Content-hash.js")` is a screen the
-owner may never open, and preloading all fourteen would trade one problem for a worse one.
+Dynamic imports are deliberately NOT preloaded: arrange mode is a dynamic import the owner may
+never open, and preloading it would trade one problem for a worse one.
 
 ## JS — ship only what's used, only when it's used
 
@@ -350,7 +351,7 @@ its 400-line cap, and the journey between pages is a different subject from what
 - **What a reader loads:** `bun run start`, fetch a post, extract `<script src>` + `<link
   rel=stylesheet>`; confirm `site.css` — **plus `pen-marks` / `pen-lines` if and only if the
   post carries a highlight or an underline** (ADR 0027) — `core.js` + `post.js`, plus
-  `book-mode.js` / `comment-thread.js` if and only if that switch is on, and nothing else,
+  `book-mode.js` / `comment-thread.js` / `reader-pen.js` if and only if that switch is on, and nothing else,
   and the correct font preloads for the site language.
 - **Critical path / LCP:** Lighthouse "Network dependency tree" — the chain should be HTML →
   public CSS → (at most) the reading font's language subset(s). No chrome font, no unused

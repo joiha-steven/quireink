@@ -20,7 +20,7 @@ It runs the published image against the droplet's bare IP over plain HTTP, which
 most a machine with no domain can honestly do. When you point a domain at the droplet, the
 reverse-proxy section of [`docs/self-host.md`](../../docs/self-host.md), or
 [`docker-compose.caddy.yml`](../../docker-compose.caddy.yml), upgrades it to HTTPS, and
-Settings → Site moves the address with you.
+Settings → Blog moves the address with you.
 
 **Why a droplet and not App Platform.** App Platform's filesystem is ephemeral and it
 mounts no volumes, so every redeploy would erase the databases and the uploads. A "Deploy

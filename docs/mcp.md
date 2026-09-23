@@ -6,7 +6,7 @@
   that lets an MCP client (Claude/ChatGPT) operate the blog. Tools are THIN wrappers over the same
   `src/content/` and `src/server/` functions the admin routes use — same slug rules, revisions, soft-delete, revalidation,
   activity log. **Off unless the owner enables it** (Admin → Settings → Server & connections toggle,
-  `settings.mcp.enabled`); `verifyMcpToken` 401s every call while off.
+  `settings.mcp.enabled`); while off `/api/mcp` answers 404 and `verifyMcpToken` accepts nothing.
 - **The 2.0 transport is hand-written** (`src/web/admin/mcp-transport.ts`), because `mcp-handler`
   wraps the SDK for Next's route handlers and could not come along. Stateless: a fresh `McpServer`
   per request, no session id, no SSE stream. **A message with no `id` is a NOTIFICATION — deliver it
@@ -102,7 +102,7 @@
   (2.2.4; it wrote three fields before, and said the rest could not be changed over MCP).
   Two things had to move first: a token now carries a SCOPE, and a `read` token's door never
   registers a write tool at all (`mcp-transport.ts`); and the deep merge is asserted for every
-  path one at a time with the other 157 watched (`content/settings-path.test.ts`), so a patch
+  path one at a time with every other path watched (`content/settings-path.test.ts`), so a patch
   built from one path cannot damage a neighbour. The route to disk is unchanged —
   `saveSettings`, which sanitises, clamps and refuses exactly as it does for the form — so
   nothing reachable here is anything the owner's own screens could not already do.

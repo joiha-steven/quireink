@@ -82,7 +82,7 @@ alternative on the table was collecting each blog's domain, which would have mad
 identifiable rather than accurate; this was chosen instead.
 
 Turn it off with `UPDATE_CHECK=0` in the environment, or in Settings → Server & connections → This install.
-Off means your blog makes no outbound request of any kind. Nothing updates itself either
+Off means your blog asks us nothing at all. Nothing updates itself either
 way: knowing a release exists and installing it are separate acts, and the second one is
 yours ([self-host.md, section 9](self-host.md#9-upgrading)).
 
@@ -96,7 +96,7 @@ recently, because "up to date" is a claim and a stale answer cannot make it.
 The code is [`src/server/update-check.ts`](../src/server/update-check.ts), which is short
 and says the same thing this section does.
 
-**One more outbound exists, and only if you build it yourself by pasting a key.** Give
+**One more outbound is worth naming, and it exists only if you build it yourself by pasting a key.** Give
 Settings → Server & connections an AI key (Anthropic, OpenAI, Gemini or DeepSeek) and pick a model
 that can see images, and each image you upload is sent to that provider once, to have its
 alt text written. A text-only model leaves this job switched off and says so. Your key, your provider,

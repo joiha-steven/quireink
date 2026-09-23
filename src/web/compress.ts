@@ -94,7 +94,7 @@ const QUALITY_PAGE = 5
  * `immutable` was the whole test at first, which was right about the public sheets and wrong
  * about what else wears the label: the admin's own chunks are hashed and immutable too, and
  * they are twenty times the size. `main-<hash>.js` is 644 KB and takes **642 ms** at q11
- * against 11 ms at q5; `admin.css` is 375 KB and takes 279 ms. Compression was synchronous
+ * against 11 ms at q5; `admin.css` was 375 KB then and took 279 ms. Compression was synchronous
  * at that point, so the first load of the admin stalled the whole process for over a second
  * and the tour's settings flow timed out with no search box on the screen — a reader asking
  * for a page in that window would have waited exactly as long.

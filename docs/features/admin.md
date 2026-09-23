@@ -360,24 +360,24 @@ are a scroll container behaving as one.
   `src/server/ai-provider.ts`).
 - **Footer is owner-editable** (Home & menu tab): `settings.footer` is limited inline markdown
   (`src/render/inline-md.ts` — **bold / italic / underline / link** only, escape-first like
-  `comment-md`, link hrefs protocol-checked) authored via `FooterField` (textarea + B/I/U/Link
+  `comment-md`, link hrefs protocol-checked) authored in `footer()` of `settings-home.ts` (textarea + B/I/U/Link
   toolbar + live preview). `{year}`/`{title}` tokens expand at render. The public layout renders it
   in `<footer class="site-footer">`; default keeps the "© {year} {title} · powered by Quire Ink" line.
-- Controlled field groups (no own state/save), per tab, each composed by its own
-  `screens/settings-<tab>.ts`: **Blog** `SiteFields` + `BrandFields` + `AuthorFields` + the canonical
-  address; **Home & menu** `LayoutMenuFields` + `FrontFields` + `FooterField` + the thumbnail
-  half of `PostImageFields` + the listing switches; **Posts** the reading switches +
-  `PostHeadFields` / `PostBodyFields` / `PostEndFields` / `PostReachFields` + the hero half of
-  `PostImageFields` + `GalleryFields` + `FigureFields` + `TableFields` + `InkFields` +
-  `CommentFields`; **Appearance** `LookFields` (**Looks like** → `settings.look`, first: the coarsest
-  decision here) + `ThemeFields` (**Default appearance**, then the palette grid) +
-  `ShapeFields` + custom CSS left, `FontFields` / `FontUpload` / `TypographyFields` right; **Comments & mail** `CommentFields` + `CommentIntegrations` +
-  `NewsletterCard`; **Server & connections** `SeoFields` + custom code + `RedirectsManager` +
-  `ImportFields` + `CacheFields` + `UpdateFields` + `StorageFields` + `AiCard` + `McpFields` +
-  `ExportFields` + `CloudflareCard` + `OffsiteCard`; **Account** `SecurityFields` + the
-  **Dashboard** switch (`settings.dashboard.systemLine`) + `ActivityLogField` + `AdvancedFields`
-  (font smoothing, **Motion** → `settings.motion.enabled`, the editor **Key feedback**
-  instrument and its volume → `settings.motion.keys` / `keyVolume`, the autosave interval).
+- Cards per tab, each tab composed by its own `screens/settings-<tab>.ts` (two columns; a
+  `panelCard` saves with the sheet, a `connectionCard` also posts to its own route): **Blog**
+  (`settings-blog.ts`) general, the canonical address, branding, author; **Home & menu**
+  (`settings-home.ts`) layout + menu + featured, footer, the composed front (only when
+  `home.mode=front`), listing (with the list thumbnail); **Posts** (`settings-post.ts`) one card
+  of four groups (head, body, end — with the comments switch — and reach), pictures (hero,
+  figure, gallery), tables, inks; **Appearance** `lookPicker` (**Looks like**, four drawn tiles
+  → `settings.look`, first: the coarsest decision) + shape + `palettes` (**Default appearance**,
+  then the grid) left, fonts / font upload / custom CSS right, type sizes full width under
+  both; **Comments & mail** (`settings-people.ts`) the comments switch again, comment keys,
+  newsletter SMTP; **Server & connections** `siteCard` (crawlers + custom code), Cloudflare,
+  redirects, import, `installCard` (cache, updates, storage), AI, MCP, API, ActivityPub, backups, off-site; **Account**
+  security, then **This admin**: the **Dashboard** switch (`settings.dashboard.systemLine`), the
+  activity log, and rendering (font smoothing, **Motion** → `settings.motion.enabled`, **Key
+  feedback** → `motion.keys` / `keyVolume`, the pen squeak, the autosave interval).
   Every credential on those cards is written to the server and never read back, which is why they
   show status rather than values. `src/admin-shared/settings-index.ts` (⌘⇧K's index) reaches them all.
   `McpFields` is the EXCEPTION to "no own state/save": the MCP enable toggle flows through the

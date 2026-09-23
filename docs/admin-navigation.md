@@ -56,7 +56,7 @@ cannot happen any more. **Two are left**, and both are fetched on demand from a 
 already open: arrange mode, and the media picker.
 
 - **Both say so, and neither reloads by itself.** `isChunkGone` in
-  [`island/rail.ts`](../src/admin/island/rail.ts) matches each browser's own wording verbatim —
+  [`island/lib/chunk-gone.ts`](../src/admin/island/lib/chunk-gone.ts) matches each browser's own wording verbatim —
   Chrome, Firefox and Safari word it differently and there is no shared type to match on — and a
   failure toast has no timer, so the sentence waits as long as it takes to be read. The reload is
   the toast's action, not something this code does: the rail is on every admin page INCLUDING the
@@ -134,7 +134,7 @@ with the screens, the two actions and the writing beside it — so "make the tex
   sat inside its own `h-8` box: the hover ground kept the full height while the label was
   pushed up out of the middle of it, so the one row with a border was the one row whose hover
   looked broken. A control's hover ground must be the control.
-  The chord is one row in `editorKeys.ts` like the rest, so the button, the Help sheet and the
+  The chord is one row in `admin-shared/keys.ts` like the rest, so the button, the Help sheet and the
   handler cannot drift apart. `tour-flows-pane.ts` presses the BUTTON and checks the palette
   opens: a control that prints a shortcut it does not perform teaches something false.
 

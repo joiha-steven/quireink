@@ -16,7 +16,8 @@ Every language is a pair of files of quoted strings under [`locales/`](../locale
 | `locales/admin/<code>.ts` | the owner, in the admin |
 
 To add a language: copy the two `en` files, translate them, and register the code in
-`locales/langs.ts`, `src/types.ts` and `DATE_LOCALE` in `src/i18n/format.ts`.
+`locales/langs.ts`, `SiteLang` in `src/types-content.ts`, `DATE_LOCALE` in `src/i18n/format.ts`
+and the plural-category table in `src/i18n/plural.ts`.
 
 **The compiler refuses to build until every key exists**, so a half-done translation cannot ship
 silently. `AdminStrings` is declared in `locales/types.ts` rather than inferred from `en`, which

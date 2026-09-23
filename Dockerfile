@@ -174,7 +174,7 @@ COPY --from=build /app/locales ./locales
 #
 # What stays is what the docs tell an operator to run: the backup and uptime scripts
 # (`docs/self-host.md`), the owner-account CLI (`bun run user`), the pen sheet, and — since
-# 2.2.13 — `backup-decrypt.ts`, which is the one that has to be here on the worst day. ADR 0035
+# 2.2.14 — `backup-decrypt.ts`, which is the one that has to be here on the worst day. ADR 0035
 # keeps the restore a shell act on a STOPPED service, so a tool for opening a sealed archive
 # that only existed in a git checkout would be a tool nobody has when they need it.
 # The BUILD stage still gets the whole directory, because that is where `build:assets` and
@@ -222,7 +222,7 @@ ARG SOURCE_COMMIT=""
 ARG BUILD_DATE=""
 LABEL org.opencontainers.image.title="Quire Ink" \
       org.opencontainers.image.description="A self-hosted blog: one Bun process, two SQLite files, no build step." \
-      org.opencontainers.image.version="2.2.13" \
+      org.opencontainers.image.version="2.2.14" \
       org.opencontainers.image.url="https://quireink.com" \
       org.opencontainers.image.source="https://github.com/joiha-steven/quireink" \
       org.opencontainers.image.documentation="https://github.com/joiha-steven/quireink#readme" \

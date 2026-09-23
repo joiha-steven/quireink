@@ -6,7 +6,7 @@
   rather than reading it: a second front end, a search index, a static export, an app. Read-only,
   unauthenticated, **off unless the owner enables it** (Admin → Settings → Server & connections,
   `settings.api.enabled`). While off, every path answers `404` with `{"error":"Not found"}` —
-  the same answer `/api/mcp` gives, for the same reason a `403` would be worse.
+  the same status `/api/mcp` gives, for the same reason a `403` would be worse.
 - **Why a switch at all.** It publishes no new FACT: everything it serves is already fetchable by
   browsing. It publishes a new SHAPE — the whole blog in as many requests as it has pages instead
   of as many as it has readers. Whether that suits a particular blog is the owner's judgement.
