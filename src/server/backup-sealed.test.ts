@@ -127,7 +127,10 @@ describe('an archive the owner asked to be sealed', () => {
     await buildArchive(sealedPath)
     const sealed = Buffer.from(await Bun.file(sealedPath).arrayBuffer())
     expect(sealed.includes(secret)).toBe(false)
-  })
+    // TWO WHOLE ARCHIVES and a seal, which is the test and cannot be made smaller. 433 ms for the
+    // file alone; inside `check:all` on a busy machine it ran past the 5 s default twice on
+    // 2026-09-23 and failed a green tree. The ceiling moves, the assertions do not.
+  }, 20_000)
 })
 
 describe('the switch cannot be on over plaintext', () => {

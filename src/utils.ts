@@ -94,17 +94,32 @@ export { formatTime } from '@/admin-shared/when'
  */
 export const EXCERPT_MAX_CHARS = 280
 
+/** `[label]: destination "title"` on a line of its own, up to three spaces in. Not a footnote. */
+const LINK_DEFINITION = /^[ \t]{0,3}\[([^\]^\n][^\]\n]*)\]:[ \t]*\S+.*$/gm
+
 // Strip markdown/HTML to plain text.
 export function toPlainText(markdown: string): string {
+  // REFERENCE LINKS, which the rules below never knew: `[the docs][d]` and its definition
+  // `[d]: https://…` went into the excerpt, the meta description, the OG card and the RSS
+  // summary as typed (found 2026-09-19). The labels are gathered first, so a shortcut `[word]`
+  // is taken for a link only when the piece defines it — otherwise it is brackets in prose.
+  const defined = new Set<string>()
+  for (const m of markdown.matchAll(LINK_DEFINITION)) defined.add(m[1]!.trim().toLowerCase())
   return markdown
+    .replace(LINK_DEFINITION, ' ')
+    .replace(/\[([^\][\n]+)\]\[([^\][\n]*)\]/g, (all, text: string, label: string) =>
+      defined.has((label || text).trim().toLowerCase()) ? text : all)
+    .replace(/\[([^\][\n]+)\](?![[(:])/g, (all, text: string) => (defined.has(text.trim().toLowerCase()) ? text : all))
     .replace(/```[\s\S]*?```/g, ' ') // code blocks
     // ⚠️ BOTH BRACKETS AND BOTH PARENS NEST ONE LEVEL, because a label may hold a pair and
     // a URL may hold a pair, and the flat versions matched NEITHER — they simply did not fire,
     // and the whole of `[Theo nghiên cứu [1]](https://e.com)` went into the deck, the meta
     // description, the OG card and the RSS summary as the characters somebody typed.
     // Wikipedia's own addresses carry the second shape: `…/wiki/A_(b)`.
-    .replace(/!\[(?:[^\][]|\[[^\][]*\])*\]\((?:[^()]|\([^()]*\))*\)/g, ' ') // images
-    .replace(/\[((?:[^\][]|\[[^\][]*\])*)\]\((?:[^()]|\([^()]*\))*\)/g, '$1') // links -> text
+    // ⚠️ NEVER ACROSS A BLANK LINE. Link text ends with its paragraph, and a pattern free to
+    // cross one joined `[a` in one paragraph to `b](x)` in the next and deleted the gap between.
+    .replace(/!\[(?:[^\][\n]|\n(?![ \t]*\n)|\[[^\][]*\])*\]\((?:[^()\n]|\([^()]*\))*\)/g, ' ') // images
+    .replace(/\[((?:[^\][\n]|\n(?![ \t]*\n)|\[[^\][]*\])*)\]\((?:[^()\n]|\([^()]*\))*\)/g, '$1') // links -> text
     // A footnote, both halves. The definition is a line of its own and belongs at the foot of
     // the piece, not in a summary of it; the reference is a number the summary cannot use.
     .replace(/^[ \t]*>?[ \t]*\[\^[^\]\s]+\]:.*$/gm, ' ')

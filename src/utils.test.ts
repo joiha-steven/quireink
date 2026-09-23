@@ -1,6 +1,7 @@
 import { describe, it, expect } from '@/test/vitest'
 import {
   slugify,
+  toPlainText,
   deriveExcerpt,
   clampExcerpt,
   readingMinutes,
@@ -293,5 +294,23 @@ describe('the site clock', () => {
   it('falls back rather than throwing on a zone nobody has heard of', () => {
     expect(isoToZonedInput('2026-09-10T02:00:00.000Z', 'Mars/Olympus_Mons')).toBe('2026-09-10T02:00')
     expect(zonedInputToIso('2026-09-10T02:00', 'Mars/Olympus_Mons')).toBe('2026-09-10T02:00:00.000Z')
+  })
+})
+
+describe('toPlainText and reference links', () => {
+  // Found 2026-09-19: the definition and the label both went into the excerpt, the meta
+  // description, the OG card and the RSS summary as the characters somebody typed.
+  it('takes the text of a full, collapsed or shortcut reference link, and drops the definition', () => {
+    expect(toPlainText('See [the docs][d] now.\n\n[d]: https://example.com/docs "Docs"\n')).toBe('See the docs now.')
+    expect(toPlainText('A [collapsed][] and [shortcut] link.\n\n[collapsed]: https://a.test\n[shortcut]: https://b.test'))
+      .toBe('A collapsed and shortcut link.')
+  })
+
+  it('leaves brackets alone when nothing defines them', () => {
+    expect(toPlainText('Brackets [like this] stay.')).toBe('Brackets [like this] stay.')
+  })
+
+  it('never lets a link reach across a blank line, which is where its paragraph ended', () => {
+    expect(toPlainText('Start [a\n\nb](x) end')).toBe('Start [a b](x) end')
   })
 })
