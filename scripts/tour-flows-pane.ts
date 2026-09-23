@@ -267,4 +267,40 @@ export function registerAutosaveFlows({ flow, expect }: Tour): void {
       return 'ok (' + slug + ')'
     })()`, 2000)
   })
+
+  // THE SMALL PRINT HOLDS ONE LINE, in all eleven languages — the rule `content-pane.ts` states
+  // for the row of two lamps and the sort key, and nothing measured until 2026-09-23. The audit
+  // of 2026-09-19 found "Published" 67% longer in Russian and the sort key beside it never
+  // weighed. Measured at 1440, where the pane is its fixed 320px and at its narrowest.
+  flow('admin: the pane\'s small print keeps to one line in every language', async () => {
+    const LANGS = ['en', 'vi', 'de', 'ja', 'zh', 'ko', 'fr', 'es', 'pt', 'it', 'ru']
+    const put = (lang: string) => expect('/admin/content', `
+      fetch('/api/settings', { method: 'PUT', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ language: ${JSON.stringify(lang)} }) })
+        .then((r) => r.ok ? 'ok' : 'refused ' + r.status)`)
+    const was = await expect('/admin/content', 'document.documentElement.lang || "en"')
+    const bad: string[] = []
+    try {
+      for (const lang of LANGS) {
+        const set = await put(lang)
+        if (set !== 'ok') return `${lang}: the language could not be set (${set})`
+        const v = await expect('/admin/content', `(() => {
+          const row = document.querySelector('[data-write-status]')?.closest('div')
+          if (!row) return 'no status row'
+          if (document.documentElement.lang !== ${JSON.stringify(lang)}) return 'the admin is in ' + document.documentElement.lang
+          const keys = [...row.querySelectorAll('button')]
+          const tops = new Set(keys.map((b) => Math.round(b.getBoundingClientRect().top)))
+          const hs = keys.map((b) => b.getBoundingClientRect().height)
+          if (tops.size > 1) return 'the row breaks onto ' + tops.size + ' lines at ' + Math.round(row.getBoundingClientRect().width) + 'px'
+          if (Math.max(...hs) > Math.min(...hs) * 1.5) return 'a key wraps inside itself: ' + keys.map((b) => b.textContent.trim()).join(' | ')
+          if (row.scrollWidth > row.clientWidth + 1) return 'the row overflows by ' + (row.scrollWidth - row.clientWidth) + 'px'
+          return 'ok'
+        })()`)
+        if (v !== 'ok') bad.push(`${lang}: ${v}`)
+      }
+    } finally {
+      await put(was.slice(0, 2))
+    }
+    return bad.length ? bad.join('; ') : 'ok'
+  })
 }

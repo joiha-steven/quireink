@@ -89,7 +89,7 @@ const ru = {
   filterAll: 'Все',
   scopePages: 'Страницы',
   scopePosts: 'Записи',
-  scopePublished: 'Опубликованные',
+  scopePublished: 'На сайте',
   scopeDrafts: 'Черновики',
   sortUpdated: 'Изменено',
   sortCreated: 'Создано',
