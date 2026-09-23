@@ -95,7 +95,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     <li><b>Content</b> — reader features (search, contents, sidebar, related, book mode…) and comments.</li>
     <li><b>Appearance</b> — palettes, fonts, per-role text sizes, custom CSS.</li>
     <li><b>SEO</b> — sitemap, RSS, robots, OG images, URL redirects.</li>
-    <li><b>Integrations</b> — SMTP, MCP, Google Drive backups, Cloudflare, WordPress import, comment keys.</li>
+    <li><b>Integrations</b> — email for the newsletter, MCP, off-site backups, Cloudflare, WordPress import, comment keys.</li>
     </ul>
     <p class="${LINKS}"><a href="/admin/settings" class="${A}">Open Settings</a></p>`,
   },

@@ -25,6 +25,7 @@ import { Database } from 'bun:sqlite'
 import { db, analyticsDb } from '@/store/db'
 import { getSettings } from '@/content/settings'
 import { replicateSnapshot } from '@/server/backup-offsite'
+import { logActivityError } from '@/server/activity'
 import { sealer } from '@/server/backup-crypt'
 import type { SiteSettings } from '@/types'
 
@@ -307,7 +308,11 @@ export async function maybeRunBackup(): Promise<{ ran: boolean; name?: string; e
     return { ran: true, name }
   } catch (error) {
     // Reported, not thrown: a failed backup must not take the rest of the cron tick with it.
+    // AND REPORTED WHERE THE OWNER LOOKS. A console line reaches a server log nobody reads on a
+    // blog; the off-site copy has always written its failures to the activity log, and the
+    // scheduled one did not, so a backup could stop for weeks with nothing on any screen.
     console.error(`[ERROR] backup.scheduled: ${(error as Error).message}`)
+    void logActivityError('scheduled backup', (error as Error).message)
     return { ran: false, error: (error as Error).message }
   }
 }

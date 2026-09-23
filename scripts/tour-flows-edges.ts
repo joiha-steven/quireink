@@ -38,4 +38,38 @@ export function registerEdgeFlows({ flow, atWidth }: Tour): void {
     const bad = ps.filter((p) => parseFloat(getComputedStyle(p).textIndent) !== 0)
     return bad.length ? bad.length + ' paragraph(s) in a callout indented ' + getComputedStyle(bad[0]).textIndent : 'ok'
   })()`))
+
+  // THE ADMIN'S EDGES, same day, same way found.
+  flow('admin: the trash is one column, a row the width of the sheet', () => atWidth(1440, '/admin/trash', `(() => {
+    const row = document.querySelector('[data-trash-row], ul > li')
+    if (!row) return 'skip: nothing in the trash'
+    const list = row.closest('ul')
+    const r = row.getBoundingClientRect(), l = list.getBoundingClientRect()
+    return r.width < l.width * 0.9 ? 'a row is ' + Math.round(r.width) + 'px of a ' + Math.round(l.width) + 'px list' : 'ok'
+  })()`))
+
+  flow('admin: a comment shows its emphasis, not its asterisks', () => atWidth(1440, '/admin/comments', `(() => {
+    const bodies = [...document.querySelectorAll('[data-comment] [data-mark].line-clamp-3')]
+    if (bodies.length === 0) return 'no comments to read'
+    const raw = bodies.filter((b) => /(^|\\s)\\*[^*\\s][^*]*\\*(\\s|$|[.,;:!?])/.test(b.textContent))
+    return raw.length ? raw.length + ' comment(s) show raw asterisks: ' + raw[0].textContent.slice(0, 60) : 'ok'
+  })()`))
+
+  flow('admin: on a phone the post title is larger than the body text under it', () => atWidth(390, '/admin/editor/five-inks-and-when-to-reach-for-each', `(async () => {
+    await new Promise((r) => setTimeout(r, 400))
+    const title = document.querySelector('[data-sheet-title]')
+    const p = document.querySelector('.ProseMirror p')
+    if (!title || !p) return 'no title or no paragraph on the sheet'
+    const a = parseFloat(getComputedStyle(title).fontSize), b = parseFloat(getComputedStyle(p).fontSize)
+    return a > b * 1.3 ? 'ok' : 'the title is ' + a + 'px over a ' + b + 'px body'
+  })()`))
+
+  flow('admin: a page asks for a page title, and says its state once', () => atWidth(1440, '/admin/page-editor', `(() => {
+    const title = document.querySelector('[data-sheet-title]')
+    if (!title) return 'no title field'
+    const meta = document.querySelector('[data-sheet-meta]')?.textContent ?? ''
+    const parts = meta.split(' · ')
+    if (parts.length !== new Set(parts).size) return 'the meta line repeats itself: ' + meta
+    return title.placeholder === document.querySelector('[data-sheet-title]').placeholder && !/post/i.test(title.placeholder) ? 'ok' : 'placeholder reads "' + title.placeholder + '"'
+  })()`))
 }

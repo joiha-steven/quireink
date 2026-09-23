@@ -22,6 +22,7 @@ import {
 } from '@/auth/sessions'
 import { generateSecret, otpauthUri } from '@/auth/totp'
 import { pendingUser, submitPassword, submitSecondFactor } from '@/auth/login'
+import { noUsersYet } from '@/auth/users'
 import { qrSvg } from '@/render/qr'
 import { fail, json } from '@/web/api'
 import { html, readFields, safeNext, signedIn } from '@/web/auth-http'
@@ -38,6 +39,10 @@ export async function handleLoginPage(c: Context): Promise<Response> {
   if (resolveSession(getCookie(c, COOKIE_NAME)) !== null) {
     return c.redirect(safeNext(c.req.query('next')), 302)
   }
+  // Nobody to sign in as: the setup page says so and says where the link is. A stranger who
+  // opened `/admin` on a fresh install met a sign-in form for an account that did not exist,
+  // and `/setup` — the page written for exactly that moment — only answered by name.
+  if (noUsersYet()) return c.redirect('/setup', 302)
   return html(passwordScreen(await getSettings(), { next: c.req.query('next') }))
 }
 

@@ -231,6 +231,8 @@ export async function writingFrame(
       title: draft.title,
       content,
       metaLine: metaLine(kind, t, draft, row?.updatedAt ?? ''),
+      touched: row?.updatedAt ? formatDateTimeShort(row.updatedAt) : '',
+      kind,
     },
     links: {
       live: {

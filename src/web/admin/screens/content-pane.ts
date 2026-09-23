@@ -19,6 +19,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteLang } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount } from '@/i18n/format'
+import { plural } from '@/i18n/plural'
 import { formatDateTimeShort } from '@/admin-shared/when'
 import { CONTROL_SM, SHEET_TOOL, SHEET_TOOL_DANGER, buttonClass } from '@/admin-shared/kit'
 import { fold } from '@/admin-shared/fold'
@@ -90,7 +91,7 @@ const ROW = 'relative block border-b border-neutral-100 px-4 py-3 dark:border-ne
 
 /** The words a row's second line needs, and the third line's two states. */
 type RowWords = Pick<AdminStrings,
-  'untitled' | 'kindPage' | 'kindNote' | 'statusDraft' | 'statusPublished' | 'scheduled'>
+  'untitled' | 'kindPage' | 'kindNote' | 'statusDraft' | 'statusPublished' | 'scheduled' | 'writeViews'>
 
 /**
  * One row's inside, which is the same whether the row is a link or a tick target.
@@ -159,9 +160,12 @@ function rowBody(it: WriteItem, t: RowWords, views: Record<string, number>, lang
       + `${prefix}<span data-write-line></span></span>`
 
   const meta = `<span class="mt-1 block text-xs text-neutral-500 dark:text-neutral-400">`
-    + escapeHtml(drafty ? t.statusDraft : t.statusPublished)
+    // SCHEDULED is its own word. The lamp beside this line already knew and pulsed amber, while
+    // the line said "Published" under a date that had not come yet (seen 2026-09-23).
+    + escapeHtml(drafty ? t.statusDraft : queued ? t.scheduled : t.statusPublished)
     + (when ? ` · ${escapeHtml(formatDateTimeShort(when))}` : '')
-    + (!drafty && seen ? ` · ${escapeHtml(formatCount(seen, lang))}` : '')
+    // The count says what it counts: a bare "· 124" after a date read as part of the date.
+    + (!drafty && seen ? ` · ${escapeHtml(plural(t.writeViews, seen, lang, formatCount(seen, lang)))}` : '')
     + `</span>`
 
   return `<span class="flex items-baseline gap-2">${mark}`

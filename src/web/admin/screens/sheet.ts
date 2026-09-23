@@ -25,6 +25,11 @@ export type SheetPiece = {
   content: string
   /** `Draft · 15/9/26 - 13:14`, already worded and formatted by the server. */
   metaLine: string
+  /** When it was last saved, formatted, or empty for a piece never saved: the island's own copy
+   *  of the line's last part, so it never has to guess which part that is. */
+  touched: string
+  /** Which of the three is open, for the title's placeholder. */
+  kind: 'post' | 'page' | 'note'
 }
 
 export type SheetFrame = {
@@ -48,12 +53,12 @@ function title(t: AdminStrings, piece: SheetPiece): string {
   // the reading face, inside the sheet. No `tracking-tight` — that was the sans's -0.025em on a
   // serif that publishes at -0.01em.
   return `<div class="px-4 pt-6">`
-    + `<textarea data-sheet-title rows="1" placeholder="${escapeAttr(t.titlePlaceholder)}"`
+    + `<textarea data-sheet-title rows="1" placeholder="${escapeAttr(piece.kind === 'page' ? t.titlePlaceholderPage : piece.kind === 'note' ? t.titlePlaceholderNote : t.titlePlaceholder)}"`
     + ` class="${escapeAttr(READING)} write-surface min-h-12 w-full resize-none overflow-hidden`
     + ` bg-transparent text-3xl font-semibold leading-tight [field-sizing:content]`
     + ` placeholder:italic placeholder:font-normal placeholder:text-neutral-300`
     + ` dark:placeholder:text-neutral-600">${escapeHtml(piece.title)}</textarea>`
-    + `<p data-sheet-meta class="mb-2 mt-1 text-xs text-neutral-500 dark:text-neutral-400">`
+    + `<p data-sheet-meta data-touched="${escapeAttr(piece.touched)}" class="mb-2 mt-1 text-xs text-neutral-500 dark:text-neutral-400">`
     + `${escapeHtml(piece.metaLine)}</p></div>`
 }
 

@@ -55,8 +55,10 @@ function boot(root: HTMLElement, data: Payload): void {
   // keeps the row's own time rather than blanking it on the first repaint. A piece that has
   // never been touched has no second part, and taking the last one regardless would print its
   // state twice.
-  const saidParts = (root.querySelector('[data-sheet-meta]')?.textContent ?? '').split(' · ')
-  const touchedAt = saidParts.length > 1 ? saidParts[saidParts.length - 1] ?? '' : ''
+  // READ, NOT PARSED, since 2026-09-23. Taking the line's last part was right for a post and
+  // wrong for a page or a note never saved, whose line is `Page · Draft`: the state was taken
+  // for the time and the island printed `Page · Draft · Draft`.
+  const touchedAt = root.querySelector<HTMLElement>('[data-sheet-meta]')?.dataset.touched ?? ''
   // The slug follows the title until somebody types one. It counts as typed from the first
   // save onwards: nothing set this after that save, so every later title edit renamed a post
   // that had already been shared.
@@ -193,6 +195,7 @@ function boot(root: HTMLElement, data: Payload): void {
    */
   const sheetBar = wireBar(root, {
     t,
+    lang,
     getText: () => `${draft.title} ${body()}`,
     onSaveDraft: () => void saveAs('draft', t.savedDraft),
     onPublish: () => {

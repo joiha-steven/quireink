@@ -17,6 +17,8 @@
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import type { Offer } from '@/admin-shared/draft-keep'
 import { countWords, readMinutes } from '@/admin-shared/word-count'
+import { plural } from '@/i18n/plural'
+import type { SiteLang } from '@/types'
 import { formatTime } from '@/admin-shared/when'
 import { matchesChord, printChord, SHORTCUTS } from '@/admin/components/editorKeys'
 import { focusOn, onFocusChange, setFocus } from './focus-mode'
@@ -26,6 +28,8 @@ const COUNT_EVERY = 4000
 
 export type BarHooks = {
   t: SheetWords
+  /** For the count's plural: "1 word", and the three Russian forms. */
+  lang: SiteLang
   /** The title and the body, for the word count. Read on the tick, never held. */
   getText: () => string
   onSaveDraft: () => void
@@ -58,7 +62,7 @@ const all = (root: HTMLElement, hook: string): HTMLElement[] =>
   [...root.querySelectorAll<HTMLElement>(`[${hook}]`)]
 
 export function wireBar(root: HTMLElement, hooks: BarHooks): Bar {
-  const { t } = hooks
+  const { t, lang } = hooks
   const one = (hook: string): HTMLElement | null => root.querySelector<HTMLElement>(`[${hook}]`)
 
   const dot = one('data-say-dot')
@@ -97,7 +101,7 @@ export function wireBar(root: HTMLElement, hooks: BarHooks): Bar {
     // Written whole rather than hidden: the class on this span is `hidden sm:inline`, so a
     // `hidden` attribute on it would be answering a question the breakpoint already answers.
     size.textContent = words > 0
-      ? `${statusLine ? ' · ' : ''}${t.edWords.replace('{n}', String(words))}`
+      ? `${statusLine ? ' · ' : ''}${plural(t.edWords, words, lang)}`
         + ` · ${t.edReadMinutes.replace('{n}', String(readMinutes(words)))}`
       : ''
   }

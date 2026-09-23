@@ -358,6 +358,8 @@ export type AdminStrings = {
   deleteFailed: string
   // editor
   titlePlaceholder: string
+  titlePlaceholderPage: string
+  titlePlaceholderNote: string
   saveDraft: string
   publish: string
   /** Sits above the attributes when they open AS the publish sheet (ADR 0024). */
@@ -450,7 +452,10 @@ export type AdminStrings = {
   findCount: string
   findNoMatch: string
   findReplacedN: string
+  /** Plural forms separated by `|`, in `Intl.PluralRules` category order (see `src/i18n/plural.ts`). */
   edWords: string
+  /** A piece's view count on the write list. Plural forms, as `edWords`. */
+  writeViews: string
   edFocus: string
   edReadMinutes: string
   pubTitle: string

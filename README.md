@@ -53,7 +53,7 @@ To start you need a domain and a rented server, and the cheapest tier is enough.
 
 **The reading page is the product.** Type, colour, size, spacing and layout are settings, not code. Not one size or colour is written into the reader's stylesheet, and the build fails if somebody puts one there.
 
-**Nothing of ours is forced onto your pages.** No "powered by" line: the footer is your own line or nothing, and the admin's wordmark and version line each have a switch.
+**Nothing of ours is forced onto your pages.** A new blog's footer ends in one "powered by Quire Ink" link. It is an ordinary line in Settings → Home & menu, so you rewrite it or clear it; the admin's wordmark and version line each have a switch.
 
 <details>
 <summary><b>Against the usual alternatives</b></summary>

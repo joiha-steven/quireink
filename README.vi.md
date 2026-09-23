@@ -60,7 +60,7 @@ Màu, font, cỡ chữ, bố cục trang chủ, menu: đổi hết trong trang q
 
 **Trang đọc mới là sản phẩm.** Font, màu, cỡ chữ, khoảng cách và bố cục đều là tuỳ chọn chứ không phải code. Không một cỡ chữ hay màu nào được viết cứng vào stylesheet của người đọc, và bản build đỏ nếu có ai nhét vào.
 
-**Không thương hiệu nào của chúng tôi bị ép lên trang bạn.** Không dòng "powered by": footer là dòng chữ của bạn hoặc không có gì, logo trong admin và dòng phiên bản đều có công tắc tắt.
+**Không thương hiệu nào của chúng tôi bị ép lên trang bạn.** Footer của một blog mới kết thúc bằng một liên kết "powered by Quire Ink". Đó là một dòng bình thường trong Settings → Home & menu, sửa hoặc xoá đi đều được; logo trong admin và dòng phiên bản đều có công tắc tắt.
 
 <details>
 <summary><b>Đặt cạnh những lựa chọn quen thuộc</b></summary>

@@ -29,6 +29,21 @@ import { SITE_LANGS } from '@/locales/langs'
 import { MIN_LENGTH } from '@/auth/password'
 
 /** `{n}` style interpolation, the same shape the admin strings already use. */
+/**
+ * THE FIRST RUN IS SEVEN SCREENS, and each one says where it stands among them.
+ *
+ * The two security screens said "Step 1 of 2" and "Step 2 of 2", and four more followed — the
+ * site, the front page, the reader's pen and the look — so a new owner who had just been told
+ * they were done was handed a fifth screen (seen 2026-09-23). Account, authenticator, recovery
+ * codes, then those four. Enrolment that happens LATER, at a sign-in on a blog already set up,
+ * keeps its own two steps: it is not a first run.
+ */
+export const SETUP_STEPS = 7
+export function setupStep(settings: SiteSettings, s: ReturnType<typeof adminT>, n: number, later?: number): string {
+  const [at, of] = settings.setupDone ? [later, 2] : [n, SETUP_STEPS]
+  return at === undefined ? '' : `<p class="login-step">${escapeHtml(fill(s.authStepOf, { n: at, total: of }))}</p>`
+}
+
 const fill = (template: string, values: Record<string, string | number>): string =>
   template.replace(/\{(\w+)\}/g, (whole, key: string) =>
     key in values ? String(values[key]) : whole)
@@ -177,7 +192,7 @@ export function enrolScreen(
 
   return loginShell(settings, s.authSetUp, `
 <h1>${escapeHtml(s.authSetUp)}</h1>
-<p class="login-step">${escapeHtml(fill(s.authStepOf, { n: 1, total: 2 }))}</p>
+${setupStep(settings, s, 2, 1)}
 <h2>${escapeHtml(s.authScanTitle)}</h2>
 <p class="login-hint">${escapeHtml(s.authScanHint)}</p>
 ${qr}
@@ -212,7 +227,7 @@ export function recoveryCodesScreen(
   const list = opts.codes.map((code) => `<li><code>${escapeHtml(code)}</code></li>`).join('')
   return loginShell(settings, s.authCodesTitle, `
 <h1>${escapeHtml(s.authCodesTitle)}</h1>
-<p class="login-step">${escapeHtml(fill(s.authStepOf, { n: 2, total: 2 }))}</p>
+${setupStep(settings, s, 3, 2)}
 <p class="login-hint">${escapeHtml(s.authCodesHint)}</p>
 <ol class="login-codes">${list}</ol>
 <p class="login-alt">
@@ -223,7 +238,7 @@ export function recoveryCodesScreen(
   <input type="checkbox" name="saved" value="1" required>
   <span>${escapeHtml(s.authCodesSaved)}</span>
 </label>
-<button type="submit" class="login-submit">${escapeHtml(s.authDone)}</button>
+<button type="submit" class="login-submit">${escapeHtml(s.authContinue)}</button>
 </form>`)
 }
 
@@ -276,6 +291,7 @@ export function claimScreen(
   const s = adminT(settings.language)
   return loginShell(settings, s.setupTitle, `
 <h1>${escapeHtml(s.setupTitle)}</h1>
+${setupStep(settings, s, 1)}
 <p class="login-lede">${escapeHtml(s.setupLede)}</p>
 ${errorBox(opts.error)}
 <form method="post" action="/api/setup/claim" class="login-form">

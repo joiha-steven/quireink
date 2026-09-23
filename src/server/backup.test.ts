@@ -6,7 +6,7 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { saveSettings } from '@/content/settings'
+import { getSettings, saveSettings } from '@/content/settings'
 import { DEFAULT_BACKUPS } from '@/content/settings-defaults'
 import { savePost } from '@/content/posts'
 import {
@@ -150,6 +150,28 @@ describe('maybeRunBackup', () => {
     await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 7, keep: 4 } })
     expect((await maybeRunBackup()).ran).toBe(true)
     expect((await maybeRunBackup()).ran).toBe(false)
+  })
+
+  it('writes a failure to the activity log, where the owner looks, not only to the console', async () => {
+    const { getActivity } = await import('@/server/activity')
+    const was = process.env.BACKUP_DIR
+    // A path under a FILE: no directory can be made there, so the run fails the way a full or
+    // read-only disk does.
+    process.env.BACKUP_DIR = join(import.meta.dir, 'backup.test.ts', 'nope')
+    try {
+      await saveSettings({
+        backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 1, keep: 4 },
+        features: { ...(await getSettings()).features, activityLog: true },
+      })
+      const run = await maybeRunBackup()
+      expect(run.ran).toBe(false)
+      expect(run.error).toBeTruthy()
+      const logged = (await getActivity(20)).find((e) => e.action === 'error' && e.detail.startsWith('scheduled backup'))
+      expect(logged).toBeDefined()
+    } finally {
+      if (was === undefined) delete process.env.BACKUP_DIR
+      else process.env.BACKUP_DIR = was
+    }
   })
 
   // Due-ness comes from the newest file rather than a recorded run time, so a machine

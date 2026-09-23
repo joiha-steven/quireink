@@ -98,6 +98,13 @@ describe('GET /login', () => {
     expect(html).toMatch(/<p class="login-warn" data-insecure hidden>/)
   })
 
+  it('sends a blog nobody owns yet to the setup page, not to a form for an account that does not exist', async () => {
+    db().run('delete from users')
+    const res = await app.request('/login')
+    expect(res.status).toBe(302)
+    expect(res.headers.get('location')).toBe('/setup')
+  })
+
   it('redirects someone who is already signed in', async () => {
     const { cookie } = await enrolFully()
     const res = await app.request('/login', { headers: { cookie } })

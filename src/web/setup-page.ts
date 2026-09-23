@@ -34,7 +34,7 @@
 import type { SiteLook, SiteSettings } from '@/types'
 import { adminT } from '@/i18n/admin-i18n'
 import { SITE_LANGS } from '@/locales/langs'
-import { loginShell } from '@/web/login-page'
+import { loginShell, setupStep } from '@/web/login-page'
 import { escapeAttr, escapeHtml } from '@/utils'
 
 /**
@@ -57,6 +57,7 @@ export function siteStepScreen(
 
   return loginShell(settings, s.siteStepTitle, `
 <h1>${escapeHtml(s.siteStepTitle)}</h1>
+${setupStep(settings, s, 4)}
 <p class="login-lede">${escapeHtml(s.siteStepLede)}</p>
 <form method="post" action="/setup/site" class="login-form">
 
@@ -113,6 +114,7 @@ export function faceStepScreen(settings: SiteSettings): string {
 
   return loginShell(settings, s.faceStepTitle, `
 <h1>${escapeHtml(s.faceStepTitle)}</h1>
+${setupStep(settings, s, 5)}
 <p class="login-lede">${escapeHtml(s.faceStepLede)}</p>
 <form method="post" action="/setup/face" class="login-form">
 <div class="face-grid">
@@ -152,6 +154,7 @@ export function readerStepScreen(settings: SiteSettings): string {
 
   return loginShell(settings, s.penStepTitle, `
 <h1>${escapeHtml(s.penStepTitle)}</h1>
+${setupStep(settings, s, 6)}
 <p class="login-lede">${escapeHtml(s.penStepLede)}</p>
 <form method="post" action="/setup/reader" class="login-form">
 <div class="face-grid">
@@ -203,6 +206,7 @@ export function lookStepScreen(settings: SiteSettings): string {
 
   return loginShell(settings, s.lookStepTitle, `
 <h1>${escapeHtml(s.lookStepTitle)}</h1>
+${setupStep(settings, s, 7)}
 <p class="login-lede">${escapeHtml(s.lookStepLede)}</p>
 <form method="post" action="/setup/look" class="login-form">
 <div class="face-grid">
