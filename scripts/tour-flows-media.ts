@@ -204,4 +204,29 @@ export function registerMediaFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       if (!got || got.url !== url) return 'the picker answered ' + JSON.stringify(got)
       return 'ok (' + got.url + (got.alt ? ', described' : ', no description') + ')'
     })()`, 2500))
+
+  // THE FULL-SIZE PICTURE IS A DIALOG, since 2026-09-23. It was a div: no role, no focus, Tab
+  // walked the grid behind it, and a screen reader was never told anything had opened.
+  flow('admin: the library\'s full-size picture is a dialog that takes and returns focus', () => expect(
+    '/admin/media', `(async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      let open = null
+      for (let i = 0; i < 40 && !open; i++) { open = document.querySelector('[data-media-grid] [data-open]'); if (!open) await sleep(100) }
+      if (!open) return 'the library shows no picture to open'
+      open.focus()
+      open.click()
+      await sleep(200)
+      const box = document.querySelector('dialog[data-media-zoom]')
+      if (!box || !box.open) return 'opening a picture drew no open dialog'
+      if (!box.matches(':modal')) return 'the dialog is not modal, so the grid behind it is still live'
+      if (!box.getAttribute('aria-label')) return 'the dialog has no name'
+      if (!box.contains(document.activeElement)) return 'focus stayed behind the dialog'
+      const close = box.querySelector('button')
+      if (!close || !close.textContent.trim()) return 'the dialog has no named way out'
+      close.click()
+      await sleep(200)
+      if (document.querySelector('dialog[data-media-zoom]')) return 'closing left the dialog in the page'
+      if (document.activeElement !== open) return 'closing left focus on ' + (document.activeElement?.tagName ?? 'nothing')
+      return 'ok'
+    })()`))
 }

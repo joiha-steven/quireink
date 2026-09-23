@@ -51,7 +51,7 @@ function words(t: AdminStrings): string {
     found: t.unusedFound, none: t.unusedNone,
     describing: t.aiDescribeAllStarted, noVision: t.aiCannotSeeImages,
     noModel: t.aiNotConfigured.replace('{tab}', t.tabServer),
-    loadFailed: t.loadMediaFailed,
+    loadFailed: t.loadMediaFailed, close: t.close,
   }))
 }
 

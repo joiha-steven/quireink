@@ -10,6 +10,11 @@
 // reading of the photograph, and a dark one is what readers expect.
 //
 // Clicks are DELEGATED from `.prose`, so an image that loads late is still covered.
+//
+// ⚠️ AND THE KEYBOARD OPENS IT TOO, since 2026-09-23. Until then the only way in was a pointer:
+// the pictures were not focusable, so the viewer — its arrows, its caption — did not exist for
+// anyone on Tab. Each picture is now a stop that says it opens a dialog, Enter or Space opens
+// it, and closing hands focus back to the picture, which `<dialog>` does by itself.
 
 import { el, label } from './dom'
 
@@ -18,7 +23,13 @@ export function lightbox(): void {
   if (!root) return
   const imgs = Array.from(root.querySelectorAll<HTMLImageElement>('figure img'))
   if (imgs.length === 0) return
-  for (const img of imgs) img.style.cursor = 'zoom-in'
+  for (const img of imgs) {
+    img.style.cursor = 'zoom-in'
+    // No role change: the picture stays a picture with its own alt text, which is what a screen
+    // reader should announce, and `aria-haspopup` says what pressing it will do.
+    img.tabIndex = 0
+    img.setAttribute('aria-haspopup', 'dialog')
+  }
 
   let dialog: HTMLDialogElement | null = null
   let index = 0
@@ -85,12 +96,16 @@ export function lightbox(): void {
     document.addEventListener('keydown', onKey)
   }
 
-  root.addEventListener('click', (e) => {
+  // ONE handler for the pointer and the keyboard: the same picture, the same viewer. Space is
+  // prevented along with Enter, or it would scroll the page underneath the dialog as it opens.
+  const act = (e: Event) => {
+    if ('key' in e && e.key !== 'Enter' && e.key !== ' ') return
     const target = e.target as HTMLElement
-    if (target.tagName !== 'IMG' || !target.closest('figure')) return
     const i = imgs.indexOf(target as HTMLImageElement)
-    if (i < 0) return
+    if (i < 0 || !target.closest('figure')) return
     e.preventDefault()
     open(i)
-  })
+  }
+  root.addEventListener('click', act)
+  root.addEventListener('keydown', act)
 }

@@ -157,4 +157,31 @@ export function registerPictureFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atW
       return done('ok ' + open.length + ' keys, ' + on.length + ' reported chosen (' + on.map((b) => b.textContent).join(', ') + ')')
     })()`, 1400)
   })
+
+  // THE KEYBOARD OPENS A PICTURE, and closing gives it back. Until 2026-09-23 the viewer had
+  // only a pointer's way in: the pictures were not focusable, so for anyone on Tab the arrows and
+  // captions inside it did not exist.
+  flow('a picture in a post opens from the keyboard, and closing hands focus back', () => atWidth(
+    1440, '/the-reed-pen-in-van-goghs-letters', `(async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const img = document.querySelector('.prose figure img')
+      if (!img) return 'the post has no picture to open'
+      if (img.tabIndex !== 0) return 'the picture is not a Tab stop (tabIndex ' + img.tabIndex + ')'
+      if (img.getAttribute('aria-haspopup') !== 'dialog') return 'the picture does not say it opens a dialog'
+      img.focus()
+      img.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }))
+      await sleep(150)
+      const box = document.querySelector('dialog.lightbox[open]')
+      if (!box) return 'Enter on a focused picture opened nothing'
+      if (!box.contains(document.activeElement)) return 'the viewer opened without focus in it'
+      box.close()
+      await sleep(150)
+      if (document.activeElement !== img) return 'closing left focus on ' + (document.activeElement?.tagName ?? 'nothing')
+      img.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }))
+      await sleep(150)
+      const again = document.querySelector('dialog.lightbox[open]')
+      if (!again) return 'Space did not open it'
+      again.close()
+      return 'ok'
+    })()`))
 }

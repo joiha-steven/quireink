@@ -1537,3 +1537,15 @@ tr[data-piece][data-last] {
 }
 :root.dark[data-media-view-files='grid'] [data-file-frame] > li { border-color: var(--color-neutral-800, #262626); }
 :root[data-media-view-files='grid'] [data-file-frame] > li > div { width: 100%; }
+
+/* THE LIBRARY'S FULL-SIZE PICTURE, a native <dialog> since 2026-09-23 (it was a div nobody was
+   told had opened). A dialog arrives with the UA's centred box, border and white paper; this
+   takes all three away so the picture sits on the dimmed page as it always did. The closed
+   rule matters: `display:flex` would otherwise show a dialog that is not open. */
+[data-media-zoom] {
+  margin: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+  padding: 1rem; border: 0; background: transparent;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem;
+}
+[data-media-zoom]:not([open]) { display: none; }
+[data-media-zoom]::backdrop { background: color-mix(in srgb, #000 80%, transparent); }

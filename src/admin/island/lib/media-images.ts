@@ -11,7 +11,7 @@
 // others from (`admin-shared/media-marks.ts`).
 import type { MediaItem, SiteLang } from '@/types'
 import { formatBytes, formatDate } from '@/i18n/format'
-import { DROPZONE_IDLE, DROPZONE_OVER } from '@/admin-shared/kit'
+import { buttonClass, DROPZONE_IDLE, DROPZONE_OVER } from '@/admin-shared/kit'
 import { mediaTileMark, type MediaWords } from '@/admin-shared/media-marks'
 import { elOf } from './mark-dom'
 import { wireGrid } from './media-grid'
@@ -248,21 +248,34 @@ export function wireImages(panel: HTMLElement, tools: HTMLElement | null, w: Wor
     zoom(open.dataset.open, tile?.dataset.name ?? '', open.getAttribute('aria-label') ?? '')
   })
 
-  /** The scrim closes it; the picture does not, so a click to look closer is not a click away. */
+  /**
+   * The scrim closes it; the picture does not, so a click to look closer is not a click away.
+   *
+   * ⚠️ A `<dialog>`, not a `fixed inset-0` div, since 2026-09-23. The div had no role and took no
+   * focus, so a screen reader was never told anything had opened, Tab walked the grid behind
+   * it, and closing left focus wherever it had been. `showModal()` makes the page inert, holds
+   * focus inside, closes on Escape, and hands focus back to the tile that opened it — all four
+   * by itself, which is why none of them is written here.
+   */
   function zoom(url: string, _name: string, label: string): void {
-    const scrim = document.createElement('div')
-    scrim.className = 'fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/80 p-4'
+    const dialog = document.createElement('dialog')
+    dialog.setAttribute('aria-label', label)
+    dialog.dataset.mediaZoom = ''
     const img = document.createElement('img')
     img.src = url
     img.alt = label
     img.className = 'max-h-[85vh] max-w-full rounded-lg object-contain'
     img.addEventListener('click', (e) => e.stopPropagation())
-    scrim.append(img)
-    const shut = (): void => { scrim.remove(); document.removeEventListener('keydown', onKey) }
-    const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') shut() }
-    scrim.addEventListener('click', shut)
-    document.addEventListener('keydown', onKey)
-    document.body.append(scrim)
+    const close = document.createElement('button')
+    close.type = 'button'
+    close.textContent = w.close ?? ''
+    close.className = buttonClass('secondary', 'sm')
+    close.addEventListener('click', (e) => { e.stopPropagation(); dialog.close() })
+    dialog.append(img, close)
+    dialog.addEventListener('click', () => dialog.close())
+    dialog.addEventListener('close', () => dialog.remove())
+    document.body.append(dialog)
+    dialog.showModal()
   }
 
   retotal()
