@@ -46,6 +46,14 @@ export type Screen = {
    * the bundler's hash decides the filename.
    */
   island: string | null
+  /**
+   * True on a screen that draws the writing sheet, which links the pen's sheet (`admin-ink.css`).
+   *
+   * Every rule in the pen is `.prose mark` or `.prose u`, and the writing sheet is the one
+   * `.prose` in the admin, so no other screen has anything for 523 KB of ink to paint. Absent
+   * means false: a new screen does not pay for the pen until it says it draws the paper.
+   */
+  pen?: boolean
 }
 
 /** Keyed by the exact path. A screen with children states its own prefix rule here later. */
@@ -108,7 +116,7 @@ export function screenFor(path: string): { name: string; screen: Screen } | null
     if (p !== prefix && !p.startsWith(`${prefix}/`)) continue
     return {
       name: prefix.slice('/admin/'.length),
-      screen: { render: (settings) => editorFrame(settings, p), island },
+      screen: { render: (settings) => editorFrame(settings, p), island, pen: true },
     }
   }
   return null

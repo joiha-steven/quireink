@@ -71,10 +71,13 @@ const styles = minifyCss(`${utilities}\n${chrome}`)
 // rules, from the same constant the public sheet uses. Appended rather than pasted into
 // `admin.css`, because a second copy of a type scale stays in step for about a month.
 //
-// The pen comes too, and ALL of it. The public side links each half of the ink only to the
-// pages whose HTML contains its element (ADR 0027), but the editor cannot know which
-// gestures a post will use before the owner writes them — a stroke you cannot see while
-// writing is a stroke you cannot place.
+// The pen comes too, and ALL of it — but IN A SHEET OF ITS OWN since 2026-09-23. The public side
+// links each half of the ink only to the pages whose HTML contains its element (ADR 0027); the
+// editor cannot know which gestures a post will use before the owner writes them, so it takes
+// the whole pen. What it no longer does is hand the pen to every OTHER screen: every rule in it
+// is `.prose mark|u[data-pen]`, and the writing sheet is the only `.prose` the admin draws.
+// Measured that day: 523.5 of the 671 KB sheet, on the dashboard, the library and the analytics
+// screen as much as on the editor. `spa.ts` links `admin-ink.css` where `Screen.pen` says to.
 //
 // ⚠️ THROUGH THE MINIFIER, LIKE THE OTHER TWO. These two were appended to the already-minified
 // pair, so their comments went to the browser: measured 2026-09-16, 18,203 raw bytes and 8,576
@@ -83,7 +86,8 @@ const styles = minifyCss(`${utilities}\n${chrome}`)
 // comments were being served; two of the four sheets were not being asked.
 const { PROSE_CSS } = await import(`${ROOT}src/web/prose.css.ts`)
 const { INK_CSS } = await import(`${ROOT}src/pen/ink.css.ts`)
-await Bun.write(`${OUT}/admin.css`, minifyCss(`${styles}\n${PROSE_CSS}\n${INK_CSS}`))
+await Bun.write(`${OUT}/admin.css`, minifyCss(`${styles}\n${PROSE_CSS}`))
+await Bun.write(`${OUT}/admin-ink.css`, minifyCss(INK_CSS))
 
 // The ENTRIES only, largest first: the chunks they share are counted in the total and would
 // otherwise print twenty lines of four-kilobyte noise over the number that matters.

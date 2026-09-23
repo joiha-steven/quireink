@@ -23,8 +23,12 @@
 // writing surface, does the sheet in front of the owner paint it.
 import type { Tour } from './tour'
 
+// ⚠️ ALL THREE WRITING ADDRESSES, since the split of 2026-09-23 made the pen a sheet a screen has
+// to ask for: a page or a note whose screen forgot to ask would write in invisible ink.
+const WRITING = ['/admin/editor', '/admin/page-editor', '/admin/note-editor']
+
 export function registerPenFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
-  flow('admin: a stroke on the writing surface has ink in it', () => expect('/admin/editor', `
+  for (const path of WRITING) flow(`admin: a stroke on the writing surface has ink in it (${path})`, () => expect(path, `
     (() => {
       // The rules are written '.prose mark', so the container is the assertion's other half:
       // a mark outside one is correctly unpainted, and reporting THAT as a failure would send
@@ -45,4 +49,15 @@ export function registerPenFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>
       if (!paint || paint === 'none') return 'the mark resolves --ink-stroke but paints nothing (' + where + ')'
       return 'ok a mark in .' + where + ' paints ' + paint.slice(0, 28) + '…'
     })()`, 1200))
+
+  // AND THE OTHER HALF OF THE SPLIT: a screen with no paper does not pay for the pen. Asked of
+  // the LINKS rather than of a computed style, because the failure is bytes, not paint — the
+  // dashboard would look exactly the same carrying 523 KB it has no use for.
+  flow('admin: a screen with no writing sheet does not load the pen', () => expect('/admin', `
+    (() => {
+      const pen = [...document.querySelectorAll('link[rel=stylesheet]')].filter((l) => /admin-ink\\./.test(l.href))
+      if (pen.length) return 'the dashboard links the pen: ' + pen[0].href
+      if (document.querySelector('.prose')) return 'the dashboard draws a .prose, so it may need the pen after all'
+      return 'ok'
+    })()`))
 }

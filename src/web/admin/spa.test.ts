@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { STYLES_NAME, staleSheet } from '@/web/admin/spa'
+import { INK_NAME, STYLES_NAME, staleSheet } from '@/web/admin/spa'
 
 // The admin drew with NO STYLESHEET when a tab outlived the release its shell came from: the
 // shell asked for `admin.<old fingerprint>.css`, the route had only this build's name and the
@@ -29,5 +29,20 @@ describe('a sheet name from an earlier release', () => {
     // A name is a name, never a path: `readdirSync` filled the map with plain file names.
     expect(staleSheet('admin.../../../etc/passwd.css')).toBe(false)
     expect(staleSheet('admin.a-b.css')).toBe(false)
+  })
+})
+
+// The pen has had a sheet of its own since 2026-09-23, linked only on the writing screens, and
+// the same rule holds for it: an old tab on the editor asks for last release's pen by name.
+describe('the pen sheet, by the same rule', () => {
+  test('an old fingerprint of the pen is stale, and this build\'s is not', () => {
+    expect(staleSheet('admin-ink.deadbeef99.css')).toBe(true)
+    expect(staleSheet(INK_NAME)).toBe(false)
+  })
+
+  test('the two names never answer for each other', () => {
+    expect(INK_NAME.startsWith('admin-ink.')).toBe(true)
+    expect(STYLES_NAME.startsWith('admin.')).toBe(true)
+    expect(staleSheet('admin-ink.a-b.css')).toBe(false)
   })
 })

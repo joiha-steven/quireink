@@ -55,8 +55,8 @@ try {
 /**
  * The stylesheet, served under a name that carries a fingerprint.
  *
- * `admin.css` is 34 KB brotli / 55 KB gzip (656 KB raw, measured 2026-09-19; the figure here
- * said 39 KB compressed without naming which compressor, and 68 KB before that) and was `cache-control:
+ * `admin.css` is 19 KB brotli / 23 KB gzip (136 KB raw, measured 2026-09-23, after the pen moved
+ * to `admin-ink.css`; it was 34 KB brotli / 55 KB gzip with the pen inside) and was `cache-control:
  * no-cache` with no validator, so the owner
  * re-downloaded it on every single admin load while the chunks beside it, which carry the
  * bundler's hash, were `immutable` and free. The public side has always done this
@@ -110,6 +110,23 @@ const RAIL_ENTRY_NAME = railEntryName()
 const RAIL_ENTRY = `/admin/assets/${RAIL_ENTRY_NAME}`
 export const STYLES_NAME = `admin.${fingerprint('admin.css')}.css`
 const STYLES = `/admin/assets/${STYLES_NAME}`
+/** The pen, fingerprinted the same way, linked only where `Screen.pen` says (build-admin.ts). */
+export const INK_NAME = `admin-ink.${fingerprint('admin-ink.css')}.css`
+const INK = `/admin/assets/${INK_NAME}`
+/**
+ * An OLD shell's sheet: chrome AND pen, joined. A tab open across the release that split the pen
+ * out links one sheet and no pen, and may be on the editor — the chrome alone would leave every
+ * stroke bare until a reload (`tour-flows-pen.ts`).
+ */
+const STALE_SHEET: Asset | null = (() => {
+  const chrome = ASSETS.get('admin.css')
+  const ink = ASSETS.get('admin-ink.css')
+  if (!chrome || !ink) return chrome ?? null
+  const body = new Uint8Array(chrome.body.length + ink.body.length)
+  body.set(chrome.body, 0)
+  body.set(ink.body, chrome.body.length)
+  return { body, type: chrome.type }
+})()
 
 /**
  * THE BOOT SCRIPT, AS A FILE, and the reason is a Content Security Policy.
@@ -275,6 +292,7 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
   const screen = found
     ? await found.screen.render(settings, query)
     : await notFoundScreen(settings)
+  const ink = found?.screen.pen ? `\n<link rel="stylesheet" href="${INK}">` : ''
   const island = found?.screen.island
     ? `\n<script type="module" src="/admin/assets/${islandNamed(found.screen.island)}"></script>`
     : ''
@@ -289,7 +307,7 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${tabHead(settings)}
 <meta name="robots" content="noindex, nofollow">
-<link rel="stylesheet" href="${STYLES}">
+<link rel="stylesheet" href="${STYLES}">${ink}
 ${PRELOADS}
 <style>${adminStyles(settings)}</style>
 <!-- Before the first paint. Everything in it is a decision the SERVER cannot make: three
@@ -353,7 +371,8 @@ export function adminAsset(name: string): Asset | null {
  * release ahead of the markup are a nudge out of place, a 404 is a bare page.
  */
 export const staleSheet = (name: string): boolean =>
-  name !== STYLES_NAME && /^admin\.[a-z0-9]+\.css$/.test(name)
+  (name !== STYLES_NAME && /^admin\.[a-z0-9]+\.css$/.test(name))
+  || (name !== INK_NAME && /^admin-ink\.[a-z0-9]+\.css$/.test(name))
 
 export function handleAdminAsset(c: Context): Response {
   const name = c.req.path.replace('/admin/assets/', '')
@@ -363,8 +382,9 @@ export function handleAdminAsset(c: Context): Response {
   // The bare `admin.css` still serves — a bookmark, or a shell an old tab is still holding —
   // and still revalidates, because only the fingerprinted URL promises the bytes cannot change.
   const stale = staleSheet(name)
-  const stored = name === STYLES_NAME || stale ? 'admin.css' : name
-  const asset = adminAsset(stored)
+  const ink = name === INK_NAME || (stale && name.startsWith('admin-ink.'))
+  const stored = name === STYLES_NAME ? 'admin.css' : ink ? 'admin-ink.css' : name
+  const asset = stale && !ink ? STALE_SHEET : adminAsset(stored)
   if (!asset) return new Response('Not found', { status: 404 })
   // Every name the shell emits carries a hash: the bundler's on the entry and the chunks,
   // ours on the sheet. Anything else is a bare name and must revalidate — and so must a
