@@ -70,7 +70,7 @@ const PANE_BESIDE = 'hidden w-80 min-[1640px]:flex'
  * already spoken for and both margins measure 0 there. A reset for a margin that is not
  * applied is a class that has to be kept true forever for no effect.
  */
-const PANE_ALONE = 'flex w-full max-w-prose mx-auto xl:w-80'
+const PANE_ALONE = 'flex w-full max-w-prose mx-auto'
 
 const PANE = 'shrink-0 flex-col self-start overflow-hidden rounded-[10px] border'
   + ' border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:max-h-[calc(100dvh-1.5rem)]'
@@ -369,6 +369,9 @@ export function writePane(opts: {
     // nobody translates. JSON in an attribute rather than eighteen attributes, which is the
     // shape the media and settings screens already use.
     + ` data-write-words="${escapeAttr(JSON.stringify(words(t)))}"`
+    // ALONE, the width above 1280 is not a class: it grows with the window, and `admin.css`
+    // holds the clamp (`[data-write-fit]`). Beside the editor it stays `w-80`; see there why.
+    + ` data-write-fit="${alone ? 'alone' : 'beside'}"`
     + ` class="${alone ? PANE_ALONE : PANE_BESIDE} ${PANE}">`
     + head(t, needs) + list + `</aside>`
 }

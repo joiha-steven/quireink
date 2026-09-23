@@ -1549,3 +1549,15 @@ tr[data-piece][data-last] {
 }
 [data-media-zoom]:not([open]) { display: none; }
 [data-media-zoom]::backdrop { background: color-mix(in srgb, #000 80%, transparent); }
+
+/* THE WRITE PANE GROWS WITH THE WINDOW when it stands alone, since 2026-09-23. It was 320px from
+   1280 up whatever the screen, which held the excerpt at 36 characters a line on a 1920 display —
+   under the 45 that `docs/conventions/type.md` sets as the floor — beside a paper with nothing
+   on it. Now 24% of the window: 320px at 1280, 448px from 1867, about 52 characters.
+   ⚠️ BESIDE THE EDITOR IT STAYS 320px, and that was measured, not assumed. The editor's key row
+   stays on one line with the pane up to 376px, but the ACTION row above it does not: in
+   Portuguese at 1760 it fits one line beside 320px and breaks in two beside 376px. The paper
+   has no width to give there, in at least one of the eleven languages. */
+@media (min-width: 1280px) {
+  [data-write-fit='alone'] { width: clamp(20rem, 24vw, 28rem); }
+}

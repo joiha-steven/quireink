@@ -198,7 +198,7 @@ export function registerKeyFlows({ flow, expect }: Tour): void {
  * the words reached the server without anybody pressing Save, and the page a reader gets did
  * not move while they did.
  */
-export function registerAutosaveFlows({ flow, expect }: Tour): void {
+export function registerAutosaveFlows({ flow, expect, atWidth }: Tour): void {
   // ⚠️ THE PIECE IS OPENED BY ITS ADDRESS. A row click is a real navigation since the write
   // column became server-rendered HTML (ADR 0054), so everything after one ran in a document
   // that no longer existed and this reported "(no value)".
@@ -271,7 +271,7 @@ export function registerAutosaveFlows({ flow, expect }: Tour): void {
   // THE SMALL PRINT HOLDS ONE LINE, in all eleven languages — the rule `content-pane.ts` states
   // for the row of two lamps and the sort key, and nothing measured until 2026-09-23. The audit
   // of 2026-09-19 found "Published" 67% longer in Russian and the sort key beside it never
-  // weighed. Measured at 1440, where the pane is its fixed 320px and at its narrowest.
+  // weighed. Measured at 1280, where the pane is at its narrowest: 320px, before it starts growing.
   flow('admin: the pane\'s small print keeps to one line in every language', async () => {
     const LANGS = ['en', 'vi', 'de', 'ja', 'zh', 'ko', 'fr', 'es', 'pt', 'it', 'ru']
     const put = (lang: string) => expect('/admin/content', `
@@ -284,7 +284,7 @@ export function registerAutosaveFlows({ flow, expect }: Tour): void {
       for (const lang of LANGS) {
         const set = await put(lang)
         if (set !== 'ok') return `${lang}: the language could not be set (${set})`
-        const v = await expect('/admin/content', `(() => {
+        const v = await atWidth(1280, '/admin/content', `(() => {
           const row = document.querySelector('[data-write-status]')?.closest('div')
           if (!row) return 'no status row'
           if (document.documentElement.lang !== ${JSON.stringify(lang)}) return 'the admin is in ' + document.documentElement.lang
@@ -300,6 +300,39 @@ export function registerAutosaveFlows({ flow, expect }: Tour): void {
       }
     } finally {
       await put(was.slice(0, 2))
+    }
+    return bad.length ? bad.join('; ') : 'ok'
+  })
+
+  // THE PANE GROWS WHERE IT STANDS ALONE, and not beside the editor. Alone it is 24% of the window
+  // up to 448px. Beside the editor it holds 320px: at 376 the editor's action row broke in two in
+  // Portuguese at 1760 (2026-09-23), so the editor's key row is asserted here as the canary.
+  flow('admin: the write pane grows with the window alone, and keeps 320px beside the editor', async () => {
+    const width = (w: number, path: string) => atWidth(w, path, `(async () => {
+      await new Promise((r) => setTimeout(r, 400))
+      const pane = document.querySelector('aside[data-write-pane]')
+      if (!pane || !pane.offsetParent) return 'none'
+      const h1 = [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'H1')
+      let rows = 0
+      if (h1) {
+        let bar = h1.parentElement
+        while (bar && bar.querySelectorAll('button').length < 15) bar = bar.parentElement
+        const keys = [...bar.querySelectorAll('button')].filter((b) => b.offsetParent)
+        rows = new Set(keys.map((b) => Math.round(b.getBoundingClientRect().top))).size
+      }
+      return Math.round(pane.getBoundingClientRect().width) + ':' + rows
+    })()`)
+    const EDIT = '/admin/editor/five-inks-and-when-to-reach-for-each'
+    const want: [number, string, number, number][] = [
+      [1280, '/admin/content', 320, 0], [1920, '/admin/content', 448, 0],
+      [1640, EDIT, 320, 1], [1920, EDIT, 320, 1], [2560, EDIT, 320, 1],
+    ]
+    const bad: string[] = []
+    for (const [w, path, px, rows] of want) {
+      const got = await width(w, path)
+      const [gotPx, gotRows] = got.split(':').map(Number)
+      if (got === 'none' || Math.abs(gotPx! - px) > 2) bad.push(`${path.split('/')[2]} at ${w}: pane ${got.split(':')[0]}px, want ${px}`)
+      if (rows && gotRows !== rows) bad.push(`editor at ${w}: key row on ${gotRows} lines`)
     }
     return bad.length ? bad.join('; ') : 'ok'
   })
