@@ -176,6 +176,15 @@ out there rather than pointed at in code.
 them. Unset means it ships in the clear, as it always has. Only public halves belong in that
 variable: the box can then seal an archive and cannot open one.
 
+Or `QUIRE_BACKUP_AGE_TO`, a file holding one [`age`](https://age-encryption.org) recipient,
+for an operator whose private key already lives with `age`. The archive is then
+`quire-<tag>.tar.gz.age` and opens with `age -d -i <key> … | tar -xz`. Setting both variables
+stops the run rather than guessing which one was meant.
+
+Like the in-app copy, the script empties `render_cache` and `body_cache` in the snapshot before
+it is packed — never in the live database. Both hold HTML the blog rebuilds on the next read,
+and on one real blog they were 530 of the database's 538 MB.
+
 ⚠️ It seals the **database tar** only. That script syncs uploads as a tree with `rclone` rather
 than putting them in the archive, so the images go up as themselves. Use `rclone crypt` for those
 if they matter, or use the built-in off-site copy, which puts everything in the one sealed file.
@@ -236,6 +245,9 @@ crontab, or in a systemd `EnvironmentFile` — whichever the machine already use
 | `QUIRE_BUN` | `$HOME/.bun/bin/bun` |
 | `QUIRE_BACKUP_REMOTE` | **none — the run stops without it.** An rclone remote and a path, e.g. `r2:my-bucket/my-blog` |
 | `QUIRE_BACKUP_STAGE` / `_LOG` / `_LOCK` | `/var/tmp/quire-backup`, `/var/log/quire-backup.log`, `/var/lock/quire-backup.lock` |
+| `QUIRE_BACKUP_TO` | empty — the archive ships in the clear. Public keys from the Backups card, space separated |
+| `QUIRE_BACKUP_AGE_TO` | empty. A file holding one `age` recipient; the alternative to the line above, never both |
+| `QUIRE_APP` | `/home/quire/app` — the checkout, needed only to reach `scripts/backup-decrypt.ts` when `QUIRE_BACKUP_TO` is set |
 | `QUIRE_ALERT_HOOK_FILE` | `/etc/quire/alert-webhook` — a file holding one URL. Absent, a failure is logged and not announced |
 | `QUIRE_ALERT_ALIAS` | `quire backup` — what this installation calls itself in that alert |
 

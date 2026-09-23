@@ -43,6 +43,11 @@ APP="${QUIRE_APP:-/home/quire/app}"
 # archive goes up in the clear, which is what this script has always done. Only public halves
 # belong here: this box can then lock an archive and cannot open one (ADR 0060).
 BACKUP_TO="${QUIRE_BACKUP_TO:-}"
+# OR a file holding one `age` recipient (`age1…`), for an operator whose private key already
+# lives with `age` and who would rather not hold a second kind. The box keeps only the public
+# half here too. Setting both is refused: an archive sealed to one of two schemes, depending on
+# which variable a crontab happened to set, is an archive nobody is sure how to open.
+AGE_TO_FILE="${QUIRE_BACKUP_AGE_TO:-}"
 # An rclone remote and a path under it: `rclone config` names the remote, this points into
 # it. There is no default worth guessing, so an unset value stops the run.
 REMOTE="${QUIRE_BACKUP_REMOTE:?set QUIRE_BACKUP_REMOTE, e.g. r2:my-bucket/my-blog}"
@@ -90,6 +95,16 @@ for db in "$DATA"/*.db; do
   SRC="$db" DEST="$TMP/$(basename "$db")" "$BUN" -e \
     'import{Database}from"bun:sqlite";const d=new Database(process.env.SRC,{readonly:true});d.exec(`vacuum into ${JSON.stringify(process.env.DEST)}`);d.close()' \
     2>>"$LOG" || fail "vacuum $(basename "$db")"
+  # THE CACHES STAY BEHIND, from the COPY, never the live file. Both tables hold HTML the blog
+  # rebuilds on the next read, and on one real blog they were 98.5% of the archive — 530 of
+  # 538 MB, shipped every hour. `src/server/backup.ts` has dropped them from the in-app copy
+  # since that measurement; this script is the same promise and went without it for six weeks.
+  # BOTH tables, each checked on its own: an old database has only `render_cache`, and
+  # `analytics.db` has neither — which is why a missing table is not an error here and any
+  # other failure is.
+  DEST="$TMP/$(basename "$db")" "$BUN" -e \
+    'import{Database}from"bun:sqlite";const d=new Database(process.env.DEST);const has=(t)=>d.query("select 1 from sqlite_master where type=\x27table\x27 and name=?").get(t)!==null;const r=has("render_cache"),b=has("body_cache");if(r)d.exec("delete from render_cache");if(b)d.exec("delete from body_cache");if(r||b)d.exec("vacuum");d.close()' \
+    2>>"$LOG" || fail "drop caches $(basename "$db")"
 done
 [ -n "$(ls -A "$TMP")" ] || fail "no databases found in $DATA"
 
@@ -106,7 +121,17 @@ done
 # ⚠️ `set -o pipefail` IS ALREADY ON at the top of this file, which is what makes `|| fail`
 # below see a tar that died mid-stream. Without it the exit status would be bun's alone and a
 # truncated archive would ship reporting success.
-if [ -n "$BACKUP_TO" ]; then
+[ -n "$BACKUP_TO" ] && [ -n "$AGE_TO_FILE" ] && fail "QUIRE_BACKUP_TO and QUIRE_BACKUP_AGE_TO are both set; choose one"
+if [ -n "$AGE_TO_FILE" ]; then
+  # Read on every run rather than once at install, so replacing the key is replacing a file.
+  AGE_TO="$(cat "$AGE_TO_FILE" 2>/dev/null || true)"
+  [ -n "$AGE_TO" ] || fail "no age recipient in $AGE_TO_FILE"
+  command -v age >/dev/null 2>&1 || fail "age is not installed"
+  ARCHIVE="$STAGE/quire-${TAG}.tar.gz.age"
+  REMOTE_NAME="quire-${TAG}.tar.gz.age"
+  tar -C "$TMP" -cz . 2>>"$LOG" | age -r "$AGE_TO" -o "$ARCHIVE" 2>>"$LOG" || fail "tar | age"
+  [ -s "$ARCHIVE" ] || fail "age wrote an empty file"
+elif [ -n "$BACKUP_TO" ]; then
   ARCHIVE="$STAGE/quire-${TAG}.tar.gz.enc"
   REMOTE_NAME="quire-${TAG}.tar.gz.enc"
   # shellcheck disable=SC2086
@@ -132,8 +157,11 @@ fi
 # Retention, on the daily run only: hourly copies for 3 days, dailies for 30, and a deleted
 # upload recoverable for 7.
 if [ "$MODE" = daily ]; then
-  rclone delete "$REMOTE/db/" --min-age 3d  --exclude "*-daily.tar.gz" 2>>"$LOG" || true
-  rclone delete "$REMOTE/db/" --min-age 30d --include "*-daily.tar.gz" 2>>"$LOG" || true
+  # ⚠️ THE TRAILING `*` IS LOAD-BEARING. A sealed archive ends `.enc` or `.age`, and a pattern
+  # ending `.tar.gz` does not match it — so the first line would take every DAILY copy for an
+  # hourly one and delete it at three days, and the thirty-day tier would never exist.
+  rclone delete "$REMOTE/db/" --min-age 3d  --exclude "*-daily.tar.gz*" 2>>"$LOG" || true
+  rclone delete "$REMOTE/db/" --min-age 30d --include "*-daily.tar.gz*" 2>>"$LOG" || true
   rclone delete "$REMOTE/uploads/_archive/" --min-age 7d 2>>"$LOG" || true
   rclone rmdirs "$REMOTE/uploads/_archive/" --leave-root 2>>"$LOG" || true
 fi
