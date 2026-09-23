@@ -337,4 +337,39 @@ html[data-look=code] body{font-family:var(--font-mono)}
    monospace strapline, monospace menu and bracketed monospace controls. The notebook's own
    name rule exists for the mirror image of this (look-notes.css.ts). */
 html[data-look=code] .site-bar > .title{font-family:var(--font-mono)}
+
+/* --- THE HEADLINES ARE SET IN THE MONOSPACE, BOLD ---------------------------
+   Since 2026-09-23 the contrast moved one step inward: every headline - the piece's title,
+   each title in a feed or on the front, the section heads inside a piece - now speaks the
+   chrome's face, and only the running text stays in the book serif. With the headlines in
+   the serif the dialect read as the plain page with a monospace frame; a heading is a
+   label for what follows, which is exactly the kind of word this dialect already sets in
+   code. What stays analogue is still everything a reader reads for more than a line: the
+   paragraphs, the standfirst, the excerpts and the comments.
+   Tracked in: a monospace gives every glyph the width of an m, and at headline sizes that
+   opens the words into letters. The mono carries a Vietnamese subset, so an accented title
+   stays in one face. */
+html[data-look=code] :is(h1,h2,h3,h4).reading-font,
+html[data-look=code] main h1,
+html[data-look=code] .prose :is(h2,h3,h4){font-family:var(--font-mono);font-weight:700;
+  letter-spacing:-.035em}
+html[data-look=code] .prose :is(h2,h3,h4){letter-spacing:-.025em}
+
+/* --- A CODE BLOCK HAS LINE NUMBERS ------------------------------------------
+   In the gutter an editor gives them, quiet, and outside what a reader selects or the copy
+   button takes: a generated counter is not text, and user-select keeps a drag-select clean
+   in the engines that would otherwise pick the pseudo-element up. Highlighted blocks only -
+   they are the ones that arrive in lines (one span.line per source line); a plain block is
+   a single run of text with nothing to count. The hairline is the rule colour, the same
+   one the rail's own gutter uses. */
+html[data-look=code] pre.shiki code{counter-reset:ln}
+html[data-look=code] pre.shiki .line{counter-increment:ln}
+html[data-look=code] pre.shiki .line::before{content:counter(ln);display:inline-block;
+  min-width:2ch;margin-right:1.25ch;padding-right:1ch;text-align:right;
+  border-right:1px solid var(--c-rule);color:var(--c-meta);-webkit-user-select:none;
+  user-select:none;font-variant-numeric:tabular-nums}
+/* The highlighter closes a block that ends in a newline with one empty line, and a number
+   beside nothing reads as a line the reader cannot see. An empty line INSIDE the block keeps
+   its number: that one is part of the code. */
+html[data-look=code] pre.shiki .line:last-child:empty::before{content:none}
 `.trim()

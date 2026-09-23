@@ -376,7 +376,7 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     // lead between them, justified with hyphens once the column is wide enough. It sits on
     // the shell rather than on .prose so the editor and the reading view can share it.
     `${progress}<div class="wrap${settings.features.bookText ? ' book-text' : ''}">
-${siteHeader(settings, { mailConfigured })}
+${siteHeader(settings, { mailConfigured, menuInHeader: settings.look === 'paper' })}
 <div class="with-rail"><main id="content">
 <article>
 ${hero}

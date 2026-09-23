@@ -25,14 +25,25 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
     for (const line of ide) expect(line).toContain('html[data-look=code]')
   })
 
-  it('never touches the reading column', () => {
-    // The half that must NOT look technical: the article body, its title, the card
-    // excerpts and the comment bodies are the reader's own words.
-    for (const line of LOOK_CODE_CSS.split('\n').filter((l) => l.includes('data-look=code'))) {
-      for (const reading of ['.prose', '.reading-font', '.deck', '.comment-body', '.fs-h1']) {
-        expect(line).not.toContain(reading)
+  it('never touches the running text, and reaches into the column only for headlines and code', () => {
+    // The half that must NOT look technical: the paragraphs, the standfirst, the card
+    // excerpts and the comment bodies are what a reader reads for more than a line.
+    // Since 2026-09-23 two things inside the column are this dialect's: the headlines, set in
+    // the monospace, and a highlighted code block's line numbers. Each SELECTOR that names a
+    // reading-column class must therefore end on a heading or on a line of highlighted code.
+    const rules = LOOK_CODE_CSS.replace(/\/\*[\s\S]*?\*\//g, '').split('}')
+    for (const rule of rules) {
+      const head = rule.slice(0, rule.indexOf('{'))
+      if (!head.includes('data-look=code')) continue
+      for (const sel of head.split(/,(?![^(]*\))/)) {
+        if (!['.prose', '.reading-font', '.deck', '.comment-body', '.fs-h1'].some((r) => sel.includes(r))) continue
+        const last = sel.trim().split(/\s+(?![^(]*\))/).pop() ?? ''
+        expect(`${sel.trim()} -> ${/h[1-4]|pre\.shiki|\.line/.test(last)}`).toBe(`${sel.trim()} -> true`)
       }
     }
+    // And never the running text by name.
+    expect(LOOK_CODE_CSS).not.toMatch(/data-look=code\][^{]*\.prose\s+(p|li|blockquote)\b/)
+    expect(LOOK_CODE_CSS).not.toMatch(/data-look=code\][^{]*\.(deck|comment-body)\b/)
   })
 
   it('borrows only theme tokens for its two syntax roles, and never the accent', () => {

@@ -107,13 +107,21 @@ describe('the newspaper dialect', () => {
     expect(LOOK_PAPER_CSS).not.toContain('.site-actions{position:absolute')
   })
 
-  it('does not put the section menu back on a phone', () => {
-    // The base sheet hides it under 60rem and paints its links only above that width, so a
-    // flat `display:flex` here outranked the hide and printed five DEFAULT-BLUE underlined
-    // links across a phone masthead — beside a drawer button that opens the same five.
-    const menu = LOOK_PAPER_CSS.split('\n').filter((l) => l.includes('.site-bar > .site-menu'))
-    expect(menu.length).toBeGreaterThan(0)
-    for (const line of menu) expect(line).not.toContain('display:flex')
+  it('puts the section menu on a phone as a painted strip, and takes it out of the drawer', () => {
+    // The base sheet hides it under 60rem and paints its links only above that width. A flat
+    // `display:flex` here once outranked the hide and printed five DEFAULT-BLUE underlined
+    // links across a phone masthead, beside a drawer button that opened the same five.
+    // Since 2026-09-23 the menu lives in the masthead on every page of this look, so the
+    // phone keeps it on purpose - but only inside a narrow-width block that paints it, and
+    // only because the rail's copy is gone, so the drawer no longer repeats it.
+    const narrow = LOOK_PAPER_CSS.slice(LOOK_PAPER_CSS.indexOf('@media (max-width:59.99rem)'))
+    expect(narrow).toContain('.site-bar > .site-menu{display:flex;flex-wrap:nowrap')
+    expect(narrow).toContain('.site-menu a{color:var(--c-meta);text-decoration:none')
+    const flat = LOOK_PAPER_CSS.slice(0, LOOK_PAPER_CSS.indexOf('@media (max-width:59.99rem)'))
+    for (const line of flat.split('\n').filter((l) => l.includes('.site-bar > .site-menu'))) {
+      expect(line).not.toContain('display:flex')
+    }
+    expect(LOOK_PAPER_CSS).toContain('.rail-inner > nav:not(.toc){display:none}')
   })
 
   it('puts the section over the headline and the byline under it', () => {
@@ -182,6 +190,9 @@ describe('the newspaper dialect', () => {
     for (const block of LOOK_PAPER_CSS.split('}')) {
       if (!/\.rail|\.toc/.test(block)) continue
       if (!/(position|display):/.test(block)) continue
+      // Taking something AWAY is not moving the shelf: the menu's rail copy and a drawer
+      // button with nothing to open go on a listing too.
+      if (/\{\s*display:none\s*$/.test(block)) continue
       expect(block).toContain('article ')
     }
   })
@@ -199,11 +210,15 @@ describe('the notebook dialect', () => {
     // The desk is the page darkened, and the palette's `--c-meta` was chosen against the
     // page. Measured on 2026-09-16 with a real browser: the tagline, the pager count, the
     // footer and every date in the rail came out at 4.47:1 on the mono desk, under the 4.5
-    // AA asks at that size, and every palette lost the same slice. It is declared on the
-    // BODY on purpose: there `--c-meta` still resolves to what :root inherited, so this is
-    // one step away from whatever the palette chose rather than a colour to keep in sync.
+    // AA asks at that size, and every palette lost the same slice.
+    // THROUGH A SECOND NAME. This was `body{--c-meta:color-mix(..var(--c-meta)..)}` until
+    // 2026-09-23, on the belief that the var() read the parent's value. It reads its own:
+    // a custom property that names itself is a cycle, the cycle makes it invalid, and every
+    // quiet line on the site fell back to the full text ink for nine days.
     expect(LOOK_NOTES_CSS)
-      .toContain('html[data-look=notes] body{--c-meta:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}')
+      .toContain('html[data-look=notes]{--c-meta-desk:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}')
+    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] body{--c-meta:var(--c-meta-desk)}')
+    expect(LOOK_NOTES_CSS).not.toMatch(/--c-meta:[^;}]*var\(--c-meta\)/)
   })
 
   it('grows the sheet outward by exactly what it pads', () => {
@@ -214,30 +229,23 @@ describe('the notebook dialect', () => {
     expect(LOOK_NOTES_CSS).toContain('margin:calc(-1px - var(--sheet-inset)) calc(-1 * var(--sheet-inset)) 0')
   })
 
-  it('rules per paragraph, at that paragraph own leading', () => {
-    // One background across the sheet has one fixed step, and a picture is not a whole
-    // number of lines tall, so the rules drift and start cutting through the text.
-    expect(LOOK_NOTES_CSS).toContain('--step:calc(var(--lh-body,1.7) * 1em)')
-    expect(LOOK_NOTES_CSS).toContain('background-size:100% var(--step)')
-  })
-
-  it('rules a listing as well as a piece, and at a weight that can be seen', () => {
-    // Both of these shipped wrong once. The rules reached `.prose`, which exists on a piece
-    // and nowhere else, so anyone who met this look on the front page met a blank sheet —
-    // and they were drawn at 38% of `--c-rule`, which on #ebebeb over #fcfcfc is not faint
-    // but absent. `--c-rule` is already the lightest line this design has.
-    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] .post-list article > p')
-    expect(LOOK_NOTES_CSS).toContain('var(--c-rule) calc(var(--step) - 1px)')
-    expect(LOOK_NOTES_CSS).not.toMatch(/var\(--c-rule\) \d\d%,transparent\) calc\(var\(--step\)/)
-    // And the composed front, which is the third shape and the one a visitor lands on.
-    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] .fc-intro')
+  it('prints a dot grid on every sheet, not a rule under every line', () => {
+    // The per-paragraph ruling (2026-09-14 to 09-23) could not drift, but it underlined each
+    // line of every excerpt on the front page and crossed between a date and its headline:
+    // it read as a form. Dots carry no line for text to sit on or miss, so they need no
+    // per-paragraph drawing - and they reach the listing and the composed front by being on
+    // the sheet itself, which is the gap the ruling once shipped with.
+    expect(LOOK_NOTES_CSS).toContain('background-image:radial-gradient(circle,var(--dot)')
+    expect(LOOK_NOTES_CSS).not.toContain('background-size:100% var(--step)')
+    // Derived from the palette, never typed.
+    expect(LOOK_NOTES_CSS).toContain('--dot:color-mix(in srgb,var(--c-meta)')
   })
 
   it('puts a page under all THREE layouts, not just the two that are named article', () => {
     // The composed front page's container is `div.front` — neither the piece nor a feed, so
     // it matched neither name and the layout most visitors arrive on had no paper under it
     // at all: three ruled sections and a row of pictures lying straight on the desk.
-    const sheet = /html\[data-look=notes] main > article,[\s\S]*?background-size[^}]*}/.exec(
+    const sheet = /html\[data-look=notes] main > article,[\s\S]*?padding:var\(--sheet-inset\)/.exec(
       LOOK_NOTES_CSS,
     )?.[0] ?? LOOK_NOTES_CSS
     expect(sheet).toContain('html[data-look=notes] main > .front')

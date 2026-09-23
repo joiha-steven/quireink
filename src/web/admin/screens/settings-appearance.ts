@@ -34,6 +34,7 @@ import { choice } from '@/web/admin/fields-pick'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
 import { palettes } from '@/web/admin/screens/settings-appearance-theme'
 import { typeResetKey, typeScale } from '@/web/admin/screens/settings-appearance-type'
+import { lookPicker, tileClass } from '@/web/admin/screens/settings-appearance-look'
 
 /** What this tab needs that is not a setting: the six palettes it offers to edit. */
 export type AppearanceTabView = {
@@ -42,24 +43,8 @@ export type AppearanceTabView = {
 
 // --- Looks like, and shape ------------------------------------------------------------------
 
-/**
- * WHAT KIND OF PUBLICATION THIS IS, before what shape it is and what colour: the look decides
- * the furniture round the words, and everything else on this tab decides the words.
- *
- * It was a boolean called "IDE chrome", filed under Account beside anti-aliasing and the
- * autosave interval — a public-site decision living in the card that describes this admin, and
- * the coarsest look decision the product has, filed as a rendering detail.
- *
- * NO LABEL ON THE STRIP: the card's own title is `t.lookLabel` and so was the control's, which
- * is the exact drift `fields.ts` exists to stop — one name, said twice, 40px apart.
- */
-const look = (t: AdminStrings, s: SiteSettings): string =>
-  choice({
-    k: 'look', note: t.lookDesc, value: s.look,
-    options: [
-      ['plain', t.lookPlain], ['code', t.lookCode], ['paper', t.lookPaper], ['notes', t.lookNotes],
-    ],
-  })
+// "Looks like" is drawn in `settings-appearance-look.ts`: four tiles with a picture and a
+// line each, because a name alone cannot say what a look does to the page.
 
 /**
  * Density, corners and headline weight — the three knobs that change SHAPE rather than colour.
@@ -103,17 +88,9 @@ function shape(t: AdminStrings, s: SiteSettings): string {
  * skin is different and the PROTOCOL is the same, so `data-choice-track` / `data-choice` /
  * `aria-pressed` carry it and the island's `pickChoice` moves it with no new code.
  */
-const TILE_BASE = 'rounded-lg border transition-colors'
-const TILE_ON = 'border-neutral-400 bg-neutral-200 font-semibold text-neutral-950'
-  + ' shadow-[inset_0_2px_3px_rgba(0,0,0,.18)] dark:border-neutral-500 dark:bg-neutral-950'
-  + ' dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.6)]'
-const TILE_OFF = 'border-neutral-300 text-neutral-700 hover:border-neutral-500'
-  + ' dark:border-neutral-700 dark:text-neutral-300'
-
 const tile = (v: string, on: boolean, cls: string, style: string, body: string): string =>
   `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${on}"`
-  + ` class="${TILE_BASE} ${cls} ${on ? TILE_ON : TILE_OFF}"`
-  + ` style="font-family:${escapeAttr(style)}">${body}</button>`
+  + ` class="${tileClass(on, cls)}" style="font-family:${escapeAttr(style)}">${body}</button>`
 
 /**
  * The two font pickers.
@@ -330,7 +307,7 @@ function cssEditor(t: AdminStrings, s: SiteSettings): string {
 export function appearanceTab(t: AdminStrings, s: SiteSettings, view: AppearanceTabView): string {
   return `<div class="space-y-5"><div class="${GRID}">`
     + `<div class="${COL}">`
-    + panelCard({ title: t.lookLabel, body: look(t, s) })
+    + panelCard({ title: t.lookLabel, body: lookPicker(t, s) })
     + panelCard({ title: t.cardShape, body: shape(t, s) })
     // ⚠️ ONE NOTE, NOT A TINTED CALLOUT AND A PARAGRAPH. `themeAdminNote` shipped in a grey
     // rounded box above a card that then carried plain notes under every row — the second note

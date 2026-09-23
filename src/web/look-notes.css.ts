@@ -70,7 +70,14 @@ html[data-look=notes] body{background-color:var(--desk)}
    whatever :root inherited, so this is a nudge away from the palette's own choice rather
    than a second colour to keep in sync. 94% lands mono at 4.60:1; the sheet keeps the ink it
    had, being lighter than the desk and already clear of the line. */
-html[data-look=notes] body{--c-meta:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}
+/* AND THROUGH A SECOND NAME, because a custom property that names itself is a cycle, not
+   a reference to its parent: a --c-meta mixed from var(--c-meta) on the body made --c-meta
+   INVALID for everything under it, and every quiet line on the site - the rail, the dates,
+   the panel - fell back to the full text ink. Shipped that way from 2026-09-14 to 09-23;
+   measured, the rail's links were rgb(48,48,47) where the palette asks #6d6c6c. The mix is
+   taken on the root, where --c-meta is the palette's own, and handed down under a new name. */
+html[data-look=notes]{--c-meta-desk:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}
+html[data-look=notes] body{--c-meta:var(--c-meta-desk)}
 
 /* ONE INSET ON ALL FOUR SIDES, and the sheet grows OUTWARD by exactly what it pads, so the
    first line of the piece stays on the line the shelf and the card start on and not one
@@ -102,8 +109,8 @@ html[data-look=notes] main > #comments,
 html[data-look=notes] .post-list{background:var(--c-bg);
   padding:var(--sheet-inset);
   margin:calc(-1px - var(--sheet-inset)) calc(-1 * var(--sheet-inset)) 0;
-  box-shadow:0 1px 2px color-mix(in srgb,var(--c-text) 12%,transparent),
-    0 6px 18px color-mix(in srgb,var(--c-text) 6%,transparent)}
+  box-shadow:0 1px 2px color-mix(in srgb,var(--c-text) 14%,transparent),
+    0 8px 24px color-mix(in srgb,var(--c-text) 9%,transparent)}
 /* A 1px rule with a radius is the language of an app panel; a page lying on a desk is told
    by its shadow. The border was drawn first and rejected for exactly that. */
 /* The second sheet keeps the outward growth but not the negative TOP margin: that one exists
@@ -129,46 +136,25 @@ html[data-look=notes] .rail::after,html[data-look=notes] .post-info::after,
 html[data-look=notes] .post-info::before,
 html[data-look=notes] .post-info .info-action::after{display:none}
 
-/* --- THE PAGE IS RULED ------------------------------------------------------
-   Drawn per paragraph so each rule sits on that paragraph's own leading and cannot drift.
-   Book typography already runs paragraphs together with no gap between them, so a run of
-   prose comes out as continuous ruling, and a heading or a picture interrupts it the way
-   pasting something into a notebook interrupts it.
+/* --- THE PAPER IS DOT GRID -------------------------------------------------
+   A dot every 22px across the whole sheet, the paper a bullet journal is kept in. It
+   replaced a rule drawn under every line of every paragraph (2026-09-23): that ruling was
+   drawn per paragraph so it could not drift, and the price was a sheet that read as a
+   spreadsheet or a form - every excerpt on the front page underlined line by line, a rule
+   crossing between a date and its headline. A grid of dots has no line for the text to sit
+   on or miss, so there is nothing to drift, and it is the quietest pattern that still says
+   "paper you write on" from across a room.
 
-   RULING THE WHOLE SHEET WAS TRIED AND REJECTED: one background on the page has one fixed
-   step, and the text under it cannot follow the lines the way a hand does - a picture is not
-   a whole number of lines tall, so the rules drift and start cutting through the middle of
-   the text. Per paragraph is the only drift-free version there is.
-
-   THE RULES RUN THE WIDTH OF THE PAGE, not the width of the words: drawn at the column's
-   width they read as underlined text. The paragraph grows outward by the sheet's inset and
-   pads it straight back, so not one line rewraps.
-
-   AT THE FULL WEIGHT OF --c-rule, which is the lightest line this design has. It was drawn
-   at 38% of that for one deploy, on the reasoning that ruling should be faint: 38% of
-   #ebebeb on #fcfcfc is not faint, it is absent, and the look shipped as a blank sheet.
-   Faint means the quietest line on the page, not a line nobody can see.
-
-   AND ON A LISTING TOO. The rules used to reach .prose alone, which exists on a piece and
-   nowhere else — so anyone who met this look on the front page met an unruled sheet. */
-html[data-look=notes] .prose > p,
-html[data-look=notes] .prose > :is(ul,ol) > li,
-html[data-look=notes] .post-list article > p,
-/* The composed front page writes its lead out in full, and those paragraphs are the only
-   prose on that layout. Unruled, the page a visitor most often lands on was the one page in
-   the notebook nobody had ruled. */
-html[data-look=notes] .fc-deck,
-html[data-look=notes] .fc-intro,
-/* And what other people wrote. Its sheet is ruled because the piece's is: an unruled second
-   page beside a ruled first one reads as a different paper rather than as the next page. A
-   comment body is a bare div holding a text node, so it takes the rules directly; a reply's
-   own indent mark then sits ON the ruling, which is what a mark on paper does. */
-html[data-look=notes] #comments .comment-body{
-  --step:calc(var(--lh-body,1.7) * 1em);
-  margin-inline:calc(-1 * var(--sheet-inset));padding-inline:var(--sheet-inset);
-  background-image:linear-gradient(to bottom,transparent calc(var(--step) - 1px),
-    var(--c-rule) calc(var(--step) - 1px));
-  background-size:100% var(--step)}
+   The dot is the meta ink thinned into the page, so it follows the palette and the night:
+   derived, never typed. At 1.1px it is visible on a laptop at arm's length and gone under
+   a word, which is the whole brief for a pattern behind text. */
+html[data-look=notes] main > article,
+html[data-look=notes] main > .front,
+html[data-look=notes] main > #comments,
+html[data-look=notes] .post-list{
+  --dot:color-mix(in srgb,var(--c-meta) 32%,var(--c-bg));
+  background-image:radial-gradient(circle,var(--dot) 0 1.1px,transparent 1.5px);
+  background-size:22px 22px;background-position:11px 11px}
 
 /* --- THE MARKS A HAND WOULD MAKE --------------------------------------------
    A section opens with a tick in the margin above it. Above the heading rather than beside
@@ -206,6 +192,29 @@ html[data-look=notes] .prose h3{border-bottom-color:var(--c-meta)}
 html[data-look=notes] .prose a[href^="/"]::before{content:"[[";color:var(--c-meta)}
 html[data-look=notes] .prose a[href^="/"]::after{content:"]]";color:var(--c-meta)}
 
+/* EVERY LINK IN THE TEXT IS MARKED WITH A HIGHLIGHTER, not printed in link blue: a band
+   of the accent thinned into the page across the lower half of the words, the way a pen
+   marks a line to come back to. Ink stays the heading's, so the words read as written and
+   the band says "this goes somewhere". box-decoration-break so a link that wraps is marked
+   on both lines rather than once across the break. A jump inside the page (a footnote, a
+   heading's own anchor) is not marked: it is apparatus, not a thing to follow.
+   It REPLACES the base sheet's drawn underline, which is a background too (an SVG stroke
+   tiled along the baseline, .prose a in prose.css.ts): size, position and repeat are all
+   reset here, or the band is cut into that underline's 4.6em by 0.3em tiles. */
+html[data-look=notes] .prose a:not([href^="#"]){color:var(--c-heading);text-decoration:none;
+  background-image:linear-gradient(transparent 55%,
+    color-mix(in srgb,var(--c-accent) 26%,transparent) 55% 92%,transparent 92%);
+  background-size:100% 100%;background-position:0 0;background-repeat:no-repeat;
+  padding-bottom:0;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+html[data-look=notes] .prose a:not([href^="#"]):hover{background-image:linear-gradient(
+  transparent 20%,color-mix(in srgb,var(--c-accent) 34%,transparent) 20% 92%,transparent 92%)}
+
+/* RAGGED RIGHT, whatever the book-typography switch says. Justified lines are a compositor's
+   habit; a hand ends a line where the word ends, and a notebook set flush on both sides
+   reads as a printed page with a desk drawn round it. The one change this look makes to
+   the reading column's setting, and the reason it may (docs/conventions/looks.md). */
+html[data-look=notes] .prose :is(p,li){text-align:left;hyphens:manual}
+
 /* THE STANDFIRST IS A NOTE TO SELF, not a subtitle. */
 html[data-look=notes] .deck{font-style:italic;border-left:2px solid var(--c-rule);
   padding-left:1rem}
@@ -234,9 +243,15 @@ html[data-look=notes] aside.series li[aria-current]::after{background:var(--c-he
 
 /* THE PANEL IS AN INDEX CARD lying on the same desk, and the date that matters in a
    notebook is the last one. */
-html[data-look=notes] .post-info{border:1px solid var(--c-rule);
-  border-radius:var(--radius,.5rem);padding:.85rem 1rem;
-  background:color-mix(in srgb,var(--c-text) 3%,var(--c-bg))}
+/* An index card is square, lies on the desk by its shadow the way the sheet does, and has
+   its first line printed in the second ink - the accent, thinned, standing in for the red
+   head rule every ruled card carries. It was a rounded bordered panel, which is an app's
+   component and not something that lies on a desk. */
+html[data-look=notes] .post-info{border:0;border-radius:0;padding:.85rem 1rem;
+  border-top:2px solid color-mix(in srgb,var(--c-accent) 55%,var(--c-bg));
+  background:var(--c-bg);
+  box-shadow:0 1px 2px color-mix(in srgb,var(--c-text) 12%,transparent),
+    0 4px 12px color-mix(in srgb,var(--c-text) 6%,transparent)}
 html[data-look=notes] .info-updated{color:var(--c-heading)}
 
 /* WHAT ELSE POINTS HERE: arrows rather than bullets, the way a note lists its neighbours. */

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### The four looks each read as their own kind of publication
+
+- **Source code**: headlines — the piece's title, the titles in a feed and on the front page,
+  and the section heads — are set in the monospace, bold. The paragraphs stay in the book face.
+  Highlighted code blocks get line numbers, which a copy does not pick up.
+- **Newspaper**: the section menu moves into the masthead on every page, including on a phone,
+  where it scrolls sideways. On a piece, the contents become one line of numbered sections, the
+  series box moves to the end of the piece, and the first letter is a drop cap. At 1440 × 1000
+  the first line of text moves up from y=980 to y=683.
+- **Notebook**: the sheet is dot-grid paper, links are marked with a highlighter in the
+  palette's accent, and the text is ragged right. The panel beside the piece is a square
+  index card.
+- **Fixed in Notebook**: the grey used for dates, the rail and small labels was broken for
+  every blog wearing this look, so all of it printed in the full text colour. It had also
+  hidden the hand-drawn series box and the section ticks, which show again now.
+- **Settings → Appearance → Looks like** shows the four as drawn tiles, each with a line saying
+  who it is for, in place of four names in a strip.
+
 ### Fixed: opening and saving a post no longer closes up a spaced list
 
 A list with a blank line between its items shows every item as a paragraph, with a paragraph's

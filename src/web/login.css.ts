@@ -212,8 +212,13 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
   background:color-mix(in srgb, var(--c-text) 55%, transparent)}
 /* Paper on a desk: a panel a shade lighter than the card it sits on, with its own shadow,
    because that is the whole of how the notebook tells a page from what is under it. */
+/* Dotted, as the look's own sheet is since 2026-09-23: the drawing says the same thing the
+   page will, and the ruled lines it carried before no longer do. */
 .face-art .face-sheet{display:flex;flex-direction:column;justify-content:center;gap:.28rem;
-  flex:1;padding:.3rem;border-radius:.1rem;background:var(--c-bg);
+  flex:1;padding:.3rem;border-radius:.1rem;background-color:var(--c-bg);
+  background-image:radial-gradient(circle,
+    color-mix(in srgb, var(--c-text) 30%, transparent) 0 .6px,transparent .9px);
+  background-size:.35rem .35rem;
   box-shadow:0 1px 3px color-mix(in srgb, var(--c-text) 22%, transparent)}
 .face-art .face-ruled{height:.1rem}
 .face-name{display:block;margin:.5rem 0 .1rem;font-weight:600;font-size:.9rem}

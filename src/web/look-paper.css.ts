@@ -162,6 +162,24 @@ html[data-look=paper] .site-bar > .site-menu{grid-area:3/1/4/-1;flex-wrap:wrap;
     margin:.45rem 0 0}
   html[data-look=paper] .site-bar > .site-menu{grid-area:4/1/5/2}
 }
+/* UNDER 60rem THE SECTIONS STAY, as one strip that scrolls sideways - the way a paper's
+   app carries them. The base hides this menu there because its drawer holds the same
+   links; on this look the drawer does not (the shelf drops its copy), so hiding both left
+   a phone reader no way to a section. The base only paints these links above 60rem, hence
+   the colour and the underline restated here. */
+@media (max-width:59.99rem){
+  html[data-look=paper] .site-bar > .site-menu{display:flex;flex-wrap:nowrap;
+    justify-content:flex-start;overflow-x:auto;scrollbar-width:none;gap:1.25rem}
+  html[data-look=paper] .site-menu a{color:var(--c-meta);text-decoration:none;
+    white-space:nowrap}
+}
+@media (min-width:44.01rem) and (max-width:59.99rem){
+  html[data-look=paper] .site-bar > .site-menu{justify-content:center}
+}
+/* A drawer with nothing left in it has no button: on the composed front the rail holds the
+   menu alone, and the menu is in the masthead now. */
+html[data-look=paper] body:not(:has(.rail-inner > :not(nav:not(.toc)))) .rail-toggle{
+  display:none}
 
 /* --- THE PIECE'S OWN PAGE SHAPE ---------------------------------------------
    The facts about the piece leave the right-hand panel and go under the headline where a
@@ -205,6 +223,21 @@ html[data-look=paper] article > header .mt-2{margin-top:.5rem}
 html[data-look=paper] .deck{text-align:left;max-width:88%;margin:1.5rem auto 0;
   padding:.95rem 0;border-top:1px solid var(--c-rule);border-bottom:1px solid var(--c-rule);
   font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
+
+/* --- THE FIRST LETTER IS A DROP CAP -----------------------------------------
+   Three lines deep, in the headline face at its own regular weight: the one ornament a
+   paper allows itself, and it marks where the story starts once the byline is done.
+   initial-letter only, with no float fallback: a floated cap is sized by guesswork against
+   the reading face's metrics and lands a few pixels off the third baseline in every face
+   but one. An engine without initial-letter (Firefox, today) simply prints no cap.
+   The pseudo-element adds no character to the text, so the pen's anchors, a copy and the
+   feed all read the word as it was written. */
+@supports (initial-letter:3) or (-webkit-initial-letter:3){
+  html[data-look=paper] article > .prose > p:first-child::first-letter{
+    -webkit-initial-letter:3;initial-letter:3;margin-right:.12em;color:var(--c-heading);
+    font-family:'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',
+      Georgia,'Times New Roman',serif;font-weight:400}
+}
 
 /* --- SECTIONS ARE NUMBERED --------------------------------------------------
    A sub-heading is numbered WITHIN its section, so 2.1 says where it lives instead of
@@ -253,31 +286,6 @@ html[data-look=paper] .prose th{border-bottom-color:var(--c-heading)}
 html[data-look=paper] hr.fn-rule{width:8rem;margin-left:0;border-top-color:var(--c-heading)}
 html[data-look=paper] .footnotes{font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small)}
-
-/* --- THE SERIES BOX IS A STANDING BOX ---------------------------------------
-   A rounded card with a hairline all round it is a web component, and it was the one thing
-   left on the page that said so. A paper sets a standing box the way it sets a section: a
-   heavy rule over it, the head as small letterspaced capitals on a band of its own, a
-   hairline under that, then the list. Nothing else on this page draws a corner radius, and
-   nothing else should.
-
-   Capitals by TEXT-TRANSFORM, never typed: the series name reaches the feed, the search
-   result and a screen reader as the owner wrote it.
-
-   The marker beside the part being read is the margin's CHANGE BAR, which is a printed
-   convention rather than a borrowed web one - so it moves to the column edge and takes
-   heading ink. It was the accent, which in this look is the link blue, and a blue bar
-   beside a line of black type says the line is a link. */
-html[data-look=paper] aside.series{border:0;border-radius:0;padding:0 0 1rem;
-  border-top:2px solid var(--c-heading);border-bottom:1px solid var(--c-rule)}
-html[data-look=paper] aside.series .series-head{margin:0 0 1rem;padding:.45rem 0;
-  line-height:1;color:var(--c-heading);border-bottom:1px solid var(--c-rule);
-  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
-  text-transform:uppercase;letter-spacing:.08em;font-weight:600}
-html[data-look=paper] aside.series .series-head a{color:inherit;text-decoration:none}
-html[data-look=paper] aside.series ol{border-top:0;padding:0 0 0 1.25rem}
-html[data-look=paper] aside.series li[aria-current]::after{left:-1.25rem;
-  background:var(--c-heading)}
 
 /* The apparatus at the end takes the same rule as a section head, so the page closes the
    way it opened. */

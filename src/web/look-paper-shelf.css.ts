@@ -1,8 +1,8 @@
 // The newspaper dialect's SHELF, cut out of `look-paper.css.ts` when that file passed the
 // 400-line cap. The cut is by SUBJECT rather than by size: everything here answers one
-// question — what a paper does with the navigation that runs down a screen's margin — and
-// it is the only block in the dialect that restates a layout generated somewhere else
-// (`render/rail-css.ts`).
+// question — what a paper does with the navigation around a piece: the menu down the
+// margin, the contents, and the series box — and it is the only block in the dialect that
+// restates a layout generated somewhere else (`render/rail-css.ts`).
 //
 // It is concatenated back into `LOOK_PAPER_CSS`, so it ships as part of the one sheet the
 // look links and every guard in `web/looks.test.ts` still reads it.
@@ -28,24 +28,30 @@ export const LOOK_PAPER_SHELF_CSS = `
    breakpoint (render/rail-css.ts). Restated rather than shared because that block is
    generated per column width inside a media query, and this one is neither. */
 html[data-look=paper] article .rail{text-align:left;position:static;width:auto;height:auto;
-  margin:1.5rem 0 2.5rem;padding:0 0 1.25rem;border:0;
+  margin:1.5rem 0 2rem;padding:0 0 1.1rem;border:0;
   border-bottom:1px solid var(--c-rule);background:none;transform:none;visibility:visible;
   overflow:visible;transition:none}
 html[data-look=paper] article .rail::after{display:none}
 html[data-look=paper] article .rail-inner{position:static;max-height:none;overflow:visible;
   width:auto;padding:0}
-html[data-look=paper] article .rail-inner > * + *{margin-top:1rem}
 html[data-look=paper] article .rail h2{margin:0;padding-left:0}
-html[data-look=paper] article .rail-inner > nav:not(.toc)::before{content:attr(aria-label);
-  display:block;margin-bottom:.5rem;font-weight:var(--fw-heading,600);color:var(--c-heading);
-  font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
+/* THE MENU IS IN THE MASTHEAD on this look, on every page (menuInHeader in article.ts
+   and listing-page.ts), so the rail's copy goes - on a listing's shelf as well as a piece's.
+   Inline on a piece it was a block headed MENU between the series box and the contents: a
+   paper does not print its section list in the middle of a story, and it pushed the first
+   line of the text to y=980 on a 1000px screen. */
+html[data-look=paper] .rail-inner > nav:not(.toc){display:none}
 html[data-look=paper] article .rail ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}
 html[data-look=paper] article .rail li,
 html[data-look=paper] article .toc li{margin-top:0}
-html[data-look=paper] article .toc ul{display:block;counter-reset:tocsec}
-html[data-look=paper] article .toc li{width:max-content;max-width:100%;margin-top:.45rem;
-  counter-increment:tocsec}
-html[data-look=paper] article .toc li:first-child{margin-top:0}
+/* THE CONTENTS ARE ONE RUN OF TEXT, the way a paper's "In this article" line is: label,
+   then numbered sections side by side. A column of rows was a web sidebar laid on its back,
+   and it cost a line of height per section above the first word of the piece. The first
+   row is the piece's own title, printed large six lines up, so it goes. */
+html[data-look=paper] article .toc ul{display:flex;flex-wrap:wrap;gap:.35rem 1.4rem;
+  counter-reset:tocsec}
+html[data-look=paper] article .toc li{max-width:100%;margin-top:0;counter-increment:tocsec}
+html[data-look=paper] article .toc li:first-child{display:none}
 html[data-look=paper] article .rail-row{padding-left:0}
 /* The rule under the row being read takes HEADING ink, for the reason the series box's
    change bar does: the base draws it in the accent, and in this dialect the accent is the
@@ -74,4 +80,52 @@ html[data-look=paper] article .toc li:has(.toc-end){counter-increment:none}
 html[data-look=paper] article .toc li:not(:first-child):not(:has(.toc-end)) .rail-row::before{
   content:counter(tocsec) ".";color:var(--c-meta);flex:none;
   font-variant-numeric:tabular-nums}
+/* --- THE SERIES BOX IS A STANDING BOX ---------------------------------------
+   A rounded card with a hairline all round it is a web component, and it was the one thing
+   left on the page that said so. A paper sets a standing box the way it sets a section: a
+   heavy rule over it, the head as small letterspaced capitals on a band of its own, a
+   hairline under that, then the list. Nothing else on this page draws a corner radius, and
+   nothing else should.
+
+   Capitals by TEXT-TRANSFORM, never typed: the series name reaches the feed, the search
+   result and a screen reader as the owner wrote it.
+
+   The marker beside the part being read is the margin's CHANGE BAR, which is a printed
+   convention rather than a borrowed web one - so it moves to the column edge and takes
+   heading ink. It was the accent, which in this look is the link blue, and a blue bar
+   beside a line of black type says the line is a link. */
+/* AND IT STANDS AT THE FOOT OF THE PIECE, where a paper prints "more in this series". At
+   the head it was the second block between the byline and the first word, and with the
+   contents under it the text began at y=850 on a 1000px screen. The kicker still says
+   which part this is (Part 2/4 lives in the box's own head, now read at the end), and the
+   read-next card below it names the next part.
+   A flex column is the only way to move it without touching the markup, and a flex column
+   does not collapse margins - the header's bottom margin and the shelf's top one now add
+   up, which is why the shelf's top margin is taken to zero in the shelf sheet. */
+html[data-look=paper] main > article{display:flex;flex-direction:column}
+html[data-look=paper] main > article > .rail + #post-body{margin-top:0}
+html[data-look=paper] main > article > aside.series{order:1;margin-top:2.5rem}
+html[data-look=paper] main > article > :is(.anchor,.post-taxo,.taxo-rule,.author-box,
+  .read-next,.related,section,footer,hr){order:2}
+html[data-look=paper] aside.series{border:0;border-radius:0;padding:0 0 1rem;
+  border-top:2px solid var(--c-heading);border-bottom:1px solid var(--c-rule)}
+html[data-look=paper] aside.series .series-head{margin:0 0 1rem;padding:.45rem 0;
+  line-height:1;color:var(--c-heading);border-bottom:1px solid var(--c-rule);
+  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
+  text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+html[data-look=paper] aside.series .series-head a{color:inherit;text-decoration:none}
+/* THE PARTS ARE ONE RUN, numbered, like the contents line under it: a column of four
+   rows was 200px of box between the byline and the first word. Numbered by a counter
+   because a flex row drops the list's own markers. The part being read is marked the way
+   the contents mark the section being read, with a rule under it in heading ink. */
+html[data-look=paper] aside.series ol{display:flex;flex-wrap:wrap;gap:.35rem 1.4rem;
+  border-top:0;padding:0;list-style:none;counter-reset:part}
+html[data-look=paper] aside.series li{margin:0;padding:0;counter-increment:part}
+html[data-look=paper] aside.series li::before{content:counter(part) ".";margin-right:.6ch;
+  color:var(--c-meta);font-variant-numeric:tabular-nums}
+html[data-look=paper] aside.series li[aria-current]{color:var(--c-heading)}
+html[data-look=paper] aside.series li[aria-current]::after{left:0;right:0;top:auto;
+  bottom:-3px;width:auto;height:2px;background:var(--c-heading)}
+/* The shelf is on the page, so there is no drawer for the header button to open. */
+html[data-look=paper] body:has(main > article > .rail) .rail-toggle{display:none}
 `.trim()

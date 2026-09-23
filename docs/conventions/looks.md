@@ -23,9 +23,13 @@ otherwise not use this software. Four is the ceiling.
 
 ## Which dialect may touch the reading column
 
-**`code` may not** — not `.prose`, `.reading-font`, `.deck`, `.comment-body` or `.fs-*`.
-That look's whole argument is the contrast between a technical frame and an analogue text,
-so touching the text destroys the thing it is for. Tested.
+**`code` may touch the headlines and the code, and nothing else** (since 2026-09-23). Every
+headline — the piece's title, a feed's titles, the front page's, the section heads inside a
+piece — is set in the monospace, bold, and a highlighted code block carries line numbers. The
+running text never: not the paragraphs, `.deck`, the excerpts or `.comment-body`. That look's
+argument is still the contrast between a technical frame and an analogue text; the frame now
+reaches the labels inside the column too, and a headline is a label. Tested per selector: one
+that names a reading-column class must end on a heading or on a line of highlighted code.
 
 **`paper` may**, and does: it numbers sections, numbers figures and tables, and moves the
 byline under the headline. Its argument is that the whole page is a publication. What it
@@ -35,7 +39,8 @@ still never changes is the reading face, the measure, or the words.
 in the newsletter, not in a search result, and not in what a reader copies. Prose that says
 "as section 2.1 showed" is broken everywhere but the page it was written on.
 
-**`notes` may**, for links and the ruling behind paragraphs, and for nothing else.
+**`notes` may**, for links (a highlighter band), for ragged-right setting (a hand does not
+justify), and for nothing else. The paper pattern is on the SHEET, not behind paragraphs.
 
 ## code — the source-code dialect (HARD RULES)
 
@@ -58,9 +63,11 @@ server-rendered as `<html data-look="code">` so the first paint is right and no 
   rest of the product gives it; it was `.6rem` here, which left the copyright line nine
   pixels off the bottom of the page.
 
-- **It never touches the reading column** — not `.prose`, `.reading-font`, `.deck`,
-  `.comment-body` or `.fs-*`. Those are the reader's own words and are the half that must
-  not look technical. Tested.
+- **It never touches the running text** — not the paragraphs, `.deck`, the excerpts or
+  `.comment-body`. Headlines and code blocks are the exception above. Tested.
+- **Line numbers are a counter on `pre.shiki .line`**, with `user-select:none`, so neither a
+  drag-select nor the copy button takes them. A plain (unhighlighted) block has no lines to
+  count and gets none. The empty line Shiki closes a block with gets no number.
 - **Two syntax roles, both from theme tokens.** An editor distinguishes a comment from a
   literal, so: labels are `--c-meta` and carry a `//` marker from CSS (never markup, so the
   heading a feed and a screen reader see stays the plain word); counts, dates and figures
@@ -133,7 +140,22 @@ What a look may still derive: anything computed **from** the tokens. The noteboo
 
 ## notes — the notebook dialect, in brief
 
-A sheet lying on a desk, ruled, written on by hand. Every colour in it is the palette's.
+A sheet of dot-grid paper lying on a desk, written on by hand. Every colour in it is the
+palette's.
+
+- **Dot grid, on the sheet, since 2026-09-23.** It replaced a rule drawn under every line of
+  every paragraph. That ruling could not drift, and it read as a form: every excerpt on the
+  front page underlined line by line, a rule between a date and its headline. Dots give text
+  no line to sit on or miss, so nothing drifts and nothing has to be drawn per paragraph.
+- **Links are marked with a highlighter** — a band of the accent thinned into the page over
+  the lower half of the words, replacing the drawn underline (reset size, position and repeat,
+  or the band is cut into the underline's tiles). In Mono the accent is near-black, so the
+  band is grey; every other palette colours it.
+- **Ragged right, whatever the book-typography switch says.**
+- **The quiet ink is stepped down through a SECOND NAME** (`--c-meta-desk` on the root, handed
+  to the body as `--c-meta`). It was `--c-meta` mixed from `var(--c-meta)` on the body, which
+  is a cycle: the property went invalid and every quiet line fell back to the full text ink
+  from 2026-09-14 to 09-23, hiding the hand-drawn series box and the section ticks with it.
 
 - **The desk is the page's own lightness taken down**, one formula for both halves of the
   day (`oklch(from var(--c-bg) calc(l * …) c h)`, behind `@supports`) — and derived, so it
@@ -156,7 +178,19 @@ A sheet lying on a desk, ruled, written on by hand. Every colour in it is the pa
 
 ## paper — the newspaper dialect
 
-A masthead, a lead headline, column rules, and a piece printed as an offprint. Three
+A masthead, a lead headline, column rules, and a piece printed as an offprint.
+
+- **The menu is in the masthead on every page** (`menuInHeader` in `article.ts` and
+  `listing-page.ts` when the look is `paper`), and the rail's copy is hidden. On a phone it is
+  one strip that scrolls sideways, painted here because the base paints it only above 60rem.
+  Inline on a piece it had been a block headed MENU between the series box and the contents,
+  and the first line of text sat at y=980 on a 1000px screen; it is at 683 now.
+- **The contents are one run of numbered sections**, not a column of rows, and the piece's
+  own title is dropped from them.
+- **The series box stands at the FOOT of the piece**, one run of numbered parts, moved there
+  by making the article a flex column (`order`). A flex column does not collapse margins, so
+  the prose's top margin goes to zero after the contents.
+- **The first letter is a drop cap**, `initial-letter:3` only, with no float fallback. Three
 front-page shapes are dressed, not one: `list`, `grid` (the reader's own toggle) and the
 composed `front`.
 
@@ -177,10 +211,11 @@ composed `front`.
 - **Under 44rem the controls take their own row, centred**, and give up the `-.625rem`
   optical pull: that exists to line the last glyph up with the rule at the column edge, and
   centred there is no edge to line up with.
-- **Never set `display` on `.site-menu` here.** The base sheet hides it under 60rem and
-  paints its links only above that width, so a flat `display:flex` outranked the hide and
-  put five default-blue underlined links across a phone masthead — beside a drawer button
-  that opens the same five.
+- **Never set a FLAT `display` on `.site-menu` here.** The base sheet hides it under 60rem
+  and paints its links only above that width, so a flat `display:flex` once outranked the
+  hide and put five default-blue underlined links across a phone masthead, beside a drawer
+  button that opened the same five. The phone strip now lives in its own narrow-width block
+  that paints the links, and the drawer no longer carries the menu.
 - **One gutter for every column rule on the page** (`margin-left:-20px;padding-left:20px`
   against a 40px gap), centred IN the gap and never drawn at a card's edge. The card grid
   ships 28px of its own, so this look restates it: the same hairline standing 14px off a
@@ -215,7 +250,7 @@ composed `front`.
 
 ## notes — the notebook dialect
 
-A ruled page lying on a dotted desk.
+A dot-grid page lying on a plain desk.
 
 - **The sheet is `main > article`, never `article`.** A listing's rows are `<article>`
   elements too, and the bare selector drew a bordered card round every entry on the front
@@ -226,16 +261,11 @@ A ruled page lying on a dotted desk.
   the top margin. Below 46rem it drops to 12: the only side space there is the page's own
   25px of padding, and a 20px sheet left four pixels of desk showing, which is a near miss
   rather than a margin.
-- **The ruling is drawn per paragraph, never across the sheet.** One background on the page
-  has one fixed step and the text cannot follow it the way a hand does — a picture is not a
-  whole number of lines tall, so the rules drift and start cutting through the text. Per
-  paragraph cannot drift; book typography already runs paragraphs together, so a run of
-  prose comes out continuously ruled and a heading or a picture interrupts it the way
-  pasting something into a notebook does. The rules run the width of the PAGE, not the width
-  of the words: at the column's width they read as underlined text.
-- **The desk is a tone darker than the page.** Dots alone were too quiet to read at a
-  glance: what makes a sheet look like a sheet is that the thing under it is not the same
-  colour. Both hairlines in the gutter go with it, and the two dots that hung on them.
+- **History: the ruling was drawn per paragraph** (2026-09-14 to 09-23), because one ruled
+  background across the sheet drifts against pictures and cuts through text. It was replaced
+  by the dot grid, which has no line to drift.
+- **The desk is a tone darker than the page.** The dots are on the sheet, not the desk: what
+  makes a sheet look like a sheet is that the thing under it is not the same colour. Both hairlines in the gutter go with it, and the two dots that hung on them.
 - **No arrow on an outbound link.** U+2197 is outside both bundled subsets and fell back to
   a system face; drawn instead as a rotated U+2191 it was its own inline box and broke onto
   the next line by itself at 390px.
