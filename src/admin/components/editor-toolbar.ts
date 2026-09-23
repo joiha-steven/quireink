@@ -47,7 +47,7 @@ const className = {
    * scrolls a strip of tools sideways in every application they have ever used, and they cannot
    * scroll the paper back up past chrome that is stuck to it.
    */
-  strip: 'no-scrollbar overflow-x-auto px-4 py-1.5 lg:flex lg:overflow-x-visible',
+  strip: 'no-scrollbar scroll-fade-x overflow-x-auto px-4 py-1.5 lg:flex lg:overflow-x-visible',
   middle: 'lg:justify-center',
   /**
    * The run of buttons inside a line, and the two widths that make it behave.

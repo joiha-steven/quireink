@@ -79,7 +79,7 @@ function greeting(t: AdminStrings, settings: SiteSettings, author: { name: strin
     : t.greetNothingYet
   return `<div class="mb-10 flex flex-wrap items-center justify-between gap-4">`
     + `<div class="flex min-w-0 items-center gap-3">${portrait(t, author)}`
-    + `<div class="min-w-0"><h1 class="truncate ${TITLE}">${lines}</h1>`
+    + `<div class="min-w-0"><h1 class="line-clamp-2 ${TITLE}">${lines}</h1>`
     + `<p class="${META_ON_CANVAS} mt-0.5">${escapeHtml(when)}`
     + (named ? '' : ` · <a href="${escapeAttr(NAME_HREF)}" class="underline underline-offset-2 hover:text-neutral-900 dark:hover:text-white">${escapeHtml(t.greetSetName)}</a>`)
     + `</p></div></div>`

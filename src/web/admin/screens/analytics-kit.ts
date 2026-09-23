@@ -95,51 +95,41 @@ export function trendChart({ points, peakLabel, viewsLabel, visitorsLabel, parti
    * place over, where it shortens the PREVIOUS window to the same elapsed length so the
    * comparison does not open showing a fall.
    *
-   * So the finished buckets carry the fill and a solid line, and the one still being counted
-   * is reached by a dashed segment. Nothing is hidden and nothing is guessed at.
+   * So the chart draws the FINISHED buckets, across the whole width, and the one still being
+   * counted is a number in the legend: "Still counting: 3". It was a dashed segment until
+   * 2026-09-23, and a dashed line from 65 down to 3 is still a line falling off a cliff — the
+   * eye reads the slope before it reads the dash. Nothing is hidden and nothing is guessed at.
    */
   partialLabel: string
   lang: SiteLang
 }): string {
   const W = 720
   const H = 150
-  const n = points.length
-  const max = points.reduce((m, p) => Math.max(m, p.views), 0) || 1
+  // ⚠️ A SPLIT NEEDS A BODY TO HANG OFF. Under three buckets there is nothing to compare the
+  // partial one against, and one finished point draws neither a line nor an area, so a short
+  // window is drawn whole and its tooltip says the rest.
+  const split = points.length >= 3
+  const counting = split ? points[points.length - 1]! : null
+  const drawn = split ? points.slice(0, -1) : points
+  const n = drawn.length
+  const max = drawn.reduce((m, p) => Math.max(m, p.views), 0) || 1
   // A single bucket has no line to draw, so it stands in the middle rather than at x=0, where
   // it would be half off the left edge of its own chart.
   const x = (i: number): number => (n <= 1 ? W / 2 : (i / (n - 1)) * W)
   const y = (v: number): number => H - (v / max) * (H - 6) - 3
   const at = (p: DailyPoint, i: number): string => `${x(i)},${y(p.views)}`
-  // ⚠️ A DASH NEEDS A BODY TO HANG OFF. Splitting the last bucket out leaves n-1 finished ones,
-  // and one point draws neither a line nor an area — so on a window of two buckets the whole
-  // chart came out as a dotted line over blank paper. Seen on `All time` against a fixture
-  // spanning two months. Under three buckets there is nothing to compare the partial one
-  // against anyway, so it is drawn whole and the tooltip says the rest.
-  const split = n >= 3
-  const solid = split ? points.slice(0, n - 1) : points
-  const viewsPts = solid.map(at).join(' ')
-  const visitorPts = solid.map((p, i) => `${x(i)},${y(p.visitors)}`).join(' ')
-  const lastX = x(n - 1)
-  const tail = split
-    ? `<polyline points="${x(n - 2)},${y(points[n - 2]!.views)} ${lastX},${y(points[n - 1]!.views)}"`
-      + ` fill="none" class="stroke-neutral-400 dark:stroke-neutral-500" stroke-width="1.5"`
-      + ` stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>`
-      + `<polyline points="${x(n - 2)},${y(points[n - 2]!.visitors)} ${lastX},${y(points[n - 1]!.visitors)}"`
-      + ` fill="none" class="stroke-neutral-800 dark:stroke-neutral-200" stroke-width="1.5"`
-      + ` stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>`
-    : ''
-  const area = solid.length > 0
-    ? `M0,${H} L${solid.map(at).join(' L')} L${x(solid.length - 1)},${H} Z`
-    : ''
+  const viewsPts = drawn.map(at).join(' ')
+  const visitorPts = drawn.map((p, i) => `${x(i)},${y(p.visitors)}`).join(' ')
+  const area = n > 0 ? `M0,${H} L${drawn.map(at).join(' L')} L${x(n - 1)},${H} Z` : ''
   const colW = n > 0 ? W / n : W
 
   const legendMark = (cls: string, label: string): string =>
     `<span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-sm ${cls}"></i>${escapeHtml(label)}</span>`
 
-  const ends = n > 1 && points[0] && points[n - 1]
+  const ends = n > 1 && drawn[0] && drawn[n - 1]
     ? `<div class="mt-1.5 flex justify-between text-xs text-neutral-500 dark:text-neutral-400">`
-      + `<span class="tabular-nums">${escapeHtml(points[0].day)}</span>`
-      + `<span class="tabular-nums">${escapeHtml(points[n - 1].day)}</span></div>`
+      + `<span class="tabular-nums">${escapeHtml(drawn[0].day)}</span>`
+      + `<span class="tabular-nums">${escapeHtml(drawn[n - 1].day)}</span></div>`
     : ''
 
   return `<div class="w-full">`
@@ -147,21 +137,19 @@ export function trendChart({ points, peakLabel, viewsLabel, visitorsLabel, parti
     + `<div class="flex items-center gap-3">`
     + legendMark('bg-neutral-400 dark:bg-neutral-500', viewsLabel)
     + legendMark('bg-neutral-800 dark:bg-neutral-200', visitorsLabel)
-    + (split
-      ? `<span class="flex items-center gap-1.5"><i class="inline-block h-px w-3.5 border-t border-dashed border-neutral-400 dark:border-neutral-500"></i>`
-        + `${escapeHtml(partialLabel)}</span>`
+    + (counting
+      ? `<span>${escapeHtml(partialLabel)}: `
+        + `<span class="tabular-nums">${escapeHtml(formatCount(counting.views, lang))}</span></span>`
       : '')
     + `</div><span>${escapeHtml(peakLabel)}: <span class="tabular-nums">${escapeHtml(formatCount(max, lang))}</span></span></div>`
     + `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="h-36 w-full" role="img">`
     + (area ? `<path d="${area}" class="fill-neutral-200/50 dark:fill-neutral-700/30"/>` : '')
     + `<polyline points="${viewsPts}" fill="none" class="stroke-neutral-400 dark:stroke-neutral-500" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`
     + `<polyline points="${visitorPts}" fill="none" class="stroke-neutral-800 dark:stroke-neutral-200" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`
-    + tail
-    + points.map((p, i) => {
+    + drawn.map((p, i) => {
       const said = `${p.day} · ${p.views} ${viewsLabel} · ${p.visitors} ${visitorsLabel}`
-      const note = n > 1 && i === n - 1 ? ` · ${partialLabel}` : ''
       return `<rect x="${x(i) - colW / 2}" y="0" width="${colW}" height="${H}" fill="transparent">`
-        + `<title>${escapeHtml(said + note)}</title></rect>`
+        + `<title>${escapeHtml(said)}</title></rect>`
     }).join('')
     + `</svg>${ends}</div>`
 }

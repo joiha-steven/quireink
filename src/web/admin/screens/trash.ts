@@ -42,7 +42,6 @@ const openKind = (query: URLSearchParams): Kind => {
   return KINDS.find((k) => k === asked) ?? 'posts'
 }
 
-const LIST = 'paper-cols'
 // `py-2.5` and not `py-3`: the row's height is set by the 36px key at its end, and the padding
 // only has to keep the key off the rule above and below it. At `py-3` every row carried 4px it
 // was not using — 40px down a column of ten.
@@ -164,7 +163,10 @@ const panel = (t: AdminStrings, kind: Kind, open: Kind, rows: string, pagerHtml 
     // matched what you typed" are different facts. The lens rather than the empty box, the way
     // the activity log, the comments queue and the library all draw it.
     ? `${emptyState({ title: t.filterEmpty, glyph: 'lens', hidden: true, attrs: `data-trash-nomatch="${kind}"` })}`
-      + `<ul class="${LIST}">${rows}</ul>`
+      // ONE COLUMN, since 2026-09-23. The trash is a list in time order, and newspaper columns
+      // read down the left and then down the right: a single deleted post sat in the left half
+      // of an empty sheet with its divider stopping mid-card, and a long list read out of order.
+      + `<ul>${rows}</ul>`
     : `<div class="p-8">${emptyState({ title: t.trashEmpty, description: t.trashEmptyHint, glyph: 'emptyBox' })}</div>`)
   + pagerHtml
   + `</div>`

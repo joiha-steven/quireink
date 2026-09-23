@@ -256,7 +256,9 @@ export async function dashboardView() {
         views30: analytics30.totalViews,
         visitors30: analytics30.uniqueVisitors,
         views7: analytics30.daily.slice(-7).reduce((sum, d) => sum + d.views, 0),
-        spark: analytics30.daily.map((d) => d.views),
+        // The finished days only. The last bucket is TODAY, a few hours against whole days, and
+        // the line ended every morning in a dive to the floor — a healthy blog drawn as a crash.
+        spark: analytics30.daily.slice(0, -1).map((d) => d.views),
         avgDwellMs: analytics30.avgDwellMs,
         avgReadDepth: analytics30.avgReadDepth,
       },

@@ -100,6 +100,11 @@
 .dark .paper-cols { column-rule-color: #262626; }
 .paper-cols > * { break-inside: avoid; }
 @media (max-width: 1023px) { .paper-cols { column-count: 1; } }
+/* One card is not two columns' worth: it sat in the left half with the rule beside nothing. */
+.paper-cols:has(> :only-child) { column-count: 1; column-rule: none; }
+/* NOT for lists in time order. The log and the trash left this on 2026-09-23: columns read down
+   the left and then down the right, so the newest entry was top-left and the next one was not
+   below it. */
 
 /* The search hit, painted the way the reading site paints a highlight. Scoped to the
    write pane's rows: the editor's own five-ink marks carry inline colours and must not
@@ -634,9 +639,13 @@ input[type='color']::-moz-color-swatch {
    14px the kit was measured at. The editor is exempt because ProseMirror sets its own
    reading size and is already above the threshold. */
 @media (max-width: 639px) {
+  /* ⚠️ NOT THE WRITING SURFACE. This rule is unlayered and the utilities are not, so it beat
+     the title's `text-3xl` and set the post's headline at 16px on a phone, smaller than an H2
+     in the body under it (seen 2026-09-23). The paper's fields set their own reading size,
+     which is already above the threshold iOS zooms at. */
   input:not([type='checkbox']):not([type='radio']),
   select,
-  textarea {
+  textarea:not(.write-surface) {
     font-size: 16px;
   }
 
@@ -672,6 +681,22 @@ input[type='color']::-moz-color-swatch {
   -ms-overflow-style: none;
 }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* The same fade, sideways, for a strip that scrolls horizontally with its bar hidden. On a
+   phone the editor's key row ended in a button cut through the middle ("H2" sliced at the
+   glass) and the Analytics range read "All tim" — a layout fault to the eye, not "there is
+   more" (seen 2026-09-23).
+   ⚠️ DRIVEN BY THE STRIP'S OWN SCROLL, because a fixed fade would dim the last key of every
+   strip that FITS. A scroll timeline is inactive on a box that cannot scroll, so the animation
+   does not apply and the band is 0; on one that can, it is 24px until the end is reached.
+   A browser without scroll timelines draws no fade, which is what it drew before. */
+@property --fade-x { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@keyframes fade-x-end { from, 98% { --fade-x: 24px; } to { --fade-x: 0px; } }
+.scroll-fade-x {
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--fade-x)), transparent);
+  animation: fade-x-end linear both;
+  animation-timeline: scroll(self inline);
+}
 
 /* A table in the WRITING SHEET scrolls. The editor was the one surface where a wide table
    simply stuck out: measured at 344px, a four-column table reached 410px and took the page
