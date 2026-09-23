@@ -67,13 +67,13 @@ bun --smol src/index.ts
 
 <div align="center">
 
-<img src="demo-looks.jpg" alt="Cùng một bài viết trong bốn lối giao diện: giấy trơn, mã nguồn với khung ngoặc vuông và số dòng, báo in với măng sét và một mục đã đánh số, và sổ tay với dòng kẻ chạy sau chữ" width="960">
+<img src="demo-looks.jpg" alt="Cùng một bài viết trong bốn lối giao diện: giấy trơn; mã nguồn, tiêu đề in chữ đơn cách đậm và khung ngoặc vuông; báo in, có măng sét, chuyên mục bên dưới và chữ cái đầu in lớn; và sổ tay, trên giấy chấm lưới cạnh một tấm thẻ" width="960">
 
 <sub>Một bài, bốn lối, một bảng màu. Lối quyết định hình dáng, kiểu chữ và các dấu; còn màu trên cả bốn đều lấy từ bảng màu, nên đổi bảng màu là cả bốn đổi theo.</sub>
 
-<img src="demo-admin.jpg" alt="Trang quản trị Quire Ink: một bài mở trong trình soạn với câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung; bên cạnh là trang cấu hình Giao diện với bốn lối, bốn font đọc, các nút chỉnh hình dáng và dải bảng màu" width="960">
+<img src="demo-admin.jpg" alt="Trang quản trị Quire Ink: một bài mở trong trình soạn với câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung; bên cạnh là trang cấu hình Giao diện với bốn lối vẽ thành thẻ, bốn font đọc, font khung trang và ô CSS riêng" width="960">
 
-<sub>Trang quản trị như 2.2.13 vẽ nó: trang do máy chủ dựng, không framework. Mọi thứ bên phải, kể cả bốn lối giao diện, đều là tuỳ chọn bấm chọn chứ không phải code, và khung trên cả hai màn đang mặc một trong số đó.</sub>
+<sub>Trang quản trị như 2.2.14 vẽ nó: trang do máy chủ dựng, không framework. Mọi thứ bên phải, kể cả bốn lối giao diện, đều là tuỳ chọn bấm chọn chứ không phải code, và khung trên cả hai màn đang mặc một trong số đó.</sub>
 
 </div>
 

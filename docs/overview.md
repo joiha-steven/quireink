@@ -67,7 +67,7 @@ bun --smol src/index.ts
 
 <div align="center">
 
-<img src="demo-looks.jpg" alt="The same article in four looks: plain paper, source code with bracketed furniture and line numbers, a newspaper with a masthead and a numbered section, and a notebook sheet ruled behind the text" width="960">
+<img src="demo-looks.jpg" alt="The same article in four looks: plain paper; source code, with the headline in a bold monospace and bracketed furniture; a newspaper, with a masthead, the sections under it and a drop cap; and a notebook, on dot-grid paper beside an index card" width="960">
 
 <sub>One post, four looks, one palette. The look decides shape, type and marks; every colour on all four comes from the palette, so changing it moves all of them together.</sub>
 
@@ -124,9 +124,9 @@ The CSS and JavaScript rows are build artefacts, the same bytes on every install
 
 <sub>None of this is for a benchmark. It is for someone on a four-year-old phone who wanted to read four hundred words.</sub>
 
-<img src="demo-admin.jpg" alt="The Quire Ink admin: a post open in the editor with a pencil underline, a red ring and a highlighted sentence, beside the Appearance settings showing the four looks, the reading fonts, the shape controls and the colour presets" width="960">
+<img src="demo-admin.jpg" alt="The Quire Ink admin: a post open in the editor with a pencil underline, a red ring and a highlighted sentence, beside the Appearance settings showing the four looks as drawn tiles, the reading fonts, the chrome font and the custom CSS box" width="960">
 
-<sub>The admin as 2.2.13 draws it: server-rendered pages, no framework. Everything on the right, the four looks included, is a setting rather than code, and the chrome on both screens is wearing one of them.</sub>
+<sub>The admin as 2.2.14 draws it: server-rendered pages, no framework. Everything on the right, the four looks included, is a setting rather than code, and the chrome on both screens is wearing one of them.</sub>
 
 </div>
 

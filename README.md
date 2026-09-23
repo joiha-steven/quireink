@@ -48,6 +48,36 @@ Colour, type, the shape of the front page and the menu are all settings in the a
 
 Every part, in detail and against the alternatives: [**Quire Ink, in full**](./docs/overview.md).
 
+## A look around
+
+<img src="docs/demo-looks.jpg" alt="The same post in the four looks: plain paper; source code, with the headline in a bold monospace and bracketed dates; newspaper, with a masthead, the sections under it and a drop cap; and notebook, on dot-grid paper beside an index card" width="960">
+
+<sub>**Four looks, one setting.** The same post as plain paper, source code, a newspaper and a notebook. A look sets shape, type and marks; the colour always comes from the palette.</sub>
+
+<img src="docs/demo-reading.jpg" alt="Book mode, the post set in two columns like a printed page with a drop cap, beside the same site in the dark theme scrolled to a four-painting gallery" width="960">
+
+<sub>**Book mode and the dark theme.** Any post opens as a paginated book; every palette is drawn twice, once for light and once for dark.</sub>
+
+<img src="docs/demo-code.jpg" alt="Three panels: a formula rendered as MathML in the reading face, a highlighted code block beside a table, and a paragraph marked with the pen in several inks" width="960">
+
+<sub>**Maths, code and the pen.** Formulas are real MathML, code is highlighted on the server, and the pen highlights, underlines and rings words by hand.</sub>
+
+<img src="docs/demo-reader-pen.jpg" alt="Left: a reader's highlight and pencil underline on a post, with the pen bar open over a selected sentence. Right: the card over a highlight, with a note box and a code that keeps the marks on every device" width="960">
+
+<sub>**Readers get the pen too.** Their marks stay in their own browser, and travel between their devices only if they ask.</sub>
+
+<img src="docs/demo-mobile.jpg" alt="Four phone screens: the post list, a post with its series box, book mode on a phone, and instant search" width="960">
+
+<sub>**On a phone,** the list, a post, book mode and search as you type.</sub>
+
+<img src="docs/demo-admin.jpg" alt="The admin: a post open in the editor with the toolbar and pen marks, beside the Appearance settings with the four looks drawn as tiles, the fonts and the custom CSS box" width="960">
+
+<sub>**The admin.** The editor on the left, and on the right the settings that decide how the site looks: all of it a setting, none of it code.</sub>
+
+<img src="docs/demo-setup.jpg" alt="Three setup screens: claiming the blog with a language, username, email and password; naming the site with its time zone and address; and choosing the front page" width="960">
+
+<sub>**Setting up** is seven short screens in the browser, and the last one drops you in the editor.</sub>
+
 ## Install
 
 You need a domain and a machine you can point it at; the cheapest VPS tier is enough. On a VPS with [Bun](https://bun.sh) 1.3 or newer, one command clones, builds and starts it:

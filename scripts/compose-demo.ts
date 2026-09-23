@@ -17,7 +17,7 @@
 // A panel whose page CONTINUES below the fold fades along its bottom edge and draws no bottom
 // border — a hard crop through half a line of type reads as a broken image. `:full` opts out.
 //
-//   bun scripts/compose-demo.ts <out.jpg> <panel.png:label[:phone|:full]> [...]
+//   [COLS=n] bun scripts/compose-demo.ts <out.jpg> <panel.png:label[:phone|:full]> [...]
 
 import sharp from 'sharp'
 import type { OverlayOptions } from 'sharp'
@@ -145,26 +145,35 @@ const bodyH = Math.max(...panels.map((p) => p.h))
 const ragged = panels.filter((p) => p.h !== bodyH)
 if (ragged.length) console.warn(`! ${ragged.length} panel(s) shorter than ${bodyH}px; plate will be ragged`)
 
-const totalW = PAD * 2 + panels.reduce((n, p) => n + p.w, 0) + GAP * (panels.length - 1)
+// COLS wraps the panels into rows (`COLS=2` puts four looks in a square rather than a strip
+// too thin to read). Unset, it is one row, which is every plate before 2026-09-23.
+const cols = Math.max(1, Number(process.env.COLS ?? panels.length) || panels.length)
+const rows: Panel[][] = []
+for (let i = 0; i < panels.length; i += cols) rows.push(panels.slice(i, i + cols))
+const rowW = (r: Panel[]) => r.reduce((n, p) => n + p.w, 0) + GAP * (r.length - 1)
+const totalW = PAD * 2 + Math.max(...rows.map(rowW))
 const labelPx = Math.round(totalW / LABEL_RATIO)
 const LABEL_H = Math.round(labelPx * 1.8)
-const totalH = PAD * 2 + LABEL_H + bodyH
+const totalH = PAD * 2 + rows.length * (LABEL_H + bodyH) + GAP * (rows.length - 1)
 
-let x = PAD
 const labels: string[] = []
 const composite: OverlayOptions[] = []
-for (const p of panels) {
-  // An empty label draws nothing at all: the setup plate labels itself ("Claim this
-  // blog", "Your site"), and a bare comment marker over it read as a typo.
-  if (p.label !== '') labels.push(
-    `<text x="${x}" y="${PAD + LABEL_H - Math.round(labelPx * 0.75)}" fill="${INK}" `
-    + `font-family="JetBrains Mono, ui-monospace, monospace" font-size="${labelPx}">`
-    + `// ${p.label}</text>`,
-  )
-  // Top-aligned, not centred: these are pages, and a page starts at the top.
-  composite.push({ input: p.buf, left: x, top: PAD + LABEL_H })
-  x += p.w + GAP
-}
+rows.forEach((row, r) => {
+  const top = PAD + r * (LABEL_H + bodyH + GAP)
+  let x = PAD
+  for (const p of row) {
+    // An empty label draws nothing at all: the setup plate labels itself ("Claim this
+    // blog", "Your site"), and a bare comment marker over it read as a typo.
+    if (p.label !== '') labels.push(
+      `<text x="${x}" y="${top + LABEL_H - Math.round(labelPx * 0.75)}" fill="${INK}" `
+      + `font-family="JetBrains Mono, ui-monospace, monospace" font-size="${labelPx}">`
+      + `// ${p.label}</text>`,
+    )
+    // Top-aligned, not centred: these are pages, and a page starts at the top.
+    composite.push({ input: p.buf, left: x, top: top + LABEL_H })
+    x += p.w + GAP
+  }
+})
 
 // Rendered to a bitmap at an explicit size first. Handing sharp the SVG directly lets
 // librsvg pick the scale, and it picks one that does not match the canvas.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rebuild the six README plates, from seeded fixtures, in one command.
+# Rebuild the seven README plates, from seeded fixtures, in one command.
 #
 # THE COMMAND IS THE POINT. `compose-demo.ts` was written so the images "regenerate from a
 # command rather than an image editor", and then the command itself lived only in whoever
@@ -131,6 +131,24 @@ bun run drive "$L/admin/settings" "$P/appearance.png" \
   "(function(){var b=[].slice.call(document.querySelectorAll('button')).find(function(x){return x.textContent.trim()==='Appearance'}); if(b) b.click()})()" \
   1440 1000 2200 > /dev/null
 
+echo "== look panels =="
+# THE LOOK IS SET, NOT SWAPPED. The newspaper's masthead menu is markup the server draws only
+# for a blog served in that look (`menuInHeader`, 2.2.14), so changing the attribute in the
+# browser photographs a newspaper with its menu still on the shelf. Each look goes through the
+# settings route with the seeded session, and the fixture's own look goes back after.
+# With the chrome font a new install gets (Inter), not the fixture's monospace: Plain paper
+# shot in a monospace chrome is a picture of a blog nobody gets by default.
+set_look() {
+  curl -sf -o /dev/null -X PUT "$L/api/settings" -H 'content-type: application/json' \
+    -H "origin: $L" -H "cookie: __Host-quire_session=$QUIRE_SESSION" \
+    -d "{\"look\":\"$1\",\"chromeFont\":\"inter\"}"
+}
+for look in plain code paper notes; do
+  set_look "$look"
+  bun run drive "$L/$POST" "$P/look-$look.png" "void 0" 1280 860 1200 2 > /dev/null
+done
+set_look code
+
 echo "== setup panels =="
 # The sixth plate photographs the three first-run screens, and they need what no seeded
 # database can hold: a blog with NO owner (the claim screen refuses to exist otherwise)
@@ -185,7 +203,9 @@ bun scripts/compose-demo.ts docs/demo-mobile.jpg  "$P/m-list.png:the post list:p
   "$P/m-post.png:a post:phone" "$P/m-book.png:book mode:phone" "$P/m-search.png:instant search:phone"
 bun scripts/compose-demo.ts docs/demo-code.jpg    "$P/maths.png:mathematics" "$P/code.png:code" "$P/pen.png:the pen"
 bun scripts/compose-demo.ts docs/demo-admin.jpg   "$P/editor.png:the editor"      "$P/appearance.png:appearance"
+COLS=2 bun scripts/compose-demo.ts docs/demo-looks.jpg "$P/look-plain.png:plain paper" \
+  "$P/look-code.png:source code" "$P/look-paper.png:newspaper" "$P/look-notes.png:notebook"
 
 echo
-echo "done. Six plates rebuilt in docs/ — LOOK at them before committing:"
-ls -la docs/demo.jpg docs/demo-reading.jpg docs/demo-mobile.jpg docs/demo-admin.jpg docs/demo-code.jpg docs/demo-setup.jpg | awk '{print "  " $5, $9}'
+echo "done. Seven plates rebuilt in docs/ — LOOK at them before committing:"
+ls -la docs/demo.jpg docs/demo-reading.jpg docs/demo-mobile.jpg docs/demo-admin.jpg docs/demo-code.jpg docs/demo-setup.jpg docs/demo-looks.jpg | awk '{print "  " $5, $9}'

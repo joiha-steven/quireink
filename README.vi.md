@@ -47,6 +47,36 @@ Màu, chữ, bố cục trang chủ và menu đều là cài đặt trong trang 
 
 Từng phần, chi tiết và so với các lựa chọn khác: [**Quire Ink, bản đầy đủ**](./docs/overview.vi.md).
 
+## Xem qua
+
+<img src="docs/demo-looks.jpg" alt="Cùng một bài trong bốn lối giao diện: giấy thường; mã nguồn, tiêu đề in chữ đơn cách đậm và ngày trong ngoặc vuông; bài báo, có măng-sét, chuyên mục bên dưới và chữ cái đầu in lớn; sổ tay, trên giấy chấm lưới cạnh một tấm thẻ" width="960">
+
+<sub>**Bốn lối giao diện, một lựa chọn.** Cùng một bài ở dạng giấy thường, mã nguồn, bài báo và sổ tay. Giao diện quyết định hình khối, kiểu chữ và các dấu; màu thì luôn do bảng màu quyết định.</sub>
+
+<img src="docs/demo-reading.jpg" alt="Chế độ đọc sách, bài dàn hai cột như trang in có chữ cái đầu in lớn, cạnh cùng trang đó ở nền tối, cuộn tới một bộ bốn bức tranh" width="960">
+
+<sub>**Chế độ đọc sách và nền tối.** Bài nào cũng mở được thành sách có lật trang; bảng màu nào cũng được vẽ hai lần, cho nền sáng và nền tối.</sub>
+
+<img src="docs/demo-code.jpg" alt="Ba khung: một công thức hiển thị bằng MathML, một khối code tô màu cạnh một bảng, và một đoạn văn được đánh dấu bằng bút nhiều màu" width="960">
+
+<sub>**Công thức, code và cây bút.** Công thức là MathML thật, code được tô màu ngay trên máy chủ, và cây bút tô, gạch chân, khoanh tròn chữ như tay vẽ.</sub>
+
+<img src="docs/demo-reader-pen.jpg" alt="Trái: vệt tô và gạch chì của người đọc trên một bài, thanh bút mở trên câu đang chọn. Phải: tấm thẻ trên vệt tô, có ô ghi chú và một mã giữ các dấu trên mọi thiết bị" width="960">
+
+<sub>**Người đọc cũng cầm bút.** Dấu của họ nằm trong trình duyệt của chính họ, và chỉ đi theo sang thiết bị khác khi họ muốn.</sub>
+
+<img src="docs/demo-mobile.jpg" alt="Bốn màn hình điện thoại: danh sách bài, một bài có hộp loạt bài, chế độ đọc sách trên điện thoại, và tìm kiếm tức thì" width="960">
+
+<sub>**Trên điện thoại:** danh sách bài, một bài viết, chế độ đọc sách và tìm kiếm ngay khi gõ.</sub>
+
+<img src="docs/demo-admin.jpg" alt="Trang quản trị: một bài mở trong trình soạn thảo có thanh công cụ và vết bút, cạnh phần cài đặt Giao diện với bốn lối giao diện vẽ thành thẻ, phông chữ và ô CSS riêng" width="960">
+
+<sub>**Trang quản trị.** Trình soạn thảo bên trái, bên phải là phần cài đặt quyết định site trông ra sao: tất cả đều là tuỳ chọn, không phải viết code.</sub>
+
+<img src="docs/demo-setup.jpg" alt="Ba màn hình cài đặt: nhận blog với ngôn ngữ, tên đăng nhập, email và mật khẩu; đặt tên site kèm múi giờ và địa chỉ; và chọn trang chủ" width="960">
+
+<sub>**Cài đặt lần đầu** là bảy màn ngắn trong trình duyệt, màn cuối đưa bạn thẳng vào trình soạn thảo.</sub>
+
 ## Cài đặt
 
 Bạn cần một tên miền và một máy trỏ được tên miền về; gói VPS rẻ nhất là đủ. Trên VPS có [Bun](https://bun.sh) 1.3 trở lên, một lệnh là tải, build và chạy:
