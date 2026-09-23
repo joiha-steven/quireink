@@ -16,7 +16,7 @@
 // mark ORDER (which is the nesting order a save writes), and which marks each one excludes. Not
 // `parseDOM`, which has no comparable shape between the two and is exercised by pasting.
 //
-// ⚠️ TWO DIFFERENCES ARE DELIBERATE and are asserted AS differences below, so that this file
+// ⚠️ THREE DIFFERENCES ARE DELIBERATE and are asserted AS differences below, so that this file
 // says what changed rather than hiding it in a tolerance.
 //
 // happy-dom is registered for this file only, the rule every editor suite here follows.
@@ -114,6 +114,8 @@ describe('the schema this product writes and the schema it replaced', () => {
   it('agrees on every node attribute and every default', () => {
     for (const name of Object.keys(was.nodes)) {
       const mine = defaults(ours.nodes[name]!.spec)
+      // `loose` on the three lists is the third deliberate difference, asserted below.
+      if (LISTS.includes(name)) delete mine.loose
       expect(`${name}: ${JSON.stringify(mine, sorted)}`)
         .toBe(`${name}: ${JSON.stringify(was.nodes[name]!.attrs, sorted)}`)
     }
@@ -164,7 +166,7 @@ describe('the schema this product writes and the schema it replaced', () => {
   })
 })
 
-describe('the two differences that are on purpose', () => {
+describe('the three differences that are on purpose', () => {
   /**
    * ⚠️ A HIGHLIGHT MAY NOW RUN ACROSS AN INLINE CODE SPAN, and it could not before.
    *
@@ -203,6 +205,40 @@ describe('the two differences that are on purpose', () => {
     expect(was.marks.link!.inclusive).toBe(true)
   })
 })
+
+describe('the third difference: a list remembers it was loose', () => {
+  /**
+   * ⚠️ THE RECORDED SCHEMA HAD NO WAY TO SAY IT, and a save paid for that. A list with blank
+   * lines between one-paragraph items is loose — every item a paragraph, with a paragraph's space
+   * — and `md/from-editor.ts` could only infer tightness from what the items held, which calls
+   * that list tight. Measured 2026-09-23 over 142 published posts opened and saved: two lost the
+   * space between their items. The attribute defaults to false and draws nothing when it is, so
+   * every list the writer makes in the editor is the same node it always was.
+   */
+  it('adds `loose`, default false, to exactly the three list nodes', () => {
+    for (const name of Object.keys(ours.nodes)) {
+      const mine = defaults(ours.nodes[name]!.spec)
+      expect(`${name}: ${'loose' in mine ? String(mine.loose) : '-'}`)
+        .toBe(`${name}: ${LISTS.includes(name) ? 'false' : '-'}`)
+      expect(`${name} recorded: ${'loose' in ((was.nodes[name]?.attrs ?? {}) as object)}`).toBe(`${name} recorded: false`)
+    }
+  })
+
+  it('writes it to the DOM only when it is true, and reads it back from a paste', async () => {
+    const { DOMParser: PMParser } = await import('prosemirror-model')
+    for (const name of LISTS) {
+      const node = ours.nodes[name]!.createAndFill({ loose: true })!
+      const dom = shape(ours.nodes[name]!.spec.toDOM?.(node))
+      expect(JSON.stringify(dom)).toContain('"data-loose":"true"')
+    }
+    const host = document.createElement('div')
+    host.innerHTML = '<ul data-loose="true"><li><p>a</p></li></ul><ol><li><p>b</p></li></ol>'
+    const doc = PMParser.fromSchema(ours).parse(host)
+    expect([doc.child(0).attrs.loose, doc.child(1).attrs.loose]).toEqual([true, false])
+  })
+})
+
+const LISTS = ['bulletList', 'orderedList', 'taskList']
 
 /** Keys in a stable order, so two objects that hold the same thing compare equal. */
 function sorted(_key: string, value: unknown): unknown {

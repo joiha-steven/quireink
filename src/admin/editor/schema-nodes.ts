@@ -83,28 +83,41 @@ const hardBreak: NodeSpec = {
 
 // `block list` and not just `block`: the list keymap and the two toggle commands ask "is the
 // thing I am in a list" by group, so a fourth list kind would join them by saying so here.
+//
+// ⚠️ `loose` IS THE ONE ATTRIBUTE THE REPLACED SCHEMA DID NOT HAVE, on all three lists. A list
+// with a blank line between two items publishes every item as a paragraph, with a paragraph's
+// space around it — and nothing in the document said so, so `md/from-editor.ts` had to guess
+// from what the items held, and guessed tight for any item that was one paragraph. Measured on
+// 2026-09-23 over 142 published posts opened and saved: two lost the space between their items,
+// one of them across ten. The parse knows the answer, so it now hands it over instead.
+// `schema-agreement.test.ts` asserts it as a difference.
+const loose = { loose: { default: false } }
+const looseOf = (dom: HTMLElement) => ({ loose: dom.hasAttribute('data-loose') })
+
 const bulletList: NodeSpec = {
   group: 'block list',
   content: 'listItem+',
-  parseDOM: [{ tag: 'ul' }],
-  toDOM: () => ['ul', 0],
+  attrs: loose,
+  parseDOM: [{ tag: 'ul', getAttrs: (dom) => looseOf(dom as HTMLElement) }],
+  toDOM: (node) => ['ul', attrs({ 'data-loose': node.attrs.loose ? 'true' : null }), 0],
 }
 
 const orderedList: NodeSpec = {
   group: 'block list',
   content: 'listItem+',
-  attrs: { start: { default: 1 }, type: { default: null } },
+  attrs: { start: { default: 1 }, type: { default: null }, ...loose },
   parseDOM: [{
     tag: 'ol',
     getAttrs: (dom) => {
       const el = dom as HTMLElement
       const start = el.getAttribute('start')
-      return { start: start ? Number(start) : 1, type: el.getAttribute('type') }
+      return { start: start ? Number(start) : 1, type: el.getAttribute('type'), ...looseOf(el) }
     },
   }],
   toDOM: (node) => ['ol', attrs({
     start: node.attrs.start === 1 ? null : String(node.attrs.start),
     type: node.attrs.type as string | null,
+    'data-loose': node.attrs.loose ? 'true' : null,
   }), 0],
 }
 
@@ -120,8 +133,9 @@ const listItem: NodeSpec = {
 const taskList: NodeSpec = {
   group: 'block list',
   content: 'taskItem+',
-  parseDOM: [{ tag: 'ul[data-type="taskList"]', priority: 60 }],
-  toDOM: () => ['ul', { 'data-type': 'taskList' }, 0],
+  attrs: loose,
+  parseDOM: [{ tag: 'ul[data-type="taskList"]', priority: 60, getAttrs: (dom) => looseOf(dom as HTMLElement) }],
+  toDOM: (node) => ['ul', attrs({ 'data-type': 'taskList', 'data-loose': node.attrs.loose ? 'true' : null }), 0],
 }
 
 /**

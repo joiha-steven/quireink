@@ -122,3 +122,31 @@ describe('what a save must never do', () => {
     expect(await save('C++ và ++i, x @@ y\n')).toBe('C++ và ++i, x @@ y\n')
   })
 })
+
+describe('a loose list stays loose', () => {
+  // FOUND ON PRODUCTION CONTENT, not in the corpus: 142 published posts opened and saved on
+  // 2026-09-23, and two published differently after. Both were loose lists of one-paragraph
+  // items — the shape a WordPress import writes — which the corpus happened not to hold. A
+  // blank line anywhere between two items makes every item a paragraph; the save dropped the
+  // blank lines and with them the space a reader sees between the items.
+  const shapes = [
+    ['blank lines between every item', '- **Bình chọn:** một.\n\n- **Kết quả:** hai.\n'],
+    ['one blank line, the whole list loose', '- một\n- hai\n\n- ba\n    - con\n'],
+    ['ordered, starting past one', '3. ba\n\n4. bốn\n'],
+    ['a checklist', '- [x] xong\n\n- [ ] chưa\n'],
+  ] as const
+  for (const [what, source] of shapes) {
+    it(what, async () => {
+      const saved = await save(source)
+      expect(toHtml(saved, PAGE)).toBe(toHtml(source, PAGE))
+      expect(await save(saved)).toBe(saved)
+    })
+  }
+
+  it('and a tight one stays tight, so the attribute is not a new way to be wrong', async () => {
+    const source = '- một\n- hai\n    - con\n- ba\n'
+    const saved = await save(source)
+    expect(saved).not.toContain('\n\n')
+    expect(toHtml(saved, PAGE)).toBe(toHtml(source, PAGE))
+  })
+})

@@ -283,9 +283,12 @@ function listNodes(node: Extract<Block, { type: 'list' }>): EditorNode[] {
     let end = i + 1
     while (end < node.items.length && (node.items[end]!.checked !== null) === task) end += 1
     const run = node.items.slice(i, end)
+    // Loose travels as an attribute because the items cannot say it: one paragraph per item is
+    // tight or loose depending only on whether blank lines stood between them (`editor/schema-nodes.ts`).
+    const attrs = { ...(node.ordered && !task ? { start } : {}), ...(node.tight ? {} : { loose: true }) }
     out.push({
       type: task ? 'taskList' : node.ordered ? 'orderedList' : 'bulletList',
-      ...(node.ordered && !task ? { attrs: { start } } : {}),
+      ...(Object.keys(attrs).length ? { attrs } : {}),
       content: run.map((item) => itemNode(item, task)),
     })
     // An ordered list split in two keeps counting: items 4 and 5 of one list are still 4 and 5.

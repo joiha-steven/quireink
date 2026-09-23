@@ -285,7 +285,11 @@ function listOf(node: PMNode, ordered: boolean): Block {
   // What separates them: a sub-list does not make its parent loose, and anything else in an
   // item — a code block, a quote, a table, a second paragraph — means blank lines were
   // written around it. Checked against both fixtures, which disagree with each other.
-  const tight = items.every((item) => {
+  //
+  // ⚠️ AND THE INFERENCE COMES SECOND. It cannot see blank lines between one-paragraph items,
+  // which is the commonest loose list there is; a list opened from Markdown carries `loose`
+  // from the parse (`md/to-editor.ts`), and only one built in the editor is left to the guess.
+  const tight = !node.attrs?.loose && items.every((item) => {
     const prose = item.children.filter((b) => b.type === 'paragraph').length
     const other = item.children.filter((b) => b.type !== 'paragraph' && b.type !== 'list').length
     return prose <= 1 && other === 0
