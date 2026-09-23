@@ -90,7 +90,7 @@ jobs:
       # Pinning the browser is what makes the tour a test of this repository rather than of
       # whatever Chromium the image shipped that week. Cached, so it costs one download per
       # runner image rather than one per run.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: headless-shell
         with:
           path: ~/chrome

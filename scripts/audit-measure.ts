@@ -23,7 +23,12 @@ const load = new Promise<void>((res)=>{const t=setTimeout(()=>{done();res()},200
   const done=()=>{const i=evs.indexOf(h); if(i>=0) evs.splice(i,1)}
   evs.push(h)})
 await send('Page.navigate',{url}); await load
-await send('Runtime.evaluate',{expression:`(()=>{const d=document.documentElement;d.dataset.palette=${JSON.stringify(palette)};d.dataset.scheme=${JSON.stringify(scheme)};d.classList.toggle('dark',${JSON.stringify(scheme)}==='dark');})()`})
+// The palette and scheme travel as ARGUMENTS to a fixed function, never spliced into source:
+// a value written into an expression is code the page runs (CodeQL js/bad-code-sanitization).
+const page = await send('Runtime.evaluate',{expression:'globalThis'})
+await send('Runtime.callFunctionOn',{objectId:page.result.objectId,
+  functionDeclaration:"function(p,s){const d=document.documentElement;d.dataset.palette=p;d.dataset.scheme=s;d.classList.toggle('dark',s==='dark')}",
+  arguments:[{value:palette},{value:scheme}]})
 await Bun.sleep(500)
 const out = await send('Runtime.evaluate',{expression:expr,returnByValue:true,awaitPromise:true})
 console.log(out?.result?.value ?? JSON.stringify(out).slice(0,500))

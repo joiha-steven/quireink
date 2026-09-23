@@ -67,14 +67,30 @@ for (const s of specs) {
   const load = waitLoad()
   await send('Page.navigate', { url: s.url })
   await load
-  const setup = [
-    s.palette ? `d.dataset.palette=${JSON.stringify(s.palette)};localStorage.setItem('palette',${JSON.stringify(s.palette)});` : '',
-    s.scheme ? `d.dataset.scheme=${JSON.stringify(s.scheme)};d.classList.toggle('dark',${JSON.stringify(s.scheme)}==='dark');localStorage.setItem('theme',${JSON.stringify(s.scheme)});` : '',
-    s.list ? `d.dataset.list=${JSON.stringify(s.list)};localStorage.setItem('list',${JSON.stringify(s.list)});` : '',
-  ].join('')
-  await send('Runtime.evaluate', { expression: `(()=>{const d=document.documentElement;${setup}})()` })
+  // The reader-side attributes travel as ARGUMENTS to one fixed function, never spliced into
+  // source: a value written into an expression is code the page runs (CodeQL
+  // js/bad-code-sanitization). An absent value is null and the function leaves that one alone.
+  const page = await send('Runtime.evaluate', { expression: 'globalThis' })
+  await send('Runtime.callFunctionOn', {
+    objectId: page.result.objectId,
+    functionDeclaration: `function (palette, scheme, list) {
+      const d = document.documentElement
+      if (palette) { d.dataset.palette = palette; localStorage.setItem('palette', palette) }
+      if (scheme) {
+        d.dataset.scheme = scheme; d.classList.toggle('dark', scheme === 'dark')
+        localStorage.setItem('theme', scheme)
+      }
+      if (list) { d.dataset.list = list; localStorage.setItem('list', list) }
+    }`,
+    arguments: [{ value: s.palette ?? null }, { value: s.scheme ?? null }, { value: s.list ?? null }],
+  })
   if (s.js) await send('Runtime.evaluate', { expression: s.js, awaitPromise: true })
-  if (s.scrollY !== undefined) await send('Runtime.evaluate', { expression: `window.scrollTo(0, ${s.scrollY})` })
+  if (s.scrollY !== undefined) {
+    await send('Runtime.callFunctionOn', {
+      objectId: page.result.objectId, functionDeclaration: 'function (y) { window.scrollTo(0, y) }',
+      arguments: [{ value: Number(s.scrollY) }],
+    })
+  }
   await Bun.sleep(s.settle ?? 450)
   let clip: any = undefined
   if (s.full) {
