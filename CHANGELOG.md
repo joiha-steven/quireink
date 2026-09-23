@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+### Fixed: opening and saving a post no longer closes up a spaced list
+
+A list with a blank line between its items shows every item as a paragraph, with a paragraph's
+space around it. Opening such a post in the editor and saving it wrote the list without the blank
+lines, and the space went with them. Measured over 142 published posts opened and saved: two
+changed on the page, both for this reason. The editor now remembers that a list was spaced.
+
+### The keyboard reaches two pictures it could not
+
+A picture in a post opens its full-size viewer with Enter or Space, not only with a click, and the
+library's full-size picture is a real dialog: focus goes into it, the page behind stops taking
+Tab, and closing puts focus back where it was.
+
+### The admin stops sending the pen to screens that have no paper
+
+The pen's stylesheet — most of the admin's CSS — now loads only on the three writing screens. On
+every other screen the stylesheet drops from 55 KB to 23 KB gzipped.
+
+### The ops backup script leaves the caches out, and keeps its daily copies when sealed
+
+`scripts/ops/quire-backup.sh` now empties the rebuildable caches in its snapshot, as the in-app
+backup already did. If you set `QUIRE_BACKUP_TO`, your daily copies were being deleted after
+three days instead of thirty; that is fixed. `QUIRE_BACKUP_AGE_TO` seals the archive with `age`
+instead (see `docs/backups.md`).
+
 ### The database cache stops promising more memory than the box has
 
 SQLite was told it could keep 64 MB of pages per connection, and there are two connections —
