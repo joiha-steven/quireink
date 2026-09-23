@@ -98,6 +98,20 @@ export function wirePalette(words: PaletteWords): () => void {
     if (shown.length === 0) box!.removeAttribute('aria-activedescendant')
   }
 
+  // A row's two lanes, folded the first time a query reaches it and kept: the markup carries the
+  // words once (`web/admin/overlays.ts`), and a keystroke should not fold a hundred rows again.
+  const folded = new WeakMap<HTMLElement, { text: string; lower: string; folded: string }>()
+  const laneOf = (r: HTMLElement): { text: string; lower: string; folded: string } => {
+    let lane = folded.get(r)
+    if (!lane) {
+      const l = lanes(r.dataset.palSearch ?? '')
+      // `text` is the lower lane, as it always was here: the match is case-blind either way.
+      lane = { text: l.lower, lower: l.lower, folded: l.folded }
+      folded.set(r, lane)
+    }
+    return lane
+  }
+
   const settle = (): void => {
     const needle = box.value.trim()
     const asked = needle !== ''
@@ -107,12 +121,7 @@ export function wirePalette(words: PaletteWords): () => void {
         r.hidden = r.dataset.palGroup === 'setting'
         continue
       }
-      const lane = {
-        text: r.dataset.palLower ?? '',
-        lower: r.dataset.palLower ?? '',
-        folded: r.dataset.palFold ?? '',
-      }
-      r.hidden = indexIn(lane, needle) === -1
+      r.hidden = indexIn(laneOf(r), needle) === -1
     }
     // A HEADING IS ONLY A HEADING IF SOMETHING FOLLOWS IT. The list is drawn in group order,
     // so each one shows exactly when its own group has a row left.
@@ -149,14 +158,13 @@ export function wirePalette(words: PaletteWords): () => void {
       postSlot.replaceChildren()
       for (const hit of (json.data?.hits ?? []).slice(0, 5)) {
         const label = hit.title || hit.slug
-        const lane = lanes(label)
         const row = el('li', {
           className: 'flex cursor-pointer items-baseline justify-between gap-4 px-4 py-2 text-sm',
           role: 'option', 'aria-selected': 'false',
           id: `pal-p-${hit.kind}-${hit.slug.replace(/[^a-z0-9]+/gi, '-')}`,
           'data-pal-row': '', 'data-pal-group': 'post',
           'data-pal-id': `p:${hit.kind}:${hit.slug}`,
-          'data-pal-lower': lane.lower, 'data-pal-fold': lane.folded,
+          'data-pal-search': label,
           'data-pal-href': `/admin/${hit.kind === 'page' ? 'page-editor' : 'editor'}/${hit.slug}`,
         })
         const name = el('span', { className: 'min-w-0 truncate text-neutral-900 dark:text-white' })

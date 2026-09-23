@@ -290,7 +290,13 @@ export function compression(): MiddlewareHandler {
     // is under a kilobyte and went out uncompressed, and then the tool list never arrived,
     // because `tools/list` is over it and did not. They are small payloads read by one
     // caller; there is nothing here worth the risk.
-    if (c.req.path.startsWith('/api/')) return
+    //
+    // ONE EXCEPTION, named rather than a rule loosened: the search index the reader's search
+    // box downloads. It is a document a browser fetches like any other, and it went out at
+    // 59,820 bytes where brotli makes it 8,938, with no validator — so every page that opened
+    // search paid the full 60 KB again (measured 2026-09-19). A pattern would be the wrong
+    // tool: the next thing under `/api/` to match it could be a stream.
+    if (c.req.path.startsWith('/api/') && c.req.path !== '/api/search/index') return
     if (!TEXTUAL.test(res.headers.get('content-type') ?? '')) return
 
     const body = new Uint8Array(await res.arrayBuffer())
@@ -299,6 +305,14 @@ export function compression(): MiddlewareHandler {
     // as often as a large one.
     const enc = body.byteLength < MIN_BYTES ? null : negotiate(c.req.header('accept-encoding') ?? '')
     const headers = new Headers(res.headers)
+    // THE ANSWER VARIES ON THE ENCODING whenever one could have been chosen — on a 304 too.
+    // Set only on the compressed path until 2026-09-23, so a revalidation answered 304 without
+    // it and a shared cache could file the brotli body under a key that ignored the header.
+    if (body.byteLength >= MIN_BYTES) {
+      const vary = headers.get('vary')
+      if (!vary) headers.set('vary', 'Accept-Encoding')
+      else if (!/accept-encoding/i.test(vary)) headers.set('vary', `${vary}, Accept-Encoding`)
+    }
     // Once, for both the validator and the cache key. wyhash is 0.006 ms on a 31 KB page,
     // which is cheap and was still worth 1,100 req/s when it was being paid twice.
     const hash = Bun.hash(body) as bigint
@@ -325,11 +339,6 @@ export function compression(): MiddlewareHandler {
 
     headers.set('content-encoding', enc)
     headers.delete('content-length') // it is now wrong, and Bun sets the right one
-    // Without this a shared cache can hand the brotli body to a client that never asked
-    // for it. `accept-encoding` is the header the answer varies on, so it is the one named.
-    const vary = headers.get('vary')
-    if (!vary) headers.set('vary', 'Accept-Encoding')
-    else if (!/accept-encoding/i.test(vary)) headers.set('vary', `${vary}, Accept-Encoding`)
 
     c.res = new Response(
       await compress(body, hash, enc, qualityFor(headers.get('cache-control'), body.byteLength)),

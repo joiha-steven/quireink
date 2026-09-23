@@ -16,7 +16,7 @@ import type { Post, SiteSettings } from '@/types'
 import { getPublicPosts } from '@/content/posts'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { resolveSeries } from '@/content/series'
-import { canonicalTermSlug, resolveTerm, tagText } from '@/content/taxonomy'
+import { canonicalTermSlug, resolveTerm, tagText, termSlug } from '@/content/taxonomy'
 import { t } from '@/i18n/i18n'
 import { escapeHtml, fill } from '@/utils'
 import { renderListing } from '@/web/listing'
@@ -127,9 +127,15 @@ export function registerTermRoutes(app: Hono): void {
       // indexable addresses for one archive, each naming itself as the canonical. It is one
       // document, so the alias answers the way every other alias here does: with a 301.
       const asked = c.req.param('slug')
-      const canonical = canonicalTermSlug(await getPublicPosts(), field, asked)
-      if (canonical !== null && canonical !== asked) {
-        return c.redirect(`/${kind}/${encodeURIComponent(canonical)}`, 301)
+      // ONLY AN ALIAS PAYS FOR THE SCAN. A slug already in its own canonical shape can only
+      // resolve to itself or to nothing, so the lookup over every public post — which ran on
+      // every hit, ahead of the page cache, 1.6 ms at 538 posts (2026-09-19) — is spent only on
+      // the old %-encoded names it exists to redirect.
+      if (termSlug(asked) !== asked) {
+        const canonical = canonicalTermSlug(await getPublicPosts(), field, asked)
+        if (canonical !== null && canonical !== asked) {
+          return c.redirect(`/${kind}/${encodeURIComponent(canonical)}`, 301)
+        }
       }
       return cached(`/${kind}/${asked}`, () => term(asked, 1))()
     })

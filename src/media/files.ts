@@ -103,9 +103,9 @@ export async function getFiles(): Promise<FileItem[]> {
 async function takenFilePaths(): Promise<Set<string>> {
   const set = new Set<string>()
   for (const r of all<{ url: string }>(`select url from files`)) set.add(collapseBlob(r.url))
-  for (const b of await listBlobs()) {
-    if (b.pathname.startsWith('files/')) set.add(b.pathname)
-  }
+  // Only `files/`, which is the only place the answer can be — the same walk the site icons
+  // stopped paying for the whole picture library on every upload.
+  for (const b of await listBlobs('files')) set.add(b.pathname)
   return set
 }
 
@@ -245,7 +245,10 @@ const ICON_EXT: Record<string, string> = {
 }
 export async function getSiteIcons(): Promise<FileItem[]> {
   try {
-    const blobs = await listBlobs()
+    // `files/` only. The icons have always lived there, and walking the whole store to find two
+    // of them cost the library screen 84.8 ms at 5,000 files against 12.9 at 100 (2026-09-19):
+    // a price that grew with every picture uploaded, on a screen that shows none of them.
+    const blobs = await listBlobs('files')
     return blobs
       .filter((b) => ICON_PREFIXES.some((p) => b.pathname.startsWith(`files/${p}`)))
       .map((b) => {

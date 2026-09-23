@@ -19,7 +19,6 @@ import { buttonClass, CONTROL, OVERLAY } from '@/admin-shared/kit'
 import { chordSpellings } from '@/web/admin/rail-rows'
 import { BUILTIN, SHORTCUTS, type Shortcut } from '@/admin-shared/keys'
 import { SETTINGS_INDEX } from '@/admin-shared/settings-index'
-import { lanes } from '@/accent'
 import { SECTION, UTIL } from '@/admin-shared/scale'
 
 /**
@@ -156,11 +155,14 @@ function palette(t: AdminStrings): string {
   // the pattern has no answer for. The React palette drew buttons and said which row was
   // current in a background colour alone, which is to say it said it to the eye only.
   const row = (r: { id: string; label: string; hint: string; search: string; group: string; href: string; run?: string }): string => {
-    const lane = lanes(`${r.search} ${r.hint}`)
     return `<li data-pal-row role="option" aria-selected="false"`
       + ` id="pal-${escapeAttr(r.id.replace(/[^a-z0-9]+/gi, '-'))}"`
       + ` data-pal-id="${escapeAttr(r.id)}" data-pal-group="${escapeAttr(r.group)}"`
-      + ` data-pal-lower="${escapeAttr(lane.lower)}" data-pal-fold="${escapeAttr(lane.folded)}"`
+      // The words ONCE, as written. The two search lanes were drawn here as well, a lower-cased
+      // and an accent-folded copy of every row — 4,222 bytes, 17% of every admin page, for a
+      // palette most screens never open (2026-09-19). The island folds a row the first time a
+      // query reaches it, with the same `lanes`.
+      + ` data-pal-search="${escapeAttr(`${r.search} ${r.hint}`)}"`
       + (r.run ? ` data-pal-run="${escapeAttr(r.run)}"` : ` data-pal-href="${escapeAttr(r.href)}"`)
       + ` hidden class="flex cursor-pointer items-baseline justify-between gap-4 px-4 py-2 text-sm">`
       + `<span class="min-w-0 truncate text-neutral-900 dark:text-white">${escapeHtml(r.label)}</span>`

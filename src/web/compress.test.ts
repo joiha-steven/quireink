@@ -234,3 +234,27 @@ describe('a 404 is compressed too', () => {
     expect(res.headers.get('etag')).toBeNull()
   })
 })
+
+describe('the two gaps the audit of 2026-09-19 found', () => {
+  it('answers a revalidation with the Vary it would have sent with the body', async () => {
+    await savePost({ title: 'Varied', status: 'published', date: PAST, content: longPage })
+    const first = await get('/varied', MODERN)
+    const tag = first.headers.get('etag') ?? ''
+    expect(tag).not.toBe('')
+    const again = await get('/varied', { ...MODERN, 'if-none-match': tag })
+    expect(again.status).toBe(304)
+    expect(again.headers.get('vary')).toContain('Accept-Encoding')
+  })
+
+  it('compresses the search index, and nothing else under /api/', async () => {
+    for (let i = 0; i < 40; i++) {
+      await savePost({ title: `Indexed ${i}`, status: 'published', date: PAST, content: longPage })
+    }
+    const index = await get('/api/search/index', MODERN)
+    expect(index.status).toBe(200)
+    expect(index.headers.get('content-encoding')).toBe('br')
+    expect(index.headers.get('etag')).toBeTruthy()
+    const health = await get('/api/health', MODERN)
+    expect(health.headers.get('content-encoding')).toBeNull()
+  })
+})

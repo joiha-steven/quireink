@@ -89,8 +89,8 @@ function announceWrite(change: BlobChange): void {
 // --- IO helpers (server-only; local driver lazy-loaded to keep node:fs off the client) ---
 
 // List every stored binary (pathname + size). Used for site stats and backups.
-export async function listBlobs(): Promise<{ pathname: string; size: number }[]> {
-  return (await import('./blob-local')).list()
+export async function listBlobs(under = ''): Promise<{ pathname: string; size: number }[]> {
+  return (await import('./blob-local')).list(under)
 }
 
 // Upload a binary and return its public URL. `_contentType` is part of the facade

@@ -122,7 +122,11 @@ export async function del(pathname: string): Promise<void> {
 }
 
 // List every stored binary (pathname + size), walking the directory tree.
-export async function list(): Promise<{ pathname: string; size: number }[]> {
+/**
+ * Every blob, or every blob under `under` — a directory name from this codebase's own
+ * constants, never a request's. The whole store is walked only by the callers that need all of it.
+ */
+export async function list(under = ''): Promise<{ pathname: string; size: number }[]> {
   const out: { pathname: string; size: number }[] = []
   const walk = async (dir: string, base: string): Promise<void> => {
     let entries
@@ -141,6 +145,6 @@ export async function list(): Promise<{ pathname: string; size: number }[]> {
       }
     }
   }
-  await walk(storeDir(), '')
+  await walk(under ? path.join(storeDir(), under) : storeDir(), under)
   return out
 }
