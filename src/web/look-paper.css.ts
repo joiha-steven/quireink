@@ -178,7 +178,7 @@ html[data-look=paper] .site-bar > .site-menu{grid-area:3/1/4/-1;flex-wrap:wrap;
 }
 /* A drawer with nothing left in it has no button: on the composed front the rail holds the
    menu alone, and the menu is in the masthead now. */
-html[data-look=paper] body:not(:has(.rail-inner > :not(nav:not(.toc)))) .rail-toggle{
+html[data-look=paper] body:has(.site-bar > .site-menu):not(:has(.rail-inner > :not(nav:not(.toc)))) .rail-toggle{
   display:none}
 
 /* --- THE PIECE'S OWN PAGE SHAPE ---------------------------------------------

@@ -70,6 +70,24 @@ export function registerLookFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok first line at y=' + Math.round(first)
     }`))
 
+  // WORN WITHOUT BEING SERVED: the demo swaps looks in the browser, so the masthead menu the
+  // server draws for the newspaper is not there. The shelf's copy must then stay, or the page
+  // has no menu at all (found 2026-09-23, preparing 2.2.14's screenshots).
+  flow('the newspaper worn in the browser still has a menu', () =>
+    atWidth(1440, '/a-type-scale-you-can-defend', `(async () => {
+    document.documentElement.setAttribute('data-look', 'paper')
+    document.querySelector('link[href*="/assets/look-"]')?.remove()
+    const el = document.createElement('link')
+    el.rel = 'stylesheet'
+    el.href = '/assets/look-paper.tour.css'
+    await new Promise((r) => { el.onload = r; el.onerror = r; document.head.append(el) })
+    await new Promise((r) => setTimeout(r, 200))
+    if (getComputedStyle(document.documentElement).getPropertyValue('--c-bg') === '') return 'no page styles'
+    const shown = [...document.querySelectorAll('nav a')].filter((a) =>
+      a.checkVisibility() && a.getAttribute('href') && a.getAttribute('href').indexOf('/category/') === 0)
+    return shown.length ? 'ok ' + shown.length + ' menu link(s) on screen' : 'the page has no menu left'
+  })()`))
+
   // The notebook: dotted paper on the sheet, and the quiet ink really quiet. The ink was a
   // custom property that named itself, which is a cycle: it went invalid and every date and
   // rail link printed in the full text colour for nine days, with every static test green.

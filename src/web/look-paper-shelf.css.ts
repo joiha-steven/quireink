@@ -40,11 +40,15 @@ html[data-look=paper] article .rail h2{margin:0;padding-left:0}
    Inline on a piece it was a block headed MENU between the series box and the contents: a
    paper does not print its section list in the middle of a story, and it pushed the first
    line of the text to y=980 on a 1000px screen. */
-html[data-look=paper] .rail-inner > nav:not(.toc){display:none}
+/* ONLY WHEN THE MASTHEAD HOLDS IT. The header's menu is markup the server draws for this look,
+   so a page that wears the look without having been SERVED in it - a demo that swaps looks in
+   the browser, a cached page from before the switch - has no masthead menu, and hiding the
+   shelf's copy there left the page with no menu at all. */
+html[data-look=paper] body:has(.site-bar > .site-menu) .rail-inner > nav:not(.toc){display:none}
 /* AND A SHELF LEFT WITH NOTHING ON IT GOES. On a page, or a piece with its contents switched
    off, the menu was the rail's only content: with it hidden the rail still drew its margins
    and its rule, an empty 19px box and a hairline between the title and the text. */
-html[data-look=paper] article .rail:not(:has(.rail-inner > :not(nav:not(.toc)))){display:none}
+html[data-look=paper] body:has(.site-bar > .site-menu) article .rail:not(:has(.rail-inner > :not(nav:not(.toc)))){display:none}
 html[data-look=paper] article .rail ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}
 html[data-look=paper] article .rail li,
 html[data-look=paper] article .toc li{margin-top:0}

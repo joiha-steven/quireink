@@ -121,7 +121,10 @@ describe('the newspaper dialect', () => {
     for (const line of flat.split('\n').filter((l) => l.includes('.site-bar > .site-menu'))) {
       expect(line).not.toContain('display:flex')
     }
-    expect(LOOK_PAPER_CSS).toContain('.rail-inner > nav:not(.toc){display:none}')
+    // And only when the masthead holds it: a page worn in this look without being served in
+    // it (a demo that swaps looks in the browser) has no masthead menu to fall back on.
+    expect(LOOK_PAPER_CSS).toContain('body:has(.site-bar > .site-menu) .rail-inner > nav:not(.toc){display:none}')
+    expect(LOOK_PAPER_CSS).not.toMatch(/^html\[data-look=paper] \.rail-inner > nav:not\(\.toc\)\{display:none/m)
   })
 
   it('puts the section over the headline and the byline under it', () => {
