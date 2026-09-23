@@ -150,3 +150,41 @@ describe('a loose list stays loose', () => {
     expect(toHtml(saved, PAGE)).toBe(toHtml(source, PAGE))
   })
 })
+
+describe('a paragraph keeps its second line', () => {
+  // FOUND 2026-09-23 through this editor, after the fix of 2026-09-21 was marked done: that fix
+  // guarded a newline INSIDE a text node, which the parser never produces. The line after a soft
+  // break is its own node, and nothing escaped it — so `\---` saved as `---`, the next open read
+  // it as a setext underline, and the second line was gone with the first turned into a heading.
+  const shapes = [
+    ['a rule', 'first line\n\\---\n'],
+    ['a heading mark', 'first line\n\\# not a heading\n'],
+    ['a list marker', 'first line\n\\- not an item\n'],
+    ['a numbered marker', 'first line\n2\\. not an item\n'],
+    ['a quote mark', 'first line\n\\> not a quote\n'],
+    ['an underline of equals', 'first line\n\\===\n'],
+    ['inside emphasis', '*first line\n\\# still emphasis*\n'],
+  ] as const
+  for (const [what, source] of shapes) {
+    it(what, async () => {
+      const once = await save(source)
+      const twice = await save(once)
+      expect(toHtml(once, PAGE)).toBe(toHtml(source, PAGE))
+      expect(twice).toBe(once)
+    })
+  }
+
+  it('a two-line setext heading stays ONE heading, with its id', async () => {
+    const source = 'Head one\nhead two\n===\n\nbody\n'
+    const saved = await save(source)
+    expect(saved.startsWith('# Head one head two\n')).toBe(true)
+    const headings = (html: string) => (html.match(/<h[1-6][ >]/g) ?? []).length
+    expect(headings(toHtml(saved, PAGE))).toBe(1)
+    expect(headings(toHtml(source, PAGE))).toBe(1)
+    expect(toHtml(saved, PAGE)).toContain('<p>body</p>')
+  })
+
+  it('an empty fence stays empty', async () => {
+    expect(await save('```\n```\n')).toBe('```\n```\n')
+  })
+})

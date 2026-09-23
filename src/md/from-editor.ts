@@ -241,7 +241,9 @@ function oneBlock(node: PMNode): Block | null {
       return {
         type: 'codeBlock',
         info: String(node.attrs?.language ?? ''),
-        value: `${textOf(node)}\n`,
+        // An EMPTY block stays empty. `"\n"` is a block holding one blank line, and writing that
+        // for an empty one added a line of code to every empty fence on its first save.
+        value: textOf(node) === '' ? '' : `${textOf(node)}\n`,
       }
     case 'mathBlock':
       return { type: 'mathBlock', value: String(node.attrs?.tex ?? ''), delim: mathDelimOf(node) }

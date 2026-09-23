@@ -87,7 +87,13 @@ function inlineToMarkdown(nodes: Inline[], atLineStart = true): string {
   // one run of text over in pieces. See `mergeText`.
   for (const node of mergeText(nodes)) {
     out += oneInline(node, first)
-    first = false
+    // ⚠️ A LINE STARTS AFTER EVERY BREAK, not only at the paragraph's first node. This was
+    // `first = false` and the escape rules in `escapeText` never saw the second line of a
+    // paragraph: `first line` / `\---` saved as `first line` / `---`, which the next open reads
+    // as a setext underline — the second line deleted and the first turned into a heading.
+    // Found 2026-09-23 through the real editor; the fix of 2026-09-21 had guarded a newline
+    // INSIDE a text node, which the parser never produces, and left this path open.
+    first = node.type === 'softbreak' || node.type === 'hardbreak'
   }
   return out
 }
@@ -201,14 +207,20 @@ function oneBlock(node: Block, ctx: Context, apart = false): string {
     case 'paragraph':
       return inlineToMarkdown(node.children)
     case 'heading':
-      return `${'#'.repeat(node.level)} ${inlineToMarkdown(node.children, false)}`
+      // An ATX heading is ONE line. A setext heading may span two, and writing its line break
+      // through verbatim put the second line in a paragraph of its own, taking the anchor id
+      // with it. A space renders the same inside `<h1>`: HTML collapses the newline anyway.
+      return `${'#'.repeat(node.level)} ${inlineToMarkdown(node.children.map((c) =>
+        c.type === 'softbreak' || c.type === 'hardbreak' ? { type: 'text', value: ' ' } as Inline : c), false)}`
     case 'thematicBreak':
       return '---'
     case 'codeBlock': {
       // The fence must outlast any run of backticks inside the code.
       const longest = (node.value.match(/^`{3,}/gm) ?? []).reduce((n, r) => Math.max(n, r.length), 2)
       const fence = '`'.repeat(Math.max(3, longest + 1))
-      return `${fence}${node.info}\n${node.value.replace(/\n$/, '')}\n${fence}`
+      // An empty block is two fences and nothing between: a blank line there is a line of code.
+      const body = node.value.replace(/\n$/, '')
+      return body === '' && node.value === '' ? `${fence}${node.info}\n${fence}` : `${fence}${node.info}\n${body}\n${fence}`
     }
     case 'htmlBlock':
       return node.value

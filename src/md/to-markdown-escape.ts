@@ -138,6 +138,8 @@ export function escapeText(value: string, atLineStart: boolean): string {
   if (atLineStart) {
     out = out.replace(/^(\s*)([#>+-])/, '$1\\$2')
     out = out.replace(/^(\s*)(\d+)([.)])/, '$1$2\\$3')
+    // The same setext rule as above, for a node that begins its line after a break.
+    out = out.replace(/^(\s*)(=+)(?=\n|$)/, '$1\\$2')
   }
   // ⚠️ TWO SHAPES COME BACK OUT, and leaving them escaped is the exact bug that cost 19 of 45
   // golden fixtures in August. A footnote reference `[^1]` and a callout's `[!NOTE]` live in
