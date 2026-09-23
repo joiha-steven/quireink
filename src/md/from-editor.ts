@@ -217,7 +217,20 @@ function blocksOf(node: PMNode): Block[] {
   const out: Block[] = []
   node.forEach((child) => {
     const block = oneBlock(child)
-    if (block) out.push(block)
+    if (!block) return
+    // A RUN MARKED `joined` GOES BACK ONTO THE LIST ABOVE IT: the parse split one Markdown list
+    // into a plain run and a task run because the schema has two list nodes. Only when that
+    // list is the block directly above — anything written in between made them two lists.
+    const above = out[out.length - 1]
+    if (child.attrs?.joined && block.type === 'list' && above?.type === 'list') {
+      above.items.push(...block.items)
+      above.tight = above.tight && block.tight
+      // An ordered list with a box in it split into an ordered run and a task run; the one
+      // list it came from was ordered, and it started where its first numbered run says.
+      if (block.ordered && !above.ordered) { above.ordered = true; above.start = block.start }
+      return
+    }
+    out.push(block)
   })
   return out
 }

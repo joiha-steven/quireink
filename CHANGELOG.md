@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixed: a list mixing bullets and checkboxes stays one list when saved
+
+`- a` followed by `- [ ] b` is one list. Opening and saving it wrote two lists instead, and on a
+spaced list each item lost its paragraph spacing. It is now saved as the one list it was, tight
+or spaced; two lists with something written between them stay two.
+
 ### Fixed: a save no longer turns a literal dollar or tilde into maths or strikethrough
 
 Text you had escaped — `\$x\$`, `\~~b~~`, or three tildes at the start of a line after a line

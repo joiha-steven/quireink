@@ -285,7 +285,12 @@ function listNodes(node: Extract<Block, { type: 'list' }>): EditorNode[] {
     const run = node.items.slice(i, end)
     // Loose travels as an attribute because the items cannot say it: one paragraph per item is
     // tight or loose depending only on whether blank lines stood between them (`editor/schema-nodes.ts`).
-    const attrs = { ...(node.ordered && !task ? { start } : {}), ...(node.tight ? {} : { loose: true }) }
+    // And every run after the first is JOINED to the one above, so the save puts them back
+    // into the one list they were (`admin/editor/schema-nodes.ts`, `joined`).
+    const attrs = {
+      ...(node.ordered && !task ? { start } : {}), ...(node.tight ? {} : { loose: true }),
+      ...(i > 0 ? { joined: true } : {}),
+    }
     out.push({
       type: task ? 'taskList' : node.ordered ? 'orderedList' : 'bulletList',
       ...(Object.keys(attrs).length ? { attrs } : {}),

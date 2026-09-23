@@ -36,7 +36,18 @@ on:
   # So a release that failed on plumbing can be retried against the SAME tag, without
   # deleting and re-pushing it — moving a tag people may already have fetched to work around
   # a broken workflow is a bad trade.
+  #
+  # AND FROM A BRANCH IT IS ALWAYS A DRY RUN (2026-09-23). A branch has no version to publish:
+  # the semver patterns resolve to nothing and the one tag left is `latest`, moved to whatever
+  # the branch held. Dry, it builds both architectures through every action here and pushes
+  # nothing, which is how an action's new major gets proven before the release tag that would
+  # otherwise be its first run. On a tag, `dry_run` does the same by choice.
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and resolve the tags, push nothing (always on from a branch)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -44,7 +55,12 @@ permissions:
 
 env:
   HUB_IMAGE: quireink/quireink
+  # 'true' for a manual run from a branch, or one that asked; a tag push is never dry.
+  DRY: ${{ github.event_name == 'workflow_dispatch' && (inputs.dry_run || !startsWith(github.ref, 'refs/tags/')) }}
 
+# UBUNTU 24.04 BY NAME, not ubuntu-latest (2026-09-23): the label moves to Ubuntu 26 from
+# 2026-10-19, and a runner image changing under a release is a failure nobody asked for. Moving
+# to 26 is a change to make on purpose, with CI watching, and then to pin again.
 jobs:
   # THE GATE: nothing below runs until CI has said yes to the commit under the tag.
   #
@@ -62,7 +78,7 @@ jobs:
   # never ran on at all (no check runs after twenty minutes) fails the same way: the
   # absence of a verdict is not a verdict.
   gate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       checks: read
       contents: read
@@ -100,7 +116,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-latest
+          - runner: ubuntu-24.04
             platform: linux/amd64
           - runner: ubuntu-24.04-arm
             platform: linux/arm64
@@ -135,7 +151,7 @@ jobs:
           build-args: |
             SOURCE_COMMIT=${{ github.sha }}
             BUILD_DATE=${{ github.event.repository.updated_at }}
-          outputs: type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,name-canonical=true,push=${{ env.DRY != 'true' }}
 
       - name: Save the digest for the merge step
         run: |
@@ -155,7 +171,7 @@ jobs:
   # One manifest list over both digests, and only now does anything carry a version.
   publish:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # `secrets` is NOT one of the contexts a step-level `if` may read — the first cut of this
     # file used `if: secrets.DOCKERHUB_TOKEN != ''` and GitHub refused the whole workflow
     # before running a line of it. A secret CAN be read here, into an env var, and `env` is
@@ -190,7 +206,14 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
 
+      - name: Dry run, so nothing is stitched or pushed
+        if: env.DRY == 'true'
+        run: |
+          echo "Dry run: both architectures built, $(ls /tmp/digests | wc -l) digest(s) handed over." >> "$GITHUB_STEP_SUMMARY"
+          echo "A real run would publish: $(jq -cr '.tags | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON")" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Stitch the architectures into one image
+        if: env.DRY != 'true'
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create \
@@ -198,6 +221,7 @@ jobs:
             $(printf 'ghcr.io/${{ github.repository }}@sha256:%s ' *)
 
       - name: Say what a puller will get
+        if: env.DRY != 'true'
         run: docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}
 
       # --- Docker Hub, when it is configured ------------------------------------------------
@@ -205,14 +229,14 @@ jobs:
       # same bytes, so the two registries can never drift into serving different code under
       # one version number.
       - name: Log in to Docker Hub
-        if: env.HAS_HUB == 'true'
+        if: env.HAS_HUB == 'true' && env.DRY != 'true'
         uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Copy the image to Docker Hub
-        if: env.HAS_HUB == 'true'
+        if: env.HAS_HUB == 'true' && env.DRY != 'true'
         run: |
           for tag in $(jq -r '.tags[]' <<< "$DOCKER_METADATA_OUTPUT_JSON"); do
             docker buildx imagetools create \
@@ -222,7 +246,7 @@ jobs:
           docker buildx imagetools inspect "${HUB_IMAGE}:${{ steps.meta.outputs.version }}"
 
       - name: Note when the Hub was skipped
-        if: env.HAS_HUB != 'true'
+        if: env.HAS_HUB != 'true' && env.DRY != 'true'
         run: |
           echo "Docker Hub was skipped: no DOCKERHUB_TOKEN secret on this repository." >> "$GITHUB_STEP_SUMMARY"
           echo "GHCR published ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}." >> "$GITHUB_STEP_SUMMARY"

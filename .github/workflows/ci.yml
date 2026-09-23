@@ -18,10 +18,13 @@ on:
 permissions:
   contents: read
 
+# UBUNTU 24.04 BY NAME, not ubuntu-latest (2026-09-23): the label moves to Ubuntu 26 from
+# 2026-10-19, and a runner image changing under a release is a failure nobody asked for. Moving
+# to 26 is a change to make on purpose, with CI watching, and then to pin again.
 jobs:
   check:
     if: github.event_name != 'schedule'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       # Bun, not Node. The runtime IS Bun since 2.0 (ADR 0005), so there is no
@@ -60,7 +63,7 @@ jobs:
   # verification tool that depends on memory is the failure mode every static guard in
   # `scripts/checks/` was written to kill; this job applies the same cure to the tour.
   #
-  # Chrome is preinstalled on ubuntu-latest at /usr/bin/google-chrome, which
+  # Chrome is preinstalled on ubuntu-24.04 at /usr/bin/google-chrome, which
   # `scripts/chrome-path.ts` finds on its own. The tour seeds its own instance on port
   # 3399 and deletes it after; nothing here needs secrets or network beyond the runner
   # (UPDATE_CHECK=0 inside tour.sh keeps it off check.quireink.com).
@@ -70,7 +73,7 @@ jobs:
   # log should be able to show it.
   tour:
     if: github.event_name != 'schedule'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
@@ -120,7 +123,7 @@ jobs:
   # machine and believe the result.
   image:
     if: github.event_name != 'schedule'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - run: docker build -t quireink:ci .
@@ -219,7 +222,7 @@ jobs:
   # is ever unreachable AND unfixable, `bun audit --ignore=<id>` takes it, and the reason
   # and the date belong in a comment here beside it. Not silently.
   audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2

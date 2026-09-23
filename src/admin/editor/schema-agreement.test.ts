@@ -115,7 +115,7 @@ describe('the schema this product writes and the schema it replaced', () => {
     for (const name of Object.keys(was.nodes)) {
       const mine = defaults(ours.nodes[name]!.spec)
       // `loose` on the three lists is the third deliberate difference, asserted below.
-      if (LISTS.includes(name)) delete mine.loose
+      if (LISTS.includes(name)) { delete mine.loose; delete mine.joined }
       expect(`${name}: ${JSON.stringify(mine, sorted)}`)
         .toBe(`${name}: ${JSON.stringify(was.nodes[name]!.attrs, sorted)}`)
     }
@@ -235,6 +235,33 @@ describe('the third difference: a list remembers it was loose', () => {
     host.innerHTML = '<ul data-loose="true"><li><p>a</p></li></ul><ol><li><p>b</p></li></ol>'
     const doc = PMParser.fromSchema(ours).parse(host)
     expect([doc.child(0).attrs.loose, doc.child(1).attrs.loose]).toEqual([true, false])
+  })
+})
+
+describe('the fourth difference: a list run remembers it continues the one above', () => {
+  // `- a / - [ ] b` is one Markdown list and two nodes here; `joined` is how the save knows to
+  // write it back as one (release review, 2026-09-23). Same contract as `loose`: default false,
+  // on the three lists only, drawn only when true, and read back from a paste.
+  it('adds `joined`, default false, to exactly the three list nodes', () => {
+    for (const name of Object.keys(ours.nodes)) {
+      const mine = defaults(ours.nodes[name]!.spec)
+      expect(`${name}: ${'joined' in mine ? String(mine.joined) : '-'}`)
+        .toBe(`${name}: ${LISTS.includes(name) ? 'false' : '-'}`)
+    }
+  })
+
+  it('writes it to the DOM only when it is true, and reads it back from a paste', async () => {
+    const { DOMParser: PMParser } = await import('prosemirror-model')
+    for (const name of LISTS) {
+      const node = ours.nodes[name]!.createAndFill({ joined: true })!
+      expect(JSON.stringify(shape(ours.nodes[name]!.spec.toDOM?.(node)))).toContain('"data-joined":"true"')
+      const plain = ours.nodes[name]!.createAndFill()!
+      expect(JSON.stringify(shape(ours.nodes[name]!.spec.toDOM?.(plain)))).not.toContain('data-joined')
+    }
+    const host = document.createElement('div')
+    host.innerHTML = '<ul><li><p>a</p></li></ul><ul data-type="taskList" data-joined="true"><li data-type="taskItem"><p>b</p></li></ul>'
+    const doc = PMParser.fromSchema(ours).parse(host)
+    expect([doc.child(0).attrs.joined, doc.child(1).attrs.joined]).toEqual([false, true])
   })
 })
 

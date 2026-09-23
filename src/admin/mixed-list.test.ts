@@ -59,34 +59,23 @@ describe('bullets and checkboxes in one list', () => {
     expect(await roundTrip(out)).toBe(out)
   })
 
-  it('settles the TIGHT mixed list on the FIRST save, and then holds', async () => {
-    // `- a\n- b\n- [x] c` is one list to Markdown and two to this schema, so a save has to keep
-    // the halves apart. That is the whole cost, and it is paid once.
-    //
-    // ⚠️ A BLANK LINE DOES NOT KEEP THEM APART, which is the correction of 2026-09-19 and the
-    // reason the second marker below is `*`. This test used to pin `- a\n- b\n\n- [x] c` and
-    // called the blank line the whole cost, on the reasoning that looseness is inferred from
-    // what an item holds rather than stored — true of `md/from-editor.ts`, and not the
-    // question. The question is what the READER'S parser does with that text, and measured:
-    //
-    //     - a / - b / (blank) / - [x] c   →   ONE list, tight=false, three <li><p>
-    //
-    // So the save that was supposed to cost a blank line in the source actually spaced every
-    // item of the list out on the published page, on a list whose author had written it tight.
-    // Markdown's own way to say "a new list starts here" is a different marker, and the two
-    // halves then read back as two TIGHT lists, which is what the editor is holding.
-    const once = await roundTrip('- a\n- b\n- [x] c\n')
-    expect(once).toBe('- a\n- b\n\n* [x] c')
-    expect(await roundTrip(once)).toBe(once)
-    // The law that the string above cannot state: no item gained a paragraph, so no item
-    // gained the space around one.
-    expect(toHtml(once)).not.toContain('<li>\n<p>')
-    expect(toHtml(once)).toBe(toHtml('- a\n- b\n\n* [x] c\n'))
-    // What matters most: every item is still there, and there is no invented one.
-    expect(once).toContain('- a')
-    expect(once).toContain('- b')
-    expect(once).toContain('[x] c')
-    expect(once.startsWith('- [ ]')).toBe(false)
-    expect(once.startsWith('* [ ]')).toBe(false)
+  it('saves a mixed list as the ONE list it was, tight or loose', async () => {
+    // `- a\n- b\n- [x] c` is one list to Markdown and two to this schema. Until 2026-09-23 the
+    // save kept the halves apart with a second marker (`- a\n- b\n\n* [x] c`), which was the
+    // honest reading of what the editor held — and it cost the published page: two lists
+    // where there had been one, and a loose list's paragraph spacing gone from every item.
+    // The parse now marks each run after the first as JOINED to the one above, and the save
+    // puts them back together (release review, 2026-09-23).
+    for (const source of ['- a\n- b\n- [x] c', '- a\n\n- [ ] b', '- a\n- [x] b\n- c', '3. one\n4. [ ] two\n5. three']) {
+      const once = await roundTrip(`${source}\n`)
+      expect(once).toBe(source)
+      expect(toHtml(`${once}\n`)).toBe(toHtml(`${source}\n`))
+    }
+  })
+
+  it('does not join two lists the author kept apart', async () => {
+    // Anything written between them makes them two lists, and they stay two.
+    const source = '- a\n\nbetween\n\n- [ ] b'
+    expect(await roundTrip(`${source}\n`)).toBe(source)
   })
 })

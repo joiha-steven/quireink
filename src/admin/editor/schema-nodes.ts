@@ -91,15 +91,27 @@ const hardBreak: NodeSpec = {
 // 2026-09-23 over 142 published posts opened and saved: two lost the space between their items,
 // one of them across ten. The parse knows the answer, so it now hands it over instead.
 // `schema-agreement.test.ts` asserts it as a difference.
-const loose = { loose: { default: false } }
-const looseOf = (dom: HTMLElement) => ({ loose: dom.hasAttribute('data-loose') })
+//
+// `joined` IS THE SECOND, for the same kind of reason: `- a / - [ ] b` is ONE list in Markdown
+// and two here (a taskList holds only taskItems), so the parse splits it into runs and marks
+// every run after the first as the continuation of the one before. `from-editor.ts` joins a
+// marked run back onto a list directly above it, and the list is saved as the one list it was.
+// Without it the save wrote two lists (`- a` then `* [ ] b`), each item lost the paragraph
+// spacing of the whole, and nothing on the page said why (release review, 2026-09-23).
+const loose = { loose: { default: false }, joined: { default: false } }
+const looseOf = (dom: HTMLElement) => ({
+  loose: dom.hasAttribute('data-loose'), joined: dom.hasAttribute('data-joined'),
+})
+const listData = (node: { attrs: Record<string, unknown> }) => ({
+  'data-loose': node.attrs.loose ? 'true' : null, 'data-joined': node.attrs.joined ? 'true' : null,
+})
 
 const bulletList: NodeSpec = {
   group: 'block list',
   content: 'listItem+',
   attrs: loose,
   parseDOM: [{ tag: 'ul', getAttrs: (dom) => looseOf(dom as HTMLElement) }],
-  toDOM: (node) => ['ul', attrs({ 'data-loose': node.attrs.loose ? 'true' : null }), 0],
+  toDOM: (node) => ['ul', attrs(listData(node)), 0],
 }
 
 const orderedList: NodeSpec = {
@@ -117,7 +129,7 @@ const orderedList: NodeSpec = {
   toDOM: (node) => ['ol', attrs({
     start: node.attrs.start === 1 ? null : String(node.attrs.start),
     type: node.attrs.type as string | null,
-    'data-loose': node.attrs.loose ? 'true' : null,
+    ...listData(node),
   }), 0],
 }
 
@@ -135,7 +147,7 @@ const taskList: NodeSpec = {
   content: 'taskItem+',
   attrs: loose,
   parseDOM: [{ tag: 'ul[data-type="taskList"]', priority: 60, getAttrs: (dom) => looseOf(dom as HTMLElement) }],
-  toDOM: (node) => ['ul', attrs({ 'data-type': 'taskList', 'data-loose': node.attrs.loose ? 'true' : null }), 0],
+  toDOM: (node) => ['ul', attrs({ 'data-type': 'taskList', ...listData(node) }), 0],
 }
 
 /**
