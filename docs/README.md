@@ -1,5 +1,22 @@
 # docs/ — durable truth
 
+## Start here, if you run a blog
+
+| You want to | Read |
+|---|---|
+| Know everything it does, and how it compares | [Quire Ink, in full](overview.md) |
+| Install it, upgrade it, put it behind a CDN | [Self-hosting](self-host.md) · [Docker](self-host-docker.md) · [Environment variables](environment.md) |
+| Change how the site looks | [Appearance](appearance.md) |
+| Back it up, and restore | [Backups](backups.md) |
+| Let an AI agent write and run it | [MCP](mcp.md) · [Cookbook](agent-cookbook.md) |
+| Read your posts from another program | [Content API](content-api.md) |
+| Be followed from Mastodon | [Fediverse](fediverse.md) |
+| Translate it | [Translations](translations.md) |
+
+Everything below is for the people building it.
+
+## For the people building it
+
 Everything here describes how Quire Ink works **right now**. Out of date here is a bug: fix
 it in place, in the same commit as the behaviour change that made it wrong.
 

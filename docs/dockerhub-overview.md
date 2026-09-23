@@ -95,7 +95,7 @@ and the analytics settings are all entered in the admin and stored in the databa
 | `CRON_SECRET` | — | Unlocks `/api/cron` for an external scheduler; the route is closed without it. The built-in clock needs neither. |
 | `ANALYTICS_TZ` | `UTC` | The site's default timezone, until one is picked in Settings → Blog. |
 
-The [environment table](https://github.com/joiha-steven/quireink/blob/main/README.md#environment-variables)
+The [environment table](https://github.com/joiha-steven/quireink/blob/main/docs/environment.md)
 has the rest.
 
 ## What is in it

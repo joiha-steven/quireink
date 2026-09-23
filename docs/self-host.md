@@ -61,7 +61,7 @@ read from disk at runtime, so they have to exist before the service starts.
 ## 3. Configure
 
 Environment only, no config file. The full list is in the
-[README](../README.md#environment-variables); the six that matter:
+[environment page](./environment.md); the six that matter:
 
 ```ini
 DATA_DIR=/var/lib/quire/data
