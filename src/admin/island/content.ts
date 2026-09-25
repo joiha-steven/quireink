@@ -148,11 +148,20 @@ function wirePane(screen: HTMLElement): () => void {
 
   // ---- the filters, which are attributes on the column --------------------------------
 
+  // THE TWO CLASS STRINGS A TAB CAN WEAR, read off the markup the server drew — the rule the
+  // trash and the comments islands already keep. The underline is a CLASS, so flipping only
+  // `aria-pressed` filtered the list and left the marker under "All" whichever tab was chosen,
+  // and on every return to the column (issue #68, since the column became the server's).
+  const ON = strip?.querySelector<HTMLElement>('[aria-pressed="true"]')?.className ?? ''
+  const OFF = strip?.querySelector<HTMLElement>('[aria-pressed="false"]')?.className ?? ''
+
   function setKind(kind: string): void {
     if (kind === 'all') delete pane!.dataset.showKind
     else pane!.dataset.showKind = kind
     for (const b of strip?.querySelectorAll<HTMLElement>('[data-tab]') ?? []) {
-      b.setAttribute('aria-pressed', String(b.dataset.tab === kind))
+      const on = b.dataset.tab === kind
+      b.setAttribute('aria-pressed', String(on))
+      if (ON && OFF) b.className = on ? ON : OFF
     }
     showTab(strip)
     keep({ kind })

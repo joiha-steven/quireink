@@ -304,6 +304,32 @@ export function registerAutosaveFlows({ flow, expect, atWidth }: Tour): void {
     return bad.length ? bad.join('; ') : 'ok'
   })
 
+  // THE CHOSEN KIND WEARS THE MARKER (issue #68). The filter worked and the underline stayed
+  // under "All": `aria-pressed` moved and the class did not. Asserted on the CLASS, after a click
+  // and again after a real navigation, where the column restores the kind from sessionStorage.
+  flow('admin: the chosen kind tab is the one underlined, and stays so on return', async () => {
+    const look = `(() => {
+      const tabs = [...document.querySelectorAll('[data-write-kinds] [data-tab]')]
+      const lit = tabs.filter((b) => b.className === tabs.find((t) => t.getAttribute('aria-pressed') === 'true')?.className)
+      return tabs.length ? lit.map((b) => b.dataset.tab).join(',') + '/' + new Set(tabs.map((b) => b.className)).size : 'no strip'
+    })()`
+    const picked = await expect('/admin/content', `(async () => {
+      sessionStorage.removeItem('quireink-write-column')
+      document.querySelector('[data-write-kinds] [data-tab="note"]').click()
+      await new Promise((r) => setTimeout(r, 150))
+      return ${look}
+    })()`)
+    const back = await expect('/admin/content', `(async () => {
+      await new Promise((r) => setTimeout(r, 300))
+      const v = ${look}
+      sessionStorage.removeItem('quireink-write-column')
+      return v
+    })()`)
+    if (picked !== 'note/2') return `after the click: ${picked} (want note/2: one tab lit, two looks)`
+    if (back !== 'note/2') return `after coming back: ${back}`
+    return 'ok'
+  })
+
   // THE PANE GROWS WHERE IT STANDS ALONE, and not beside the editor. Alone it is 24% of the window
   // up to 448px. Beside the editor it holds 320px: at 376 the editor's action row broke in two in
   // Portuguese at 1760 (2026-09-23), so the editor's key row is asserted here as the canary.
