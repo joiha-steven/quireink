@@ -1,5 +1,51 @@
 # CHANGELOG
 
+## 2026-09-25 · Quire Ink 2.2.15
+
+Two days after 2.2.14, and one feature that was asked for in an issue: a post can go out
+without a title. Plus the fix for the kind tabs in the writing list, which filtered the list
+correctly and kept the marker under the wrong word.
+
+### A post can have no title (ADR 0064)
+
+A short thought, a link with a line under it, a small update: leave the title empty and
+publish. It is a post in every other respect, with its own address, a place in the blog's list,
+both feeds, tags and categories, and the newsletter. Notes stay what they were: a notebook kept
+out of the feed.
+
+- **Its address is its first six words**, `/just-shipped-the-new-reading-mode`, fixed at the
+  first save.
+- **It is drawn by its words, never by a headline made from them.** The article has no
+  headline. In the list the date is the link to it, the way a microblog does it. The front page
+  shows its words, linked. The newsletter shows its words under the date.
+- **The RSS and JSON Feed items carry no title**, which both formats allow, so a feed reader
+  shows the words. A JSON Feed item without a title carries them as its text.
+- **Where only a name fits, it is called by its first words**, cut at about 70 characters: the
+  browser tab, the share card, the schema headline, read next, related posts, a series, the
+  archive, the sidebar, search and `llms.txt`.
+- **The editor, the admin API and the MCP `create_post` tool accept a post that is only words.**
+  Pages and notes still need a name.
+
+### Fixed
+
+- **An untitled draft was renamed on every save.** It had no address of its own to send, so
+  each save made one up again (`post-` and the clock) and moved the draft to it. It now keeps
+  the address it was first saved under.
+- **The kind tabs in the writing list underlined "All" whatever was chosen** (issue #68). The
+  list narrowed to posts, pages or notes and the marker stayed put, on a click and again on
+  every return to the list. Broken since 2.2.13, when the list became a page the server draws.
+  A browser flow now checks the marker itself, after a click and after a navigation.
+
+### What 2.2.15 does not do
+
+- **A short post shows its summary in the list and the feeds, not its whole body**, so a link
+  inside it is plain text there. The post's own page has all of it.
+- **The admin's writing list shows a short post as `(untitled) #n`**, with its words on the
+  line under it.
+- **A short post written entirely in Chinese, Japanese or Korean, or in emoji, is addressed by
+  the clock** (`post-` and a number), as a title in those scripts always has been. The address
+  can be changed in the post's attributes.
+
 ## 2026-09-23 · Quire Ink 2.2.14
 
 Three days after 2.2.13, and most of it is about the machine underneath. The smallest box this
