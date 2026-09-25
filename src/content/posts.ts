@@ -5,6 +5,7 @@
 import type { Post, PostWithContent } from '@/types'
 import { collapseBlob, expandBlob } from '@/media/blob'
 import { slugify, deriveExcerpt, clampExcerpt, isPublicallyVisible, readingMinutes } from '@/utils'
+import { slugFromWords } from '@/content/untitled'
 import { accentedWords, keepsAccents } from '@/accent'
 import { ensureSlugFree } from '@/content/slugs'
 import { pushRevision, renameRevisions } from '@/content/revisions'
@@ -152,7 +153,9 @@ function normalize(input: Partial<PostWithContent>, excerptWords = 50): PostWith
   // slugify() can reduce a non-empty title/slug (emoji, punctuation-only, an empty
   // import title) to '' — an empty slug makes the row unreachable in the editor and
   // Trash. Fall back to a timestamped slug so every post keeps an editable identity.
-  const slug = (input.slug?.trim() ? slugify(input.slug) : slugify(title)) || `post-${Date.now()}`
+  // A post with no title is addressed by its first words before the clock (ADR 0064).
+  const slug = (input.slug?.trim() ? slugify(input.slug) : title ? slugify(title) : slugFromWords(content))
+    || `post-${Date.now()}`
   // Author excerpt wins (length-capped); else auto from the body.
   const excerpt = input.excerpt?.trim() ? clampExcerpt(input.excerpt.trim()) : deriveExcerpt(content, excerptWords)
   return {

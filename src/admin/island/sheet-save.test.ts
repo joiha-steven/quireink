@@ -22,7 +22,15 @@ describe('what every kind sends', () => {
     expect(payloadOf('post', draft({ title: 'A Piece, Titled' }), 'x', UTC).slug).toBe('a-piece-titled')
     // Nothing to make one from: a stamp rather than a refusal, because the words matter more
     // than the address and the address can be fixed afterwards.
-    expect(String(payloadOf('post', draft(), 'x', UTC).slug)).toMatch(/^post-\d+$/)
+    expect(String(payloadOf('post', draft(), '', UTC).slug)).toMatch(/^post-\d+$/)
+    expect(String(payloadOf('post', draft(), '日本語', UTC).slug)).toMatch(/^post-\d+$/)
+  })
+
+  it('addresses a post with no title by its first words (ADR 0064)', () => {
+    const out = payloadOf('post', draft(), 'Hôm nay **tôi** đọc lại [một bài](https://e.com) cũ, và nó vẫn đúng.', UTC)
+    expect(out.slug).toBe('hom-nay-toi-doc-lai-mot')
+    // A slug already there — typed, or pinned by the first save — is never re-derived.
+    expect(payloadOf('post', draft({ slug: 'kept' }), 'Other words entirely', UTC).slug).toBe('kept')
   })
 
   it('names a note by its source when it has no title of its own', () => {
@@ -107,10 +115,15 @@ describe('whether there is anything to do', () => {
     expect(worthSaving('post', draft({ sourceTitle: 'S' }), '')).toBe(false)
   })
 
-  it('will not publish a piece nobody has named', () => {
-    expect(nameEnough('post', draft())).toBe(false)
-    expect(nameEnough('post', draft({ title: 'A' }))).toBe(true)
-    expect(nameEnough('note', draft({ sourceTitle: 'S' }))).toBe(true)
-    expect(nameEnough('page', draft({ sourceTitle: 'S' }))).toBe(false)
+  it('will not publish a page or a note nobody has named', () => {
+    expect(nameEnough('post', draft({ title: 'A' }), '')).toBe(true)
+    expect(nameEnough('note', draft({ sourceTitle: 'S' }), '')).toBe(true)
+    expect(nameEnough('page', draft({ sourceTitle: 'S' }), 'Words.')).toBe(false)
+    expect(nameEnough('note', draft(), 'Words.')).toBe(false)
+  })
+
+  it('publishes a post with words and no name — a short post (ADR 0064)', () => {
+    expect(nameEnough('post', draft(), 'Just shipped the thing.')).toBe(true)
+    expect(nameEnough('post', draft(), '   ')).toBe(false)
   })
 })

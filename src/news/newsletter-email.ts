@@ -23,6 +23,7 @@
 import type { Dict } from '@/locales/types'
 import type { ThemeColors } from '@/types'
 import { escapeHtml } from '@/utils'
+import { isUntitled, postName } from '@/content/untitled'
 
 // `dateLabel` is preformatted by the caller (which knows the site language), so these
 // builders stay pure string functions with no locale plumbing.
@@ -119,7 +120,9 @@ function postBlock(c: ThemeColors, tx: Dict, base: string, post: EmailPost, lead
       ? `<a href="${escapeHtml(url)}"><img src="${escapeHtml(absolute(base, post.coverImage))}" width="${WIDTH}" alt="" style="display:block;width:100%;max-width:${WIDTH}px;height:auto;border:0;border-radius:8px;margin-bottom:22px;"></a>`
       : ''
   const size = lead ? 26 : 19
-  const title =
+  // A short post (ADR 0064) has no headline here either: its words are the block, under the
+  // date, and the button beneath them is the way in, as it is for every post.
+  const title = isUntitled(post) ? '' :
     `<h1 style="margin:0 0 ${lead ? 10 : 6}px;font-family:${FONT};font-size:${size}px;line-height:1.3;letter-spacing:-0.015em;font-weight:700;color:${c.heading};">` +
     `<a href="${escapeHtml(url)}" style="color:${c.heading};text-decoration:none;">${escapeHtml(post.title)}</a></h1>`
   const date = post.dateLabel
@@ -153,12 +156,12 @@ export function broadcastEmail(
   const pixel = openToken
     ? `<img src="${escapeHtml(`${base}/api/newsletter/open?t=${encodeURIComponent(openToken)}`)}" width="1" height="1" alt="" style="display:block;border:0;">`
     : ''
-  const subject = posts.length === 1 ? `${lead.title} — ${siteTitle}` : `${tx.bcastDigestSubject.replace('{n}', String(posts.length))} — ${siteTitle}`
+  const subject = posts.length === 1 ? `${postName(lead)} — ${siteTitle}` : `${tx.bcastDigestSubject.replace('{n}', String(posts.length))} — ${siteTitle}`
   const html = shell(
     brand,
     blocks.join(''),
     `${broadcastFooter(theme, tx, siteTitle, base, unsubToken)}${pixel}`,
-    lead.excerpt ?? lead.title,
+    lead.excerpt ?? postName(lead),
   )
   return { subject, html }
 }

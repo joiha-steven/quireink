@@ -151,9 +151,9 @@ describe('posts', () => {
     expect((await asOwner(`/api/posts/${meta.slug}`)).status).toBe(404)
   })
 
-  it('requires a title or a slug', async () => {
-    const res = await post('/api/posts', { content: 'Body with no title' })
-    expect(res.status).toBe(400)
+  it('takes a post that is only words — a short post (ADR 0064) — but not an empty one', async () => {
+    expect((await post('/api/posts', { content: 'Body with no title' })).status).toBe(201)
+    expect((await post('/api/posts', { content: '   ' })).status).toBe(400)
   })
 
   // `slug_taken` verbatim, and 409. The admin client matches on the string, not the status,

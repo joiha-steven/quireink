@@ -52,7 +52,10 @@ export function renderJsonFeed(
       // working — which is the whole of what permanent means here.
       id: e.url,
       url: e.url,
-      title: e.title,
+      // A short post (ADR 0064) goes out with NO title, which JSON Feed allows and a
+      // microblog reader expects: it shows the words, where an invented title would show them
+      // twice. Its words then travel as the item's text, since a titleless item needs a body.
+      ...(e.title ? { title: e.title } : e.summary ? { content_text: e.summary } : {}),
       date_published: rfc3339(e.date),
       ...(e.summary ? { summary: e.summary } : {}),
     })),

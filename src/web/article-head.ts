@@ -10,6 +10,7 @@ import type { Post, SiteLang, SiteSettings } from '@/types'
 import type { Sibling } from '@/content/translations'
 import { alternateLinks } from '@/content/translations'
 import { clampExcerpt } from '@/utils'
+import { postName } from '@/content/untitled'
 import { formatDate } from '@/i18n/i18n'
 import { ogImageUrl } from '@/render/og'
 import { blogPostingSchema } from '@/render/schema'
@@ -35,8 +36,11 @@ export function articleHead(a: {
   siblings: readonly Sibling[]
 }): Head {
   const { settings, site, item, post, canonicalPath, description, plainBody } = a
+  // A short post has no title (ADR 0064); the tab, the card and the schema call it by its
+  // first words, the way every other place that must name it does.
+  const name = post?.metaTitle || (post ? postName(post) : item.title)
   return {
-    title: `${post?.metaTitle || item.title} · ${settings.title}`,
+    title: `${name} · ${settings.title}`,
     description,
     canonical: site ? `${site}${canonicalPath ?? `/${item.slug}`}` : undefined,
     lang: a.pieceLang,
@@ -46,7 +50,7 @@ export function articleHead(a: {
     // Absolute, always: `resolveSiteUrl` falls back to SITE_URL and then to localhost,
     // and a relative og:image is ignored by every scraper.
     image: ogImageUrl(settings, site, {
-      title: post?.metaTitle || item.title,
+      title: name,
       featuredImage: post?.featuredImage,
       // The CARD's description, which is not the search snippet and should not be capped
       // like one. `description` above is bounded by META_DESC_MAX (157) because a
@@ -67,7 +71,7 @@ export function articleHead(a: {
           // The same card the OG tags point at, so the two never disagree about what the
           // picture for this post is.
           image: ogImageUrl(settings, site, {
-            title: post.metaTitle || item.title,
+            title: name,
             featuredImage: post.featuredImage,
           }),
         }) ?? undefined

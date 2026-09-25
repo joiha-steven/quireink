@@ -10,6 +10,7 @@ import { termSlug } from '@/content/taxonomy'
 import { seriesSlug } from '@/content/series-order'
 import { clampExcerpt } from '@/utils'
 import { groupsOf } from '@/content/translations'
+import { postName } from '@/content/untitled'
 
 /**
  * ⚠️ CHARACTERS XML FORBIDS OUTRIGHT, which no escape can rescue.
@@ -62,7 +63,9 @@ export const FEED_MAX = 50
 
 export const postItems = (posts: Post[], site: string): FeedItem[] =>
   posts.map((p) => ({
-    title: p.title, url: `${site}/${p.slug}`, date: p.date, summary: p.excerpt ?? '',
+    // Untitled with words: no title, the words carry it. Untitled with NO words (a picture and
+    // nothing else) still needs something to show, and gets the name everything else uses.
+    title: p.title || (p.excerpt ? '' : postName(p)), url: `${site}/${p.slug}`, date: p.date, summary: p.excerpt ?? '',
   }))
 
 /**
@@ -91,9 +94,11 @@ export function renderFeed(
 ): string {
   const { title, description, path } = channel
     ?? { title: settings.title, description: settings.description, path: '/feed.xml' }
+  // No `<title>` for a short post (ADR 0064): RSS 2.0 asks for a title OR a description, and
+  // every microblog feed leaves the title out so the reader shows the words.
   const items = entries.slice(0, FEED_MAX).map((e) => `    <item>
-      <title>${escapeXml(e.title)}</title>
-      <link>${escapeXml(e.url)}</link>
+${e.title ? `      <title>${escapeXml(e.title)}</title>
+` : ''}      <link>${escapeXml(e.url)}</link>
       <guid isPermaLink="true">${escapeXml(e.url)}</guid>
       <pubDate>${rfc822(e.date)}</pubDate>
       <description>${escapeXml(e.summary)}</description>
@@ -323,7 +328,7 @@ export function renderLlms(posts: Post[], pages: Page[], settings: SiteSettings,
     `- [${title}](${site}/${slug})${summary ? `: ${summary}` : ''}`
   // No excerpt, no summary. It used to fall back to `toPlainText('')`, which is the empty
   // string with two function calls in front of it.
-  const postLines = posts.map((p) => line(p.title, p.slug, p.excerpt ? clampExcerpt(p.excerpt) : ''))
+  const postLines = posts.map((p) => line(postName(p), p.slug, p.excerpt ? clampExcerpt(p.excerpt) : ''))
   const pageLines = pages.map((p) => line(p.title, p.slug, ''))
   return `# ${settings.title}
 

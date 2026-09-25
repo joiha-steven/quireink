@@ -261,6 +261,8 @@ function boot(root: HTMLElement, data: Payload): void {
       safety.retarget(res.slug)
       savedAt = new Date().toISOString()
       slugTyped = true
+      // ⚠️ PINNED: an untitled piece re-derived its slug on every save and was renamed each time (ADR 0064).
+      if (!draft.slug) { draft.slug = res.slug; if (slugBox) slugBox.value = res.slug }
       // ⚠️ ONLY IF NOTHING MOVED WHILE THE REQUEST WAS IN THE AIR. `text` was read before the
       // fetch, so marking the sheet clean over a sentence typed during it turned off the exit
       // warning and dropped both recovery copies for exactly that sentence.
@@ -292,7 +294,7 @@ function boot(root: HTMLElement, data: Payload): void {
   }
 
   async function saveAs(status: SheetDraft['status'], done: string): Promise<boolean> {
-    if (status === 'published' && !nameEnough(kind, draft)) {
+    if (status === 'published' && !nameEnough(kind, draft, body())) {
       say(t.needTitle, 'error')
       return false
     }

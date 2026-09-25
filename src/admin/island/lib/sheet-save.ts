@@ -10,15 +10,19 @@
 // in Hanoi, and the line under the field agreed with the laptop.
 import { API_PATH, type SheetDraft, type SheetKind } from '@/admin-shared/sheet-wire'
 import { slugify, zonedInputToIso } from '@/utils'
+import { slugFromWords } from '@/content/untitled'
 
 /** What a kind sends. The keys a kind does not have are left out rather than sent empty. */
 export function payloadOf(
   kind: SheetKind, draft: SheetDraft, content: string, timezone: string,
   statusOverride?: SheetDraft['status'],
 ): Record<string, unknown> {
-  // Always have a slug, so the API never refuses a piece that is only a body.
+  // Always have a slug, so the API never refuses a piece that is only a body. A piece with
+  // NO name is addressed by its first words before it falls back to the clock (ADR 0064); one
+  // whose name slugifies to nothing (emoji, CJK) keeps the clock, as it always has.
+  const name = (kind === 'note' ? (draft.title || draft.sourceTitle) : draft.title).trim()
   const named = draft.slug
-    || slugify(kind === 'note' ? (draft.title || draft.sourceTitle) : draft.title)
+    || (name ? slugify(name) : slugFromWords(content))
     || `${kind}-${Date.now()}`
   const base: Record<string, unknown> = {
     title: draft.title,
@@ -68,9 +72,15 @@ export function worthSaving(kind: SheetKind, draft: SheetDraft, content: string)
   return kind === 'note' && draft.sourceTitle.trim() !== ''
 }
 
-/** Can this go out? A published piece needs a name; a note may be named by its source. */
-export function nameEnough(kind: SheetKind, draft: SheetDraft): boolean {
-  return draft.title.trim() !== '' || (kind === 'note' && draft.sourceTitle.trim() !== '')
+/**
+ * Can this go out? A page needs a name; a note may be named by its source; a POST may go out
+ * with words and no name at all — that is a short post (ADR 0064), and the site calls it by
+ * its first words wherever something has to be called something.
+ */
+export function nameEnough(kind: SheetKind, draft: SheetDraft, content: string): boolean {
+  if (draft.title.trim() !== '') return true
+  if (kind === 'post') return content.trim() !== ''
+  return kind === 'note' && draft.sourceTitle.trim() !== ''
 }
 
 export type SaveResult =

@@ -76,7 +76,10 @@ export function contentRoutes() {
 
   router.post('/api/posts', async (c) => {
     const input = await body<PostWithContent>(c)
-    if (!input.title?.trim() && !input.slug?.trim()) return fail(c, 'Title or slug is required', 400)
+    // A post may be only words (ADR 0064): a short post has no title and is still a post.
+    if (!input.title?.trim() && !input.slug?.trim() && !input.content?.trim()) {
+      return fail(c, 'Title, slug or content is required', 400)
+    }
     try {
       const meta = await savePost(input)
       finalizeAfterResponse(input.content ?? '', input.featuredImage ?? undefined)

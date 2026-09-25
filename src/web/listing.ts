@@ -15,6 +15,7 @@ import type { Paged } from '@/content/paginate'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { postImage, type ReadyImages } from '@/web/front-card'
 import { langAttr } from '@/content/translations'
+import { isUntitled, postName } from '@/content/untitled'
 
 // The site's calendar year and month, not the stored instant's. Slicing the UTC ISO put a
 // post published on 1 January at 02:00 in Hanoi under last year's marker while its own card
@@ -88,11 +89,19 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
     opts.lead === true) ?? ''
     : ''
   const thumbBlock = thumb ? `<div class="card-thumb">${thumb}</div>` : ''
+  // A SHORT POST (ADR 0064) has no headline, so the card is its words — and the DATE is the
+  // way in, the permalink every microblog puts there. Something on the card has to be the
+  // link, and a headline invented from the first words would print them twice.
+  const untitled = isUntitled(post)
+  const time = `<time class="meta-part" datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>`
+  const when = untitled
+    ? `<a class="link-accent" href="/${escapeAttr(post.slug)}" aria-label="${escapeAttr(postName(post))}">${time}</a>`
+    : time
   const shape = thumb ? ` data-thumb="${thumbKind}"` : ''
   return `<article class="reveal"${shape}${opts.lead ? ' data-lead' : ''}>${mark}${thumbBlock}
-<p class="t-small text-meta">${categoryLink}<time class="meta-part" datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${minutes}</p>
-<${Title} class="reading-font mt-2 ${size} font-semibold"${lang}><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
-${post.excerpt ? `<p class="reading-font mt-3 t-body text-text"${lang}>${escapeHtml(post.excerpt)}</p>` : ''}
+<p class="t-small text-meta">${categoryLink}${when}${minutes}</p>
+${untitled ? '' : `<${Title} class="reading-font mt-2 ${size} font-semibold"${lang}><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
+`}${post.excerpt ? `<p class="reading-font mt-3 t-body text-text"${lang}>${escapeHtml(post.excerpt)}</p>` : ''}
 </article>`
 }
 

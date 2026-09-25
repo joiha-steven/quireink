@@ -13,6 +13,7 @@ import { getSettings } from '@/content/settings'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { foldAccents } from '@/utils'
 import { fail, json } from '@/web/api'
+import { postName } from '@/content/untitled'
 
 /** Generous per-IP cap. A public full-text endpoint should not be a free database-load lever. */
 const PER_MINUTE = 60
@@ -26,7 +27,7 @@ export async function handleSearch(c: Context): Promise<Response> {
   if (!features.search) return fail(c, 'Search disabled', 404)
 
   const posts = await searchPosts(c.req.query('q') ?? '')
-  return json(posts.map((p) => ({ slug: p.slug, title: p.title, date: p.date })))
+  return json(posts.map((p) => ({ slug: p.slug, title: postName(p), date: p.date })))
 }
 
 /**
@@ -53,9 +54,10 @@ export async function handleSearchIndex(c: Context): Promise<Response> {
   const posts = await getPublicPosts()
   const index = posts.map((p) => ({
     slug: p.slug,
-    title: p.title,
+    // A short post (ADR 0064) is listed, and found, by its first words.
+    title: postName(p),
     date: p.date,
-    terms: foldAccents([p.title, p.tags.join(' '), p.categories.join(' ')].join(' ')),
+    terms: foldAccents([postName(p), p.tags.join(' '), p.categories.join(' ')].join(' ')),
   }))
   return c.json(index, 200, { 'cache-control': 'public, s-maxage=300, stale-while-revalidate=600' })
 }

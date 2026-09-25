@@ -82,6 +82,7 @@ const NO_PRESS: Record<string, string> = {
   '.rail-tags a': 'a link, in the rail',
   '.search-results a': 'a link, in the results list',
   '.fc-title a': 'a link, on a front-page card',
+  '.fc-deck a': "a short post's words, the link on its front-page card (ADR 0064)",
 }
 
 describe('the press is for everything a finger can press', () => {

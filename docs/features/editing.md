@@ -220,6 +220,14 @@ all from one parse. Four libraries used to answer those five questions separatel
   rates against ordinary prose rather than a clock, because a wall-clock ceiling measures the
   machine: three quadratic shapes were found and fixed that way.
 
+## Short posts — a post with no title, `src/content/untitled.ts`, ADR 0064
+
+Leave the title empty and publish: it is a post in every respect — address, list, feeds,
+tags, categories, newsletter — drawn by its words instead of a headline. The address is its
+first six words, pinned at the first save. Wherever only a name fits (the tab, the share
+card, a link) it is called by its first words; see
+[ADR 0064](../decisions/0064-a-post-may-have-no-title.md) for which surface does which.
+
 ## Scheduled publishing — `src/server/scheduled.ts`, `/api/cron`, `src/utils.ts` (`isScheduled`)
 
 - **How to schedule:** set a FUTURE publish date and hit Publish. There is no separate

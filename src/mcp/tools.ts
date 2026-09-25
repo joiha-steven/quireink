@@ -90,9 +90,10 @@ function registerPostTools(server: ToolHost): void {
 
   server.registerTool(
     'create_post',
-    { description: 'Create a post. Returns the saved metadata. Status defaults to draft.', inputSchema: postFields },
+    { description: 'Create a post. Returns the saved metadata. Status defaults to draft. The title may be left empty for a short post; it is then addressed and listed by its first words.', inputSchema: postFields },
     async (args) => {
-      if (!args.title?.trim() && !args.slug?.trim()) return asError('Title or slug is required')
+      // A post may be only words (ADR 0064): a short post has no title and is still a post.
+      if (!args.title?.trim() && !args.slug?.trim() && !args.content?.trim()) return asError('Title, slug or content is required')
       try {
         const meta = await savePost(args as Partial<PostWithContent>)
         clearCache() // Invariant 1: one total flush, not a per-path superset

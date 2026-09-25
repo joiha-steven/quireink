@@ -18,6 +18,7 @@ import { byYear, yearAnchor } from '@/content/archive'
 import { listingRailCss } from '@/render/rail-css'
 import { t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { postName } from '@/content/untitled'
 
 /** Curated posts shown in the "Featured" block. */
 const FEATURED_MAX = 5
@@ -157,13 +158,13 @@ export async function renderSidebar(
       ? getSeriesList()
       : Promise.resolve([] as Awaited<ReturnType<typeof getSeriesList>>),
   ])
-  const titleBySlug = new Map(posts.map((p) => [p.slug, p.title]))
+  const titleBySlug = new Map(posts.map((p) => [p.slug, postName(p)]))
   const labels = t(settings.language)
 
   // Most viewed: public posts ranked by all-time views (`viewTotals` is keyed by path).
   // The count is owner-set, and 0 hides the block.
   const mostViewed = posts
-    .map((p) => ({ slug: p.slug, title: p.title, views: viewTotals[`/${p.slug}`] ?? 0 }))
+    .map((p) => ({ slug: p.slug, title: postName(p), views: viewTotals[`/${p.slug}`] ?? 0 }))
     .filter((p) => p.views > 0)
     .sort((a, b) => b.views - a.views)
     .slice(0, settings.mostViewedCount)

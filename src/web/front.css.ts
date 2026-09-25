@@ -68,6 +68,9 @@ export const FRONT_CSS = `
   font-size:var(--fs-h3);line-height:var(--lh-h3);letter-spacing:var(--ls-h3)}
 .fc-title a{color:inherit;text-decoration:none}
 .fc-title a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+/* A short post's standfirst IS its link (ADR 0064): the words keep their colour, as a headline does. */
+.fc-deck a{color:inherit;text-decoration:none}
+.fc-deck a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
 .fc-deck{margin:.5rem 0 0;color:var(--c-text);
   font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
 .fc-meta{margin:.5rem 0 0}

@@ -13,6 +13,7 @@ import { termSlug } from '@/content/taxonomy'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { responsiveSources, type ReadyOriginals } from '@/render/figures'
 import { langAttr } from '@/content/translations'
+import { isUntitled, postName } from '@/content/untitled'
 
 /** Which originals have responsive variants. Built once per render, never per image. */
 /**
@@ -130,7 +131,7 @@ export function postImage(
 ): string | null {
   const src = post.featuredImage || post.coverImage
   if (!src) return null
-  const alt = escapeAttr(post.title)
+  const alt = escapeAttr(postName(post))
   const loading = priority ? ' fetchpriority="high"' : ' loading="lazy"'
   // The intrinsic size, when the caller knows it. Without it the browser reserves NOTHING
   // and the page jumps as each picture arrives — measured 2026-08-29 on a list of three
@@ -158,9 +159,23 @@ function meta(post: Post, settings: SiteSettings, front: FrontSettings): string 
   return parts.length ? `<p class="fc-meta t-small text-meta">${parts.join(' · ')}</p>` : ''
 }
 
+/** The headline. A short post is called by its first words here — a line row has nothing else. */
 function title(post: Post, tag: 'h1' | 'h2' | 'h3', siteLang: SiteLang): string {
   return `<${tag} class="fc-title reading-font"${langAttr(post, siteLang)}>`
-    + `<a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${tag}>`
+    + `<a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(postName(post))}</a></${tag}>`
+}
+
+/**
+ * The headline and the standfirst under it — or, for a SHORT POST (ADR 0064), the standfirst
+ * alone and linked. Its words are the piece; a headline made of them would print the first
+ * seventy characters in bold and then the same seventy again underneath.
+ */
+function heading(post: Post, tag: 'h1' | 'h3', max: number, siteLang: SiteLang): string {
+  if (!isUntitled(post)) return title(post, tag, siteLang) + deck(post, max, siteLang)
+  const text = clamp(post.excerpt ?? '', max)
+  if (!text) return title(post, tag, siteLang)
+  return `<p class="fc-deck reading-font"${langAttr(post, siteLang)}>`
+    + `<a href="/${escapeAttr(post.slug)}">${escapeHtml(text)}</a></p>`
 }
 
 function deck(post: Post, max: number, siteLang: SiteLang): string {
@@ -204,7 +219,7 @@ export function leadItem(post: Post, ctx: Ctx, opening = ''): string {
       escapeHtml(clamp(body, LEAD_INTRO_CHARS[front.kind]))}</p>`
     : ''
   return `<article class="fc fc-lead${picture ? ' has-media' : ''}">
-<div class="fc-text">${category(post)}${title(post, 'h1', settings.language)}${deck(post, DECK_CHARS[front.kind].lead, settings.language)}${intro}${meta(post, settings, front)}</div>
+<div class="fc-text">${category(post)}${heading(post, 'h1', DECK_CHARS[front.kind].lead, settings.language)}${intro}${meta(post, settings, front)}</div>
 ${picture ? `<div class="fc-media">${picture}</div>` : ''}
 </article>`
 }
@@ -224,7 +239,7 @@ export function cardItem(post: Post, ctx: Ctx, opts: { category?: boolean } = {}
   const cat = opts.category === false ? '' : category(post)
   return `<article class="fc${picture ? ' has-media' : ''}">
 ${picture ? `<div class="fc-media">${picture}</div>` : ''}
-<div class="fc-text">${cat}${title(post, 'h3', settings.language)}${deck(post, DECK_CHARS[front.kind].card, settings.language)}${meta(post, settings, front)}</div>
+<div class="fc-text">${cat}${heading(post, 'h3', DECK_CHARS[front.kind].card, settings.language)}${meta(post, settings, front)}</div>
 </article>`
 }
 

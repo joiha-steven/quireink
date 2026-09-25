@@ -22,7 +22,8 @@ export function wantsMarkdown(accept: string | undefined): boolean {
 }
 
 function document(title: string, meta: string, body: string): Response {
-  return new Response(`# ${title}\n\n${meta ? `${meta}\n\n` : ''}${body}\n`, {
+  // No heading for a short post (ADR 0064): `# ` over nothing is an empty heading, not a name.
+  return new Response(`${title ? `# ${title}\n\n` : ''}${meta ? `${meta}\n\n` : ''}${body}\n`, {
     headers: {
       'content-type': 'text/markdown; charset=utf-8',
       'cache-control': 'public, max-age=300',

@@ -24,6 +24,7 @@ import { PUBLIC_SHEET } from '@/web/assets'
 // attribute. Nothing reaches that one but an ISO date, so it was not exploitable here. It was
 // the same wrong shape, which is what the next person copies.
 import { escapeAttr, escapeHtml } from '@/utils'
+import { postName } from '@/content/untitled'
 
 export async function handlePreview(c: Context): Promise<Response> {
   // Typed as optional because a bare `Context` does not know the route's shape.
@@ -51,13 +52,12 @@ export async function handlePreview(c: Context): Promise<Response> {
 
   const html = renderDocument(
     settings,
-    { title: `${entry.title} · ${settings.title}`, stylesheet: PUBLIC_SHEET },
+    { title: `${post ? postName(post) : entry.title} · ${settings.title}`, stylesheet: PUBLIC_SHEET },
     pageStyles(settings),
     `<div class="wrap">
 <article>
 <p class="preview-note">${escapeHtml(t(settings.language).previewNotice)}</p>
-<h1>${escapeHtml(entry.title)}</h1>
-${meta}
+${entry.title ? `<h1>${escapeHtml(entry.title)}</h1>\n` : ''}${meta}
 <div class="prose">${body}</div>
 </article>
 </div>`,

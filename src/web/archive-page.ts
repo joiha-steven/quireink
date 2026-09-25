@@ -20,6 +20,7 @@ import { getSettings } from '@/content/settings'
 import { byYear, yearAnchor, type ArchiveYear } from '@/content/archive'
 import { langAttr } from '@/content/translations'
 import { listingPage } from '@/web/listing-page'
+import { postName } from '@/content/untitled'
 
 /**
  * `MM-DD`, and the year is the heading above it.
@@ -38,7 +39,7 @@ function yearBlock({ year, posts }: ArchiveYear, lang: SiteSettings['language'],
     const day = zonedDay(p.date, tz)
     return `<li><time datetime="${escapeAttr(day)}">`
     + `${escapeHtml(monthDay(day))}</time>`
-    + `<a class="link-accent" href="/${escapeAttr(p.slug)}"${langAttr(p, lang)}>${escapeHtml(p.title)}</a></li>`
+    + `<a class="link-accent" href="/${escapeAttr(p.slug)}"${langAttr(p, lang)}>${escapeHtml(postName(p))}</a></li>`
   }).join('')
   return `<section class="arc-yr"><h2 id="${escapeAttr(yearAnchor(year))}">${year}`
     + `<span class="arc-count">${escapeHtml(formatCount(posts.length, lang))}</span>`

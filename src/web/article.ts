@@ -21,6 +21,7 @@ import { standaloneUrls } from '@/render/link-cards'
 import { cardFacts, noteLinks } from '@/content/link-cards'
 import type { ImageDims, ReadyOriginals } from '@/render/figures'
 import { extractHeadings } from '@/utils'
+import { isUntitled, postName } from '@/content/untitled'
 import { langAttr, langOf, siblingsOf } from '@/content/translations'
 import { articleHead } from '@/web/article-head'
 import { TOC_ANCHORS } from '@/render/toc'
@@ -125,6 +126,8 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     // date, the length of the read, and the way into book mode. It read "14 min" with the
     // word count missing entirely — the suffixes are in the locale table for a reason.
     const category = features.categoryLabel ? post.categories[0] : undefined
+    // A SHORT POST (ADR 0064): no headline and no standfirst, none made up — the words are the piece.
+    const untitled = isUntitled(post)
     // The figures are wrapped and the units are not: the IDE chrome sets a literal apart
     // from the words around it, and it cannot do that to a bare text node.
     // ONE pass for both numbers, and the same one the info panel prints. `wordCount` runs
@@ -165,9 +168,9 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
       escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${length}${
       // Who wrote it, when the owner has said. '' on every blog that has not.
       byline(settings, s.bylinePrefix)}${book}</span></p>
-<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtml(item.title)}</h1>${
+${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtml(item.title)}</h1>`}${
       // Standfirst: the excerpt, so a long read opens on a sentence rather than a wall.
-      features.deck && post.excerpt ? `
+      features.deck && post.excerpt && !untitled ? `
 <p class="deck">${escapeHtml(post.excerpt)}</p>` : ''}${langs}
 </header>`
 
@@ -181,9 +184,9 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
           escapeAttr(series.slug)}">${escapeHtml(series.name)}</a> · ${escapeHtml(s.seriesPartPrefix)} ${
           series.currentIndex + 1}/${series.posts.length}</p><ol>${
           series.posts.map((p) => (p.slug === post.slug
-            ? `<li aria-current="page"${langAttr(p, settings.language)}>${escapeHtml(p.title)}</li>`
+            ? `<li aria-current="page"${langAttr(p, settings.language)}>${escapeHtml(postName(p))}</li>`
             : `<li><a href="/${escapeAttr(p.slug)}"${langAttr(p, settings.language)}>${
-              escapeHtml(p.title)}</a></li>`)).join('')
+              escapeHtml(postName(p))}</a></li>`)).join('')
         }</ol></aside>`
       : ''
     // Tags and categories, each on its own labelled line, over a rule. The rule is the
@@ -227,14 +230,14 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
       if (target) {
         readNextBlock = `<hr><section class="read-next"><p class="read-next-label">${
           escapeHtml(readLabel)}</p><p class="read-next-title reading-font"><a class="link-accent" href="/${
-          escapeAttr(target.slug)}">${escapeHtml(target.title)}</a></p></section>`
+          escapeAttr(target.slug)}">${escapeHtml(postName(target))}</a></p></section>`
       }
     }
 
     const related = features.related ? await getRelatedPosts(post.slug, settings.relatedCount) : []
     const relatedBlock = related.length
       ? `<hr><section class="related"><h2>${escapeHtml(s.relatedTitle)}</h2><ul>${
-          related.map((r) => `<li><a class="link-accent" href="/${escapeAttr(r.slug)}">${escapeHtml(r.title)}</a>`
+          related.map((r) => `<li><a class="link-accent" href="/${escapeAttr(r.slug)}">${escapeHtml(postName(r))}</a>`
             + `<p class="t-small text-meta">${escapeHtml(formatDate(r.date, settings.language, settings.timezone))}</p></li>`).join('')
         }</ul></section>`
       : ''
@@ -280,7 +283,7 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     // heading is the fold, so a long index can be put away with one click and no script.
     ? `<nav class="toc" aria-label="${escapeAttr(s.tocIndex)}">
 <details open><summary><h2>${escapeHtml(s.tocIndex)}</h2></summary>
-<ul>${row('#top', post.title, ' is-active')}${
+<ul>${row('#top', postName(post), ' is-active')}${
       headings.map((h) => row(`#${h.id}`, h.text,
         mixed ? (h.level === 3 ? ' rail-sub' : ' rail-lead') : '')).join('')
     }${endLabel ? row(`#${endAnchor}`, endLabel, ' toc-end') : ''}</ul>

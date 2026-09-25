@@ -23,6 +23,7 @@ import { getPublicPosts } from '@/content/posts'
 import { langAttr } from '@/content/translations'
 import { getMailStatus } from '@/news/mail'
 import { PUBLIC_SHEET, scriptTag } from '@/web/assets'
+import { postName } from '@/content/untitled'
 
 type Posts = ListingView['paged']['items']
 
@@ -230,7 +231,7 @@ export async function notFoundPage(): Promise<Response> {
   const latestBlock = latest.length
     ? `<hr><section class="related"><h2>${escapeHtml(s.frontLatest)}</h2><ul>${
         latest.map((p) => `<li><a class="link-accent" href="/${escapeAttr(p.slug)}"${
-          langAttr(p, settings.language)}>${escapeHtml(p.title)}</a>`
+          langAttr(p, settings.language)}>${escapeHtml(postName(p))}</a>`
           + `<p class="t-small text-meta">${escapeHtml(formatDate(p.date, settings.language, settings.timezone))}</p></li>`).join('')
       }</ul></section>`
     : ''

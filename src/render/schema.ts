@@ -17,6 +17,7 @@
 // production once already, in the feed and the sitemap.
 
 import type { Post, SiteSettings } from '@/types'
+import { postName } from '@/content/untitled'
 
 /**
  * The payload, ready for a `<script type="application/ld+json">`.
@@ -88,7 +89,7 @@ export function blogPostingSchema(
   const obj: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: post.metaTitle || post.title,
+    headline: post.metaTitle || postName(post),
     url,
     mainEntityOfPage: { '@type': 'WebPage', '@id': url },
     datePublished: post.date,

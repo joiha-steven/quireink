@@ -3,6 +3,7 @@
 // `series.ts` (which re-exports these for server callers + tests).
 import type { Post } from '@/types'
 import { slugify } from '@/utils'
+import { postName } from '@/content/untitled'
 
 // Order within a series: explicit order first, chronological as the tiebreak. Pure.
 export function orderSeries(posts: Post[]): Post[] {
@@ -38,7 +39,7 @@ export function seriesEntries(posts: Post[]): SeriesEntry[] {
     .map(([name, group]) => ({
       name,
       slug: seriesSlug(name),
-      parts: orderSeries(group).map((p) => ({ slug: p.slug, title: p.title })),
+      parts: orderSeries(group).map((p) => ({ slug: p.slug, title: postName(p) })),
     }))
     .sort((a, b) => b.parts.length - a.parts.length || a.name.localeCompare(b.name))
 }
