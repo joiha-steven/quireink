@@ -19,6 +19,7 @@ import { listingRailCss } from '@/render/rail-css'
 import { t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { postName } from '@/content/untitled'
+import { isSafeHref } from '@/content/safe-href'
 
 /** Curated posts shown in the "Featured" block. */
 const FEATURED_MAX = 5
@@ -89,7 +90,8 @@ function termCloud(
  */
 export function menuBlock(items: MenuItem[], label: string): string {
   if (items.length === 0) return ''
-  const rows = items.map((item) => {
+  // A row stored before the save refused unsafe links is still skipped here.
+  const rows = items.filter((item) => isSafeHref(item.href)).map((item) => {
     // An external link opens in a new tab; an internal one does not. `noopener` because
     // `target=_blank` otherwise hands the opened page a handle on this one.
     const external = /^https?:\/\//.test(item.href)

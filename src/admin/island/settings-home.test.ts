@@ -90,6 +90,19 @@ describe('the header menu', () => {
     box.dispatchEvent(new Event('input', { bubbles: true }))
     expect(held('menu')).toEqual([{ label: 'Home', href: '/' }, { label: 'About', href: '/about-us' }])
   })
+
+  it('says under the row that a javascript: link will not be kept, and takes it back when fixed', () => {
+    const box = root.querySelectorAll<HTMLInputElement>('[data-menu-href]')[1]!
+    const warning = box.closest('[data-menu-row]')!.querySelector<HTMLElement>('[data-menu-unsafe]')!
+    expect(warning.hidden).toBe(true)
+    box.value = 'javascript:alert(1)'
+    box.dispatchEvent(new Event('input', { bubbles: true }))
+    expect(warning.hidden).toBe(false)
+    expect(box.getAttribute('aria-invalid')).not.toBeNull()
+    box.value = '/about'
+    box.dispatchEvent(new Event('input', { bubbles: true }))
+    expect(warning.hidden).toBe(true)
+  })
 })
 
 describe('the featured posts', () => {

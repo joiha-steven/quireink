@@ -529,6 +529,7 @@ const de = {
   menuHrefField: 'Link',
   menuAdd: 'Eintrag hinzufügen',
   menuHint: 'Link: Startseite /, Beitrag oder Seite /slug, Kategorie /category/name oder extern https://...',
+  menuHrefUnsafe: 'Dieser Link würde im Browser der Leser Code ausführen und wird daher nicht gespeichert. Nimm einen Pfad oder eine http(s)-, mailto- oder tel-Adresse.',
   navAppearance: 'Darstellung',
   appearanceHint: 'Farben für hellen und dunklen Modus anpassen: Hintergrund, Text, Überschriften, Sekundärtext, Links, Trennlinie.',
   themePreset: 'Farbschema',

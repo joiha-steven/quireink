@@ -851,6 +851,8 @@ export type AdminStrings = {
   menuHrefField: string
   menuAdd: string
   menuHint: string
+  /** Under a menu link that names a scheme other than http(s), mailto or tel. */
+  menuHrefUnsafe: string
   // appearance
   navAppearance: string
   appearanceHint: string

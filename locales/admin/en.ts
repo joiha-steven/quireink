@@ -529,6 +529,7 @@ const en = {
   menuHrefField: 'Link',
   menuAdd: 'Add item',
   menuHint: 'Link: home /, post or page /slug, category /category/name, or external https://...',
+  menuHrefUnsafe: 'This link would run code in a reader’s browser, so it will not be saved. Use a path, or an http(s), mailto or tel address.',
   navAppearance: 'Appearance',
   appearanceHint: 'Customize colors for light and dark mode: background, text, headings, secondary text, links, horizontal rule.',
   themePreset: 'Color preset',

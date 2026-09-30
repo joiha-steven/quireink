@@ -529,6 +529,7 @@ const es = {
   menuHrefField: 'Enlace',
   menuAdd: 'Añadir elemento',
   menuHint: 'Enlace: inicio /, entrada o página /slug, categoría /category/nombre, o externo https://…',
+  menuHrefUnsafe: 'Este enlace ejecutaría código en el navegador del lector, así que no se guardará. Usa una ruta o una dirección http(s), mailto o tel.',
   navAppearance: 'Apariencia',
   appearanceHint: 'Personaliza los colores de los modos claro y oscuro: fondo, texto, títulos, texto secundario, enlaces, línea horizontal.',
   themePreset: 'Paleta de colores',

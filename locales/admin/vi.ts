@@ -529,6 +529,7 @@ const vi = {
   menuHrefField: 'Đường dẫn',
   menuAdd: 'Thêm mục',
   menuHint: 'Đường dẫn: trang chủ /, bài viết hoặc trang /duong-dan, danh mục /category/ten, hoặc link ngoài https://...',
+  menuHrefUnsafe: 'Liên kết này sẽ chạy mã trong trình duyệt của người đọc nên sẽ không được lưu. Hãy dùng đường dẫn, hoặc địa chỉ http(s), mailto hay tel.',
   navAppearance: 'Giao diện',
   appearanceHint: 'Tùy chỉnh màu cho chế độ sáng và tối: nền, chữ, tiêu đề, chữ phụ, liên kết, đường gạch ngang.',
   themePreset: 'Bảng màu',

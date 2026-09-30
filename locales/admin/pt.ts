@@ -530,6 +530,7 @@ const pt = {
   menuHrefField: 'Link',
   menuAdd: 'Adicionar item',
   menuHint: 'Link: início /, post ou página /slug, categoria /category/nome, ou externo https://…',
+  menuHrefUnsafe: 'Esta ligação executaria código no navegador de quem lê, por isso não será guardada. Use um caminho ou um endereço http(s), mailto ou tel.',
   navAppearance: 'Aparência',
   appearanceHint: 'Personalize as cores dos modos claro e escuro: fundo, texto, títulos, texto secundário, links, linha horizontal.',
   themePreset: 'Paleta de cores',

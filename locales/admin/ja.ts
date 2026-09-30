@@ -529,6 +529,7 @@ const ja = {
   menuHrefField: 'リンク',
   menuAdd: '項目を追加',
   menuHint: 'リンク: ホーム /、投稿またはページ /slug、カテゴリー /category/name、または外部 https://...',
+  menuHrefUnsafe: 'このリンクは読者のブラウザでコードを実行するため保存されません。パス、または http(s)・mailto・tel のアドレスを使ってください。',
   navAppearance: '外観',
   appearanceHint: 'ライトモードとダークモードの色をカスタマイズ: 背景、文字、見出し、補助テキスト、リンク、区切り線。',
   themePreset: 'カラープリセット',

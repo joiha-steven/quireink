@@ -529,6 +529,7 @@ const it = {
   menuHrefField: 'Link',
   menuAdd: 'Aggiungi voce',
   menuHint: 'Link: home /, articolo o pagina /slug, categoria /category/nome, o esterno https://…',
+  menuHrefUnsafe: 'Questo link eseguirebbe codice nel browser di chi legge, quindi non verrà salvato. Usa un percorso o un indirizzo http(s), mailto o tel.',
   navAppearance: 'Aspetto',
   appearanceHint: 'Personalizza i colori delle modalità chiara e scura: sfondo, testo, titoli, testo secondario, link, filetto orizzontale.',
   themePreset: 'Palette di colori',

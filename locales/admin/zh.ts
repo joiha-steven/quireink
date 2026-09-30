@@ -529,6 +529,7 @@ const zh = {
   menuHrefField: '链接',
   menuAdd: '添加项',
   menuHint: '链接：首页 /、文章或页面 /slug、分类 /category/name，或外部 https://...',
+  menuHrefUnsafe: '这个链接会在读者的浏览器里运行代码，因此不会保存。请使用路径，或 http(s)、mailto、tel 地址。',
   navAppearance: '外观',
   appearanceHint: '自定义浅色和深色模式的颜色：背景、文字、标题、次要文字、链接、分隔线。',
   themePreset: '配色方案',

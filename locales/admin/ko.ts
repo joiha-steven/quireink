@@ -529,6 +529,7 @@ const ko = {
   menuHrefField: '링크',
   menuAdd: '항목 추가',
   menuHint: '링크: 홈 /, 게시물 또는 페이지 /slug, 카테고리 /category/name, 또는 외부 https://...',
+  menuHrefUnsafe: '이 링크는 독자의 브라우저에서 코드를 실행하므로 저장되지 않습니다. 경로나 http(s), mailto, tel 주소를 쓰세요.',
   navAppearance: '디자인',
   appearanceHint: '라이트 및 다크 모드의 색상 사용자 지정: 배경, 텍스트, 제목, 보조 텍스트, 링크, 구분선.',
   themePreset: '색상 프리셋',

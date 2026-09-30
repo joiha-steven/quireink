@@ -529,6 +529,7 @@ const fr = {
   menuHrefField: 'Lien',
   menuAdd: 'Ajouter un élément',
   menuHint: 'Lien : accueil /, article ou page /slug, catégorie /category/nom, ou externe https://…',
+  menuHrefUnsafe: 'Ce lien exécuterait du code dans le navigateur du lecteur ; il ne sera donc pas enregistré. Utilisez un chemin, ou une adresse http(s), mailto ou tel.',
   navAppearance: 'Apparence',
   appearanceHint: 'Personnalisez les couleurs des modes clair et sombre : fond, texte, titres, texte secondaire, liens, filet horizontal.',
   themePreset: 'Palette de couleurs',

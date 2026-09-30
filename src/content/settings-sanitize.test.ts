@@ -262,6 +262,14 @@ describe('sanitizeMenu', () => {
     expect(sanitizeMenu([{ label: 'A', href: '/a' }, null, { label: 'B', href: '' },
       { label: 'C', href: '/c' }], [])).toEqual([{ label: 'A', href: '/a' }, { label: 'C', href: '/c' }])
   })
+
+  // The public header printed `href="javascript:alert(1)"` as saved (2026-09-30).
+  it('drops a link that would run code, however it is spelled', () => {
+    const bad = ['javascript:alert(1)', 'JavaScript:alert(1)', ' java\tscript:x', 'data:text/html,<b>', 'vbscript:x']
+    expect(sanitizeMenu(bad.map((href) => ({ label: 'X', href })), [])).toEqual([])
+    const good = ['/a', '#top', '?q=1', 'https://example.com', 'mailto:me@example.com', 'tel:+1555', 'about']
+    expect(sanitizeMenu(good.map((href) => ({ label: 'X', href })), []).length).toBe(good.length)
+  })
 })
 
 /**

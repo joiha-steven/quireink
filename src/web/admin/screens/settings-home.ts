@@ -29,6 +29,7 @@ import { choice, plainPick } from '@/web/admin/fields-pick'
 import { panelList } from '@/web/admin/fields-box'
 import { gate } from '@/web/admin/fields-pic'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
+import { isSafeHref } from '@/content/safe-href'
 
 /** What this tab needs that is not a setting: the lists its pickers choose from. */
 export type HomeTabView = {
@@ -73,9 +74,11 @@ const TB_KEY = 'flex h-8 min-w-8 items-center justify-center rounded-lg border b
 /** The header's links. A LABEL, not a placeholder: a placeholder goes the moment the row has
  *  content, so a filled menu was a column of unnamed boxes and a screen reader never had the
  *  names at all. */
+const MENU_BAD = 'mt-1 text-sm text-[var(--ink-danger)]'
+
 function menu(t: AdminStrings, s: SiteSettings): string {
   const row = (m: { label: string; href: string }): string =>
-    `<div class="flex gap-2" data-menu-row>`
+    `<div data-menu-row><div class="flex gap-2">`
     + `<input class="${FIELD}" data-menu-label value="${escapeAttr(m.label)}"`
     + ` placeholder="${escapeAttr(t.menuLabelField)}"`
     + ` aria-label="${escapeAttr(t.menuLabelField)}">`
@@ -84,6 +87,10 @@ function menu(t: AdminStrings, s: SiteSettings): string {
     + ` aria-label="${escapeAttr(t.menuHrefField)}">`
     + `<button type="button" data-menu-remove aria-label="${escapeAttr(t.delete)}"`
     + ` class="${ICON_KEY}">×</button></div>`
+    // Drawn hidden under every row; the island shows it while the link names a scheme that
+    // would run code, which the save drops (`content/safe-href.ts`).
+    + `<p class="${MENU_BAD}" role="alert" data-menu-unsafe${isSafeHref(m.href) ? ' hidden' : ''}>`
+    + `${escapeHtml(t.menuHrefUnsafe)}</p></div>`
   return `<div class="space-y-3" data-menu>`
     + `<span class="${SETTING_LABEL}">${escapeHtml(t.menuTitle)}</span>`
     + `<div class="space-y-3" data-menu-rows>${s.menu.map(row).join('')}</div>`

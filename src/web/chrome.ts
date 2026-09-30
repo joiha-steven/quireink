@@ -16,6 +16,7 @@ import { renderInlineMarkdown, expandFooterTokens } from '@/render/inline-md'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { SW_PATH } from '@/web/assets'
 import { ICONS } from '@/icons'
+import { isSafeHref } from '@/content/safe-href'
 
 /**
  * Inline SVG rather than an icon font: no extra request, and it inherits `currentColor`.
@@ -142,7 +143,8 @@ const token = (text: string): string => `<span class="btn-token">${escapeHtml(te
  */
 function siteMenu(settings: SiteSettings, label: string): string {
   if (settings.menu.length === 0) return ''
-  const links = settings.menu.map((item) => {
+  // A row stored before the save refused unsafe links is still skipped here.
+  const links = settings.menu.filter((item) => isSafeHref(item.href)).map((item) => {
     // Same rule the rail applies: an external link opens in a new tab, and `noopener`
     // because `target=_blank` otherwise hands the opened page a handle on this one.
     const external = /^https?:\/\//.test(item.href)

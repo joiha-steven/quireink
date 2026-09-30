@@ -16,6 +16,7 @@
 // option that has been used is HIDDEN rather than removed, so putting it back is a flag rather
 // than a `<option>` assembled in JavaScript with none of the server's words in it.
 import { renderInlineMarkdown } from '@/render/inline-md'
+import { isSafeHref } from '@/content/safe-href'
 import { show, type ListWords } from './list-dom'
 
 /** Write a list back and let the Save key count it. The event has to bubble to the panels box. */
@@ -51,8 +52,16 @@ function wireMenu(screen: HTMLElement): void {
 
   box.addEventListener('input', (e) => {
     const target = e.target as HTMLElement
+    if (target.matches('[data-menu-href]')) warn(target as HTMLInputElement)
     if (target.matches('[data-menu-label], [data-menu-href]')) sync()
   })
+
+  /** Say so under the row while its link would be dropped on save. */
+  const warn = (href: HTMLInputElement): void => {
+    const bad = !isSafeHref(href.value)
+    href.toggleAttribute('aria-invalid', bad)
+    show(href.closest('[data-menu-row]')?.querySelector('[data-menu-unsafe]') ?? null, bad)
+  }
 
   box.addEventListener('click', (e) => {
     const target = e.target as HTMLElement

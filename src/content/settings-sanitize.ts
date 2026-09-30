@@ -13,15 +13,16 @@ export {
   sanitizeAi, sanitizeApi, sanitizeActivityPub, sanitizeBackups, sanitizeMcp,
 } from '@/content/settings-doors'
 import { bool, clampNumber } from '@/content/settings-scrub'
+import { isSafeHref } from '@/content/safe-href'
 
-// Keep only well-formed menu items (label + href both present).
+// Keep only well-formed menu items (label + href both present), and never a `javascript:` link.
 export function sanitizeMenu(input: unknown, fallback: MenuItem[]): MenuItem[] {
   if (!Array.isArray(input)) return fallback
   return withHolesFilled(input, fallback)
     .filter((m): m is MenuItem => !!m && typeof (m as MenuItem).label === 'string'
       && typeof (m as MenuItem).href === 'string')
     .map((m) => ({ label: m.label.trim(), href: m.href.trim() }))
-    .filter((m) => m.label && m.href)
+    .filter((m) => m.label && m.href && isSafeHref(m.href))
 }
 
 const HEX = /^#[0-9a-fA-F]{3,8}$/
