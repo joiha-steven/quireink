@@ -150,3 +150,37 @@ describe('the two halves agree on what a footnote definition is', () => {
     expect(parse(source).children.length).toBe(1)
   })
 })
+
+// Three faults the 2026-09-30 sweep found, each a page a reader saw wrong.
+describe('footnote syntax a writer is showing, not using', () => {
+  const page = (md: string) => renderPostContent({ markdown: md })
+
+  it('leaves [^x] alone in an inline code span, a ~~~ fence and an indented sample', async () => {
+    const html = await page([
+      'Write `[^a]` for a note.[^a]', '',
+      '~~~', 'text[^a]', '[^a]: inside the fence', '~~~', '',
+      'Before the sample.', '',
+      '    indented[^a]', '',
+      '[^a]: The real note.',
+    ].join('\n'))
+    expect(html.match(/class="fnref"/g)).toHaveLength(1)
+    expect(html).toContain('[^a]: inside the fence')
+    expect(html).toContain('<li id="fn-a">The real note.')
+  })
+
+  it('takes a definition that runs on to the next blank line, indented or flush', async () => {
+    for (const lines of ['[^n]: First line\n    and its continuation.', '[^n]: First line\nand its continuation.']) {
+      const html = await page(`Claim.[^n]\n\n${lines}\n\nAfter.\n`)
+      expect(html).toContain('First line and its continuation.')
+      expect(html).not.toContain('<pre')
+      expect(html).not.toContain('<p>and its continuation.</p>')
+      expect(html).toContain('<p>After.</p>')
+    }
+  })
+
+  it('gives each citation of one note its own id', async () => {
+    const html = await page('One[^d], two[^d], three[^d].\n\n[^d]: Shared.\n')
+    const ids = [...html.matchAll(/id="(fnref-[^"]+)"/g)].map((m) => m[1])
+    expect(ids).toEqual(['fnref-d', 'fnref-d-2', 'fnref-d-3'])
+  })
+})

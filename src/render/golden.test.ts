@@ -171,6 +171,13 @@ const DIVERGED: Record<string, { behaviour: string; why: string }> = {
   //    shape, which is why this is a divergence and not a port bug. `buildFigures` now splits
   //    the paragraph, which is what the parser was doing anyway.
   'reference-links': { behaviour: 'picture out of paragraph', why: 'the paragraph is split round the figure, not repaired by the parser' },
+
+  // ── A note cited twice (2026-09-30, the eight-agent sweep). 1.x gave every citation of the
+  //    same note `id="fnref-d"`, so the page held one id on two elements, which HTML forbids and
+  //    which leaves a fragment link and a screen reader's "jump to" guessing. The second and later
+  //    citations count on (`fnref-d-2`); the first keeps the plain id the back link points at.
+  //    One attribute on one line differs from 1.x, checked with diff at capture time.
+  'footnote-duplicate': { behaviour: 'footnote citation id', why: 'a second citation of one note gets its own id' },
 }
 
 describe('golden: the deliberate divergences from 1.x', () => {
@@ -181,9 +188,10 @@ describe('golden: the deliberate divergences from 1.x', () => {
     // gate. And a name that no longer exists is a rule guarding nothing, which is how
     // `check:css-literal` went quietly dead twice.
     const behaviours = new Set(Object.values(DIVERGED).map((d) => d.behaviour))
-    // Four since 2026-09-14. The ceiling moves only when a behaviour is added deliberately and
-    // written up above; raising it to keep a red test quiet is the drift this guard is for.
-    expect(behaviours.size).toBeLessThan(5)
+    // Five since 2026-09-30 (the footnote citation id, written up above). The ceiling moves only
+    // when a behaviour is added deliberately and written up there; raising it to keep a red test
+    // quiet is the drift this guard is for.
+    expect(behaviours.size).toBeLessThan(6)
     expect(Object.keys(DIVERGED).length).toBeLessThan(fixtures.length / 4)
     for (const name of Object.keys(DIVERGED)) expect(fixtures).toContain(`${name}.md`)
   })

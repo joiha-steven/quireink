@@ -10,3 +10,4 @@ list-with-table
 mixed-everything
 task-lists
 reference-links
+footnote-duplicate
