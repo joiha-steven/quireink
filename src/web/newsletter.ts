@@ -8,7 +8,7 @@
 import type { Context } from 'hono'
 import { addSubscriber, confirmSubscriber, unsubscribeByToken, SubscribeError } from '@/news/subscribers'
 import { recordOpen } from '@/news/newsletter-log'
-import { sendMail } from '@/news/mail'
+import { getSmtpConfig, isMailConfigured, sendMail } from '@/news/mail'
 import { confirmEmail } from '@/news/newsletter-email'
 import { confirmPage, resultPage } from '@/news/newsletter-html'
 import { emailBrand } from '@/news/email-brand'
@@ -81,6 +81,11 @@ export async function handleSubscribe(c: Context): Promise<Response> {
     return resultPage(title, body, resolveSiteUrl(settings), settings.title)
   }
 
+  // NO MAIL, NO LIST (2026-09-30). The form is not drawn without SMTP (`mailBlocked`), but the
+  // route still took addresses posted to it straight: pending rows that could never be
+  // confirmed, and a door anyone could use to put `=1+2@…` into the owner's export.
+  if (!isMailConfigured(await getSmtpConfig())) return fail(c, 'newsletter_unavailable', 404)
+
   // A bot gets the success page and nothing else: no row, no email, no hint. Before
   // `addSubscriber`, so a bombing run cannot even fill the pending list with junk.
   if (looksLikeBot(sub)) {
@@ -103,13 +108,12 @@ export async function handleSubscribe(c: Context): Promise<Response> {
     return new Response(page.body, { status: 400, headers: page.headers })
   }
 
-  // Already on the list: nothing to send, and the answer is the same as a fresh sign-up.
-  // Saying "you are already subscribed" would turn this endpoint into a way to test
-  // whether a given address reads this blog.
+  // Already on the list: nothing to send, and the answer is THE SAME as a fresh sign-up — the
+  // status as well as the page. Saying "you are already subscribed" would turn this endpoint
+  // into a way to test whether a given address reads this blog; the JSON said exactly that
+  // (`already`) until 2026-09-30 while this comment said it did not.
   const settings = await getSettings()
-  if (alreadyConfirmed) {
-    return reply('already', t(settings.language).nlSuccess, t(settings.language).nlThanksBody)
-  }
+  if (alreadyConfirmed) return reply('sent', t(settings.language).nlSuccess)
 
   const tx = t(settings.language)
 

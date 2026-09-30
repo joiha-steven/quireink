@@ -4,7 +4,7 @@
 // internet, so the assertions worth having are about what they refuse: a comment on a
 // draft, a flood, a `javascript:` website, an unsubscribe on GET.
 
-import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { savePost } from '@/content/posts'
@@ -12,6 +12,7 @@ import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 import { payload } from '@/test/api'
+import { saveSmtpConfig } from '@/news/mail'
 import { createHash, createHmac } from 'node:crypto'
 import { serverSecret } from '@/auth/secret'
 import { issueStamp, resetStamps } from '@/comments/stamp'
@@ -195,10 +196,23 @@ describe('POST /api/comments', () => {
 })
 
 describe('POST /api/subscribe', () => {
+  // A mail server that is configured and answers nobody: a closed port on this machine, so a
+  // send fails at once and nothing leaves. Without one the form is not drawn and the route
+  // refuses, which the first test below holds.
+  beforeAll(() => saveSmtpConfig({ host: '127.0.0.1', port: 9, from: 'blog@example.com' }))
+
+  it('refuses outright while no mail server is set, and keeps nothing', async () => {
+    await saveSmtpConfig({ host: '', from: '' })
+    const res = await post('/api/subscribe', { email: 'nomail@example.com' }, '198.51.100.40')
+    expect(res.status).toBe(404)
+    expect(db().query<{ n: number }, []>(`select count(*) as n from subscribers`).get()?.n).toBe(0)
+    await saveSmtpConfig({ host: '127.0.0.1', port: 9, from: 'blog@example.com' })
+  })
+
   it('creates a PENDING subscriber, not a confirmed one', async () => {
     const res = await post('/api/subscribe', { email: 'new@example.com' })
     expect(res.status).toBe(200)
-    // No mail server is configured here, and the row exists anyway: the owner can still
+    // The mail server answers nobody here, and the row exists anyway: the owner can still
     // see the sign-up. Double opt-in means the address gets nothing until it clicks.
     const row = db().query<{ status: string }, []>(`select status from subscribers`).get()
     expect(row?.status).toBe('pending')
@@ -213,10 +227,11 @@ describe('POST /api/subscribe', () => {
     seedSubscriber('known@example.com', 'confirmed', 'tok')
     const known = await post('/api/subscribe', { email: 'known@example.com' }, '198.51.100.1')
     const fresh = await post('/api/subscribe', { email: 'unknown@example.com' }, '198.51.100.2')
-    // Both 200. A different answer would make this endpoint a way to test whether a given
-    // person reads this blog.
+    // Both 200, AND the same status in the body. The JSON said `already` for a confirmed
+    // address until 2026-09-30, which is the very test this was meant to rule out.
     expect(known.status).toBe(200)
     expect(fresh.status).toBe(200)
+    expect((await payload<{ status: string }>(known)).status).toBe('sent')
   })
 
   it('drops a submission whose honeypot is filled — success face, no row, no email', async () => {
