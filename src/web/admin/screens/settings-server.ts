@@ -75,14 +75,15 @@ export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView)
     + cloudflareCard(t, view.integrations)
     + redirectsCard(t, view.redirects)
     + importCard(t)
+    // The third machine door, on this side since 2026-09-30 (FIXLIST 7.8): the right stack had
+    // grown to 3,029 against 2,050 at 1280, a 999px hole under the import. Now 2,433 and 2,466.
+    + activityPubCard(t, s, { origin: view.origin, followers: view.followers })
     + `</div><div class="${COL}">`
     + installCard(t, s, view.update)
     + aiCard(t, s, view.integrations)
     + mcpCard(t, s, endpoint)
     // Under MCP: the two machine doors read as a pair, and this is the smaller one.
     + apiCard(t, s, `${origin}/api/v1`)
-    // The third machine door, and the only one that gives this blog a name out there.
-    + activityPubCard(t, s, { origin: view.origin, followers: view.followers })
     + backupsCard(t, s)
     // The snapshot that leaves the machine (ADR 0035): a copy beside the data does not survive
     // the disk. It sits under the backups it ships.

@@ -290,11 +290,10 @@ function cssEditor(t: AdminStrings, s: SiteSettings): string {
 /**
  * The tab.
  *
- * ⚠️ SHAPE IS IN THE LEFT COLUMN, and it was in the right one on the measured grounds that the
- * left stack was the taller of the two. Pairing the light and dark colour tables took 363px out
- * of the left stack and that stopped being true — measured at 1440px, left 2,224 against right
- * 2,992. Moving it back puts them at 2,752 and 2,464 and leaves the right column as exactly one
- * subject: type.
+ * ⚠️ SHAPE IS IN THE RIGHT COLUMN again (2026-09-30, FIXLIST 7.8). It moved left when the paired
+ * colour tables made the left stack the shorter one; since then the palette card has shrunk, and
+ * at 1280 the left stood 1,734 against 898 — an 836px hole beside the palettes. On the right:
+ * 1,197 against 1,435. Re-measure before moving it again.
  *
  * ⚠️ CUSTOM CSS IS ON THE RIGHT, and that was measured too. The right column was type and ONLY
  * type, which cost, at 1440 on 2026-09-12: left 1,534 against right 535, so the tab ended in
@@ -308,7 +307,6 @@ export function appearanceTab(t: AdminStrings, s: SiteSettings, view: Appearance
   return `<div class="space-y-5"><div class="${GRID}">`
     + `<div class="${COL}">`
     + panelCard({ title: t.lookLabel, body: lookPicker(t, s) })
-    + panelCard({ title: t.cardShape, body: shape(t, s) })
     // ⚠️ ONE NOTE, NOT A TINTED CALLOUT AND A PARAGRAPH. `themeAdminNote` shipped in a grey
     // rounded box above a card that then carried plain notes under every row — the second note
     // style `fields.ts` names as the drift it exists to stop. It is the card's own sentence, so
@@ -328,6 +326,7 @@ export function appearanceTab(t: AdminStrings, s: SiteSettings, view: Appearance
         + `<div class="mt-6 border-t border-neutral-200 pt-5 dark:border-neutral-800">`
         + fontUpload(t, s) + `</div>`,
     })
+    + panelCard({ title: t.cardShape, body: shape(t, s) })
     + panelCard({
       title: t.customCss,
       body: `<div class="space-y-1.5">${cssEditor(t, s)}`
