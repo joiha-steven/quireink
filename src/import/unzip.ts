@@ -45,6 +45,14 @@ const EOCD_SCAN = 22 + 0xffff
  */
 const MAX_ENTRY_BYTES = 64 * 1024 * 1024
 
+/**
+ * What all the kept entries may inflate to together. Each entry was capped and the sum was not:
+ * a thousand `.md` entries of zeros fit well under the 100 MB upload and inflate to about 64 GB,
+ * which ended the process (2026-09-30). Reported as `entry_too_large`, the answer the import
+ * route already gives for an archive that will not fit.
+ */
+export const MAX_TOTAL_BYTES = 256 * 1024 * 1024
+
 export type ZipEntry = { name: string; bytes: Uint8Array }
 
 export type ZipFault =
@@ -229,9 +237,11 @@ export function unzip(
   archive: Uint8Array,
   keep: (name: string) => boolean = () => true,
   limit: number = MAX_ENTRY_BYTES,
+  total: number = MAX_TOTAL_BYTES,
 ): ZipEntry[] {
   const { offset, count } = readEnd(archive)
   const out: ZipEntry[] = []
+  let inflated = 0
 
 
   let at = offset
@@ -255,7 +265,10 @@ export function unzip(
       if (head.local === OVERFLOWED || head.packed === OVERFLOWED || head.unpacked === OVERFLOWED) {
         readZip64Extra(archive, at + 46 + nameLen, extraLen, head)
       }
-      out.push({ name, bytes: readEntry(archive, name, head, limit) })
+      // The entry is capped at what is still left of the total, so the sum cannot pass it.
+      const bytes = readEntry(archive, name, head, Math.max(1, Math.min(limit, total - inflated)))
+      inflated += bytes.byteLength
+      out.push({ name, bytes })
     }
     at += 46 + nameLen + extraLen + commentLen
   }

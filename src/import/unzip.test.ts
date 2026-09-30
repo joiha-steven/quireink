@@ -179,6 +179,17 @@ describe('an archive that is wrong says which way', () => {
     }
   })
 
+  // Each entry was capped and the sum was not: a thousand small entries could inflate to
+  // gigabytes between them (2026-09-30).
+  it('refuses an archive whose kept entries together pass the total', () => {
+    try {
+      unzip(bytes(NORMAL), () => true, 1024 * 1024, 8)
+      throw new Error('an archive past its total was accepted')
+    } catch (e) {
+      expect((e as ZipError).code).toBe('entry_too_large')
+    }
+  })
+
   it('holds the limit even when the entry lies about its size', () => {
     // The declared size is checked first, so a hostile archive understates it. zlib's own
     // `maxOutputLength` is what actually stops the read, which is why the cap is passed down

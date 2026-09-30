@@ -96,6 +96,15 @@ describe('the WordPress import', () => {
     expect(new Set(list.map((p) => p.slug)).size).toBe(2)
   })
 
+  // The same export sent twice made `-2` copies of everything, and pointed the old URLs at them
+  // (2026-09-30). An item already here, same slug, title and date, is counted as skipped.
+  it('does not import the same dated item a second time', async () => {
+    const dated = item('Dated', 'post', 'dated').replace('<wp:status>', '<wp:post_date_gmt>2020-05-01 10:00:00</wp:post_date_gmt>\n  <wp:status>')
+    expect(await payload<{ posts: number }>(await send(wxr(dated)))).toMatchObject({ posts: 1 })
+    expect(await payload<{ posts: number; skipped: number }>(await send(wxr(dated)))).toMatchObject({ posts: 0, skipped: 1 })
+    expect((await payload<Array<{ slug: string }>>(asOwner('/api/posts'))).map((p) => p.slug)).toEqual(['dated'])
+  })
+
   it('is recorded under the blog it actually came from', async () => {
     // ⚠️ THE KIND IS WHAT THE ACTIVITY LOG PRINTS, and there was one kind for four importers.
     // A Ghost, Substack or Medium import was filed as `import.wordpress`, which the log renders

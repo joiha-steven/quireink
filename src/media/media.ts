@@ -67,22 +67,9 @@ function insertRows(rows: MediaRow[]): void {
   })
 }
 
-// Non-cached read of the whole library, newest first (mutating helpers use it to
-// return authoritative current state).
-async function listMedia(page?: { limit: number; offset: number }): Promise<MediaItem[]> {
-  try {
-    return all<MediaRow>(
-      `select * from media where ${liveOnly('media')} order by uploaded_at desc`
-      + (page ? ` limit ${Number(page.limit)} offset ${Number(page.offset)}` : ''),
-    ).map(rowToItem)
-  } catch (error) {
-    console.error(`[ERROR] media.listMedia: ${(error as Error).message}`)
-    return []
-  }
-}
-
 /**
- * Library list, newest first. Fresh every request.
+ * Library list, newest first. Fresh every request (mutating helpers return it as the
+ * authoritative current state).
  *
  * ⚠️ `page` IS OPTIONAL AND THE DEFAULT IS STILL EVERYTHING, because two callers need every
  * row: `media-usage.ts`, which answers "is this picture used anywhere", and the `list_media`
@@ -91,7 +78,15 @@ async function listMedia(page?: { limit: number; offset: number }): Promise<Medi
  * can use and a browser that thinks about it for several seconds.
  */
 export async function getMedia(page?: { limit: number; offset: number }): Promise<MediaItem[]> {
-  return listMedia(page)
+  const live = `select * from media where ${liveOnly('media')} order by uploaded_at desc`
+  try {
+    // Bound, never interpolated: the hard rule has no exception for a value that is a number.
+    const rows = page ? all<MediaRow>(`${live} limit ? offset ?`, page.limit, page.offset) : all<MediaRow>(live)
+    return rows.map(rowToItem)
+  } catch (error) {
+    console.error(`[ERROR] media.getMedia: ${(error as Error).message}`)
+    return []
+  }
 }
 
 /**
@@ -225,8 +220,17 @@ export async function addMediaBatch(
 ): Promise<MediaItem[]> {
   const taken = await takenPathnames()
   const rows: MediaRow[] = []
-  for (const f of files) {
-    rows.push(await processFile(f.filename, f.body, f.contentType, taken))
+  try {
+    for (const f of files) {
+      rows.push(await processFile(f.filename, f.body, f.contentType, taken))
+    }
+  } catch (error) {
+    // All or nothing: a later file refused used to leave the earlier ones' blobs on disk with no
+    // row, counted against the quota and listed nowhere (2026-09-30).
+    for (const row of rows) {
+      for (const p of new Set([row.path, row.thumb ?? row.path])) await deleteByPathname(p).catch(() => { /* already gone */ })
+    }
+    throw error
   }
   insertRows(rows)
   // Background, per file, with the bytes this function already holds — no re-read, no
@@ -308,12 +312,12 @@ const mediaKeys = (urls: string[]): string[] =>
 // linking these images keeps rendering until an explicit Trash purge.
 export async function deleteMediaBatch(urls: string[]): Promise<MediaItem[]> {
   const keys = mediaKeys(urls)
-  if (keys.length === 0) return listMedia()
+  if (keys.length === 0) return getMedia()
   run(
     `update media set deleted_at = ? where path in (select value from json_each(?))`,
     nowMs(), keyList(keys),
   )
-  return listMedia()
+  return getMedia()
 }
 
 // Soft-delete a single media item (delegates to the batch path).
@@ -325,9 +329,9 @@ export async function deleteMedia(url: string): Promise<MediaItem[]> {
 // authoritative live list.
 export async function restoreMediaBatch(urls: string[]): Promise<MediaItem[]> {
   const keys = mediaKeys(urls)
-  if (keys.length === 0) return listMedia()
+  if (keys.length === 0) return getMedia()
   run(`update media set deleted_at = null where path in (select value from json_each(?))`, keyList(keys))
-  return listMedia()
+  return getMedia()
 }
 
 // Hard delete (irreversible, Trash UI only): remove DB rows first (source of
@@ -381,12 +385,8 @@ export async function emptyMediaTrash(): Promise<number> {
 }
 
 // Owner-only diagnostic: report what a delete of `url` would match in the DB.
-export async function debugDelete(url: string): Promise<{
-  manifestCount: number
-  targetKey: string | null
-  matched: number
-  sampleStored: string[]
-}> {
+type DeleteProbe = { manifestCount: number; targetKey: string | null; matched: number; sampleStored: string[] }
+export async function debugDelete(url: string): Promise<DeleteProbe> {
   const targetKey = mediaKey(url)
   return {
     manifestCount: one<{ n: number }>(`select count(*) n from media`)?.n ?? 0,

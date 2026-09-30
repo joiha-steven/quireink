@@ -10,7 +10,7 @@ import { Hono } from 'hono'
 import { one } from '@/store/query'
 import { savePost, getPost } from '@/content/posts'
 import { savePage, getPage } from '@/content/pages'
-import { saveNote } from '@/content/notes'
+import { saveNote, getNote } from '@/content/notes'
 import { saveUnique } from '@/content/slugs'
 import { saveRedirect } from '@/server/redirects'
 import { normalizePath } from '@/server/redirect-path'
@@ -107,12 +107,24 @@ export function opsRoutes() {
     let importedPages = 0
     let importedNotes = 0
     let redirects = 0
+    let skipped = result.skipped
+    // Read BEFORE anything is written. One unparseable date in a bundle threw half-way through,
+    // and running the file again then made `-2` copies of everything already in (2026-09-30).
+    // A date that will not parse skips its item; an item already here, same slug and same
+    // title and date, is not imported a second time.
+    const unparseable = (d: string | undefined) => d !== undefined && Number.isNaN(Date.parse(d))
+    const sameDate = (a: string, b: string | undefined) => b === undefined || Date.parse(a) === Date.parse(b)
     for (const { slug, path, ...rest } of result.posts) {
+      if (unparseable(rest.date)) { skipped++; continue }
+      const here = await getPost(slug)
+      if (here && here.title === rest.title && sameDate(here.date, rest.date)) { skipped++; continue }
       const finalSlug = await saveUnique(slug, (s) => savePost({ ...rest, slug: s }))
       redirects += await redirectOldPath(path, finalSlug)
       importedPosts += 1
     }
     for (const { slug, path, ...rest } of result.pages) {
+      const here = await getPage(slug)
+      if (here && here.title === rest.title && here.content === rest.content) { skipped++; continue }
       const finalSlug = await saveUnique(slug, (s) => savePage({ ...rest, slug: s }))
       redirects += await redirectOldPath(path, finalSlug)
       importedPages += 1
@@ -121,6 +133,9 @@ export function opsRoutes() {
     // kind). No `redirectOldPath`: a note's address is `/notes/<slug>` in a namespace of its
     // own, so nothing it used to live at belongs to this blog.
     for (const { slug, ...rest } of result.notes ?? []) {
+      if (unparseable(rest.date)) { skipped++; continue }
+      const here = await getNote(slug)
+      if (here && here.content === rest.content && sameDate(here.date, rest.date)) { skipped++; continue }
       await saveUnique(slug, (s) => saveNote({ ...rest, slug: s }))
       importedNotes += 1
     }
@@ -136,7 +151,7 @@ export function opsRoutes() {
     )
     return {
       posts: importedPosts, pages: importedPages, notes: importedNotes,
-      skipped: result.skipped, redirects,
+      skipped, redirects,
     }
   }
 
