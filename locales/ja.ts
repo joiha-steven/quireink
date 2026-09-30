@@ -77,6 +77,11 @@ const ja = {
   // and the word before a clip's source.
   notesTitle: 'ノート',
   alsoIn: '他の言語',
+  calloutNote: '注記',
+  calloutTip: 'ヒント',
+  calloutWarning: '警告',
+  calloutImportant: '重要',
+  calloutCaution: '注意',
   notesMeta: '{site} に残したノートと抜き書き。',
   notesEmpty: 'まだノートはありません。',
   noteSourcePrefix: '出典',

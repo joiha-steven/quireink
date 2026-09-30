@@ -17,6 +17,7 @@ import { listingPage } from '@/web/listing-page'
 import { formatDate, t } from '@/i18n/i18n'
 import { clampExcerpt, escapeAttr, escapeHtml, fill, isPublicallyVisible, toPlainText } from '@/utils'
 import type { Note } from '@/types'
+import { calloutWords } from '@/render/callout-words'
 
 /** Where a clip came from, as one line: the word, then the source by its title. */
 function sourceLine(note: Note, prefix: string): string {
@@ -65,9 +66,9 @@ export async function renderNotePage(slug: string): Promise<string | null> {
   const s = t(settings.language)
   const note = await getNote(slug)
   if (!note || !isPublicallyVisible(note.status, note.date)) return null
-  const body = await renderPostContent({
+  const body = calloutWords(await renderPostContent({
     markdown: note.content, cards: await cardFacts(settings), slot: `note:${note.slug}`,
-  })
+  }), s)
   // A clip is a passage kept FROM somewhere, so a note is the piece most likely to hold a
   // standalone link. Same rule as an article's: what is still a plain link gets written down.
   noteLinks(standaloneUrls(body), settings.siteUrl)

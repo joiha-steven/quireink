@@ -36,6 +36,7 @@ import { articleBandCss } from '@/render/rail-css'
 import { languageLine, postInfoPanel, termLinks, bookToggle } from '@/web/post-info'
 
 import { escapeAttr, escapeHtml } from '@/utils'
+import { calloutWords } from '@/render/callout-words'
 
 /** What a search engine will actually print, and the whole reason this number exists.
  *  It was 200 under a comment that said "a search engine truncates there" — and eleven lines
@@ -84,13 +85,12 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
 
   const { ready, dims } = await mediaFacts()
   const cards = await cardFacts(settings)
-  const body = await renderPostContent({
+  // The callout labels in the piece's own language (FIXLIST 8.1); the body itself is language-blind.
+  const body = calloutWords(await renderPostContent({
     markdown: item.content, readyOriginals: ready, imageDims: dims, cards,
-    // Posts and pages share one slug namespace (Invariant 2) and at most one of them matched,
-    // so the prefix is not what keeps these apart — it is what keeps the slot readable when
-    // somebody is looking at the table wondering where a row came from.
+    // One slug namespace (Invariant 2): the prefix only keeps the slot readable in the table.
     slot: post ? `post:${item.slug}` : `page:${item.slug}`,
-  })
+  }), t(langOf(item, settings.language)))
   // ⚠️ THE FINISHED BODY, not the markdown, and that is what makes this self-selecting: every
   // link that BECAME a card is gone from it, so what is left is exactly the links nothing is
   // known about yet. They are written down (no network, one `insert or ignore` each) and the

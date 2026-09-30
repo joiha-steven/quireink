@@ -77,6 +77,11 @@ const vi = {
   // and the word before a clip's source.
   notesTitle: 'Sổ tay',
   alsoIn: 'Cũng có bằng',
+  calloutNote: 'Ghi chú',
+  calloutTip: 'Mẹo',
+  calloutWarning: 'Cảnh báo',
+  calloutImportant: 'Quan trọng',
+  calloutCaution: 'Thận trọng',
   notesMeta: 'Ghi chú và trích dẫn giữ lại trên {site}.',
   notesEmpty: 'Chưa có ghi chú nào.',
   noteSourcePrefix: 'Từ',

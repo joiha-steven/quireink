@@ -77,6 +77,11 @@ const it = {
   // and the word before a clip's source.
   notesTitle: 'Note',
   alsoIn: 'Anche in',
+  calloutNote: 'Nota',
+  calloutTip: 'Suggerimento',
+  calloutWarning: 'Avviso',
+  calloutImportant: 'Importante',
+  calloutCaution: 'Attenzione',
   notesMeta: 'Note e ritagli conservati su {site}.',
   notesEmpty: 'Ancora nessuna nota.',
   noteSourcePrefix: 'Da',

@@ -77,6 +77,11 @@ const zh = {
   // and the word before a clip's source.
   notesTitle: '笔记',
   alsoIn: '其他语言',
+  calloutNote: '注意',
+  calloutTip: '提示',
+  calloutWarning: '警告',
+  calloutImportant: '重要',
+  calloutCaution: '小心',
   notesMeta: '{site} 上保存的笔记与摘录。',
   notesEmpty: '还没有笔记。',
   noteSourcePrefix: '来自',

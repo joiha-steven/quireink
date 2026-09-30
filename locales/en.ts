@@ -77,6 +77,11 @@ const en = {
   // and the word before a clip's source.
   notesTitle: 'Notes',
   alsoIn: 'Also in',
+  calloutNote: 'Note',
+  calloutTip: 'Tip',
+  calloutWarning: 'Warning',
+  calloutImportant: 'Important',
+  calloutCaution: 'Caution',
   notesMeta: 'Notes and clippings kept on {site}.',
   notesEmpty: 'No notes yet.',
   noteSourcePrefix: 'From',

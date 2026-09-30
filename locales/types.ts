@@ -94,6 +94,12 @@ export type Dict = {
   notesTitle: string
   /** The label before a piece's other languages, on the article itself (ADR 0056). */
   alsoIn: string
+  /** The label on a `> [!NOTE]` callout and its four siblings, in the piece's language. */
+  calloutNote: string
+  calloutTip: string
+  calloutWarning: string
+  calloutImportant: string
+  calloutCaution: string
   notesMeta: string
   notesEmpty: string
   noteSourcePrefix: string

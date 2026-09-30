@@ -77,6 +77,11 @@ const ru = {
   // and the word before a clip's source.
   notesTitle: 'Заметки',
   alsoIn: 'Также на',
+  calloutNote: 'Примечание',
+  calloutTip: 'Совет',
+  calloutWarning: 'Предупреждение',
+  calloutImportant: 'Важно',
+  calloutCaution: 'Осторожно',
   notesMeta: 'Заметки и выписки, сохранённые на {site}.',
   notesEmpty: 'Заметок пока нет.',
   noteSourcePrefix: 'Из',

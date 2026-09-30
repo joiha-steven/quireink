@@ -77,6 +77,11 @@ const ko = {
   // and the word before a clip's source.
   notesTitle: '노트',
   alsoIn: '다른 언어',
+  calloutNote: '참고',
+  calloutTip: '팁',
+  calloutWarning: '경고',
+  calloutImportant: '중요',
+  calloutCaution: '주의',
   notesMeta: '{site}에 남긴 노트와 발췌.',
   notesEmpty: '아직 노트가 없습니다.',
   noteSourcePrefix: '출처',
