@@ -20,6 +20,16 @@ const PER_MINUTE = 120
 
 const NO_STORE = { 'cache-control': 'no-store' }
 
+/**
+ * An error in the same envelope as every other route's (`success: false`). These were sent with
+ * `json()`, which wraps its payload as a SUCCESS, so a 401, 400, 404 or 429 read as
+ * `{ success: true, data: { error } }` to anything that reads the envelope (2026-09-30).
+ */
+const refuse = (error: string, status: number): Response =>
+  new Response(JSON.stringify({ success: false, error }), {
+    status, headers: { 'content-type': 'application/json; charset=utf-8', ...NO_STORE },
+  })
+
 /** A page path this blog could have served: absolute, one origin, short. */
 function cleanPath(raw: string | undefined): string | null {
   if (!raw || !raw.startsWith('/') || raw.startsWith('//') || raw.length > 512) return null
@@ -33,7 +43,7 @@ async function penOn(): Promise<boolean> {
 
 function limited(c: Context, key: string, max: number, windowMs?: number): Response | null {
   return rateLimited(`${key}:${clientIp(c)}`, max, windowMs)
-    ? json({ error: 'too many requests' }, 429, NO_STORE)
+    ? refuse('too many requests', 429)
     : null
 }
 
@@ -63,11 +73,11 @@ export function penRoutes(): Hono {
     const slow = limited(c, 'pen-read', PER_MINUTE)
     if (slow) return slow
     const who = readerOf(c)
-    if (!who) return json({ error: 'unauthorized' }, 401, NO_STORE)
+    if (!who) return refuse('unauthorized', 401)
     const path = cleanPath(c.req.query('path'))
-    if (!path) return json({ error: 'bad path' }, 400, NO_STORE)
+    if (!path) return refuse('bad path', 400)
     const body = getMarks(who.id, path)
-    if (body === null) return json({ error: 'not found' }, 404, NO_STORE)
+    if (body === null) return refuse('not found', 404)
     return new Response(`{"success":true,"data":{"items":${body}}}`, {
       status: 200, headers: { 'content-type': 'application/json; charset=utf-8', ...NO_STORE },
     })
@@ -78,14 +88,14 @@ export function penRoutes(): Hono {
     const slow = limited(c, 'pen-write', PER_MINUTE)
     if (slow) return slow
     const who = readerOf(c)
-    if (!who) return json({ error: 'unauthorized' }, 401, NO_STORE)
+    if (!who) return refuse('unauthorized', 401)
     const path = cleanPath(c.req.query('path'))
-    if (!path) return json({ error: 'bad path' }, 400, NO_STORE)
+    if (!path) return refuse('bad path', 400)
     const raw = await c.req.text()
-    if (raw.length > MAX_BODY_BYTES * 2) return json({ error: 'too large' }, 413, NO_STORE)
+    if (raw.length > MAX_BODY_BYTES * 2) return refuse('too large', 413)
     let items: unknown
     try { items = (JSON.parse(raw) as { items?: unknown }).items } catch { items = undefined }
-    if (!putMarks(who.id, path, JSON.stringify(items ?? null))) return json({ error: 'bad body' }, 400, NO_STORE)
+    if (!putMarks(who.id, path, JSON.stringify(items ?? null))) return refuse('bad body', 400)
     return c.body(null, 204)
   })
 
@@ -95,7 +105,7 @@ export function penRoutes(): Hono {
     const slow = limited(c, 'pen-write', PER_MINUTE)
     if (slow) return slow
     const who = readerOf(c)
-    if (!who) return json({ error: 'unauthorized' }, 401, NO_STORE)
+    if (!who) return refuse('unauthorized', 401)
     forgetReader(who)
     return c.body(null, 204)
   })

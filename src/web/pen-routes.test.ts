@@ -45,7 +45,10 @@ describe('a notebook code', () => {
   it('carries a page of marks there and back, and 404s a page never kept', async () => {
     const code = await mint()
     const h = { [CODE_HEADER]: code }
-    expect((await get(h)).status).toBe(404)
+    const missing = await get(h)
+    expect(missing.status).toBe(404)
+    // A failure in the failure envelope: these read `success: true` until 2026-09-30.
+    expect(await missing.json()).toEqual({ success: false, error: 'not found' })
     expect((await put(h)).status).toBe(204)
     const res = await get(h)
     expect(res.status).toBe(200)
