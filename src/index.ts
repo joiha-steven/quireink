@@ -7,7 +7,7 @@
 import { readEnv } from '@/env'
 import { getSettings, siteUrlIsUnset, resolveSiteUrl } from '@/content/settings'
 import { noUsersYet } from '@/auth/users'
-import { settleExcerptKinds } from '@/content/posts'
+import { settleExcerptKinds, settleReadingMinutes } from '@/content/settle'
 import { setupBanner } from '@/web/setup-routes'
 import { openDatabases, closeDatabases } from '@/store/db'
 import { ensureBlobStore } from '@/media/blob-local'
@@ -83,6 +83,9 @@ const bootSettings = await getSettings()
 // Decided once here; a boot with nothing to decide reads no post body.
 const settled = settleExcerptKinds(bootSettings.excerptLength)
 if (settled > 0) console.log(`[INFO] excerpts: sorted ${settled} post(s) into written and derived`)
+// And, from migration 021, each post's reading time counted again under today's rule.
+const recounted = settleReadingMinutes()
+if (recounted > 0) console.log(`[INFO] reading time: recounted ${recounted} post(s)`)
 if (noUsersYet()) {
   // The bound socket, not `resolveSiteUrl`: on a fresh install there IS no site address yet,
   // and its fallback is a hardcoded `localhost:3000` that ignores the port in front of it.

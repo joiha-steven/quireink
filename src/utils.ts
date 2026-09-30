@@ -213,11 +213,16 @@ export function extractImageUrls(content: string): string[] {
   return [...new Set(content.match(re) ?? [])]
 }
 
-// Body word count (whitespace-split, markup stripped). Reused by readingMinutes so
-// the two always agree. Note: whitespace-split, so CJK (no word spaces) undercounts —
-// fine for space-delimited languages; the reading estimate has always worked this way.
+// Body word count (whitespace-split, markup stripped). Reused by readingMinutes so the two
+// always agree. Chinese and Japanese write no spaces between words, so a whitespace split read
+// a 775-character Chinese post as a handful of words and "1 min" (2026-09-30). Their characters
+// are counted apart, two to a word: about 400 a minute at the rate below, which is how fast
+// both are read. Korean spaces its words and is split like any other.
+const HAN_KANA = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g
 export function wordCount(markdown: string): number {
-  return toPlainText(markdown).split(' ').filter(Boolean).length
+  const text = toPlainText(markdown)
+  const glyphs = text.match(HAN_KANA)?.length ?? 0
+  return text.replace(HAN_KANA, ' ').split(' ').filter(Boolean).length + Math.round(glyphs / 2)
 }
 
 /**

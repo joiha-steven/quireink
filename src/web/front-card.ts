@@ -12,6 +12,8 @@ import { formatDate, t } from '@/i18n/i18n'
 import { termSlug } from '@/content/taxonomy'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { responsiveSources, type ReadyOriginals } from '@/render/figures'
+import { collapseBlob } from '@/media/blob'
+import { THUMB_WIDTH } from '@/media/image'
 import { langAttr } from '@/content/translations'
 import { isUntitled, postName } from '@/content/untitled'
 
@@ -21,7 +23,23 @@ import { isUntitled, postName } from '@/content/untitled'
  * named. It was a bare `Set<string>` until 2026-08-29, which threw that number away and
  * left every card asking for a 1024px file (`render/figures.ts` holds the one builder now).
  */
-export type ReadyImages = ReadyOriginals
+/**
+ * The originals with responsive widths, and (`thumbs`) each raster's own small copy. The copy is
+ * what a small box shows when the widths have not been made yet: a 96px thumbnail used to
+ * download the 1200px original, 167 KB where a 20 KB `-thumb.webp` sat unused (2026-09-30).
+ */
+export type ReadyImages = ReadyOriginals & { thumbs?: Map<string, string> }
+
+/** Fill a ready map from the media refs: widths by version, and the small copies. */
+export function readyFrom(refs: { url: string; variants: number; thumb?: string }[]): ReadyImages {
+  const ready: ReadyImages = new Map()
+  ready.thumbs = new Map()
+  for (const r of refs) {
+    if (r.variants) ready.set(collapseBlob(r.url), r.variants)
+    if (r.thumb) ready.thumbs.set(collapseBlob(r.url), r.thumb)
+  }
+  return ready
+}
 
 /**
  * How much standfirst a shape gets, in characters.
@@ -141,8 +159,12 @@ export function postImage(
   // Harmless where CSS pins the box anyway (a cropped thumbnail): an aspect-ratio wins over
   // the attribute ratio, and the attributes still describe the file correctly.
   const size = dims ? ` width="${dims.width}" height="${dims.height}"` : ''
-  const img = `<img src="${escapeAttr(src)}" alt="${alt}"${size}${loading} decoding="async">`
   const sources = responsiveSources(src, ready, sizes)
+  // No widths yet, and the box is no bigger than the small copy: the small copy it is.
+  const box = /^(\d+)px$/.exec(sizes)
+  const small = !sources && box && Number(box[1]) * 2 <= THUMB_WIDTH ? ready.thumbs?.get(collapseBlob(src)) : undefined
+  // The same width and height: the small copy has the original's shape, which is what they say.
+  const img = `<img src="${escapeAttr(small ?? src)}" alt="${alt}"${size}${loading} decoding="async">`
   return sources ? `<picture>${sources}${img}</picture>` : `<picture>${img}</picture>`
 }
 

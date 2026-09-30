@@ -7,7 +7,8 @@
 import { describe, it, expect, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
-import { getPost, savePost, settleExcerptKinds } from '@/content/posts'
+import { getPost, savePost } from '@/content/posts'
+import { settleExcerptKinds } from '@/content/settle'
 import { createApp } from '@/web/app'
 import { legacyExcerpt } from '@/utils'
 

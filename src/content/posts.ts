@@ -84,7 +84,10 @@ export async function getPublicPosts(): Promise<Post[]> {
  * phrases are an implicit AND, matching the `websearch` behaviour this replaces.
  */
 function ftsQuery(input: string): string {
+  // Control characters out first: a NUL ends the string SQLite's FTS parser sees, so
+  // `x \0 y` failed as an "unterminated string", logged an error and found nothing (2026-09-30).
   return input
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
     .split(/\s+/)
     .filter(Boolean)
     .map((word) => `"${word.replaceAll('"', '""')}"`)
@@ -146,31 +149,8 @@ export async function getPost(slug: string): Promise<PostWithContent | null> {
 }
 
 /** Whether `excerpt` is exactly what `content` derives — under today's rule or the older one. */
-function isDerivedExcerpt(excerpt: string, content: string, excerptWords: number): boolean {
+export function isDerivedExcerpt(excerpt: string, content: string, excerptWords: number): boolean {
   return [excerptWords, 50].some((n) => excerpt === deriveExcerpt(content, n) || excerpt === legacyExcerpt(content, n))
-}
-
-/**
- * Decide, once, whether each post from before migration 020 has a WRITTEN excerpt or a derived
- * one. The migration marks them `-1` because SQL cannot run `deriveExcerpt`; this compares the
- * stored excerpt with what the body derives, under today's and the older rule and at the length
- * set now or the default, and marks a match `1`. Anything else was typed and is marked `0`,
- * which is the safe way to be wrong: a written excerpt is never thrown away. Returns how many it
- * settled; a boot with nothing left to settle reads no body at all.
- */
-export function settleExcerptKinds(excerptWords: number): number {
-  const rows = all<{ slug: string; excerpt: string | null; content: string }>(
-    `select slug, excerpt, content from posts where excerpt_auto = -1`,
-  )
-  if (rows.length === 0) return 0
-  tx(() => {
-    for (const row of rows) {
-      const excerpt = row.excerpt?.trim() ?? ''
-      const auto = excerpt === '' || isDerivedExcerpt(excerpt, row.content, excerptWords)
-      run(`update posts set excerpt_auto = ? where slug = ?`, auto ? 1 : 0, row.slug)
-    }
-  })
-  return rows.length
 }
 
 // Normalize input into a complete Post + content pair. `excerptWords` sets the

@@ -344,3 +344,13 @@ describe('slugify and the Greek alphabet', () => {
     expect(slugify('Ψυχή και λόγος')).toBe('psychi-kai-logos')
   })
 })
+
+// A Chinese or Japanese post has no spaces between words and read "1 min" at any length.
+describe('reading time for writing without word spaces', () => {
+  it('counts Han and kana characters two to a word, and leaves spaced text as it was', () => {
+    expect(readingMinutes('字'.repeat(800))).toBe(2)
+    expect(readingMinutes('か'.repeat(1200))).toBe(3)
+    expect(wordCount('three plain words')).toBe(3)
+    expect(wordCount('한국어는 띄어쓰기를 합니다')).toBe(3)
+  })
+})

@@ -12,9 +12,8 @@ import { listPageSize, paginate } from '@/content/paginate'
 import { pageCache, countCacheHit, countCacheMiss } from '@/server/cache'
 import { renderDocument, pageStyles } from '@/web/layout'
 import { renderListing, type ListingView } from '@/web/listing'
-import type { ReadyImages } from '@/web/front-card'
+import { readyFrom, type ReadyImages } from '@/web/front-card'
 import { getMediaRefs } from '@/media/media-refs'
-import { collapseBlob } from '@/media/blob'
 import { menuRail, renderSidebar } from '@/web/sidebar'
 import { timelineCss } from '@/render/rail-css'
 import { ogCardUrl, siteDomain } from '@/render/og'
@@ -167,11 +166,9 @@ ${siteFooter(settings, { mailConfigured })}
  * one. Called only when thumbnails are switched on.
  */
 async function readyThumbs(): Promise<ReadyImages> {
-  const ready: ReadyImages = new Map()
   // The version number, not a boolean — it is what lets a 96px thumbnail be offered the
-  // 512px file instead of the 1024px one.
-  for (const r of await getMediaRefs()) if (r.variants) ready.set(collapseBlob(r.url), r.variants)
-  return ready
+  // 512px file instead of the 1024px one — and each raster's own small copy.
+  return readyFrom(await getMediaRefs())
 }
 
 /**

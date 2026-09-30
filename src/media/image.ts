@@ -39,7 +39,7 @@ export const SIZES = [512, 1024, 1600] as const
  * change needs no migration, no downtime, and no re-upload.
  */
 export const VARIANT_VERSION = 2
-const THUMB_WIDTH = 400
+export const THUMB_WIDTH = 400
 export const ORIGINAL_CAP = 2048 // hard ceiling for a stored original's width — no full-size bytes are ever kept/served
 const CAPPABLE = /^image\/(jpeg|png|webp|avif)$/ // formats we can safely downscale in place (svg/gif excluded)
 

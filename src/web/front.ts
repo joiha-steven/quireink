@@ -17,10 +17,9 @@ import { websiteSchema } from '@/render/schema'
 import { tagText, termSlug } from '@/content/taxonomy'
 import { getViewTotalsSince } from '@/analytics/summary'
 import { getMediaRefs } from '@/media/media-refs'
-import { collapseBlob } from '@/media/blob'
 import { t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml, isPublicallyVisible, toPlainText } from '@/utils'
-import { cardItem, leadItem, lineItem, type ReadyImages } from '@/web/front-card'
+import { cardItem, leadItem, lineItem, readyFrom, type ReadyImages } from '@/web/front-card'
 import { listingPage } from '@/web/listing-page'
 
 /**
@@ -269,13 +268,9 @@ async function buildBody(settings: SiteSettings, ready: ReadyImages): Promise<st
  */
 export async function renderFront(): Promise<string | null> {
   const settings = await getSettings()
-  const ready: ReadyImages = new Map()
-  // Only needed for the kind that draws pictures, and it is a full table read.
-  if (settings.home.front.kind === 'image') {
-    // The VERSION, not a boolean: it decides whether the 512 width may be named
-    // (`render/figures.ts`). A Set threw it away and every card asked for 1024.
-    for (const r of await getMediaRefs()) if (r.variants) ready.set(collapseBlob(r.url), r.variants)
-  }
+  // Only needed for the kind that draws pictures, and it is a full table read. The VERSION,
+  // not a boolean: it decides whether the 512 width may be named (`render/figures.ts`).
+  const ready: ReadyImages = settings.home.front.kind === 'image' ? readyFrom(await getMediaRefs()) : new Map()
   const body = await buildBody(settings, ready)
   return listingPage({
     title: settings.title,

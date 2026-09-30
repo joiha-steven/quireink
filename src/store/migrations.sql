@@ -447,3 +447,10 @@ delete from render_cache;
 -- one once at boot, by comparing the stored excerpt with what the body derives. New rows are
 -- always written with 0 or 1.
 alter table posts add column excerpt_auto integer not null default -1;
+
+-- migration: 021-reading-minutes-cjk
+-- Reading time split words on spaces, which Chinese and Japanese do not write, so a post of
+-- 775 characters read "1 min". Han and kana now count two to a word (`wordCount`, utils.ts).
+-- Every stored count is recounted once: -1 marks it, `settleReadingMinutes` (content/settle.ts)
+-- recounts each body at boot. New saves write the count directly.
+update posts set reading_minutes = -1;

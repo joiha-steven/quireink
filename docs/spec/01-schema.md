@@ -151,6 +151,11 @@ or derived from the body: `1` derived, `0` written, `-1` only on rows from befor
 derives. A derived excerpt is re-derived on every save, is never loaded into the editor's field, and
 is not printed as the deck. `src/content/excerpt-kind.test.ts`.
 
+`posts.reading_minutes` was recounted for every post by migration `021-reading-minutes-cjk`
+(2026-09-30): Han and kana count two characters to a word, so a Chinese or Japanese post no
+longer reads "1 min" at any length. The migration marks each row `-1` and
+`settleReadingMinutes` (`content/settle.ts`) recounts it at boot.
+
 Three areas needed real design work, now in [01-schema-port.md](01-schema-port.md) §1–3, and
 two tables were added for a fourth.
 

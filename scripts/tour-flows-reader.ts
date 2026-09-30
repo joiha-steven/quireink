@@ -192,4 +192,36 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
       await fetch('/api/pen', { method: 'DELETE', headers: { 'x-quire-pen': code } })
       return both.includes('elsewhere') && both.includes(mine[0].id) ? 'ok' : 'after the code, this page holds ' + JSON.stringify(both)
     })()`, 900))
+
+  // Selecting the reader's own note raised the whole bar, and an ink pressed there made nothing.
+  flow('reader: the pen bar stays off the reader\'s own note', () => expect('/kerning-is-not-tracking', `
+    (async () => {
+      ${SELECT_PLAIN}
+      const store = 'quire:pen:' + location.pathname
+      localStorage.removeItem(store)
+      await select()
+      const bar = document.querySelector('.pen-bar')
+      bar.querySelector('.pen-n').click()
+      const pop = document.querySelector('.pen-pop')
+      for (let i = 0; i < 40 && pop.hidden; i++) await sleep(50)
+      const area = pop.querySelector('textarea')
+      area.value = 'a note long enough to select inside of'
+      area.dispatchEvent(new Event('input', { bubbles: true }))
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await sleep(400)
+      const card = document.querySelector('.pen-note')
+      if (!card) { localStorage.removeItem(store); return 'no note card to select inside' }
+      const walk = document.createTreeWalker(card, NodeFilter.SHOW_TEXT)
+      let text = null
+      while (walk.nextNode()) if (walk.currentNode.data.length > 20) { text = walk.currentNode; break }
+      const range = document.createRange()
+      range.setStart(text, 0); range.setEnd(text, 20)
+      getSelection().removeAllRanges(); getSelection().addRange(range)
+      document.dispatchEvent(new Event('selectionchange'))
+      await sleep(500)
+      const shown = !bar.hidden
+      getSelection().removeAllRanges()
+      localStorage.removeItem(store)
+      return shown ? 'the pen bar rose over the reader\'s own note' : 'ok'
+    })()`, 900))
 }
