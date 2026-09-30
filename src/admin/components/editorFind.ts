@@ -28,15 +28,27 @@ export type FindOptions = {
  * thing that can be done. Stepping through them agrees with what Replace all will do, which
  * is the property that stops Replace all being a surprise.
  *
- * Case folding is `toLowerCase` on both sides rather than a locale-aware compare: it has to
- * agree EXACTLY with what `String.indexOf` will then find, and a fold that changes a string's
- * length would move every offset after it. Turkish dotless ı and the German ß both survive
- * `toLowerCase` at the same length; a full locale fold does not promise that.
+ * Case folding is per code unit, keeping the length: the offsets found in the folded copy have
+ * to be offsets in the original. `toLowerCase` on the whole string did not promise that. The
+ * Turkish `İ` (U+0130) lowers to TWO code units, so every hit after one landed one place early,
+ * and Replace all turned "İzmir: harf harf." into "İzmir: haHARFaHARF" (2026-09-30). A unit
+ * whose lowercase runs longer keeps only its first unit: `İ` becomes `i` without the combining
+ * dot, which is also what a Turkish reader means by it.
  */
+export function fold(text: string): string {
+  let out = ''
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!
+    const low = ch.toLowerCase()
+    out += low[0] ?? ch
+  }
+  return out
+}
+
 export function findAll(haystack: string, needle: string, opts: FindOptions): Hit[] {
   if (!needle) return []
-  const hay = opts.caseSensitive ? haystack : haystack.toLowerCase()
-  const pin = opts.caseSensitive ? needle : needle.toLowerCase()
+  const hay = opts.caseSensitive ? haystack : fold(haystack)
+  const pin = opts.caseSensitive ? needle : fold(needle)
   const hits: Hit[] = []
   let at = hay.indexOf(pin)
   while (at !== -1) {

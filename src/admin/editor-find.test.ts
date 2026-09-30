@@ -44,6 +44,17 @@ describe('what counts as a match', () => {
     expect(findAll('(net)', '(net)', insensitive)).toHaveLength(1)
   })
 
+  // `İ` lowers to two code units, and a whole-string fold moved every later offset: Replace all
+  // on this line gave "İstanbul ve İzmir: haHARFaHARF" (2026-09-30).
+  it('keeps every offset true after a letter whose lowercase is longer', () => {
+    const line = 'İstanbul ve İzmir: harf harf.'
+    const hits = findAll(line, 'harf', insensitive)
+    expect(hits).toEqual([{ from: 19, to: 23 }, { from: 24, to: 28 }])
+    expect(replaceAllIn(line, hits, 'HARF')).toBe('İstanbul ve İzmir: HARF HARF.')
+    expect(findAll('İzmir', 'izmir', insensitive)).toEqual([{ from: 0, to: 5 }])
+    expect(findAll('İzmir', 'İZMİR', insensitive)).toHaveLength(1)
+  })
+
   it('finds nothing for an empty query rather than a hit per character', () => {
     expect(findAll('anything', '', insensitive)).toEqual([])
   })
