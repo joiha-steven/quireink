@@ -6,13 +6,15 @@ Five days after 2.2.15, and most of it came out of reading the whole product aga
 screen and route by route. What that found is mostly in **Fixed**, and some of it matters: on a
 blog with no site address, a sign-in ticket could be traded for a session without the second
 factor; the first-run questions skipped four of their seven steps; ⌘S on a live post saved it as
-a draft. Upgrading is the usual pull and restart. One database migration runs on its own, and
+a draft. Upgrading is the usual pull and restart. Two database migrations run on their own, and
 the one new switch that changes how a published page looks is off on an upgraded blog.
 
 ### Upgrading
 
-- **Migration 020 runs by itself** on the first start. It tells a summary the blog derived from
-  a summary somebody wrote, so a derived one follows the body again (see Fixed).
+- **Migrations 020 and 021 run by themselves** on the first start. 020 tells a summary the blog
+  derived from a summary somebody wrote, so a derived one follows the body again (see Fixed).
+  021 recounts every post's reading time once, because Chinese and Japanese are now counted by
+  character: a post of 775 characters read "1 min".
 - **Curly quotes are off on an existing blog and on for a new one.** They redraw every quote in
   every piece, which an upgrade should not do by itself. The switch is in Settings, Posts, under
   the body.
