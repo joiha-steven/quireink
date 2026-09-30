@@ -307,4 +307,49 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
       const say = lightLow.toFixed(2) + ' / ' + darkLow.toFixed(2)
       return lightLow >= 4.5 && darkLow >= 4.5 ? 'ok ' + say : 'a token under 4.5:1 (light / dark): ' + say + window.__worst
     })()`, 600))
+
+  // At the end of a post on a phone, the floating keys stand clear of the footer's words
+  // (FIXLIST 7.4). Measured on the glyphs, not the footer's box.
+  flow('reader: the floating keys leave the footer readable on a phone', () => atWidth(390, '/what-a-subsetter-removes', `
+    (async () => {
+      // Pictures load as the page scrolls and the page grows, so scroll until the end stays put.
+      for (let i = 0, was = -1; i < 20 && was !== document.documentElement.scrollHeight; i++) {
+        was = document.documentElement.scrollHeight
+        scrollTo(0, was)
+        await new Promise((r) => setTimeout(r, 300))
+      }
+      const foot = document.querySelector('footer.site')
+      if (!foot) return 'no footer'
+      const range = document.createRange()
+      range.selectNodeContents(foot)
+      const words = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0)
+      const keys = [...document.querySelectorAll('.to-top, .book-fab')]
+        .filter((k) => getComputedStyle(k).display !== 'none' && getComputedStyle(k).visibility !== 'hidden')
+        .map((k) => k.getBoundingClientRect())
+      const hit = words.some((w) => keys.some((k) => w.left < k.right && k.left < w.right && w.top < k.bottom && k.top < w.bottom))
+      return hit ? 'a floating key covers the footer words' : 'ok (' + keys.length + ' keys)'
+    })()`, 600))
+
+  // On a touch screen the copy key always shows, so every block keeps a band above its first
+  // line for it (FIXLIST 7.4). The tour cannot emulate hover:none, so the rule is read out of
+  // the sheet, applied, and the geometry measured with it.
+  flow('reader: the copy key sits above the code on a touch screen, not on it', () => expect('/what-a-subsetter-removes', `
+    (async () => {
+      const rules = [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules] } catch { return [] } })
+      const touch = rules.filter((r) => r.media && /hover:\\s*none/.test(r.conditionText || r.media.mediaText))
+        .flatMap((r) => [...r.cssRules]).find((r) => r.selectorText === '.prose pre' && r.style.paddingTop)
+      if (!touch) return 'no touch-screen band for the copy key in the sheet'
+      const pre = document.querySelector('.prose pre')
+      if (!pre) return 'no code block on the page'
+      for (let i = 0; i < 20 && !pre.querySelector('.code-copy'); i++) await new Promise((r) => setTimeout(r, 100))
+      const key = pre.querySelector('.code-copy')
+      if (!key) return 'no copy key was added'
+      pre.style.paddingTop = touch.style.paddingTop
+      key.style.opacity = '1'
+      const first = (pre.querySelector('.line') || pre.querySelector('code')).getBoundingClientRect()
+      const k = key.getBoundingClientRect()
+      pre.style.paddingTop = ''
+      key.style.opacity = ''
+      return k.bottom <= first.top + 1 ? 'ok' : 'the copy key reaches ' + Math.round(k.bottom - first.top) + 'px into the first line'
+    })()`, 600))
 }

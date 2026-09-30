@@ -116,10 +116,18 @@ footer.site a{display:inline-block;padding-block:.35rem}
 /* Copy sat behind pre:hover, and a touch screen never hovers: the button existed on a phone
    but was transparent, so copying a code block was a lucky tap. Keyed on the POINTER rather
    than the width, because a touchscreen laptop has the same problem at desktop width. */
-@media (hover:none){.code-copy{opacity:1}}
+@media (hover:none){.code-copy{opacity:1}
+/* ...and always showing, it sat on the first line of code: "HTMLE…" and "langu…" were under it
+   at 390px (2026-09-30, FIXLIST 7.4). A band above the code holds it instead. Reserved by the
+   sheet on every block rather than when the script adds the key, so nothing moves on load. */
+.prose pre{padding-top:calc(var(--sp) + 1.75rem)}}
 
 /* The home indicator and the notch. Both resolve to 0px on a device that has neither, which
    is why the fallback is in the env() rather than in a second rule. */
 .to-top{bottom:calc(1.25rem + env(safe-area-inset-bottom,0px))}
+/* The two floating keys stand in the bottom 7rem of a phone, and at the end of the page they
+   stood on the footer: "Ink" of "powered by Quire Ink" was under them (FIXLIST 7.4). The
+   footer keeps that much clear below its last line. */
+@media (max-width:767px){footer.site{padding-bottom:calc(7.5rem + env(safe-area-inset-bottom,0px))}}
 .rail{padding-left:calc(1.25rem + env(safe-area-inset-left,0px))}
 `.trim()
