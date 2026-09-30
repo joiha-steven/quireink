@@ -257,7 +257,7 @@ describe('the manual archive', () => {
     expect(res.status).toBe(200)
     expect(res.headers.get('content-type')).toBe('application/gzip')
     expect(res.headers.get('content-disposition'))
-      .toMatch(/attachment; filename="quire-\d{4}-\d{2}-\d{2}T\d{4}\.tar\.gz"/)
+      .toMatch(/attachment; filename="quire-\d{4}-\d{2}-\d{2}T\d{6}\.tar\.gz"/)
 
     const bytes = new Uint8Array(await res.arrayBuffer())
     // The gzip magic number. A zero-length or error body would not carry it.

@@ -17,7 +17,7 @@
 // live database has a write-ahead log, and copying the file alone can capture a torn state
 // that only reveals itself on restore.
 
-import { mkdtemp, readdir, rm, stat, mkdir } from 'node:fs/promises'
+import { mkdtemp, readdir, rm, stat, mkdir, rename } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { existsSync } from 'node:fs'
@@ -64,8 +64,11 @@ export const encryptReady = (s: SiteSettings): boolean =>
  */
 export function snapshotName(now = new Date(), sealed = false): string {
   const p = (n: number) => String(n).padStart(2, '0')
+  // THE SECOND TOO, since 2026-09-30. Two runs inside one minute — the button pressed twice,
+  // the clock and an external cron, MCP `run_backup` — wrote ONE file, and the failure path of
+  // the second deleted the good first one. Names from before keep matching `isSnapshotName`.
   return `quire-${now.getUTCFullYear()}-${p(now.getUTCMonth() + 1)}-${p(now.getUTCDate())}`
-    + `T${p(now.getUTCHours())}${p(now.getUTCMinutes())}.tar.gz${sealed ? '.enc' : ''}`
+    + `T${p(now.getUTCHours())}${p(now.getUTCMinutes())}${p(now.getUTCSeconds())}.tar.gz${sealed ? '.enc' : ''}`
 }
 
 /**
@@ -84,7 +87,7 @@ export function snapshotName(now = new Date(), sealed = false): string {
  * `replicateSnapshot` swallows its failures by design, so the bucket would simply grow.
  */
 export const isSnapshotName = (name: string): boolean =>
-  /^quire-\d{4}-\d{2}-\d{2}T\d{4}\.tar\.gz(\.enc)?$/.test(name)
+  /^quire-\d{4}-\d{2}-\d{2}T\d{4}(\d{2})?\.tar\.gz(\.enc)?$/.test(name)
 
 /**
  * The rendered-HTML caches do not go in the archive. Both of them: the body's table and
@@ -252,19 +255,34 @@ export async function lastRunAt(): Promise<string | null> {
  * Pruned AFTER the new one is written, not before. Pruning first would use less peak disk
  * and would delete a good backup to make room for one that then failed.
  */
-export async function runBackup(): Promise<Snapshot> {
+/** The run in progress, which every other caller joins rather than racing. */
+let running: Promise<Snapshot> | null = null
+
+export function runBackup(): Promise<Snapshot> {
+  // ONE AT A TIME. The button, the clock, an external cron and MCP `run_backup` each started
+  // their own, and two at once opened and truncated the same file.
+  running ??= takeSnapshot().finally(() => { running = null })
+  return running
+}
+
+async function takeSnapshot(): Promise<Snapshot> {
   const dir = snapshotsDir()
   await mkdir(dir, { recursive: true })
 
   const name = snapshotName(new Date(), encryptReady(await getSettings()))
   const dest = join(dir, name)
+  // WRITTEN BESIDE ITS NAME, then renamed: a failure removes only its own `.part`, never a
+  // finished snapshot that happens to share the name. `.part` is not a snapshot name, so a
+  // half-written one is never listed, pruned into retention, or offered for download.
+  const part = `${dest}.part`
   let size: number
   try {
-    size = await buildArchive(dest)
+    size = await buildArchive(part)
+    await rename(part, dest)
   } catch (error) {
     // A half-written archive is worse than none: it counts towards retention and it looks
     // like a backup until the day someone opens it.
-    await rm(dest, { force: true })
+    await rm(part, { force: true })
     throw error
   }
 

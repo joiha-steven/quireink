@@ -38,11 +38,16 @@ beforeEach(() => {
 })
 
 describe('snapshotName / isSnapshotName', () => {
-  it('is sortable, and carries the minute so two in one day are two files', () => {
+  it('is sortable, and carries the second so two in one minute are two files', () => {
     const name = snapshotName(new Date('2026-07-29T20:40:11.000Z'))
-    expect(name).toBe('quire-2026-07-29T2040.tar.gz')
-    expect(snapshotName(new Date('2026-07-29T20:41:00.000Z'))).not.toBe(name)
+    expect(name).toBe('quire-2026-07-29T204011.tar.gz')
+    // The same minute: a failure of the second used to delete the first, which had its name.
+    expect(snapshotName(new Date('2026-07-29T20:40:12.000Z'))).not.toBe(name)
     expect(name < snapshotName(new Date('2026-07-30T01:00:00.000Z'))).toBe(true)
+    // And the names taken before the second was added are still names this module made.
+    expect(isSnapshotName('quire-2026-07-29T2040.tar.gz')).toBe(true)
+    expect(isSnapshotName(name)).toBe(true)
+    expect(isSnapshotName(`${name}.part`)).toBe(false)
   })
 
   // The name reaches the download and delete routes from a query string. Every one of
@@ -59,6 +64,15 @@ describe('snapshotName / isSnapshotName', () => {
 })
 
 describe('runBackup', () => {
+  it('runs once when asked twice at the same moment, and leaves no half-written file', async () => {
+    // The button pressed twice, or the clock and an external cron in the same minute: two runs
+    // wrote one file, and the failure path of the second deleted the finished first.
+    const [a, b] = await Promise.all([runBackup(), runBackup()])
+    expect(a.name).toBe(b.name)
+    const names = (await readdir(SNAPSHOTS)).filter((n) => n.startsWith('quire-'))
+    expect(names.filter((n) => n.endsWith('.part'))).toEqual([])
+  })
+
   it('writes a real archive holding both databases and the uploads tree', async () => {
     await savePost({ title: 'In the backup', slug: 'in-the-backup', status: 'published',
       date: '2020-01-01T00:00:00.000Z' })
