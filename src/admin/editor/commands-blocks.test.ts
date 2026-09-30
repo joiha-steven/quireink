@@ -172,6 +172,23 @@ describe('the table the button makes', () => {
     view.destroy()
   })
 
+  // The caret was left in the LAST cell: the first thing typed landed bottom-right (2026-09-30).
+  it('puts the caret in the first header cell', async () => {
+    const { view, caretAtFirstText } = await open('a line')
+    const { chainOn } = await import('./run')
+    const { insertTable } = await import('./commands-blocks')
+    caretAtFirstText()
+    chainOn(view).cmd(insertTable()).run()
+    const { $from } = view.state.selection
+    const cell = $from.node(-1)
+    const row = $from.node(-2)
+    const table = $from.node(-3)
+    expect(cell.type.name).toBe('tableHeader')
+    expect(table.firstChild).toBe(row)
+    expect(row.firstChild).toBe(cell)
+    view.destroy()
+  })
+
   it('refuses every table edit when the caret is not in a table', async () => {
     const { view, caretAtFirstText } = await open('a line')
     const { chainOn } = await import('./run')

@@ -10,7 +10,7 @@ import { wrapInList, liftListItem, sinkListItem, splitListItem } from 'prosemirr
 import {
   addColumnAfter, addRowAfter, deleteColumn, deleteRow, deleteTable, goToNextCell, isInTable,
 } from 'prosemirror-tables'
-import { NodeSelection, TextSelection } from 'prosemirror-state'
+import { NodeSelection, Selection, TextSelection } from 'prosemirror-state'
 import type { EditorState } from 'prosemirror-state'
 import type { NodeType, Node as PMNode } from 'prosemirror-model'
 import type { Cmd } from './run'
@@ -265,7 +265,19 @@ export const insertTable = (rows = 3, cols = 3, withHeader = true): Cmd => (stat
       nodeType('tableRow').create(null, Array.from({ length: cols }, () => cell(header)))
     const body = Array.from({ length: Math.max(1, rows - (withHeader ? 1 : 0)) }, () => row(false))
     const table = nodeType('table').create(null, withHeader ? [row(true), ...body] : body)
-    dispatch(state.tr.replaceSelectionWith(table).scrollIntoView())
+    const tr = state.tr.replaceSelectionWith(table)
+    // THE CARET GOES TO THE FIRST CELL. `replaceSelectionWith` left it in the last, so the first
+    // thing typed landed bottom-right and Tab from there added a row (2026-09-30). The inserted
+    // node is found by identity: it may land after a split paragraph rather than at the caret.
+    let at = -1
+    tr.doc.descendants((node, pos) => {
+      if (at >= 0) return false
+      if (node === table) { at = pos; return false }
+      return true
+    })
+    const first = at >= 0 ? Selection.findFrom(tr.doc.resolve(at), 1, true) : null
+    if (first) tr.setSelection(first)
+    dispatch(tr.scrollIntoView())
   }
   return true
 }
