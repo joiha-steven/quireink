@@ -36,9 +36,14 @@ function maskCode(md: string, hide: (text: string) => string): string {
     const open = /^ {0,3}(`{3,}|~{3,})/.exec(lines[i]!)
     if (open) {
       const run = open[1]!
-      const close = new RegExp(`^ {0,3}\\${run[0]}{${run.length},}\\s*$`)
+      // The closer is compared, not compiled: a pattern built out of the document is a pattern
+      // the document writes (CodeQL js/incomplete-hostname-regexp traced a test's URL into it).
+      const closes = (line: string): boolean => {
+        const fence = /^ {0,3}(`+|~+)\s*$/.exec(line)?.[1]
+        return !!fence && fence[0] === run[0] && fence.length >= run.length
+      }
       let j = i + 1
-      while (j < lines.length && !close.test(lines[j]!)) j++
+      while (j < lines.length && !closes(lines[j]!)) j++
       out.push(hide(lines.slice(i, j + 1).join('\n')))
       i = j + 1
       continue
