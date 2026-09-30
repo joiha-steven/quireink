@@ -65,10 +65,12 @@ Google account.
   Manual comments carry a **stamp**: a challenge the server signs into the comments mount point,
   solved in the reader's browser with `crypto.subtle` while they type, and spent on send. No
   account, no third-party request, no state — the HMAC is the storage, and only a Map of spent
-  salts is kept. Verdicts are separate on purpose: `expired` answers **409** so the island
-  re-solves a fresh challenge and sends again (a page can sit in a cache longer than a stamp
-  lives), everything else answers 400. The issue time doubles as a floor — under three seconds
-  was not typed. **Turnstile takes over whenever its keys are set** (since 2026-08-27);
+  salts is kept. Verdicts are separate on purpose: `expired` and `replayed` answer **409** so
+  the island fetches a challenge of its own from `/api/comments/stamp`, waits out the floor and
+  sends again; everything else answers 400. `replayed` is the common one, not an attack: the
+  page is cached, so every reader of a post holds the same challenge and the first comment
+  spends it. After any send the island arms its next answer from a fresh challenge, never the
+  page's. The issue time doubles as a floor — under three seconds was not typed. **Turnstile takes over whenever its keys are set** (since 2026-08-27);
   Settings → Comments & mail says which gate is standing. A signed-in Google reader skips both.
   Without a secure context there is no `crypto.subtle`, so only the age check stands: that
   install needs TLS.

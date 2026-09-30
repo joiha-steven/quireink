@@ -120,8 +120,16 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
       // The blog's own gate (ADR 0032). 409 for a stale challenge is a SEPARATE answer from
       // 400 on purpose: the island re-solves a fresh one and sends again, so a page that sat
       // in a cache does not cost somebody the paragraph they just wrote.
+      //
+      // `replayed` is the same answer, and for the same reason. The page is cached, so every
+      // reader of a post is handed the SAME challenge: the first comment spends it, and each
+      // later reader arrives with a correctly solved but spent one. As a 400 that was the end
+      // of the thread — nobody after the first commenter could post until the cache let go.
+      // As a 409 the island fetches a stamp of its own and the reader never sees it.
       const verdict = verifyStamp(body.stamp)
-      if (verdict === 'expired') return fail(c, 'This page has been open a while — sending again', 409)
+      if (verdict === 'expired' || verdict === 'replayed') {
+        return fail(c, 'This page has been open a while — sending again', 409)
+      }
       if (verdict !== 'ok') {
         return fail(c, 'Verification failed — please try again', 400)
       }

@@ -94,11 +94,27 @@ describe('POST /api/comments', () => {
     expect(await get('/api/comments?post=a-post').then((r) => r.text())).not.toContain('Nice post')
   })
 
-  it('refuses a comment whose stamp was already spent', async () => {
+  it('sends a spent stamp back for a fresh one, and stores nothing on it', async () => {
+    // A spent stamp is what EVERY reader after the first holds: the page is cached, so the
+    // challenge in it is shared. 409 is the answer the island re-solves on; this was a 400,
+    // and nobody after the first commenter on a post could comment at all.
     await publish()
     const body = stamped({ postSlug: 'a-post', ...COMMENT })
     expect((await post('/api/comments', body, '203.0.113.32')).status).toBe(200)
-    expect((await post('/api/comments', body, '203.0.113.33')).status).toBe(400)
+    const second = { ...body, content: 'A second reader, same cached page' }
+    expect((await post('/api/comments', second, '203.0.113.33')).status).toBe(409)
+    expect(await get('/api/comments?post=a-post').then((r) => r.text())).not.toContain('second reader')
+  })
+
+  it('takes the second reader\'s comment once they solve a stamp of their own', async () => {
+    await publish()
+    const shared = stamped({ postSlug: 'a-post', ...COMMENT })
+    expect((await post('/api/comments', shared, '203.0.113.34')).status).toBe(200)
+    // What the island does on the 409: ask for its own challenge and solve that.
+    const { data } = await get('/api/comments/stamp').then((r) => r.json()) as { data: { stamp: { salt: string; target: string } } }
+    expect(data.stamp.salt).not.toBe((shared.stamp as { salt: string }).salt)
+    const again = stamped({ postSlug: 'a-post', ...COMMENT, content: 'A second reader, own stamp' })
+    expect((await post('/api/comments', again, '203.0.113.35')).status).toBe(200)
   })
 
   it('accepts a comment on a published post', async () => {

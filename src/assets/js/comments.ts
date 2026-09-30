@@ -238,14 +238,17 @@ async function submit(
       // and only a reload cleared it, which throws away what they wrote. The retry exists
       // because losing that is unforgivable; this is the same loss one branch over, and it is
       // the DEFAULT configuration, since Turnstile ships off and this gate is what stands in
-      // for it. The server spends a salt only on a verdict of `ok`, so re-solving the page's
-      // own challenge is valid.
+      // for it. `startSolving` fetches a fresh challenge from here on, since the page's own
+      // may have been spent by any reader of this cached page.
       startSolving(document.querySelector<HTMLElement>('#comments'))
       const { error } = await res.json().catch(() => ({})) as { error?: string }
       status.textContent = error ?? label('commentError')
       return
     }
     form.reset()
+    // Armed for the next one: a salt buys one comment, and a reader who answers a reply
+    // below their own would otherwise send with no stamp at all.
+    if (signedInAs === null) startSolving(document.querySelector<HTMLElement>('#comments'))
     // No "posted!" line: the thread is re-read and the comment appears in it, which says
     // the same thing without a message the reader then has to dismiss.
     await load()
