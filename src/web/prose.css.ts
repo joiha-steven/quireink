@@ -190,7 +190,12 @@ ${LISTS_INK_CSS}
   border-width:var(--tbl-rule-y, 1px) var(--tbl-rule-x, 1px);
   border-style:solid;border-color:var(--c-rule);
   padding:calc(var(--sp) * .4 * var(--tbl-pad, 1)) calc(var(--sp) * .6 * var(--tbl-pad, 1));
-  min-width:var(--tbl-min-col, 0);text-align:left}
+  min-width:var(--tbl-min-col, 0);text-align:start}
+/* The column's own alignment from the delimiter row (a delimiter of ---: gives align="right"). The rule above
+   used to say left for every cell and win over the attribute, so a right-aligned column of
+   numbers stopped lining up on the one page a reader sees (2026-09-30). */
+.prose :is(th,td)[align=center]{text-align:center}
+.prose :is(th,td)[align=right]{text-align:right}
 /* The header's own separation, drawn whatever the grid says: it marks the head off from the
    data and is not one of the table's lines. */
 .prose th{background:var(--tbl-head-bg, color-mix(in srgb, var(--c-text) 6%, var(--c-bg)));

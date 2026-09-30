@@ -224,4 +224,17 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
       localStorage.removeItem(store)
       return shown ? 'the pen bar rose over the reader’s own note' : 'ok'
     })()`, 900))
+
+  // A right-aligned column stays right-aligned on the public page (FIXLIST 7.1). The cell carried
+  // align="right" and the prose sheet's text-align:left beat it, so the numbers stopped lining up.
+  flow('reader: a table column keeps the alignment its delimiter row declares', () => expect('/what-a-subsetter-removes', `
+    (() => {
+      const cell = document.querySelector('.prose td[align=right]')
+      if (!cell) return 'the post has no right-aligned cell to measure'
+      const said = getComputedStyle(cell).textAlign
+      if (said !== 'right') return 'a right-aligned column renders ' + said
+      const plain = document.querySelector('.prose td:not([align])')
+      if (plain && getComputedStyle(plain).textAlign === 'right') return 'an unaligned cell turned right too'
+      return 'ok'
+    })()`, 500))
 }
