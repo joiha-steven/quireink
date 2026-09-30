@@ -23,7 +23,7 @@ import { getIndex, getPost, savePost, deletePost } from '@/content/posts'
 import { getPageIndex, getPage, savePage, deletePage } from '@/content/pages'
 import { getRevisions } from '@/content/revisions'
 import { getAutosave, putAutosave } from '@/content/autosave'
-import { SlugConflictError } from '@/content/slugs'
+import { SlugConflictError, saveNew } from '@/content/slugs'
 import { finalizeContentMedia } from '@/media/finalize'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
@@ -76,13 +76,13 @@ export function contentRoutes() {
   router.get('/api/posts', async () => json(await getIndex()))
 
   router.post('/api/posts', async (c) => {
-    const input = await body<PostWithContent>(c)
+    const input = await body<PostWithContent & { slugDerived: boolean }>(c)
     // A post may be only words (ADR 0064): a short post has no title and is still a post.
     if (!input.title?.trim() && !input.slug?.trim() && !input.content?.trim()) {
       return fail(c, 'Title, slug or content is required', 400)
     }
     try {
-      const meta = await savePost(input)
+      const meta = await saveNew(input, (i) => savePost(i))
       finalizeAfterResponse(input.content ?? '', input.featuredImage ?? undefined)
       clearCache()
       void logActivity('post.create', meta.title || meta.slug)
@@ -168,10 +168,10 @@ export function contentRoutes() {
   router.get('/api/pages', async () => json(await getPageIndex()))
 
   router.post('/api/pages', async (c) => {
-    const input = await body<PageWithContent>(c)
+    const input = await body<PageWithContent & { slugDerived: boolean }>(c)
     if (!input.title?.trim() && !input.slug?.trim()) return fail(c, 'Title or slug is required', 400)
     try {
-      const meta = await savePage(input)
+      const meta = await saveNew(input, (i) => savePage(i))
       finalizeAfterResponse(input.content ?? '')
       clearCache()
       void logActivity('page.create', meta.title || meta.slug)

@@ -70,3 +70,19 @@ describe('a save from an older copy', () => {
     expect(res.status).toBe(200)
   })
 })
+
+// A new post whose title matches an existing post's failed every save with "That slug is
+// already taken", though the writer never typed a slug — and on an untitled post, cannot see it.
+describe('a new piece whose derived slug is taken', () => {
+  it('is saved under the next free one', async () => {
+    await post('/api/posts', { title: 'Three weeks', content: 'first' })
+    const again = await post('/api/posts', { title: 'Three weeks', slug: 'three-weeks', slugDerived: true, content: 'second' })
+    expect(again.status).toBe(201)
+    expect((await payload<{ slug: string }>(again)).slug).toBe('three-weeks-2')
+  })
+
+  it('still refuses a slug the writer typed', async () => {
+    await post('/api/posts', { title: 'Typed', slug: 'typed' })
+    expect((await post('/api/posts', { title: 'Other', slug: 'typed' })).status).toBe(409)
+  })
+})

@@ -19,7 +19,7 @@ describe('what a save sends', () => {
     const keys = Object.keys(payloadOf('post', draft({ title: 'T', series: 'S' }), 'body', TZ)).sort()
     expect(keys).toEqual([
       'categories', 'content', 'coverImage', 'date', 'excerpt', 'featuredImage',
-      'lang', 'metaDescription', 'metaTitle', 'series', 'seriesOrder', 'slug', 'status',
+      'lang', 'metaDescription', 'metaTitle', 'series', 'seriesOrder', 'slug', 'slugDerived', 'status',
       'tags', 'title', 'translationGroup',
     ])
   })
@@ -27,7 +27,7 @@ describe('what a save sends', () => {
   it('sends a PAGE its language and no date', () => {
     const body = payloadOf('page', draft({ title: 'About', lang: 'en', translationGroup: 'me' }), 'x', TZ)
     expect(Object.keys(body).sort()).toEqual([
-      'content', 'featuredImage', 'lang', 'slug', 'status', 'title', 'translationGroup',
+      'content', 'featuredImage', 'lang', 'slug', 'slugDerived', 'status', 'title', 'translationGroup',
     ])
     expect(body.lang).toBe('en')
     expect(body.translationGroup).toBe('me')
@@ -67,5 +67,14 @@ describe('what a plain Save does to the status', () => {
   it('never publishes a draft: that is the Publish key and its questions', () => {
     expect(statusForSave('draft', 'published')).toBe('draft')
     expect(statusForSave('draft', 'draft')).toBe('draft')
+  })
+})
+
+describe('a slug nobody typed', () => {
+  it('is sent as derived, so the server may add -2', () => {
+    expect(payloadOf('post', draft({ title: 'Three weeks' }), 'x', TZ).slugDerived).toBe(true)
+  })
+  it('is not, once the writer typed one or a save pinned it', () => {
+    expect(payloadOf('post', draft({ title: 'T', slug: 'mine' }), 'x', TZ).slugDerived).toBeUndefined()
   })
 })

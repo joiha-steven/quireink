@@ -89,3 +89,37 @@ export function liveSlugTaken(slug: string): boolean {
   return !!one<{ slug: string }>(`select slug from posts where slug = ? and deleted_at is null`, slug)
     || !!one<{ slug: string }>(`select slug from pages where slug = ? and deleted_at is null`, slug)
 }
+
+/**
+ * Save under `base`, appending `-2`, `-3`… until the slug is free.
+ *
+ * Posts and pages share one namespace (Invariant 2), so a collision here can be with
+ * either. Nothing is ever overwritten: an import ADDS.
+ */
+export async function saveUnique(base: string, save: (slug: string) => Promise<unknown>): Promise<string> {
+  for (let n = 1; n < 50; n++) {
+    const slug = n === 1 ? base : `${base}-${n}`
+    try {
+      await save(slug)
+      return slug
+    } catch (error) {
+      if (error instanceof SlugConflictError) continue
+      throw error
+    }
+  }
+  throw new Error(`could not find a free slug for "${base}"`)
+}
+
+/**
+ * A NEW piece whose slug the editor derived rather than the writer typed: saved under the first
+ * free one (`-2`, `-3`…), since the writer never chose it and may not even see it. A typed slug
+ * still gets `slug_taken` — that one is theirs to change.
+ */
+export async function saveNew<I extends { slug?: string; slugDerived?: unknown }, M>(
+  input: I, save: (input: I) => Promise<M>,
+): Promise<M> {
+  if (input.slugDerived !== true || !input.slug?.trim()) return save(input)
+  let meta: M | undefined
+  await saveUnique(input.slug.trim(), async (slug) => { meta = await save({ ...input, slug }) })
+  return meta as M
+}

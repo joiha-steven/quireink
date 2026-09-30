@@ -44,6 +44,10 @@ export function payloadOf(
     status: statusOverride ?? draft.status,
     content,
   }
+  // NOBODY TYPED IT, so a collision is ours to settle, not the writer's: the server adds `-2`.
+  // A new post titled like an existing one — or an untitled one whose first words match another,
+  // whose slug is not even on screen — failed every save with "That slug is already taken".
+  if (!draft.slug) base.slugDerived = true
   // A page has no date and no schedule: it is not in the archive and nothing waits for it.
   if (kind !== 'page') {
     base.date = draft.date ? zonedInputToIso(draft.date, timezone) : new Date().toISOString()

@@ -7,7 +7,7 @@ import type { NoteWithContent } from '@/types'
 import { savedSince } from '@/web/admin/stale'
 import { getNoteIndex, getNote, saveNote, deleteNote } from '@/content/notes'
 import { getAutosave, putAutosave } from '@/content/autosave'
-import { SlugConflictError } from '@/content/slugs'
+import { SlugConflictError, saveNew } from '@/content/slugs'
 import { finalizeContentMedia } from '@/media/finalize'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
@@ -28,12 +28,13 @@ export function noteRoutes() {
   router.get('/api/notes', async () => json(await getNoteIndex()))
 
   router.post('/api/notes', async (c) => {
-    const input = await body<NoteWithContent>(c)
+    const input = await body<NoteWithContent & { slugDerived: boolean }>(c)
     if (!input.title?.trim() && !input.slug?.trim() && !input.sourceTitle?.trim()) {
       return fail(c, 'Title or slug is required', 400)
     }
     try {
-      const meta = await saveNote(input)
+      // A derived slug that is taken gets `-2`, as a post's does.
+      const meta = await saveNew(input, (i) => saveNote(i))
       void finalizeContentMedia(input.content ?? '')
       clearCache()
       void logActivity('note.create', meta.title || meta.slug)

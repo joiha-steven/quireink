@@ -11,7 +11,7 @@ import { one } from '@/store/query'
 import { savePost, getPost } from '@/content/posts'
 import { savePage, getPage } from '@/content/pages'
 import { saveNote } from '@/content/notes'
-import { SlugConflictError } from '@/content/slugs'
+import { saveUnique } from '@/content/slugs'
 import { saveRedirect } from '@/server/redirects'
 import { normalizePath } from '@/server/redirect-path'
 import { previewToken } from '@/content/preview'
@@ -44,25 +44,6 @@ function bearerOk(header: string | null, secret: string): boolean {
   return given.length === expected.length && timingSafeEqual(given, expected)
 }
 
-/**
- * Save under `base`, appending `-2`, `-3`… until the slug is free.
- *
- * Posts and pages share one namespace (Invariant 2), so a collision here can be with
- * either. Nothing is ever overwritten: an import ADDS.
- */
-async function saveUnique(base: string, save: (slug: string) => Promise<unknown>): Promise<string> {
-  for (let n = 1; n < 50; n++) {
-    const slug = n === 1 ? base : `${base}-${n}`
-    try {
-      await save(slug)
-      return slug
-    } catch (error) {
-      if (error instanceof SlugConflictError) continue
-      throw error
-    }
-  }
-  throw new Error(`could not find a free slug for "${base}"`)
-}
 
 /** The owner-gated half. */
 export function opsRoutes() {
