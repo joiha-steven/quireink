@@ -194,6 +194,17 @@ describe('POST /api/comments', () => {
     expect(await payload<{ comments: unknown[] }>(get('/api/comments?post=a-post'))).toEqual({ comments: [] })
   })
 
+  // The island printed the server's English sentence on a blog in any language; the answer names
+  // the refusal, and the island prints the site's own sentence for it (2026-09-30).
+  it('names each refusal a reader can fix, beside the sentence', async () => {
+    await publish()
+    const bad = await post('/api/comments', stamped({ postSlug: 'a-post', ...COMMENT, email: 'not-an-address' }), '203.0.113.51')
+    expect(bad.status).toBe(400)
+    expect(await bad.json()).toMatchObject({ success: false, code: 'Email' })
+    const long = await post('/api/comments', stamped({ postSlug: 'a-post', ...COMMENT, content: 'x'.repeat(5000) }), '203.0.113.52')
+    expect(await long.json()).toMatchObject({ code: 'Long' })
+  })
+
   // Readers' words on a withdrawn post were still served, and a reply naming a live post could
   // land under a hidden one (2026-09-30).
   it('keeps the thread of a post taken back to draft out of sight, and takes no reply to it', async () => {
@@ -349,8 +360,12 @@ describe('unsubscribe', () => {
     expect(statusOf()).toBe('confirmed')
   })
 
-  it('shows a page rather than an error for a bad token', async () => {
-    expect((await get('/api/newsletter/confirm?token=garbage')).status).toBe(200)
+  // A page, still, and a 404 under it: a 200 counted a bogus token as a confirmation in every
+  // log and monitor (2026-09-30).
+  it('shows a page for a bad token, with a status that says it confirmed nothing', async () => {
+    const res = await get('/api/newsletter/confirm?token=garbage')
+    expect(res.status).toBe(404)
+    expect(res.headers.get('content-type')).toContain('text/html')
   })
 })
 

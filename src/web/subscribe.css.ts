@@ -27,6 +27,9 @@ export const SUBSCRIBE_CSS = `
 .overlay h2{font-size:inherit;font-weight:var(--fw-heading,600);color:var(--c-heading);margin:0 2rem .75rem 0}
 .search-input{width:100%;padding:.5rem .75rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;box-shadow:var(--well)}
 .search-input:focus{border-color:var(--c-heading)}
+/* The browser's own clear button is a blue ✕ no palette reaches (2026-09-30). The overlay has
+   a close key of its own, and a field is cleared the way any field is. */
+.search-input::-webkit-search-cancel-button,form.search input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
 .search-results{list-style:none;padding:0;margin:.85rem 0 0;overflow-y:auto}
 .search-results li{margin:0 0 .6rem}
 .search-results a{color:var(--c-heading);text-decoration:none}

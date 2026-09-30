@@ -44,6 +44,14 @@ function cleanWebsite(raw: unknown): string {
   }
 }
 
+/**
+ * A refusal with a `code` beside the English sentence. The island prints the sentence the SITE's
+ * language has for the code; it printed the English one on a blog in any language (2026-09-30).
+ * The sentence stays for logs and for anything else reading the API.
+ */
+const refuse = (c: Context, message: string, status: number, code: string): Response =>
+  c.json({ success: false, error: message, ...(code ? { code } : {}) }, status as 400)
+
 export async function handleCommentsGet(c: Context): Promise<Response> {
   const slug = c.req.query('post')?.trim()
   const { comments } = await getSettings()
@@ -77,7 +85,7 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
   // `clientCountry`. Absent otherwise, which is every install with no zone configured.
   const country = clientCountry(c)
   if (rateLimited(`comment:${ip}`, PER_MINUTE)) {
-    return fail(c, 'Too many comments — slow down a moment', 429)
+    return refuse(c, 'Too many comments — slow down a moment', 429, 'TooMany')
   }
 
   const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>
@@ -88,7 +96,7 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
 
   if (!content) return fail(c, 'Comment cannot be empty', 400)
   if (content.length > MAX_COMMENT_LEN) {
-    return fail(c, `Comment must be under ${MAX_COMMENT_LEN} characters`, 400)
+    return refuse(c, `Comment must be under ${MAX_COMMENT_LEN} characters`, 400, 'Long')
   }
 
   // Only on a post that is actually published and visible. Without this, a draft's slug is
@@ -112,13 +120,13 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
     name = typeof body.name === 'string' ? body.name.trim() : ''
     email = typeof body.email === 'string' ? body.email.trim() : ''
     website = cleanWebsite(body.website)
-    if (!name || name.length > 80) return fail(c, 'A name (under 80 chars) is required', 400)
-    if (!EMAIL_RE.test(email) || email.length > 120) return fail(c, 'A valid email is required', 400)
+    if (!name || name.length > 80) return refuse(c, 'A name (under 80 chars) is required', 400, 'Name')
+    if (!EMAIL_RE.test(email) || email.length > 120) return refuse(c, 'A valid email is required', 400, 'Email')
 
     const { turnstileConfigured } = await getCommentEnv()
     if (comments.turnstile && turnstileConfigured) {
       if (!(await verifyTurnstile(turnstileToken, ip))) {
-        return fail(c, 'Verification failed — please try again', 400)
+        return refuse(c, 'Verification failed — please try again', 400, 'Verify')
       }
     } else {
       // The blog's own gate (ADR 0032). 409 for a stale challenge is a SEPARATE answer from
@@ -135,7 +143,7 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
         return fail(c, 'This page has been open a while — sending again', 409)
       }
       if (verdict !== 'ok') {
-        return fail(c, 'Verification failed — please try again', 400)
+        return refuse(c, 'Verification failed — please try again', 400, 'Verify')
       }
     }
   }
@@ -148,7 +156,9 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
     })
   } catch (error) {
     // Bad input (missing parent, reply too deep) is a 400, not a 500.
-    if (error instanceof CommentInputError) return fail(c, error.message, 400)
+    if (error instanceof CommentInputError) {
+      return refuse(c, error.message, 400, error.message === 'Maximum reply depth reached' ? 'Deep' : '')
+    }
     throw error
   }
 

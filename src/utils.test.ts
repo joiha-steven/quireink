@@ -1,6 +1,7 @@
 import { describe, it, expect } from '@/test/vitest'
 import {
   slugify,
+  titleSlug,
   toPlainText,
   deriveExcerpt,
   clampExcerpt,
@@ -352,5 +353,16 @@ describe('reading time for writing without word spaces', () => {
     expect(readingMinutes('か'.repeat(1200))).toBe(3)
     expect(wordCount('three plain words')).toBe(3)
     expect(wordCount('한국어는 띄어쓰기를 합니다')).toBe(3)
+  })
+})
+
+// A 287-character title made a 287-character address (2026-09-30).
+describe('titleSlug', () => {
+  it('cuts a long title back to a whole word within 80 characters, and leaves a short one', () => {
+    const long = titleSlug('A very long title '.repeat(16))
+    expect(long.length).toBeLessThanOrEqual(80)
+    expect(long.endsWith('-')).toBe(false)
+    expect('a-very-long-title-'.repeat(16)).toContain(long)
+    expect(titleSlug('Short title')).toBe('short-title')
   })
 })

@@ -21,7 +21,7 @@ import {
 import { saveStatusLine } from '@/admin-shared/draft-keep'
 import { formatDateTimeShort, formatTime } from '@/admin-shared/when'
 import { formatWallClock } from '@/i18n/format'
-import { isScheduled, slugify } from '@/utils'
+import { isScheduled, titleSlug } from '@/utils'
 import { withLiveIdentity } from '@/admin/components/restore-identity'
 import { askForLink } from './lib/ask-link'
 import { say } from './lib/media-bridge'
@@ -181,7 +181,7 @@ function boot(root: HTMLElement, data: Payload): void {
     Object.assign(draft, patch)
     if ('slug' in patch) slugTyped = true
     if ('title' in patch && !slugTyped) {
-      draft.slug = slugify(patch.title ?? '')
+      draft.slug = titleSlug(patch.title ?? '')
       if (slugBox) slugBox.value = draft.slug
     }
     markDirty()

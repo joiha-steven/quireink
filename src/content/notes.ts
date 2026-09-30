@@ -14,7 +14,7 @@
 import type { Note, NoteWithContent } from '@/types'
 import { collapseBlob, expandBlob } from '@/media/blob'
 import { clearAutosave } from '@/content/autosave'
-import { isPublicallyVisible, slugify } from '@/utils'
+import { isPublicallyVisible, slugify, titleSlug } from '@/utils'
 import { SlugConflictError } from '@/content/slugs'
 import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
 import { all, one, run, tx } from '@/store/query'
@@ -114,7 +114,7 @@ function normalize(input: Partial<NoteWithContent>): NoteWithContent {
   // A clip with no title of its own is named after where it came from; a note with
   // neither gets a dated name rather than an empty one.
   // Tags out of a clipped title first: `<b>evil</b> source` slugged as `evil-bsourceb`.
-  const slug = (input.slug?.trim() ? slugify(input.slug) : slugify((title || sourceTitle || '').replace(/<[^>]*>/g, ' ')))
+  const slug = (input.slug?.trim() ? slugify(input.slug) : titleSlug((title || sourceTitle || '').replace(/<[^>]*>/g, ' ')))
     || `note-${Date.now()}`
   return {
     title,

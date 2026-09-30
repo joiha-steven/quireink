@@ -54,10 +54,16 @@ export function slugify(input: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-// Terse date + 24h time for the admin tables. It lives in `@/admin-shared/when` now, because
-// the assistant's island draws chat rows with a date on them and may not import this module:
-// three regexes at the top of this file pull the pen grammar and the maths syntax in behind
-// them. Re-exported, so the dozen call sites that had it here keep the import they had.
+// A new piece's slug from its TITLE, cut to a whole word within 80 characters (a 287-character
+// title made a 287-character address, 09-30). Typed, term and heading slugs are never cut.
+export function titleSlug(title: string): string {
+  const s = slugify(title)
+  return s.length <= 80 ? s : s.slice(0, 81).replace(/-[^-]*$/, '') || s.slice(0, 80)
+}
+
+// Terse date + 24h time for the admin tables, from `@/admin-shared/when`: the assistant's island
+// may not import this module, whose top pulls the pen grammar and the maths syntax in behind
+// it. Re-exported, so the dozen call sites that had it here keep the import they had.
 export { formatDateTimeShort } from '@/admin-shared/when'
 
 // The clock beside the save state, for the same reason and by the same route as the line

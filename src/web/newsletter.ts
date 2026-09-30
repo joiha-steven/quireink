@@ -139,9 +139,11 @@ export async function handleConfirm(c: Context): Promise<Response> {
   const settings = await getSettings()
   const tx = t(settings.language)
   const base = resolveSiteUrl(settings)
-  return confirmed
-    ? resultPage(tx.nlThanksTitle, tx.nlThanksBody, base, settings.title)
-    : resultPage(tx.nlLinkInvalid, '', base, settings.title)
+  if (confirmed) return resultPage(tx.nlThanksTitle, tx.nlThanksBody, base, settings.title)
+  // 404 with the same page: a link that confirms nothing answered 200, so every log and monitor
+  // counted a bogus or stale token as a confirmation (2026-09-30).
+  const page = resultPage(tx.nlLinkInvalid, '', base, settings.title)
+  return new Response(page.body, { status: 404, headers: page.headers })
 }
 
 /**

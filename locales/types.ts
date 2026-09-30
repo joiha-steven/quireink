@@ -112,6 +112,8 @@ export type Dict = {
   readerPenSend: string
   readerPenNotebookAsk: string
   readerPenNotebookGo: string
+  /** Said when the notebook's address is not a web address. */
+  readerPenNotebookBad: string
   previewNotice: string
   nlInvalid: string
   nlNoMail: string
@@ -185,6 +187,13 @@ export type Dict = {
   commentReply: string
   commentDeleted: string
   commentError: string
+  /** What the comment form says for each refusal the server names (`code` on the answer). */
+  commentErrTooMany: string
+  commentErrName: string
+  commentErrEmail: string
+  commentErrVerify: string
+  commentErrDeep: string
+  commentErrLong: string
   /** Shown for the moment a stale comment stamp is being re-solved (ADR 0032). */
   commentChecking: string
   commentSignInGoogle: string

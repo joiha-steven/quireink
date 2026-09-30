@@ -210,8 +210,10 @@ const BUDGET: Record<string, number> = {
   // 14,300 since 2026-09-30 (14,004 measured): a way in to a notebook for a reader with no
   // mark yet, and a notebook adopted without dropping the marks already made here; the anchor
   // refusing to land on the same word elsewhere once its sentence changed; the bar kept on a
-  // phone's screen; and the copied quote widened to whole words.
-  'reader-pen.js': 14_300,
+  // phone's screen; and the copied quote widened to whole words. 14,600 the same day (14,350
+  // measured): no bar over the reader's own note card, where an ink made nothing, and the
+  // notebook's address box taking Enter and saying when an address is not one.
+  'reader-pen.js': 14_600,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

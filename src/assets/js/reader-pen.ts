@@ -259,14 +259,20 @@ function readerPen(): void {
     ask.hidden = false
     askIn.focus()
   })
-  ask.addEventListener('click', (e) => {
-    if (!(e.target as Element).closest('.pen-go') || !open) return
+  // Enter sends too, and a wrong address SAYS so: it used to take focus back in silence, and
+  // Enter did nothing at all (2026-09-30).
+  const go = () => {
+    if (!open) return
     const v = askIn.value.trim().replace(/\/+$/, '')
-    if (!/^https?:\/\/\S+$/.test(v)) return askIn.focus()
+    askIn.setCustomValidity(/^https?:\/\/\S+$/.test(v) ? '' : label('readerPenNotebookBad'))
+    if (!askIn.reportValidity()) return
     try { localStorage.setItem(NB, v) } catch { /* then it is asked again next time */ }
     ask.hidden = true
     sendHome(open, v)
-  })
+  }
+  ask.addEventListener('click', (e) => { if ((e.target as Element).closest('.pen-go')) go() })
+  askIn.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); go() } })
+  askIn.addEventListener('input', () => askIn.setCustomValidity(''))
   /* ---- tier two: where the marks live, and the panel that keeps them everywhere ------ */
   const btn = (text: string) => el('button', { type: 'button' }, text)
   const keep = el('div', { class: 'pen-keep' })

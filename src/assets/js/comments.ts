@@ -241,8 +241,9 @@ async function submit(
       // for it. `startSolving` fetches a fresh challenge from here on, since the page's own
       // may have been spent by any reader of this cached page.
       startSolving(document.querySelector<HTMLElement>('#comments'))
-      const { error } = await res.json().catch(() => ({})) as { error?: string }
-      status.textContent = error ?? label('commentError')
+      // In the site's language, by the refusal's code; the server's own sentence is English.
+      const { code } = await res.json().catch(() => ({})) as { code?: string }
+      status.textContent = (code && label(`commentErr${code}`)) || label('commentError')
       return
     }
     form.reset()

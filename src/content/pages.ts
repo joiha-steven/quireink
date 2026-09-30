@@ -5,7 +5,7 @@ import type { Page, PageWithContent } from '@/types'
 import { collapseBlob, expandBlob } from '@/media/blob'
 import { asLang } from '@/content/post-row'
 import { clearAutosave } from '@/content/autosave'
-import { slugify } from '@/utils'
+import { slugify, titleSlug } from '@/utils'
 import { ensureSlugFree } from '@/content/slugs'
 import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
 import { all, one, run, tx } from '@/store/query'
@@ -95,7 +95,7 @@ function normalize(input: Partial<PageWithContent>): PageWithContent {
   // One line, whichever door it came in by: a line break in a title reached <title> and the feeds.
   const title = (input.title ?? '').replace(/\s*[\r\n]+\s*/g, ' ').trim()
   // Guard an empty slug (slugify can empty an emoji/punctuation title) — see posts.ts.
-  const slug = (input.slug?.trim() ? slugify(input.slug) : slugify(title)) || `page-${Date.now()}`
+  const slug = (input.slug?.trim() ? slugify(input.slug) : titleSlug(title)) || `page-${Date.now()}`
   return {
     title,
     slug,
