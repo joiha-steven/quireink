@@ -17,7 +17,7 @@
 // the reply that mints them and nowhere else; the markup ships empty and this writes them in.
 import type { SecurityWire } from '@/admin-shared/wire'
 import { formatDateTimeShort } from '@/admin-shared/when'
-import { say } from './media-bridge'
+import { ask, say } from './media-bridge'
 
 export type SecWords = Partial<Record<string, string>>
 
@@ -85,7 +85,12 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
     if (!next?.value) return
     const out = await post('/password', { current: current(), next: next.value })
     if (!out) return
+    // BOTH BOXES. The current password stayed typed in after it had stopped being the password,
+    // armed for the next key anyone pressed on this screen.
     next.value = ''
+    const was = box.querySelector<HTMLInputElement>('[data-security-current]')
+    if (was) was.value = ''
+    arm()
     const other = typeof out.signedOut === 'number' ? out.signedOut : 0
     say((w.passwordChanged ?? '').replace('{n}', String(other)))
     void refresh()
@@ -93,7 +98,10 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
 
   // ---- the recovery codes -----------------------------------------------------------------
 
+  // ASKED FIRST: the set in the drawer stops working the moment the new one is minted.
   box.querySelector('[data-sec-recovery]')?.addEventListener('click', async () => {
+    const sure = await ask({ yes: w.askRecoveryYes, no: w.no }, w.askRecoveryTitle ?? '', w.askRecoveryBody ?? '')
+    if (!sure) return
     const out = await post('/recovery', { current: current() })
     if (!out) return
     const codes = Array.isArray(out.codes) ? out.codes as string[] : []
@@ -110,6 +118,22 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
     }
     show(box.querySelector('[data-sec-codes-panel]'), codes.length > 0)
     void refresh()
+  })
+
+  const codesText = (): string =>
+    [...box.querySelectorAll('[data-security-codes] li')].map((li) => li.textContent ?? '').join('\n')
+
+  box.querySelector('[data-sec-codes-copy]')?.addEventListener('click', () => {
+    void navigator.clipboard?.writeText(codesText())
+      .then(() => say(w.codesCopied ?? ''), () => say(w.saveFailed ?? '', 'error'))
+  })
+
+  box.querySelector('[data-sec-codes-download]')?.addEventListener('click', () => {
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(new Blob([`${codesText()}\n`], { type: 'text/plain' }))
+    a.download = `${location.hostname}-recovery-codes.txt`
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000)
   })
 
   // ---- the second factor ------------------------------------------------------------------

@@ -28,7 +28,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteSettings } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { CONTROL, buttonClass } from '@/admin-shared/kit'
-import { NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
+import { NOTE_ALERT, NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { group, panelCard, settingRow, switchRow, textField } from '@/web/admin/fields'
 import { PANEL, panelList } from '@/web/admin/fields-box'
 import { pick, slider } from '@/web/admin/fields-pick'
@@ -93,6 +93,9 @@ function sessionRow(t: AdminStrings): string {
  * with the box empty) and is the right state for a page whose island has not started: a key
  * that is live before anything is wired is a key that does nothing when pressed.
  */
+/** A fact about the account, read from `/api/security`: plain text, never a hideable hint. */
+const STATE = 'text-sm text-neutral-700 dark:text-neutral-300'
+
 function security(t: AdminStrings): string {
   return `<div class="${SETTING_GAP}">`
     + settingRow({
@@ -114,37 +117,47 @@ function security(t: AdminStrings): string {
         // somebody doing this actually wants.
         + `<p class="${NOTE_TEXT} mt-1.5">${escapeHtml(t.securityPasswordSignsOut)}</p>`,
     })
-    // THE COUNT SHIPS AT ZERO and the sentence carries its own template. React rendered
-    // `recoveryLeft ?? 0` on its first pass too; what is different here is that the island has
-    // no locale dictionary to rebuild the sentence from, so the raw `{n}` string rides along in
-    // `data-tpl` and the island substitutes into it.
+    // THE COUNT SHIPS AT ZERO and the sentence carries its own template: the island has no
+    // dictionary to rebuild it from, so the raw `{n}` rides in `data-tpl`.
+    //
+    // ⚠️ A STATE, NOT A NOTE (2026-09-30). The count and the 2FA state below were drawn as the
+    // row's hint, and `admin.css` hides every hint when explanations are off — so turning the
+    // explanations off also hid how many codes are left and whether a second factor is on.
     + settingRow({
       label: t.securityRecovery,
-      noteHtml: `<span data-sec-recovery-note data-tpl="${escapeAttr(t.securityRecoveryHint)}">`
-        + `${escapeHtml(t.securityRecoveryHint.replace('{n}', '0'))}</span>`,
       inline: true,
-      control: `<button type="button" data-sec-recovery disabled class="${buttonClass('secondary', 'sm')}">`
-        + `${escapeHtml(t.securityNewCodes)}</button>`,
+      control: `<div class="flex flex-wrap items-center gap-3">`
+        + `<span class="${STATE}" data-sec-recovery-note data-tpl="${escapeAttr(t.securityRecoveryHint)}">`
+        + `${escapeHtml(t.securityRecoveryHint.replace('{n}', '0'))}</span>`
+        + `<button type="button" data-sec-recovery disabled class="${buttonClass('secondary', 'sm')}">`
+        + `${escapeHtml(t.securityNewCodes)}</button></div>`,
     })
     // Shown once and never again: minting replaces the old set, so the list the island writes
     // in here is the only copy that will ever exist. It ships EMPTY and hidden — a code in this
-    // markup would be a code in the page source of every account screen ever opened.
+    // markup would be a code in the page source of every account screen ever opened. The
+    // warning is an ALERT, not a note, so switching explanations off cannot hide it; Copy and
+    // Download are there because ten codes copied by hand is ten chances to copy one wrong.
     + gate(false,
-      `<p class="${NOTE_TEXT}">${escapeHtml(t.securityCodesOnce)}</p>`
-      + `<ul class="mt-2 grid gap-1 font-mono text-sm sm:grid-cols-2" data-security-codes></ul>`,
+      `<div class="p-3"><p class="${NOTE_ALERT}">${escapeHtml(t.securityCodesOnce)}</p>`
+      + `<ul class="mt-2 grid gap-1 font-mono text-sm sm:grid-cols-2" data-security-codes></ul>`
+      + `<div class="mt-3 flex flex-wrap gap-2">`
+      + `<button type="button" data-sec-codes-copy class="${buttonClass('secondary', 'sm')}">`
+      + `${escapeHtml(t.mcpCopy)}</button>`
+      + `<button type="button" data-sec-codes-download class="${buttonClass('secondary', 'sm')}">`
+      + `${escapeHtml(t.download)}</button></div></div>`,
       `class="${PANEL}" data-sec-codes-panel`)
-    // ON and OFF in ONE wrapper. Two sentences loose in the note would be two children of the
-    // note's box, and a stack that hides one of a pair hands the other a margin it never had
-    // (`docs/admin-one-dom.md` trap 4). OFF is what ships visible, because that is what React
-    // drew before `/api/security` answered.
+    // ON and OFF in ONE wrapper, so hiding one of the pair cannot hand the other a margin it
+    // never had (`docs/admin-one-dom.md` trap 4). OFF ships visible, as React drew it before
+    // `/api/security` answered.
     + settingRow({
       label: t.securityTotp,
-      noteHtml: `<span data-sec-totp-state>`
-        + `<span data-sec-totp-on hidden>${escapeHtml(t.securityTotpOn)}</span>`
-        + `<span data-sec-totp-off>${escapeHtml(t.securityTotpOff)}</span></span>`,
       inline: true,
-      control: `<button type="button" data-sec-reenrol disabled class="${buttonClass('secondary', 'sm')}">`
-        + `${escapeHtml(t.securityReenrol)}</button>`,
+      control: `<div class="flex flex-wrap items-center gap-3">`
+        + `<span class="${STATE}" data-sec-totp-state>`
+        + `<span data-sec-totp-on hidden>${escapeHtml(t.securityTotpOn)}</span>`
+        + `<span data-sec-totp-off>${escapeHtml(t.securityTotpOff)}</span></span>`
+        + `<button type="button" data-sec-reenrol disabled class="${buttonClass('secondary', 'sm')}">`
+        + `${escapeHtml(t.securityReenrol)}</button></div>`,
     })
     // The enrolment panel, and the `<code>` in it is EMPTY on purpose: the secret arrives from
     // `/api/security/totp/start` and never from this render.

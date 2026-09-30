@@ -762,6 +762,11 @@ export type AdminStrings = {
   securityRecovery: string
   securityRecoveryHint: string
   securityNewCodes: string
+  /** Asked before new recovery codes replace the old ones. */
+  askRecoveryTitle: string
+  askRecoveryBody: string
+  askRecoveryYes: string
+  securityCodesCopied: string
   securityCodesOnce: string
   securityTotp: string
   securityTotpOn: string

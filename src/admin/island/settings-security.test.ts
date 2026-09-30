@@ -36,6 +36,9 @@ const state = (over: Partial<SecurityWire> = {}): SecurityWire => ({
 
 let root: HTMLElement
 let said: { message: string; kind?: string }[]
+let asked: string[]
+/** What the product's dialog answers when the card asks; `cancel` is the owner saying no. */
+let reply = 'confirm'
 
 const answer = (body: unknown, status = 200): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -57,6 +60,8 @@ const settle = async (): Promise<void> => { for (let i = 0; i < 12; i++) await P
 
 beforeEach(() => {
   said = []
+  asked = []
+  reply = 'confirm'
   document.body.innerHTML = ''
   root = document.createElement('div')
   root.innerHTML = accountTab(t, DEFAULT_SETTINGS)
@@ -65,6 +70,14 @@ beforeEach(() => {
     said.push((e as CustomEvent).detail as { message: string; kind?: string })
   }) as EventListener)
 })
+
+const onConfirm = ((e: Event) => {
+  e.preventDefault()
+  const d = (e as CustomEvent).detail as { request: { title: string }; respond: (a: string) => void }
+  asked.push(d.request.title)
+  d.respond(reply)
+}) as EventListener
+beforeAll(() => window.addEventListener('quire:confirm', onConfirm))
 
 describe('the signed-in devices', () => {
   it('lists every one, and says which is the one asking', async () => {
@@ -236,5 +249,81 @@ describe('ending every other device', () => {
     root.querySelector<HTMLButtonElement>('[data-sec-signout-others]')!.click()
     await settle()
     expect(said.at(-1)?.message).toBe('2 signed out')
+  })
+})
+
+describe('what the card says and does (2026-09-30)', () => {
+  const words = { askRecoveryTitle: t.askRecoveryTitle, askRecoveryBody: t.askRecoveryBody,
+    askRecoveryYes: t.askRecoveryYes, no: t.askCancel, codesCopied: t.securityCodesCopied }
+
+  async function type(hook: string, value: string): Promise<void> {
+    const box = root.querySelector<HTMLInputElement>(`[${hook}]`)!
+    box.value = value
+    box.dispatchEvent(new Event('input', { bubbles: true }))
+    await settle()
+  }
+
+  it('keeps the code count and the 2FA state out of the hints that explanations-off hides', async () => {
+    serve(state(), null)
+    wireSecurity(root, {})
+    await settle()
+    const count = root.querySelector('[data-sec-recovery-note]')!
+    expect(count.textContent).toContain('8')
+    expect(count.closest('.admin-note')).toBeNull()
+    expect(root.querySelector('[data-sec-totp-state]')!.closest('.admin-note')).toBeNull()
+    expect(root.querySelector('[data-sec-codes-panel] p')!.classList.contains('admin-note')).toBe(false)
+  })
+
+  it('asks before new codes replace the old, and mints nothing on a no', async () => {
+    let writes = 0
+    serve(state(), null)
+    const inner = globalThis.fetch
+    globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method) writes++
+      return inner(input, init)
+    }) as typeof fetch
+    wireSecurity(root, words)
+    await settle()
+    await type('data-security-current', 'pw')
+    reply = 'cancel'
+    root.querySelector<HTMLButtonElement>('[data-sec-recovery]')?.click()
+    await settle()
+    expect(asked).toEqual([t.askRecoveryTitle])
+    expect(writes).toBe(0)
+    reply = 'confirm'
+    root.querySelector<HTMLButtonElement>('[data-sec-recovery]')?.click()
+    await settle()
+    expect(writes).toBe(1)
+    expect(root.querySelector<HTMLElement>('[data-sec-codes-panel]')?.hidden).toBe(false)
+  })
+
+  it('copies the codes, one per line', async () => {
+    let copied = ''
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true, value: { writeText: (s: string) => { copied = s; return Promise.resolve() } },
+    })
+    serve(state(), null)
+    wireSecurity(root, words)
+    await settle()
+    await type('data-security-current', 'pw')
+    root.querySelector<HTMLButtonElement>('[data-sec-recovery]')?.click()
+    await settle()
+    root.querySelector<HTMLButtonElement>('[data-sec-codes-copy]')?.click()
+    await settle()
+    expect(copied).toBe('aaaa-bbbb')
+    expect(said.at(-1)?.message).toBe(t.securityCodesCopied)
+  })
+
+  it('empties the old password once it is no longer the password, and disarms the keys', async () => {
+    serve(state(), null)
+    wireSecurity(root, words)
+    await settle()
+    await type('data-security-current', 'old one')
+    await type('data-sec-new', 'a much longer new one')
+    root.querySelector<HTMLButtonElement>('[data-sec-change]')?.click()
+    await settle()
+    expect(root.querySelector<HTMLInputElement>('[data-security-current]')?.value).toBe('')
+    expect(root.querySelector<HTMLInputElement>('[data-sec-new]')?.value).toBe('')
+    expect(root.querySelector<HTMLButtonElement>('[data-sec-recovery]')?.disabled).toBe(true)
   })
 })

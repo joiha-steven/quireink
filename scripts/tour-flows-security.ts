@@ -53,6 +53,15 @@ export function registerAccountFlows({ flow, expect }: Tour): void {
 
       // THE POINT: a valid session plus a wrong password changes nothing.
       acting().find((b) => /codes|mã mới/i.test(b.textContent)).click()
+      // ASKED FIRST since 2026-09-30: new codes end the old set, so the product's own dialog
+      // stands between the key and the request.
+      let yes = null
+      for (let i = 0; i < 30 && !yes; i++) {
+        await sleep(100)
+        yes = [...document.querySelectorAll('[data-confirm-yes]')].find((b) => b.offsetParent !== null) || null
+      }
+      if (!yes) return 'new recovery codes were requested without asking first'
+      yes.click()
       await sleep(900)
       // ⚠️ VISIBLE AND FILLED, not merely present. Under ADR 0054 the server draws every state,
       // so the codes panel ships in the markup EMPTY and hidden — a code written into it would
@@ -64,6 +73,16 @@ export function registerAccountFlows({ flow, expect }: Tour): void {
       const codesShown = codesBox && codesBox.offsetParent !== null && codesBox.children.length > 0
       if (codesShown) return 'a wrong password minted recovery codes'
       if (!/not right|không đúng/i.test(document.body.innerText)) return 'a wrong password was refused silently'
+
+      // The count and the 2FA state are FACTS, not explanations: switching explanations off must
+      // leave them on screen.
+      const scr = document.querySelector('[data-settings-panels]') || document.documentElement
+      const was = scr.getAttribute('data-explanations')
+      scr.setAttribute('data-explanations', 'off')
+      const facts = ['[data-sec-recovery-note]', '[data-sec-totp-state]']
+        .filter((q) => { const el = document.querySelector(q); return !el || el.offsetParent === null })
+      if (was === null) scr.removeAttribute('data-explanations'); else scr.setAttribute('data-explanations', was)
+      if (facts.length) return 'hidden with explanations off: ' + facts.join(', ')
 
       set.call(cur, '')
       cur.dispatchEvent(new Event('input', { bubbles: true }))

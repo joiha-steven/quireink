@@ -103,7 +103,9 @@ function words(t: AdminStrings): string {
     // The account's four flows report what they did; the server's REFUSALS ride on the card
     // itself, because each belongs to the control that can provoke it.
     passwordChanged: t.securityPasswordChanged, signedOut: t.securitySignedOut,
-    totpDone: t.securityTotpDone,
+    totpDone: t.securityTotpDone, codesCopied: t.securityCodesCopied,
+    askRecoveryTitle: t.askRecoveryTitle, askRecoveryBody: t.askRecoveryBody,
+    askRecoveryYes: t.askRecoveryYes,
   }))
 }
 
