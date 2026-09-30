@@ -160,7 +160,7 @@ export function mediaTileMark(row: MediaRow, w: MediaWords, s: TileState): Mark 
     inside.push(el('div', `absolute right-1.5 top-1.5 z-10 flex gap-1 transition-opacity duration-150 ${ON_HOVER}`, [
       el('button', KEY, [glyph('copy')], { type: 'button', 'data-copy': row.url, title: w.copyUrl, 'aria-label': w.copyUrl }),
       el('a', KEY, [glyph('download')], { href: row.url, download: row.filename, title: w.download, 'aria-label': w.download }),
-      el('button', `${KEY} hover:text-[var(--pen-red)] dark:hover:text-[var(--pen-red)]`, [glyph('trash')],
+      el('button', `${KEY} hover:text-[var(--pen-red)]`, [glyph('trash')],
         { type: 'button', 'data-del': row.url, title: w.delete, 'aria-label': w.delete }),
     ]))
   }

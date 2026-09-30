@@ -119,7 +119,7 @@ function fonts(t: AdminStrings, s: SiteSettings): string {
     // ONE shade for the second line, where React had two. `pickChoice` repaints the BUTTON it
     // pressed and not the words inside it, and a second pair of hidden spans per tile to carry
     // one step of grey is four nodes for something the sunken tile already says.
-    + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">Aa · 1793</span>`)).join('')
+    + `<span class="block text-xs text-neutral-600 dark:text-neutral-300">Aa · 1793</span>`)).join('')
   const chrome = CHROME_FONTS.map((f) => tile(f.id, f.id === s.chromeFont,
     'px-2 py-2 text-center text-sm', f.sans ?? `'Inter'`,
     escapeHtml(f.id === 'reading' ? t.chromeFontReading : f.name))).join('')

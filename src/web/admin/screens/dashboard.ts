@@ -211,7 +211,7 @@ function systemLine(t: AdminStrings, settings: SiteSettings, d: Awaited<ReturnTy
   // one hover away for whoever is helping them. A database that is DOWN still shows in words.
   return `<div class="flex flex-wrap items-center justify-between gap-3 px-1 ${META_ON_CANVAS}"><span title="${escapeAttr(facts)}">`
     + build
-    + (system.dbReachable ? '' : `<span class="ml-1.5 font-medium text-[var(--pen-red)]">· offline</span>`)
+    + (system.dbReachable ? '' : `<span class="ml-1.5 font-medium text-[var(--ink-danger)]">· offline</span>`)
     + `</span>`
     + (system.siteHref ? `<a href="${escapeAttr(system.siteHref)}" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-900 dark:hover:text-white">${escapeHtml(t.viewSite)} ↗</a>` : '')
     + `</div>`

@@ -37,7 +37,8 @@ const WHO = 'truncate font-medium text-neutral-700 dark:text-neutral-300'
 const BADGE = 'shrink-0 rounded-full border border-neutral-200 px-1.5 text-xs tabular-nums'
   + ' text-neutral-500 dark:border-neutral-700 dark:text-neutral-400'
 const TITLE_LINK = 'min-w-0 flex-1 truncate text-sm font-semibold text-neutral-900 hover:underline dark:text-white'
-const FORENSICS = 'mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutral-400 dark:text-neutral-500'
+// neutral-500, not 400: the address read 2.58:1 at 12px on the card (FIXLIST 7.7).
+const FORENSICS = 'mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutral-500 dark:text-neutral-400'
 
 /**
  * One comment.
@@ -77,7 +78,8 @@ function comment(t: AdminStrings, c: AdminComment, title: string): string {
     // The forensics, one line, and only where it exists: the third question a moderator asks.
     + (c.email || c.ip
       ? `<div class="${FORENSICS}">`
-        + (c.email ? `<span class="truncate">${escapeHtml(c.email)}</span>` : '')
+        // Cut where the card ends, and whole in the tooltip: it was cut with no way to read the rest.
+        + (c.email ? `<span class="min-w-0 max-w-full truncate" title="${escapeAttr(c.email)}">${escapeHtml(c.email)}</span>` : '')
         + (c.ip ? `<span class="whitespace-nowrap">${escapeHtml(c.ip)}${c.country ? ` (${escapeHtml(c.country)})` : ''}</span>` : '')
         + `</div>`
       : '')

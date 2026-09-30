@@ -145,7 +145,7 @@ function needsCard(t: AdminStrings, needs: DashboardData['needs']): string {
       + `<span class="text-neutral-600 dark:text-neutral-300">${escapeHtml(i.label)}</span>`
       + `<span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${i.count > 0
         ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-        : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'}">${i.count}</span>`
+        : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300'}">${i.count}</span>`
       + `</a></li>`).join('') + `</ul>`
   return card({ title: escapeHtml(t.dashNeedsAttention), body })
 }

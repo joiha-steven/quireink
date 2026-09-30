@@ -242,22 +242,21 @@ export const ICON_KEY = `${TAP_TOUCH} grid h-9 w-9 shrink-0 place-items-center r
   + ' dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
 
 /**
- * The same square key, in red ballpoint, for the one on a row that DESTROYS something.
- *
- * Built by replacing the neutral's inks rather than written out, so a change to the key's box —
- * its size, its radius, its touch area — cannot reach one of the pair and miss the other.
+ * The same square key, in red, for the one on a row that DESTROYS something. Built by replacing
+ * the neutral's inks, so a change to the key's box cannot reach one of the pair and miss the other.
  */
 export const ICON_KEY_DANGER = ICON_KEY
-  .replace('text-neutral-500', 'text-[var(--pen-red)]')
-  .replace('hover:text-neutral-900', 'hover:text-[var(--pen-red)]')
-  .replace('dark:text-neutral-400', 'dark:text-[var(--pen-red)]')
-  .replace('dark:hover:text-white', 'dark:hover:text-[var(--pen-red)]')
+  .replace('text-neutral-500', 'text-[var(--ink-danger)]')
+  .replace(' hover:text-neutral-900', '')
+  .replace(' dark:text-neutral-400', '')
+  .replace(' dark:hover:text-white', '')
 
+// `--ink-danger`, not the pen's red, which read 3.3:1 in dark (FIXLIST 7.7); it has its own dark.
 export const SHEET_TOOL_DANGER = SHEET_TOOL
-  .replace('text-neutral-500', 'text-[var(--pen-red)]')
-  .replace('hover:text-neutral-900', 'hover:text-[var(--pen-red)] hover:underline')
-  .replace('dark:text-neutral-400', 'dark:text-[var(--pen-red)]')
-  .replace('dark:hover:text-neutral-200', 'dark:hover:text-[var(--pen-red)]')
+  .replace('text-neutral-500', 'text-[var(--ink-danger)]')
+  .replace('hover:text-neutral-900', 'hover:underline')
+  .replace(' dark:text-neutral-400', '')
+  .replace(' dark:hover:text-neutral-200', '')
 
 /**
  * The sheet's FIRST ROW: the page's tools on one thin band over a hairline.

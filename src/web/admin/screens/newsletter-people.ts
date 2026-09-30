@@ -92,7 +92,7 @@ export function peoplePanel(
   const row = (s: Row, i: number): string => {
     const rate = openRate(s.stats)
     const failed = s.stats && s.stats.failed > 0
-      ? `<span class="ml-1 text-[var(--pen-red)]" title="${escapeAttr(s.stats.lastError ?? '')}">+${n(s.stats.failed)}</span>`
+      ? `<span class="ml-1 text-[var(--ink-danger)]" title="${escapeAttr(s.stats.lastError ?? '')}">+${n(s.stats.failed)}</span>`
       : ''
     // The five fields the CSV carries, on the row, because the island must not read them back
     // out of the cells: the Sent cell also prints failures and the rate cell prints an em-dash

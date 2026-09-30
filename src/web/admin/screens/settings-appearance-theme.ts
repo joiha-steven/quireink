@@ -106,7 +106,7 @@ function presetCard(t: AdminStrings, p: ThemePreset, s: SiteSettings): string {
   // a filled black pill was the loudest thing in the frame. All six ship; the island moves the
   // `hidden` when "Set as default" is pressed.
   const pill = `<span class="whitespace-nowrap rounded-full border border-neutral-300 px-1.5`
-    + ` py-0.5 text-xs text-neutral-500 dark:border-neutral-600 dark:text-neutral-400"`
+    + ` py-0.5 text-xs text-neutral-600 dark:border-neutral-600 dark:text-neutral-300"`
     + ` data-card-default${isDefault ? '' : ' hidden'}>${escapeHtml(t.themeDefault)}</span>`
   // The default palette is always shown, so the visitor never ends up with zero palettes — and
   // a locked tick has to LOOK unavailable rather than merely refuse.
