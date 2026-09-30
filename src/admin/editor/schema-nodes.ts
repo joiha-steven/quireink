@@ -62,7 +62,10 @@ const codeBlock: NodeSpec = {
       return { language: named?.[1] ?? null }
     },
   }],
-  toDOM: (node) => ['pre', ['code', attrs({
+  // `data-language` on the `<pre>` so the stylesheet can print it: the language rode only as a
+  // class on `<code>`, which CSS cannot read back as words, so a pasted Python block showed no
+  // sign of being Python (2026-09-30). Drawn only when there is one.
+  toDOM: (node) => ['pre', attrs({ 'data-language': (node.attrs.language as string | null) ?? null }), ['code', attrs({
     class: node.attrs.language ? `language-${node.attrs.language as string}` : null,
   }), 0]],
 }

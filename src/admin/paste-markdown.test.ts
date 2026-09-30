@@ -177,3 +177,22 @@ describe('pasting Markdown into the editor', () => {
     expect(inCode).toBe(true)
   })
 })
+
+// Two shapes pasted from the web that the editor kept wrong (2026-09-30).
+describe('HTML pasted from somewhere else', () => {
+  it('drops a paragraph holding only a no-break space, which is a blank line spelled as HTML', async () => {
+    const editor = await open('')
+    const out = editor.view.someProp('transformPastedHTML', (fn) =>
+      fn('<p>One</p><p>&nbsp;</p><p> </p><p><br></p><p>Two</p>', editor.view))
+    expect(out).toBe('<p>One</p><p>Two</p>')
+    editor.destroy()
+  })
+
+  it('shows the language a code block carries', async () => {
+    const { schema } = await import('@/admin/editor/schema')
+    const node = schema.nodes.codeBlock!.create({ language: 'python' })
+    expect(JSON.stringify(schema.nodes.codeBlock!.spec.toDOM!(node))).toContain('"data-language":"python"')
+    const plain = schema.nodes.codeBlock!.create()
+    expect(JSON.stringify(schema.nodes.codeBlock!.spec.toDOM!(plain))).not.toContain('data-language')
+  })
+})

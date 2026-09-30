@@ -57,14 +57,16 @@ export function wireHistory(
     none.hidden = revisions.length > 0
     list.hidden = revisions.length === 0
     list.replaceChildren()
-    revisions.forEach((rev, i) => {
+    revisions.forEach((rev) => {
       const row = el('li', { className: className.row })
       const head = el('div', { className: className.head })
       const who = el('div', { className: className.who })
       const name = el('div', { className: className.title })
       name.textContent = rev.title || t.untitled
       const when = el('div', { className: className.when })
-      when.textContent = (i === 0 ? `${t.tmLatest} · ` : '') + formatDateTimeShort(rev.savedAt)
+      // No "Latest" on the first row: a revision is the text as it was BEFORE a save, so the
+      // newest one is never the newest text, and the label said it was (2026-09-30).
+      when.textContent = formatDateTimeShort(rev.savedAt)
       who.append(name, when)
       const key = el('button', { className: buttonClass('secondary'), type: 'button' })
       key.textContent = t.restore

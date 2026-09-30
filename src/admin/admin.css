@@ -256,6 +256,16 @@ img.ProseMirror-separator {
   margin: 0 !important;
 }
 
+/* A code block names its language in the corner, from the `data-language` the node draws. */
+.ProseMirror pre[data-language]::before {
+  content: attr(data-language);
+  float: right;
+  margin-left: 0.75rem;
+  font-size: 0.75em;
+  opacity: 0.6;
+  user-select: none;
+}
+
 /* Editor preview: the writing surface has no .gallery wrapper (grouping happens on
    publish), so make #grid figures flow side-by-side as thumbnails — a gallery
    reads as columns in the editor too, not a vertical stack.

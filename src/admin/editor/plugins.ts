@@ -85,6 +85,9 @@ function markdownClipboard(): Plugin {
         // between them stay whole.
         return Slice.maxOpen(doc.content)
       },
+      // A paragraph holding nothing but a no-break space is how a word processor or a web page
+      // spells a blank line; pasted, it saved as a lone U+00A0 paragraph (2026-09-30).
+      transformPastedHTML: (html: string) => html.replace(/<p\b[^>]*>(?:\s|&nbsp;|&#160;|\u00a0|<br\s*\/?>)*<\/p>/gi, ''),
     },
   })
 }

@@ -111,10 +111,17 @@ function row(t: AdminStrings, kind: Kind, id: string, name: string, deletedAt: s
     + `</span></div></li>`
 }
 
-/** The three kinds that are a piece of writing: a title, and nothing else to say about it. */
+/**
+ * The three kinds that are a piece of writing: a title, and its address in small print.
+ *
+ * The address because titles repeat: three drafts called "x" and eight called "CMP" were rows
+ * nobody could tell apart before restoring or destroying one (2026-09-30). The slug is the one
+ * thing two of them cannot share.
+ */
 const slugRows = (t: AdminStrings, kind: Kind, rows: (Post | Page | Note)[]): string =>
   rows.map((r) => row(t, kind, r.slug, r.title || t.untitled, r.deletedAt,
-    `<p class="${NAME}">${escapeHtml(r.title || t.untitled)}</p>`)).join('')
+    `<p class="${NAME} truncate">${escapeHtml(r.title || t.untitled)}`
+    + ` <span class="${META}">${escapeHtml(r.slug)}</span></p>`)).join('')
 
 const mediaRows = (t: AdminStrings, rows: MediaItem[]): string =>
   rows.map((m) => row(t, 'media', m.url, m.filename, m.deletedAt,
