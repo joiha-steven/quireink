@@ -337,12 +337,13 @@ export async function purgeMediaBatch(urls: string[]): Promise<void> {
   if (keys.length === 0) return
 
   // Need thumb + variants for blob cleanup.
+  // Only trashed rows: a live picture's bytes went with a purge from a stale Trash (see `purgePost`).
   const removed = all<MediaRow>(
-    `select * from media where path in (select value from json_each(?))`, keyList(keys),
+    `select * from media where path in (select value from json_each(?)) and deleted_at is not null`, keyList(keys),
   )
   if (removed.length === 0) return
 
-  run(`delete from media where path in (select value from json_each(?))`, keyList(keys))
+  run(`delete from media where path in (select value from json_each(?)) and deleted_at is not null`, keyList(keys))
 
   // Clean up EVERY blob (original + thumb + all variants). Variant paths attempted
   // for any raster regardless of the flag — deletes are idempotent, so nothing orphans.

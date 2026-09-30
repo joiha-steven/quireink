@@ -193,7 +193,8 @@ export async function restoreNote(slug: string): Promise<void> {
 }
 
 export async function purgeNote(slug: string): Promise<void> {
-  run(`delete from notes where slug = ?`, slug)
+  // Only a trashed row: see `purgePost`.
+  run(`delete from notes where slug = ? and deleted_at is not null`, slug)
 }
 
 export async function getTrashedNotes(): Promise<Note[]> {

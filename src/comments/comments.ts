@@ -281,7 +281,8 @@ export async function restoreComment(id: number): Promise<void> {
 
 // Hard delete one comment (Trash purge). Any live child re-roots to top on read.
 export async function purgeComment(id: number): Promise<void> {
-  run(`delete from comments where id = ?`, id)
+  // Only a trashed row: see `purgePost`.
+  run(`delete from comments where id = ? and deleted_at is not null`, id)
 }
 
 // Permanently remove EVERY trashed comment. Returns the count.

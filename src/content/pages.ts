@@ -196,7 +196,8 @@ export async function restorePage(slug: string): Promise<void> {
 
 // Permanently remove a page (hard delete, irreversible). Only reached from Trash.
 export async function purgePage(slug: string): Promise<void> {
-  run(`delete from pages where slug = ?`, slug)
+  // Only a trashed row: see `purgePost`.
+  run(`delete from pages where slug = ? and deleted_at is not null`, slug)
 }
 
 // Trashed pages (metadata only), most-recently-deleted first, for the Trash view.

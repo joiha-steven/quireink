@@ -283,11 +283,21 @@ describe('soft delete (Invariant 6)', () => {
     await savePost({ title: 'Doomed', content: 'v1', categories: ['dev'], tags: ['bun'] })
     await savePost({ title: 'Doomed', content: 'v2', categories: ['dev'] }, 'doomed')
     await addComment({ postSlug: 'doomed', parentId: null, name: 'A', email: 'a@b.co', provider: 'manual', content: 'hi' })
+    await deletePost('doomed') // a purge is of a trashed row, as the Trash sends it
     await purgePost('doomed')
     expect(one<{ n: number }>(`select count(*) n from posts`)!.n).toBe(0)
     expect(all(`select 1 from post_terms`)).toHaveLength(0)
     expect(await getRevisions('doomed')).toHaveLength(0)
     expect(await getCommentTree('doomed')).toHaveLength(0)
+  })
+
+  it('refuses to purge a post that is live, and takes nothing with it', async () => {
+    // A second admin tab still showing it in the Trash after the first restored it.
+    await savePost({ title: 'Alive', content: 'v1', categories: ['dev'] })
+    await addComment({ postSlug: 'alive', parentId: null, name: 'A', email: 'a@b.co', provider: 'manual', content: 'hi' })
+    await purgePost('alive')
+    expect(await getPost('alive')).not.toBeNull()
+    expect(await getCommentTree('alive')).toHaveLength(1)
   })
 
   it('empties the posts trash and reports the count', async () => {

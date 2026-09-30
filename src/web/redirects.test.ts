@@ -131,8 +131,9 @@ describe('the URLs that are a second spelling of another URL', () => {
 
 describe('what redirects do NOT touch', () => {
   it('leaves the admin and the API alone', async () => {
-    await saveRedirect({ source: '/admin/old', destination: '/new' })
-    await saveRedirect({ source: '/api/old', destination: '/new' })
+    // Rows as an older release could have stored them: saving one is refused now.
+    await expect(saveRedirect({ source: '/admin/old', destination: '/new' })).rejects.toThrow('reserved')
+    db().run(`insert into redirects (source, destination, permanent, created_at) values ('/admin/old', '/new', 1, 0), ('/api/old', '/new', 1, 0)`)
     // The admin bounces a signed-out visitor to sign-in; the API 404s. Neither is a 301,
     // which is the point: a redirect table cannot reach either surface.
     expect((await get('/admin/old')).status).not.toBe(301)

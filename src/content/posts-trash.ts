@@ -33,9 +33,13 @@ export async function restorePost(slug: string): Promise<void> {
 // Hard delete a post + its revisions (Trash UI only). `post_terms` cascades. One transaction:
 // a purge that stopped after the row left revisions and comments keyed to a slug nothing
 // answers to, which nothing would ever collect.
+// ⚠️ ONLY A TRASHED ROW (2026-09-30). Nothing checked `deleted_at`, so a purge from a second
+// admin tab that still showed the row in the Trash — after the first tab restored it — hard-deleted
+// the live piece.
 export async function purgePost(slug: string): Promise<void> {
   tx(() => {
-    run(`delete from posts where slug = ?`, slug)
+    const { changes } = run(`delete from posts where slug = ? and deleted_at is not null`, slug)
+    if (changes === 0) return
     deleteRevisions(slug)
     deleteCommentsForPost(slug)
   })

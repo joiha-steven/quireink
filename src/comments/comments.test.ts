@@ -166,6 +166,7 @@ describe('mutations', () => {
   it('a purged parent leaves its live reply re-rooted, not deleted', async () => {
     const parent = await addComment({ ...base, parentId: null })
     const reply = await addComment({ ...base, parentId: parent.id, content: 'still here' })
+    await softDeleteComment(parent.id) // a purge is of a trashed row, as the Trash sends it
     await purgeComment(parent.id)
     const tree = await getCommentTree('hello')
     expect(tree.map((c) => c.id)).toEqual([reply.id])

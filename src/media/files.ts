@@ -211,10 +211,13 @@ export async function restoreFilesBatch(urls: string[]): Promise<FileItem[]> {
 
 // Hard delete (Trash UI only): row delete first, then best-effort blob cleanup.
 export async function purgeFilesBatch(urls: string[]): Promise<void> {
-  const keys = deletableKeys(urls)
-  if (keys.length === 0) return
-  run(`delete from files where url in (select value from json_each(?))`, keyList(keys))
-  await Promise.all(keys.map((k) => deleteByPathname(k).catch(() => {})))
+  // Only trashed rows, and only their bytes: see `purgePost`.
+  const trashed = all<{ url: string }>(
+    `select url from files where url in (select value from json_each(?)) and deleted_at is not null`, keyList(deletableKeys(urls)),
+  ).map((r) => r.url)
+  if (trashed.length === 0) return
+  run(`delete from files where url in (select value from json_each(?))`, keyList(trashed))
+  await Promise.all(trashed.map((k) => deleteByPathname(k).catch(() => {})))
 }
 
 // Trashed library files (most-recently-deleted first) for the Trash view.
