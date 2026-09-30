@@ -6,7 +6,7 @@
 // has no such rule: the lookup becomes ordinary middleware in M3, and the rows here do
 // not change.
 
-import { normalizePath, isValidDestination } from '@/server/redirect-path'
+import { normalizePath, isValidDestination, isReservedPath } from '@/server/redirect-path'
 import { all, one, run } from '@/store/query'
 import { nowMs } from '@/store/db'
 import { liveSlugTaken } from '@/content/slugs'
@@ -81,6 +81,7 @@ export async function saveRedirect(input: {
   if (!source) throw new RedirectInputError('A source path is required')
   if (!isValidDestination(destination)) throw new RedirectInputError('Destination must be a path or an http(s) URL')
   if (source === destination) throw new RedirectInputError('Source and destination are the same')
+  if (isReservedPath(source)) throw new RedirectInputError(`reserved: ${source} cannot be redirected`)
   // Live content beats a redirect at the same path, and the middleware answers BEFORE the
   // router, so a redirect saved over a live slug does not lose the argument: it wins, and
   // the post simply stops being reachable with nothing anywhere saying why. Refusing is

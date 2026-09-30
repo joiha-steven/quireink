@@ -17,6 +17,7 @@
 
 import type { MiddlewareHandler } from 'hono'
 import { findRedirect } from '@/server/redirects'
+import { isReservedPath } from '@/server/redirect-path'
 
 /**
  * Paths that can never be a redirect source: the owner's own surfaces, and the two heavy
@@ -24,8 +25,7 @@ import { findRedirect } from '@/server/redirects'
  * reason — a table lookup per image byte buys nothing.
  */
 function isExcluded(path: string): boolean {
-  return path.startsWith('/admin') || path.startsWith('/api')
-    || path.startsWith('/uploads/') || path.startsWith('/assets/')
+  return path.startsWith('/admin') || isReservedPath(path)
 }
 
 export function userRedirects(): MiddlewareHandler {

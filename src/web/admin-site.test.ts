@@ -176,6 +176,21 @@ describe('redirects', () => {
   it('rejects a non-numeric id', async () => {
     expect((await asOwner('/api/redirects/abc', { method: 'DELETE' })).status).toBe(400)
   })
+
+  // A redirect on `/login` was saved and took effect: the sign-in page answered 301 for
+  // everybody, and the owner was locked out the moment the session ran out.
+  it('refuses the owner\'s way in, the feeds and the root', async () => {
+    for (const source of ['/login', '/login/2fa', '/setup', '/', '/feed.xml', '/sitemap.xml', '/api/health', '/.well-known/x']) {
+      const res = await post('/api/redirects', { source, destination: '/elsewhere' })
+      expect(`${source} → ${res.status}`).toBe(`${source} → 400`)
+    }
+  })
+
+  it('and a row stored before the refusal existed does nothing', async () => {
+    db().run(`insert into redirects (source, destination, permanent, created_at) values ('/login', '/x', 1, 0)`)
+    expect((await app.request('/login')).status).not.toBe(301)
+    db().run(`delete from redirects where source = '/login'`)
+  })
 })
 
 describe('settings', () => {
