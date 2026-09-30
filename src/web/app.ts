@@ -56,7 +56,7 @@ import { viewRoutes } from '@/web/admin/views'
 import { backupRoutes } from '@/web/admin/backup'
 import { handleMcp } from '@/web/admin/mcp-transport'
 import { adminShell, handleAdminAsset } from '@/web/admin/spa'
-import { currentOwner } from '@/web/guard'
+import { currentOwner, renewCookie } from '@/web/guard'
 import { handleCommentsGet, handleCommentsPost, handleStampGet } from '@/web/comments'
 import { commentAuthRoutes } from '@/web/comment-auth'
 import { SPECULATION_PATH, speculationRules } from '@/web/speculation'
@@ -76,7 +76,8 @@ import { handleSetupClaim, handleSetupPage, setupWizardRoutes } from '@/web/setu
  * asked for rather than dumping them at the dashboard.
  */
 async function adminPage(c: Context): Promise<Response> {
-  if (currentOwner(c) === null) {
+  const found = currentOwner(c)
+  if (found === null) {
     const next = encodeURIComponent(c.req.path + (new URL(c.req.url).search || ''))
     return c.redirect(`/login?next=${next}`, 302)
   }
@@ -87,7 +88,9 @@ async function adminPage(c: Context): Promise<Response> {
   // mark is a fact about this request. It was a client-side comparison against `location`,
   // which is the same answer arrived at one paint later.
   const query = new URL(c.req.url).searchParams
-  return c.html(await adminShell(await getSettings(), c.req.path, query), 200, { 'x-robots-tag': 'noindex, nofollow' })
+  const res = c.html(await adminShell(await getSettings(), c.req.path, query), 200, { 'x-robots-tag': 'noindex, nofollow' })
+  renewCookie(c, found, res)
+  return res
 }
 
 export function createApp(): Hono {

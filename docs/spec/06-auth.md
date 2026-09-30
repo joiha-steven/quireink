@@ -96,7 +96,7 @@ SHA-1, 30-second step, 6 digits. About 80 lines using `crypto.createHmac`, no li
 - Token: 32 random bytes, base64url. The **hash** is the primary key; the raw token
   exists only in the cookie. A database leak does not yield live sessions.
 - Cookie: `__Host-quire_session`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`.
-- Sliding expiry: 30 days from last use, absolute maximum 90 days.
+- Sliding expiry: 30 days from last use, absolute maximum 90 days. The row moves at most once an hour, and the owner response that moves it sends the cookie again with the new `Max-Age` (the browser kept the sign-in one until 2026-09-30).
 - `last_seen_at` is written at most once per hour to avoid a write per request.
 - Revocable: Settings lists active sessions (coarse device, approximate location by IP
   hash bucket, last seen) with per-session revoke and a "sign out everywhere" button.

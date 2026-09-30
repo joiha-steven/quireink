@@ -43,6 +43,8 @@ export type SessionRow = {
   expiresAt: number
   userAgent: string | null
   ipHash: string | null
+  /** Set when this lookup moved the expiry, so the cookie has to be sent again with it. */
+  renewed?: true
 }
 
 type DbRow = {
@@ -140,7 +142,7 @@ export function resolveSession(token: string | null | undefined): SessionRow | n
   if (at - row.last_seen_at >= TOUCH_MS) {
     const expiresAt = Math.min(at + IDLE_MS, row.created_at + MAX_MS)
     run(`update sessions set last_seen_at = ?, expires_at = ? where id = ?`, at, expiresAt, row.id)
-    return toSession({ ...row, last_seen_at: at, expires_at: expiresAt })
+    return { ...toSession({ ...row, last_seen_at: at, expires_at: expiresAt }), renewed: true }
   }
   return toSession(row)
 }

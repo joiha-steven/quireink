@@ -84,3 +84,23 @@ describe('Invariant 1, held by the gate rather than by the handler', () => {
     expect(pageCache.size).toBe(1)
   })
 })
+
+// The row slid forward with use and the cookie never did, so a daily owner was signed out a
+// month after signing in (2026-09-30).
+describe('the session cookie', () => {
+  const age = (ms: number) => db().run(`update sessions set last_seen_at = last_seen_at - ?`, [ms])
+
+  it('is sent again, with the new expiry, when the request moved it', async () => {
+    age(2 * 60 * 60 * 1000)
+    const res = await gated().request('/api/reads-nothing', { headers: { cookie } })
+    const set = res.headers.get('set-cookie') ?? ''
+    expect(set).toContain(cookie)
+    const maxAge = Number(/Max-Age=(\d+)/.exec(set)?.[1])
+    expect(maxAge).toBeGreaterThan(29 * 24 * 60 * 60)
+  })
+
+  it('is left alone when nothing moved, so an ordinary request carries no Set-Cookie', async () => {
+    const res = await gated().request('/api/reads-nothing', { headers: { cookie } })
+    expect(res.headers.get('set-cookie')).toBeNull()
+  })
+})

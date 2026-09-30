@@ -9,7 +9,7 @@
 import { Hono } from 'hono'
 import type { Context, MiddlewareHandler } from 'hono'
 import { getCookie } from 'hono/cookie'
-import { COOKIE_NAME, resolveSession, type SessionRow } from '@/auth/sessions'
+import { COOKIE_NAME, resolveSession, sessionCookie, type SessionRow } from '@/auth/sessions'
 import { checkOrigin, isStateChanging } from '@/auth/csrf'
 import { getUser, type PublicUser } from '@/auth/users'
 import { clearCache } from '@/server/cache'
@@ -43,6 +43,19 @@ export function currentOwner(c: Context): Owner | null {
 }
 
 /**
+ * Send the session cookie again when this request moved its expiry.
+ *
+ * The row slides forward with use (up to 90 days) but the cookie was only ever issued at sign-in
+ * with 30 days on it, so an owner who used the admin every day was still signed out a month
+ * after signing in (2026-09-30). Only on owner responses, which are `private, no-store`: a
+ * `Set-Cookie` on a public page is one a shared cache could keep.
+ */
+export function renewCookie(c: Context, found: Owner, res: Response): void {
+  const token = getCookie(c, COOKIE_NAME)
+  if (found.session.renewed && token) res.headers.append('set-cookie', sessionCookie(token, found.session.expiresAt))
+}
+
+/**
  * Reject anything not signed in, and any state-changing request that cannot prove where
  * it came from.
  *
@@ -67,6 +80,7 @@ export function requireOwner(opts: RouteOptions = {}): MiddlewareHandler<OwnerEn
 
     c.set('owner', owner)
     await next()
+    renewCookie(c, owner, c.res)
 
     // Invariant 1, made structural the way Invariant 4 already is. Until 2026-08-29 it
     // was the only invariant enforced by DISCIPLINE: ~45 hand-placed `clearCache()` calls
