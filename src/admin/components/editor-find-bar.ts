@@ -18,6 +18,7 @@ import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { buttonClass, CONTROL_CHROME } from '@/admin-shared/kit'
 import { ICONS } from '@/icons'
 import { el, svgGlyph } from './node-dom'
+import { composing } from './composing'
 
 /** The five things the strip can ask for, and nothing about what it is searching. */
 export type FindActions = {
@@ -198,11 +199,13 @@ export function mountFindBar(host: HTMLElement, hooks: FindBarHooks): FindBar {
   find.addEventListener('input', () => ask(find.value, caseSensitive))
   matchCase.addEventListener('click', () => ask(query, !caseSensitive))
   find.addEventListener('keydown', (e) => {
+    if (composing(e)) return
     // Enter walks the hits, which is the one key every find box in existence answers to.
     if (e.key === 'Enter') { e.preventDefault(); target.onStep(e.shiftKey ? -1 : 1) }
     if (e.key === 'Escape') { e.preventDefault(); target.onClose() }
   })
   swap.addEventListener('keydown', (e) => {
+    if (composing(e)) return
     if (e.key === 'Enter') { e.preventDefault(); target.onReplace(swap.value) }
     if (e.key === 'Escape') { e.preventDefault(); target.onClose() }
   })

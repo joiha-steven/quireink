@@ -98,3 +98,24 @@ describe('a field the panel drew reaches the draft', () => {
     expect(wrote('tags')).toBeUndefined()
   })
 })
+
+// Telex and every CJK input method confirm a word with Enter, delivered as a keydown with
+// `isComposing` set. The tag box took the half-typed "việ" as a tag (2026-09-30).
+describe('a tag box and an input method', () => {
+  const chips = `<div data-chips="tags"><div data-chip-chosen></div><div data-chip-offers></div>
+    <input data-chip-box value=""></div>`
+  const enter = (box: HTMLInputElement, composing: boolean): void => {
+    box.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', isComposing: composing, bubbles: true, cancelable: true }))
+  }
+
+  it('leaves the Enter that confirms a composed word to the input method', () => {
+    wire(chips)
+    const box = root.querySelector<HTMLInputElement>('[data-chip-box]')!
+    box.value = 'việ'
+    enter(box, true)
+    expect(wrote('tags')).toBeUndefined()
+    box.value = 'việt'
+    enter(box, false)
+    expect(wrote('tags')).toEqual(['việt'])
+  })
+})

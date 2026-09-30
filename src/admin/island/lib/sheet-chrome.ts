@@ -12,7 +12,7 @@
 import type { Editor } from '@/admin/editor/editor'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { mountToolbar, toolbarWords, type Toolbar } from '@/admin/components/editor-toolbar'
-import { mountBubbleBar, openSlashMenu, type BubbleBar } from '@/admin/components/editor-menus'
+import { mountBubbleBar, openSlashMenu, type BubbleBar, type SlashAt, type SlashMenu } from '@/admin/components/editor-menus'
 
 // The sticky band above the writing: the action line plus the toolbar strip that sticks under
 // it (~60px with its margins). The bubble bar must not be placed inside this band, because both
@@ -57,8 +57,10 @@ export type Chrome = {
   sync: () => void
   /** How tall the find strip is right now, so the toolbar sticks below rather than behind. */
   setFindHeight: (px: number) => void
-  /** Open the "/" menu at a point in viewport coordinates, or shut the one that is open. */
-  openSlash: (at: { left: number; top: number } | null) => void
+  /** Open the "/" menu where the "/" was typed, or shut the one that is open. */
+  openSlash: (at: SlashAt | null) => void
+  /** Offer the open "/" menu a key; true when it used it. */
+  slashKey: (key: string) => boolean
   destroy: () => void
 }
 
@@ -66,7 +68,7 @@ export function mountChrome(parts: ChromeParts, hooks: ChromeHooks): Chrome {
   const { editor, t } = hooks
   let toolbar: Toolbar | null = null
   let bubble: BubbleBar | null = null
-  let closeSlash: (() => void) | null = null
+  let slash: SlashMenu | null = null
   let findHeight = 0
   let barHeight = 0
 
@@ -132,14 +134,14 @@ export function mountChrome(parts: ChromeParts, hooks: ChromeHooks): Chrome {
       // Answering the request by forgetting the handle leaves the menu on the page over an
       // editor that has already run the command.
       const drop = (): void => {
-        if (!closeSlash) return
-        closeSlash()
-        closeSlash = null
+        if (!slash) return
+        slash.close()
+        slash = null
         hooks.onSlashShut()
       }
       drop()
       if (!at || hooks.raw()) return
-      closeSlash = openSlashMenu({
+      slash = openSlashMenu({
         editor,
         t,
         at,
@@ -148,10 +150,11 @@ export function mountChrome(parts: ChromeParts, hooks: ChromeHooks): Chrome {
         onPickGallery: () => { drop(); hooks.onPickGallery() },
       })
     },
+    slashKey: (key) => slash?.key(key) ?? false,
     destroy: () => {
       watch.disconnect()
       wide.removeEventListener('change', onWide)
-      closeSlash?.()
+      slash?.close()
       toolbar?.destroy()
       bubble?.destroy()
     },

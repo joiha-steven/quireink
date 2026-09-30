@@ -272,26 +272,53 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
     })()`, 1500)
   })
 
-  // The mock's one inserting gesture: "/" on an empty line raises the insert menu, and the
-  // character does NOT land in the text. Driven through execCommand so it exercises the same
-  // `handleTextInput` path a keyboard reaches. Both halves matter — a menu that opens but
-  // also types the slash fails the second assertion.
-  flow('admin: "/" on an empty line raises the insert menu', () => expect('/admin/editor', `
+  // The mock's one inserting gesture: "/" on an empty line raises the insert menu. Since
+  // 2026-09-30 the "/" is typed too and what follows filters, so a line may start with a slash:
+  // `/usr/bin` used to lose its "/" to a menu that then sat over the text. Driven through
+  // execCommand so it exercises the same `handleTextInput` path a keyboard reaches.
+  flow('admin: "/" on an empty line raises the insert menu, and filters as you type', () => expect('/admin/editor', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
       const surface = document.querySelector('.ProseMirror')
       if (!surface) return 'no writing surface'
+      const key = (k) => surface.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }))
+      const visible = () => [...document.querySelectorAll('[data-slash-row]')].filter((r) => !r.hidden)
       surface.focus()
       document.execCommand('insertText', false, '/')
-      await sleep(400)
-      const rows = document.querySelectorAll('[data-slash-row]').length
-      if (!rows) return 'typing "/" on an empty line raised nothing'
-      if (surface.textContent.includes('/')) return 'the menu opened AND the slash landed in the text'
-      // Escape closes it and leaves the paragraph as it was.
-      surface.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await sleep(300)
+      const all = visible().length
+      if (!all) return 'typing "/" on an empty line raised nothing'
+      if (!surface.textContent.includes('/')) return 'the slash did not land in the text'
+      document.execCommand('insertText', false, 'tab')
       await sleep(200)
+      const left = visible()
+      if (left.length === 0 || left.length >= all) return 'typing after the slash did not narrow the menu (' + left.length + ' of ' + all + ')'
+      key('Enter')
+      await sleep(300)
+      if (document.querySelector('[data-slash-row]')) return 'Enter did not choose'
+      if (!surface.querySelector('table')) return 'Enter on the table row put no table in'
+      if (surface.textContent.includes('/tab')) return 'the "/tab" was left in the text'
+      // A path: no row matches, so the menu goes and the words stay exactly as typed.
+      document.execCommand('selectAll'); document.execCommand('delete')
+      await sleep(100)
+      document.execCommand('insertText', false, '/')
+      await sleep(200)
+      document.execCommand('insertText', false, 'usr/bin is a path')
+      await sleep(250)
+      if (visible().length) return 'the menu stayed open over a path'
+      if (!surface.textContent.includes('/usr/bin is a path')) return 'the path was not kept: ' + surface.textContent.slice(0, 40)
+      // Escape closes and keeps the slash, on a fresh line of its own.
+      key('Enter')
+      await sleep(150)
+      document.execCommand('insertText', false, '/')
+      await sleep(200)
+      if (!visible().length) return 'no menu on a fresh line'
+      key('Escape')
+      await sleep(150)
       if (document.querySelector('[data-slash-row]')) return 'Escape did not close the menu'
-      return 'ok ' + rows + ' rows'
+      // Not the LAST paragraph: the editor keeps an empty one under the writing.
+      const kept = [...surface.querySelectorAll('p')].some((p) => p.textContent === '/')
+      return kept ? 'ok ' + all + ' rows' : 'Escape took the slash away: ' + JSON.stringify(surface.textContent)
     })()`, 1200))
 
   // The owner found this one by writing: selecting the FIRST line put the formatting bar

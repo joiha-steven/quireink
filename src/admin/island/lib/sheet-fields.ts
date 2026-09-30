@@ -10,6 +10,7 @@ import { CONTROL } from '@/admin-shared/kit'
 import { el } from '@/admin/components/node-dom'
 import { wireDate, type DateField } from './sheet-calendar'
 import { safeImageSrc } from '@/md/html-rules'
+import { composing } from '@/admin/components/composing'
 
 export type Picked = { url: string; alt?: string } | { urls: string[] } | null
 
@@ -130,7 +131,7 @@ function wireChips(
   }
   entry?.addEventListener('input', paint)
   entry?.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter') return
+    if (e.key !== 'Enter' || composing(e)) return
     e.preventDefault()
     add(entry.value)
   })

@@ -19,6 +19,7 @@ import {
 import { fill } from './lib/mark-dom'
 import { ask, type Usage } from './lib/assistant-stream'
 import { scrollBehavior } from '@/admin/motion'
+import { composing } from '@/admin/components/composing'
 
 const root = document.querySelector<HTMLElement>('[data-screen="assistant"]')
 
@@ -89,6 +90,7 @@ if (root) {
 
   box?.addEventListener('input', () => { grow(); armSend() })
   box?.addEventListener('keydown', (e) => {
+    if (composing(e)) return
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(box.value) }
   })
   sendBtn?.addEventListener('click', () => { if (box) void send(box.value) })

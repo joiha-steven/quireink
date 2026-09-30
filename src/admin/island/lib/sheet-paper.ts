@@ -11,6 +11,7 @@ import { Editor } from '@/admin/editor/editor'
 import type { KeySound } from '@/admin/components/key-sound'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import type { Hit } from '@/admin/components/editorFind'
+import type { SlashAt } from '@/admin/components/editor-menus'
 import { writingSurface } from '@/admin/components/editor-surface'
 import { mountSource } from '@/admin/components/editor-source'
 import { captionFromUrl, readMarkdown, videoUrlsToNodes } from '@/admin/components/editorDoc'
@@ -64,7 +65,7 @@ export type Paper = {
 export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
   const { t, keySound } = hooks
   const editorRef: { current: Editor | null } = { current: null }
-  const slashRef: { current: { left: number; top: number } | null } = { current: null }
+  const slashRef: { current: SlashAt | null } = { current: null }
   // The typewriter's caret: a span the key feedback moves to where the writing is. Drawn only
   // when there is a sound to go with it, because it is that feature's own sight of itself.
   const caret = keySound.mode === 'off'
@@ -127,6 +128,7 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
       caretRef,
       slashRef,
       setSlash: (at) => { slashRef.current = at; chrome.openSlash(at) },
+      slashKey: (key) => chrome.slashKey(key),
       editorRef,
       insertImages,
       imageFiles,

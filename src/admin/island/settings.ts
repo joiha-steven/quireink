@@ -30,6 +30,7 @@ import { wireSecurity } from './lib/settings-security'
 import { wireSound } from './lib/settings-sound'
 import { wireTheme } from './lib/settings-theme'
 import { wireType } from './lib/settings-type'
+import { composing } from '@/admin/components/composing'
 
 const root = document.querySelector<HTMLElement>('[data-screen="settings"]')
 
@@ -270,7 +271,7 @@ if (root) {
   }
 
   find?.addEventListener('keydown', (e) => {
-    if (results?.hidden !== false) return
+    if (results?.hidden !== false || composing(e)) return
     if (e.key === 'ArrowDown') { e.preventDefault(); mark(at + 1) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); mark(at - 1) }
     else if (e.key === 'Enter' && at >= 0) { e.preventDefault(); shown()[at]?.querySelector('button')?.click() }

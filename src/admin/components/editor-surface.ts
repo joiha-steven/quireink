@@ -17,6 +17,8 @@ import type { Editor } from '@/admin/editor/editor'
 import type { KeySound } from './key-sound'
 import { placeCaret, pulseInput } from './key-feedback'
 import { isVideoUrl } from '@/render/video'
+import type { SlashAt } from './editor-menus'
+import { composing } from './composing'
 
 /** A box with one slot in it, read at call time rather than captured at build time. */
 export type Holder<T> = { current: T }
@@ -25,8 +27,10 @@ export type SurfaceHooks = {
   keySound: KeySound
   caretRef: Holder<HTMLSpanElement | null>
   /** Where the "/" menu is open, read inside a handler registered once. */
-  slashRef: Holder<{ left: number; top: number } | null>
-  setSlash: (at: { left: number; top: number } | null) => void
+  slashRef: Holder<SlashAt | null>
+  setSlash: (at: SlashAt | null) => void
+  /** Offer the open "/" menu a key; true when it used it. */
+  slashKey: (key: string) => boolean
   editorRef: Holder<Editor | null>
   /** Upload and insert, in order, from wherever they came. */
   insertImages: (files: File[], at: number | undefined) => Promise<void>
@@ -35,13 +39,13 @@ export type SurfaceHooks = {
 }
 
 export function writingSurface(
-  { keySound, caretRef, slashRef, setSlash, editorRef, insertImages, imageFiles }: SurfaceHooks,
+  { keySound, caretRef, slashRef, setSlash, slashKey, editorRef, insertImages, imageFiles }: SurfaceHooks,
 ): EditorProps {
   return {
       attributes: { class: 'prose max-w-none min-h-[420px] px-4 py-4' },
-      // "/" on an empty line CALLS the insert menu rather than typing a character (the
-      // Writing Desk mock's gesture). Anywhere else "/" is just a slash — dates, paths and
-      // fractions keep working.
+      // "/" on an empty line CALLS the insert menu (the Writing Desk mock's gesture), and is
+      // typed as well: the words after it filter the menu, and a line that really starts with
+      // a slash keeps it (`components/editor-menus.ts`). Anywhere else "/" is just a slash.
       //
       // `handleTextInput`, not `handleKeyDown`: the text hook sees every way a "/" can
       // arrive — a keypress, an IME commit, an `insertText` — where the key hook sees only
@@ -52,16 +56,12 @@ export function writingSurface(
         const { $from, empty } = view.state.selection
         if (!empty || $from.parent.type.name !== 'paragraph' || $from.parent.content.size !== 0) return false
         const caret = view.coordsAtPos(from)
-        setSlash({ left: caret.left, top: caret.top })
-        return true
-      },
-      // Escape closes the menu before it does anything else.
-      handleKeyDown(_view, event) {
-        if (event.key === 'Escape' && slashRef.current) {
-          setSlash(null)
-          return true
-        }
+        setSlash({ left: caret.left, top: caret.top, from })
         return false
+      },
+      // While the menu is open it has the first say on arrows, Enter, Tab and Escape.
+      handleKeyDown(_view, event) {
+        return !!slashRef.current && !composing(event) && slashKey(event.key)
       },
       handleDOMEvents: {
         beforeinput(view, event) {

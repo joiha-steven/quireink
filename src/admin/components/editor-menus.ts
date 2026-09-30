@@ -250,22 +250,35 @@ export function mountBubbleBar(
 export type SlashHooks = {
   editor: Editor
   t: SheetWords
-  /** Viewport coordinates of the caret the "/" was typed at. */
-  at: { left: number; top: number }
+  /** Viewport coordinates of the caret the "/" was typed at, and the document position. */
+  at: SlashAt
   onClose: () => void
   onPickImage: () => void
   onPickGallery: () => void
 }
+
+/** Where the "/" went: the point to draw the menu at and the position of the character. */
+export type SlashAt = { left: number; top: number; from: number }
+
+/** The open menu: take it down, or offer it a key (true = the menu used it). */
+export type SlashMenu = { close: () => void; key: (key: string) => boolean }
 
 /**
  * The "/" menu: everything that puts something NEW on the page, opened at the caret by typing
  * "/" on an empty line. Each block's Markdown shortcut is printed beside its row, so the menu
  * teaches the gesture that makes itself unnecessary.
  *
+ * THE "/" IS TYPED, and what follows it filters (2026-09-30). The menu used to swallow the
+ * character, so no paragraph could start with one (`/usr/bin is a path` became `usr/bin…`),
+ * and it stayed open over whatever was typed next without listening to it. Now the text after
+ * the "/" narrows the rows; arrows move, Enter or Tab chooses, and choosing takes the "/…" out
+ * first. Escape, a query no row matches, or the caret leaving the line closes the menu and
+ * leaves the words exactly as typed.
+ *
  * `mousedown` is prevented THROUGHOUT: a mousedown in here would blur the editor and move the
  * caret before the command ran — the same trap the bubble bar documents.
  */
-export function openSlashMenu({ editor, t, at, onClose, onPickImage, onPickGallery }: SlashHooks): () => void {
+export function openSlashMenu({ editor, t, at, onClose, onPickImage, onPickGallery }: SlashHooks): SlashMenu {
   const box = el('div', { className: className.menu, role: 'menu', 'aria-label': t.tbInsert })
   box.addEventListener('mousedown', hold)
   // Keep the menu on screen when "/" is typed near the bottom edge.
@@ -273,9 +286,38 @@ export function openSlashMenu({ editor, t, at, onClose, onPickImage, onPickGalle
   box.style.top = `${Math.min(at.top + 24, window.innerHeight - 380)}px`
 
   const chain = () => editor.chain().focus()
-  // `onClose` first, matching what the React menu did: the caller drops the state that
-  // opened this, and the box goes with it on the next pass.
-  const run = (fn: () => void): void => { onClose(); fn() }
+  type Row = { button: HTMLButtonElement; words: string; act: () => void }
+  const rows: Row[] = []
+  let shown: Row[] = []
+  let active = 0
+
+  /** The "/…" this menu is answering, or null once the caret has left it. */
+  const typed = (): string | null => {
+    const { $from, empty } = editor.state.selection
+    if (!empty || $from.parent.type.name !== 'paragraph' || $from.start() !== at.from) return null
+    const text = $from.parent.textContent
+    return text.startsWith('/') ? text.slice(1) : null
+  }
+  // Choosing: `onClose` first, matching what the React menu did, then the "/…" goes, then the
+  // command runs where it stood.
+  const run = (act: () => void): void => {
+    const query = typed()
+    onClose()
+    if (query !== null) editor.view.dispatch(editor.state.tr.delete(at.from, at.from + 1 + query.length))
+    act()
+  }
+  const paint = (): void => shown.forEach((r, i) => {
+    const on = i === active
+    r.button.setAttribute('aria-selected', String(on))
+    r.button.classList.toggle('bg-neutral-100', on)
+    r.button.classList.toggle('dark:bg-neutral-700', on)
+    if (!on) return
+    // By hand, not `scrollIntoView`, which could move the page and so close the menu.
+    const top = r.button.offsetTop
+    const bottom = top + r.button.offsetHeight
+    if (top < box.scrollTop) box.scrollTop = top
+    else if (bottom > box.scrollTop + box.clientHeight) box.scrollTop = bottom - box.clientHeight
+  })
   const row = (label: string, act: () => void, hint?: string): void => {
     const button = el('button', { className: className.row, type: 'button', 'data-slash-row': '' })
     const name = el('span')
@@ -288,6 +330,7 @@ export function openSlashMenu({ editor, t, at, onClose, onPickImage, onPickGalle
     }
     button.addEventListener('click', () => run(act))
     box.appendChild(button)
+    rows.push({ button, words: `${label} ${hint ?? ''}`.toLowerCase(), act })
   }
 
   row(t.tbImage, onPickImage)
@@ -297,7 +340,8 @@ export function openSlashMenu({ editor, t, at, onClose, onPickImage, onPickGalle
   row(t.tbMath, () => chain().setMath(true).run())
   row(t.tbMathInline, () => chain().setMath(false).run())
   row(t.tbDivider, () => chain().setHorizontalRule().run(), '---')
-  box.appendChild(el('span', { className: className.divider, 'aria-hidden': 'true' }))
+  const divider = el('span', { className: className.divider, 'aria-hidden': 'true' })
+  box.appendChild(divider)
   row(tip(t.tbQuote, 'blockquote'), () => chain().toggleBlockquote().run(), '>')
   row(tip(t.tbList, 'bulletList'), () => chain().toggleBulletList().run(), '-')
   row(tip(t.tbListNumbered, 'orderedList'), () => chain().toggleOrderedList().run(), '1.')
@@ -305,19 +349,50 @@ export function openSlashMenu({ editor, t, at, onClose, onPickImage, onPickGalle
   for (const level of [2, 3] as const) {
     row(`${t.tbHeading} ${level}`, () => chain().toggleHeading({ level }).run(), '#'.repeat(level))
   }
+  shown = rows
+  paint()
+
+  // Every change to the document or the caret re-reads the "/…". Nothing is filtered on a
+  // keystroke of its own: an IME commit or a paste reaches the text without one.
+  const follow = (): void => {
+    const query = typed()
+    // A space straight after the "/" is somebody writing, not asking.
+    if (query === null || /^\s/.test(query)) { onClose(); return }
+    const q = query.trim().toLowerCase()
+    shown = rows.filter((r) => r.words.includes(q))
+    if (shown.length === 0) { onClose(); return }
+    for (const r of rows) r.button.hidden = !shown.includes(r)
+    divider.hidden = q !== ''
+    active = Math.min(active, shown.length - 1)
+    paint()
+  }
+  editor.on('transaction', follow)
 
   const away = (e: MouseEvent): void => { if (!box.contains(e.target as Node)) onClose() }
   // One scroll closes it: the menu is pinned to where the caret WAS, and a menu that stays
-  // behind while the page moves reads as broken.
-  const scrolled = (): void => onClose()
+  // behind while the page moves reads as broken. Its OWN scroll does not: the rows run past
+  // 360px, and scrolling to the last of them closed the menu before it could be reached.
+  const scrolled = (e: Event): void => { if (!box.contains(e.target as Node)) onClose() }
   document.addEventListener('mousedown', away)
   document.addEventListener('scroll', scrolled, true)
   document.body.appendChild(box)
 
-  function close(): void {
-    document.removeEventListener('mousedown', away)
-    document.removeEventListener('scroll', scrolled, true)
-    box.remove()
+  return {
+    close: () => {
+      editor.off('transaction', follow)
+      document.removeEventListener('mousedown', away)
+      document.removeEventListener('scroll', scrolled, true)
+      box.remove()
+    },
+    key: (key) => {
+      if (key === 'ArrowDown' || key === 'ArrowUp') {
+        active = (active + (key === 'ArrowDown' ? 1 : shown.length - 1)) % shown.length
+        paint()
+        return true
+      }
+      if (key === 'Enter' || key === 'Tab') { const pick = shown[active]; if (pick) run(pick.act); return true }
+      if (key === 'Escape') { onClose(); return true }
+      return false
+    },
   }
-  return close
 }

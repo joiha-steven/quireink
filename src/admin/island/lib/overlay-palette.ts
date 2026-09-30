@@ -13,6 +13,7 @@
 import { indexIn, lanes } from '@/accent'
 import { el } from '@/admin/components/node-dom'
 import { say } from './media-bridge'
+import { composing } from '@/admin/components/composing'
 
 /**
  * Asked for by name, so nothing has to hold a setter.
@@ -248,6 +249,7 @@ export function wirePalette(words: PaletteWords): () => void {
   })
 
   box.addEventListener('keydown', (e) => {
+    if (composing(e)) return
     const shown = live()
     if (e.key === 'Escape') show(false)
     else if (e.key === 'ArrowDown') { e.preventDefault(); cursor = Math.min(cursor + 1, shown.length - 1); mark() }
