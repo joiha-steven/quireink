@@ -128,4 +128,10 @@ html[data-rail=open],html[data-rail=open] body{overflow:hidden}
 .toc summary{display:block;pointer-events:none;cursor:default}
 .toc summary::-webkit-details-marker{display:none}
 .toc summary h2{margin-bottom:.75rem}
+
+/* A term is one token: "van-gogh" broke at its own hyphen in the info panel's narrow column
+   (FIXLIST 7.5). Moved whole to the next line instead, and broken inside only when it is
+   longer than the whole line. Here, beside the rail, because the panel is where the column
+   is narrow enough to break one; the article's own taxonomy line uses the same list. */
+.term-list a{display:inline-block;max-width:100%;overflow-wrap:anywhere;hyphens:manual}
 `.trim()

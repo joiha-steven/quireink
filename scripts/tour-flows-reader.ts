@@ -352,4 +352,14 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
       key.style.opacity = ''
       return k.bottom <= first.top + 1 ? 'ok' : 'the copy key reaches ' + Math.round(k.bottom - first.top) + 'px into the first line'
     })()`, 600))
+
+  // A tag is one token in the info panel's narrow column: "mixed-script" broke after its
+  // hyphen (FIXLIST 7.5). Every term link sits on one line.
+  flow('reader: no tag breaks at its own hyphen in the info panel', () => expect('/zimian-yu-zishen', `
+    (() => {
+      const links = [...document.querySelectorAll('.post-info .term-list a')]
+      if (!links.length) return 'the info panel shows no terms'
+      const split = links.filter((a) => a.getClientRects().length > 1).map((a) => a.textContent)
+      return split.length ? 'broken across lines: ' + split.join(', ') : 'ok (' + links.length + ' terms)'
+    })()`, 500))
 }

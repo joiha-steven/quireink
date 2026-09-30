@@ -230,6 +230,11 @@ export function registerMediaFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       if (low > innerHeight + 1) return 'the view runs past the window: ' + Math.round(low) + ' > ' + innerHeight
       const close = [...box.querySelectorAll(':scope > button')].pop()
       if (!close || !close.textContent.trim()) return 'the dialog has no named way out'
+      // The kit's ring, not the browser's blue one (FIXLIST 7.6): the dialog hangs on <body>,
+      // outside the shell the ring was scoped to. Read off the sheet the dialog matches.
+      const ring = [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules] } catch { return [] } })
+        .find((r) => r.selectorText && r.selectorText.includes('dialog :focus-visible') && r.style.outlineStyle === 'solid')
+      if (!ring) return 'no kit focus ring reaches a dialog'
       close.click()
       await sleep(200)
       if (document.querySelector('dialog[data-media-zoom]')) return 'closing left the dialog in the page'

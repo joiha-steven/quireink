@@ -494,11 +494,17 @@ img.ProseMirror-separator {
   background: rgb(23 23 23 / 0.95);
 }
 
-.admin-shell :focus-visible {
+/* AND THE DIALOGS HUNG ON <body>, which are outside the shell: the Library's full-size view
+   and the picture picker drew Chrome's own blue ring on their keys (FIXLIST 7.6). */
+.admin-shell :focus-visible,
+dialog :focus-visible,
+[role='dialog'] :focus-visible {
   outline: 2px solid #737373;
   outline-offset: 2px;
 }
-.dark .admin-shell :focus-visible {
+.dark .admin-shell :focus-visible,
+.dark dialog :focus-visible,
+.dark [role='dialog'] :focus-visible {
   outline-color: #a3a3a3;
 }
 /* The editor is a large writing surface, not a discrete button/input. Its card
