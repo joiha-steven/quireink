@@ -193,6 +193,7 @@ const fr = {
   slugTaken: 'Ce slug est déjà pris, choisissez-en un autre',
   needTitle: 'Un titre est nécessaire pour publier',
   savedDraft: 'Brouillon enregistré',
+  savedChanges: 'Modifications enregistrées',
   published: 'Publié',
   imageUploadFailed: 'L’envoi de l’image a échoué',
   localDraftFound: 'Des modifications non enregistrées sont sur cet appareil',

@@ -95,7 +95,11 @@ that file first; this one only adds what is true here.
   ⚠️ **`Mod-s` is not a convenience.** Autosave here writes to localStorage and NEVER to the
   server — deliberately, so editing a published post cannot push half a sentence live. Before
   this chord existed, a writer pressing Cmd+S got the browser's own "Save page as…" dialog and
-  a reasonable belief that the work was safe. Collisions were checked against the live keymap
+  a reasonable belief that the work was safe. **Save never changes the status**: a draft
+  stays a draft, a published piece stays published and the key reads "Save" rather than "Save
+  draft". Until 2.2.15 it saved as a draft whatever the piece was, so ⌘S on a live post took
+  it off the site. Unpublishing is the status choice in the panel, and a restored revision
+  brings back words, never a status. Collisions were checked against the live keymap
   and against the browsers; `Mod-Shift-i` and `Mod-Shift-p` were dropped for belonging to
   DevTools and to a Firefox private window.
 - **The autosave is TWO copies and neither of them is the published body.** localStorage on

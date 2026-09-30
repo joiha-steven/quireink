@@ -27,6 +27,11 @@ describe('a restored snapshot', () => {
     expect(withLiveIdentity(snap, live, true).date).toBe('2026-01-02T09:00')
   })
 
+  it('does not unpublish a piece that is live', () => {
+    const got = withLiveIdentity({ ...snap, status: 'draft' }, { ...live, status: 'published' }, true)
+    expect(got.status).toBe('published')
+  })
+
   it('keeps the snapshot whole on a piece that has never been saved', () => {
     // There is no identity to protect yet: the snapshot's own slug is the only one there is.
     expect(withLiveIdentity(snap, { ...live, slug: '', date: '' }, false)).toEqual(snap)

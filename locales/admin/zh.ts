@@ -193,6 +193,7 @@ const zh = {
   slugTaken: '该别名已被占用，请选择其他别名',
   needTitle: '发布前需要填写标题',
   savedDraft: '草稿已保存',
+  savedChanges: '更改已保存',
   published: '已发布',
   imageUploadFailed: '图片上传失败',
   localDraftFound: '此设备上有未保存的修改',

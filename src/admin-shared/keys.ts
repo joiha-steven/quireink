@@ -12,7 +12,7 @@ import { PALETTE_CHORD } from '@/admin-shared/rail'
 export type Shortcut = { id: string; chord: string; does: string }
 
 export const SHORTCUTS: Shortcut[] = [
-  { id: 'save', chord: 'Mod-s', does: 'Save the draft. Autosave keeps a copy on this device and on the server, but only Save writes the piece itself — the text a preview or a Publish reads.' },
+  { id: 'save', chord: 'Mod-s', does: 'Save. A draft stays a draft and a published piece stays published: only Publish, or the status in the panel, changes that. Autosave keeps a copy on this device and on the server, but only Save writes the piece itself.' },
   { id: 'link', chord: 'Mod-k', does: 'Add a link, or edit the one the cursor is inside. Clearing the box removes it.' },
   { id: 'ink', chord: 'Mod-Shift-h', does: 'Highlighter over the selection (==text==).' },
   { id: 'ring', chord: 'Mod-Shift-o', does: 'Ballpoint ring around the selection (@@word@@).' },

@@ -19,7 +19,8 @@
 //
 // ⚠️ NOTHING THAT RENDERS A PAGE MAY READ THESE COLUMNS. `getPost`, the feeds, the sitemap and
 // the search index all select named columns and none of them names this one; `store/autosave.test.ts`
-// holds that.
+// holds that. The ONE reader outside the editor is `/preview` (`web/preview.ts`): token-gated,
+// `no-store`, never indexed — it is how a published piece is previewed without being saved.
 import { one, run } from '@/store/query'
 import { nowMs } from '@/store/db'
 

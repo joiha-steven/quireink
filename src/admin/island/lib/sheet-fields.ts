@@ -206,6 +206,8 @@ function wirePicture(box: HTMLElement, t: SheetWords, edit: Edit): void {
 export type PanelFields = {
   /** Push a whole draft in — a revision loaded, or a snapshot restored. */
   apply: (draft: SheetDraft) => void
+  /** Tick the status choice that matches what was just saved. */
+  setStatus: (status: SheetDraft['status']) => void
   destroy: () => void
 }
 
@@ -233,6 +235,12 @@ export function wireFields(
   seriesBox?.addEventListener('input', syncOrder)
 
   return {
+    /** The status choice follows a save: after a first Publish it still read Draft. */
+    setStatus: (status: SheetDraft['status']) => {
+      for (const radio of root.querySelectorAll<HTMLInputElement>('input[data-k="status"]')) {
+        radio.checked = radio.value === status
+      }
+    },
     apply: (next: SheetDraft) => {
       for (const node of root.querySelectorAll<HTMLElement>('[data-k]')) {
         const key = node.dataset.k as keyof SheetDraft

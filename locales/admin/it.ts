@@ -193,6 +193,7 @@ const it = {
   slugTaken: 'Quello slug è già preso, scegline un altro',
   needTitle: 'Serve un titolo per pubblicare',
   savedDraft: 'Bozza salvata',
+  savedChanges: 'Modifiche salvate',
   published: 'Pubblicato',
   imageUploadFailed: 'Caricamento dell’immagine non riuscito',
   localDraftFound: 'Ci sono modifiche non salvate su questo dispositivo',

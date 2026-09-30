@@ -15,8 +15,12 @@
 // (2026-09-15) and fixed before the merge, so the server-rendered sheet has one behaviour to
 // reproduce rather than two to choose between.
 
-/** The fields that belong to the ROW rather than to the draft. */
-type Identity = { slug: string; date?: string }
+/**
+ * The fields that belong to the ROW rather than to the draft. The STATUS too since 2026-09-30:
+ * a snapshot taken while the piece was a draft carried `draft`, and restoring it into a live
+ * post took the post off the site at the next Save.
+ */
+type Identity = { slug: string; date?: string; status?: string }
 
 /**
  * The snapshot, with the live piece's identity put back.
@@ -31,5 +35,6 @@ export function withLiveIdentity<T extends Identity>(snapshot: T, live: T, hasRo
   if (!hasRow) return snapshot
   const kept: T = { ...snapshot, slug: live.slug }
   if (live.date !== undefined) kept.date = live.date
+  if (live.status !== undefined) kept.status = live.status
   return kept
 }

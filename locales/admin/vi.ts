@@ -193,6 +193,7 @@ const vi = {
   slugTaken: 'Đường dẫn (slug) đã tồn tại, chọn đường dẫn khác',
   needTitle: 'Cần tiêu đề để đăng bài',
   savedDraft: 'Đã lưu nháp',
+  savedChanges: 'Đã lưu thay đổi',
   published: 'Đã đăng bài',
   imageUploadFailed: 'Tải ảnh thất bại',
   localDraftFound: 'Có nội dung chưa lưu trên máy này',

@@ -25,8 +25,8 @@ import { isScheduled, slugify } from '@/utils'
 import { withLiveIdentity } from '@/admin/components/restore-identity'
 import { askForLink } from './lib/ask-link'
 import { say } from './lib/media-bridge'
-import { readSnapshot } from './lib/sheet-keep'
-import { nameEnough, payloadOf, savePiece, worthSaving } from './lib/sheet-save'
+import { readSnapshot, sendSnapshot } from './lib/sheet-keep'
+import { nameEnough, payloadOf, savePiece, statusForSave, worthSaving } from './lib/sheet-save'
 import { mountPaper } from './lib/sheet-paper'
 import { wireBar } from './lib/sheet-bar'
 import { wireFields, askForPicture } from './lib/sheet-fields'
@@ -63,6 +63,8 @@ function boot(root: HTMLElement, data: Payload): void {
   // save onwards: nothing set this after that save, so every later title edit renamed a post
   // that had already been shared.
   let slugTyped = Boolean(draft.slug)
+  // The status THE SERVER HOLDS (`statusForSave`). A piece never saved is a draft.
+  let savedStatus: SheetDraft['status'] = slug ? draft.status : 'draft'
 
   /**
    * A NEW PIECE REOPENS FROM ITS SNAPSHOT.
@@ -127,6 +129,7 @@ function boot(root: HTMLElement, data: Payload): void {
     )
     sheetBar.setDirty(dirty)
     sheetBar.setState(draft.status === 'published', scheduled())
+    sheetBar.setSaveWord(savedStatus === 'published')
     const live = draft.status === 'published' && slug !== '' && !scheduled()
     sheetBar.setLive(live ? LIVE_PATH[kind](slug) : null)
     sheetBar.setPreviewable(kind === 'post' && slug !== '')
@@ -197,7 +200,10 @@ function boot(root: HTMLElement, data: Payload): void {
     t,
     lang,
     getText: () => `${draft.title} ${body()}`,
-    onSaveDraft: () => void saveAs('draft', t.savedDraft),
+    onSaveDraft: () => {
+      const status = statusForSave(savedStatus, draft.status)
+      void saveAs(status, status === 'published' ? t.savedChanges : t.savedDraft)
+    },
     onPublish: () => {
       // THE FIRST PUBLISH OPENS THE ATTRIBUTES instead of publishing: they are the publish-time
       // questions — the slug, the date, the terms, both pictures — and they all already carry
@@ -210,7 +216,13 @@ function boot(root: HTMLElement, data: Payload): void {
       }
       void saveAs('published', scheduled() ? t.scheduled : t.published)
     },
-    onPreview: () => void openPreview(t, () => (dirty ? enqueue() : Promise.resolve(true)), () => slug),
+    // ⚠️ A LIVE PIECE IS PREVIEWED FROM ITS SNAPSHOT (`web/preview.ts`), NEVER SAVED FIRST:
+    // saving put the half-typed sentence on the public page.
+    onPreview: () => void openPreview(t, () => {
+      if (!dirty) return Promise.resolve(true)
+      if (savedStatus !== 'published') return enqueue()
+      return sendSnapshot(kind, slug, JSON.stringify({ ...draft, content: body() }))
+    }, () => slug),
     onToggleMd: () => { paper.toggleRaw(); sheetBar.setMd(paper.raw) },
     onToggleAttrs: () => { panel.toggle(); sheetBar.setAttrs(panel.open) },
     onRestore: () => void restoreSnapshot(),
@@ -302,6 +314,8 @@ function boot(root: HTMLElement, data: Payload): void {
     // for a piece the server still had as a draft.
     if (!(await enqueue(status))) return false
     draft.status = status
+    savedStatus = status
+    fields.setStatus(status)
     sayState()
     say(done)
     return true
@@ -330,15 +344,10 @@ function boot(root: HTMLElement, data: Payload): void {
 
   // ---- pictures ---------------------------------------------------------------------------
 
-  /**
-   * ASK FOR A PICTURE, then do with it whatever this control was for. One function, because the
-   * ask is the same every time and only the answer's destination differs.
-   */
+  /** ASK FOR A PICTURE; only the answer's destination differs between the two controls. */
   async function choose(what: 'editor' | 'gallery'): Promise<void> {
     const got = await askForPicture(t, what === 'gallery')
-    if (!got) return
-    if ('urls' in got) paper.insertGalleryMany(got.urls)
-    else paper.insertImage(got.url, got.alt)
+    if (got) { if ('urls' in got) paper.insertGalleryMany(got.urls); else paper.insertImage(got.url, got.alt) }
   }
 
   // ---- putting work back -------------------------------------------------------------------
@@ -367,17 +376,10 @@ function boot(root: HTMLElement, data: Payload): void {
     say(t.revisionLoaded)
   }
 
-  /** An overwritten version back into the editor. The slug and the date stay current. */
+  /** An overwritten version back into the editor. The slug, the date and the STATUS stay current. */
   function loadRevision(rev: PostRevision): void {
-    load({
-      ...draft,
-      title: rev.title,
-      excerpt: rev.excerpt ?? '',
-      featuredImage: rev.featuredImage ?? '',
-      categories: rev.categories,
-      tags: rev.tags,
-      status: rev.status,
-    }, rev.content)
+    const { title, categories, tags } = rev
+    load({ ...draft, title, categories, tags, excerpt: rev.excerpt ?? '', featuredImage: rev.featuredImage ?? '' }, rev.content)
     say(t.revisionLoaded)
   }
 

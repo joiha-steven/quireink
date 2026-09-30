@@ -51,6 +51,8 @@ export type Bar = {
   setLive: (href: string | null) => void
   /** A piece with a row can be previewed; one that has never been saved cannot. */
   setPreviewable: (yes: boolean) => void
+  /** "Save" on a piece the server holds as published, "Save draft" on anything else. */
+  setSaveWord: (live: boolean) => void
   setMd: (on: boolean) => void
   setAttrs: (open: boolean) => void
   setOffer: (offer: Offer) => void
@@ -180,6 +182,11 @@ export function wireBar(root: HTMLElement, hooks: BarHooks): Bar {
         if (!link.closest('[data-sheet-live-wrap]')) link.hidden = !href
       }
       if (liveWrap) liveWrap.hidden = !href
+    },
+    setSaveWord: (live) => {
+      if (!save) return
+      const say = live ? save.dataset.saySave : save.dataset.sayDraft
+      if (say) { save.textContent = say; save.title = say }
     },
     setPreviewable: (yes) => {
       for (const key of all(root, 'data-sheet-preview')) {

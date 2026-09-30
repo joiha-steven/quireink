@@ -194,6 +194,7 @@ const pt = {
   slugTaken: 'Esse slug já está em uso, escolha outro',
   needTitle: 'É preciso um título para publicar',
   savedDraft: 'Rascunho salvo',
+  savedChanges: 'Alterações salvas',
   published: 'Publicado',
   imageUploadFailed: 'O envio da imagem falhou',
   localDraftFound: 'Há alterações não guardadas neste dispositivo',

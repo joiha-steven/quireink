@@ -246,6 +246,7 @@ export async function writingFrame(
       publish: t.publish,
       schedule: t.schedule,
       scheduled,
+      published: saved && draft.status === 'published',
     },
     contentWidth: settings.contentWidth,
     panel,

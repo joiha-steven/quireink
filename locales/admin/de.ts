@@ -193,6 +193,7 @@ const de = {
   slugTaken: 'Dieser Slug ist bereits vergeben, bitte einen anderen wählen',
   needTitle: 'Zum Veröffentlichen ist ein Titel erforderlich',
   savedDraft: 'Entwurf gespeichert',
+  savedChanges: 'Änderungen gespeichert',
   published: 'Veröffentlicht',
   imageUploadFailed: 'Bild-Upload fehlgeschlagen',
   localDraftFound: 'Nicht gespeicherte Änderungen liegen auf diesem Gerät',

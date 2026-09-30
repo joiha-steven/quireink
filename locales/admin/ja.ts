@@ -193,6 +193,7 @@ const ja = {
   slugTaken: 'このスラッグは既に使用されています。別のものを選んでください',
   needTitle: '公開するにはタイトルが必要です',
   savedDraft: '下書きを保存しました',
+  savedChanges: '変更を保存しました',
   published: '公開しました',
   imageUploadFailed: '画像のアップロードに失敗しました',
   localDraftFound: '未保存の変更がこの端末にあります',

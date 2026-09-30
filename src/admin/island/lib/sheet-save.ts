@@ -12,6 +12,20 @@ import { API_PATH, type SheetDraft, type SheetKind } from '@/admin-shared/sheet-
 import { slugify, zonedInputToIso } from '@/utils'
 import { slugFromWords } from '@/content/untitled'
 
+/**
+ * The status a plain Save writes: never a change of it.
+ *
+ * ⚠️ SAVE NEVER UNPUBLISHES. It wrote `draft` whatever the piece was, so ⌘S on a live post to fix
+ * a typo took it off the site (200 → 404) and said "Draft saved". A piece the server holds as
+ * published stays published unless the panel's status choice says otherwise; anything else is
+ * saved as a draft, because publishing is the Publish key's job and it asks its questions first.
+ */
+export function statusForSave(
+  saved: SheetDraft['status'], chosen: SheetDraft['status'],
+): SheetDraft['status'] {
+  return saved === 'published' ? chosen : 'draft'
+}
+
 /** What a kind sends. The keys a kind does not have are left out rather than sent empty. */
 export function payloadOf(
   kind: SheetKind, draft: SheetDraft, content: string, timezone: string,

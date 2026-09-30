@@ -193,6 +193,7 @@ const ko = {
   slugTaken: '이미 사용 중인 슬러그입니다. 다른 슬러그를 선택하세요',
   needTitle: '게시하려면 제목이 필요합니다',
   savedDraft: '초안이 저장되었습니다',
+  savedChanges: '변경 사항이 저장되었습니다',
   published: '게시되었습니다',
   imageUploadFailed: '이미지 업로드 실패',
   localDraftFound: '저장되지 않은 변경 사항이 이 기기에 있습니다',

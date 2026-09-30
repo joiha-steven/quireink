@@ -378,6 +378,7 @@ export type AdminStrings = {
   slugTaken: string
   needTitle: string
   savedDraft: string
+  savedChanges: string
   published: string
   imageUploadFailed: string
   // local (offline) autosave recovery bar

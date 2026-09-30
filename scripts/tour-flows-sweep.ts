@@ -69,4 +69,59 @@ export function registerSweepFlows({ flow, expect }: Tour): void {
       }
       return 'ok (A by hand, B and C through the form)'
     })()`, 1500))
+
+  // Save on a live post saved it as a DRAFT: ⌘S to fix a typo took the post off the site (200 →
+  // 404) and said "Draft saved". And Preview saved first, so a half-typed sentence went live the
+  // moment the writer asked how it read. A post of its own, cleaned up by the last of the three.
+  // `no-store` on every read of the public page: the browser keeps the first answer otherwise,
+  // and the flow would be testing its own cache.
+  const LIVE = 'tour-live-post-keeps-living'
+  flow('a live post for the save flows', () => expect('/admin', `
+    (async () => {
+      const r = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour live post keeps living', content: 'Words the readers see.', status: 'published', date: '2020-01-01T00:00:00.000Z' }),
+      })
+      if (!r.ok) return 'could not create the live post: ' + r.status
+      return (await fetch('/${LIVE}')).status === 200 ? 'ok' : 'the new post is not public'
+    })()`))
+
+  flow('admin: ⌘S on a live post saves it and leaves it live', () => expect(`/admin/editor/${LIVE}`, `
+    (async () => {
+      const key = document.querySelector('[data-sheet-save]')
+      if (!key) return 'no Save key'
+      if (key.textContent !== key.dataset.saySave) return 'the key on a live post reads "' + key.textContent + '", not "' + key.dataset.saySave + '"'
+      const ta = document.querySelector('[data-sheet-title]')
+      const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
+      ta.focus(); set.call(ta, ta.value + ' (typo fixed)')
+      ta.dispatchEvent(new Event('input', { bubbles: true }))
+      await new Promise((r) => setTimeout(r, 200))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', metaKey: true, ctrlKey: true, bubbles: true, cancelable: true }))
+      await new Promise((r) => setTimeout(r, 1500))
+      const live = await fetch('/${LIVE}', { cache: 'no-store' })
+      if (live.status !== 200) return 'the post answers ' + live.status + ' after ⌘S: Save took it off the site'
+      return (await live.text()).includes('typo fixed') ? 'ok' : 'the post stayed live but the save never landed'
+    })()`, 1500))
+
+  flow('admin: Preview on a live post leaves the public page as it was', () => expect(`/admin/editor/${LIVE}`, `
+    (async () => {
+      const ta = document.querySelector('[data-sheet-title]')
+      const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
+      ta.focus(); set.call(ta, 'HALF-WRITTEN title nobody saved')
+      ta.dispatchEvent(new Event('input', { bubbles: true }))
+      await new Promise((r) => setTimeout(r, 200))
+      const preview = document.querySelector('[data-sheet-preview]')
+      if (!preview) return 'no Preview key'
+      preview.click()
+      await new Promise((r) => setTimeout(r, 1500))
+      const live = await (await fetch('/${LIVE}', { cache: 'no-store' })).text()
+      const leaked = live.includes('HALF-WRITTEN')
+      // Clean up: the post leaves the site and the database, so the next run starts clean.
+      await fetch('/api/posts/${LIVE}', { method: 'DELETE' })
+      await fetch('/api/trash', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'posts', action: 'purge', ids: ['${LIVE}'] }),
+      })
+      return leaked ? 'Preview put the unsaved title on the public page' : 'ok'
+    })()`, 1500))
 }

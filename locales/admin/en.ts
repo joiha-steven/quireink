@@ -193,6 +193,7 @@ const en = {
   slugTaken: 'That slug is already taken, choose another',
   needTitle: 'A title is required to publish',
   savedDraft: 'Draft saved',
+  savedChanges: 'Changes saved',
   published: 'Published',
   imageUploadFailed: 'Image upload failed',
   localDraftFound: 'Unsaved changes are kept on this device',

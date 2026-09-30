@@ -45,6 +45,8 @@ export type SheetLinks = {
   publish: string
   schedule: string
   scheduled: boolean
+  /** Whether the server holds the piece as published: Save says "Save" rather than "Save draft". */
+  published: boolean
 }
 
 /**
@@ -52,6 +54,7 @@ export type SheetLinks = {
  * is a thing a designer may reasonably rename.
  */
 export function sheetActions(t: AdminStrings, links: SheetLinks): string {
+  const saveWord = links.published ? t.save : t.saveDraft
   const quiet = escapeAttr(QUIET)
   const menuItem = (attr: string, label: string, extra = ''): string =>
     `<button type="button" ${attr} class="${quiet} text-left"${extra}>${escapeHtml(label)}</button>`
@@ -130,8 +133,12 @@ export function sheetActions(t: AdminStrings, links: SheetLinks): string {
     + ` title="${escapeAttr(links.live.label)}" class="${escapeAttr(buttonClass('secondary'))}">`
     + `${escapeHtml(links.live.label)}</a></span>`
 
-    + `<button type="button" data-sheet-save${chord('save')} title="${escapeAttr(t.saveDraft)}"`
-    + ` disabled class="${escapeAttr(buttonClass('secondary'))}">${escapeHtml(t.saveDraft)}</button>`
+    // "Save draft" on a draft and "Save" on a published piece, both shipped so the island can
+    // swap after a first Publish. Save never changes the status (`island/sheet.ts`), so the
+    // word must not promise a draft on a piece it will leave live.
+    + `<button type="button" data-sheet-save${chord('save')} title="${escapeAttr(saveWord)}"`
+    + ` data-say-draft="${escapeAttr(t.saveDraft)}" data-say-save="${escapeAttr(t.save)}"`
+    + ` disabled class="${escapeAttr(buttonClass('secondary'))}">${escapeHtml(saveWord)}</button>`
     + `<button type="button" data-sheet-publish`
     + ` data-say-publish="${escapeAttr(links.publish)}" data-say-schedule="${escapeAttr(links.schedule)}"`
     + ` class="${escapeAttr(buttonClass())}">`

@@ -15,6 +15,7 @@ import { resetSecretCache } from '@/auth/secret'
 import { resetLimits } from '@/server/rate-limit'
 import { resetSweepWindow } from '@/server/scheduled'
 import { verifyPreview } from '@/content/preview'
+import { savePost } from '@/content/posts'
 import { payload } from '@/test/api'
 
 const DIR = './.tmp/test-admin-ops'
@@ -213,6 +214,22 @@ describe('the preview link', () => {
 
   it('requires a slug', async () => {
     expect((await asOwner('/api/preview-link')).status).toBe(400)
+  })
+
+  it('shows a live post\'s unsaved words from its snapshot, and the live page not at all', async () => {
+    // Preview on a live post used to SAVE first, which put the half-written sentence on the
+    // public page. The editor now sends a snapshot; the preview reads it, the post does not.
+    await savePost({ title: 'Live one', content: 'What readers see.', status: 'published', date: '2020-01-01T00:00:00.000Z' })
+    const snap = JSON.stringify({ title: 'Live one', content: 'HALF-WRITTEN sentence' })
+    expect((await asOwner('/api/posts/live-one/autosave', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ snapshot: snap }),
+    })).status).toBe(200)
+    const { token } = await payload<{ token: string }>(await asOwner('/api/preview-link?slug=live-one'))
+    const preview = await (await app.request(`/preview/live-one?key=${encodeURIComponent(token)}`)).text()
+    expect(preview).toContain('HALF-WRITTEN sentence')
+    const live = await (await app.request('/live-one')).text()
+    expect(live).toContain('What readers see.')
+    expect(live).not.toContain('HALF-WRITTEN')
   })
 
   it('expires, and the expiry in the token cannot be edited forward', async () => {

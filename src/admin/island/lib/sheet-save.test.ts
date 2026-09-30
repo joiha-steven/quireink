@@ -9,7 +9,7 @@
 // somebody remembered to check is the same list again, one layer up.
 import { describe, expect, it } from 'bun:test'
 import { emptyDraft, type SheetDraft } from '@/admin-shared/sheet-wire'
-import { payloadOf } from './sheet-save'
+import { payloadOf, statusForSave } from './sheet-save'
 
 const TZ = 'Asia/Ho_Chi_Minh'
 const draft = (over: Partial<SheetDraft> = {}): SheetDraft => ({ ...emptyDraft(), ...over })
@@ -53,5 +53,19 @@ describe('what a save sends', () => {
     const filled = payloadOf('post', draft({ title: 'T', lang: 'vi', translationGroup: 'thu' }), 'x', TZ)
     expect(filled.lang).toBe('vi')
     expect(filled.translationGroup).toBe('thu')
+  })
+})
+
+describe('what a plain Save does to the status', () => {
+  it('leaves a live piece live', () => {
+    // ⌘S on a live post to fix a typo took it off the site: Save wrote `draft` regardless.
+    expect(statusForSave('published', 'published')).toBe('published')
+  })
+  it('unpublishes only when the panel says so', () => {
+    expect(statusForSave('published', 'draft')).toBe('draft')
+  })
+  it('never publishes a draft: that is the Publish key and its questions', () => {
+    expect(statusForSave('draft', 'published')).toBe('draft')
+    expect(statusForSave('draft', 'draft')).toBe('draft')
   })
 })

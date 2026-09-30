@@ -193,6 +193,7 @@ const es = {
   slugTaken: 'Ese slug ya está ocupado, elige otro',
   needTitle: 'Hace falta un título para publicar',
   savedDraft: 'Borrador guardado',
+  savedChanges: 'Cambios guardados',
   published: 'Publicada',
   imageUploadFailed: 'No se pudo subir la imagen',
   localDraftFound: 'Hay cambios sin guardar en este dispositivo',

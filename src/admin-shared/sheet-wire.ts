@@ -131,7 +131,7 @@ export const SHEET_WORD_KEYS = [
   'localDraftDiscard', 'localDraftFound', 'localDraftRestore', 'mathPlaceholder', 'mediaTitle',
   'moreActions', 'navWrite', 'needTitle', 'previewDraft', 'promptLink', 'publish', 'published',
   'removeAria', 'restore', 'revisionLoaded', 'save', 'saveDraft', 'saveFailed', 'savedAtPrefix',
-  'savedDraft', 'saving', 'schedule', 'scheduled', 'scheduledForPrefix', 'serverDraftFound',
+  'savedChanges', 'savedDraft', 'saving', 'schedule', 'scheduled', 'scheduledForPrefix', 'serverDraftFound',
   'slashHint', 'slugTaken', 'statusDraft', 'statusPublished', 'tbBold', 'tbCodeBlock',
   'tbCodeInline', 'tbColAdd', 'tbColDel', 'tbDivider', 'tbGallery', 'tbHeading', 'tbHighlight',
   'tbImage', 'tbInsert', 'tbItalic', 'tbLink', 'tbLinkRemove', 'tbList', 'tbListNumbered',
