@@ -215,4 +215,40 @@ export function registerSweepFlows({ flow, expect }: Tour): void {
       md.click(); await sleep(300); md.click(); await sleep(300)
       return save.disabled ? 'ok' : 'two presses of the Markdown key left the piece unsaved'
     })()`, 1500))
+
+  // A title fixed while a save was in the air was marked saved: only the body was compared, so
+  // the fix was neither sent nor kept, and leaving the page raised no warning.
+  const AIR = 'tour-edited-in-the-air'
+  flow('in the air: a post for it', () => expect('/admin', `
+    (async () => {
+      const r = await fetch('/api/posts', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour edited in the air', content: 'Words.', status: 'draft' }) })
+      return r.ok ? 'ok' : 'could not create it: ' + r.status
+    })()`))
+
+  flow('in the air: a field changed during a save keeps the piece unsaved', () => expect(`/admin/editor/${AIR}`, `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const real = window.fetch
+      window.fetch = async (url, init) => {
+        if (init && init.method === 'PUT') await sleep(900)
+        return real(url, init)
+      }
+      const ta = document.querySelector('[data-sheet-title]')
+      const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
+      const type = (v) => { set.call(ta, v); ta.dispatchEvent(new Event('input', { bubbles: true })) }
+      type('Tour edited in the air, first')
+      await sleep(150)
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', metaKey: true, ctrlKey: true, bubbles: true, cancelable: true }))
+      await sleep(250)
+      type('Tour edited in the air, fixed while saving')
+      await sleep(1500)
+      window.fetch = real
+      const save = document.querySelector('[data-sheet-save]')
+      const verdict = save.disabled ? 'the title fixed during the save was marked saved' : 'ok'
+      await fetch('/api/posts/${AIR}', { method: 'DELETE' })
+      await fetch('/api/trash', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'posts', action: 'purge', ids: ['${AIR}'] }) })
+      return verdict
+    })()`, 1500))
 }

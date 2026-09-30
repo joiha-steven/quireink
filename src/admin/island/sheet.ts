@@ -259,6 +259,7 @@ function boot(root: HTMLElement, data: Payload): void {
 
   async function persist(status?: SheetDraft['status']): Promise<boolean> {
     const text = body()
+    const sent = JSON.stringify(draft)
     if (!worthSaving(kind, draft, text)) return false
     saving = true
     sayState()
@@ -274,11 +275,11 @@ function boot(root: HTMLElement, data: Payload): void {
       savedAt = new Date().toISOString()
       slugTyped = true
       // ⚠️ PINNED: an untitled piece re-derived its slug on every save and was renamed each time (ADR 0064).
+      // ⚠️ CLEAN ONLY IF NOTHING MOVED IN THE AIR — the body AND every field (a title fixed during
+      // the save was marked saved and lost). Read before the slug pin below, which is ours.
+      const clean = body() === text && JSON.stringify(draft) === sent
       if (!draft.slug) { draft.slug = res.slug; if (slugBox) slugBox.value = res.slug }
-      // ⚠️ ONLY IF NOTHING MOVED WHILE THE REQUEST WAS IN THE AIR. `text` was read before the
-      // fetch, so marking the sheet clean over a sentence typed during it turned off the exit
-      // warning and dropped both recovery copies for exactly that sentence.
-      if (body() === text) {
+      if (clean) {
         dirty = false
         safety.clear()
       }
@@ -325,9 +326,7 @@ function boot(root: HTMLElement, data: Payload): void {
     // ⚠️ THE PANEL STAYS OPEN ON A REFUSAL. Closing it regardless would take the writer away
     // from the one screen carrying the field that was refused — a taken slug is answered here.
     void saveAs('published', scheduled() ? t.scheduled : t.published).then((went) => {
-      if (!went) return
-      asking = false
-      panel.hide()
+      if (went) { asking = false; panel.hide() }
     })
   })
   at('[data-sheet-history]')?.addEventListener('click', () => timeMachine.open())
