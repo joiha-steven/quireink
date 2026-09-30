@@ -44,6 +44,20 @@ describe('Ghost', () => {
     } }],
   }
 
+  it('keeps a featured image, and the words of a post kept only as lexical', () => {
+    const { posts } = parseGhost({ db: [{ data: { posts: [
+      { id: 'x1', title: 'Pictured', slug: 'pictured', status: 'published', type: 'post', html: '<p>Hi.</p>',
+        feature_image: 'https://ghost.example/content/images/p.jpg' },
+      { id: 'x2', title: 'Lexical', slug: 'lexical', status: 'published', type: 'post', html: null,
+        lexical: JSON.stringify({ root: { children: [
+          { type: 'heading', tag: 'h2', children: [{ type: 'text', text: 'A heading' }] },
+          { type: 'paragraph', children: [{ type: 'text', text: 'Words ' }, { type: 'text', text: 'kept.' }] },
+        ] } }) },
+    ], tags: [], posts_tags: [] } }] }, NOW)
+    expect(posts.find((p) => p.slug === 'pictured')!.featuredImage).toBe('https://ghost.example/content/images/p.jpg')
+    expect(posts.find((p) => p.slug === 'lexical')!.content).toBe('## A heading\n\nWords kept.')
+  })
+
   it('recognises both export shapes', () => {
     expect(looksLikeGhost(doc)).toBe(true)
     expect(looksLikeGhost({ data: doc.db[0].data })).toBe(true)
@@ -60,7 +74,10 @@ describe('Ghost', () => {
     expect(hello.tags).toEqual(['craft'])
     expect(hello.excerpt).toBe('A greeting.')
     expect(hello.date).toBe('2024-05-01T08:00:00.000Z')
-    expect(posts.find((p) => p.slug === 'waiting')!.status).toBe('draft') // scheduled → draft
+    // Scheduled stays scheduled: published, with its future date (it came in as a draft until
+    // 2026-09-30, while WordPress's scheduled posts were dropped).
+    const waiting = posts.find((p) => p.slug === 'waiting')!
+    expect([waiting.status, waiting.date]).toEqual(['published', '2030-01-01T00:00:00.000Z'])
     expect(posts.find((p) => p.slug === 'sent-letter')!.status).toBe('published') // sent = delivered
   })
 })

@@ -87,10 +87,18 @@ async function run(file: File, key: HTMLButtonElement, w: ListWords): Promise<vo
     return
   }
   const json = await res?.json().catch(() => null) as
-    { success?: boolean; data?: Imported } | null
-  if (!json?.success || !json.data) { say(w.importFailed ?? '', 'error'); return }
+    { success?: boolean; data?: Imported; error?: string } | null
+  // WHICH refusal: the server names a file of the wrong kind or size, and all of them read
+  // "Upload failed", which sends somebody to check their connection over a wrong file.
+  if (!json?.success || !json.data) {
+    const why = json?.error ?? ''
+    say((why.startsWith('not_a_') ? w.importWrongKind : why === 'file_too_large' ? w.importTooBig : w.importFailed) ?? '', 'error')
+    return
+  }
   const notes = json.data.notes ?? 0
-  say(`${w.importDone ?? ''}: ${json.data.posts} + ${json.data.pages}` + (notes > 0 ? ` + ${notes}` : ''))
+  // What was left out is counted aloud: it came back in the answer and was never said.
+  const skipped = json.data.skipped > 0 ? ` · ${(w.importSkipped ?? '').replace('{n}', String(json.data.skipped))}` : ''
+  say(`${w.importDone ?? ''}: ${json.data.posts} + ${json.data.pages}` + (notes > 0 ? ` + ${notes}` : '') + skipped)
   await bringImagesHome(key, w)
 }
 

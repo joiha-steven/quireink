@@ -70,7 +70,9 @@ export function parseWxr(xml: string, now: string): WxrResult {
   for (const item of items) {
     const type = text(item['wp:post_type'])
     const status = text(item['wp:status'])
-    if ((type !== 'post' && type !== 'page') || !['publish', 'draft', 'pending', 'private'].includes(status)) {
+    // 'future' is WordPress's scheduled post: published here with its future date, which is what
+    // a schedule is on this blog. It was dropped with nothing said but a count (2026-09-30).
+    if ((type !== 'post' && type !== 'page') || !['publish', 'future', 'draft', 'pending', 'private'].includes(status)) {
       skipped++
       continue
     }
@@ -78,7 +80,7 @@ export function parseWxr(xml: string, now: string): WxrResult {
     const slug = uniqueSlug(slugify(text(item['wp:post_name']) || title))
     const html = raw(item['content:encoded'])
     const body = htmlToMarkdown(html)
-    const mappedStatus = status === 'publish' ? 'published' : 'draft'
+    const mappedStatus = status === 'publish' || status === 'future' ? 'published' : 'draft'
     const path = oldPath(item.link, mappedStatus === 'published')
 
     if (type === 'page') {

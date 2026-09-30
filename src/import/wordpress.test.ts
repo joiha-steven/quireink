@@ -184,3 +184,12 @@ describe('parseWxr content', () => {
     expect(out.posts[0]?.excerpt.length).toBeGreaterThan(0)
   })
 })
+
+// WordPress's scheduled post ('future') was dropped with nothing said but a count (2026-09-30).
+describe('a scheduled WordPress post', () => {
+  it('comes in scheduled: published, with its future date', () => {
+    const out = parseWxr(wxr(item({ name: 'later', status: 'future', dateGmt: '2030-01-01 09:00:00' })), NOW)
+    expect(out.skipped).toBe(0)
+    expect(out.posts.map((p) => [p.slug, p.status, p.date])).toEqual([['later', 'published', '2030-01-01T09:00:00.000Z']])
+  })
+})

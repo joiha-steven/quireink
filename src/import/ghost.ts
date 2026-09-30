@@ -69,18 +69,24 @@ export function parseGhost(doc: unknown, now: string): ImportResult {
   for (const p of (d.posts as GhostPost[] | undefined) ?? []) {
     const status = str(p.status)
     // 'sent' is a Ghost email-only post that WAS delivered — published, in our terms.
-    // 'scheduled' has not happened yet and imports as a draft the owner can re-schedule.
+    // 'scheduled' stays scheduled: published here with its future date, which is what a
+    // schedule IS on this blog. It came in as a draft, while WordPress's 'future' was dropped
+    // outright; the two importers now agree (2026-09-30).
     if (!['published', 'draft', 'scheduled', 'sent'].includes(status)) {
       skipped++
       continue
     }
     const title = str(p.title).trim() || 'Untitled'
     const slug = uniqueSlug(slugify(str(p.slug) || title))
-    const body = htmlToMarkdown(str(p.html))
-    const published = status === 'published' || status === 'sent'
+    // A post Ghost kept only as lexical (`html: null`) imported with an EMPTY body; its words
+    // come from the lexical tree when there is no HTML.
+    const body = str(p.html) ? htmlToMarkdown(str(p.html)) : lexicalToMarkdown(str(p.lexical))
+    const published = status === 'published' || status === 'sent' || status === 'scheduled'
+    // The featured image was never mapped, so every post lost it (2026-09-30).
+    const featuredImage = str(p.feature_image) || undefined
 
     if (str(p.type) === 'page') {
-      pages.push({ title, slug, status: published ? 'published' : 'draft', content: body })
+      pages.push({ title, slug, status: published ? 'published' : 'draft', content: body, ...(featuredImage ? { featuredImage } : {}) })
       continue
     }
 
@@ -94,7 +100,33 @@ export function parseGhost(doc: unknown, now: string): ImportResult {
       tags: [...new Set(tags)],
       excerpt: str(p.custom_excerpt).trim() || deriveExcerpt(body),
       content: body,
+      ...(featuredImage ? { featuredImage } : {}),
     })
   }
   return { posts, pages, skipped }
+}
+
+/**
+ * The words of a Ghost lexical document, as Markdown paragraphs and headings. Not a full
+ * converter: it is the fallback for a post that has no `html`, and keeping its text with its
+ * headings is the difference between an import and an empty page.
+ */
+export function lexicalToMarkdown(source: string): string {
+  let root: { root?: { children?: unknown[] } }
+  try { root = JSON.parse(source) } catch { return '' }
+  const text = (node: unknown): string => {
+    const n = node as { text?: unknown; children?: unknown[]; type?: string }
+    if (typeof n?.text === 'string') return n.text
+    if (n?.type === 'linebreak') return '\n'
+    return (n?.children ?? []).map(text).join('')
+  }
+  return (root.root?.children ?? []).map((node) => {
+    const n = node as { type?: string; tag?: string; listType?: string; children?: unknown[] }
+    const words = text(node).trim()
+    if (!words) return ''
+    if (n.type === 'heading') return `${'#'.repeat(Math.min(6, Number(n.tag?.slice(1)) || 2))} ${words}`
+    if (n.type === 'quote') return `> ${words}`
+    if (n.type === 'list') return (n.children ?? []).map((li) => `- ${text(li).trim()}`).join('\n')
+    return words
+  }).filter(Boolean).join('\n\n')
 }
