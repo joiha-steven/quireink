@@ -128,16 +128,16 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     const category = features.categoryLabel ? post.categories[0] : undefined
     // A SHORT POST (ADR 0064): no headline and no standfirst, none made up — the words are the piece.
     const untitled = isUntitled(post)
-    // The figures are wrapped and the units are not: the IDE chrome sets a literal apart
-    // from the words around it, and it cannot do that to a bare text node.
+    // The figures are wrapped: the IDE chrome sets a literal apart, which a bare text node defeats.
     // ONE pass for both numbers, and the same one the info panel prints. `wordCount` runs
     // `toPlainText` over the whole body, and this pair used to be taken twice here and twice
     // more in `postInfoPanel`: four passes for two numbers on one screen.
     const words = features.readingTime ? wordCount(post.content) : 0
     const length = features.readingTime
-      ? ` · <span class="num">${formatCount(words, settings.language)}</span>`
-        + ` ${escapeHtml(s.wordsSuffix)}`
-        + ` · <span class="num">${minutesFor(words)}</span> ${escapeHtml(s.readingSuffix)}`
+      // `meta-part` holds each figure to its unit, as the listing does (FIXLIST 7.11).
+      ? ` · <span class="meta-part"><span class="num">${formatCount(words, settings.language)}</span>`
+        + ` ${escapeHtml(s.wordsSuffix)}</span>`
+        + ` · <span class="meta-part"><span class="num">${minutesFor(words)}</span> ${escapeHtml(s.readingSuffix)}</span>`
       : ''
     // Desktop and tablet only, hidden by CSS on a narrow screen: two columns of type in
     // a phone-width viewport is worse than one, not better.
@@ -181,8 +181,8 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
     const series = await getSeriesForPost(post.slug)
     const seriesBox = series && series.posts.length > 1
       ? `<aside class="series"><p class="series-head"><a class="link-accent" href="/series/${
-          escapeAttr(series.slug)}">${escapeHtml(series.name)}</a> · ${escapeHtml(s.seriesPartPrefix)} ${
-          series.currentIndex + 1}/${series.posts.length}</p><ol>${
+          escapeAttr(series.slug)}">${escapeHtml(series.name)}</a> · <span class="meta-part">${escapeHtml(s.seriesPartPrefix)} ${
+          series.currentIndex + 1}/${series.posts.length}</span></p><ol>${
           series.posts.map((p) => (p.slug === post.slug
             ? `<li aria-current="page"${langAttr(p, settings.language)}>${escapeHtml(postName(p))}</li>`
             : `<li><a href="/${escapeAttr(p.slug)}"${langAttr(p, settings.language)}>${

@@ -102,9 +102,9 @@ export function postInfoPanel(
     // DATE line, not these: "2.799 chữ · 14 phút đọc" is short enough to hold at 250px.
     // The figures are wrapped and the units are not, the same way the meta line does it, so
     // the IDE chrome can set a literal apart from the words beside it.
-    rows.push(`<p><span class="num">${
-      formatCount(words, settings.language)}</span> ${escapeHtml(s.wordsSuffix)}`
-      + ` · <span class="num">${minutesFor(words)}</span> ${escapeHtml(s.readingSuffix)}</p>`)
+    rows.push(`<p><span class="meta-part"><span class="num">${
+      formatCount(words, settings.language)}</span> ${escapeHtml(s.wordsSuffix)}</span>`
+      + ` · <span class="meta-part"><span class="num">${minutesFor(words)}</span> ${escapeHtml(s.readingSuffix)}</span></p>`)
   }
   // No category link among the rows even though the meta line carries one: the full list of
   // categories is two lines further down, and naming the first of them twice in a 250px
