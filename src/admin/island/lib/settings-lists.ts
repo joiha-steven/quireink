@@ -308,9 +308,18 @@ async function add(screen: HTMLElement, list: HTMLElement, w: ListWords): Promis
   const permanent = screen.querySelector<HTMLInputElement>('[data-redirect-permanent]')
   if (!from?.value.trim() || !to?.value.trim()) return
   const body = { source: from.value.trim(), destination: to.value.trim(), permanent: Boolean(permanent?.checked) }
-  const res = await fetch('/api/redirects', {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+  const send = (replace: boolean) => fetch('/api/redirects', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...body, replace }),
   }).catch(() => null)
+  let res = await send(false)
+  // The source already goes somewhere: asked, then replaced only on a yes (2026-09-30).
+  if (res?.status === 409) {
+    const was = ((await res.json().catch(() => null) as { error?: string } | null)?.error ?? '').replace(/^exists:/, '')
+    const yes = await ask({ ...w, yes: w.redirectReplace }, w.redirectReplaceTitle ?? '',
+      (w.redirectReplaceBody ?? '').replace('{from}', body.source).replace('{to}', was))
+    if (!yes) return
+    res = await send(true)
+  }
   if (!res?.ok) {
     // The server's own sentence when it has one — "that source is a live post", "the
     // destination is not a path" — and the redirect card's own fallback when it does not.

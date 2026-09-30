@@ -93,7 +93,8 @@ export function opsRoutes() {
     const sourceSlug = source.slice(1)
     if (!sourceSlug.includes('/') && (await getPost(sourceSlug) !== null || await getPage(sourceSlug) !== null)) return 0
     try {
-      await saveRedirect({ source, destination: `/${slug}`, permanent: true })
+      // Never over a redirect the owner already has: an import is not asked, so it does not win.
+      await saveRedirect({ source, destination: `/${slug}`, permanent: true, replace: false })
       return 1
     } catch {
       return 0

@@ -93,3 +93,27 @@ describe('removal', () => {
     expect(await getRedirects()).toHaveLength(1)
   })
 })
+
+// Two faults in the redirect list (2026-09-30).
+describe('a redirect to this site written as a full URL, and a source that is taken', () => {
+  it('is stored as a path, so a loop through it is refused', async () => {
+    const { setOwnOrigins } = await import('@/media/blob')
+    setOwnOrigins(['https://blog.example'])
+    await saveRedirect({ source: '/lg', destination: 'https://blog.example/lh' })
+    expect(one<{ destination: string }>(`select destination from redirects where source = '/lg'`)!.destination).toBe('/lh')
+    await expect(saveRedirect({ source: '/lh', destination: '/lg' })).rejects.toBeInstanceOf(RedirectInputError)
+    // Somebody else's address stays exactly as typed.
+    await saveRedirect({ source: '/away', destination: 'https://other.example/x' })
+    expect(one<{ destination: string }>(`select destination from redirects where source = '/away'`)!.destination).toBe('https://other.example/x')
+    setOwnOrigins([])
+  })
+
+  it('asks before pointing a taken source somewhere else, and not when it is the same place', async () => {
+    await saveRedirect({ source: '/dup-a', destination: '/colophon' })
+    await expect(saveRedirect({ source: '/dup-a', destination: '/about-me', replace: false }))
+      .rejects.toThrow('exists:/colophon')
+    await saveRedirect({ source: '/dup-a', destination: '/colophon', replace: false })
+    await saveRedirect({ source: '/dup-a', destination: '/about-me', replace: true })
+    expect(one<{ destination: string }>(`select destination from redirects where source = '/dup-a'`)!.destination).toBe('/about-me')
+  })
+})

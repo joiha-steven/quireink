@@ -307,3 +307,15 @@ describe('trash', () => {
     expect((await post('/api/trash', { kind: 'media', action: 'purge', ids: [url] })).status).toBe(200)
   })
 })
+
+// "Settings saved" over an emptied title, and the old title back at the next load (2026-09-30).
+describe('the site title', () => {
+  it('is refused when emptied, and left as it was', async () => {
+    await put('/api/settings', { title: 'Kept title' })
+    const res = await put('/api/settings', { title: '   ' })
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ success: false, error: 'title_required' })
+    const { getSettings } = await import('@/content/settings')
+    expect((await getSettings()).title).toBe('Kept title')
+  })
+})

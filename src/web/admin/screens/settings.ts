@@ -45,7 +45,7 @@ function words(t: AdminStrings): string {
   return escapeAttr(JSON.stringify({
     save: t.saveSettings, saveCount: t.saveSettingsCount, saving: t.saving,
     savedAt: t.savedAtPrefix, saved: t.savedSettings, failed: t.saveFailed,
-    listTaken: t.listPathTaken,
+    listTaken: t.listPathTaken, titleRequired: t.siteTitleRequired,
     leaveTitle: t.leaveUnsavedTitle, leaveBody: t.leaveUnsavedBody,
     leaveSave: t.leaveUnsavedSave, leaveDiscard: t.leaveUnsavedDiscard, leaveStay: t.leaveUnsavedStay,
     // ⚠️ `connectionOk` CLAIMS A REPLY, so only the island may ever print it: it is the one
@@ -79,6 +79,7 @@ function words(t: AdminStrings): string {
     backupDone: t.backupToastOk, backupFailed: t.backupToastFail, backupBusy: t.exportBusy,
     // A redirect is a row in its own table, not a setting, and it said "Settings saved".
     redirectSaved: t.redirectSaved, redirectFailed: t.redirectSaveFailed,
+    redirectReplaceTitle: t.redirectReplaceTitle, redirectReplaceBody: t.redirectReplaceBody, redirectReplace: t.redirectReplace,
     // The MCP card's five keys. Every one of them was drawn and wired to nothing until
     // 2026-09-15, so none of these had a reader either.
     mcpGenerate: t.mcpGenerate, mcpNamePrompt: t.mcpNamePrompt,
@@ -92,6 +93,7 @@ function words(t: AdminStrings): string {
     // that did not take, and there is no key of its own for it — see OPEN_QUESTIONS.
     importDone: t.importDone, importImagesDone: t.importImagesDone,
     importImagesFailed: t.importImagesFailed, importFailed: t.uploadFailed,
+    importSkipped: t.importSkipped, importWrongKind: t.importWrongKind, importTooBig: t.importTooBig,
     // The footer's link key asks for an address in the product's own dialog, not the browser's.
     linkTitle: t.tbLink, promptLink: t.promptLink, linkSave: t.save,
     // Why a value was refused. Six sentences that had no reader left after ADR 0054, on a screen

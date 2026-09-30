@@ -90,8 +90,10 @@ export function wireSave(screen: HTMLElement, w: SaveWords): Form {
         // ONE tab, and not necessarily the tab being looked at, so the screen opens that tab
         // before pointing at the field.
         const taken = json.error?.startsWith('list_path_taken')
-        say(taken ? (w.listTaken ?? '') : (w.failed ?? ''), 'error')
-        if (taken) screen.dispatchEvent(new CustomEvent('settings:field-error', { detail: { k: 'home.listPath' } }))
+        const untitled = json.error === 'title_required'
+        say((taken ? w.listTaken : untitled ? w.titleRequired : w.failed) ?? '', 'error')
+        const k = taken ? 'home.listPath' : untitled ? 'title' : ''
+        if (k) screen.dispatchEvent(new CustomEvent('settings:field-error', { detail: { k } }))
         return false
       }
       settle(moved)

@@ -111,18 +111,20 @@ export function siteRoutes() {
   router.get('/api/redirects', async () => json(await getRedirects()))
 
   router.post('/api/redirects', async (c) => {
-    const input = await body<{ source: unknown; destination: unknown; permanent: unknown }>(c)
+    const input = await body<{ source: unknown; destination: unknown; permanent: unknown; replace: unknown }>(c)
     try {
       await saveRedirect({
         source: typeof input.source === 'string' ? input.source : '',
         destination: typeof input.destination === 'string' ? input.destination : '',
         // Default 301. Only an explicit `false` makes it temporary.
         permanent: input.permanent !== false,
+        // Asked, not assumed: an existing source is replaced only once the owner said so.
+        replace: input.replace === true,
       })
     } catch (error) {
       // The message is the validation reason and IS meant for the caller, unlike the
       // generic 500 path where an exception string could carry anything.
-      if (error instanceof RedirectInputError) return fail(c, error.message, 400)
+      if (error instanceof RedirectInputError) return fail(c, error.message, error.message.startsWith('exists:') ? 409 : 400)
       throw error
     }
     clearCache()
@@ -151,6 +153,11 @@ export function siteRoutes() {
       return fail(c, 'body must be a JSON object', 400)
     }
     const input = raw.value as Partial<SiteSettings>
+    // An emptied title is REFUSED, not quietly kept: the sanitizer falls back, so the save said
+    // "Settings saved" over an empty field and the old title was back at the next load (2026-09-30).
+    if ('title' in input && (typeof input.title !== 'string' || input.title.trim() === '')) {
+      return fail(c, 'title_required', 400)
+    }
     // Read BEFORE the write, so the log can say what moved, and so the guard below can ask
     // what the settings will BE rather than what this payload happens to mention. One
     // extra read on a route that is pressed by hand a few times an hour.

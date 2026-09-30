@@ -51,6 +51,11 @@ export function setOwnOrigins(urls: readonly string[]): void {
 const ours = (origin: string | undefined): boolean =>
   origin === undefined || ownOrigins.has(origin.toLowerCase())
 
+/** Whether an absolute URL is on one of this site's own origins (the same set as above). */
+export const isOwnUrl = (url: string): boolean => {
+  try { return ownOrigins.has(new URL(url).origin.toLowerCase()) } catch { return false }
+}
+
 // Expand store-relative `media/`/`files/` refs to `${base}/...` (idempotent;
 // external links + body text outside link/src/href positions untouched).
 function expandWith(base: string, s: string): string {

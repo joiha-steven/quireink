@@ -10,6 +10,7 @@ import { normalizePath, isValidDestination, isReservedPath } from '@/server/redi
 import { all, one, run } from '@/store/query'
 import { nowMs } from '@/store/db'
 import { liveSlugTaken } from '@/content/slugs'
+import { isOwnUrl } from '@/media/blob'
 
 export type Redirect = {
   id: number
@@ -73,11 +74,20 @@ export async function saveRedirect(input: {
   source: string
   destination: string
   permanent?: boolean
+  /**
+   * False: refuse a source that already goes somewhere else (`exists:<where>`), so the owner is
+   * asked first. It was replaced in silence, and "Redirect saved" twice meant the first rule was
+   * gone (2026-09-30). True (the default) for the saves that ARE replacements: a rename.
+   */
+  replace?: boolean
 }): Promise<void> {
   const source = normalizePath(input.source)
-  const destination = input.destination.trim().startsWith('/')
-    ? normalizePath(input.destination)
-    : input.destination.trim()
+  // A full URL on this site's own address IS a path here, and is stored as one: pasted as
+  // `https://blog/lh`, the loop check below (which follows paths) walked straight past it, and
+  // `/lg -> https://blog/lh` with `/lh -> /lg` bounced a browser until it gave up (2026-09-30).
+  const typed = input.destination.trim()
+  const local = !typed.startsWith('/') && isOwnUrl(typed) ? new URL(typed).pathname : typed
+  const destination = local.startsWith('/') ? normalizePath(local) : local
   if (!source) throw new RedirectInputError('A source path is required')
   if (!isValidDestination(destination)) throw new RedirectInputError('Destination must be a path or an http(s) URL')
   if (source === destination) throw new RedirectInputError('Source and destination are the same')
@@ -109,6 +119,10 @@ export async function saveRedirect(input: {
       const next = findRedirect(at)
       at = next !== null && next.destination.startsWith('/') ? next.destination : ''
     }
+  }
+  if (input.replace === false) {
+    const had = one<{ destination: string }>(`select destination from redirects where source = ?`, source)
+    if (had && had.destination !== destination) throw new RedirectInputError(`exists:${had.destination}`)
   }
   run(
     `insert into redirects (source, destination, permanent, created_at)

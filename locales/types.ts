@@ -684,6 +684,7 @@ export type AdminStrings = {
   fieldRequired: string
   fieldInvalid: string
   listPathTaken: string
+  siteTitleRequired: string
   noMedia: string
   deleteNoMatch: string
   libraryIntro: string
@@ -1373,6 +1374,10 @@ export type AdminStrings = {
   importChoose: string
   importRun: string
   importDone: string
+  /** `{n}` items an import left out, and the one reason that covers every importer. */
+  importSkipped: string
+  importWrongKind: string
+  importTooBig: string
   importImages: string
   importImagesDone: string
   importImagesFailed: string
@@ -1470,6 +1475,10 @@ export type AdminStrings = {
   redirectEmpty: string
   redirectDelete: string
   redirectSaved: string
+  /** Asked before an existing source is pointed somewhere else: `{from}`, `{to}`. */
+  redirectReplaceTitle: string
+  redirectReplaceBody: string
+  redirectReplace: string
   redirectSaveFailed: string
   // newsletter (Settings → Integrations)
   cardNewsletter: string
