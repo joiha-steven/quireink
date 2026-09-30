@@ -15,7 +15,7 @@ export const asLang = (raw: string | null | undefined): SiteLang | undefined =>
   raw && (LANG_CODES as readonly string[]).includes(raw) ? raw as SiteLang : undefined
 
 // Metadata columns (everything except the heavy `content` body) for list reads.
-export const META_COLS = `p.slug, p.title, p.date, p.status, p.featured_image, p.excerpt,
+export const META_COLS = `p.slug, p.title, p.date, p.status, p.featured_image, p.excerpt, p.excerpt_auto,
   p.reading_minutes, p.series, p.series_order, p.meta_title, p.meta_description,
   p.cover_image, p.updated_at, p.lang, p.tr_group,${TERM_SELECT}`
 
@@ -30,6 +30,7 @@ export type PostRow = {
   tags: string | null
   featured_image: string | null
   excerpt: string | null
+  excerpt_auto?: number | null
   reading_minutes: number | null
   series: string | null
   series_order: number | null
@@ -53,6 +54,8 @@ export function rowToMeta(row: PostRow): Post {
     tags: parseTerms(row.tags),
     featuredImage: row.featured_image ? expandBlob(row.featured_image) : undefined,
     excerpt: row.excerpt ?? undefined,
+    // Derived from the body, not written: the editor shows the field empty and the deck skips it.
+    ...(row.excerpt_auto === 1 ? { excerptAuto: true } : {}),
     readingMinutes: row.reading_minutes ?? undefined,
     series: row.series ?? undefined,
     seriesOrder: row.series != null ? (row.series_order ?? 0) : undefined,

@@ -169,8 +169,8 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
       // Who wrote it, when the owner has said. '' on every blog that has not.
       byline(settings, s.bylinePrefix)}${book}</span></p>
 ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtml(item.title)}</h1>`}${
-      // Standfirst: the excerpt, so a long read opens on a sentence rather than a wall.
-      features.deck && post.excerpt && !untitled ? `
+      // Standfirst: a WRITTEN excerpt, so a long read opens on a sentence (a derived one is the opening, twice).
+      features.deck && post.excerpt && !post.excerptAuto && !untitled ? `
 <p class="deck">${escapeHtml(post.excerpt)}</p>` : ''}${langs}
 </header>`
 

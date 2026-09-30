@@ -42,7 +42,9 @@ export async function writeExcerpt(slug: string, mechanical: string, content: st
     // Only while the row still carries the mechanical fallback — the author winning any
     // race here is the point of the guard, not an inconvenience.
     run(
-      `update posts set excerpt = $answer where slug = $slug and excerpt = $mechanical and deleted_at is null`,
+      // `excerpt_auto = 0`: the answer is a summary somebody (something) WROTE, not the opening
+      // repeated, so the deck may show it and the editor offers it in the field.
+      `update posts set excerpt = $answer, excerpt_auto = 0 where slug = $slug and excerpt = $mechanical and deleted_at is null`,
       { answer, slug, mechanical },
     )
     clearCache()

@@ -134,7 +134,11 @@ function registerPostTools(server: ToolHost): void {
       const existing = await getPost(slug)
       if (!existing) return asError(`Post not found: ${slug}`)
       // Merge only the provided keys over the current post, then save the whole thing.
-      const defined = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined))
+      const defined: Record<string, unknown> = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined))
+      // An excerpt passed here is written. One left out on a post whose excerpt was DERIVED is
+      // derived again, from the body as patched, rather than carried over from the old one.
+      if ('excerpt' in defined) defined.excerptAuto = false
+      else if (existing.excerptAuto) defined.excerpt = undefined
       try {
         const meta = await savePost({ ...existing, ...defined } as Partial<PostWithContent>, slug)
         clearCache()

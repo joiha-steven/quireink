@@ -84,7 +84,9 @@ function draftOf(kind: SheetKind, row: Loaded['row'], timezone: string): SheetDr
     coverImage: post.coverImage ?? '',
     metaTitle: post.metaTitle ?? '',
     metaDescription: post.metaDescription ?? '',
-    excerpt: post.excerpt ?? '',
+    // A derived excerpt is not offered as the author's: the field stays empty (its placeholder
+    // says what empty does), so the next save derives again instead of freezing today's opening.
+    excerpt: post.excerptAuto ? '' : (post.excerpt ?? ''),
     sourceUrl: note.sourceUrl ?? '',
     sourceTitle: note.sourceTitle ?? '',
     quote: note.quote ?? '',

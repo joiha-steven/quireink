@@ -35,6 +35,8 @@ create table if not exists posts (
   status           text not null default 'draft' check (status in ('draft','published')),
   featured_image   text,
   excerpt          text,
+  -- 1 when `excerpt` was derived from the body rather than written (see migration 020).
+  excerpt_auto     integer not null default 0,
   reading_minutes  integer,
   content          text not null default '',
   series           text,

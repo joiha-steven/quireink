@@ -192,9 +192,17 @@ export function toPlainText(markdown: string): string {
     .trim()
 }
 
-// Auto excerpt: first `maxWords` words of the body, ending with "..." if cut.
+// Auto excerpt: first `maxWords` words of the body, ending with "..." if cut. HEADINGS LEFT OUT
+// ("Code Math Inline math" ran into a summary, 2026-09-30), unless that is all there is.
 export function deriveExcerpt(markdown: string, maxWords = 50): string {
-  const plain = toPlainText(markdown)
+  return excerptOf(toPlainText(markdown.replace(/^[ \t]{0,3}#{1,6}(?:[ \t].*)?$/gm, ' ')), maxWords)
+    || excerptOf(toPlainText(markdown), maxWords)
+}
+
+/** `deriveExcerpt` before 2026-09-30, to recognise a stored one. */
+export const legacyExcerpt = (markdown: string, maxWords = 50): string => excerptOf(toPlainText(markdown), maxWords)
+
+function excerptOf(plain: string, maxWords: number): string {
   if (!plain) return ''
   const words = plain.split(' ')
   const trimmed = words.length <= maxWords ? plain : `${words.slice(0, maxWords).join(' ')}...`

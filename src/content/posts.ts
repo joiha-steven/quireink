@@ -4,7 +4,7 @@
 
 import type { Post, PostWithContent } from '@/types'
 import { collapseBlob, expandBlob } from '@/media/blob'
-import { slugify, deriveExcerpt, clampExcerpt, isPublicallyVisible, readingMinutes } from '@/utils'
+import { slugify, deriveExcerpt, legacyExcerpt, clampExcerpt, isPublicallyVisible, readingMinutes } from '@/utils'
 import { slugFromWords } from '@/content/untitled'
 import { accentedWords, keepsAccents } from '@/accent'
 import { ensureSlugFree } from '@/content/slugs'
@@ -145,6 +145,34 @@ export async function getPost(slug: string): Promise<PostWithContent | null> {
   }
 }
 
+/** Whether `excerpt` is exactly what `content` derives — under today's rule or the older one. */
+function isDerivedExcerpt(excerpt: string, content: string, excerptWords: number): boolean {
+  return [excerptWords, 50].some((n) => excerpt === deriveExcerpt(content, n) || excerpt === legacyExcerpt(content, n))
+}
+
+/**
+ * Decide, once, whether each post from before migration 020 has a WRITTEN excerpt or a derived
+ * one. The migration marks them `-1` because SQL cannot run `deriveExcerpt`; this compares the
+ * stored excerpt with what the body derives, under today's and the older rule and at the length
+ * set now or the default, and marks a match `1`. Anything else was typed and is marked `0`,
+ * which is the safe way to be wrong: a written excerpt is never thrown away. Returns how many it
+ * settled; a boot with nothing left to settle reads no body at all.
+ */
+export function settleExcerptKinds(excerptWords: number): number {
+  const rows = all<{ slug: string; excerpt: string | null; content: string }>(
+    `select slug, excerpt, content from posts where excerpt_auto = -1`,
+  )
+  if (rows.length === 0) return 0
+  tx(() => {
+    for (const row of rows) {
+      const excerpt = row.excerpt?.trim() ?? ''
+      const auto = excerpt === '' || isDerivedExcerpt(excerpt, row.content, excerptWords)
+      run(`update posts set excerpt_auto = ? where slug = ?`, auto ? 1 : 0, row.slug)
+    }
+  })
+  return rows.length
+}
+
 // Normalize input into a complete Post + content pair. `excerptWords` sets the
 // auto-excerpt length when the author leaves it blank.
 function normalize(input: Partial<PostWithContent>, excerptWords = 50): PostWithContent {
@@ -157,10 +185,18 @@ function normalize(input: Partial<PostWithContent>, excerptWords = 50): PostWith
   const slug = (input.slug?.trim() ? slugify(input.slug) : title ? slugify(title) : slugFromWords(content))
     || `post-${Date.now()}`
   // Author excerpt wins (length-capped); else auto from the body.
-  const excerpt = input.excerpt?.trim() ? clampExcerpt(input.excerpt.trim()) : deriveExcerpt(content, excerptWords)
+  //
+  // ⚠️ AN EXCERPT THAT CAME BACK MARKED AUTO, UNCHANGED, IS NOT AN AUTHOR'S. Every path that
+  // re-saves a post it read (a bulk status change, the image rescue, MCP `patch_post`) hands
+  // back the derived excerpt with `excerptAuto`, and taking it as written froze it on that
+  // day's opening. Changed to anything the body does not derive, somebody wrote it.
+  const typed = input.excerpt?.trim() ?? ''
+  const written = typed && !(input.excerptAuto && isDerivedExcerpt(typed, content, excerptWords)) ? typed : ''
+  const excerpt = written ? clampExcerpt(written) : deriveExcerpt(content, excerptWords)
   return {
     title,
     slug,
+    ...(written ? {} : { excerptAuto: true }),
     date: input.date ?? new Date().toISOString(),
     status: input.status === 'published' ? 'published' : 'draft',
     categories: input.categories ?? [],
@@ -217,15 +253,16 @@ export async function savePost(
   // its predecessor's categories.
   tx(() => {
     run(
-      `insert into posts (slug, title, date, status, featured_image, excerpt, reading_minutes,
+      `insert into posts (slug, title, date, status, featured_image, excerpt, excerpt_auto, reading_minutes,
                           content, series, series_order, meta_title, meta_description,
                           cover_image, lang, tr_group, created_at, updated_at)
-       values ($slug, $title, $date, $status, $featuredImage, $excerpt, $readingMinutes,
+       values ($slug, $title, $date, $status, $featuredImage, $excerpt, $excerptAuto, $readingMinutes,
                $content, $series, $seriesOrder, $metaTitle, $metaDescription,
                $coverImage, $lang, $trGroup, $createdAt, $now)
        on conflict(slug) do update set
          title = excluded.title, date = excluded.date, status = excluded.status,
          featured_image = excluded.featured_image, excerpt = excluded.excerpt,
+         excerpt_auto = excluded.excerpt_auto,
          reading_minutes = excluded.reading_minutes, content = excluded.content,
          series = excluded.series, series_order = excluded.series_order,
          meta_title = excluded.meta_title, meta_description = excluded.meta_description,
@@ -238,6 +275,7 @@ export async function savePost(
         status: post.status,
         featuredImage: post.featuredImage ? collapseBlob(post.featuredImage) : null,
         excerpt: post.excerpt ?? null,
+        excerptAuto: post.excerptAuto ? 1 : 0,
         // Recomputed so the column stays in sync with the body for list reads.
         readingMinutes: readingMinutes(post.content),
         content: collapseBlob(post.content),
@@ -286,7 +324,7 @@ export async function savePost(
   // stored the mechanical fifty-word fallback, and only this save path knows the field
   // was blank. Fire-and-forget: the job declines instantly unless a key and its switch
   // are both on, and its write-back is guarded so an author edit always wins.
-  if (post.status === 'published' && !input.excerpt?.trim()) {
+  if (post.status === 'published' && post.excerptAuto) {
     void writeExcerpt(post.slug, post.excerpt ?? '', post.content)
   }
 

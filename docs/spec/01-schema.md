@@ -141,7 +141,15 @@ server-side autosave, added 2026-08-30. They map straight across — `TEXT` and 
 the only thing worth carrying into any port is the RULE: **nothing that renders a page may
 read them.** `content` is what the reader is served and only an explicit Save moves it; these
 two hold the in-progress draft so a dead laptop does not cost the morning, and a real save
-clears them. `src/content/autosave.test.ts` asserts both halves.
+clears them. `src/content/autosave.test.ts` asserts both halves. The one reader outside the
+editor is `/preview`, token-gated and `no-store`: a published piece is previewed from its snapshot
+rather than saved first (2026-09-30).
+
+`posts.excerpt_auto` (migration `020-excerpt-auto`, 2026-09-30) says whether `excerpt` was written
+or derived from the body: `1` derived, `0` written, `-1` only on rows from before the column, until
+`settleExcerptKinds` decides them at the next boot by comparing the stored excerpt with what the body
+derives. A derived excerpt is re-derived on every save, is never loaded into the editor's field, and
+is not printed as the deck. `src/content/excerpt-kind.test.ts`.
 
 Three areas needed real design work, now in [01-schema-port.md](01-schema-port.md) §1–3, and
 two tables were added for a fourth.

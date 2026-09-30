@@ -435,3 +435,15 @@ create table if not exists body_cache (
 ) without rowid;
 
 delete from render_cache;
+
+-- migration: 020-excerpt-auto
+-- Whether a post's excerpt was WRITTEN or derived from its body. They shared one column, so the
+-- editor loaded the derived one into the Excerpt field and the next save stored it as written:
+-- the excerpt froze on the opening the post had when it was first reopened, and the list card,
+-- the feeds and the meta description kept old words. And the deck printed it above the body,
+-- so every post without a written excerpt showed its opening twice.
+--
+-- -1 on existing rows means "not known yet": `settleExcerptKinds` (content/posts.ts) decides each
+-- one once at boot, by comparing the stored excerpt with what the body derives. New rows are
+-- always written with 0 or 1.
+alter table posts add column excerpt_auto integer not null default -1;

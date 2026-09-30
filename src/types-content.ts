@@ -23,6 +23,7 @@ export type Post = {
   tags: string[]
   featuredImage?: string // stored image URL; used only for SEO/social meta, never shown
   excerpt?: string // auto-extracted from first paragraph if empty
+  excerptAuto?: boolean // true when `excerpt` was derived from the body rather than written
   readingMinutes?: number // estimated read time, computed from the body at save (for lists)
   series?: string // optional series/collection name this post belongs to (undefined = none)
   seriesOrder?: number // position within the series (ascending); undefined when no series

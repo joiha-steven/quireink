@@ -7,6 +7,7 @@
 import { readEnv } from '@/env'
 import { getSettings, siteUrlIsUnset, resolveSiteUrl } from '@/content/settings'
 import { noUsersYet } from '@/auth/users'
+import { settleExcerptKinds } from '@/content/posts'
 import { setupBanner } from '@/web/setup-routes'
 import { openDatabases, closeDatabases } from '@/store/db'
 import { ensureBlobStore } from '@/media/blob-local'
@@ -75,6 +76,10 @@ console.log(`quire ${(pkg as { version: string }).version} listening on http://$
 // site-address warning below because on a fresh install this is the only thing the operator
 // can act on — the address is set from inside, and there is no inside yet.
 const bootSettings = await getSettings()
+// Posts from before migration 020 do not yet say whether their excerpt was written or derived.
+// Decided once here; a boot with nothing to decide reads no post body.
+const settled = settleExcerptKinds(bootSettings.excerptLength)
+if (settled > 0) console.log(`[INFO] excerpts: sorted ${settled} post(s) into written and derived`)
 if (noUsersYet()) {
   // The bound socket, not `resolveSiteUrl`: on a fresh install there IS no site address yet,
   // and its fallback is a hardcoded `localhost:3000` that ignores the port in front of it.
