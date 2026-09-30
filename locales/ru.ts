@@ -26,7 +26,7 @@ const ru = {
   gridView: 'Сеткой',
   listView: 'Списком',
   palette: 'Палитра',
-  paletteNames: { mono: 'Моно', sepia: 'Сепия', forest: 'Лес', ocean: 'Океан', scifi: 'Sci-Fi', amber: 'Янтарь' },
+  paletteNames: { mono: 'Моно', sepia: 'Сепия', forest: 'Лес', ocean: 'Океан', scifi: 'Фантастика', amber: 'Янтарь' },
   theme: 'Тема',
   themeLight: 'Светлая',
   themeDark: 'Тёмная',
