@@ -93,6 +93,30 @@ export const INK_SYNTAX_GLOBAL = new RegExp(INK_SYNTAX_SOURCE, 'g')
  * only place that knows which it is marking is here, at render time. Stable by construction:
  * cached bodies carry the number.
  */
+/**
+ * The two respellings a save makes of a gesture, undone before it is hashed (2026-09-30).
+ *
+ * `==x==#yellow` is saved as `==x==`, because yellow is the highlighter's default and the
+ * editor cannot tell a named default from none; and emphasis covering the same words as the
+ * stroke is saved OUTSIDE it, `@@**x**@@` coming back as `**@@x@@**`. Each changed the source,
+ * so one save re-dealt the stroke under an unchanged phrase: six of 38 seeded posts drew
+ * differently after it. A gesture already spelled the way a save spells it hashes exactly as
+ * before; only these two shapes move, once, to the number a save would give them anyway.
+ *
+ * On the RAW source, before escapes are resolved: an escaped `\*` is a character the author
+ * wants seen, not emphasis, and must not be unwrapped.
+ */
+function sameGesture(raw: string): string {
+  const m = /^(==|\+\+|@@)([\s\S]*)\1(#[a-z]+)?$/.exec(raw)
+  if (!m) return raw
+  const fence = m[1]!
+  let inner = m[2]!
+  const suffix = fence === '==' && m[3] === '#yellow' ? '' : (m[3] ?? '')
+  // Only a pair around the WHOLE run: `**a** and **b**` is two emphases, and stays as it is.
+  for (let w; (w = /^(\*\*|__|~~|\*|_)([\s\S]+)(?<!\\)\1$/.exec(inner)) && !w[2]!.includes(w[1]!); ) inner = w[2]!
+  return fence + inner + fence + suffix
+}
+
 export function penSeed(raw: string): number {
   // ⚠️ THE SPELLING IS NORMALISED FIRST, because the same words reach this twice spelled two
   // ways. `==5*3==` is what the author typed; a save writes `==5\*3==`, since the serializer
@@ -103,7 +127,7 @@ export function penSeed(raw: string): number {
   //
   // Resolving the escapes costs nothing for the gestures that have none, which is nearly all
   // of them: the number under every phrase without a backslash in it is the number it was.
-  const text = raw.replace(/\\([!-/:-@[-`{-~])/g, '$1')
+  const text = sameGesture(raw).replace(/\\([!-/:-@[-`{-~])/g, '$1')
   let h = 0x811c9dc5
   for (let i = 0; i < text.length; i++) {
     h ^= text.charCodeAt(i)

@@ -209,3 +209,20 @@ describe('a paragraph keeps its second line', () => {
     expect(await save('```\n```\n')).toBe('```\n```\n')
   })
 })
+
+// The page deals each stroke by a hash of its source, and a save respells two shapes: an
+// explicit `#yellow` on the highlighter is dropped, and emphasis over the same words moves
+// outside the stroke. Each re-dealt the stroke under an unchanged phrase (2026-09-30).
+describe('a save does not re-deal the pen', () => {
+  const pens = (html: string): string[] => [...html.matchAll(/data-pen="(\d+)"/g)].map((m) => m[1]!)
+  for (const source of [
+    'A ==highlighted phrase==#yellow here.',
+    'A @@**ringed**@@ word and ++_underlined words_++#pink.',
+    'Mixed ==**a** and **b**== stays.',
+  ]) {
+    it(`keeps the strokes of ${JSON.stringify(source)}`, async () => {
+      const saved = await save(source)
+      expect(pens(toHtml(saved, PAGE))).toEqual(pens(toHtml(source, PAGE)))
+    })
+  }
+})
