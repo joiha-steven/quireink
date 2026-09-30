@@ -161,7 +161,7 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     // thing in that gap otherwise and `textContent` would read "TypographySeptember". A grid
     // does not make an item of it: an anonymous item holding nothing but white space is not
     // rendered, so the promoted row it would otherwise claim never exists.
-    header = `<header>
+    header = `<header${untitled ? ' data-untitled' : ''}>
 <p class="t-small text-meta post-meta">${category
       ? `<a class="post-cat link-accent" href="/category/${escapeAttr(termSlug(category))}">${escapeHtml(category)}</a>`
       : ''} <span class="post-facts"><time datetime="${escapeAttr(post.date)}">${

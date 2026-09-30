@@ -237,4 +237,32 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
       if (plain && getComputedStyle(plain).textAlign === 'right') return 'an unaligned cell turned right too'
       return 'ok'
     })()`, 500))
+
+  // A SHORT POST starts level with the two rails at desktop width (FIXLIST 7.2). Its empty
+  // header held the body 40px lower than both. Two visits: plant it, then read it.
+  const SHORT = 'tour-short-post'
+  flow('reader: plant a short post with no title', () => expect('/admin/editor', `
+    (async () => {
+      await fetch('/api/posts/${SHORT}', { method: 'DELETE' })
+      const r = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: '', slug: '${SHORT}', content: 'A short one, with no headline at all.', status: 'published', categories: [], tags: [] }),
+      })
+      const made = await r.json().catch(() => null)
+      const page = await fetch('/')
+      return r.ok ? 'ok ' + JSON.stringify(made?.data?.slug ?? made?.data?.post?.slug) + ' ' + page.status : 'POST /api/posts -> ' + r.status
+    })()`, 600))
+  flow('reader: a short post starts level with both rails', () => expect(`/${SHORT}`, `
+    (async () => {
+      const first = document.querySelector('#post-body > *')
+      const rail = document.querySelector('.rail-toc .rail-inner > *')
+      const info = document.querySelector('.post-info > *')
+      const top = (el) => el ? Math.round(el.getBoundingClientRect().top) : null
+      const got = [top(first), top(rail), top(info)]
+      await fetch('/api/posts/${SHORT}', { method: 'DELETE' })
+      if (got[0] === null) return 'the short post has no body'
+      const off = got.slice(1).filter((y) => y !== null).map((y) => Math.abs(y - got[0]))
+      if (!off.length) return 'no rail beside the post to line up with'
+      return Math.max(...off) <= 8 ? 'ok ' + got.join('/') : 'the body starts off the rails: ' + got.join('/')
+    })()`, 600))
 }

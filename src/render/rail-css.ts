@@ -150,6 +150,15 @@ export function singleRailCss(colWidth: number): string {
     // nothing. That was the three columns not lining up: both rails start their first line
     // at the same y and the title sat 8px below them. Measured, then re-measured.
     `article > header .mt-2{margin-top:0}` +
+    // A SHORT POST's header is then empty: no title, and the meta line is in the gutter. It
+    // still held #post-body's 40px off the top, so the first line sat 40px below both rails
+    // (2026-09-30, FIXLIST 7.2). Gone, and the body takes the header's place — unless a cover
+    // or a series card stands above it, which the gap is there to separate.
+    `article > header[data-untitled]:not(:has(.post-langs)){display:none}` +
+    `article:not(:has(> .post-hero,> .series)) > header[data-untitled]:not(:has(.post-langs)) ~ #post-body{margin-top:0}` +
+    // ...and its first paragraph's own top margin, which collapsed through to the article and
+    // held the line 12px under the rails once the 40px had gone.
+    `article:not(:has(> .post-hero,> .series)) > header[data-untitled]:not(:has(.post-langs)) ~ #post-body > :first-child{margin-top:0}` +
     // A "wide" image or video noses right into the freed gutter by one rail width.
     `.prose figure.img-wide,.prose .video-wide{width:calc(100% + var(--rail-w) + var(--rail-gap));max-width:none;margin-left:0;` +
     `margin-right:calc(-1 * (var(--rail-w) + var(--rail-gap)))}` +
