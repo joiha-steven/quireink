@@ -191,6 +191,7 @@ const de = {
   serverDraftFound: 'Nicht gespeicherte Änderungen liegen auf dem Server',
   saveFailed: 'Speichern fehlgeschlagen',
   slugTaken: 'Dieser Slug ist bereits vergeben, bitte einen anderen wählen',
+  staleSave: 'Seit dem Öffnen woanders gespeichert. Neu laden, um diese Fassung zu sehen; dein Text bleibt auf diesem Gerät.',
   needTitle: 'Zum Veröffentlichen ist ein Titel erforderlich',
   savedDraft: 'Entwurf gespeichert',
   savedChanges: 'Änderungen gespeichert',

@@ -177,7 +177,7 @@ export async function savePage(
   // the route.
   clearAutosave('page', page.slug)
 
-  return toMeta(page) // full URLs for the client
+  return { ...toMeta(page), updatedAt: toIso(now) } // full URLs for the client
 }
 
 // Soft-delete a page: move it to the Trash (set deleted_at). The row, body and any

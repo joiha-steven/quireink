@@ -63,8 +63,9 @@ function boot(root: HTMLElement, data: Payload): void {
   // save onwards: nothing set this after that save, so every later title edit renamed a post
   // that had already been shared.
   let slugTyped = Boolean(draft.slug)
-  // The status THE SERVER HOLDS (`statusForSave`). A piece never saved is a draft.
+  // The status THE SERVER HOLDS (`statusForSave`), and when it last saved the row (`stale.ts`).
   let savedStatus: SheetDraft['status'] = slug ? draft.status : 'draft'
+  let baseSavedAt = data.rowSavedAt
 
   /**
    * A NEW PIECE REOPENS FROM ITS SNAPSHOT.
@@ -262,14 +263,13 @@ function boot(root: HTMLElement, data: Payload): void {
     saving = true
     sayState()
     try {
-      const res = await savePiece(kind, slug, payloadOf(kind, draft, text, timezone, status))
+      const res = await savePiece(kind, slug, payloadOf(kind, draft, text, timezone, status), baseSavedAt)
       if (!res.ok) {
-        // The one refusal worth its own word: two pieces cannot share an address, and "could
-        // not save" sends somebody looking for a network fault.
-        say(res.reason === 'slug_taken' ? t.slugTaken : t.saveFailed, 'error')
+        say(res.reason === 'slug_taken' ? t.slugTaken : res.reason === 'stale' ? t.staleSave : t.saveFailed, 'error')
         return false
       }
       slug = res.slug
+      baseSavedAt = res.savedAt ?? baseSavedAt
       safety.retarget(res.slug)
       savedAt = new Date().toISOString()
       slugTyped = true

@@ -180,7 +180,7 @@ export async function saveNote(input: Partial<NoteWithContent>, previousSlug?: s
   await clearRedirectForPath(`/notes/${note.slug}`)
   if (renaming) await saveRedirect({ source: `/notes/${previousSlug}`, destination: `/notes/${note.slug}`, permanent: true })
   clearAutosave('note', note.slug)
-  return toMeta(note)
+  return { ...toMeta(note), updatedAt: toIso(now) }
 }
 
 export async function deleteNote(slug: string): Promise<void> {

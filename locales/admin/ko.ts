@@ -191,6 +191,7 @@ const ko = {
   serverDraftFound: '저장되지 않은 변경 사항이 서버에 있습니다',
   saveFailed: '저장 실패',
   slugTaken: '이미 사용 중인 슬러그입니다. 다른 슬러그를 선택하세요',
+  staleSave: '이 화면을 연 뒤 다른 곳에서 저장되었습니다. 새로고침해 그 버전을 확인하세요. 작성한 글은 이 기기에 남아 있습니다.',
   needTitle: '게시하려면 제목이 필요합니다',
   savedDraft: '초안이 저장되었습니다',
   savedChanges: '변경 사항이 저장되었습니다',

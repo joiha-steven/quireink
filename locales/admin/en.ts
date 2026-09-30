@@ -191,6 +191,7 @@ const en = {
   serverDraftFound: 'Unsaved changes are kept on the server',
   saveFailed: 'Save failed',
   slugTaken: 'That slug is already taken, choose another',
+  staleSave: 'Saved from somewhere else since this opened. Reload to see that version; your text stays on this device.',
   needTitle: 'A title is required to publish',
   savedDraft: 'Draft saved',
   savedChanges: 'Changes saved',

@@ -98,8 +98,8 @@ export function nameEnough(kind: SheetKind, draft: SheetDraft, content: string):
 }
 
 export type SaveResult =
-  | { ok: true; slug: string }
-  | { ok: false; reason: 'slug_taken' | 'failed' }
+  | { ok: true; slug: string; savedAt: number | null }
+  | { ok: false; reason: 'slug_taken' | 'stale' | 'failed' }
 
 /**
  * Write the piece.
@@ -108,20 +108,24 @@ export type SaveResult =
  * rename is a PUT to the old address carrying the new one. Empty means there is no row yet.
  */
 export async function savePiece(
-  kind: SheetKind, editing: string, body: Record<string, unknown>,
+  kind: SheetKind, editing: string, body: Record<string, unknown>, baseSavedAt: number | null = null,
 ): Promise<SaveResult> {
   const at = API_PATH[kind]
+  // `baseSavedAt`: when the row was last saved as far as this sheet knows. The server refuses
+  // the write if somebody saved it since (`web/admin/stale.ts`) rather than undo their work.
   const res = await fetch(editing ? `${at}/${encodeURIComponent(editing)}` : at, {
     method: editing ? 'PUT' : 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify(editing && baseSavedAt !== null ? { ...body, baseSavedAt } : body),
   })
   const json = await res.json().catch(() => null) as
-    { success?: boolean; data?: { slug?: string }; error?: string } | null
+    { success?: boolean; data?: { slug?: string; updatedAt?: string }; error?: string } | null
   if (!res.ok || !json?.success) {
-    // The one refusal worth its own word: two pieces cannot share an address, and "could not
-    // save" sends somebody looking for a network fault.
-    return { ok: false, reason: json?.error === 'slug_taken' ? 'slug_taken' : 'failed' }
+    // Two refusals worth their own words: two pieces cannot share an address, and another tab
+    // saved first. "Could not save" sends somebody looking for a network fault.
+    const reason = json?.error === 'slug_taken' || json?.error === 'stale' ? json.error : 'failed'
+    return { ok: false, reason }
   }
-  return { ok: true, slug: json.data?.slug ?? String(body.slug ?? '') }
+  const savedAt = json.data?.updatedAt ? Date.parse(json.data.updatedAt) : null
+  return { ok: true, slug: json.data?.slug ?? String(body.slug ?? ''), savedAt }
 }

@@ -191,6 +191,7 @@ const it = {
   serverDraftFound: 'Ci sono modifiche non salvate sul server',
   saveFailed: 'Salvataggio non riuscito',
   slugTaken: 'Quello slug è già preso, scegline un altro',
+  staleSave: 'Salvato altrove dopo l’apertura. Ricarica per vedere quella versione; il tuo testo resta su questo dispositivo.',
   needTitle: 'Serve un titolo per pubblicare',
   savedDraft: 'Bozza salvata',
   savedChanges: 'Modifiche salvate',

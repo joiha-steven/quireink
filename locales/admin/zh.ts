@@ -191,6 +191,7 @@ const zh = {
   serverDraftFound: '服务器上有未保存的修改',
   saveFailed: '保存失败',
   slugTaken: '该别名已被占用，请选择其他别名',
+  staleSave: '打开后已在别处保存。请重新加载查看那个版本；你的文字仍保留在此设备上。',
   needTitle: '发布前需要填写标题',
   savedDraft: '草稿已保存',
   savedChanges: '更改已保存',

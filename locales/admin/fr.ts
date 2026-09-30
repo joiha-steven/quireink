@@ -191,6 +191,7 @@ const fr = {
   serverDraftFound: 'Des modifications non enregistrées sont sur le serveur',
   saveFailed: 'L’enregistrement a échoué',
   slugTaken: 'Ce slug est déjà pris, choisissez-en un autre',
+  staleSave: 'Enregistré ailleurs depuis l’ouverture. Rechargez pour voir cette version ; votre texte reste sur cet appareil.',
   needTitle: 'Un titre est nécessaire pour publier',
   savedDraft: 'Brouillon enregistré',
   savedChanges: 'Modifications enregistrées',

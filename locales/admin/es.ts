@@ -191,6 +191,7 @@ const es = {
   serverDraftFound: 'Hay cambios sin guardar en el servidor',
   saveFailed: 'No se pudo guardar',
   slugTaken: 'Ese slug ya está ocupado, elige otro',
+  staleSave: 'Se guardó desde otro lugar después de abrir esto. Recarga para ver esa versión; tu texto se queda en este dispositivo.',
   needTitle: 'Hace falta un título para publicar',
   savedDraft: 'Borrador guardado',
   savedChanges: 'Cambios guardados',

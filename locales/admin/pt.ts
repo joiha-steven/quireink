@@ -192,6 +192,7 @@ const pt = {
   serverDraftFound: 'Há alterações não guardadas no servidor',
   saveFailed: 'Não foi possível salvar',
   slugTaken: 'Esse slug já está em uso, escolha outro',
+  staleSave: 'Foi salvo em outro lugar depois que isto foi aberto. Recarregue para ver essa versão; seu texto fica neste dispositivo.',
   needTitle: 'É preciso um título para publicar',
   savedDraft: 'Rascunho salvo',
   savedChanges: 'Alterações salvas',

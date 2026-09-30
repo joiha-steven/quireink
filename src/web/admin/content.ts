@@ -17,6 +17,7 @@
 // depends on.
 
 import type { Context } from 'hono'
+import { savedSince } from '@/web/admin/stale'
 import type { PageWithContent, PostWithContent } from '@/types'
 import { getIndex, getPost, savePost, deletePost } from '@/content/posts'
 import { getPageIndex, getPage, savePage, deletePage } from '@/content/pages'
@@ -100,7 +101,8 @@ export function contentRoutes() {
 
   router.put('/api/posts/:slug', async (c) => {
     const slug = param(c, 'slug')
-    const input = await body<PostWithContent>(c)
+    const input = await body<PostWithContent & { baseSavedAt: number }>(c)
+    if (savedSince('post', slug, input.baseSavedAt)) return fail(c, 'stale', 409)
     try {
       const meta = await savePost(input, slug)
       finalizeAfterResponse(input.content ?? '', input.featuredImage ?? undefined)
@@ -187,7 +189,8 @@ export function contentRoutes() {
 
   router.put('/api/pages/:slug', async (c) => {
     const slug = param(c, 'slug')
-    const input = await body<PageWithContent>(c)
+    const input = await body<PageWithContent & { baseSavedAt: number }>(c)
+    if (savedSince('page', slug, input.baseSavedAt)) return fail(c, 'stale', 409)
     try {
       const meta = await savePage(input, slug)
       finalizeAfterResponse(input.content ?? '')

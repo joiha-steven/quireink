@@ -4,6 +4,7 @@
 // (Invariant 4), and every write empties the cache (Invariant 1).
 
 import type { NoteWithContent } from '@/types'
+import { savedSince } from '@/web/admin/stale'
 import { getNoteIndex, getNote, saveNote, deleteNote } from '@/content/notes'
 import { getAutosave, putAutosave } from '@/content/autosave'
 import { SlugConflictError } from '@/content/slugs'
@@ -51,7 +52,8 @@ export function noteRoutes() {
 
   router.put('/api/notes/:slug', async (c) => {
     const slug = param(c, 'slug')
-    const input = await body<NoteWithContent>(c)
+    const input = await body<NoteWithContent & { baseSavedAt: number }>(c)
+    if (savedSince('note', slug, input.baseSavedAt)) return fail(c, 'stale', 409)
     try {
       const meta = await saveNote(input, slug)
       void finalizeContentMedia(input.content ?? '')

@@ -16,7 +16,7 @@ import { writeExcerpt } from '@/content/ai-excerpt'
 import { writeTerms, updateTermRows, type TermKind } from '@/content/post-terms'
 import { META_COLS, asLang, rowToMeta, type PostRow } from '@/content/post-row'
 import { all, one, run, tx } from '@/store/query'
-import { liveOnly, nowMs, fromIso } from '@/store/db'
+import { liveOnly, nowMs, fromIso, toIso } from '@/store/db'
 import { clearAutosave } from '@/content/autosave'
 import { renameSends } from '@/news/newsletter-log'
 
@@ -251,6 +251,9 @@ export async function savePost(
   const renaming = !!previousSlug && previousSlug !== post.slug && !!existing
   // The row and its terms move together: a half-applied save would leave a post carrying
   // its predecessor's categories.
+  // One stamp for the row and for the answer: the editor sends it back with its next save, and
+  // the server refuses a save made from an older copy (`web/admin/stale.ts`).
+  const savedAt = nowMs()
   tx(() => {
     run(
       `insert into posts (slug, title, date, status, featured_image, excerpt, excerpt_auto, reading_minutes,
@@ -289,8 +292,8 @@ export async function savePost(
         // A rename INSERTS a row rather than updating one, so `on conflict do update` is
         // not there to leave the birthday alone: without this the post is restamped as
         // created today every time its slug changes.
-        createdAt: existing?.created_at ?? nowMs(),
-        now: nowMs(),
+        createdAt: existing?.created_at ?? savedAt,
+        now: savedAt,
       },
     )
     writeTerms(post.slug, post.categories, post.tags)
@@ -328,7 +331,7 @@ export async function savePost(
     void writeExcerpt(post.slug, post.excerpt ?? '', post.content)
   }
 
-  return toMeta(post)
+  return { ...toMeta(post), updatedAt: toIso(savedAt) }
 }
 
 // Up to `limit` other public posts sharing the most tags/categories (tags weighted

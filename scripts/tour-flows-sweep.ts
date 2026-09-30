@@ -167,4 +167,39 @@ export function registerSweepFlows({ flow, expect }: Tour): void {
       type(cur, '')
       return 'ok'
     })()`, 1800))
+
+  // Two tabs on one post: the tab holding the older copy saved over the newer one in silence,
+  // "Draft saved" on both screens. It is refused now, and says why.
+  const TWO = 'tour-two-tabs-one-post'
+  flow('two tabs: a post for them to share', () => expect('/admin', `
+    (async () => {
+      const r = await fetch('/api/posts', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour two tabs one post', content: 'As first written.', status: 'draft' }) })
+      return r.ok ? 'ok' : 'could not create it: ' + r.status
+    })()`))
+
+  flow('two tabs: the one holding an older copy cannot save over the newer', () => expect(`/admin/editor/${TWO}`, `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      // The other tab saves first, carrying nothing but its words (as a tab opened later would).
+      await sleep(20)
+      const other = await fetch('/api/posts/${TWO}', { method: 'PUT', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour two tabs one post', content: 'The OTHER tab wrote this.', status: 'draft' }) })
+      if (!other.ok) return 'the other tab could not save: ' + other.status
+      const ta = document.querySelector('[data-sheet-title]')
+      const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
+      ta.focus(); set.call(ta, ta.value + ' (this tab)')
+      ta.dispatchEvent(new Event('input', { bubbles: true }))
+      await sleep(200)
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', metaKey: true, ctrlKey: true, bubbles: true, cancelable: true }))
+      await sleep(1200)
+      const row = await (await fetch('/api/posts/${TWO}', { cache: 'no-store' })).json()
+      const kept = row.data.content.includes('OTHER tab')
+      const said = document.body.innerText.includes('somewhere else') || document.body.innerText.includes('nơi khác')
+      await fetch('/api/posts/${TWO}', { method: 'DELETE' })
+      await fetch('/api/trash', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'posts', action: 'purge', ids: ['${TWO}'] }) })
+      if (!kept) return 'the older copy was saved over the newer one'
+      return said ? 'ok' : 'refused, but the screen never said why'
+    })()`, 1500))
 }
