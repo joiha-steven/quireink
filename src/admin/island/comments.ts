@@ -15,6 +15,9 @@
 import { indexIn, lanes, type Lanes } from '@/accent'
 import { showTab } from './lib/tab-strip'
 import { pressKey } from './lib/press-key'
+import type { SiteLang } from '@/types'
+import { commentTally } from '@/admin-shared/tally'
+import { formatCount } from '@/i18n/format'
 
 const root = document.querySelector<HTMLElement>('[data-screen="comments"]')
 const cardHost = root?.querySelector<HTMLElement>('[data-comment-cards]')
@@ -23,6 +26,7 @@ if (root && cardHost) {
   const screen: HTMLElement = root
   const host: HTMLElement = cardHost
   const words = JSON.parse(root.dataset.commentWords ?? '{}') as Record<string, string>
+  const lang = (root.dataset.lang ?? 'en') as SiteLang
   const cards = [...host.querySelectorAll<HTMLElement>('[data-card]')]
   const search = root.querySelector<HTMLInputElement>('[data-comment-search]')
   const sortStrip = root.querySelector<HTMLElement>('[data-comment-sort]')
@@ -125,7 +129,7 @@ if (root && cardHost) {
       if (!card.hidden) for (const span of card.querySelectorAll<HTMLElement>('[data-mark]')) paint(span, needle)
     }
     if (tally && words.inPosts) {
-      tally.textContent = words.inPosts.replace('{n}', String(shown)).replace('{p}', String(posts))
+      tally.textContent = commentTally(words, shown, posts, lang, (x) => formatCount(x, lang))
     }
     if (noMatch) noMatch.hidden = posts > 0
     order()

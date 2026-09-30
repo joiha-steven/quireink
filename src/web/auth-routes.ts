@@ -27,6 +27,7 @@ import { qrSvg } from '@/render/qr'
 import { fail, json } from '@/web/api'
 import { html, readFields, safeNext, signedIn } from '@/web/auth-http'
 import { enrolmentSkippable, rememberEnrolmentSecret } from '@/web/enrol-routes'
+import { plural } from '@/i18n/plural'
 import {
   enrolScreen, fillTemplate, passwordScreen, twoFactorScreen,
 } from '@/web/login-page'
@@ -141,7 +142,15 @@ export async function handleTwoFactor(c: Context): Promise<Response> {
     return html(passwordScreen(settings, { error: s.authRestart }), 401)
   }
 
-  const message = fillTemplate(s.authBadCode, { n: result.attemptsLeft })
+  if (result.status === 'reused') {
+    if (!wantsHtml) return fail(c, s.authCodeReused, 401)
+    return html(twoFactorScreen(settings, {
+      ticket: values.ticket, error: s.authCodeReused, recovery, next: values.next || undefined,
+    }), 401)
+  }
+
+  // In the language's plural forms: "1 attempts left" was printed on the last try (U8).
+  const message = plural(s.authBadCode, result.attemptsLeft, settings.language)
   if (!wantsHtml) return fail(c, message, 401)
   return html(twoFactorScreen(settings, {
     ticket: values.ticket, error: message, recovery, next: values.next || undefined,

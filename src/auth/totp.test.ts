@@ -101,7 +101,9 @@ describe('verifyCode', () => {
   // the remainder of that window, which is the whole point of watching someone type it.
   test('rejects a step already spent', () => {
     const code = codeForStep(RFC_SECRET, step)!
-    expect(verifyCode(RFC_SECRET, code, { now: NOW, minStep: step }).ok).toBe(false)
+    expect(verifyCode(RFC_SECRET, code, { now: NOW, minStep: step })).toEqual({ ok: false, reused: true })
+    // A wrong code under the same floor is only wrong.
+    expect(verifyCode(RFC_SECRET, '000000', { now: NOW, minStep: step })).toEqual({ ok: false })
     expect(verifyCode(RFC_SECRET, code, { now: NOW, minStep: step - 1 }).ok).toBe(true)
   })
 

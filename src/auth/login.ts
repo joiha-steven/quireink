@@ -118,6 +118,8 @@ export type SecondFactorOutcome =
   /** The ticket is gone: expired, already used, or spent by too many wrong codes. */
   | { status: 'restart' }
   | { status: 'rate-limited'; retryAfter: number }
+  /** A right code the replay guard already spent: wait for the next one. Costs no attempt. */
+  | { status: 'reused' }
 
 /**
  * Step two. `code` is either a 6-digit TOTP code or a recovery code; the shape decides
@@ -183,6 +185,12 @@ export async function submitSecondFactor(input: {
       // twice even if the session insert were to fail.
       setTotpLastStep(ticket.userId, result.step)
       matched = true
+    } else if (result.reused) {
+      // Not a guess: the code was right, only already used. Counted against the rate limit like
+      // any code, since it is still a request, but not against this ticket's few attempts.
+      recordHit(totpKey, FIFTEEN_MIN)
+      recordHit(totpUserKey, FIFTEEN_MIN)
+      return { status: 'reused' }
     } else {
       recordHit(totpKey, FIFTEEN_MIN)
       recordHit(totpUserKey, FIFTEEN_MIN)

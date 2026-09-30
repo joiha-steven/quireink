@@ -311,7 +311,10 @@ export type AdminStrings = {
   commentsSortBusiest: string
   commentsFilterWeek: string
   commentsWalkHint: string
+  /** The order of the two counts: `{c}` is commentCount, `{p}` is postCount, each pluralised. */
   commentsInPosts: string
+  commentCount: string
+  postCount: string
   commentsStatPosts: string
   commentsStatWeek: string
   commentsStatPeople: string
@@ -1616,6 +1619,10 @@ export type AdminStrings = {
   authTwoFactorHint: string
   authCode: string
   authBadCode: string
+  /** A wrong code where there is no attempt limit to count down (enrolment). */
+  authCodeWrong: string
+  /** A right code the replay guard already spent. */
+  authCodeReused: string
   authUseRecovery: string
   authRecoveryCode: string
   authRecoveryHint: string

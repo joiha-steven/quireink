@@ -24,6 +24,7 @@ import { emptyState, pageHeader, selectionBar, sheet, sheetTop, tabs, tick } fro
 import { numBand } from '@/web/admin/kit-figures'
 import { commentsView } from '@/web/admin/views'
 import { commentPlainText, renderCommentMarkdown } from '@/comments/comment-md'
+import { commentTally } from '@/admin-shared/tally'
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -103,6 +104,7 @@ function card(t: AdminStrings, g: { slug: string; title: string; items: AdminCom
 export async function commentsScreen(settings: SiteSettings): Promise<string> {
   const t = adminT(settings.language)
   const n = (x: number): string => formatCount(x, settings.language)
+  const tally = { inPosts: t.commentsInPosts, commentCount: t.commentCount, postCount: t.postCount }
   const { rows } = await commentsView()
 
   if (rows.length === 0) {
@@ -153,7 +155,7 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
       clearLabel: t.clearSelection, deleteLabel: t.deleteSelected, attrs: 'data-comment-selection',
     })
     + `<span data-comment-tally class="${SHEET_TOOL}">`
-    + `${escapeHtml(t.commentsInPosts.replace('{n}', n(rows.length)).replace('{p}', n(by.size)))}</span>`
+    + `${escapeHtml(commentTally(tally, rows.length, by.size, settings.language, n))}</span>`
     + `<input type="search" data-comment-search placeholder="${escapeAttr(t.commentsSearch)}"`
     + ` aria-label="${escapeAttr(t.commentsSearch)}"`
     + ` class="h-8 w-56 rounded-md border border-neutral-200 bg-white px-3 text-sm shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:placeholder:text-neutral-500">`
@@ -161,10 +163,10 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
   // The two words the island can need to say, plus the sentence it recomputes. Everything else
   // on this screen is already written above.
   const words = escapeAttr(JSON.stringify({
-    inPosts: t.commentsInPosts, trashed: t.trashedOne, undo: t.undo, failed: t.deleteFailed,
+    ...tally, trashed: t.trashedOne, undo: t.undo, failed: t.deleteFailed,
     restoreFailed: t.restoreFailed,
   }))
-  return `<div data-screen="comments" data-comment-words="${words}">`
+  return `<div data-screen="comments" data-lang="${escapeAttr(settings.language)}" data-comment-words="${words}">`
     + pageHeader({ title: t.commentsNavTitle })
     + sheet(sheetTop(tools) + band
       + `<p data-comment-nomatch class="px-5 py-8 text-sm text-neutral-500 dark:text-neutral-400" hidden>${escapeHtml(t.filterEmpty)}</p>`

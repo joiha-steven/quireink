@@ -109,19 +109,24 @@ export function verifyCode(
   secret: string,
   input: string,
   opts: { now?: number; minStep?: number | null } = {},
-): { ok: true; step: number } | { ok: false } {
+): { ok: true; step: number } | { ok: false; reused?: true } {
   const code = input.replace(/\s/g, '')
   if (!/^\d{6}$/.test(code)) return { ok: false }
 
   const current = stepAt(opts.now ?? Date.now())
   const floor = opts.minStep ?? null
+  // A RIGHT CODE ALREADY SPENT is told apart from a wrong one (FIXLIST 8.3, U9). Signing in
+  // within the same 30 seconds as the last sign-in offers the code the replay guard has just
+  // retired, and "that code is not right" sent the owner looking for a typo that was not there.
+  let reused = false
   for (let delta = -DRIFT_STEPS; delta <= DRIFT_STEPS; delta++) {
     const step = current + delta
-    if (floor !== null && step <= floor) continue
     const expected = codeForStep(secret, step)
-    if (expected !== null && sameCode(expected, code)) return { ok: true, step }
+    if (expected === null || !sameCode(expected, code)) continue
+    if (floor !== null && step <= floor) { reused = true; continue }
+    return { ok: true, step }
   }
-  return { ok: false }
+  return reused ? { ok: false, reused: true } : { ok: false }
 }
 
 /**

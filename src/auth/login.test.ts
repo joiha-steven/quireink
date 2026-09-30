@@ -184,8 +184,13 @@ describe('submitSecondFactor', () => {
     const code = currentCode()
     const first = await submitSecondFactor({ ticket: await startSignIn(), code, ip: freshIp() })
     expect(first.status).toBe('ok')
-    const second = await submitSecondFactor({ ticket: await startSignIn(), code, ip: freshIp() })
-    expect(second.status).toBe('rejected')
+    const ticket = await startSignIn()
+    const second = await submitSecondFactor({ ticket, code, ip: freshIp() })
+    // Refused, and SAID to be spent rather than wrong (FIXLIST 8.3, U9) — and it costs no attempt:
+    // a wrong code afterwards still has the whole five.
+    expect(second.status).toBe('reused')
+    expect(await submitSecondFactor({ ticket, code: '000000', ip: freshIp() }))
+      .toEqual({ status: 'rejected', attemptsLeft: 4 })
   })
 
   it('advances the stored replay floor', async () => {

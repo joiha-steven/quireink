@@ -15,6 +15,7 @@ import { buttonClass } from '@/admin-shared/kit'
 import { wireSubscribers } from './lib/subscriber-list'
 import { showTab } from './lib/tab-strip'
 import { pressKey } from './lib/press-key'
+import { plural } from '@/i18n/plural'
 
 const root = document.querySelector<HTMLElement>('[data-screen="newsletter"]')
 
@@ -107,8 +108,9 @@ if (root) {
     if (!sendLabel) return
     if (sending) sendLabel.textContent = words.loading ?? ''
     else if (armed > 0) {
-      sendLabel.textContent = (words.armed ?? '')
-        .replace('{n}', recipients === null ? '…' : n(recipients)).replace('{s}', String(armed))
+      // Pluralised on the recipient count (FIXLIST 8.3); an unknown count reads as many.
+      sendLabel.textContent = plural(words.armed ?? '', recipients ?? 2, lang,
+        recipients === null ? '…' : n(recipients)).replace('{s}', String(armed))
     } else sendLabel.textContent = words.send ?? ''
   }
 

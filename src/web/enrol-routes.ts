@@ -23,7 +23,7 @@ import { qrSvg } from '@/render/qr'
 import { fail, json } from '@/web/api'
 import { html, readFields, safeNext, signedIn } from '@/web/auth-http'
 import {
-  enrolScreen, fillTemplate, passwordScreen, recoveryCodesScreen,
+  enrolScreen, passwordScreen, recoveryCodesScreen,
 } from '@/web/login-page'
 
 /**
@@ -123,7 +123,9 @@ export async function handleEnrol(c: Context): Promise<Response> {
   // This is the step that proves the app was actually set up.
   const verified = verifyCode(secret, values.code)
   if (!verified.ok) {
-    const message = fillTemplate(s.authBadCode, { n: 1 })
+    // No count: enrolment has no attempt limit, and "1 attempts left" after seven tries was
+    // two things wrong in four words (U8).
+    const message = s.authCodeWrong
     if (!wantsHtml) return fail(c, message, 401)
     return html(enrolScreen(settings, {
       ticket: values.ticket, secret, qr: qrSvg(otpauthUri(secret, String(userId))), error: message,
