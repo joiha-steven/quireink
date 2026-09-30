@@ -28,6 +28,7 @@ import { registerAccountFlows } from './tour-flows-security'
 import { registerGuardFlows } from './tour-flows-guard'
 import { registerPageFlows } from './tour-flows-pages'
 import { registerSweepFlows } from './tour-flows-sweep'
+import { registerWriterFlows } from './tour-flows-writer'
 
 export function registerFlows({ flow, expect, atWidth }: Tour): void {
   // ---------------------------------------------------------------------------------------------
@@ -341,4 +342,6 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
   registerSecurityFlows({ flow, expect, atWidth })
   // What the eight-agent sweep of 2026-09-30 found.
   registerSweepFlows({ flow, expect, atWidth })
+  // The writing surface, phase 4 of the same sweep's fix list.
+  registerWriterFlows({ flow, expect, atWidth })
 }

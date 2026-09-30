@@ -229,6 +229,33 @@ body {
   animation: setting-found 1.6s ease-out forwards;
 }
 
+/* PROSEMIRROR'S REQUIRED CSS, the part that is behaviour rather than look (2026-09-30).
+
+   prosemirror-view ships `style/prosemirror.css` and asks for it; nothing loaded it, so the
+   surface computed `white-space: normal` and the view kept a space typed after a mark, an atom
+   or another space alive the only way `normal` allows: as U+00A0. `**bold**\xa0and` went into
+   the Markdown and `&nbsp;` onto the published page, holding words together and polluting
+   search and diffs. Every load also logged the view's own warning about exactly this.
+   The selection outline in the upstream file is look, and the editor draws its own. */
+.ProseMirror {
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0;
+}
+.ProseMirror pre { white-space: pre-wrap; }
+.ProseMirror li { position: relative; }
+.ProseMirror-hideselection *::selection { background: transparent; }
+.ProseMirror-hideselection { caret-color: transparent; }
+.ProseMirror [draggable][contenteditable=false] { user-select: text; }
+img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
 /* Editor preview: the writing surface has no .gallery wrapper (grouping happens on
    publish), so make #grid figures flow side-by-side as thumbnails — a gallery
    reads as columns in the editor too, not a vertical stack.
