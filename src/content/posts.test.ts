@@ -332,3 +332,12 @@ describe('terms that differ only in case', () => {
       .toEqual(['Chữ Việt', 'a', 'b'])
   })
 })
+
+// A clip named after its source took the markup's letters into the address (2026-09-30).
+describe('a note named after its source', () => {
+  it('leaves the tags of a clipped title out of the slug', async () => {
+    const { saveNote } = await import('@/content/notes')
+    const note = await saveNote({ title: '', sourceTitle: '<b>evil</b> source', content: 'x', status: 'draft', date: '2020-01-01T00:00:00.000Z' })
+    expect(note.slug).toBe('evil-source')
+  })
+})

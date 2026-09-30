@@ -113,7 +113,8 @@ function normalize(input: Partial<NoteWithContent>): NoteWithContent {
   const sourceTitle = (input.sourceTitle ?? '').trim() || undefined
   // A clip with no title of its own is named after where it came from; a note with
   // neither gets a dated name rather than an empty one.
-  const slug = (input.slug?.trim() ? slugify(input.slug) : slugify(title || sourceTitle || ''))
+  // Tags out of a clipped title first: `<b>evil</b> source` slugged as `evil-bsourceb`.
+  const slug = (input.slug?.trim() ? slugify(input.slug) : slugify((title || sourceTitle || '').replace(/<[^>]*>/g, ' ')))
     || `note-${Date.now()}`
   return {
     title,

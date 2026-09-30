@@ -146,7 +146,12 @@ function postFields(t: AdminStrings, piece: PanelPiece, lists: PanelLists): stri
 
 function noteFields(t: AdminStrings, piece: PanelPiece): string {
   return `<div class="space-y-3">`
-    + textField({ k: 'sourceUrl', label: t.noteSourceUrl, value: piece.sourceUrl, type: 'url', placeholder: 'https://' })
+    // Said up front: anything else is dropped on save, and a `javascript:` source vanished with
+    // nothing to say why (2026-09-30).
+    + textField({
+      k: 'sourceUrl', label: t.noteSourceUrl, value: piece.sourceUrl, type: 'url', placeholder: 'https://',
+      note: t.noteSourceUrlHint,
+    })
     + textField({ k: 'sourceTitle', label: t.noteSourceTitle, value: piece.sourceTitle })
     + textArea({ k: 'quote', label: t.noteQuote, value: piece.quote, rows: 4 })
     + fieldNote(t.noteSourceHint)

@@ -129,7 +129,7 @@ export const SHEET_WORD_KEYS = [
   'imgSizeColumn', 'imgSizeWide', 'inkBlue', 'inkGreen', 'inkOrange', 'inkPink', 'inkYellow',
   'keptLocallyPrefix', 'keptOnServerPrefix', 'kindNote', 'kindPage', 'loadMediaFailed',
   'localDraftDiscard', 'localDraftFound', 'localDraftRestore', 'mathPlaceholder', 'mediaTitle',
-  'moreActions', 'navWrite', 'needTitle', 'previewDraft', 'promptLink', 'publish', 'published',
+  'moreActions', 'navWrite', 'needTitle', 'needTitleNote', 'previewDraft', 'promptLink', 'publish', 'published',
   'removeAria', 'restore', 'revisionLoaded', 'save', 'saveDraft', 'saveFailed', 'savedAtPrefix',
   'savedChanges', 'savedDraft', 'saving', 'schedule', 'scheduled', 'scheduledForPrefix', 'serverDraftFound',
   'slashHint', 'slugTaken', 'staleSave', 'statusDraft', 'statusPublished', 'tbBold', 'tbCodeBlock',
@@ -137,7 +137,7 @@ export const SHEET_WORD_KEYS = [
   'tbImage', 'tbInsert', 'tbItalic', 'tbLink', 'tbLinkRemove', 'tbList', 'tbListNumbered',
   'tbMarkdown', 'tbMath', 'tbMathInline', 'tbParagraph', 'tbQuote', 'tbRing', 'tbRowAdd',
   'tbRowDel', 'tbStrike', 'tbTable', 'tbTableDelete', 'tbTask', 'tbUnderline',
-  'titlePlaceholder', 'tmLatest', 'trashFailed', 'trashedOne', 'undo', 'unsaved',
+  'titlePlaceholder', 'trashFailed', 'trashedOne', 'undo', 'unsaved',
   'unsupportedType', 'untitled', 'unusedBadge', 'uploadNoRoom', 'uploadTooLarge',
 ] as const
 

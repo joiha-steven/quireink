@@ -310,7 +310,7 @@ function boot(root: HTMLElement, data: Payload): void {
 
   async function saveAs(status: SheetDraft['status'], done: string): Promise<boolean> {
     if (status === 'published' && !nameEnough(kind, draft, body())) {
-      say(t.needTitle, 'error')
+      say(kind === 'note' ? t.needTitleNote : t.needTitle, 'error')
       return false
     }
     // The STATUS FOLLOWS THE SAVE. Set first, a refused save left the sheet saying Published

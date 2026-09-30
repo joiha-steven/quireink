@@ -378,6 +378,9 @@ export type AdminStrings = {
   slugTaken: string
   staleSave: string
   needTitle: string
+  /** A note publishes with a title OR a source title. */
+  needTitleNote: string
+  noteSourceUrlHint: string
   savedDraft: string
   savedChanges: string
   published: string
@@ -1143,7 +1146,6 @@ export type AdminStrings = {
   history: string
   tmIntro: string
   restore: string
-  tmLatest: string
   tmEmpty: string
   revisionLoaded: string
   previewDraft: string
