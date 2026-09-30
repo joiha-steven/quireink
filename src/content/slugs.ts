@@ -4,6 +4,7 @@
 // circular import.
 import { one } from '@/store/query'
 import { getSettings } from '@/content/settings'
+import { liveOnly } from '@/store/db'
 
 /**
  * Slugs the router answers before `/{slug}` ever runs, so a post or page saved at one of
@@ -86,8 +87,8 @@ export function slugTaken(slug: string): boolean {
  * other half by clearing the redirect when the row comes back.
  */
 export function liveSlugTaken(slug: string): boolean {
-  return !!one<{ slug: string }>(`select slug from posts where slug = ? and deleted_at is null`, slug)
-    || !!one<{ slug: string }>(`select slug from pages where slug = ? and deleted_at is null`, slug)
+  return !!one<{ slug: string }>(`select slug from posts where slug = ? and ${liveOnly('posts')}`, slug)
+    || !!one<{ slug: string }>(`select slug from pages where slug = ? and ${liveOnly('pages')}`, slug)
 }
 
 /**

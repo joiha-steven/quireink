@@ -13,6 +13,7 @@ import { getIntegrationKeys } from '@/store/integration-keys'
 import { getSettings } from '@/content/settings'
 import { logActivity } from '@/server/activity'
 import { ask, buildParts, parseText } from '@/server/ai-provider'
+import { liveOnly } from '@/store/db'
 
 // Compatibility exports: the provider plumbing moved to `server/ai-provider.ts` on
 // 2026-08-23; these keep every existing caller and test honest about where it lives.
@@ -70,7 +71,7 @@ export async function describeUpload(path: string, body: ArrayBuffer, mime: stri
     if (!alt) return
 
     // `alt is null` and not `coalesce(alt,'') = ''`: an owner who cleared the field said no.
-    run(`update media set alt = $alt where path = $path and alt is null and deleted_at is null`, { alt, path })
+    run(`update media set alt = $alt where path = $path and alt is null and ${liveOnly('media')}`, { alt, path })
     void logActivity('media.upload', `alt: ${path}`)
   } catch (error) {
     console.error(`[ERROR] alt-text: ${(error as Error).message}`)

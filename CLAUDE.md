@@ -16,7 +16,7 @@ it is the PRODUCT and stays — the private deploy script ships `scripts/` and t
 bun run check:all
 ```
 
-Typecheck, the fourteen static guards (`filesize` · `css` · `nul` · `routes` · `type` · `admin-kit` ·
+Typecheck, the fifteen static guards (`filesize` · `css` · `nul` · `sql` · `routes` · `type` · `admin-kit` ·
 `bundle` · `contract` · `docs` · `motion` · `i18n` · `deps` · `admin-css` · `admin-wired`) and
 `bun test`. ~2 min; a change under `src/md`, `src/render` or `src/web` also runs the golden compare.
 

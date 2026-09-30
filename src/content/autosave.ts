@@ -22,7 +22,7 @@
 // holds that. The ONE reader outside the editor is `/preview` (`web/preview.ts`): token-gated,
 // `no-store`, never indexed — it is how a published piece is previewed without being saved.
 import { one, run } from '@/store/query'
-import { nowMs } from '@/store/db'
+import { nowMs, liveOnly } from '@/store/db'
 
 export type AutosaveKind = 'post' | 'page' | 'note'
 
@@ -44,7 +44,7 @@ export type Autosave = { json: string; at: number }
  */
 export function putAutosave(kind: AutosaveKind, slug: string, json: string): boolean {
   const { changes } = run(
-    `update ${TABLE[kind]} set autosave_json = ?, autosave_at = ? where slug = ? and deleted_at is null`,
+    `update ${TABLE[kind]} set autosave_json = ?, autosave_at = ? where slug = ? and ${liveOnly(TABLE[kind])}`,
     json,
     nowMs(),
     slug,

@@ -31,6 +31,7 @@ import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
 import { ownerRouter } from '@/web/guard'
+import { liveOnly } from '@/store/db'
 
 /** What the media library accepts. Anything else is a 415, not a silent skip. */
 const IMAGE_TYPES = [
@@ -170,7 +171,7 @@ export function uploadRoutes() {
     // owner would watch a progress line that never moves. Say no here instead.
     if (!seesImages(keys.aiProvider, keys.aiModel)) return fail(c, 'ai_cannot_see_images', 400)
     const rows = all<{ path: string }>(
-      `select path from media where alt is null and deleted_at is null order by uploaded_at desc`,
+      `select path from media where alt is null and ${liveOnly('media')} order by uploaded_at desc`,
     )
     const images = rows.filter((r) => /\.(jpe?g|png|webp|gif)$/i.test(r.path))
     void (async () => {

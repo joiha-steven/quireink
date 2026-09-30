@@ -157,7 +157,7 @@ export async function subscriberCounts(): Promise<{ confirmed: number; pending: 
 
 // The admin's remove: soft, restorable, and the send log stays with the row.
 export async function deleteSubscriber(id: number): Promise<void> {
-  run(`update subscribers set deleted_at = ? where id = ? and deleted_at is null`, nowMs(), id)
+  run(`update subscribers set deleted_at = ? where id = ? and ${liveOnly('subscribers')}`, nowMs(), id)
 }
 
 /** Put a trashed subscriber back exactly as it was, history and all. */

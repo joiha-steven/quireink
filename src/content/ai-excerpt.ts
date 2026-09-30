@@ -15,6 +15,7 @@ import { ask } from '@/server/ai-provider'
 import { languageName } from '@/media/alt-text'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
+import { liveOnly } from '@/store/db'
 
 // Enough body for a faithful summary; whole books are not.
 const BODY_CAP = 8_000
@@ -44,7 +45,7 @@ export async function writeExcerpt(slug: string, mechanical: string, content: st
     run(
       // `excerpt_auto = 0`: the answer is a summary somebody (something) WROTE, not the opening
       // repeated, so the deck may show it and the editor offers it in the field.
-      `update posts set excerpt = $answer, excerpt_auto = 0 where slug = $slug and excerpt = $mechanical and deleted_at is null`,
+      `update posts set excerpt = $answer, excerpt_auto = 0 where slug = $slug and excerpt = $mechanical and ${liveOnly('posts')}`,
       { answer, slug, mechanical },
     )
     clearCache()

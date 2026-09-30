@@ -19,7 +19,7 @@ scripts too, and that is the name to use: `bun run build:assets`, `bun run check
   reads the WXR, `src/import/html-parse.ts` and `src/import/html-to-md.ts` turn the HTML into
   this blog's own syntax tree ([ADR 0053](../decisions/0053-a-dependency-is-a-decision.md)).
 - **`scripts/checks/`** holds the static guards `check:all` runs — `file-size`, `css-literal`,
-  `no-nul`, `routes-guarded`, `type-roles`, `admin-kit`, `admin-bundle`, `appearance-contract`,
+  `no-nul`, `sql-rules`, `routes-guarded`, `type-roles`, `admin-kit`, `admin-bundle`, `appearance-contract`,
   `docs`, `deps`, `admin-css`, `admin-wired`, in that order. A new load-bearing rule that a
   test cannot hold belongs here, not in a comment.
 - **A check that needs a RUNNING instance does not go in `scripts/checks/`.** Those are static

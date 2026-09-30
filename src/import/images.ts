@@ -28,6 +28,7 @@ import { finalizeContentMedia } from '@/media/finalize'
 import { safeFetch, BlockedUrlError } from '@/server/safe-fetch'
 import { clearCache } from '@/server/cache'
 import type { PostWithContent, PageWithContent } from '@/types'
+import { liveOnly } from '@/store/db'
 
 export const IMAGE_BATCH = 5
 
@@ -157,7 +158,7 @@ function stillRemote(row: Skim, ownHost: string | null): boolean {
 async function docsWithRemoteImages(ownHost: string | null): Promise<Doc[]> {
   const docs: Doc[] = []
   const posts = all<Skim>(
-    `select slug, content, featured_image, cover_image from posts where deleted_at is null order by date desc`,
+    `select slug, content, featured_image, cover_image from posts where ${liveOnly('posts')} order by date desc`,
   )
   for (const row of posts) {
     if (!stillRemote(row, ownHost)) continue
@@ -165,7 +166,7 @@ async function docsWithRemoteImages(ownHost: string | null): Promise<Doc[]> {
     if (doc) docs.push({ kind: 'post', doc })
   }
   const pages = all<Skim>(
-    `select slug, content, featured_image, null as cover_image from pages where deleted_at is null`,
+    `select slug, content, featured_image, null as cover_image from pages where ${liveOnly('pages')}`,
   )
   for (const row of pages) {
     if (!stillRemote(row, ownHost)) continue
