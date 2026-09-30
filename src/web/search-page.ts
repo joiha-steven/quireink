@@ -39,14 +39,16 @@ export async function handleSearchPage(c: Context): Promise<Response> {
   // English plural rule, on a site that ships six languages — so a Vietnamese blog read
   // "12 results for" under a heading that said "Tìm kiếm". Same class of bug as the
   // hardcoded " min" reading-time suffix, and the same fix.
+  // The box UNDER its heading (FIXLIST 8.6): it stood above "Search", the one page where the
+  // heading was not the first thing on it.
   const body = renderListing({
     headingHtml: escapeHtml(tx.search),
-    subheading: q ? fill(tx.searchResults, { n: results.length, q }) : undefined,
+    afterHead: searchForm(tx, q)
+      + (q ? `<p class="meta search-count">${escapeHtml(fill(tx.searchResults, { n: results.length, q }))}</p>` : ''),
     paged: { items: results, page: 1, totalPages: 1 },
     basePath: '/search',
     empty: q ? tx.searchEmpty : tx.searchHint,
   }, settings)
-  const form = searchForm(tx, q)
   return c.html(await listingPage({
     title: `${tx.search} · ${settings.title}`,
     // Out of the index, and this is the one page on the site that has to say so: `/search?q=`
@@ -55,6 +57,6 @@ export async function handleSearchPage(c: Context): Promise<Response> {
     // undefined on purpose), and a page with neither was an invitation.
     noindex: true,
     description: tx.searchHint,
-    body: form + body,
+    body,
   }))
 }

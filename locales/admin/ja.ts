@@ -111,6 +111,7 @@ const ja = {
   commentsStatPeople: '人',
   commentsFootHint: 'コメントをクリックすると全文を表示。削除はソフト削除で、ごみ箱に移動します。',
   filterEmpty: 'フィルターに一致する記事がありません。',
+  writeNothingYet: 'まだ何も書いていません。「{new}」を押して最初の一本を始めましょう。',
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
   // arrangement makes a person remember which of eight tabs holds a setting.

@@ -111,6 +111,7 @@ const zh = {
   commentsStatPeople: '人',
   commentsFootHint: '点击评论可展开全文。删除为软删除——移入回收站。',
   filterEmpty: '没有符合筛选条件的文章。',
+  writeNothingYet: '还没有写任何内容。按“{new}”开始第一篇。',
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
   // arrangement makes a person remember which of eight tabs holds a setting.

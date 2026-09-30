@@ -111,6 +111,7 @@ const es = {
   commentsStatPeople: 'personas',
   commentsFootHint: 'Haz clic en un comentario para leerlo entero. Eliminar es un borrado suave: va a la papelera.',
   filterEmpty: 'Ninguna entrada coincide con tu filtro.',
+  writeNothingYet: 'Aún no hay nada escrito. Pulsa «{new}» para empezar la primera pieza.',
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
   // arrangement makes a person remember which of eight tabs holds a setting.

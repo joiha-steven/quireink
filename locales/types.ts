@@ -282,6 +282,8 @@ export type AdminStrings = {
   filterPlaceholder: string
   filterAll: string
   filterEmpty: string
+  /** The Write list on a blog with nothing in it; `{new}` is the New post key's own words. */
+  writeNothingYet: string
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
   // arrangement makes a person remember which of eight tabs holds a setting.

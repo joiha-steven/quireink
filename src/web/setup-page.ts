@@ -161,7 +161,7 @@ ${setupStep(settings, s, 6)}
 ${option('on', lines(true), s.penStepOn, s.penStepOnHint, on)}
 ${option('off', lines(false), s.penStepOff, s.penStepOffHint, !on)}
 </div>
-<button type="submit" class="login-submit">${escapeHtml(s.setupFinish)}</button>
+<button type="submit" class="login-submit">${escapeHtml(s.authContinue)}</button>
 </form>`)
 }
 

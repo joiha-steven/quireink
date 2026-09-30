@@ -111,6 +111,7 @@ const ko = {
   commentsStatPeople: '명',
   commentsFootHint: '댓글을 클릭하면 전문이 열립니다. 삭제는 휴지통으로 이동하는 소프트 삭제입니다.',
   filterEmpty: '필터와 일치하는 글이 없습니다.',
+  writeNothingYet: '아직 쓴 글이 없습니다. “{new}”을 눌러 첫 글을 시작하세요.',
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
   // arrangement makes a person remember which of eight tabs holds a setting.

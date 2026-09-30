@@ -330,20 +330,11 @@ export function renderLlms(posts: Post[], pages: Page[], settings: SiteSettings,
   // string with two function calls in front of it.
   const postLines = posts.map((p) => line(postName(p), p.slug, p.excerpt ? clampExcerpt(p.excerpt) : ''))
   const pageLines = pages.map((p) => line(p.title, p.slug, ''))
-  return `# ${settings.title}
-
-${settings.description}
-
-## Posts
-
-${postLines.join('\n')}
-
-## Pages
-
-${pageLines.join('\n')}
-${notes.length ? `
-## Notes
-
-${notes.map((n) => line(n.title || n.sourceTitle || n.slug, `notes/${n.slug}`, n.quote ? clampExcerpt(n.quote) : '')).join('\n')}
-` : ''}`
+  const noteLines = notes.map((n) => line(n.title || n.sourceTitle || n.slug, `notes/${n.slug}`, n.quote ? clampExcerpt(n.quote) : ''))
+  // A heading only over something (FIXLIST 8.6): an empty blog printed bare `## Posts` and
+  // `## Pages`. With every list filled the bytes are the same as they always were.
+  const section = (head: string, lines: string[]): string =>
+    lines.length ? `\n## ${head}\n\n${lines.join('\n')}\n` : ''
+  return `# ${settings.title}\n\n${settings.description}\n`
+    + section('Posts', postLines) + section('Pages', pageLines) + section('Notes', noteLines)
 }

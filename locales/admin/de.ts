@@ -111,6 +111,7 @@ const de = {
   commentsStatPeople: 'Personen',
   commentsFootHint: 'Kommentar anklicken, um ihn ganz zu lesen. Löschen ist ein weiches Löschen — er wandert in den Papierkorb.',
   filterEmpty: 'Keine Beiträge entsprechen dem Filter.',
+  writeNothingYet: 'Noch nichts geschrieben. Drücken Sie „{new}“, um das erste Stück zu beginnen.',
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
   // arrangement makes a person remember which of eight tabs holds a setting.

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { DEFAULT_SETTINGS } from '@/content/settings'
-import { changedSettingPaths, describeSettingsSave, isNavOrderOnly } from '@/content/settings-diff'
+import { changedSettingPaths, describeSettingsSave, isDeskOnly, isNavOrderOnly } from '@/content/settings-diff'
 import type { SiteSettings } from '@/types'
 
 /** A settings object with one thing moved, without mutating the defaults. */
@@ -84,5 +84,16 @@ describe('isNavOrderOnly', () => {
 
   test('a save that moved nothing is not a nav-order save', () => {
     expect(isNavOrderOnly(DEFAULT_SETTINGS, structuredClone(DEFAULT_SETTINGS))).toBe(false)
+  })
+})
+
+describe('isDeskOnly', () => {
+  test('is true for the release note read and the first-run card closed, alone or with the rail order', () => {
+    expect(isDeskOnly(DEFAULT_SETTINGS, { ...DEFAULT_SETTINGS, seenRelease: '9.9.9' })).toBe(true)
+    expect(isDeskOnly(DEFAULT_SETTINGS, { ...DEFAULT_SETTINGS, firstRunDone: true, seenRelease: '9.9.9' })).toBe(true)
+  })
+  test('is false as soon as anything about the blog moved too', () => {
+    expect(isDeskOnly(DEFAULT_SETTINGS, { ...DEFAULT_SETTINGS, seenRelease: '9.9.9', title: 'New' })).toBe(false)
+    expect(isDeskOnly(DEFAULT_SETTINGS, structuredClone(DEFAULT_SETTINGS))).toBe(false)
   })
 })

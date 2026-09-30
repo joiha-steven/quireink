@@ -78,3 +78,16 @@ export function isNavOrderOnly(before: SiteSettings, after: SiteSettings): boole
   const paths = changedSettingPaths(before, after)
   return paths.length > 0 && paths.every((p) => p === 'navOrder' || p.startsWith('navOrder.'))
 }
+
+/**
+ * The keys that describe the DESK rather than the blog: the rail's order, the release note
+ * the owner has read, the first-run card they closed. "Changed settings: seenRelease" was the
+ * log's answer to dismissing a note about a new version (FIXLIST 8.6).
+ */
+const DESK = ['navOrder', 'seenRelease', 'firstRunDone']
+
+/** Did this save touch nothing but the desk? Then it is not an event in the blog's ledger. */
+export function isDeskOnly(before: SiteSettings, after: SiteSettings): boolean {
+  const paths = changedSettingPaths(before, after)
+  return paths.length > 0 && paths.every((p) => DESK.includes(p.split('.')[0] ?? ''))
+}

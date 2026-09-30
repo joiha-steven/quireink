@@ -198,6 +198,8 @@ export type ListingView = {
   headingHtml?: string
   /** A line under the heading: the term description, the series blurb, the result count. Plain text — renderListing escapes it. */
   subheading?: string
+  /** Markup that belongs under the heading and over the list: the search page's own box. */
+  afterHead?: string
   /** Originals with variants, for card thumbnails. Absent = a text-only list. */
   ready?: ReadyImages
   paged: Paged<Post>
@@ -216,8 +218,8 @@ export function renderListing(view: ListingView, settings: SiteSettings): string
   const head = view.headingHtml
     ? `<header class="listing-head"><h1>${view.headingHtml}</h1>${
         view.subheading ? `<p class="meta">${escapeHtml(view.subheading)}</p>` : ''
-      }</header>`
-    : ''
+      }</header>${view.afterHead ?? ''}`
+    : view.afterHead ?? ''
   if (view.paged.items.length === 0) {
     return `${head}<p class="empty">${escapeHtml(view.empty)}</p>`
   }

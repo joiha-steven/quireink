@@ -81,7 +81,8 @@ function wirePane(screen: HTMLElement): () => void {
       hits,
     }, limit)
     const waiting = needle.length >= 2 && hits === null
-    if (none) none.hidden = matched > 0 || waiting
+    // Nothing written at all has its own sentence, drawn by the server; this one is for a filter.
+    if (none) none.hidden = matched > 0 || waiting || rows.length === 0
     if (list) list.hidden = matched === 0
     // The foot goes away when there is nothing left under it, which is also what stops the
     // observer below from firing for ever at the bottom of a short list.

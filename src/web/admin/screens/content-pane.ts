@@ -357,8 +357,12 @@ export function writePane(opts: {
     if (!out) shown += 1
     return row(it, t, views, lang, now, openKey, out, !out && shown > WRITE_PAGE)
   }).join('')
+  // An EMPTY blog is not a filter that matched nothing (FIXLIST 8.6): its own sentence.
+  const empty = items.length === 0
   const list = `<div class="flex min-h-0 flex-1 flex-col">`
-    + `<p data-write-none${none ? '' : ' hidden'} class="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">`
+    + `<p data-write-nothing${empty ? '' : ' hidden'} class="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">`
+    + `${escapeHtml(t.writeNothingYet.replace('{new}', t.newPost))}</p>`
+    + `<p data-write-none${none && !empty ? '' : ' hidden'} class="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">`
     + `${escapeHtml(t.filterEmpty)}</p>`
     + `<div data-write-list${none ? ' hidden' : ''} class="scroll-fade min-h-0 flex-1 overflow-y-auto pb-6">`
     + rows
