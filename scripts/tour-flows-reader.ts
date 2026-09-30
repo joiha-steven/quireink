@@ -362,4 +362,33 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
       const split = links.filter((a) => a.getClientRects().length > 1).map((a) => a.textContent)
       return split.length ? 'broken across lines: ' + split.join(', ') : 'ok (' + links.length + ' terms)'
     })()`, 500))
+
+  // Every key a finger uses on a post is 44px where the pointer is coarse (FIXLIST 7.10). The
+  // tour cannot emulate a coarse pointer, so the sheet's coarse rules are lifted out and applied,
+  // and what they make is measured: the element's box, or its ::before where that is the hit area.
+  flow('reader: the keys on a post are 44px for a finger', () => atWidth(390, '/what-a-subsetter-removes', `
+    (async () => {
+      const rules = [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules] } catch { return [] } })
+      const coarse = rules.filter((r) => r.media && /pointer:\\s*coarse/.test(r.conditionText || r.media.mediaText))
+      if (!coarse.length) return 'no coarse-pointer rules in the sheet'
+      const lifted = document.createElement('style')
+      lifted.textContent = coarse.flatMap((r) => [...r.cssRules].map((x) => x.cssText)).join('\\n')
+      document.head.append(lifted)
+      for (let i = 0; i < 20 && !document.querySelector('.code-copy'); i++) await new Promise((r) => setTimeout(r, 100))
+      const tall = (el, pseudo) => {
+        if (pseudo) { const cs = getComputedStyle(el, pseudo); if (cs.content === 'none') return 0
+          return el.getBoundingClientRect().height - parseFloat(cs.top) - parseFloat(cs.bottom) }
+        return Math.min(...[...el.getClientRects()].map((r) => r.height))
+      }
+      const small = []
+      for (const [sel, pseudo] of [['.icon-btn', ''], ['.code-copy', '::before'], ['.comment-reply', ''], ['.post-meta a', ''], ['.info-terms a', '']]) {
+        for (const el of document.querySelectorAll(sel)) {
+          if (!el.getClientRects().length || getComputedStyle(el).display === 'none') continue
+          const h = tall(el, pseudo)
+          if (h < 43.5) small.push(sel + pseudo + ' ' + Math.round(h))
+        }
+      }
+      lifted.remove()
+      return small.length ? 'under 44px: ' + [...new Set(small)].join(', ') : 'ok'
+    })()`, 900))
 }

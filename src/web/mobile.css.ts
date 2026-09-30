@@ -130,4 +130,16 @@ footer.site a{display:inline-block;padding-block:.35rem}
    footer keeps that much clear below its last line. */
 @media (max-width:767px){footer.site{padding-bottom:calc(7.5rem + env(safe-area-inset-bottom,0px))}}
 .rail{padding-left:calc(1.25rem + env(safe-area-inset-left,0px))}
+
+/* A FINGER'S 44px, where the pointer is a finger (FIXLIST 7.10). Measured at 390: header keys
+   40x40, the copy key 50x28, Reply 42x24, the meta line's section and tag links 21px tall, the
+   skip link 30px. Each grows its HIT AREA and keeps its look: padding with an equal negative
+   margin on the ones that sit in text, a transparent ::before on the one that sits on code. */
+@media (pointer:coarse){
+.icon-btn{width:2.75rem;height:2.75rem}
+.code-copy::before{content:"";position:absolute;inset:-.5rem -.25rem}
+.comment-reply{padding:.625rem 0;margin:-.125rem 0 -.625rem}
+.post-meta a,.info-terms a,.post-taxo a{padding-block:.75rem;margin-block:-.75rem}
+.skip-link:focus{display:inline-flex;align-items:center;min-height:2.75rem}
+}
 `.trim()

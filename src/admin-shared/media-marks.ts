@@ -167,9 +167,11 @@ export function mediaTileMark(row: MediaRow, w: MediaWords, s: TileState): Mark 
 
   return el('figure', 'group relative', [
     el('div', s.selected ? TRAY_ON : TRAY_IDLE, inside, { 'data-tray': '' }),
-    // One line, and the whole width of the tile for the one thing you are looking for.
-    // Dimensions, size and date are all a hover or a title away.
-    leaf('figcaption', 'mt-1.5 truncate text-xs text-neutral-700 dark:text-neutral-300',
+    // The whole width of the tile for the one thing you are looking for. Dimensions, size and
+    // date are all a hover or a title away.
+    // Two lines, broken anywhere, before it is cut: a name one character too long for its tile
+    // lost its extension, the part that says what the file is (FIXLIST 7.9).
+    leaf('figcaption', 'mt-1.5 line-clamp-2 break-all text-xs text-neutral-700 dark:text-neutral-300',
       row.filename, { title: s.title }),
   ], {
     'data-media': row.url,

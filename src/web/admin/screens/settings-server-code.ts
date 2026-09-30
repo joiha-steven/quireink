@@ -160,7 +160,9 @@ function redirectRow(t: AdminStrings, r?: Redirect): string {
   const code = r ? (r.permanent ? '301' : '302') : ''
   return `<li class="flex items-center gap-3 py-2 text-sm" data-redirect`
     + `${r ? ` data-redirect-id="${escapeAttr(String(r.id))}"` : ''}>`
-    + `<span class="min-w-0 flex-1 truncate">`
+    // WRAPPED, not cut (FIXLIST 7.9): the target is the half of the row being checked, and it was
+    // the half cut off, at 1280 as well as on a phone. A path breaks anywhere.
+    + `<span class="min-w-0 flex-1 break-all">`
     + `<code class="text-neutral-800 dark:text-neutral-200" data-redirect-from>`
     + `${escapeHtml(r?.source ?? '')}</code>`
     + `<span class="mx-1.5 text-neutral-500 dark:text-neutral-400">→</span>`

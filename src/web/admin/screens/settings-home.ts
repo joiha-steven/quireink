@@ -115,7 +115,8 @@ function featured(t: AdminStrings, s: SiteSettings, v: HomeTabView): string {
     + ` class="${ICON_KEY}"${off ? ' disabled' : ''}>${mark}</button>`
   const row = (slug: string, i: number, last: number): string =>
     `<div class="${PICKED_ROW}" data-featured-row="${escapeAttr(slug)}">`
-    + `<span class="flex-1 truncate" data-featured-title>${escapeHtml(titleOf(slug))}</span>`
+    // Two lines before it is cut: one was 132px on a phone (FIXLIST 7.9).
+    + `<span class="min-w-0 flex-1 line-clamp-2" data-featured-title>${escapeHtml(titleOf(slug))}</span>`
     + key(t.moveUp, '↑', 'data-featured-up', i === 0)
     + key(t.moveDown, '↓', 'data-featured-down', i === last)
     + key(t.delete, '×', 'data-featured-remove', false) + `</div>`
