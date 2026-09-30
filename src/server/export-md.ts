@@ -85,11 +85,13 @@ export const postFile = (p: Post & { content: string }): string => withBody(fron
   ['excerpt', p.excerpt], ['coverImage', p.coverImage], ['featuredImage', p.featuredImage],
   ['metaTitle', p.metaTitle], ['metaDescription', p.metaDescription],
   ['readingMinutes', p.readingMinutes], ['updatedAt', p.updatedAt],
+  ['lang', p.lang], ['translationGroup', p.translationGroup],
 ]), p.content)
 
 export const pageFile = (p: Page & { content: string }): string => withBody(frontMatter([
   ['title', p.title], ['slug', p.slug], ['status', p.status],
   ['featuredImage', p.featuredImage], ['updatedAt', p.updatedAt],
+  ['lang', p.lang], ['translationGroup', p.translationGroup],
 ]), p.content)
 
 export const noteFile = (n: Note & { content: string }): string => withBody(frontMatter([

@@ -16,6 +16,8 @@
 
 import type { ImportedNote, ImportedPage, ImportedPost, ImportResult } from '@/import/convert'
 import type { Entry } from '@/import/archive'
+import type { SiteLang } from '@/types'
+import { isSiteLang } from '@/locales/langs'
 
 type Value = string | number | boolean | string[]
 
@@ -113,6 +115,13 @@ const list = (f: Record<string, Value>, k: string): string[] =>
 const status = (f: Record<string, Value>): 'draft' | 'published' =>
   f.status === 'published' ? 'published' : 'draft'
 
+/** The language pair, only when the language is one this software speaks (ADR 0056). */
+const pair = (f: Record<string, Value>): { lang?: SiteLang; translationGroup?: string } => {
+  const lang = str(f, 'lang')
+  const group = str(f, 'translationGroup')
+  return { ...(isSiteLang(lang) ? { lang } : {}), ...(group ? { translationGroup: group } : {}) }
+}
+
 /**
  * Is this our own bundle?
  *
@@ -155,6 +164,7 @@ export function parseQuireInk(entries: Entry[], now: string): ImportResult {
       pages.push({
         title, slug, status: status(f), content: parsed.body,
         ...(str(f, 'featuredImage') ? { featuredImage: str(f, 'featuredImage') } : {}),
+        ...pair(f),
       })
     } else if (folder === 'notes') {
       notes.push({
@@ -174,6 +184,7 @@ export function parseQuireInk(entries: Entry[], now: string): ImportResult {
         ...(str(f, 'featuredImage') ? { featuredImage: str(f, 'featuredImage') } : {}),
         ...(str(f, 'metaTitle') ? { metaTitle: str(f, 'metaTitle') } : {}),
         ...(str(f, 'metaDescription') ? { metaDescription: str(f, 'metaDescription') } : {}),
+        ...pair(f),
       })
     }
   }

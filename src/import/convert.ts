@@ -14,6 +14,7 @@ import { toMarkdown } from '@/md/to-markdown'
 import { parseHtml } from './html-parse'
 import { fromHtml } from './html-to-md'
 import { deriveExcerpt } from '@/utils'
+import type { SiteLang } from '@/types'
 
 export type ImportedPost = {
   title: string
@@ -41,10 +42,13 @@ export type ImportedPost = {
   featuredImage?: string
   metaTitle?: string
   metaDescription?: string
+  /** The language pair (ADR 0056). Lost on the round trip until 2026-09-30. */
+  lang?: SiteLang
+  translationGroup?: string
 }
 export type ImportedPage = {
   title: string; slug: string; status: 'draft' | 'published'; content: string; path?: string
-  featuredImage?: string
+  featuredImage?: string; lang?: SiteLang; translationGroup?: string
 }
 /**
  * A notebook entry (ADR 0044). OPTIONAL on the result, because only one source has ever had

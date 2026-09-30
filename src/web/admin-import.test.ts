@@ -232,9 +232,9 @@ describe('a blog leaves and comes back', () => {
     await savePost({
       title: 'Buoi chieu', content: 'Than bai voi ==but da==.', status: 'published',
       date: '2020-01-01T00:00:00.000Z', categories: ['Suy nghi'], tags: ['thu'],
-      series: 'La thu', seriesOrder: 2,
+      series: 'La thu', seriesOrder: 2, lang: 'vi', translationGroup: 'pair-1',
     })
-    await savePage({ title: 'Gioi thieu', content: 'Ve toi.', status: 'published' })
+    await savePage({ title: 'Gioi thieu', content: 'Ve toi.', status: 'published', lang: 'en', translationGroup: 'pair-2' })
     await saveNote({
       title: 'Cay but', content: 'Ghi lai.', status: 'published',
       date: '2020-02-01T00:00:00.000Z', quote: 'every stroke starts wet',
@@ -268,6 +268,11 @@ describe('a blog leaves and comes back', () => {
     expect(back.series).toBe('La thu')
     expect(back.seriesOrder).toBe(2)
     expect(back.status).toBe('published')
+    // The language pair, which the export dropped until 2026-09-30.
+    expect([back.lang, back.translationGroup]).toEqual(['vi', 'pair-1'])
+    const { getPage } = await import('@/content/pages')
+    const page = (await getPage('gioi-thieu'))!
+    expect([page.lang, page.translationGroup]).toEqual(['en', 'pair-2'])
 
     const { getNote } = await import('@/content/notes')
     expect((await getNote('cay-but'))!.quote).toBe('every stroke starts wet')
