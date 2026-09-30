@@ -2,10 +2,10 @@
 
 import { INK_SYNTAX_GLOBAL, RING_SYNTAX_GLOBAL, UNDER_SYNTAX_GLOBAL } from '@/pen/grammar'
 // `math-syntax`, NOT `math`: the grammar, not the renderer. Fifteen admin files import this
-// module, so whatever it reaches for lands in the chunk every admin screen loads — and
-// `render/math.ts` imports Temml. Three regexes cost 212 KB of LaTeX engine until this line
-// pointed one file to the left. See the header of `math-syntax.ts`.
+// module, and `render/math.ts` imports Temml: three regexes cost every admin screen 212 KB of
+// LaTeX engine until this line pointed one file to the left (`math-syntax.ts`).
 import { MATH_SYNTAX_GLOBAL, mathOf, isDisplayMatch } from '@/md/math-syntax'
+import { toLatin } from '@/transliterate'
 
 /** TeX source -> the letters and numbers in it: control words, braces, `&` and `\\` go. */
 const stripTex = (tex: string) =>
@@ -39,27 +39,15 @@ export function escapeHtml(s: string): string {
  */
 export const escapeAttr = escapeHtml
 
-// Cyrillic -> latin, one lowercase letter at a time (BGN/PCGN-style). Added with the
-// Russian locale (2026-08-28): a fully-Cyrillic title used to slugify to NOTHING and
-// fall back to `post-<timestamp>`, which is a URL nobody can read aloud. Cyrillic maps
-// cleanly; CJK deliberately still falls through to the timestamp, because romanizing
-// Chinese or Japanese is a judgment call this function has no business making.
-const CYRILLIC: Record<string, string> = {
-  а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i',
-  й: 'i', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't',
-  у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ъ: '', ы: 'y',
-  ь: '', э: 'e', ю: 'yu', я: 'ya',
-}
-
-// Convert arbitrary text to a URL-safe slug (supports Vietnamese diacritics + Cyrillic).
+// Convert arbitrary text to a URL-safe slug (Vietnamese diacritics, Cyrillic and Greek:
+// `transliterate.ts`).
 export function slugify(input: string): string {
-  return input
+  return toLatin(input
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // strip diacritic marks
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
-    .toLowerCase()
-    .replace(/[\u0430-\u044f\u0451]/g, (c) => CYRILLIC[c] ?? '')
+    .toLowerCase())
     .trim()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/[\s-]+/g, '-')
@@ -151,8 +139,11 @@ export function toPlainText(markdown: string): string {
     // the letters stay — deliberately NOT mapped to their symbols, because a table turning
     // `\times` into × would be a second grammar to keep in step with Temml's, which is the
     // thing this file's own history argues hardest against.
+    // An escaped `\$` is a typed dollar, not an opener (`\$a+b$` read "\a+b" until 09-30).
+    .replace(/\\\$/g, '\uE010')
     .replace(MATH_SYNTAX_GLOBAL, (...m: (string | undefined)[]) =>
       isDisplayMatch(m) ? ' ' : stripTex(mathOf(m)))
+    .replace(/\uE010/g, '$')
     // A LIST MARKER, and only at the head of a line. The bare-character strip below takes
     // `*` but not `-`, because a hyphen belongs inside "self-hosted" and between dates, so a
     // list written with asterisks counted nothing extra and the same list written with
@@ -167,8 +158,7 @@ export function toPlainText(markdown: string): string {
     // holding one four-cell table read fifteen words instead of four, so its reading time and
     // the panel beside the editor were wrong, and a post OPENING with a table put `| --- |`
     // into all four summaries.
-    // The first line also takes a `---` divider, which is the same shape and counted as a word
-    // of its own; `***` and `___` are taken by the bare-character strip below.
+    // The first line also takes a `---` divider; `***` and `___` go with the bare characters.
     //
     // ⚠️ `-+`, NOT `-{2,}`. GFM's delimiter row is "one or more hyphens" per cell, so `| - | - |`
     // is a table and `| --- | --- |` is the same table — and the two-or-more form read the first

@@ -327,3 +327,20 @@ describe('toPlainText reads a backslash escape as the character it escapes', () 
     expect(toPlainText('# Head\n\n**bold** and _it_')).toBe('Head bold and it')
   })
 })
+
+// A dollar the author escaped is a dollar: `\$a+b$` summarised as "\a+b", into the deck, the meta
+// description, the OG card and the feed (2026-09-30).
+describe('toPlainText and an escaped dollar', () => {
+  it('keeps it as a dollar and opens no formula with it', () => {
+    expect(toPlainText('inline \\$a+b$ math')).toBe('inline $a+b$ math')
+    expect(toPlainText('a formula \\(\\frac{a}{b}\\) still loses its notation')).not.toContain('frac')
+  })
+})
+
+// A Greek title became `post-<clock>`: only CJK and emoji should reach that (ADR 0064).
+describe('slugify and the Greek alphabet', () => {
+  it('writes a Greek title in Latin letters, accents off, final sigma included', () => {
+    expect(slugify('Ωμέγα Ελληνικά')).toBe('omega-ellinika')
+    expect(slugify('Ψυχή και λόγος')).toBe('psychi-kai-logos')
+  })
+})
