@@ -807,6 +807,8 @@ const es = {
   featPenListsDesc: 'Las viñetas se convierten en puntos de tinta y guiones, y las listas numeradas cuentan con cifras manuscritas. Desactivado restaura el punto y el número del navegador.',
   featBookText: 'Texto de libro',
   featBookTextDesc: 'Sangra la primera línea de cada párrafo en lugar de dejar una línea en blanco, y justifica ambos márgenes en pantallas anchas.',
+  featCurlyQuotes: 'Comillas tipográficas',
+  featCurlyQuotesDesc: 'Muestra las comillas rectas y los apóstrofos que escribes con los signos que usa el idioma de la pieza. El código y las fórmulas se quedan como están, y tu texto se guarda tal como lo escribiste.',
   featBookmarkCards: 'Tarjetas de vista previa de enlaces',
   featBookmarkCardsDesc: 'Un párrafo que no lleva más que un enlace se convierte en una tarjeta con el título, la descripción y la imagen de esa página. Tu blog lee cada página enlazada una sola vez para saberlo, y guarda su propia copia de la imagen — así tus lectores siguen sin cargar nada de nadie más.',
   featFileCards: 'Tarjetas de archivo',

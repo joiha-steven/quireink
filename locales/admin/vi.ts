@@ -807,6 +807,8 @@ const vi = {
   featPenListsDesc: 'Chấm đầu dòng thành chấm mực, cấp con thành gạch ngắn, danh sách đánh số dùng chữ số viết tay. Tắt thì về chấm tròn và số thường của trình duyệt.',
   featBookText: 'Dàn trang kiểu sách',
   featBookTextDesc: 'Thụt đầu dòng mỗi đoạn thay vì chừa dòng trống, và canh đều hai bên trên màn hình rộng.',
+  featCurlyQuotes: 'Dấu nháy cong',
+  featCurlyQuotesDesc: 'Hiện dấu nháy thẳng và dấu phẩy trên bạn gõ thành dấu cong theo ngôn ngữ của bài. Code và công thức giữ nguyên, chữ bạn viết vẫn được lưu đúng như đã gõ.',
   featBookmarkCards: 'Thẻ xem trước liên kết',
   featBookmarkCardsDesc: 'Đoạn nào chỉ có mỗi một liên kết sẽ thành thẻ mang tiêu đề, mô tả và ảnh của trang đó. Blog đọc trang được dẫn đúng một lần để biết, rồi giữ bản sao ảnh của riêng mình — nên người đọc vẫn không tải gì từ chỗ khác.',
   featFileCards: 'Thẻ tệp',

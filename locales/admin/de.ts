@@ -807,6 +807,8 @@ const de = {
   featPenListsDesc: 'Aufzählungspunkte werden zu Tintenpunkten und Strichen, nummerierte Listen zählen in handschriftlichen Ziffern. Aus stellt Punkt und Zahl des Browsers wieder her.',
   featBookText: 'Buchsatz',
   featBookTextDesc: 'Erste Zeile jedes Absatzes einrücken statt Leerzeile, und auf breiten Bildschirmen Blocksatz.',
+  featCurlyQuotes: 'Typografische Anführungszeichen',
+  featCurlyQuotesDesc: 'Zeigt die geraden Anführungszeichen und Apostrophe, die Sie tippen, als die Zeichen der Sprache des Beitrags. Code und Formeln bleiben, wie sie sind, und gespeichert wird Ihr Text genau so, wie Sie ihn geschrieben haben.',
   featBookmarkCards: 'Link-Vorschaukarten',
   featBookmarkCardsDesc: 'Ein Absatz, der nichts als einen Link enthält, wird zu einer Karte mit Titel, Beschreibung und Bild jener Seite. Ihr Blog liest jede verlinkte Seite einmal, um das zu erfahren, und behält eine eigene Kopie des Bildes — so laden Ihre Leser weiterhin nichts von Dritten.',
   featFileCards: 'Dateikarten',

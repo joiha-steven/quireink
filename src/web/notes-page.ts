@@ -68,7 +68,7 @@ export async function renderNotePage(slug: string): Promise<string | null> {
   if (!note || !isPublicallyVisible(note.status, note.date)) return null
   const body = pieceWords(await renderPostContent({
     markdown: note.content, cards: await cardFacts(settings), slot: `note:${note.slug}`,
-  }), s, settings.language)
+  }), s, settings.features.curlyQuotes ? settings.language : null)
   // A clip is a passage kept FROM somewhere, so a note is the piece most likely to hold a
   // standalone link. Same rule as an article's: what is still a plain link gets written down.
   noteLinks(standaloneUrls(body), settings.siteUrl)

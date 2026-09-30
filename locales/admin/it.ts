@@ -807,6 +807,8 @@ const it = {
   featPenListsDesc: 'I punti elenco diventano punti d’inchiostro e trattini, gli elenchi numerati contano in cifre scritte a mano. Disattivato ripristina punto e numero del browser.',
   featBookText: 'Testo da libro',
   featBookTextDesc: 'Rientra la prima riga di ogni paragrafo invece di lasciare una riga vuota, e giustifica entrambi i margini sugli schermi larghi.',
+  featCurlyQuotes: 'Virgolette tipografiche',
+  featCurlyQuotesDesc: 'Mostra le virgolette dritte e gli apostrofi che digiti con i segni della lingua del pezzo. Il codice e le formule restano come sono, e il testo viene salvato esattamente come l’hai scritto.',
   featBookmarkCards: 'Card di anteprima dei link',
   featBookmarkCardsDesc: 'Un paragrafo che non contiene altro che un link diventa una card con titolo, descrizione e immagine di quella pagina. Il tuo blog legge una sola volta ogni pagina collegata per saperlo, e tiene una copia propria dell’immagine — così i tuoi lettori continuano a non caricare nulla da nessun altro.',
   featFileCards: 'Card dei file',

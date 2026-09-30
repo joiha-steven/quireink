@@ -807,6 +807,8 @@ const fr = {
   featPenListsDesc: 'Les puces deviennent des points d’encre et des tirets, les listes numérotées comptent en chiffres manuscrits. Désactivé rétablit la puce et le chiffre du navigateur.',
   featBookText: 'Texte de livre',
   featBookTextDesc: 'Renfonce la première ligne de chaque paragraphe au lieu de sauter une ligne, et justifie les deux marges sur grand écran.',
+  featCurlyQuotes: 'Guillemets typographiques',
+  featCurlyQuotesDesc: 'Affiche les guillemets droits et les apostrophes que vous tapez avec les signes de la langue du texte. Le code et les formules restent tels quels, et votre texte est conservé tel que vous l’avez écrit.',
   featBookmarkCards: 'Cartes d’aperçu de lien',
   featBookmarkCardsDesc: 'Un paragraphe qui ne contient rien d’autre qu’un lien devient une carte portant le titre, la description et l’image de cette page. Votre blog lit une seule fois chaque page liée pour les connaître, et garde sa propre copie de l’image — vos lecteurs ne chargent donc toujours rien chez personne d’autre.',
   featFileCards: 'Cartes de fichier',

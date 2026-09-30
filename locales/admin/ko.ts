@@ -807,6 +807,8 @@ const ko = {
   featPenListsDesc: '글머리 기호는 잉크 점과 짧은 줄로, 번호 목록은 손글씨 숫자로 표시됩니다. 끄면 브라우저 기본 점과 숫자로 돌아갑니다.',
   featBookText: '책 조판',
   featBookTextDesc: '문단 사이를 비우는 대신 첫 줄을 들여쓰고, 넓은 화면에서는 양쪽 정렬합니다.',
+  featCurlyQuotes: '둥근 따옴표',
+  featCurlyQuotesDesc: '입력한 곧은 따옴표와 아포스트로피를 글의 언어에 맞는 부호로 보여 줍니다. 코드와 수식은 그대로 두고, 저장되는 것은 입력한 그대로의 글입니다.',
   featBookmarkCards: '링크 미리보기 카드',
   featBookmarkCardsDesc: '링크 하나만 들어 있는 문단은 그 페이지의 제목, 설명, 이미지를 담은 카드가 됩니다. 블로그가 링크된 페이지를 한 번만 읽어 이를 알아내고, 이미지는 자기 사본을 보관합니다. 그래서 독자는 다른 곳에서 아무것도 내려받지 않습니다.',
   featFileCards: '파일 카드',

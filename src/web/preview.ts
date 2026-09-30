@@ -71,7 +71,7 @@ export async function handlePreview(c: Context): Promise<Response> {
   // which is what keeps the owner's refresh as fast as it is today (ADR 0062).
   const body = pieceWords(await renderPostContent({
     markdown: entry.content, cards: await cardFacts(settings), slot: `preview:${entry.slug}`,
-  }), t(settings.language), settings.language)
+  }), t(settings.language), settings.features.curlyQuotes ? settings.language : null)
   noteLinks(standaloneUrls(body), settings.siteUrl)
   const meta = post
     ? `<p class="meta"><time datetime="${escapeAttr(post.date)}">${

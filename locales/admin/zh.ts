@@ -807,6 +807,8 @@ const zh = {
   featPenListsDesc: '项目符号变为墨点和短横线，编号列表使用手写数字。关闭后恢复浏览器默认的圆点和数字。',
   featBookText: '书籍排版',
   featBookTextDesc: '每段首行缩进而非空行分段，宽屏时两端对齐。',
+  featCurlyQuotes: '弯引号',
+  featCurlyQuotesDesc: '把你输入的直引号和撇号显示为这篇文章所用语言的引号。代码和公式保持原样，保存的仍是你输入的原文。',
   featBookmarkCards: '链接预览卡片',
   featBookmarkCardsDesc: '段落里只有一个链接时，它会变成一张卡片，带上那个页面的标题、描述和图片。博客只把被链接的页面读取一次来获知这些，并自己留一份图片副本——所以你的读者依然不会从别处加载任何东西。',
   featFileCards: '文件卡片',

@@ -202,6 +202,7 @@ let cachedSettings: SiteSettings | null = null
  */
 const NEW_SINCE_INSTALLS_EXISTED = {
   bookText: false,
+  curlyQuotes: false,
   bookmarkCards: false,
   fileCards: false,
 } as const

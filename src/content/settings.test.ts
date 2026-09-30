@@ -30,10 +30,13 @@ describe('getSettings', () => {
   it('gives a blog that already has a row the answers it already had', async () => {
     expect(DEFAULT_SETTINGS.setupDone).toBe(false)
     expect(DEFAULT_SETTINGS.features.bookText).toBe(true)
+    expect(DEFAULT_SETTINGS.features.curlyQuotes).toBe(true)
     write({ title: 'Running since before either question existed' })
     const s = await getSettings()
     expect(s.setupDone).toBe(true)
     expect(s.features.bookText).toBe(false)
+    // Curled quotes redraw every piece, so an upgraded blog keeps its straight ones (2.2.16).
+    expect(s.features.curlyQuotes).toBe(false)
     // And a row that ANSWERS one keeps its own answer, whichever way it points.
     db().run(`delete from settings`)
     resetSettingsCache()

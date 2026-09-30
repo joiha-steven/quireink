@@ -808,6 +808,8 @@ const pt = {
   featPenListsDesc: 'Os marcadores viram pontos de tinta e traços, e as listas numeradas contam em algarismos manuscritos. Desligado restaura o ponto e o número do navegador.',
   featBookText: 'Texto de livro',
   featBookTextDesc: 'Recuo na primeira linha de cada parágrafo em vez de linha em branco, e justificação das duas margens em telas largas.',
+  featCurlyQuotes: 'Aspas curvas',
+  featCurlyQuotesDesc: 'Mostra as aspas retas e os apóstrofos que você digita com os sinais do idioma do texto. Código e fórmulas ficam como estão, e o texto é guardado exatamente como você o escreveu.',
   featBookmarkCards: 'Cartões de pré-visualização de links',
   featBookmarkCardsDesc: 'Um parágrafo que não tem nada além de um link vira um cartão com o título, a descrição e a imagem daquela página. O seu blog lê uma única vez cada página apontada para saber isso, e guarda a sua própria cópia da imagem — assim os seus leitores continuam sem carregar nada de ninguém.',
   featFileCards: 'Cartões de arquivo',

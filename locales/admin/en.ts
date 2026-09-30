@@ -807,6 +807,8 @@ const en = {
   featPenListsDesc: 'Bullets become ink dots and level dashes, and a numbered list counts in a handwritten numeral. Off restores the browser’s disc and decimal.',
   featBookText: 'Book text',
   featBookTextDesc: 'Indent the first line of each paragraph instead of leaving a blank line, and justify both margins on wide screens.',
+  featCurlyQuotes: 'Curly quotes',
+  featCurlyQuotesDesc: 'Show the straight quotes and apostrophes you type as the curved marks the piece’s language uses. Code and formulas are left as typed, and your text is stored exactly as you wrote it.',
   featBookmarkCards: 'Link preview cards',
   featBookmarkCardsDesc: 'A paragraph holding nothing but a link becomes a card with that page’s title, its description and its picture. Your blog reads each linked page once to learn them, and keeps its own copy of the picture — so your readers still load nothing from anybody else.',
   featFileCards: 'File cards',

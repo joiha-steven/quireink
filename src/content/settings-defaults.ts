@@ -68,6 +68,9 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   // like one. An install that already has a settings row keeps what it looked like — the
   // asymmetry is in `fromStored`, with its reasoning.
   bookText: true,
+  // ON for a new blog, OFF for one that already has a settings row: it redraws every quote
+  // in every piece, which an upgrade must not do on its own (`NEW_SINCE_INSTALLS_EXISTED`).
+  curlyQuotes: true,
   // ON for a new blog, OFF for one that already has a settings row — the same asymmetry
   // `bookText` has, and `NEW_SINCE_INSTALLS_EXISTED` in `settings.ts` is now the one list
   // of defaults that changed after this software had users (ADR 0058).

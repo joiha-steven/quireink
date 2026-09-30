@@ -85,12 +85,13 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
 
   const { ready, dims } = await mediaFacts()
   const cards = await cardFacts(settings)
-  // The callout labels in the piece's own language (FIXLIST 8.1); the body itself is language-blind.
+  // The callout labels and the quotes in the piece's own language; the body itself is language-blind.
+  const pieceLang = langOf(item, settings.language)
   const body = pieceWords(await renderPostContent({
     markdown: item.content, readyOriginals: ready, imageDims: dims, cards,
     // One slug namespace (Invariant 2): the prefix only keeps the slot readable in the table.
     slot: post ? `post:${item.slug}` : `page:${item.slug}`,
-  }), t(langOf(item, settings.language)), langOf(item, settings.language))
+  }), t(pieceLang), settings.features.curlyQuotes ? pieceLang : null)
   // ⚠️ THE FINISHED BODY, not the markdown, and that is what makes this self-selecting: every
   // link that BECAME a card is gone from it, so what is left is exactly the links nothing is
   // known about yet. They are written down (no network, one `insert or ignore` each) and the
@@ -102,7 +103,6 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   // by both headers below and by `articleHead` further down.
   const selfPath = canonicalPath ?? `/${item.slug}`
   const siblings = await siblingsOf(item, settings)
-  const pieceLang = langOf(item, settings.language)
   // ⚠️ THE LABEL IS IN THE PIECE'S LANGUAGE, not the site's. This line sits in a document
   // whose `<html lang>` is the piece's, it is read by whoever is reading that piece, and
   // "Cũng có bằng English" under an English headline is wrong for both of them.

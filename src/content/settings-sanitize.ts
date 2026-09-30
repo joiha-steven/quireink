@@ -126,6 +126,7 @@ export function sanitizeFeatures(input: unknown, fallback: FeatureSettings): Fea
     categoryLabel: bool(o.categoryLabel, fallback.categoryLabel),
     deck: bool(o.deck, fallback.deck),
     bookText: bool(o.bookText, fallback.bookText),
+    curlyQuotes: bool(o.curlyQuotes, fallback.curlyQuotes),
     bookmarkCards: bool(o.bookmarkCards, fallback.bookmarkCards),
     fileCards: bool(o.fileCards, fallback.fileCards),
     penUnderline: bool(o.penUnderline, fallback.penUnderline),

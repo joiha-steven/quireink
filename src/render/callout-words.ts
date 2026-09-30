@@ -24,8 +24,10 @@ export function calloutWords(html: string, s: Dict): string {
 
 /**
  * Everything a finished body gets from its language when the page is put together: the callout
- * labels above, and the quotes curled the way `lang` writes them (`curly-quotes.ts`).
+ * labels above, and the quotes curled the way `lang` writes them (`curly-quotes.ts`). A null
+ * `lang` is the owner's switch turned off (`features.curlyQuotes`): the quotes stay as typed.
  */
-export function pieceWords(html: string, s: Dict, lang: SiteLang): string {
-  return curlyQuotes(calloutWords(html, s), lang)
+export function pieceWords(html: string, s: Dict, lang: SiteLang | null): string {
+  const labelled = calloutWords(html, s)
+  return lang ? curlyQuotes(labelled, lang) : labelled
 }

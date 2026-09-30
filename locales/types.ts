@@ -1155,6 +1155,8 @@ export type AdminStrings = {
   featPenListsDesc: string
   featBookText: string
   featBookTextDesc: string
+  featCurlyQuotes: string
+  featCurlyQuotesDesc: string
   featBookmarkCards: string
   featBookmarkCardsDesc: string
   featFileCards: string
