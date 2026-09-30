@@ -219,3 +219,17 @@ describe('discovery', () => {
     }
   })
 })
+
+// JSON Feed 1.1 requires content_html or content_text on EVERY item: only untitled posts had
+// one, and a note with no kept passage had neither body nor summary (2026-09-30).
+describe('every item carries a body field', () => {
+  it('in the post feed and in the notebook, even with nothing to summarise', async () => {
+    await savePost({ title: 'A titled post', content: 'Words here.', status: 'published', date: PAST })
+    await saveNote({ title: 'A bare note', content: '', status: 'published', date: PAST })
+    for (const path of ['/feed.json', '/notes/feed.json']) {
+      const items = (JSON.parse(await text(path)) as { items: Record<string, unknown>[] }).items
+      expect(items.length).toBeGreaterThan(0)
+      for (const item of items) expect(`${path} ${typeof (item.content_text ?? item.content_html)}`).toBe(`${path} string`)
+    }
+  })
+})

@@ -55,7 +55,12 @@ export function renderJsonFeed(
       // A short post (ADR 0064) goes out with NO title, which JSON Feed allows and a
       // microblog reader expects: it shows the words, where an invented title would show them
       // twice. Its words then travel as the item's text, since a titleless item needs a body.
-      ...(e.title ? { title: e.title } : e.summary ? { content_text: e.summary } : {}),
+      ...(e.title ? { title: e.title } : {}),
+      // ⚠️ EVERY ITEM CARRIES A BODY FIELD, which JSON Feed 1.1 requires of each one: only the
+      // untitled ones did, so every other item was invalid, and a note with no kept passage
+      // had nothing at all (2026-09-30). Still no body here, by design above; the summary is
+      // the item's text, and where there is none the title stands in.
+      content_text: e.summary || e.title,
       date_published: rfc3339(e.date),
       ...(e.summary ? { summary: e.summary } : {}),
     })),
