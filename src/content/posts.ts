@@ -297,7 +297,7 @@ export async function savePost(
         now: savedAt,
       },
     )
-    writeTerms(post.slug, post.categories, post.tags)
+    Object.assign(post, writeTerms(post.slug, post.categories, post.tags))
     // A RENAME FINISHES HERE, or none of it happened. The new row is an INSERT, so until the
     // old one goes there are two live rows for one post; this used to be four statements after
     // the commit, and a process that stopped between them left both rows standing with

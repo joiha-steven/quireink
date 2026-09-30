@@ -321,3 +321,14 @@ describe('a title with a line break in it', () => {
     expect((await saveNote({ title: 'N\nM', content: 'x', status: 'draft', date: '2020-01-01T00:00:00.000Z' })).title).toBe('N M')
   })
 })
+
+// Two tags that differ only in case shared one address and were linked twice (2026-09-30).
+describe('terms that differ only in case', () => {
+  it('are stored once, in the spelling the blog already uses, and a comma separates them', async () => {
+    await savePost({ title: 'First', content: 'x', status: 'draft', tags: ['Chữ Việt'] })
+    const second = await savePost({ title: 'Second', content: 'x', status: 'draft', tags: ['chữ việt', 'CHỮ VIỆT', 'a,b'] })
+    expect(second.tags).toEqual(['Chữ Việt', 'a', 'b'])
+    expect(all<{ term: string }>(`select distinct term from post_terms where kind = 'tag' order by term`).map((r) => r.term))
+      .toEqual(['Chữ Việt', 'a', 'b'])
+  })
+})

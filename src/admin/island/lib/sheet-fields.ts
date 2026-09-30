@@ -117,11 +117,19 @@ function wireChips(
     offers.hidden = !any
   }
 
+  // One chip per name whatever its case, and a comma separates names, as the server has it too
+  // (`content/post-terms.ts`). A name the blog already has keeps the spelling it has there.
+  const same = (a: string, b: string): boolean => a.normalize('NFC').toLowerCase() === b.normalize('NFC').toLowerCase()
   const add = (term: string): void => {
-    const value = term.trim()
-    const held = draft[key]
-    if (!value || held.includes(value)) return
-    edit({ [key]: [...held, value] } as Partial<SheetDraft>)
+    let held = draft[key]
+    for (const part of term.split(',')) {
+      const typed = part.trim()
+      if (!typed || held.some((h) => same(h, typed))) continue
+      const known = [...offers.querySelectorAll<HTMLElement>('[data-chip-add]')]
+        .map((o) => o.dataset.chipAdd ?? '').find((o) => same(o, typed))
+      held = [...held, known ?? typed]
+    }
+    if (held !== draft[key]) edit({ [key]: held } as Partial<SheetDraft>)
     if (entry) entry.value = ''
     paint()
   }

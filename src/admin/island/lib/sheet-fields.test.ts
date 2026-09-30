@@ -119,3 +119,17 @@ describe('a tag box and an input method', () => {
     expect(wrote('tags')).toEqual(['việt'])
   })
 })
+
+// "Chữ Việt" and "chữ việt" were two chips, two stored tags and one address (2026-09-30).
+describe('a tag box and names that differ only in case', () => {
+  it('keeps one chip per name, takes the blog\'s spelling, and splits on a comma', () => {
+    wire(`<div data-chips="tags"><div data-chip-chosen></div>
+      <div data-chip-offers><button data-chip-add="Chữ Việt"></button></div>
+      <input data-chip-box value=""></div>`)
+    const box = root.querySelector<HTMLInputElement>('[data-chip-box]')!
+    const enter = (): void => { box.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })) }
+    box.value = 'chữ việt, kerning, KERNING'
+    enter()
+    expect(wrote('tags')).toEqual(['Chữ Việt', 'kerning'])
+  })
+})

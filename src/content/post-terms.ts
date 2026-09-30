@@ -30,16 +30,34 @@ export function parseTerms(json: string | null): string[] {
  *
  * Caller runs this inside the same transaction as the post write.
  */
-export function writeTerms(slug: string, categories: string[], tags: string[]): void {
+export function writeTerms(slug: string, categories: string[], tags: string[]): { categories: string[]; tags: string[] } {
   run(`delete from post_terms where post_slug = ?`, slug)
-  const add = (kind: TermKind, list: string[]) => {
-    for (const term of new Set(list.map((t) => t.trim()).filter(Boolean))) {
+  const add = (kind: TermKind, list: string[]): string[] => {
+    // ONE TERM PER NAME, whatever its case (2026-09-30). "Chữ Việt" and "chữ việt" were stored as
+    // two tags that share one address, `/tag/chu-viet`, and the article linked it twice. A name
+    // already on the blog keeps the spelling most posts use; a comma separates names, as it does
+    // in the box they are typed into, so `a,b` is two tags and not one with a comma in it.
+    const known = new Map<string, string>()
+    for (const { term } of all<{ term: string }>(
+      `select term from post_terms where kind = ? group by term order by count(*) desc, term`, kind,
+    )) if (!known.has(foldTerm(term))) known.set(foldTerm(term), term)
+    const names = list.flatMap((t) => t.split(',')).map((t) => t.trim()).filter(Boolean)
+    const chosen = new Map<string, string>()
+    for (const name of names) {
+      const key = foldTerm(name)
+      if (!chosen.has(key)) chosen.set(key, known.get(key) ?? name)
+    }
+    for (const term of chosen.values()) {
       run(`insert or ignore into post_terms (post_slug, kind, term) values (?, ?, ?)`, slug, kind, term)
     }
+    return [...chosen.values()]
   }
-  add('category', categories)
-  add('tag', tags)
+  // What was STORED, so the caller answers with the spelling kept rather than the one sent.
+  return { categories: add('category', categories), tags: add('tag', tags) }
 }
+
+/** The same name, whatever its case or its Unicode composition. */
+const foldTerm = (term: string): string => term.normalize('NFC').toLowerCase()
 
 /**
  * Rename (`newName` set) or remove (null) a term across EVERY post. Returns how many posts
