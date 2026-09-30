@@ -188,7 +188,9 @@ describe('warming an archive too big for the budget', () => {
     // page certain to be asked for, evicted by the warm meant to have it ready.
     expect(pageCache.has('/')).toBe(true)
     expect(pageCache.chars).toBeLessThanOrEqual(budgetChars())
-  })
+    // Its own clock: nine megabyte renders took 4.9 to 5.3 s on CI against bun's default 5 s,
+    // and one run timed out on a commit that did not touch the cache (2026-09-30).
+  }, 20_000)
 })
 
 describe('a write that lands while the warmer is already running', () => {

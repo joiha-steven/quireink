@@ -48,6 +48,8 @@ type Seen = { prev: string; outer: boolean; inner: boolean }
 
 const fresh = (): Seen => ({ prev: '', outer: false, inner: false })
 
+const ENTITY_AT = /&(?:#\d+|#x[\da-f]+|\w+);/iy
+
 /** One run of text, carrying `seen` forward. */
 function curlText(text: string, seen: Seen, lang: SiteLang): string {
   const [open, close] = pairFor(lang)
@@ -58,14 +60,21 @@ function curlText(text: string, seen: Seen, lang: SiteLang): string {
     const c = text[i]!
     if (c === '&') {
       // An escaped character is one character to the reader, and the quote after `&gt;` is
-      // after a `>`, not after a semicolon.
-      const ent = /^&(?:#\d+|#x[\da-f]+|\w+);/i.exec(text.slice(i))
+      // after a `>`, not after a semicolon. Sticky, so a run with many `&` does not copy the
+      // rest of the text at each one.
+      ENTITY_AT.lastIndex = i
+      const ent = ENTITY_AT.exec(text)
       if (ent) {
         out += ent[0]
         prev = ENTITY[ent[0]] ?? 'x'
         i += ent[0].length - 1
         continue
       }
+    }
+    if (c !== '"' && c !== "'") {
+      out += c
+      prev = c
+      continue
     }
     const opening = prev === '' || OPENS_AFTER.test(prev)
     if (c === '"') {
@@ -85,8 +94,6 @@ function curlText(text: string, seen: Seen, lang: SiteLang): string {
         // A contraction or a possessive: every language spells it ’.
         out += '’'
       }
-    } else {
-      out += c
     }
     prev = c
   }
@@ -109,6 +116,11 @@ export function curlyQuotes(html: string, lang: SiteLang): string {
     }
     if (depth > 0 || part === '') return part
     const text = part.replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    // No quote in it: nothing to curl, and only the last character to carry forward.
+    if (!/["']/.test(text)) {
+      seen.prev = text.at(-1) ?? seen.prev
+      return part
+    }
     const curled = curlText(text, seen, lang)
     return curled.replace(/"/g, '&quot;').replace(/'/g, '&#39;')
   }).join('')
