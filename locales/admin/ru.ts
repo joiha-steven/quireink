@@ -1276,6 +1276,7 @@ const ru = {
   nlColOpenRate: 'Открываемость',
   nlSearchPlaceholder: 'Искать адреса…',
   nlExportCsv: 'Выгрузить CSV',
+  nlPickAll: 'Выбрать все найденные',
   nlShowing: '{from}-{to} из {n}',
   nlNoMatch: 'Ни один адрес не подходит.',
   nlPagePrev: 'Назад',

@@ -22,9 +22,12 @@ import { SECTION } from '@/admin-shared/scale'
 import { chordSpellings } from '@/web/admin/rail-rows'
 import { BUILTIN, SHORTCUTS } from '@/admin-shared/keys'
 import { firstRunSteps } from '@/admin-shared/first-run'
-import {
-  HELP_INDEX, HELP_SECTIONS, MARKDOWN_ROWS, REPO, TROUBLE_ROWS, doc, type HelpRow,
-} from '@/admin-shared/help'
+import { REPO, doc, dress, fillWords, helpText } from '@/admin-shared/help'
+import type { HelpText } from '@/locales/help/types'
+import type { AdminStrings } from '@/i18n/admin-i18n'
+
+/** A table beats prose here: you arrive knowing a syntax or a symptom and want one glance. */
+type HelpRow = [string, string]
 import { pageHeader } from '@/web/admin/kit'
 
 /**
@@ -47,10 +50,10 @@ const anchored = (id: string, body: string): string =>
   `<section id="${id}" class="mb-4 break-inside-avoid scroll-mt-24">${body}</section>`
 
 /** A lookup table: you arrive knowing what you want and want the answer in one glance. */
-function lookup(rows: HelpRow[], head: [string, string], firstWidth: string, literal: boolean): string {
+function lookup(t: AdminStrings, rows: HelpRow[], head: [string, string], firstWidth: string, literal: boolean): string {
   const cell = (text: string): string => literal
     ? `<code class="${CODE}">${escapeHtml(text)}</code>`
-    : escapeHtml(text)
+    : fillWords(escapeHtml(text), t)
   return `<div class="${TABLE_FRAME}"><div class="${TABLE_SCROLL}"><table class="w-full text-sm">`
     + `<thead class="${THEAD}"><tr>`
     + `<th class="${firstWidth} px-4 py-2.5 font-medium">${escapeHtml(head[0])}</th>`
@@ -58,7 +61,7 @@ function lookup(rows: HelpRow[], head: [string, string], firstWidth: string, lit
     + rows.map(([a, b]) =>
       `<tr class="${TROW}">`
       + `<td class="px-4 py-2.5 align-top${literal ? '' : ' font-medium text-neutral-800 dark:text-neutral-200'}">${cell(a)}</td>`
-      + `<td class="px-4 py-2.5 align-top ${P}">${escapeHtml(b)}</td></tr>`).join('')
+      + `<td class="px-4 py-2.5 align-top ${P}">${fillWords(escapeHtml(b), t)}</td></tr>`).join('')
     + `</tbody></table></div></div>`
 }
 
@@ -73,16 +76,16 @@ function lookup(rows: HelpRow[], head: [string, string], firstWidth: string, lit
  * This product's own chords first, then the ones the editor brings. Somebody arriving here
  * already knows Ctrl+B; what they came to find out is that the highlighter has a key at all.
  */
-function shortcuts(): string {
+function shortcuts(h: HelpText): string {
   const rows = [...SHORTCUTS, ...BUILTIN]
   return `<div class="${TABLE_FRAME}"><div class="${TABLE_SCROLL}"><table class="w-full text-sm">`
-    + `<thead class="${THEAD}"><tr><th class="w-1/3 px-4 py-2.5 font-medium">Press</th>`
-    + `<th class="px-4 py-2.5 font-medium">And it does</th></tr></thead><tbody>`
+    + `<thead class="${THEAD}"><tr><th class="w-1/3 px-4 py-2.5 font-medium">${escapeHtml(h.keysHead[0])}</th>`
+    + `<th class="px-4 py-2.5 font-medium">${escapeHtml(h.keysHead[1])}</th></tr></thead><tbody>`
     + rows.map((s) =>
       `<tr class="${TROW}"><td class="px-4 py-2.5 align-top">`
       + `<code data-chord class="${CODE}">`
       + `${chordSpellings(s.chord)}</code></td>`
-      + `<td class="px-4 py-2.5 align-top ${P}">${escapeHtml(s.does)}</td></tr>`).join('')
+      + `<td class="px-4 py-2.5 align-top ${P}">${escapeHtml(h.keys[s.id] ?? s.does)}</td></tr>`).join('')
     + `</tbody></table></div></div>`
 }
 
@@ -111,6 +114,7 @@ function firstRun(t: ReturnType<typeof adminT>): string {
 
 export async function helpScreen(settings: SiteSettings): Promise<string> {
   const t = adminT(settings.language)
+  const h = helpText(settings.language)
   const ext = (href: string, text: string): string =>
     `<a href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer" class="${A}">${escapeHtml(text)}</a>`
 
@@ -118,7 +122,7 @@ export async function helpScreen(settings: SiteSettings): Promise<string> {
   // sheet, and CSS COLUMNS pack them: the panels are wildly different heights, and a grid would
   // leave a dead gap under every short one.
   const body = `<div class="space-y-5 p-5">`
-    + `<p class="text-sm text-neutral-500 dark:text-neutral-400">Everything this blog can do, and where each thing lives. Start at the top if it is a new site; jump to a section if you are looking something up.</p>`
+    + `<p class="text-sm text-neutral-500 dark:text-neutral-400">${escapeHtml(h.intro)}</p>`
     + panel(escapeHtml(t.firstRunTitle), firstRun(t))
     // The index is STICKY, and it is CSS rather than a widget: this page runs to about six
     // screens, and an index that scrolls away at screen one is an index you can only use before
@@ -129,20 +133,20 @@ export async function helpScreen(settings: SiteSettings): Promise<string> {
     // filters needs script, and the settings search and the command palette already reach every
     // setting by name.
     + `<nav class="sticky top-0 z-10 -mx-5 flex flex-wrap gap-2 border-b border-neutral-100 bg-white/95 px-5 py-3 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-900/95">`
-    + HELP_INDEX.map(([id, label]) =>
+    + Object.entries(h.index).map(([id, label]) =>
       `<a href="#${id}" class="rounded-lg border border-neutral-200 px-2.5 py-1 text-sm text-neutral-600 transition hover:border-neutral-300 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:text-neutral-100">${escapeHtml(label)}</a>`).join('')
     + `</nav>`
     + `<div class="columns-1 gap-5 xl:columns-2 [&>*]:mb-5 [&>*]:break-inside-avoid">`
-    + HELP_SECTIONS.map((s) => anchored(s.id, panel(s.title, s.body))).join('')
+    + h.sections.map((s) => anchored(s.id, panel(escapeHtml(s.title), dress(s.body, t)))).join('')
     + `</div>`
-    + anchored('markdown', panel('Markdown the editor understands',
-      `<p class="${P} mb-3">Standard Markdown, plus these. The toolbar inserts most of them for you.</p>`
-      + lookup(MARKDOWN_ROWS, ['Type this', 'And you get'], 'w-1/3', true)))
-    + anchored('keys', panel('Keys the editor answers to',
-      `<p class="${P} mb-3">On top of the usual bold, italic, headings and undo.</p>${shortcuts()}`))
-    + anchored('trouble', panel('When something looks wrong',
-      `<p class="${P} mb-3">The problems that actually come up, and what fixes each.</p>`
-      + lookup(TROUBLE_ROWS, ['Symptom', 'What to do'], 'w-2/5', false)))
+    + anchored('markdown', panel(escapeHtml(h.markdownTitle),
+      `<p class="${P} mb-3">${escapeHtml(h.markdownLede)}</p>`
+      + lookup(t, Object.entries(h.markdown), h.markdownHead, 'w-1/3', true)))
+    + anchored('keys', panel(escapeHtml(h.keysTitle),
+      `<p class="${P} mb-3">${escapeHtml(h.keysLede)}</p>${shortcuts(h)}`))
+    + anchored('trouble', panel(escapeHtml(h.troubleTitle),
+      `<p class="${P} mb-3">${escapeHtml(h.troubleLede)}</p>`
+      + lookup(t, h.trouble, h.troubleHead, 'w-2/5', false)))
     + `<p class="pt-2 text-center text-xs text-neutral-500 dark:text-neutral-400">`
     + `${ext(REPO, 'Quire Ink')} v${escapeHtml(APP_VERSION)} · `
     + `${ext(doc('LICENSE-EXCEPTION.md'), 'PolyForm NC + hosting')} · `

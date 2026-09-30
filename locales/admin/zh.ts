@@ -1276,6 +1276,7 @@ const zh = {
   nlColOpenRate: '打开率',
   nlSearchPlaceholder: '搜索地址…',
   nlExportCsv: '导出 CSV',
+  nlPickAll: '全选匹配项',
   nlShowing: '{n} 条中的 {from}-{to}',
   nlNoMatch: '没有地址匹配。',
   nlPagePrev: '上一页',

@@ -1276,6 +1276,7 @@ const en = {
   nlColOpenRate: 'Open rate',
   nlSearchPlaceholder: 'Search addresses…',
   nlExportCsv: 'Export CSV',
+  nlPickAll: 'Select every match',
   nlShowing: '{from}-{to} of {n}',
   nlNoMatch: 'No address matches that.',
   nlPagePrev: 'Previous',

@@ -67,14 +67,32 @@ export function wireSubscribers(screen: HTMLElement, opts: {
 
   const boxes = (): HTMLInputElement[] =>
     [...screen.querySelectorAll<HTMLInputElement>('[data-sub-pick]')]
+  /** Every row the search and the filter match, on every page. Kept by `apply`. */
+  let matching = new Set<number>()
+  /** The ticked subscribers the filter still matches — past this page too, once. */
   const chosen = (): number[] =>
-    boxes().filter((b) => b.checked && b.closest('tr')?.hidden !== true).map((b) => Number(b.dataset.id))
+    [...new Set(boxes().filter((b) => b.checked).map((b) => Number(b.dataset.id)))]
+      .filter((id) => matching.has(id))
+  const all = pick<HTMLInputElement>('[data-sub-all]')
 
   function countPicked(): void {
     const many = chosen().length
     if (picked) picked.textContent = String(many)
     if (bar) bar.hidden = many === 0
+    if (all) {
+      all.checked = matching.size > 0 && many === matching.size
+      all.indeterminate = many > 0 && many < matching.size
+    }
   }
+
+  /** Both faces of one subscriber carry a tick; they say the same thing. */
+  const tickFor = (id: number, on: boolean): void => {
+    for (const b of screen.querySelectorAll<HTMLInputElement>(`[data-sub-pick][data-id="${id}"]`)) b.checked = on
+  }
+  all?.addEventListener('change', () => {
+    for (const id of matching) tickFor(id, all.checked)
+    countPicked()
+  })
 
   function apply(): void {
     const needle = (search?.value ?? '').trim().toLowerCase()
@@ -86,6 +104,7 @@ export function wireSubscribers(screen: HTMLElement, opts: {
     // should land on the last page that exists, not throw you back to the first.
     if (page > pages - 1) page = pages - 1
     const from = page * PER_PAGE
+    matching = new Set(hit.map((e) => e.id))
     const on = new Set(hit.slice(from, from + PER_PAGE).map((e) => e.id))
     for (const e of entries) {
       e.tr.hidden = !on.has(e.id)
@@ -118,7 +137,10 @@ export function wireSubscribers(screen: HTMLElement, opts: {
   prev?.addEventListener('click', () => { page = Math.max(0, page - 1); apply() })
   next?.addEventListener('click', () => { page += 1; apply() })
   screen.addEventListener('change', (e) => {
-    if ((e.target as HTMLElement).hasAttribute('data-sub-pick')) countPicked()
+    const box = e.target as HTMLInputElement
+    if (!box.hasAttribute('data-sub-pick')) return
+    tickFor(Number(box.dataset.id), box.checked)
+    countPicked()
   })
   pick('[data-pick-clear]')?.addEventListener('click', () => {
     for (const b of boxes()) b.checked = false

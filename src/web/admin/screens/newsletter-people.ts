@@ -165,6 +165,10 @@ export function peoplePanel(
       value: 'all',
       attrs: 'data-sub-scope',
     })
+    // EVERY MATCH, on every page (2026-09-30): the export takes ticked rows only, and 500
+    // subscribers was 500 boxes to tick by hand.
+    + `<label class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300">`
+    + tick({ label: t.nlPickAll, attrs: 'data-sub-all' }) + `${escapeHtml(t.nlPickAll)}</label>`
     + selectionBar({
       clearLabel: t.clearSelection,
       deleteLabel: t.deleteSelected,

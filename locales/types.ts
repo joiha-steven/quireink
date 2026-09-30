@@ -1545,6 +1545,8 @@ export type AdminStrings = {
   nlColOpenRate: string
   nlSearchPlaceholder: string
   nlExportCsv: string
+  /** Ticks every subscriber the search and filter match, on every page, not just this one. */
+  nlPickAll: string
   nlShowing: string
   nlNoMatch: string
   nlPagePrev: string

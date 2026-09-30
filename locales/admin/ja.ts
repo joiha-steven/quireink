@@ -1276,6 +1276,7 @@ const ja = {
   nlColOpenRate: '開封率',
   nlSearchPlaceholder: 'アドレスを検索…',
   nlExportCsv: 'CSVで書き出す',
+  nlPickAll: '該当するものをすべて選択',
   nlShowing: '{n} 件中 {from}-{to}',
   nlNoMatch: '一致するアドレスはありません。',
   nlPagePrev: '前へ',

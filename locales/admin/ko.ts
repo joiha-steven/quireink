@@ -1276,6 +1276,7 @@ const ko = {
   nlColOpenRate: '열람률',
   nlSearchPlaceholder: '주소 검색…',
   nlExportCsv: 'CSV 내보내기',
+  nlPickAll: '검색 결과 모두 선택',
   nlShowing: '{n}개 중 {from}-{to}',
   nlNoMatch: '일치하는 주소가 없습니다.',
   nlPagePrev: '이전',

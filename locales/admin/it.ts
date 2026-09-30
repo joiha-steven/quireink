@@ -1276,6 +1276,7 @@ const it = {
   nlColOpenRate: 'Tasso di apertura',
   nlSearchPlaceholder: 'Cerca indirizzi…',
   nlExportCsv: 'Esporta CSV',
+  nlPickAll: 'Seleziona tutti i risultati',
   nlShowing: '{from}-{to} di {n}',
   nlNoMatch: 'Nessun indirizzo corrisponde.',
   nlPagePrev: 'Precedente',

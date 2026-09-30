@@ -1276,6 +1276,7 @@ const vi = {
   nlColOpenRate: 'Tỉ lệ mở',
   nlSearchPlaceholder: 'Tìm địa chỉ…',
   nlExportCsv: 'Xuất CSV',
+  nlPickAll: 'Chọn tất cả kết quả',
   nlShowing: '{from}-{to} trên {n}',
   nlNoMatch: 'Không địa chỉ nào khớp.',
   nlPagePrev: 'Trước',

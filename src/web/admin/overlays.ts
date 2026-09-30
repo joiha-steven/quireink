@@ -13,7 +13,7 @@
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteLook, SiteSettings } from '@/types'
 import { APP_VERSION } from '@/version'
-import { REPO } from '@/admin-shared/help'
+import { REPO, helpText } from '@/admin-shared/help'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { buttonClass, CONTROL, OVERLAY } from '@/admin-shared/kit'
 import { chordSpellings } from '@/web/admin/rail-rows'
@@ -92,11 +92,10 @@ function confirmBox(): string {
  * `[data-chord]` carries its Mac form in `data-mac` and wears the other as its text, which is
  * the arrangement the rail's own search key already uses.
  *
- * The DESCRIPTIONS stay English, like the Help screen's reference material and for the same
- * reason: the chords are symbols, the sheet's furniture is translated, and what is left is a
- * line of reference prose that is canonical in one language rather than approximate in eleven.
+ * The DESCRIPTIONS come from `locales/help/`, the same words the Help screen's table prints,
+ * since 2026-09-30: an owner working in Vietnamese pressed `?` and read eleven English lines.
  */
-function shortcutSheet(t: AdminStrings): string {
+function shortcutSheet(t: AdminStrings, keys: Record<string, string>): string {
   const row = (s: Shortcut): string =>
     `<li class="flex items-baseline gap-4 border-b border-neutral-100 py-2 last:border-0`
     + ` dark:border-neutral-800">`
@@ -106,7 +105,7 @@ function shortcutSheet(t: AdminStrings): string {
     + ` class="w-24 shrink-0 whitespace-nowrap font-sans text-sm font-semibold tabular-nums`
     + ` text-neutral-900 dark:text-white">${chordSpellings(s.chord)}</kbd>`
     + `<span class="min-w-0 text-sm leading-[1.5] text-neutral-600 dark:text-neutral-400">`
-    + `${escapeHtml(s.does)}</span></li>`
+    + `${escapeHtml(keys[s.id] ?? s.does)}</span></li>`
   // Two groups, and the split is honest: the first are chords this product invented, the
   // second are the ones the editor arrives with. A reader who wants to know "what did they
   // add" can see it, and neither list has to pretend the other does not exist.
@@ -321,5 +320,5 @@ function whatsNew(t: AdminStrings, settings: SiteSettings): string {
 }
 
 export function overlaysHtml(t: AdminStrings, settings: SiteSettings): string {
-  return toastStack() + confirmBox() + shortcutSheet(t) + palette(t) + whatsNew(t, settings)
+  return toastStack() + confirmBox() + shortcutSheet(t, helpText(settings.language).keys) + palette(t) + whatsNew(t, settings)
 }
