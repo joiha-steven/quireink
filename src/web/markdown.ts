@@ -26,7 +26,13 @@ function document(title: string, meta: string, body: string): Response {
   return new Response(`${title ? `# ${title}\n\n` : ''}${meta ? `${meta}\n\n` : ''}${body}\n`, {
     headers: {
       'content-type': 'text/markdown; charset=utf-8',
-      'cache-control': 'public, max-age=300',
+      // ⚠️ NOT A SHARED CACHE'S TO KEEP (2026-09-30). The same URL answers HTML to a browser, and
+      // a shared cache keyed by URL that stored this — nginx `proxy_cache`, a CDN on "cache
+      // everything" — would hand raw Markdown to every reader for five minutes after one crawler
+      // asked first. `Vary: Accept` says why; `private` makes sure, since CDNs honour it and many
+      // ignore a Vary they do not understand.
+      'cache-control': 'private, max-age=300',
+      vary: 'Accept',
       // The HTML page is the canonical one. Indexing the raw view too would put two URLs
       // with the same words in the index, competing with each other.
       'x-robots-tag': 'noindex',

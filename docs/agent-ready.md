@@ -13,7 +13,7 @@ already exists.
 
 | Path | What | Route |
 |---|---|---|
-| `/:slug` + `Accept: text/markdown` | Post/page as raw **Markdown** (the source, not a conversion). Browsers (`Accept: text/html`) get HTML unchanged. | `src/web/markdown.ts` (`wantsMarkdown`), negotiated in `src/web/app.ts` |
+| `/:slug` + `Accept: text/markdown` | Post/page as raw **Markdown** (the source, not a conversion). Browsers (`Accept: text/html`) get HTML unchanged. Sent `private, max-age=300` with `Vary: Accept`, so no shared cache hands it to a browser. | `src/web/markdown.ts` (`wantsMarkdown`), negotiated in `src/web/app.ts` |
 | `/api/md/:slug` | The same document at an explicit path | `src/web/markdown.ts` |
 | `/.well-known/oauth-authorization-server` | OAuth AS metadata (RFC 8414) | `src/web/admin/mcp.ts` |
 | `/.well-known/oauth-protected-resource` | OAuth protected-resource metadata (RFC 9728) | `src/web/admin/mcp.ts` |

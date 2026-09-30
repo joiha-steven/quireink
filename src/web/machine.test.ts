@@ -61,6 +61,9 @@ describe('markdown for agents', () => {
     const res = await get('/a-post', { accept: 'text/markdown' })
     expect(res.headers.get('content-type')).toContain('text/markdown')
     expect(await res.text()).toContain('Some **prose**.')
+    // Never a shared cache's to keep: the same URL is HTML to everybody else.
+    expect(res.headers.get('cache-control')).toBe('private, max-age=300')
+    expect(res.headers.get('vary')).toContain('Accept')
   })
 
   it('still serves HTML to a browser, which lists text/markdown in no Accept it sends', async () => {
