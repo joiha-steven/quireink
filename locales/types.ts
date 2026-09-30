@@ -56,6 +56,8 @@ export type Dict = {
   search: string
   searchHint: string
   searchEmpty: string
+  /** The search overlay's way to the full results page. */
+  searchSeeAll: string
   searchResults: string
   pagerNewer: string
   pagerOlder: string

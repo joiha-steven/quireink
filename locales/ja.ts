@@ -46,6 +46,7 @@ const ja = {
   search: '検索',
   searchHint: 'キーワードを入力して投稿を検索します。',
   searchEmpty: '一致する投稿が見つかりません。',
+  searchSeeAll: 'すべての結果を見る',
   searchResults: '「{q}」の検索結果 {n} 件',
   pagerNewer: '新しい記事',
   pagerOlder: '古い記事',

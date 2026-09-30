@@ -46,6 +46,7 @@ const zh = {
   search: '搜索',
   searchHint: '输入关键词搜索文章。',
   searchEmpty: '未找到匹配的文章。',
+  searchSeeAll: '查看全部结果',
   searchResults: '“{q}” 的 {n} 条结果',
   pagerNewer: '较新',
   pagerOlder: '较旧',

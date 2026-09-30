@@ -286,10 +286,12 @@ describe('search overlay', () => {
     stubFetch({ timezone: results })
     openOverlay()
     await type('timezone')
-    const links = document.querySelectorAll('.search-results a')
+    const links = document.querySelectorAll('.search-results a:not(.search-all)')
     expect(links.length).toBe(1)
     expect(links[0]!.textContent).toBe('Timezone bugs')
     expect(links[0]!.getAttribute('href')).toBe('/timezone-bugs')
+    // The way on to the full results, which the overlay had none of (2026-09-30).
+    expect(document.querySelector('.search-results a.search-all')!.getAttribute('href')).toBe('/search?q=timezone')
   })
 
   it('sends ONE request for a burst of typing', async () => {
@@ -316,7 +318,7 @@ describe('search overlay', () => {
     openOverlay()
     await type('ti', 220)
     await type('timezone', 400)
-    const links = document.querySelectorAll('.search-results a')
+    const links = document.querySelectorAll('.search-results a:not(.search-all)')
     expect(links.length).toBe(1)
     expect(links[0]!.textContent).toBe('Timezone bugs')
   })

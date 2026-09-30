@@ -46,6 +46,7 @@ const ru = {
   search: 'Поиск',
   searchHint: 'Начните печатать, чтобы найти записи.',
   searchEmpty: 'Ничего не нашлось.',
+  searchSeeAll: 'Все результаты',
   searchResults: 'Результаты по запросу «{q}»: {n}',
   pagerNewer: 'Новее',
   pagerOlder: 'Старее',

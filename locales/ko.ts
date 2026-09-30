@@ -46,6 +46,7 @@ const ko = {
   search: '검색',
   searchHint: '키워드를 입력해 게시물을 검색하세요.',
   searchEmpty: '일치하는 게시물이 없습니다.',
+  searchSeeAll: '모든 결과 보기',
   searchResults: '“{q}” 검색 결과 {n}개',
   pagerNewer: '최신',
   pagerOlder: '이전',

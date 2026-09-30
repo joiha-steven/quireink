@@ -46,6 +46,7 @@ const es = {
   search: 'Buscar',
   searchHint: 'Escribe para buscar entradas.',
   searchEmpty: 'No se encontraron entradas que coincidan.',
+  searchSeeAll: 'Ver todos los resultados',
   searchResults: 'Resultados para «{q}»: {n}',
   pagerNewer: 'Más recientes',
   pagerOlder: 'Más antiguas',

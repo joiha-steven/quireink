@@ -118,7 +118,13 @@ const BUDGET: Record<string, number> = {
   // evidence that the declaration is not what differs. The fade is still CSS and still off
   // the main thread; 108 bytes now decide when it is OVER, which no stale range can argue
   // with. Left at 11,500 the next change to this file would have been golf.
-  'core.js': 11_800,
+  //
+  // 13,200 since 2026-09-30 (12,893 measured), for two keyboard paths the eight-agent sweep
+  // found missing. The search overlay had no way to a result but Tab and no way to the full
+  // results at all: Enter now opens them, the arrows walk the list, and a "See all" row links
+  // the page. The phone drawer declared `aria-modal` and let Tab walk out into the page behind
+  // it, and a Contents entry left it open over the heading it had just scrolled to.
+  'core.js': 13_200,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Same rule as above — each raise is named and priced.
   //
@@ -163,7 +169,11 @@ const BUDGET: Record<string, number> = {
   // their own. They were 7.8 KB and 7.0 KB of the 19.6 KB - three quarters of the file spent
   // on two owner's switches, sent to every reader of a site with both off. What is left is
   // every article's islands: copy, lightbox, contents, quote, resume, to-top.
-  'post.js': 7_400,
+  //
+  // 8,000 since 2026-09-30 (7,797 measured): a quote widened to whole words at its edges. A
+  // drag that began or ended mid-word made a `#:~:text=` Chrome will not match, so the link
+  // opened at the top of the page instead of at the sentence.
+  'post.js': 8_000,
   // Only on a page whose switch is on (article.ts). Priced with their own copy of `dom` and
   // `motion` (~1.5 KB each): an IIFE cannot share, and a shared chunk would be a request
   // every page pays for two pages' benefit.
@@ -184,7 +194,10 @@ const BUDGET: Record<string, number> = {
   // 7,900 since 2026-09-23, for the copy's pictures to stop promising the lightbox: cloned
   // with the article, each was a Tab stop announcing a dialog nothing would open, and
   // focusing one on a later page scrolled the book off its spread (renameAnchors).
-  'book-mode.js': 7_900,
+  // 8,400 since 2026-09-30 (8,150 measured), for the keyboard: Space on a focused button
+  // turned the page instead of pressing it, and Tab into a later column scrolled the window
+  // under the pages while the counter stayed on the first; focus now turns to its spread.
+  'book-mode.js': 8_400,
   'comment-thread.js': 6_700,
   // The reader's pen: the selection bar, the anchor maths (a text-quote selector, found
   // again by its surroundings), the store, the note card and the copy gesture it absorbed
@@ -194,7 +207,11 @@ const BUDGET: Record<string, number> = {
   // question for the notebook's address, and the URL the door reads.
   // 13.1 KB with tier two (ADR 0047): the keep panel is twelve labelled controls and the
   // four calls behind them. Loaded on article pages only, and only while the pen is on.
-  'reader-pen.js': 13_400,
+  // 14,300 since 2026-09-30 (14,004 measured): a way in to a notebook for a reader with no
+  // mark yet, and a notebook adopted without dropping the marks already made here; the anchor
+  // refusing to land on the same word elsewhere once its sentence changed; the bar kept on a
+  // phone's screen; and the copied quote widened to whole words.
+  'reader-pen.js': 14_300,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

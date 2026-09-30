@@ -309,6 +309,7 @@ export function chromeLabels(settings: SiteSettings): Record<string, string> {
     search: s.search,
     searchHint: s.searchHint,
     searchEmpty: s.searchEmpty,
+    searchSeeAll: s.searchSeeAll,
     lightboxClose: s.lightboxClose,
     gridView: s.gridView,
     listView: s.listView,

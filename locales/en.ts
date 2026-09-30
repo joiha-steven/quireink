@@ -46,6 +46,7 @@ const en = {
   search: 'Search',
   searchHint: 'Type to search posts.',
   searchEmpty: 'No matching posts found.',
+  searchSeeAll: 'See all results',
   searchResults: 'Results for “{q}”: {n}',
   pagerNewer: 'Newer',
   pagerOlder: 'Older',

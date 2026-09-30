@@ -46,6 +46,7 @@ const vi = {
   search: 'Tìm kiếm',
   searchHint: 'Nhập từ khoá để tìm bài viết.',
   searchEmpty: 'Không tìm thấy bài viết phù hợp.',
+  searchSeeAll: 'Xem mọi kết quả',
   searchResults: '{n} kết quả cho “{q}”',
   pagerNewer: 'Mới hơn',
   pagerOlder: 'Cũ hơn',

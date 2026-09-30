@@ -55,7 +55,13 @@ export function search(): void {
       link.textContent = r.title
       list.appendChild(el('li', {}, link))
     }
+    // The overlay shows the first few; the page has them all, and there was no way to it.
+    const all = el('a', { href: fullPage(query), class: 'search-all' })
+    all.textContent = label('searchSeeAll')
+    list.appendChild(el('li', {}, all))
   }
+  const fullPage = (query: string) =>
+    `${trigger.getAttribute('href') || '/search'}?q=${encodeURIComponent(query)}`
 
   function open(): void {
     if (dialog) {
@@ -101,6 +107,25 @@ export function search(): void {
     }, 200)
 
     input.addEventListener('input', () => run(input.value.trim()))
+    // THE KEYBOARD'S WAY ON (2026-09-30): Enter did nothing and ArrowDown stayed in the box, so
+    // a result was reachable only by Tab. Enter opens the full results; the arrows walk the list
+    // and ArrowUp from the first result comes back to the box.
+    const links = () => [...list.querySelectorAll<HTMLAnchorElement>('a[href]')]
+    input.addEventListener('keydown', (e) => {
+      if (e.isComposing || e.keyCode === 229) return
+      const query = input.value.trim()
+      if (e.key === 'Enter' && query) { e.preventDefault(); location.href = fullPage(query) }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); links()[0]?.focus() }
+    })
+    list.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+      e.preventDefault()
+      const all = links()
+      const at = all.indexOf(document.activeElement as HTMLAnchorElement)
+      const to = at + (e.key === 'ArrowDown' ? 1 : -1)
+      if (to < 0) input.focus()
+      else all[Math.min(to, all.length - 1)]?.focus()
+    })
 
     const next = document.createElement('dialog')
     next.className = 'overlay search-overlay'

@@ -331,7 +331,9 @@ export function rail(): void {
   // with the masthead's real one (release review, 2026-09-23). Open, the rail IS the menu the
   // button opened, and a dialog needs a name; closed, it is a sidebar and says nothing.
   const name = button.getAttribute('aria-label') ?? ''
-  const set = (open: boolean) => {
+  // `back` = hand focus back to the button on closing. Not after a link was followed: focusing
+  // the button in the header would scroll the page back up past where the link just went.
+  const set = (open: boolean, back = true) => {
     const was = html.dataset.rail === 'open'
     if (open) html.dataset.rail = 'open'
     else delete html.dataset.rail
@@ -352,7 +354,7 @@ export function rail(): void {
     // body, because the closed drawer is visibility:hidden and a hidden element cannot keep
     // it. The button is the place a keyboard user was before the drawer opened.
     if (open) rail.querySelector<HTMLElement>('a[href],button')?.focus()
-    else if (was && rail.contains(document.activeElement)) button.focus()
+    else if (back && was && rail.contains(document.activeElement)) button.focus()
   }
 
   const scrim = el('div', { class: 'rail-scrim', hidden: '', 'aria-hidden': 'true' })
@@ -360,6 +362,22 @@ export function rail(): void {
   scrim.addEventListener('click', () => set(false))
   button.addEventListener('click', () => set(html.dataset.rail !== 'open'))
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && html.dataset.rail === 'open') set(false)
+    if (html.dataset.rail !== 'open') return
+    if (e.key === 'Escape') { set(false); return }
+    // ⚠️ AND FOCUS STAYS IN IT, as `aria-modal` promises: Tab past the last link went on into
+    // the page behind the drawer and its scrim (2026-09-30). The two ends wrap to each other.
+    if (e.key !== 'Tab') return
+    const stops = [...rail.querySelectorAll<HTMLElement>('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')]
+      .filter((n) => n.offsetParent !== null)
+    const first = stops[0]
+    const last = stops[stops.length - 1]
+    if (!first || !last) return
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+  })
+  // A link inside the drawer takes the reader somewhere, and the drawer was left open over it:
+  // a Contents entry scrolled to its heading underneath (2026-09-30). The link still goes.
+  rail.addEventListener('click', (e) => {
+    if (html.dataset.rail === 'open' && (e.target as HTMLElement).closest('a[href]')) set(false, false)
   })
 }

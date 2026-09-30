@@ -220,10 +220,25 @@ export function book(): void {
     // the arrow keys already live); tabbing still reaches every button, ring intact.
     const stage = el('div', { class: 'book-stage', tabindex: '-1', autofocus: '' }, prev, viewport, fwd)
 
+    // ⚠️ SPACE BELONGS TO A FOCUSED CONTROL. Taken at the document for every target, it turned
+    // the page when a keyboard reader pressed it on Close or Larger text (2026-09-30).
     const onKey = (e: KeyboardEvent) => {
+      const control = (e.target as HTMLElement | null)?.closest?.('a,button,input,select,textarea,summary')
+      if (e.key === ' ' && control) return
       if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); turn(1) }
       else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); turn(-1) }
     }
+
+    // ⚠️ FOCUS TURNS THE PAGE, AND THE WINDOW NEVER SCROLLS. Tabbing to a link in a later column
+    // made the browser scroll the clipping viewport under the translated flow, so the screen
+    // showed spread 4 while the counter said 1 / 4 and the arrows turned from the wrong place
+    // (2026-09-30). The scroll is taken back at once, and the spread holding the focus is shown.
+    viewport.addEventListener('scroll', () => { if (viewport.scrollLeft) viewport.scrollLeft = 0 })
+    viewport.addEventListener('focusin', (e) => {
+      viewport.scrollLeft = 0
+      const at = (e.target as HTMLElement).getBoundingClientRect().left - flow.getBoundingClientRect().left
+      goto(Math.floor(at / step))
+    })
 
     // The phone turns pages the way every e-reader does: a horizontal swipe, or a tap in
     // the outer thirds of the page — the stylesheet retires the hover-sized arrows under

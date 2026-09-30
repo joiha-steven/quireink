@@ -47,6 +47,7 @@ const pt = {
   search: 'Buscar',
   searchHint: 'Digite para buscar posts.',
   searchEmpty: 'Nenhum post encontrado.',
+  searchSeeAll: 'Ver todos os resultados',
   searchResults: 'Resultados para «{q}»: {n}',
   pagerNewer: 'Mais novos',
   pagerOlder: 'Mais antigos',
