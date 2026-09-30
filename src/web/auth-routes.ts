@@ -62,6 +62,21 @@ export async function handleTwoFactorPage(c: Context): Promise<Response> {
   }))
 }
 
+/**
+ * The switch between the authenticator and a recovery code, POSTed so the ticket travels in
+ * the body and never in an address the browser keeps (FIXLIST 9.7).
+ */
+export async function handleTwoFactorMode(c: Context): Promise<Response> {
+  const { values } = await readFields(c, ['ticket', 'recovery', 'next'])
+  const settings = await getSettings()
+  if (pendingUser(values.ticket) === null) {
+    return html(passwordScreen(settings, { error: adminT(settings.language).authRestart }), 400)
+  }
+  return html(twoFactorScreen(settings, {
+    ticket: values.ticket, recovery: values.recovery === '1', next: values.next || undefined,
+  }))
+}
+
 // ----- step one: the password --------------------------------------------------
 
 export async function handleLogin(c: Context): Promise<Response> {

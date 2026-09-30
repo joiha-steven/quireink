@@ -64,7 +64,7 @@ import {
   handleConfirm, handleOpenPixel, handleSubscribe, handleUnsubscribeGet, handleUnsubscribePost,
 } from '@/web/newsletter'
 import {
-  handleLogin, handleLoginPage, handleLogout, handleTwoFactor, handleTwoFactorPage,
+  handleLogin, handleLoginPage, handleLogout, handleTwoFactor, handleTwoFactorMode, handleTwoFactorPage,
 } from '@/web/auth-routes'
 import { handleEnrol, handleEnrolDone, handleEnrolSkip } from '@/web/enrol-routes'
 import { handleSetupClaim, handleSetupPage, setupWizardRoutes } from '@/web/setup-routes'
@@ -224,6 +224,7 @@ export function createApp(): Hono {
   app.get('/login/2fa', handleTwoFactorPage)
   app.post('/api/auth/login', handleLogin)
   app.post('/api/auth/2fa', handleTwoFactor)
+  app.post('/api/auth/2fa/mode', handleTwoFactorMode)
   app.post('/api/auth/enrol', handleEnrol)
   app.post('/api/auth/enrol/done', handleEnrolDone)
   app.post('/api/auth/enrol/skip', handleEnrolSkip)

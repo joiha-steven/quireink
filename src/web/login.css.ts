@@ -142,6 +142,11 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
 .login-alt{margin:1.25rem 0 0;font-size:.875rem;text-align:center}
 .login-alt a{color:var(--c-link);text-decoration:none}
 .login-alt a:hover{text-decoration:underline}
+/* The mode switch under the code box is a form (it carries the ticket in its body), dressed as
+   the link it always looked like. */
+.login-alt form{display:inline}
+.login-link{border:0;background:none;padding:0;font:inherit;color:var(--c-link);cursor:pointer}
+.login-link:hover{text-decoration:underline}
 /* A button that has to read as a way out rather than as the answer. It is a real <button>
    because it POSTs — a link cannot — but it must not look like the submit above it, or the
    screen offers two equal doors and the safe one stops being obvious. */

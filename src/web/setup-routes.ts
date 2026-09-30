@@ -13,7 +13,7 @@ import type { Context } from 'hono'
 import type { SiteLook } from '@/types'
 import { getSettings } from '@/content/settings'
 import { adminT } from '@/i18n/admin-i18n'
-import { noUsersYet, createUser } from '@/auth/users'
+import { noUsersYet, createUser, looksLikeEmail } from '@/auth/users'
 import { checkPassword, MIN_LENGTH } from '@/auth/password'
 import { submitPassword } from '@/auth/login'
 import { generateSecret, otpauthUri } from '@/auth/totp'
@@ -24,7 +24,7 @@ import {
   MIN_CODE_LENGTH,
 } from '@/server/setup-token'
 import { qrSvg } from '@/render/qr'
-import { claimScreen, enrolScreen, unclaimedScreen, fillTemplate } from '@/web/login-page'
+import { claimScreen, claimedScreen, enrolScreen, unclaimedScreen, fillTemplate } from '@/web/login-page'
 import { rememberEnrolmentSecret, enrolmentSkippable } from '@/web/enrol-routes'
 import { fail, json } from '@/web/api'
 import { ownerRouter, type OwnerRouter } from '@/web/guard'
@@ -55,9 +55,7 @@ export async function handleSetupPage(c: Context): Promise<Response> {
   const settings = await getSettings()
   // Claimed: say so and stop. Not a redirect to `/login`, because someone who followed a
   // stale setup link deserves to know the link is stale rather than to be handed a form.
-  if (!noUsersYet()) {
-    return html(unclaimedScreen(settings, { error: adminT(settings.language).setupClaimed }), 404)
-  }
+  if (!noUsersYet()) return html(claimedScreen(settings), 404)
   const s = adminT(settings.language)
   const askCode = setupCodeConfigured()
   const given = c.req.query('token') ?? ''
@@ -121,13 +119,26 @@ export async function handleSetupClaim(c: Context): Promise<Response> {
     return html(unclaimedScreen(settings, { error: message, askCode }), status)
   }
 
-  if (!noUsersYet()) return refuse(s.setupClaimed, 409)
+  if (!noUsersYet()) {
+    if (!wantsHtml) return fail(c, s.setupClaimed, 409)
+    return html(claimedScreen(settings), 409)
+  }
   if (overLimit(tries(c), TRIES, TRIES_WINDOW)) return refuse(s.setupTooMany, 429)
   if (!setupTokenMatches(token)) {
     recordHit(tries(c), TRIES_WINDOW)
     return refuse(askCode ? s.setupBadCode : s.setupBadLink, 403)
   }
-  if (username === '' || email === '') return refuse(s.setupBadLink, 400)
+  // Only spaces is not a name (FIXLIST 9.2): the form comes back with what was typed and says
+  // so, where it said the LINK was wrong and threw the form away with a valid token in hand.
+  if (username === '' || email === '') {
+    if (!wantsHtml) return fail(c, s.setupNeedName, 400)
+    return html(claimScreen(settings, { token, username, email, error: s.setupNeedName }), 400)
+  }
+  // An address, and not only in the browser's `type=email`: a direct POST took anything (U15).
+  if (!looksLikeEmail(email)) {
+    if (!wantsHtml) return fail(c, s.fieldEmail, 400)
+    return html(claimScreen(settings, { token, username, email, error: s.fieldEmail }), 400)
+  }
 
   // The same rules the CLI applies, so the two doors cannot disagree about what a password
   // is. Reported against the claim form, which still holds what was typed — and reported

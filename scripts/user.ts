@@ -7,6 +7,7 @@
 //   bun run user create --username hung --email hung@example.com
 //   bun run user set-password --username hung
 //   bun run user reset-2fa --username hung
+//   bun run user rename --username hung --to steven
 //   bun run user list
 //
 // The password is read from STDIN, never from an argument: an argument lands in shell
@@ -15,15 +16,24 @@
 import { openDatabases, closeDatabases } from '@/store/db'
 import { readEnv } from '@/env'
 import { checkPassword, MIN_LENGTH } from '@/auth/password'
-import { createUser, getUserByUsername, noUsersYet, setPassword, setTotpSecret } from '@/auth/users'
+import { createUser, getUserByUsername, looksLikeEmail, noUsersYet, renameUser, setPassword, setTotpSecret } from '@/auth/users'
 import { all, run } from '@/store/query'
 
 const args = process.argv.slice(2)
 const command = args[0] ?? ''
 
+/**
+ * A flag's value, as `--name value` or `--name=value`.
+ *
+ * ⚠️ NEVER ANOTHER FLAG. `create --username --email me@x` took `--email` as the name and made
+ * the blog's one owner with it, which only deleting the database could undo (FIXLIST 9.4).
+ */
 function flag(name: string): string | undefined {
+  const inline = args.find((a) => a.startsWith(`--${name}=`))
+  if (inline !== undefined) return inline.slice(name.length + 3).trim() || undefined
   const at = args.indexOf(`--${name}`)
-  return at === -1 ? undefined : args[at + 1]
+  const value = at === -1 ? undefined : args[at + 1]?.trim()
+  return value === undefined || value === '' || value.startsWith('--') ? undefined : value
 }
 
 function die(message: string): never {
@@ -111,6 +121,8 @@ try {
     case 'create': {
       const username = flag('username') ?? die('create: --username is required')
       const email = flag('email') ?? die('create: --email is required')
+      if (/\s/.test(username)) die('create: a username has no spaces')
+      if (!looksLikeEmail(email)) die(`create: "${email}" is not an email address`)
       if (getUserByUsername(username) !== null) die(`create: "${username}" already exists`)
       // `createUser` refuses this too, and would throw a sentence written for a developer.
       // Checked here so the person at the console gets the two commands they actually want.
@@ -176,13 +188,28 @@ try {
       )[0]?.n ?? 0
       if (enrolled === 0) die(`reset-2fa: ${user.username} has no second factor to clear`)
 
+      // The codes STILL GOOD, which is the number that means something: it said "10 destroyed"
+      // when two of them had already been spent (FIXLIST 9.4).
+      const unused = all<{ n: number }>(
+        `select count(*) as n from recovery_codes where user_id = ? and used_at is null`, user.id,
+      )[0]?.n ?? 0
       setTotpSecret(user.id, null)
-      const dropped = run(`delete from recovery_codes where user_id = ?`, user.id).changes
+      run(`delete from recovery_codes where user_id = ?`, user.id)
       console.log(`✓ second factor cleared for ${user.username}`)
-      console.log(`  ${dropped} recovery code(s) destroyed with it — they belonged to that enrolment.`)
+      console.log(`  ${unused} unused recovery code${unused === 1 ? '' : 's'} destroyed with it — they belonged to that enrolment.`)
       console.log('  The next sign-in will enrol a new authenticator and print new codes.')
       console.log('  Until it does, the PASSWORD is the only thing guarding this account:')
       console.log(`  if it may be known to anyone else, run  bun run user set-password --username ${user.username}`)
+      break
+    }
+
+    // `rename --username old --to new`: the one owner's sign-in name, changed at the console.
+    case 'rename': {
+      const username = flag('username') ?? die('rename: --username is required')
+      const to = flag('to') ?? die('rename: --to is required')
+      const user = getUserByUsername(username) ?? die(`rename: no such user "${username}"`)
+      try { renameUser(user.id, to) } catch (error) { die((error as Error).message.replace(/^renameUser: /, 'rename: ')) }
+      console.log(`✓ ${user.username} is now ${to.trim()}`)
       break
     }
 
@@ -201,7 +228,7 @@ try {
     }
 
     default:
-      console.log('usage: bun run user <create|set-password|reset-2fa|list> [--username <name>] [--email <address>]')
+      console.log('usage: bun run user <create|set-password|reset-2fa|rename|list> [--username <name>] [--email <address>] [--to <new name>]')
       process.exit(command === '' ? 0 : 1)
   }
 } finally {

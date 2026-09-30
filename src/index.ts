@@ -98,7 +98,8 @@ if (noUsersYet()) {
 if (siteUrlIsUnset(bootSettings)) {
   console.warn(
     '[WARN] No site address is set. Feeds, the sitemap, OG images and newsletter links will'
-    + ' all say http://localhost:3000. Set SITE_URL, or Settings → Search & URLs → Site address.',
+    // The tab as it is named now (FIXLIST 9.5): "Search & URLs" left with ADR 0041.
+    + ' all say http://localhost:3000. Set SITE_URL, or Settings → Blog → Address → Site address.',
   )
 } else if (plainHttpAddress(resolveSiteUrl(bootSettings))) {
   // The one way sign-in fails with nothing to read. The session cookie is `__Host-`, which a

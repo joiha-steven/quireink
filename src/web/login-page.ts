@@ -157,9 +157,12 @@ export function twoFactorScreen(
 <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code"
        pattern="[0-9]*" maxlength="7" required autofocus>`
 
-  const toggle = recovery
-    ? `<a href="/login/2fa?ticket=${encodeURIComponent(opts.ticket)}">${escapeHtml(s.authUseAuthenticator)}</a>`
-    : `<a href="/login/2fa?ticket=${encodeURIComponent(opts.ticket)}&amp;recovery=1">${escapeHtml(s.authUseRecovery)}</a>`
+  // A FORM, NOT A LINK (FIXLIST 9.7): the link carried the pending ticket in its address, so it
+  // sat in the browser's history one step from a session. The body carries it now.
+  const toggle = `<form method="post" action="/api/auth/2fa/mode">`
+    + `<input type="hidden" name="ticket" value="${escapeAttr(opts.ticket)}">${next}`
+    + `<input type="hidden" name="recovery" value="${recovery ? '0' : '1'}">`
+    + `<button type="submit" class="login-link">${escapeHtml(recovery ? s.authUseAuthenticator : s.authUseRecovery)}</button></form>`
 
   return loginShell(settings, s.authTwoFactor, `
 <h1>${escapeHtml(recovery ? s.authRecoveryCode : s.authTwoFactor)}</h1>
@@ -275,6 +278,19 @@ ${errorBox(opts.error)}
   return loginShell(settings, s.setupUnclaimedTitle, `
 <h1>${escapeHtml(s.setupUnclaimedTitle)}</h1>
 ${body}`)
+}
+
+/**
+ * A CLAIMED blog met by a setup link (FIXLIST 9.1). It used to reuse the unclaimed screen, so a
+ * reload of the QR step read "This blog has no owner yet" above "This blog already has an
+ * owner", with no way on. The way on is the sign-in, which resumes at the authenticator.
+ */
+export function claimedScreen(settings: SiteSettings): string {
+  const s = adminT(settings.language)
+  return loginShell(settings, s.setupClaimedTitle, `
+<h1>${escapeHtml(s.setupClaimedTitle)}</h1>
+<p class="login-lede">${escapeHtml(s.setupClaimedLede)}</p>
+<p class="login-alt"><a href="/login">${escapeHtml(s.authSignIn)}</a></p>`)
 }
 
 /**

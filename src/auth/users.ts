@@ -144,6 +144,23 @@ export async function createUser(input: {
   return toPublic(row)
 }
 
+/** An address, plainly: something before and after one @, and a dot in the part after it. */
+export const looksLikeEmail = (s: string): boolean =>
+  s.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)
+
+/**
+ * The owner's sign-in name, changed (FIXLIST 9.4). The blog has one owner and no second
+ * account to fix a typo from, so a name made wrong at the console could only be undone by
+ * deleting the database. Case-insensitive like every lookup; the new name must be free.
+ */
+export function renameUser(id: number, username: string): void {
+  const next = username.trim()
+  if (next === '' || /\s/.test(next)) throw new Error('renameUser: a username has no spaces and is not empty')
+  const taken = rowByUsername(next)
+  if (taken !== null && taken.id !== id) throw new Error(`renameUser: "${next}" is taken`)
+  run(`update users set username = ?, updated_at = ? where id = ?`, next, nowMs(), id)
+}
+
 export async function setPassword(id: number, password: string): Promise<void> {
   run(`update users set password_hash = ?, updated_at = ? where id = ?`, await hashPassword(password), nowMs(), id)
 }

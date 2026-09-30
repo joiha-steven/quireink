@@ -28,6 +28,7 @@ const PUBLIC_WRITES = new Map<string, string>([
   ['/api/newsletter/unsubscribe', 'the POST half of unsubscribe. The token in the link is the authorisation.'],
   ['/api/auth/login', 'the sign-in form. Cannot require a session to create one.'],
   ['/api/auth/2fa', 'the second factor. Authorised by the pending ticket from the step before.'],
+  ['/api/auth/2fa/mode', 'switching the second-factor screen between the authenticator and a recovery code. Same pending ticket; it renders a form and grants nothing.'],
   ['/api/auth/enrol', 'first-run TOTP enrolment. Same pending ticket.'],
   ['/api/auth/enrol/done', 'acknowledging the recovery codes, which is where the first session is issued. Requires a ticket whose enrolment actually completed.'],
   ['/api/auth/enrol/skip', 'deferring TOTP on a blog that has no public address yet. Refuses on its own when one is set - the button not being rendered is not the check. Nothing is written, so the very next sign-in asks for enrolment again.'],

@@ -1655,6 +1655,11 @@ export type AdminStrings = {
   setupPwHint: string
   setupCreate: string
   setupClaimed: string
+  /** The page a claimed blog shows a setup link: it was claimed, sign in to finish. */
+  setupClaimedTitle: string
+  setupClaimedLede: string
+  /** The claim form sent back when the username or email was only spaces. */
+  setupNeedName: string
   setupUnclaimedTitle: string
   setupUnclaimedLede: string
   setupWhereToLook: string

@@ -75,7 +75,11 @@ describe('the unclaimed page', () => {
     await createUser({ username: 'taken', email: 't@example.com', password: PASSWORD })
     const res = await app.request(`/setup?token=${setupToken()}`)
     expect(res.status).toBe(404)
-    expect(await res.text()).not.toContain('/api/setup/claim')
+    const page = await res.text()
+    expect(page).not.toContain('/api/setup/claim')
+    // Says it was claimed and offers the way on (FIXLIST 9.1), instead of "no owner yet".
+    expect(page).toContain('href="/login"')
+    expect(page).not.toContain(adminT('en').setupUnclaimedTitle)
   })
 })
 
@@ -352,5 +356,30 @@ describe('a chosen setup code', () => {
     const body = await (await app.request('/setup')).text()
     expect(body).not.toContain('name="token"')
     expect(setupBanner('https://example.com')).toContain('SETUP_CODE is shorter than 12')
+  })
+})
+
+describe('a claim with a blank name', () => {
+  it('comes back as the form with what was typed, not as a dead link (FIXLIST 9.2)', async () => {
+    const res = await app.request('/api/setup/claim', {
+      method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'text/html' },
+      body: new URLSearchParams({ token: setupToken(), username: '   ', email: 'me@example.com', password: PASSWORD }),
+    })
+    expect(res.status).toBe(400)
+    const page = await res.text()
+    expect(page).toContain(adminT('en').setupNeedName)
+    expect(page).toContain('me@example.com')
+    expect(page).toContain('/api/setup/claim')
+  })
+})
+
+describe('the second-factor screen', () => {
+  it('switches to a recovery code by a form, never by an address holding the ticket (FIXLIST 9.7)', async () => {
+    const { twoFactorScreen } = await import('@/web/login-page')
+    const { DEFAULT_SETTINGS } = await import('@/content/settings')
+    const page = twoFactorScreen(DEFAULT_SETTINGS, { ticket: 'SECRET-TICKET' })
+    expect(page).not.toMatch(/href="[^"]*SECRET-TICKET/)
+    expect(page).toContain('action="/api/auth/2fa/mode"')
+    expect(page).toContain('value="SECRET-TICKET"')
   })
 })

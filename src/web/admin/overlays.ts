@@ -281,7 +281,10 @@ const LOOKS: SiteLook[] = ['plain', 'code', 'paper', 'notes']
  * every release, or eleven languages framing an English paragraph badly.
  */
 function whatsNew(t: AdminStrings, settings: SiteSettings): string {
-  if (settings.seenRelease === APP_VERSION) return ''
+  // Nor on a NEW install (FIXLIST 9.3): an owner made from the command line, who never saw the
+  // setup steps, met "Quire Ink has been updated" on their first visit to a blog that had
+  // never been anything else. `setupDone` is false only on a blog with no history.
+  if (settings.seenRelease === APP_VERSION || !settings.setupDone) return ''
   const askLook = settings.seenRelease === ''
   const names: Record<SiteLook, string> = {
     plain: t.lookPlain, code: t.lookCode, paper: t.lookPaper, notes: t.lookNotes,
