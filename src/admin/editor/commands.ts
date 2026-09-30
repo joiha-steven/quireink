@@ -83,7 +83,7 @@ export const COMMANDS = {
   deleteTable: () => blocks.tableDelete,
 
   // ----- the document -----------------------------------------------------------------------
-  setContent: (content: unknown) => doc.setContent(content),
+  setContent: (content: unknown, opts?: { history?: boolean }) => doc.setContent(content, opts),
   insertContent: (content: unknown) => doc.insertContent(content),
   insertContentAt: (range: { from: number; to: number } | number, content: unknown) =>
     doc.insertContentAt(typeof range === 'number' ? { from: range, to: range } : range, content),

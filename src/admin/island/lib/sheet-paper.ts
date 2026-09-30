@@ -199,8 +199,9 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
 
   return {
     getMarkdown: () => (raw.on ? raw.text : readMarkdown(editor)),
+    // A restore — revision or snapshot — so it is one undoable step (`commands-doc.ts`).
     setMarkdown: (markdown: string) => {
-      editor.commands.setContent(markdown)
+      editor.commands.setContent(markdown, { history: true })
       videoUrlsToNodes(editor)
       raw.load(markdown)
     },

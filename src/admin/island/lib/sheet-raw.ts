@@ -46,6 +46,8 @@ export function wireRaw(
 ): RawView {
   let on = false
   let text = ''
+  // What the view opened with, so a switch back with nothing typed can be told from an edit.
+  let opened = ''
 
   /** Put the source view on screen at its real height, with the caret where the writer was. */
   const reveal = (at: number): void => {
@@ -79,9 +81,13 @@ export function wireRaw(
       if (on) {
         const next = text
         const at = source.area.selectionStart
-        editor.commands.setContent(next)
-        videoUrlsToNodes(editor)
-        hooks.onText(next)
+        // Unchanged, the document is left alone: rebuilding it marked the sheet unsaved and armed
+        // the exit warning after two presses with no typing. Changed, it is one undoable step.
+        if (next !== opened) {
+          editor.commands.setContent(next, { history: true })
+          videoUrlsToNodes(editor)
+          hooks.onText(next)
+        }
         on = false
         hooks.onShow(false)
         // The same line, in the other view. `focus(pos)` both puts the caret there and scrolls
@@ -91,6 +97,7 @@ export function wireRaw(
       }
       const at = markdownOffsetAt(editor, editor.state.selection.from)
       text = readMarkdown(editor)
+      opened = text
       on = true
       // The slot has to be visible before the textarea is measured: `scrollHeight` on a hidden
       // box is 0, and a box laid out at zero height puts the caret on the first line.

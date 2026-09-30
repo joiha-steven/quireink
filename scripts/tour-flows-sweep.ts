@@ -202,4 +202,17 @@ export function registerSweepFlows({ flow, expect }: Tour): void {
       if (!kept) return 'the older copy was saved over the newer one'
       return said ? 'ok' : 'refused, but the screen never said why'
     })()`, 1500))
+
+  // Toggling the Markdown view twice with nothing typed rebuilt the document, which marked the
+  // sheet unsaved and armed the exit warning. Nothing changed; nothing is to be saved.
+  flow('editor: looking at the Markdown and back changes nothing', () => expect('/admin/editor/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const save = document.querySelector('[data-sheet-save]')
+      const md = document.querySelector('[data-sheet-md]')
+      if (!save || !md) return 'no Save or Markdown key'
+      if (!save.disabled) return 'Save was live before anything was typed'
+      md.click(); await sleep(300); md.click(); await sleep(300)
+      return save.disabled ? 'ok' : 'two presses of the Markdown key left the piece unsaved'
+    })()`, 1500))
 }

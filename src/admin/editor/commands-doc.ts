@@ -8,7 +8,7 @@
 // bridge extension overrode two of the library's own commands to parse the string on the way in
 // — and it is one call now: `md/to-editor.ts` builds the ProseMirror JSON straight from the
 // parse, with no HTML in the middle and nothing to spell twice.
-import { undo as pmUndo, redo as pmRedo } from 'prosemirror-history'
+import { undo as pmUndo, redo as pmRedo, closeHistory } from 'prosemirror-history'
 import { undoInputRule as pmUndoInputRule } from 'prosemirror-inputrules'
 import {
   chainCommands, createParagraphNear, exitCode as pmExitCode, liftEmptyBlock,
@@ -87,7 +87,7 @@ function mend(node: PMNode): PMNode[] {
  * — ProseMirror clamps it — which is the middle of somebody else's paragraph, and the next
  * keystroke lands there.
  */
-export const setContent = (content: unknown): Cmd => (state, dispatch) => {
+export const setContent = (content: unknown, opts: { history?: boolean } = {}): Cmd => (state, dispatch) => {
   if (dispatch) {
     const nodes = contentToNodes(content)
     const doc = schema.topNodeType.create(null, nodes.length ? nodes : schema.nodes.paragraph!.create())
@@ -98,9 +98,15 @@ export const setContent = (content: unknown): Cmd => (state, dispatch) => {
     // ProseMirror warns, and the next character typed lands in a NEW paragraph before the
     // first one. Restoring a snapshot and typing was enough to see it.
     tr.setSelection(TextSelection.near(tr.doc.resolve(0)))
-    // Not part of the undo history: opening a piece is not an edit somebody made, and letting
-    // Mod-Z walk back into the previous post is how a writer loses the one they are in.
-    tr.setMeta('addToHistory', false)
+    // Not part of the undo history when OPENING a piece: that is not an edit somebody made, and
+    // letting Mod-Z walk back into the previous post is how a writer loses the one they are in.
+    // ⚠️ But a restore and the way back from the Markdown view ARE edits (`history: true`).
+    // Kept out of the history, they voided every step before them and Mod-Z answered true and
+    // did nothing: the unsaved words a one-click Restore replaced could not be brought back.
+    // Its own step, never merged into the typing just before it: undoing a restore gives back
+    // the words it replaced, not those minus the last half-second of them.
+    if (!opts.history) tr.setMeta('addToHistory', false)
+    else closeHistory(tr)
     dispatch(tr)
   }
   return true
