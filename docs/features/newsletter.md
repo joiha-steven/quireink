@@ -29,7 +29,8 @@
   `sendMail` never throws: `{ sent:false, error:'smtp_not_configured' }` when unset, so subscribe
   still records the pending row. `isMailConfigured` = host + From present.
 - **Sign-up form** (`SubscribeForm`) renders at the foot of a post ONLY when SMTP is configured
-  (`getMailStatus().configured`). The same gate also puts an envelope button in the public header
+  (`getMailStatus().configured`), and `POST /api/subscribe` refuses (404) without it too. A confirmed
+  address gets the same answer as a new one, JSON included. The same gate also puts an envelope button in the public header
   (`SubscribeTrigger`, last before the mobile drawer toggle) that opens the identical card as a
   modal (built client-side by `subscribe.ts` in `core.js`, on the `.overlay` panel search shares; Escape / backdrop / ✕ closes), so a reader can subscribe from any
   page.
