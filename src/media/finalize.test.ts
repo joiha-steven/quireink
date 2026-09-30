@@ -2,14 +2,22 @@
 // way it fails is by running past the moment the caller is still there to receive an answer.
 
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
+import { rmSync } from 'node:fs'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { all } from '@/store/query'
-import { finalizePendingVariants, VARIANT_BUDGET_MS } from '@/media/finalize'
+import { finalizePendingVariants, finalizeVariants, VARIANT_BUDGET_MS } from '@/media/finalize'
+import { VARIANT_VERSION } from '@/media/image'
 
 const DIR = './.tmp/test-finalize'
 freshDatabase(DIR)
-afterAll(() => dropDatabase(DIR))
+// Its own upload store, so the race below writes nowhere a developer keeps files.
+process.env.STORAGE_LOCAL_DIR = `${DIR}-uploads`
+afterAll(() => {
+  dropDatabase(DIR)
+  rmSync(`${DIR}-uploads`, { recursive: true, force: true })
+  delete process.env.STORAGE_LOCAL_DIR
+})
 
 const pending = (path: string) =>
   db().run(
@@ -46,5 +54,20 @@ describe('the variant sweep stops when its time is up', () => {
     // route that can legitimately run long. This number exists to stay under that on a box
     // where nobody measured anything, so it is worth failing loudly if it ever creeps up.
     expect(VARIANT_BUDGET_MS).toBeLessThan(10_000)
+  })
+})
+
+// Two runs at once used to encode the same original twice and rewrite files served immutable
+// for a year (2026-09-30).
+describe('two finalize runs at once', () => {
+  it('encode an original once: the second skips what the first holds', async () => {
+    const sharp = (await import('sharp')).default
+    const { uploadFile } = await import('@/media/blob')
+    const png = await sharp({ create: { width: 64, height: 48, channels: 3, background: '#88aacc' } }).png().toBuffer()
+    await uploadFile('media/race.png', png, 'image/png')
+    pending('media/race.png')
+    const [a, b] = await Promise.all([finalizeVariants(['media/race.png']), finalizeVariants(['media/race.png'])])
+    expect(a + b).toBe(1)
+    expect(all<{ variants: number }>(`select variants from media where path = 'media/race.png'`)[0]!.variants).toBe(VARIANT_VERSION)
   })
 })

@@ -8,6 +8,7 @@
 // `/uploads` prefix, which is the same prefix blob.ts uses to build public URLs.
 
 import { promises as fs, createReadStream, mkdirSync } from 'node:fs'
+import { randomBytes } from 'node:crypto'
 import { Readable } from 'node:stream'
 import path from 'node:path'
 
@@ -87,7 +88,22 @@ export async function put(
   }
   await fs.mkdir(path.dirname(abs), { recursive: true })
   const buf = Buffer.isBuffer(body) ? body : Buffer.from(body)
-  await fs.writeFile(abs, buf, opts?.exclusive ? { flag: 'wx' } : undefined)
+  if (opts?.exclusive) {
+    await fs.writeFile(abs, buf, { flag: 'wx' })
+    return `/uploads/${pathname}`
+  }
+  // An overwrite goes through a temporary file and a rename. A plain `writeFile` truncates and
+  // then writes, and these files are served `immutable` for a year: a reader or an edge that
+  // fetched one mid-rewrite kept a truncated copy for that long (2026-09-30). A rename within
+  // one directory swaps the whole file or nothing.
+  const part = `${abs}.${randomBytes(6).toString('hex')}.part`
+  try {
+    await fs.writeFile(part, buf)
+    await fs.rename(part, abs)
+  } catch (error) {
+    await fs.rm(part, { force: true }).catch(() => { /* already gone */ })
+    throw error
+  }
   return `/uploads/${pathname}`
 }
 

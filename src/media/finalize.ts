@@ -22,6 +22,16 @@ import { liveOnly } from '@/store/db'
  */
 export const VARIANT_BUDGET_MS = 6_000
 
+/**
+ * Originals being encoded right now, in this process.
+ *
+ * A save hands its finalize off in the background, and a second save or the hourly tick could
+ * start the same one while it ran: both encoded, and both rewrote files served `immutable` for
+ * a year, so an edge fetching mid-rewrite kept a truncated copy (2026-09-30). The second run
+ * now skips what the first holds; the write itself is also atomic now (`blob-local.ts`).
+ */
+const inFlight = new Set<string>()
+
 // Generate deferred display variants for pending raster originals (variants < current).
 // Called after a save; cron sweeps anything left pending. Returns how many originals were
 // NEWLY finalized so callers can re-purge the pages that embed them (a page cached at save
@@ -42,24 +52,35 @@ export async function finalizeVariants(
     // Checked BEFORE the work, never after: stopping once the clock has already been blown
     // is the same as not stopping.
     if (Date.now() >= deadline) break
-    const row = one<{ variants: number }>(`select variants from media where path = ?`, path)
-    // `< VARIANT_VERSION`, not truthiness. When 512 was added, every already-finalised
-    // image was version 1 and truthiness said "done" — which would have left them naming a
-    // file that does not exist, in a <picture> that has no fallback. This makes the sweep
-    // an upgrade path as well as a first pass, so a widened set needs no migration.
-    if (!row || row.variants >= VARIANT_VERSION) continue
-    // Read the original from the store DIRECTLY. `fetch`ing the blob URL breaks on the local
-    // driver: blobUrl/expandBlob is a store-relative `/uploads/...` path (no origin) and
-    // server-side fetch throws "Failed to parse URL". null = not on the store; a sweep retries.
-    const original = await readBlob(path).catch(() => null)
-    if (!original) continue
-    const stem = path.replace(/\.[^.]+$/, '')
-    const files = await makeDisplay(original)
-    await Promise.all(files.map((f) => uploadFile(`${stem}${f.suffix}`, f.data, f.contentType)))
-    run(`update media set variants = ? where path = ?`, VARIANT_VERSION, path)
-    finalized++
+    if (inFlight.has(path)) continue
+    inFlight.add(path)
+    try {
+      if (await finalizeOne(path)) finalized++
+    } finally {
+      inFlight.delete(path)
+    }
   }
   return finalized
+}
+
+/** One original: its display variants, unless another run already made them. */
+async function finalizeOne(path: string): Promise<boolean> {
+  const row = one<{ variants: number }>(`select variants from media where path = ?`, path)
+  // `< VARIANT_VERSION`, not truthiness. When 512 was added, every already-finalised
+  // image was version 1 and truthiness said "done" — which would have left them naming a
+  // file that does not exist, in a <picture> that has no fallback. This makes the sweep
+  // an upgrade path as well as a first pass, so a widened set needs no migration.
+  if (!row || row.variants >= VARIANT_VERSION) return false
+  // Read the original from the store DIRECTLY. `fetch`ing the blob URL breaks on the local
+  // driver: blobUrl/expandBlob is a store-relative `/uploads/...` path (no origin) and
+  // server-side fetch throws "Failed to parse URL". null = not on the store; a sweep retries.
+  const original = await readBlob(path).catch(() => null)
+  if (!original) return false
+  const stem = path.replace(/\.[^.]+$/, '')
+  const files = await makeDisplay(original)
+  await Promise.all(files.map((f) => uploadFile(`${stem}${f.suffix}`, f.data, f.contentType)))
+  run(`update media set variants = ? where path = ?`, VARIANT_VERSION, path)
+  return true
 }
 
 // Backfill thumbs for rows that have none (script/migration imports). Raster gets a
