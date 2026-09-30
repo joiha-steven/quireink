@@ -113,6 +113,23 @@ export function closeLabel(held: { lone: Set<number>; seen: number } | null): vo
 }
 
 /**
+ * A line indented four columns or more is an indented code block, so its first whitespace
+ * character is written as an entity, which reads back as the same character and opens nothing.
+ *
+ * A writer indenting a poem line with four spaces or a tab saved it as code: the page showed a
+ * grey block and the next open made it a code-block node (2026-09-30). Fewer than four columns
+ * is a paragraph's own indent and is left as typed.
+ */
+function unindent(line: string): string {
+  const lead = /^[ \t]*/.exec(line)![0]
+  if (lead.length === line.length) return line
+  let col = 0
+  for (const ch of lead) col = ch === '\t' ? col + 4 - (col % 4) : col + 1
+  if (col < 4) return line
+  return (line[0] === '\t' ? '&#9;' : '&#32;') + line.slice(1)
+}
+
+/**
  * Escape what would otherwise be read as syntax on the way back in.
  *
  * POSITIONAL, not blanket. A `#` is a heading only at the start of a line; a `-` is a bullet
@@ -174,6 +191,7 @@ export function escapeText(value: string, atLineStart: boolean): string {
   // Guarded on a `\n` being there at all, so the ordinary text node pays one `includes` and
   // not three global regexes.
   if (out.includes('\n')) {
+    out = out.split('\n').map((line, i) => (i === 0 ? line : unindent(line))).join('\n')
     out = out.replace(/\n(\s*)([#>+-])/g, '\n$1\\$2')
     out = out.replace(/\n(\s*)(\d+)([.)])/g, '\n$1$2\\$3')
     // A RUN OF `=` ON ITS OWN LINE is a setext underline, which would eat the line above it.
@@ -185,6 +203,7 @@ export function escapeText(value: string, atLineStart: boolean): string {
     out = out.replace(/\n(\s*)(~{3,})/g, '\n$1\\$2')
   }
   if (atLineStart) {
+    out = unindent(out)
     out = out.replace(/^(\s*)([#>+-])/, '$1\\$2')
     out = out.replace(/^(\s*)(~{3,})/, '$1\\$2')
     out = out.replace(/^(\s*)(\d+)([.)])/, '$1$2\\$3')

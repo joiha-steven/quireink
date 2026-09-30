@@ -276,3 +276,40 @@ describe('the keys that were bound wrong, or not at all', () => {
     }
   })
 })
+
+// Inside a code span the syntax is being SHOWN. Rules fired there: `$$x$$` split the span and
+// the paragraph around a formula, and `==x==` ate its delimiters to apply a mark code cannot
+// hold (2026-09-30).
+describe('typing inside a code span', () => {
+  for (const typed of [' ==x== ', ' $$x$$ ', ' \\(q\\) ', ' **b** ']) {
+    it(`keeps ${typed.trim()} as the characters typed`, async () => {
+      const ed = await open('Use `ab` here')
+      caretAfter(ed, 'a')
+      type(ed, typed)
+      expect(md(ed)).toBe(`Use \`a${typed}b\` here`)
+      ed.destroy()
+    })
+  }
+})
+
+// Four spaces or a tab at the start of a paragraph is a writer's indent, not code: it published
+// as a grey code block and came back as a code-block node (2026-09-30).
+describe('a paragraph indented as it is typed', () => {
+  for (const indent of ['    ', '\t', '  \t', '        ']) {
+    it(`stays a paragraph with ${JSON.stringify(indent)} in front`, async () => {
+      const { toHtml } = await import('@/md')
+      const ed = await open('First.')
+      type(ed, '\nwords after the indent')
+      caretAfter(ed, 'First.')
+      ed.commands.setTextSelection(ed.state.selection.from + 2)
+      type(ed, indent)
+      const saved = ed.getMarkdown()
+      expect(toHtml(saved)).not.toContain('<pre')
+      const again = await open(saved)
+      expect(again.state.doc.child(1).type.name).toBe('paragraph')
+      expect(again.state.doc.child(1).textContent).toBe(`${indent}words after the indent`)
+      expect(again.getMarkdown()).toBe(saved)
+      ed.destroy(); again.destroy()
+    })
+  }
+})

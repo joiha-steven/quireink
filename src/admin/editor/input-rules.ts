@@ -146,6 +146,15 @@ function suffixRule(type: MarkType, bare: boolean): InputRule {
 
 /** Every rule, in the order they are consulted. */
 export function inputRules(): InputRule[] {
+  // ⚠️ NONE OF THEM FIRES INSIDE A CODE SPAN. `prosemirror-inputrules` lets a rule fire inside a
+  // code mark unless told otherwise, and code no longer excludes the pen: typing ` $$x$$ ` in
+  // `` `ab` `` split the paragraph and the span around a display formula, and ` ==x== ` ate its
+  // delimiters to apply a mark the serializer cannot write inside code (2026-09-30). Code is
+  // the one place a writer types the syntax to SHOW it.
+  return rules().map((rule) => { rule.inCodeMark = false; return rule })
+}
+
+function rules(): InputRule[] {
   return [
     // ----- blocks ------------------------------------------------------------------------
     wrappingInputRule(/^\s*>\s$/, node('blockquote')),
