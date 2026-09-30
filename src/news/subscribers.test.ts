@@ -193,11 +193,27 @@ describe('the pending sweep', () => {
     await addSubscriber('fresh@example.com')
     const confirmed = await addSubscriber('reader@example.com')
     await confirmSubscriber(confirmed.token)
-    db().run(`update subscribers set created_at = created_at - ${PENDING_MAX_AGE_MS + 1000}
+    // As time would: the row AND its last confirm are both a month and more old.
+    db().run(`update subscribers set created_at = created_at - ${PENDING_MAX_AGE_MS + 1000},
+      confirm_sent_at = confirm_sent_at - ${PENDING_MAX_AGE_MS + 1000}
       where email in ('stale@example.com', 'reader@example.com')`)
     expect(await sweepPendingSubscribers()).toBe(1) // old AND pending — only stale@
     expect((await listSubscribers()).map((s) => s.email).sort()).toEqual(
       ['fresh@example.com', 'reader@example.com'])
     expect(all<{ email: string }>(`select email from newsletter_sends`)).toHaveLength(0)
+  })
+
+  it('spares a reader who comes back: the clock starts at the new confirm, not the old row', async () => {
+    // Subscribed long ago, left, and signed up again today. The row keeps its old `created_at`,
+    // and aged by that it was deleted within the hour, taking the link just mailed with it.
+    const first = await addSubscriber('returning@example.com')
+    await confirmSubscriber(first.token)
+    await unsubscribeByToken(first.token)
+    db().run(`update subscribers set created_at = created_at - ${PENDING_MAX_AGE_MS * 2},
+      confirm_sent_at = confirm_sent_at - ${PENDING_MAX_AGE_MS * 2} where email = 'returning@example.com'`)
+    const again = await addSubscriber('returning@example.com')
+    expect(again.sendConfirm).toBe(true)
+    expect(await sweepPendingSubscribers()).toBe(0)
+    expect(await confirmSubscriber(again.token)).toBe(true)
   })
 })

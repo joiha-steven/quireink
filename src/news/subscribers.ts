@@ -194,9 +194,14 @@ export async function emptySubscribersTrash(): Promise<number> {
  */
 export async function sweepPendingSubscribers(maxAgeMs = PENDING_MAX_AGE_MS): Promise<number> {
   const cutoff = nowMs() - maxAgeMs
+  // Aged from the LAST confirm sent, not from the row's birth. A reader who unsubscribed forty
+  // days ago and signs up again today keeps the old `created_at`; aged by that, the row — and
+  // every send it ever had — was hard-deleted within the hour, and the confirm link they had
+  // just been mailed was dead (2026-09-30).
   const rows = all<{ id: number; email: string }>(
     `select id, email from subscribers
-      where status = 'pending' and ${liveOnly('subscribers')} and created_at < ?`,
+      where status = 'pending' and ${liveOnly('subscribers')}
+        and coalesce(confirm_sent_at, created_at) < ?`,
     cutoff,
   )
   for (const r of rows) {
