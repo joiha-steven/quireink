@@ -17,6 +17,7 @@
 // depends on.
 
 import type { Context } from 'hono'
+import { readPiece } from '@/web/admin/piece-input'
 import { savedSince } from '@/web/admin/stale'
 import type { PageWithContent, PostWithContent } from '@/types'
 import { getIndex, getPost, savePost, deletePost } from '@/content/posts'
@@ -76,7 +77,9 @@ export function contentRoutes() {
   router.get('/api/posts', async () => json(await getIndex()))
 
   router.post('/api/posts', async (c) => {
-    const input = await body<PostWithContent & { slugDerived: boolean }>(c)
+    const read = await readPiece<PostWithContent & { slugDerived: boolean }>(c)
+    if (typeof read === 'string') return fail(c, read, 400)
+    const input = read
     // A post may be only words (ADR 0064): a short post has no title and is still a post.
     if (!input.title?.trim() && !input.slug?.trim() && !input.content?.trim()) {
       return fail(c, 'Title, slug or content is required', 400)
@@ -101,7 +104,9 @@ export function contentRoutes() {
 
   router.put('/api/posts/:slug', async (c) => {
     const slug = param(c, 'slug')
-    const input = await body<PostWithContent & { baseSavedAt: number }>(c)
+    const read = await readPiece<PostWithContent & { baseSavedAt: number }>(c)
+    if (typeof read === 'string') return fail(c, read, 400)
+    const input = read
     if (savedSince('post', slug, input.baseSavedAt)) return fail(c, 'stale', 409)
     try {
       const meta = await savePost(input, slug)
@@ -168,7 +173,9 @@ export function contentRoutes() {
   router.get('/api/pages', async () => json(await getPageIndex()))
 
   router.post('/api/pages', async (c) => {
-    const input = await body<PageWithContent & { slugDerived: boolean }>(c)
+    const read = await readPiece<PageWithContent & { slugDerived: boolean }>(c)
+    if (typeof read === 'string') return fail(c, read, 400)
+    const input = read
     if (!input.title?.trim() && !input.slug?.trim()) return fail(c, 'Title or slug is required', 400)
     try {
       const meta = await saveNew(input, (i) => savePage(i))
@@ -189,7 +196,9 @@ export function contentRoutes() {
 
   router.put('/api/pages/:slug', async (c) => {
     const slug = param(c, 'slug')
-    const input = await body<PageWithContent & { baseSavedAt: number }>(c)
+    const read = await readPiece<PageWithContent & { baseSavedAt: number }>(c)
+    if (typeof read === 'string') return fail(c, read, 400)
+    const input = read
     if (savedSince('page', slug, input.baseSavedAt)) return fail(c, 'stale', 409)
     try {
       const meta = await savePage(input, slug)

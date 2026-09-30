@@ -7,6 +7,7 @@
 // `content.ts`, not because any behaviour was reconsidered.
 
 import type { Context } from 'hono'
+import { readJson } from '@/web/admin/piece-input'
 import type { SiteSettings } from '@/types'
 import { reorderSeries, updateSeries } from '@/content/series'
 import { getSettings, saveSettings } from '@/content/settings'
@@ -143,7 +144,13 @@ export function siteRoutes() {
   // No public GET: every public read goes through `getSettings()` server-side.
 
   router.put('/api/settings', async (c) => {
-    const input = await body<SiteSettings>(c)
+    // A malformed body is a 400, not "change nothing": read as `{}`, it answered 200 and wrote a
+    // settings entry to the activity log for a save that never happened.
+    const raw = await readJson(c)
+    if (!raw.ok || raw.value === null || typeof raw.value !== 'object' || Array.isArray(raw.value)) {
+      return fail(c, 'body must be a JSON object', 400)
+    }
+    const input = raw.value as Partial<SiteSettings>
     // Read BEFORE the write, so the log can say what moved, and so the guard below can ask
     // what the settings will BE rather than what this payload happens to mention. One
     // extra read on a route that is pressed by hand a few times an hour.

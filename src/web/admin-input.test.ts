@@ -1,4 +1,5 @@
-// Two tabs on one piece (2026-09-30): the save from the older copy is refused, not applied.
+// What the piece routes refuse, and why (2026-09-30): a save from an older copy (two tabs), a
+// derived slug that is taken (renamed, not refused), and a body of the wrong shape.
 // The rule is in `web/admin/stale.ts`; the editor half is a tour flow ("two tabs: …").
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
@@ -10,7 +11,7 @@ import { resetSecretCache } from '@/auth/secret'
 import { resetLimits } from '@/server/rate-limit'
 import { payload } from '@/test/api'
 
-const DIR = './.tmp/test-admin-stale'
+const DIR = './.tmp/test-admin-input'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 
@@ -84,5 +85,26 @@ describe('a new piece whose derived slug is taken', () => {
   it('still refuses a slug the writer typed', async () => {
     await post('/api/posts', { title: 'Typed', slug: 'typed' })
     expect((await post('/api/posts', { title: 'Other', slug: 'typed' })).status).toBe(409)
+  })
+})
+
+// A body of the wrong shape is the caller's mistake and says so; it was a 500.
+describe('a piece body of the wrong shape', () => {
+  it('is refused with a 400 that names the field', async () => {
+    for (const [bad, field] of [
+      [{ title: 123 }, 'title'], [{ slug: { a: 1 } }, 'slug'], [{ title: 'x', tags: 'notarray' }, 'tags'],
+      [{ title: 'x', date: 'not-a-date' }, 'date'],
+    ] as const) {
+      const res = await post('/api/posts', bad)
+      expect(`${field}: ${res.status}`).toBe(`${field}: 400`)
+      expect((await res.json() as { error: string }).error).toContain(field)
+    }
+    expect((await asOwner('/api/posts', { method: 'POST', body: 'null' })).status).toBe(400)
+    expect((await asOwner('/api/pages', { method: 'POST', body: '{"title":[1]}' })).status).toBe(400)
+    expect((await asOwner('/api/notes', { method: 'POST', body: '{"content":7}' })).status).toBe(400)
+  })
+
+  it('and a settings save that is not JSON is a 400, not a silent no-op', async () => {
+    expect((await asOwner('/api/settings', { method: 'PUT', body: '{bad' })).status).toBe(400)
   })
 })

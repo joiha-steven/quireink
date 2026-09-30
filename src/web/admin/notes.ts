@@ -4,6 +4,7 @@
 // (Invariant 4), and every write empties the cache (Invariant 1).
 
 import type { NoteWithContent } from '@/types'
+import { readPiece } from '@/web/admin/piece-input'
 import { savedSince } from '@/web/admin/stale'
 import { getNoteIndex, getNote, saveNote, deleteNote } from '@/content/notes'
 import { getAutosave, putAutosave } from '@/content/autosave'
@@ -28,7 +29,9 @@ export function noteRoutes() {
   router.get('/api/notes', async () => json(await getNoteIndex()))
 
   router.post('/api/notes', async (c) => {
-    const input = await body<NoteWithContent & { slugDerived: boolean }>(c)
+    const read = await readPiece<NoteWithContent & { slugDerived: boolean }>(c)
+    if (typeof read === 'string') return fail(c, read, 400)
+    const input = read
     if (!input.title?.trim() && !input.slug?.trim() && !input.sourceTitle?.trim()) {
       return fail(c, 'Title or slug is required', 400)
     }
@@ -53,7 +56,9 @@ export function noteRoutes() {
 
   router.put('/api/notes/:slug', async (c) => {
     const slug = param(c, 'slug')
-    const input = await body<NoteWithContent & { baseSavedAt: number }>(c)
+    const read = await readPiece<NoteWithContent & { baseSavedAt: number }>(c)
+    if (typeof read === 'string') return fail(c, read, 400)
+    const input = read
     if (savedSince('note', slug, input.baseSavedAt)) return fail(c, 'stale', 409)
     try {
       const meta = await saveNote(input, slug)
