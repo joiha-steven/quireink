@@ -83,14 +83,31 @@ describe('submitPassword', () => {
     if (result.status === 'rate-limited') expect(result.retryAfter).toBe(900)
   })
 
-  // The per-IP limit alone never sees a distributed attempt on the one account that
-  // matters. This is the window that does.
-  it('rate limits by username across different IPs', async () => {
+  // Five wrong guesses from anywhere used to lock the only owner out for fifteen minutes,
+  // correct password or not — and one guess every three minutes kept it that way.
+  it('does not let strangers lock the owner out', async () => {
     for (let i = 0; i < 5; i++) {
       await submitPassword({ username: 'owner', password: 'nope nope nope', ip: freshIp() })
     }
     const result = await submitPassword({ username: 'owner', password: PASSWORD, ip: freshIp() })
-    expect(result.status).toBe('rate-limited')
+    expect(result.status).toBe('need-2fa')
+  })
+
+  it('stops five guesses at one account from one address', async () => {
+    const ip = freshIp()
+    for (let i = 0; i < 5; i++) await submitPassword({ username: 'owner', password: 'nope nope nope', ip })
+    expect((await submitPassword({ username: 'owner', password: 'nope nope nope', ip })).status).toBe('rate-limited')
+  })
+
+  // The per-IP limit alone never sees a distributed attempt on the one account that
+  // matters. Past a wide cap across addresses, a wrong guess reads as throttled — and the
+  // right password still gets through to the second factor.
+  it('throttles a distributed attempt without shutting out the right password', async () => {
+    for (let i = 0; i < 50; i++) {
+      await submitPassword({ username: 'owner', password: 'nope nope nope', ip: freshIp() })
+    }
+    expect((await submitPassword({ username: 'owner', password: 'still wrong', ip: freshIp() })).status).toBe('rate-limited')
+    expect((await submitPassword({ username: 'owner', password: PASSWORD, ip: freshIp() })).status).toBe('need-2fa')
   })
 
   // The lockout counts FAILURES. Charging successes to the same window locks the owner

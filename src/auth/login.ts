@@ -69,26 +69,40 @@ export async function submitPassword(input: {
   // Both are checked before the attempt and charged only after it FAILS. A successful
   // sign-in must not spend the allowance, or the owner signing in from a new device for
   // the sixth time in a quarter of an hour locks themselves out.
+  //
+  // ⚠️ THE USERNAME'S OWN ALLOWANCE IS PER ADDRESS, AND THE ONE ACROSS ADDRESSES DOES NOT STOP
+  // THE RIGHT PASSWORD (2026-09-30). The username bucket was shared by every client and checked
+  // before the password, so five wrong guesses from anywhere — one every three minutes — kept
+  // the only owner out for good, correct password or not. Now five per username per address,
+  // and a wide cap across addresses that a CORRECT password still passes: a distributed guesser
+  // is slowed to five per address and learns nothing, the owner signs in, and the second factor
+  // is still in front of the session.
   const username = input.username.trim().toLowerCase()
   const ipKey = `login:ip:${input.ip}`
+  const pairKey = `login:user:${username}:${input.ip}`
   const userKey = `login:user:${username}`
-  for (const [key, max] of [[ipKey, 10], [userKey, 5]] as const) {
-    if (overLimit(key, max, FIFTEEN_MIN)) {
-      logAuthEvent('auth.login.failed', `rate limited: ${key === ipKey ? 'ip' : 'username'}`)
-      return { status: 'rate-limited', retryAfter: Math.ceil(FIFTEEN_MIN / 1000) }
-    }
+  const refuse = (why: string): PasswordOutcome => {
+    logAuthEvent('auth.login.failed', `rate limited: ${why}`)
+    return { status: 'rate-limited', retryAfter: Math.ceil(FIFTEEN_MIN / 1000) }
   }
+  if (overLimit(ipKey, 10, FIFTEEN_MIN)) return refuse('ip')
+  if (overLimit(pairKey, 5, FIFTEEN_MIN)) return refuse('username')
+  const crowded = overLimit(userKey, 50, FIFTEEN_MIN)
 
   const account = passwordHashFor(input.username)
   const ok = await verifyPassword(account?.hash ?? null, input.password)
   if (!ok || account === null) {
     recordHit(ipKey, FIFTEEN_MIN)
+    recordHit(pairKey, FIFTEEN_MIN)
     recordHit(userKey, FIFTEEN_MIN)
+    // Past the wide cap a wrong guess reads as throttled, not as wrong: the same answer the
+    // guesser would get for a right one, had it not been right.
+    if (crowded) return refuse('username, across addresses')
     logAuthEvent('auth.login.failed', 'bad username or password')
     return { status: 'rejected' }
   }
   // The password was right. Whatever came before it was this person mistyping.
-  clearLimit(userKey)
+  clearLimit(pairKey)
 
   const ticket = Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString('base64url')
   pending.set(ticket, { userId: account.id, createdAt: now, attempts: 0 })

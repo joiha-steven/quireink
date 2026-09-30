@@ -118,7 +118,8 @@ Extends the existing `rate-limit.ts` sliding window.
 | Surface | Limit | On exceeding |
 |---|---|---|
 | Password attempt, per IP | 10 / 15 min | 429 with `Retry-After` |
-| Password attempt, per username | 5 / 15 min | soft lock 15 min, message says so plainly |
+| Password attempt, per username **from one address** | 5 / 15 min | soft lock 15 min, message says so plainly |
+| Password attempt, per username across addresses | 50 / 15 min | a wrong guess reads as throttled; the **right password still passes** to the second factor. Until 2.2.15 the per-username bucket was shared by every client, so five guesses from anywhere locked the only owner out |
 | TOTP attempt, per session | 5 total | the pending sign-in is destroyed, start over |
 | TOTP attempt, per account | 15 / 15 min | 429 with `Retry-After` |
 | TOTP attempt, per IP | 30 / 15 min | 429 with `Retry-After` |
