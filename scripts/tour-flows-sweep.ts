@@ -124,4 +124,47 @@ export function registerSweepFlows({ flow, expect }: Tour): void {
       })
       return leaked ? 'Preview put the unsaved title on the public page' : 'ok'
     })()`, 1500))
+
+  // Re-enrolling two-factor could not be finished: Confirm was drawn disabled with nothing to
+  // enable it, and its request left out the secret the server needs (400 bad_code). There was no
+  // QR either. This walks it with a real code computed in the page from the secret shown.
+  flow('admin: two-factor can be enrolled again from the account screen', () =>
+    expect('/admin/settings?tab=account', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+      const type = (el, v) => { set.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })) }
+      const cur = document.querySelector('[data-security-current]')
+      if (!cur) return 'no Security card'
+      type(cur, 'quartz-lantern-47-thicket') // the showcase owner's (scripts/seed-showcase.ts)
+      await sleep(200)
+      document.querySelector('[data-sec-reenrol]').click()
+      await sleep(900)
+      if (!document.querySelector('[data-sec-qr] svg')) return 'no QR code to scan'
+      const secret = document.querySelector('[data-sec-secret]').textContent.replace(/\\s/g, '')
+      if (secret.length < 16) return 'no secret shown'
+      // RFC 6238 in the page: base32, HMAC-SHA1 over the 30-second step, six digits.
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+      let bits = ''
+      for (const ch of secret) bits += alphabet.indexOf(ch).toString(2).padStart(5, '0')
+      const key = new Uint8Array(Math.floor(bits.length / 8)).map((_, i) => parseInt(bits.slice(i * 8, i * 8 + 8), 2))
+      const counter = new ArrayBuffer(8)
+      new DataView(counter).setUint32(4, Math.floor(Date.now() / 30000))
+      const k = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign'])
+      const mac = new Uint8Array(await crypto.subtle.sign('HMAC', k, counter))
+      const o = mac[19] & 15
+      const code = String((((mac[o] & 127) << 24) | (mac[o + 1] << 16) | (mac[o + 2] << 8) | mac[o + 3]) % 1e6).padStart(6, '0')
+      const box = document.querySelector('[data-sec-otp]')
+      const confirm = document.querySelector('[data-sec-otp-confirm]')
+      if (!confirm.disabled) return 'Confirm was live before a code was typed'
+      type(box, code)
+      await sleep(100)
+      if (confirm.disabled) return 'Confirm stayed disabled with six digits in the box'
+      confirm.click()
+      await sleep(1200)
+      const panel = document.querySelector('[data-sec-enrol]')
+      if (panel && panel.offsetParent !== null) return 'the enrolment panel stayed open: "' + document.querySelector('[role=status], .toast')?.textContent + '"'
+      type(cur, '')
+      return 'ok'
+    })()`, 1800))
 }

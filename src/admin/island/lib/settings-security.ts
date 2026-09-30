@@ -114,20 +114,38 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
 
   // ---- the second factor ------------------------------------------------------------------
 
+  // ⚠️ THE SECRET IS KEPT FOR THE CONFIRM. The server answers the confirm only with the secret it
+  // handed out beside the code, and this sent the code alone: `400 bad_code`, every time. And the
+  // Confirm key was drawn disabled with nothing to enable it, so nobody got as far as that.
+  let pendingSecret = ''
+  const confirmKey = box.querySelector<HTMLButtonElement>('[data-sec-otp-confirm]')
+  const otpBox = box.querySelector<HTMLInputElement>('[data-sec-otp]')
+  const sixDigits = (): string => (otpBox?.value ?? '').replace(/\s/g, '')
+  otpBox?.addEventListener('input', () => {
+    if (confirmKey) confirmKey.disabled = !/^\d{6}$/.test(sixDigits()) || pendingSecret === ''
+  })
+
   box.querySelector('[data-sec-reenrol]')?.addEventListener('click', async () => {
     const out = await post('/totp/start', { current: current() })
     if (!out) return
+    pendingSecret = typeof out.secret === 'string' ? out.secret : ''
     const secret = box.querySelector<HTMLElement>('[data-sec-secret]')
-    if (secret) secret.textContent = typeof out.secret === 'string' ? out.secret : ''
+    if (secret) secret.textContent = pendingSecret.replace(/(.{4})/g, '$1 ').trim()
+    // Server-drawn SVG (`render/qr.ts`), the same one the first-run screen puts in its HTML.
+    const qr = box.querySelector<HTMLElement>('[data-sec-qr]')
+    if (qr) qr.innerHTML = typeof out.qr === 'string' ? out.qr : ''
     show(box.querySelector('[data-sec-enrol]'), true)
+    otpBox?.focus()
   })
 
-  box.querySelector('[data-sec-otp-confirm]')?.addEventListener('click', async () => {
-    const code = box.querySelector<HTMLInputElement>('[data-sec-otp]')
-    if (!code?.value) return
-    const out = await post('/totp/confirm', { current: current(), code: code.value })
+  confirmKey?.addEventListener('click', async () => {
+    const code = sixDigits()
+    if (!code || !pendingSecret) return
+    const out = await post('/totp/confirm', { current: current(), secret: pendingSecret, code })
     if (!out) return
-    code.value = ''
+    pendingSecret = ''
+    if (otpBox) otpBox.value = ''
+    if (confirmKey) confirmKey.disabled = true
     show(box.querySelector('[data-sec-enrol]'), false)
     say(w.totpDone ?? '')
     void refresh()

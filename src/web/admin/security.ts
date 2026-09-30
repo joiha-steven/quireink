@@ -20,6 +20,7 @@ import { getUser, passwordHashFor, setPassword, setTotpLastStep, setTotpSecret, 
 import { regenerateCodes, remainingCodes } from '@/auth/recovery'
 import { listSessions, revokeAllSessions, revokeSession } from '@/auth/sessions'
 import { generateSecret, otpauthUri, verifyCode } from '@/auth/totp'
+import { qrSvg } from '@/render/qr'
 import { logActivity } from '@/server/activity'
 import { rateLimited } from '@/server/rate-limit'
 import { clientIp } from '@/server/rate-limit'
@@ -127,7 +128,8 @@ export function securityRoutes() {
     if (isResponse(ok)) return ok
     const user = getUser(ok.id)
     const secret = generateSecret()
-    return json({ secret, uri: otpauthUri(secret, user?.username ?? 'owner') })
+    const uri = otpauthUri(secret, user?.username ?? 'owner')
+    return json({ secret, uri, qr: qrSvg(uri) })
   })
 
   /** Step two: a code from the new authenticator, and only then does the secret replace the old. */

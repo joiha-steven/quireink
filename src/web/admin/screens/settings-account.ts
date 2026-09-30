@@ -150,6 +150,9 @@ function security(t: AdminStrings): string {
     // `/api/security/totp/start` and never from this render.
     + gate(false,
       `<p class="${NOTE_TEXT}">${escapeHtml(t.securityScanHint)}</p>`
+      // The QR the first-run screen draws, from the same server-side renderer: a phone points at
+      // it, and the typed key below is for the phone that cannot.
+      + `<div class="mt-2 w-40" data-sec-qr></div>`
       + `<code class="mt-2 block break-all font-mono text-xs" data-sec-secret></code>`
       + `<div class="mt-3 flex flex-wrap items-center gap-2">`
       + `<input inputmode="numeric" autocomplete="one-time-code" placeholder="000000" data-sec-otp`
