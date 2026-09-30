@@ -193,6 +193,19 @@ describe('POST /api/comments', () => {
     // nothing and the page is unaffected.
     expect(await payload<{ comments: unknown[] }>(get('/api/comments?post=a-post'))).toEqual({ comments: [] })
   })
+
+  // Readers' words on a withdrawn post were still served, and a reply naming a live post could
+  // land under a hidden one (2026-09-30).
+  it('keeps the thread of a post taken back to draft out of sight, and takes no reply to it', async () => {
+    await publish()
+    await savePost({ title: 'Other', content: 'x', status: 'published', date: PAST })
+    const { comment: first } = await payload<{ comment: { id: number } }>(post('/api/comments', stamped({ postSlug: 'a-post', ...COMMENT }), '203.0.113.41'))
+    await savePost({ title: 'A Post', content: 'body', status: 'draft', date: PAST }, 'a-post')
+    expect(await payload<{ comments: unknown[] }>(get('/api/comments?post=a-post'))).toEqual({ comments: [] })
+    const reply = await post('/api/comments', stamped({ postSlug: 'other', parentId: first.id, ...COMMENT }), '203.0.113.42')
+    expect(reply.status).toBe(400)
+    expect(db().query(`select count(*) as n from comments`).get()).toEqual({ n: 1 })
+  })
 })
 
 describe('POST /api/subscribe', () => {

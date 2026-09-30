@@ -49,6 +49,10 @@ export async function handleCommentsGet(c: Context): Promise<Response> {
   const { comments } = await getSettings()
   // An empty list rather than an error: the island renders nothing and the page is fine.
   if (!comments.enabled || !slug) return json({ comments: [] })
+  // The same rule as posting: readers' words on a post that was trashed or taken back to draft
+  // are not public either, and an empty list says nothing about whether the slug exists.
+  const post = await getPost(slug)
+  if (!post || !isPublicallyVisible(post.status, post.date)) return json({ comments: [] })
   return json({ comments: await getCommentTree(slug) })
 }
 

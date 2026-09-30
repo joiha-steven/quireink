@@ -105,13 +105,20 @@ describe('addComment input guards', () => {
 })
 
 describe('addComment stored shape', () => {
-  it('derives depth and post from the PARENT, never from the caller', async () => {
+  it('derives depth from the PARENT, never from the caller', async () => {
     const parent = await addComment({ ...base, postSlug: 'real-post', parentId: null })
-    const reply = await addComment({ ...base, postSlug: 'a-lie', parentId: parent.id })
+    const reply = await addComment({ ...base, postSlug: 'real-post', parentId: parent.id })
     const stored = db().query<{ post_slug: string; depth: number }, [number]>(
       `select post_slug, depth from comments where id = ?`,
     ).get(reply.id)!
     expect(stored).toEqual({ post_slug: 'real-post', depth: 1 })
+  })
+
+  // It used to be refiled under the parent's post, which is how a reply reached a trashed or
+  // draft post: the route checked the post it was told, and the row went to another.
+  it('refuses a reply that names a different post from its parent', async () => {
+    const parent = await addComment({ ...base, postSlug: 'real-post', parentId: null })
+    await expect(addComment({ ...base, postSlug: 'a-lie', parentId: parent.id })).rejects.toBeInstanceOf(CommentInputError)
   })
 
   it('truncates content at MAX_COMMENT_LEN', async () => {

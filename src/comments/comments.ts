@@ -138,8 +138,11 @@ export async function addComment(input: NewComment): Promise<PublicComment> {
     )
     if (!p || p.deleted_at !== null) throw new CommentInputError('Comment not found')
     if (p.depth >= MAX_DEPTH) throw new CommentInputError('Maximum reply depth reached')
+    // A reply to a comment on ANOTHER post is refused, not refiled under the parent's post.
+    // Refiling is how a reply reached a trashed or draft post (2026-09-30): the route checks
+    // that `input.postSlug` is visible, and this used to write somewhere else.
+    if (p.post_slug !== postSlug) throw new CommentInputError('Comment not found')
     depth = p.depth + 1
-    postSlug = p.post_slug // a reply always belongs to the parent's post
   }
 
   const inserted = one<DbRow>(
