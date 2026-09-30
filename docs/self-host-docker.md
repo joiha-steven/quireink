@@ -32,8 +32,8 @@ docker logs quire            # prints the link that claims the blog
 nobody owns prints a one-time `/setup` link every time it starts, so a NAS with a log panel
 and no TTY can finish the install in a browser. A panel with no log at all? Set
 `SETUP_CODE` (twelve characters or more) as an environment variable and `/setup` asks for it
-instead of the link. Section 6 of [`self-host.md`](self-host.md#6-your-account) has the whole
-of it, the CLI included.
+instead of the link. [Your account](account.md) has the whole of it, the CLI and the way
+back in after a lost password or phone included.
 
 Two registries carry it and they are the same bytes: `quireink/quireink` on Docker Hub,
 which is what a NAS search box looks in, and `ghcr.io/joiha-steven/quireink`. One workflow

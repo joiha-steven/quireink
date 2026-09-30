@@ -101,7 +101,7 @@ say "Installed"
 step "Directory   $DIR_ABS"
 step "Data        $DIR_ABS/data  (quire.db + analytics.db)"
 step "Uploads     $DIR_ABS/uploads"
-step "Address     ${SITE_URL:-not set — feeds and emails will say http://localhost:$PORT}"
+step "Address     ${SITE_URL:-not set — feeds and emails will say http://localhost:3000}"
 step ""
 step "Upgrading later:  cd $DIR_ABS && git pull && bun install && bun run build:assets && bun run build:admin"
 
@@ -128,6 +128,10 @@ fi
 
 say "Starting the blog. Watch for the link that claims it, then open it in a browser."
 step "Ctrl-C stops it. Nothing you write is lost by stopping it."
+# IN THE FOREGROUND, said out loud: closing this terminal stops the blog and a reboot does not
+# bring it back. Fine for a look; a server wants a service (docs/self-host.md section 4, or Docker).
+step "It runs in THIS terminal: closing it stops the blog, and a reboot does not restart it."
+step "On a server, make it a service instead: docs/self-host.md section 4 (systemd), or Docker."
 echo
 
 DATA_DIR=./data \

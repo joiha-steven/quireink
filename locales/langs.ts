@@ -3,9 +3,9 @@ import type { SiteLang } from '@/types'
 // Single source of truth for supported UI languages.
 //
 // This folder lives at the repository ROOT so a translator never has to learn the tree:
-// to add a language, extend SiteLang (src/types.ts), add a row here, create
-// locales/<code>.ts + locales/admin/<code>.ts (the compiler enforces every key), and add
-// a BCP-47 entry to DATE_LOCALE in src/i18n/i18n.ts. English is the default.
+// to add a language, extend SiteLang (src/types-content.ts), add a row here, create
+// locales/<code>.ts, locales/admin/<code>.ts and locales/help/<code>.ts (the compiler enforces
+// every key), and add a BCP-47 entry to DATE_LOCALE in src/i18n/format.ts. English is the default.
 export const SITE_LANGS: { value: SiteLang; label: string }[] = [
   { value: 'en', label: 'English' },
   { value: 'vi', label: 'Tiếng Việt' },

@@ -226,6 +226,13 @@ export function setupBanner(base: string): string {
     '',
     '  The link is good until this service restarts, and once only.',
     '',
+    // A loopback address cannot be opened from the owner's own browser when the blog is on a
+    // server (FIXLIST 9.6). Said here, where the link is, rather than in a guide.
+    ...(/\/\/(127\.0\.0\.1|localhost|\[::1\])(:|\/|$)/.test(base)
+      ? ['  On a server? Open it through a tunnel from your own machine:',
+        `    ssh -L ${new URL(base).port || '80'}:127.0.0.1:${new URL(base).port || '80'} you@your-server`,
+        '  or set SITE_URL to the public address and restart, which prints the link on it.', '']
+      : []),
     ...ignored,
   ].join('\n')
 }

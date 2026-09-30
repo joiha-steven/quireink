@@ -5,7 +5,7 @@
 | You want to | Read |
 |---|---|
 | Know everything it does, and how it compares | [Quire Ink, in full](overview.md) |
-| Install it, upgrade it, put it behind a CDN | [Self-hosting](self-host.md) · [Docker](self-host-docker.md) · [Environment variables](environment.md) |
+| Install it, upgrade it, put it behind a CDN | [Self-hosting](self-host.md) · [Docker](self-host-docker.md) · [Environment variables](environment.md) · [Your account](account.md) |
 | Change how the site looks | [Appearance](appearance.md) |
 | Back it up, and restore | [Backups](backups.md) |
 | Let an AI agent write and run it | [MCP](mcp.md) · [Cookbook](agent-cookbook.md) |
@@ -66,6 +66,7 @@ copies of a rule means one is wrong within a month
 | [backups.md](backups.md) | What is copied off the server, how often, and how to restore it |
 | [update-check.md](update-check.md) | What the daily update check sends, and how to turn it off |
 | [self-host.md](self-host.md) | Running it on your own server |
+| [account.md](account.md) | Claiming the blog, and getting back in after a lost password or phone |
 | [self-host-docker.md](self-host-docker.md) | The same thing in a container, and on a NAS |
 
 ## How it is built

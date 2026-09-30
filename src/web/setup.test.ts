@@ -383,3 +383,10 @@ describe('the second-factor screen', () => {
     expect(page).toContain('value="SECRET-TICKET"')
   })
 })
+
+describe('the claim banner on a loopback address', () => {
+  it('says how to reach it from another machine, and only then (FIXLIST 9.6)', () => {
+    expect(setupBanner('http://127.0.0.1:3000')).toContain('ssh -L 3000:127.0.0.1:3000')
+    expect(setupBanner('https://example.com')).not.toContain('ssh -L')
+  })
+})
