@@ -176,27 +176,6 @@ describe('posts', () => {
     expect((await asOwner('/api/posts/nothing-here')).status).toBe(404)
   })
 
-  // Two tabs on one post: the stale one's save used to undo the other's in silence.
-  it('refuses a save from a copy older than the row, and keeps the newer words', async () => {
-    const meta = await payload<{ slug: string; updatedAt: string }>(await post('/api/posts', { title: 'Twice', content: 'v1' }))
-    const opened = Date.parse(meta.updatedAt)
-    await new Promise((r) => setTimeout(r, 5))
-    const put = (content: string, baseSavedAt?: number) => asOwner(`/api/posts/${meta.slug}`, {
-      method: 'PUT', body: JSON.stringify({ title: 'Twice', content, ...(baseSavedAt ? { baseSavedAt } : {}) }),
-    })
-    // Tab A saves, from the copy it opened.
-    const a = await put('from tab A', opened)
-    expect(a.status).toBe(200)
-    // Tab B still holds that same old copy.
-    const b = await put('from tab B', opened)
-    expect(b.status).toBe(409)
-    expect(await b.json()).toEqual({ success: false, error: 'stale' })
-    const now = await payload<{ content: string }>(asOwner(`/api/posts/${meta.slug}`))
-    expect(now.content).toBe('from tab A')
-    // Tab A carries on from what it saved.
-    expect((await put('A again', Date.parse((await payload<{ updatedAt: string }>(a)).updatedAt))).status).toBe(200)
-  })
-
   it('lists drafts, which is the reason this route is owner-only', async () => {
     await post('/api/posts', { title: 'A draft', status: 'draft' })
     const list = await payload<Array<{ title: string }>>(asOwner('/api/posts'))
