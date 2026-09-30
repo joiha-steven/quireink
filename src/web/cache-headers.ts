@@ -35,7 +35,9 @@ export const PUBLIC = 'public, s-maxage=60, stale-while-revalidate=600'
  */
 const PRIVATE = 'private, no-store'
 
-const OWNER_PATH = /^\/(admin|login|api)(\/|$)/
+// `setup` too (2026-09-30): the four first-run questions are owner pages drawn with the owner's
+// settings, and they went out `public, s-maxage=60` with the prerender header on.
+const OWNER_PATH = /^\/(admin|login|api|setup)(\/|$)/
 
 export function cacheHeaders(): MiddlewareHandler {
   return async (c, next) => {
