@@ -210,19 +210,9 @@ function oneBlock(node: Block): EditorNode[] {
         content: text(node.value.replace(/\n$/, '')),
       }]
     case 'htmlBlock':
-      // ⚠️ THE INDENTATION COMES OFF HERE, ON PURPOSE, and it is the choice between losing it
-      // once and losing it later. Raw HTML is text in this editor, so the block arrives as a
-      // PARAGRAPH — and a paragraph cannot carry leading spaces on its continuation lines;
-      // every Markdown parser strips them. Left in, they survive the first save and vanish on
-      // the second, so `golden/corpus/raw-html-block.md` published one thing, then another,
-      // then held. A file that changes on its own is the failure this engine was built against.
-      //
-      // Nothing a reader sees moves: the page shows this as text, and HTML collapses a run of
-      // whitespace to one space whether or not it is there.
-      return [{
-        type: 'paragraph',
-        content: text(node.value.split('\n').map((l) => l.replace(/^[ \t]+/, '')).join('\n')),
-      }]
+      // Verbatim, indentation and all: a block of its own rather than a paragraph, which could
+      // keep neither the characters nor the lines (`admin/editor/schema-nodes.ts`, `htmlBlock`).
+      return [{ type: 'htmlBlock', content: text(node.value) }]
     case 'mathBlock':
       return [{ type: 'mathBlock', attrs: { tex: node.value, display: true, delim: node.delim } }]
     case 'blockquote':
@@ -284,7 +274,8 @@ function listNodes(node: Extract<Block, { type: 'list' }>): EditorNode[] {
     // And every run after the first is JOINED to the one above, so the save puts them back
     // into the one list they were (`admin/editor/schema-nodes.ts`, `joined`).
     const attrs = {
-      ...(node.ordered && !task ? { start } : {}), ...(node.tight ? {} : { loose: true }),
+      ...(node.ordered ? { start } : {}), ...(node.ordered && task ? { ordered: true } : {}),
+      ...(node.tight ? { tight: true } : { loose: true }),
       ...(i > 0 ? { joined: true } : {}),
     }
     out.push({
@@ -293,7 +284,7 @@ function listNodes(node: Extract<Block, { type: 'list' }>): EditorNode[] {
       content: run.map((item) => itemNode(item, task)),
     })
     // An ordered list split in two keeps counting: items 4 and 5 of one list are still 4 and 5.
-    if (!task) start += run.length
+    start += run.length
     i = end
   }
   return out

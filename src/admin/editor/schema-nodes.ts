@@ -67,6 +67,24 @@ const codeBlock: NodeSpec = {
   }), 0]],
 }
 
+/**
+ * Raw HTML, kept as the author wrote it (2026-09-30).
+ *
+ * It arrived as a PARAGRAPH, so `<details>` was saved as `\<details>`, a comment gained a
+ * backslash, and the page wrapped the lines in `<p>` with `<br>` between them. A block of
+ * verbatim text is what it is: the source view of it is edited like code and written back byte
+ * for byte, and the reader's page renders it as it always did.
+ */
+const htmlBlock: NodeSpec = {
+  group: 'block',
+  content: 'text*',
+  marks: '',
+  code: true,
+  defining: true,
+  parseDOM: [{ tag: 'pre[data-html]', priority: 60, preserveWhitespace: 'full' }],
+  toDOM: () => ['pre', { 'data-html': 'true' }, ['code', 0]],
+}
+
 const horizontalRule: NodeSpec = {
   group: 'block',
   parseDOM: [{ tag: 'hr' }],
@@ -98,12 +116,18 @@ const hardBreak: NodeSpec = {
 // marked run back onto a list directly above it, and the list is saved as the one list it was.
 // Without it the save wrote two lists (`- a` then `* [ ] b`), each item lost the paragraph
 // spacing of the whole, and nothing on the page said why (release review, 2026-09-23).
-const loose = { loose: { default: false }, joined: { default: false } }
+//
+// `tight` IS THE THIRD, the other half of the first (2026-09-30). The guess below `loose` read
+// any item holding a formula, a rule or a code block as written with blank lines, so a tight
+// `- $a$ / - $$b$$` was saved loose and its first item gained a paragraph. The parse knows this
+// answer too. Neither set means a list built here, and the guess is still what decides it.
+const loose = { loose: { default: false }, tight: { default: false }, joined: { default: false } }
 const looseOf = (dom: HTMLElement) => ({
-  loose: dom.hasAttribute('data-loose'), joined: dom.hasAttribute('data-joined'),
+  loose: dom.hasAttribute('data-loose'), tight: dom.hasAttribute('data-tight'), joined: dom.hasAttribute('data-joined'),
 })
 const listData = (node: { attrs: Record<string, unknown> }) => ({
-  'data-loose': node.attrs.loose ? 'true' : null, 'data-joined': node.attrs.joined ? 'true' : null,
+  'data-loose': node.attrs.loose ? 'true' : null, 'data-tight': node.attrs.tight ? 'true' : null,
+  'data-joined': node.attrs.joined ? 'true' : null,
 })
 
 const bulletList: NodeSpec = {
@@ -142,12 +166,24 @@ const listItem: NodeSpec = {
   toDOM: () => ['li', 0],
 }
 
+// `ordered` and `start`: `1. [ ] a` is a numbered checklist, and a task list with no way to say
+// so saved it as `- [ ] a`, taking the page from `<ol>` to `<ul>` (2026-09-30).
 const taskList: NodeSpec = {
   group: 'block list',
   content: 'taskItem+',
-  attrs: loose,
-  parseDOM: [{ tag: 'ul[data-type="taskList"]', priority: 60, getAttrs: (dom) => looseOf(dom as HTMLElement) }],
-  toDOM: (node) => ['ul', attrs({ 'data-type': 'taskList', ...listData(node) }), 0],
+  attrs: { ...loose, ordered: { default: false }, start: { default: 1 } },
+  parseDOM: [{
+    tag: 'ul[data-type="taskList"]', priority: 60,
+    getAttrs: (dom) => {
+      const el = dom as HTMLElement
+      return { ...looseOf(el), ordered: el.hasAttribute('data-ordered'), start: Number(el.getAttribute('data-start') ?? 1) }
+    },
+  }],
+  toDOM: (node) => ['ul', attrs({
+    'data-type': 'taskList', ...listData(node),
+    'data-ordered': node.attrs.ordered ? 'true' : null,
+    'data-start': node.attrs.ordered && node.attrs.start !== 1 ? String(node.attrs.start) : null,
+  }), 0],
 }
 
 /**
@@ -351,5 +387,5 @@ const tableCell: NodeSpec = {
 export const NODES: Record<string, NodeSpec> = {
   paragraph, blockquote, bulletList, codeBlock, doc, hardBreak, heading, horizontalRule,
   listItem, orderedList, text, image, video, mathInline, mathBlock,
-  table, tableRow, tableHeader, tableCell, taskList, taskItem,
+  table, tableRow, tableHeader, tableCell, taskList, taskItem, htmlBlock,
 }

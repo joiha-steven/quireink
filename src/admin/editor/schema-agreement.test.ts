@@ -16,8 +16,9 @@
 // mark ORDER (which is the nesting order a save writes), and which marks each one excludes. Not
 // `parseDOM`, which has no comparable shape between the two and is exercised by pasting.
 //
-// ⚠️ THREE DIFFERENCES ARE DELIBERATE and are asserted AS differences below, so that this file
-// says what changed rather than hiding it in a tolerance.
+// ⚠️ THE DIFFERENCES ARE DELIBERATE and are asserted AS differences below, so that this file
+// says what changed rather than hiding it in a tolerance. 2026-09-30 added three: a raw HTML
+// node, `tight` on the lists, and `ordered`/`start` on a task list.
 //
 // happy-dom is registered for this file only, the rule every editor suite here follows.
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
@@ -88,7 +89,8 @@ const shape = (out: unknown): unknown => {
 
 describe('the schema this product writes and the schema it replaced', () => {
   it('holds the same nodes and the same marks, by name', () => {
-    expect(Object.keys(ours.nodes).sort()).toEqual(Object.keys(was.nodes).sort())
+    // `htmlBlock` is the one node added, asserted in its own block below.
+    expect(Object.keys(ours.nodes).filter((n) => n !== 'htmlBlock').sort()).toEqual(Object.keys(was.nodes).sort())
     expect(Object.keys(ours.marks).sort()).toEqual(Object.keys(was.marks).sort())
   })
 
@@ -115,7 +117,8 @@ describe('the schema this product writes and the schema it replaced', () => {
     for (const name of Object.keys(was.nodes)) {
       const mine = defaults(ours.nodes[name]!.spec)
       // `loose` on the three lists is the third deliberate difference, asserted below.
-      if (LISTS.includes(name)) { delete mine.loose; delete mine.joined }
+      if (LISTS.includes(name)) { delete mine.loose; delete mine.joined; delete mine.tight }
+      if (name === 'taskList') { delete mine.ordered; delete mine.start }
       expect(`${name}: ${JSON.stringify(mine, sorted)}`)
         .toBe(`${name}: ${JSON.stringify(was.nodes[name]!.attrs, sorted)}`)
     }
@@ -276,3 +279,28 @@ function sorted(_key: string, value: unknown): unknown {
   }
   return value
 }
+
+// Three more, 2026-09-30, each a shape a save used to change on the reader's page.
+describe('what the schema added after the one it replaced', () => {
+  it('adds `tight`, default false, to the three lists, and draws it only when true', () => {
+    for (const name of LISTS) {
+      expect(`${name}: ${String((defaults(ours.nodes[name]!.spec) as Record<string, unknown>).tight)}`).toBe(`${name}: false`)
+      const node = ours.nodes[name]!.createAndFill({ tight: true })!
+      expect(JSON.stringify(shape(ours.nodes[name]!.spec.toDOM?.(node)))).toContain('"data-tight":"true"')
+    }
+  })
+
+  it('lets a task list be numbered, from where it starts', () => {
+    const attrs = defaults(ours.nodes.taskList!.spec) as Record<string, unknown>
+    expect([attrs.ordered, attrs.start]).toEqual([false, 1])
+    const node = ours.nodes.taskList!.createAndFill({ ordered: true, start: 3 })!
+    const dom = JSON.stringify(shape(ours.nodes.taskList!.spec.toDOM?.(node)))
+    expect(dom).toContain('"data-ordered":"true"')
+    expect(dom).toContain('"data-start":"3"')
+  })
+
+  it('keeps raw HTML in a verbatim block of its own', () => {
+    const spec = ours.nodes.htmlBlock!.spec
+    expect([spec.group, spec.content, spec.marks, spec.code]).toEqual(['block', 'text*', '', true])
+  })
+})

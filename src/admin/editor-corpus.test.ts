@@ -107,13 +107,9 @@ describe('the corpus, opened in the editor', () => {
  * which would have passed on a post collapsed to a single character.
  */
 const MAY_DIFFER: Record<string, { behaviour: string; why: string }> = {
-  // The one that is left, and it is a limit rather than a loss. Raw HTML is TEXT in this editor
-  // — the blog's promise, and `md/to-editor.ts` keeps it — so a block of it arrives as a
-  // paragraph, and a paragraph cannot carry the indentation of its continuation lines: every
-  // Markdown parser strips them. What moves is two spaces before a `<script>` that is being
-  // shown, not run. Nothing a reader sees moves at all, because HTML collapses the whitespace
-  // either way; what moves is the source, once, and then it holds.
-  'raw-html-block.md': { behaviour: 'text that is not markup', why: 'raw HTML is text here, and a paragraph cannot keep the indentation of a continuation line' },
+  // Empty since 2026-09-30. The last entry was `raw-html-block.md`: raw HTML arrived as a
+  // paragraph, which could keep neither its characters nor the indentation of its lines. It is
+  // a verbatim block now (`admin/editor/schema-nodes.ts`, `htmlBlock`), and publishes the same.
 }
 
 /**

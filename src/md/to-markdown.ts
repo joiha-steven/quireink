@@ -50,6 +50,8 @@ type Context = {
   prefix: string
   /** True inside a tight list, where a paragraph writes no blank line after itself. */
   tight: boolean
+  /** True anywhere inside a list item, where `---` is not a safe way to write a rule. */
+  inItem?: boolean
 }
 
 const ROOT: Context = { prefix: '', tight: false }
@@ -224,7 +226,10 @@ function oneBlock(node: Block, ctx: Context, apart = false): string {
       return `${'#'.repeat(node.level)} ${inlineToMarkdown(node.children.map((c) =>
         c.type === 'softbreak' || c.type === 'hardbreak' ? { type: 'text', value: ' ' } as Inline : c), false)}`
     case 'thematicBreak':
-      return '---'
+      // ⚠️ `***` INSIDE A LIST ITEM. `- ---` is itself a thematic break, so a rule that was the
+      // item left the list on the first save, and after a line of text in a tight item `---` is
+      // a setext underline that makes the text a heading (2026-09-30).
+      return ctx.inItem ? '***' : '---'
     case 'codeBlock': {
       // The fence must outlast any run of backticks inside the code.
       const longest = (node.value.match(/^`{3,}/gm) ?? []).reduce((n, r) => Math.max(n, r.length), 2)
@@ -266,12 +271,14 @@ function itemToMarkdown(
   // back of the one above it. Both are CommonMark; neither changes what the reader sees.
   const marker = list.ordered ? `${list.start + index}${apart ? ')' : '.'} ` : apart ? '* ' : '- '
   const check = item.checked === null ? '' : item.checked ? '[x] ' : '[ ] '
-  const body = blocksToMarkdown(item.children, { prefix: '', tight: list.tight })
+  const body = blocksToMarkdown(item.children, { prefix: '', tight: list.tight, inItem: true })
   // Continuation lines line up under the content, not under the marker: that is what keeps a
   // second paragraph inside the item instead of ending the list.
   const pad = ' '.repeat(marker.length)
   const lines = body.split('\n')
-  const head = `${marker}${check}${lines[0] ?? ''}`
+  // `* ***` is a rule, not an item holding one: after the second marker, the rule is dashes.
+  const first = marker === '* ' && lines[0] === '***' ? '- - -' : lines[0] ?? ''
+  const head = `${marker}${check}${first}`
   const rest = lines.slice(1).map((line) => (line === '' ? '' : pad + line))
   void ctx
   return [head, ...rest].join('\n')

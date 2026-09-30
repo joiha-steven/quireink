@@ -226,3 +226,24 @@ describe('a save does not re-deal the pen', () => {
     })
   }
 })
+
+// Four shapes a save changed on the page, found by the 2026-09-30 sweep: a numbered checklist
+// saved as bullets, a rule inside a list item moved out of the list, a tight list holding a
+// formula saved loose, and raw HTML saved as escaped text in paragraphs.
+describe('a save keeps these shapes as the page showed them', () => {
+  for (const source of [
+    '1. [ ] a\n2. [x] b\n',
+    '3. [ ] c\n4. [ ] d\n',
+    '- a\n- ***\n',
+    '- $a$\n- $$b$$\n',
+    '<details>\n<summary>Hi</summary>\n\nBody\n</details>\n',
+    '<!-- a note to self -->\n\nText.\n',
+    '<div class="x">\n  hello\n</div>\n',
+  ]) {
+    it(`keeps ${JSON.stringify(source)}`, async () => {
+      const once = await save(source)
+      expect(toHtml(once, PAGE)).toBe(toHtml(source, PAGE))
+      expect(await save(once)).toBe(once)
+    })
+  }
+})

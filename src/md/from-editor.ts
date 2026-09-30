@@ -265,7 +265,9 @@ function oneBlock(node: PMNode): Block | null {
     case 'bulletList':
     case 'orderedList':
     case 'taskList':
-      return listOf(node, name === 'orderedList')
+      return listOf(node, name === 'orderedList' || Boolean(node.attrs?.ordered))
+    case 'htmlBlock':
+      return { type: 'htmlBlock', value: textOf(node) }
     case 'table':
       return tableOf(node)
     case 'image': {
@@ -304,10 +306,12 @@ function listOf(node: PMNode, ordered: boolean): Block {
   // ⚠️ AND THE INFERENCE COMES SECOND. It cannot see blank lines between one-paragraph items,
   // which is the commonest loose list there is; a list opened from Markdown carries `loose`
   // from the parse (`md/to-editor.ts`), and only one built in the editor is left to the guess.
+  // A list the parse called tight stays tight whatever block an item holds; a second paragraph
+  // in one item still needs the blank line, so that part of the guess is never overridden.
   const tight = !node.attrs?.loose && items.every((item) => {
     const prose = item.children.filter((b) => b.type === 'paragraph').length
     const other = item.children.filter((b) => b.type !== 'paragraph' && b.type !== 'list').length
-    return prose <= 1 && other === 0
+    return prose <= 1 && (other === 0 || Boolean(node.attrs?.tight))
   })
   return { type: 'list', ordered, start: Number(node.attrs?.start ?? 1), tight, items }
 }
