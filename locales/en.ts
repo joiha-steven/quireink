@@ -168,7 +168,7 @@ const en = {
   commentsEmpty: 'No comments yet. Be the first.',
   commentName: 'Name',
   commentEmail: 'Email',
-  commentEmailNote: 'Not published',
+  commentEmailNote: 'not published',
   commentWebsite: 'Website (optional)',
   commentBody: 'Your comment',
   commentSubmit: 'Post comment',

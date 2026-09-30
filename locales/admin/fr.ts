@@ -105,6 +105,7 @@ const fr = {
   commentsInPosts: '{c} sur {p}',
   commentCount: '{n} commentaire|{n} commentaires|{n} commentaires',
   postCount: '{n} article|{n} articles|{n} articles',
+  commentsStatComments: 'commentaires',
   commentsStatPosts: 'articles',
   commentsStatWeek: 'en 7 jours',
   commentsStatPeople: 'personnes',

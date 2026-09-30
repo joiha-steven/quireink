@@ -105,6 +105,7 @@ const ko = {
   commentsInPosts: '{p}에 {c}',
   commentCount: '댓글 {n}개',
   postCount: '글 {n}개',
+  commentsStatComments: '댓글',
   commentsStatPosts: '글',
   commentsStatWeek: '7일간',
   commentsStatPeople: '명',

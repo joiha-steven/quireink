@@ -130,7 +130,7 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
   // `data-comment-band`: the island recounts it from the rows left after a delete or an undo.
   // The header moved and the band kept the old totals until a reload (2026-09-30).
   const band = `<div data-comment-band>` + numBand([
-    { n: n(rows.length), label: t.commentsNavTitle },
+    { n: n(rows.length), label: t.commentsStatComments },
     { n: n(by.size), label: t.commentsStatPosts },
     { n: n(rows.filter((c) => (Date.parse(c.createdAt) || 0) >= since).length), label: t.commentsStatWeek },
     { n: n(new Set(rows.map((c) => (c.email || c.name).toLowerCase())).size), label: t.commentsStatPeople },

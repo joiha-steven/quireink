@@ -168,7 +168,7 @@ const it = {
   commentsEmpty: 'Ancora nessun commento. Rompi il ghiaccio.',
   commentName: 'Nome',
   commentEmail: 'Email',
-  commentEmailNote: 'Non viene pubblicata',
+  commentEmailNote: 'non viene pubblicata',
   commentWebsite: 'Sito web (facoltativo)',
   commentBody: 'Il tuo commento',
   commentSubmit: 'Pubblica commento',

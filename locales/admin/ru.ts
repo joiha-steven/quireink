@@ -105,6 +105,7 @@ const ru = {
   commentsInPosts: '{c} {p}',
   commentCount: '{n} комментарий|{n} комментария|{n} комментариев|{n} комментария',
   postCount: 'к {n} записи|к {n} записям|к {n} записям|к {n} записи',
+  commentsStatComments: 'комментарии',
   commentsStatPosts: 'записи',
   commentsStatWeek: 'за 7 дней',
   commentsStatPeople: 'человек',

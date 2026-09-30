@@ -168,7 +168,7 @@ const fr = {
   commentsEmpty: 'Pas encore de commentaire. Lancez-vous.',
   commentName: 'Nom',
   commentEmail: 'E-mail',
-  commentEmailNote: 'Jamais publié',
+  commentEmailNote: 'jamais publié',
   commentWebsite: 'Site web (facultatif)',
   commentBody: 'Votre commentaire',
   commentSubmit: 'Publier le commentaire',

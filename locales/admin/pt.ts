@@ -106,6 +106,7 @@ const pt = {
   commentsInPosts: '{c} em {p}',
   commentCount: '{n} comentário|{n} comentários|{n} comentários',
   postCount: '{n} post|{n} posts|{n} posts',
+  commentsStatComments: 'comentários',
   commentsStatPosts: 'posts',
   commentsStatWeek: 'em 7 dias',
   commentsStatPeople: 'pessoas',

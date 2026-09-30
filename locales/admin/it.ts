@@ -105,6 +105,7 @@ const it = {
   commentsInPosts: '{c} su {p}',
   commentCount: '{n} commento|{n} commenti|{n} commenti',
   postCount: '{n} articolo|{n} articoli|{n} articoli',
+  commentsStatComments: 'commenti',
   commentsStatPosts: 'articoli',
   commentsStatWeek: 'in 7 giorni',
   commentsStatPeople: 'persone',

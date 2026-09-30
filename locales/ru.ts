@@ -168,7 +168,7 @@ const ru = {
   commentsEmpty: 'Комментариев пока нет. Будьте первым.',
   commentName: 'Имя',
   commentEmail: 'Почта',
-  commentEmailNote: 'Не публикуется',
+  commentEmailNote: 'не публикуется',
   commentWebsite: 'Сайт (необязательно)',
   commentBody: 'Ваш комментарий',
   commentSubmit: 'Отправить комментарий',

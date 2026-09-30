@@ -105,6 +105,7 @@ const zh = {
   commentsInPosts: '{p}共 {c}',
   commentCount: '{n} 条评论',
   postCount: '{n} 篇文章',
+  commentsStatComments: '评论',
   commentsStatPosts: '文章',
   commentsStatWeek: '7 天内',
   commentsStatPeople: '人',

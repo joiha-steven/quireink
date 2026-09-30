@@ -168,7 +168,7 @@ const de = {
   commentsEmpty: 'Noch keine Kommentare. Sei der Erste.',
   commentName: 'Name',
   commentEmail: 'E-Mail',
-  commentEmailNote: 'Nicht veröffentlicht',
+  commentEmailNote: 'nicht veröffentlicht',
   commentWebsite: 'Website (optional)',
   commentBody: 'Dein Kommentar',
   commentSubmit: 'Kommentar senden',

@@ -168,7 +168,7 @@ const es = {
   commentsEmpty: 'Todavía no hay comentarios. Sé el primero.',
   commentName: 'Nombre',
   commentEmail: 'Correo',
-  commentEmailNote: 'No se publica',
+  commentEmailNote: 'no se publica',
   commentWebsite: 'Sitio web (opcional)',
   commentBody: 'Tu comentario',
   commentSubmit: 'Publicar comentario',

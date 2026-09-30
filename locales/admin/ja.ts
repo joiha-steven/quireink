@@ -105,6 +105,7 @@ const ja = {
   commentsInPosts: '{p}に{c}',
   commentCount: '{n}件のコメント',
   postCount: '{n}件の記事',
+  commentsStatComments: 'コメント',
   commentsStatPosts: '記事',
   commentsStatWeek: '7日間',
   commentsStatPeople: '人',

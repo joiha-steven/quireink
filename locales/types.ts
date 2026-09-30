@@ -315,6 +315,8 @@ export type AdminStrings = {
   commentsInPosts: string
   commentCount: string
   postCount: string
+  /** The band's first figure, in the same case as the three beside it. */
+  commentsStatComments: string
   commentsStatPosts: string
   commentsStatWeek: string
   commentsStatPeople: string

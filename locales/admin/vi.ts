@@ -105,6 +105,7 @@ const vi = {
   commentsInPosts: '{c} trên {p}',
   commentCount: '{n} bình luận',
   postCount: '{n} bài',
+  commentsStatComments: 'bình luận',
   commentsStatPosts: 'bài',
   commentsStatWeek: 'trong 7 ngày',
   commentsStatPeople: 'người',

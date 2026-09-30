@@ -169,7 +169,7 @@ const pt = {
   commentsEmpty: 'Ainda não há comentários. Seja o primeiro.',
   commentName: 'Nome',
   commentEmail: 'Email',
-  commentEmailNote: 'Não é publicado',
+  commentEmailNote: 'não é publicado',
   commentWebsite: 'Site (opcional)',
   commentBody: 'Seu comentário',
   commentSubmit: 'Publicar comentário',
