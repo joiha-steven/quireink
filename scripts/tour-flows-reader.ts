@@ -222,6 +222,6 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
       const shown = !bar.hidden
       getSelection().removeAllRanges()
       localStorage.removeItem(store)
-      return shown ? 'the pen bar rose over the reader\'s own note' : 'ok'
+      return shown ? 'the pen bar rose over the reader’s own note' : 'ok'
     })()`, 900))
 }

@@ -384,7 +384,7 @@ export function writePane(opts: {
 const words = (t: AdminStrings): Record<string, string> => ({
   trash: t.moveToTrash, trashed: t.trashedMany, trashPartial: t.trashPartial, undo: t.undo,
   publish: t.publish, published: t.publishedMany,
-  draft: t.backToDraft, drafted: t.draftedMany, bulkPartial: t.bulkPartial,
+  draft: t.backToDraft, drafted: t.draftedMany, bulkPartial: t.bulkPartial, homePage: t.trashHomePage,
   restoreFailed: t.restoreFailed,
   saveFailed: t.saveFailed, renamed: t.renamed, deleted: t.deleted,
   renameTermTitle: t.renameTermTitle, renameSeriesTitle: t.renameSeriesTitle,

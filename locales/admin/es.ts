@@ -147,6 +147,7 @@ const es = {
   askDeleteBackupBody: 'El archivo se elimina del servidor. Nada del blog cambia.',
   trashedOne: 'Movido a la papelera',
   trashFailed: 'No se pudo mover a la papelera',
+  trashHomePage: 'Esta página es la portada. Elige antes otra portada en Ajustes.',
   trashedMany: '{n} movidos a la papelera',
   undo: 'Deshacer',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

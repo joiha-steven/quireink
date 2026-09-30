@@ -147,6 +147,7 @@ const ko = {
   askDeleteBackupBody: '보관 파일이 서버에서 사라집니다. 블로그 내용은 바뀌지 않습니다.',
   trashedOne: '휴지통으로 옮겼습니다',
   trashFailed: '휴지통으로 옮기지 못했습니다',
+  trashHomePage: '이 페이지는 첫 페이지입니다. 먼저 설정에서 다른 첫 페이지를 고르세요.',
   trashedMany: '{n}개를 휴지통으로 옮겼습니다',
   undo: '되돌리기',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

@@ -147,6 +147,7 @@ const it = {
   askDeleteBackupBody: 'Il file d’archivio viene rimosso dal server. Nel blog non cambia nulla.',
   trashedOne: 'Spostato nel cestino',
   trashFailed: 'Non è stato possibile spostarlo nel cestino',
+  trashHomePage: 'Questa pagina è la home. Scegli prima un’altra home nelle Impostazioni.',
   trashedMany: '{n} spostati nel cestino',
   undo: 'Annulla',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

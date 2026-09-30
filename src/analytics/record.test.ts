@@ -72,6 +72,18 @@ describe('recording', () => {
     const tag = (slug: string, term: string) =>
       db().run(`insert into post_terms (post_slug, kind, term) values (?, 'tag', ?)`, [slug, term])
 
+    // The notebook and the year archive load the beacon and were never counted (2026-09-30).
+    it('counts the notebook, a public note and the archive, and not a note that is not out', async () => {
+      db().run(`delete from notes`)
+      db().run(`insert into notes (slug, date, status, content, created_at, updated_at) values ('kept', 1, 'published', 'x', 1, 1)`)
+      db().run(`insert into notes (slug, date, status, content, created_at, updated_at) values ('draft', 1, 'draft', 'x', 1, 1)`)
+      for (const path of ['/notes', '/notes/kept', '/archive']) await recordView(path, '1.1.1.1', 'Mozilla/5.0')
+      expect(pendingAnalytics()).toBe(3)
+      await recordView('/notes/draft', '1.1.1.1', 'Mozilla/5.0')
+      await recordView('/notes/nothing', '1.1.1.1', 'Mozilla/5.0')
+      expect(pendingAnalytics()).toBe(3)
+    })
+
     it('counts a list page only while the list has that many pages', async () => {
       const perPage = listPageSize(await getSettings())
       seedPosts(perPage + 1) // four seeded above, so two pages

@@ -147,6 +147,7 @@ const vi = {
   askDeleteBackupBody: 'Tệp nén bị gỡ khỏi máy chủ. Nội dung blog không đổi.',
   trashedOne: 'Đã chuyển vào Thùng rác',
   trashFailed: 'Không chuyển vào thùng rác được',
+  trashHomePage: 'Trang này đang là trang chủ. Hãy chọn trang chủ khác trong Cài đặt trước.',
   trashedMany: 'Đã chuyển {n} mục vào Thùng rác',
   undo: 'Hoàn tác',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

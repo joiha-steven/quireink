@@ -341,6 +341,8 @@ export type AdminStrings = {
   /** Trashing asks nothing and offers the way back instead. */
   trashedOne: string
   trashFailed: string
+  /** Refusing to bin the page chosen as the front page. */
+  trashHomePage: string
   trashedMany: string
   undo: string
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

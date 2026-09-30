@@ -147,6 +147,7 @@ const fr = {
   askDeleteBackupBody: 'Le fichier d’archive est retiré du serveur. Rien ne change sur le blog.',
   trashedOne: 'Déplacé vers la corbeille',
   trashFailed: 'Impossible de le mettre à la corbeille',
+  trashHomePage: 'Cette page est la page d’accueil. Choisissez d’abord une autre page d’accueil dans les Réglages.',
   trashedMany: '{n} déplacés vers la corbeille',
   undo: 'Annuler l’action',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

@@ -147,6 +147,7 @@ const ru = {
   askDeleteBackupBody: 'Файл архива удаляется с сервера. В блоге ничего не меняется.',
   trashedOne: 'Перемещено в корзину',
   trashFailed: 'Не удалось переместить в корзину',
+  trashHomePage: 'Эта страница — главная. Сначала выберите другую главную страницу в настройках.',
   trashedMany: 'Перемещено в корзину: {n}',
   undo: 'Вернуть',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

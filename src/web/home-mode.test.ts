@@ -126,3 +126,25 @@ describe('the sitemap', () => {
     expect(xml).not.toContain('/welcome<')
   })
 })
+
+// Renaming or binning the page chosen as the front page turned `/` into the post list without a
+// word (2026-09-30). A rename is followed; a bin is refused until another front page is chosen.
+describe('the page that is the front page', () => {
+  it('is followed to its new address when renamed', async () => {
+    await savePage({ title: 'Front', slug: 'front', status: 'published', content: 'The front, before.' })
+    await setMode({ mode: 'page', page: 'front' })
+    await savePage({ title: 'Front', slug: 'front-door', status: 'published', content: 'The front, after.' }, 'front')
+    clearCache()
+    expect((await getSettings()).home.page).toBe('front-door')
+    expect(await body('/')).toContain('The front, after.')
+  })
+
+  it('cannot be binned while it is the front page, and can once it is not', async () => {
+    const { deletePage, HomePageError } = await import('@/content/pages')
+    await savePage({ title: 'Bin me', slug: 'bin-me', status: 'published', content: 'x' })
+    await setMode({ mode: 'page', page: 'bin-me' })
+    await expect(deletePage('bin-me')).rejects.toBeInstanceOf(HomePageError)
+    await setMode({ mode: 'list' })
+    await expect(deletePage('bin-me')).resolves.toBeUndefined()
+  })
+})

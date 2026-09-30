@@ -29,7 +29,7 @@ import { BULK_MAX } from '@/admin-shared/write'
 export type PickWords = Partial<Record<string, string>>
 
 type Piece = { kind: string; slug: string }
-type BulkAnswer = { done: Piece[]; failed: Piece[] }
+type BulkAnswer = { done: Piece[]; failed: (Piece & { reason?: string })[] }
 
 /** `kind:slug`, the shape the ticks carry and the bulk route takes. */
 const split = (key: string): Piece => {
@@ -180,6 +180,7 @@ export function wirePicking(pane: HTMLElement, rows: HTMLElement[], after: () =>
     // six hundred. SEQUENTIAL, because each run is a write and they queue on one writer anyway.
     const gone: string[] = []
     let broke = false
+    let homePage = false
     for (let at = 0; at < picked.length; at += BULK_MAX) {
       const run = picked.slice(at, at + BULK_MAX)
       const res = await fetch('/api/content/bulk', {
@@ -195,6 +196,7 @@ export function wirePicking(pane: HTMLElement, rows: HTMLElement[], after: () =>
       // stops the rest: whatever is wrong will be wrong for them too.
       if (!res?.ok || !answer?.success || !answer.data) { broke = true; break }
       gone.push(...answer.data.done.map(join))
+      if (answer.data.failed.some((f) => f.reason === 'home_page')) homePage = true
     }
     busy(false)
 
@@ -233,7 +235,8 @@ export function wirePicking(pane: HTMLElement, rows: HTMLElement[], after: () =>
         run: () => { void restore(gone) },
       })
     } else {
-      say(`${words.trashPartial ?? ''} (${gone.length}/${picked.length})`, 'error')
+      // The front page stays behind, ticked, and the reason is the whole of what is said.
+      say(homePage ? words.homePage ?? '' : `${words.trashPartial ?? ''} (${gone.length}/${picked.length})`, 'error')
     }
 
     // The sheet beside this column was showing one of them. There is nothing to edit any more,

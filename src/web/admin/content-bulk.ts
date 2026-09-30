@@ -32,7 +32,7 @@
 
 import type { Context } from 'hono'
 import { getPost, savePost, deletePost } from '@/content/posts'
-import { getPage, savePage, deletePage } from '@/content/pages'
+import { getPage, savePage, deletePage, HomePageError } from '@/content/pages'
 import { getNote, saveNote, deleteNote } from '@/content/notes'
 import { logActivity, type ActivityAction } from '@/server/activity'
 import { fail, json } from '@/web/api'
@@ -42,7 +42,7 @@ import { BULK_MAX } from '@/admin-shared/write'
 export type BulkAction = 'trash' | 'publish' | 'draft'
 export type BulkKind = 'post' | 'page' | 'note'
 export type BulkPiece = { kind: BulkKind; slug: string }
-export type BulkFailure = BulkPiece & { reason: 'not_found' | 'failed' }
+export type BulkFailure = BulkPiece & { reason: 'not_found' | 'failed' | 'home_page' }
 
 /** The ceiling on one request, shared with the column that draws the key. */
 export { BULK_MAX } from '@/admin-shared/write'
@@ -153,7 +153,7 @@ export function bulkRoutes() {
         // have to do again, and the twentieth is named in the answer so the column can leave
         // it on screen still ticked.
         console.error(`[ERROR] content.bulk ${action} ${piece.kind}:${piece.slug}: ${(error as Error).message}`)
-        failed.push({ ...piece, reason: 'failed' })
+        failed.push({ ...piece, reason: error instanceof HomePageError ? 'home_page' : 'failed' })
       }
     }
 

@@ -10,6 +10,7 @@ import { ensureSlugFree } from '@/content/slugs'
 import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, toIso } from '@/store/db'
+import { getSettings, saveSettings } from '@/content/settings'
 
 // `updated_at` joined the list read when the admin stopped sorting by title: one stream of
 // posts AND pages, most recently touched first (ADR 0024), needs pages to carry the same
@@ -174,6 +175,12 @@ export async function savePage(
   // the save threw, and the page was unreachable (see `savePost`).
   await clearRedirectForPath(`/${page.slug}`)
   if (renaming) await saveRedirect({ source: `/${previousSlug}`, destination: `/${page.slug}`, permanent: true })
+  // The front page follows its page to the new address: the setting still named the old slug,
+  // so `/` quietly became the post list on a rename (2026-09-30).
+  if (renaming) {
+    const { home } = await getSettings()
+    if (home.page === previousSlug) await saveSettings({ home: { ...home, page: page.slug } })
+  }
   // The autosave is now the older text — see `savePost` for why this is here and not in
   // the route.
   clearAutosave('page', page.slug)
@@ -184,7 +191,18 @@ export async function savePage(
 // Soft-delete a page: move it to the Trash (set deleted_at). The row, body and any
 // referenced blobs are kept; nothing is purged until an explicit Trash purge. The
 // slug stays reserved (the row still exists) so restore always works.
+/** Thrown by `deletePage` for the page the owner chose as the front page. */
+export class HomePageError extends Error {
+  constructor(slug: string) { super(`${slug} is the front page`) }
+}
+
 export async function deletePage(slug: string): Promise<void> {
+  // ⚠️ NOT THE FRONT PAGE. `/` falls back to the post list when its page is gone, which is
+  // right for a page unpublished by accident and wrong as a thing a Trash key does in silence:
+  // the owner binned a page and their home page changed (2026-09-30). Choosing another front
+  // page first is one field in Settings.
+  const { home } = await getSettings()
+  if (home.mode === 'page' && home.page === slug) throw new HomePageError(slug)
   run(`update pages set deleted_at = ? where slug = ?`, nowMs(), slug)
 }
 

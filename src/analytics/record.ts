@@ -25,6 +25,8 @@ import { bufferEvent, bufferScroll } from '@/analytics/buffer'
 import { nowMs } from '@/store/db'
 import { getSettings } from '@/content/settings'
 import { getPublicPosts } from '@/content/posts'
+import { getNote } from '@/content/notes'
+import { isPublicallyVisible } from '@/utils'
 import { listPageSize, parsePathPage } from '@/content/paginate'
 import { resolveSeries } from '@/content/series'
 import { liveSlugTaken } from '@/content/slugs'
@@ -102,6 +104,17 @@ export async function pathIsServable(p: string): Promise<boolean> {
     if (name === null) return false
     return term[3] === undefined ? true : listPageExists(term[3], posts.length)
   }
+  // THE NOTEBOOK AND THE ARCHIVE, which load the beacon like every listing and were never
+  // counted (2026-09-30). Asked the way their routes ask: the notebook's index always answers,
+  // a note only when it is public, and the archive when its switch is on or a document owns
+  // the address (`term-routes.ts`).
+  if (p === '/notes') return true
+  const note = /^\/notes\/([^/]+)$/.exec(p)
+  if (note) {
+    const found = await getNote(note[1]!)
+    return !!found && isPublicallyVisible(found.status, found.date)
+  }
+  if (p === '/archive') return (await getSettings()).features.archive || liveSlugTaken('archive')
   // A series is never paginated, so `/series/x/page/2` is not a route either.
   const series = /^\/series\/([^/]+)$/.exec(p)
   if (series) return (await resolveSeries(series[1]!)).name !== null

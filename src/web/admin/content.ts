@@ -21,7 +21,7 @@ import { readPiece } from '@/web/admin/piece-input'
 import { savedSince } from '@/web/admin/stale'
 import type { PageWithContent, PostWithContent } from '@/types'
 import { getIndex, getPost, savePost, deletePost } from '@/content/posts'
-import { getPageIndex, getPage, savePage, deletePage } from '@/content/pages'
+import { getPageIndex, getPage, savePage, deletePage, HomePageError } from '@/content/pages'
 import { getRevisions } from '@/content/revisions'
 import { getAutosave, putAutosave } from '@/content/autosave'
 import { SlugConflictError, saveNew } from '@/content/slugs'
@@ -229,7 +229,12 @@ export function contentRoutes() {
 
   router.delete('/api/pages/:slug', async (c) => {
     const slug = param(c, 'slug')
-    await deletePage(slug)
+    try {
+      await deletePage(slug)
+    } catch (error) {
+      if (error instanceof HomePageError) return fail(c, 'home_page', 409)
+      throw error
+    }
     clearCache()
     void logActivity('page.delete', slug)
     return json({ slug })

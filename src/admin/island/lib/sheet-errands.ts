@@ -85,7 +85,11 @@ export async function moveToTrash(
     // A failed delete must not navigate: leaving the editor would look like it worked. AND IT
     // HAS TO SAY SO — silently un-greying the button is indistinguishable from a click that did
     // not register, so the owner presses it again, and again.
-    if (!res.ok) { say(t.trashFailed, 'error'); return }
+    if (!res.ok) {
+      const { error } = await res.json().catch(() => ({})) as { error?: string }
+      say(error === 'home_page' ? t.trashHomePage : t.trashFailed, 'error')
+      return
+    }
     // ⚠️ AND THE SAFETY NET COMES DOWN FIRST. The editor is holding unsaved changes to a piece
     // that no longer exists: left standing, the exit guard would ask whether to leave, and the
     // flush on the way out would write a snapshot of a trashed post for the next visit to
