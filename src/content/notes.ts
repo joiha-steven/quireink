@@ -17,7 +17,7 @@ import { clearAutosave } from '@/content/autosave'
 import { isPublicallyVisible, slugify } from '@/utils'
 import { SlugConflictError } from '@/content/slugs'
 import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
-import { all, one, run } from '@/store/query'
+import { all, one, run, tx } from '@/store/query'
 import { fromIso, liveOnly, nowMs, toIso } from '@/store/db'
 
 const META_COLS = 'slug, title, date, status, source_url, source_title, quote, updated_at'
@@ -146,37 +146,40 @@ export async function saveNote(input: Partial<NoteWithContent>, previousSlug?: s
   const existing = one<{ created_at: number }>(
     `select created_at from notes where slug = ?`, previousSlug ?? note.slug,
   )
-  run(
-    `insert into notes (slug, title, date, status, content, source_url, source_title, quote, created_at, updated_at)
-     values ($slug, $title, $date, $status, $content, $sourceUrl, $sourceTitle, $quote, $createdAt, $now)
-     on conflict(slug) do update set
-       title        = excluded.title,
-       date         = excluded.date,
-       status       = excluded.status,
-       content      = excluded.content,
-       source_url   = excluded.source_url,
-       source_title = excluded.source_title,
-       quote        = excluded.quote,
-       updated_at   = excluded.updated_at`,
-    {
-      slug: note.slug,
-      title: note.title,
-      date: fromIso(note.date),
-      status: note.status,
-      content: collapseBlob(note.content),
-      sourceUrl: note.sourceUrl ?? null,
-      sourceTitle: note.sourceTitle ?? null,
-      quote: note.quote ?? null,
-      createdAt: existing?.created_at ?? now,
-      now,
-    },
-  )
-  if (previousSlug && previousSlug !== note.slug && existing) {
-    run(`delete from notes where slug = ?`, previousSlug)
-    await saveRedirect({ source: `/notes/${previousSlug}`, destination: `/notes/${note.slug}`, permanent: true })
-  }
-  clearAutosave('note', note.slug)
+  // One transaction for a rename, and the live slug's redirects cleared before the rename's
+  // own is saved — both for the reasons written in `savePost`.
+  const renaming = !!previousSlug && previousSlug !== note.slug && !!existing
+  tx(() => {
+    run(
+      `insert into notes (slug, title, date, status, content, source_url, source_title, quote, created_at, updated_at)
+       values ($slug, $title, $date, $status, $content, $sourceUrl, $sourceTitle, $quote, $createdAt, $now)
+       on conflict(slug) do update set
+         title        = excluded.title,
+         date         = excluded.date,
+         status       = excluded.status,
+         content      = excluded.content,
+         source_url   = excluded.source_url,
+         source_title = excluded.source_title,
+         quote        = excluded.quote,
+         updated_at   = excluded.updated_at`,
+      {
+        slug: note.slug,
+        title: note.title,
+        date: fromIso(note.date),
+        status: note.status,
+        content: collapseBlob(note.content),
+        sourceUrl: note.sourceUrl ?? null,
+        sourceTitle: note.sourceTitle ?? null,
+        quote: note.quote ?? null,
+        createdAt: existing?.created_at ?? now,
+        now,
+      },
+    )
+    if (renaming) run(`delete from notes where slug = ?`, previousSlug)
+  })
   await clearRedirectForPath(`/notes/${note.slug}`)
+  if (renaming) await saveRedirect({ source: `/notes/${previousSlug}`, destination: `/notes/${note.slug}`, permanent: true })
+  clearAutosave('note', note.slug)
   return toMeta(note)
 }
 

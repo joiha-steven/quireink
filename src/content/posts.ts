@@ -269,17 +269,18 @@ export async function savePost(
     }
   })
 
-  // The 301 is outside it: it validates its own input and can refuse, and a rename with no
-  // redirect is still a rename where a half-applied one is two posts.
+  // This slug is now live content, so any redirect that used it as a SOURCE is stale.
+  // ⚠️ BEFORE the new redirect, not after. Renamed a→b→a, the old `/a → /b` was still there
+  // when `/b → /a` was saved: the loop check refused it and threw, this line never ran, and
+  // `/a` went on sending readers to `/b`, which was a 404. The post was unreachable.
+  await clearRedirectForPath(`/${post.slug}`)
+  // The 301 is outside the transaction: it validates its own input and can refuse, and a
+  // rename with no redirect is still a rename where a half-applied one is two posts.
   if (renaming) await saveRedirect({ source: `/${previousSlug}`, destination: `/${post.slug}`, permanent: true })
   // The autosave is now the OLDER text, so it stops being offered. Here rather than in the
   // route, because the MCP server and the importer save through this same function and a
   // snapshot surviving one of those would offer to restore what the author just replaced.
   clearAutosave('post', post.slug)
-
-  // This slug is now live content, so any redirect that used it as a SOURCE is stale
-  // (live content must win over a redirect; also breaks a rename-back self-loop).
-  await clearRedirectForPath(`/${post.slug}`)
 
   // The AUTHOR left the excerpt blank on a published post — normalize() has already
   // stored the mechanical fifty-word fallback, and only this save path knows the field

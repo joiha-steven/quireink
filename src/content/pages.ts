@@ -8,7 +8,7 @@ import { clearAutosave } from '@/content/autosave'
 import { slugify } from '@/utils'
 import { ensureSlugFree } from '@/content/slugs'
 import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
-import { all, one, run } from '@/store/query'
+import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, toIso } from '@/store/db'
 
 // `updated_at` joined the list read when the admin stopped sorting by title: one stream of
@@ -135,46 +135,47 @@ export async function savePage(
   //
   // A RENAME inserts rather than updates, so that clause never runs and the page was
   // restamped as created today every time its slug moved. Hence the carried value.
-  run(
-    `insert into pages (slug, title, status, featured_image, content, lang, tr_group,
-                        created_at, updated_at)
-     values ($slug, $title, $status, $featuredImage, $content, $lang, $trGroup, $createdAt, $now)
-     on conflict(slug) do update set
-       title          = excluded.title,
-       status         = excluded.status,
-       featured_image = excluded.featured_image,
-       content        = excluded.content,
-       lang           = excluded.lang,
-       tr_group       = excluded.tr_group,
-       updated_at     = excluded.updated_at`,
-    {
-      slug: page.slug,
-      title: page.title,
-      status: page.status,
-      featuredImage: page.featuredImage ? collapseBlob(page.featuredImage) : null,
-      content: collapseBlob(page.content),
-      lang: page.lang ?? null,
-      trGroup: page.translationGroup ?? null,
-      createdAt: existing?.created_at ?? now,
-      now: now,
-    },
-  )
+  // A RENAME FINISHES IN ONE TRANSACTION, as `savePost`'s does: the new row is an INSERT, so
+  // until the old one goes there are two live rows for one page.
+  const renaming = !!previousSlug && previousSlug !== page.slug && !!existing
+  tx(() => {
+    run(
+      `insert into pages (slug, title, status, featured_image, content, lang, tr_group,
+                          created_at, updated_at)
+       values ($slug, $title, $status, $featuredImage, $content, $lang, $trGroup, $createdAt, $now)
+       on conflict(slug) do update set
+         title          = excluded.title,
+         status         = excluded.status,
+         featured_image = excluded.featured_image,
+         content        = excluded.content,
+         lang           = excluded.lang,
+         tr_group       = excluded.tr_group,
+         updated_at     = excluded.updated_at`,
+      {
+        slug: page.slug,
+        title: page.title,
+        status: page.status,
+        featuredImage: page.featuredImage ? collapseBlob(page.featuredImage) : null,
+        content: collapseBlob(page.content),
+        lang: page.lang ?? null,
+        trGroup: page.translationGroup ?? null,
+        createdAt: existing?.created_at ?? now,
+        now: now,
+      },
+    )
+    // Only when there WAS an old row: a PUT naming a slug nothing holds is a create, and
+    // treating it as a rename wrote a permanent redirect out of a path that never existed.
+    if (renaming) run(`delete from pages where slug = ?`, previousSlug)
+  })
 
-  // If the slug changed, drop the old row + leave a 301 from the old path.
-  //
-  // Only when there WAS an old row: a PUT naming a slug nothing holds is a create, and
-  // treating it as a rename wrote a permanent redirect out of a path that never existed.
-  // Same guard, same reason, as `savePost`.
-  if (previousSlug && previousSlug !== page.slug && existing) {
-    run(`delete from pages where slug = ?`, previousSlug)
-    await saveRedirect({ source: `/${previousSlug}`, destination: `/${page.slug}`, permanent: true })
-  }
+  // The live slug wins over any redirect that used it as a source, and it is cleared BEFORE
+  // the rename's own redirect: renamed a→b→a, the stale `/a → /b` made the new one a loop,
+  // the save threw, and the page was unreachable (see `savePost`).
+  await clearRedirectForPath(`/${page.slug}`)
+  if (renaming) await saveRedirect({ source: `/${previousSlug}`, destination: `/${page.slug}`, permanent: true })
   // The autosave is now the older text — see `savePost` for why this is here and not in
   // the route.
   clearAutosave('page', page.slug)
-
-  // The live slug wins over any redirect that used it as a source (and no self-loop).
-  await clearRedirectForPath(`/${page.slug}`)
 
   return toMeta(page) // full URLs for the client
 }
