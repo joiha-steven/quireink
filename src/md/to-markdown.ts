@@ -65,9 +65,9 @@ const ROOT: Context = { prefix: '', tight: false }
  * `==chữ và cả ==` is not a stroke at all on the way back in: the mark is simply GONE, and the
  * `==` shows up in the published sentence as two characters the author never typed.
  *
- * It is reachable from an ordinary document. A stroke drawn across an inline code span loses
- * its grip on the code (the schema's `code` excludes every other mark), so what the serializer
- * is handed ends on the space before it. `prosemirror-markdown` had the same repair, and it is
+ * It is reachable from an ordinary document: a stroke the writer ends on a space, or one that
+ * stopped at an inline code span back when the schema's `code` excluded every other mark, hands
+ * the serializer a run that ends on the space before the closing delimiter. `prosemirror-markdown` had the same repair, and it is
  * where the quadratic stall that started this engine lived — it re-read the whole buffer for
  * every mark. Reading the two ends of one string does the same job.
  */

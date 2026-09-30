@@ -178,7 +178,9 @@ Mod-Z to take back — so the test asserts the SHAPE of what reaches the view.
   saying the fix needed a forked mark and another dependency. The mark is ours; the fix is a
   named list where an underscore was. The server has always drawn ``==a `b` c==`` as one stroke
   and the editor now agrees — which matters because the old behaviour was a save that changed
-  the reader's page.
+  the reader's page. ⚠️ It did not agree until 2026-09-30: `md/to-editor.ts` still dropped every
+  mark around a code span when loading, and the list still excluded bold, italic, strike and
+  link, so ``[`x`](url)`` lost its URL at the first save. `code` now excludes only itself.
 - ⚠️ **`_` is not a list you can subtract from.** `'_ ink'` still excludes every mark: the first
   term already said all of them. Cost one attempt.
 - ⚠️ **Changing a bullet list into a task list cannot be two steps.** Either order leaves an item

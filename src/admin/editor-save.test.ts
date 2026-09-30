@@ -115,6 +115,27 @@ describe('what a save must never do', () => {
     expect(await save('giá [$x^2$](https://a.test) đây\n')).toContain('](https://a.test)')
   })
 
+  it('keeps a link, emphasis and strike around a code span', async () => {
+    // Every one of these published fine and lost its mark at the first save: the code mark
+    // excluded them all, so the document opened without them. Links labelled in code are common
+    // in technical posts, and the URL was gone for good.
+    for (const md of [
+      'See [`useEffect`](https://react.dev/x) docs.\n',
+      '[call `f()` now](http://x.test)\n',
+      '**`x`** and *a `y` b* and ~~`z`~~\n',
+      '==a `b` c==\n',
+    ]) {
+      expect(await save(md)).toBe(md)
+    }
+  })
+
+  it('keeps the link on a picture that stands alone on its line', async () => {
+    // A lone picture is lifted to a block node, and a block node carries no marks: the badge
+    // stopped pointing anywhere after one save. A linked one now stays inline.
+    expect(await save('[![badge](/b.svg)](https://ci.test)\n')).toBe('[![badge](/b.svg)](https://ci.test)\n')
+    expect(await save('- [![a](/b.png)](https://c.test)\n')).toBe('- [![a](/b.png)](https://c.test)\n')
+  })
+
   it('does not put a backslash where the author typed none', async () => {
     // Over-escaping is corruption too — of the file the author opens next. `pen/grammar.ts`
     // can read neither of these as a stroke, so neither needs a backslash.

@@ -89,12 +89,15 @@ const bold: MarkSpec = {
 // one thing `editor-corpus.test.ts`'s second law exists to forbid.
 //
 // ⚠️ `_` IS NOT A LIST YOU CAN SUBTRACT FROM. It is ProseMirror's word for "every mark", and
-// `'_ ink'` still means every mark — the first term already said all of them. So the marks this
-// one excludes are NAMED, and the three pen gestures are the omission. `schema-agreement.test.ts`
-// walks every mark in the schema and asserts which side of that line it falls on, so a ninth
-// mark added later cannot quietly become legal inside a code span.
+// `'_ ink'` still means every mark — the first term already said all of them. So the list is
+// NAMED. It named bold, italic, strike and link too until 2026-09-30, and each was a save that
+// changed a page: ``[`x`](url)`` lost its URL. Now it names only `code`. `schema-agreement.test.ts`
+// walks every mark in the schema and asserts which side of that line it falls on.
 const code: MarkSpec = {
-  excludes: 'code bold italic strike link',
+  // ⚠️ ONLY ITSELF since 2026-09-30. It excluded bold, italic, strike and link too, and the
+  // reader's page has always drawn every one of them around a code span: ``[`useEffect`](url)``
+  // opened as a code span with no link, and the first save wrote the URL out of the post.
+  excludes: 'code',
   code: true,
   parseDOM: [{ tag: 'code' }],
   toDOM: () => ['code', 0],

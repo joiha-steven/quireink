@@ -51,17 +51,11 @@ function inlineNodes(nodes: Inline[], marks: Mark[]): EditorNode[] {
         out.push({ type: 'hardBreak' })
         break
       case 'code':
-        // ⚠️ A CODE SPAN CARRIES NOTHING ELSE, and that is the schema's rule rather than a
-        // choice here: StarterKit's `code` mark is `excludes: '_'`, so it excludes every other
-        // mark, and `InkMark.ts` records the consequence as an accepted limit — a stroke drawn
-        // across `mã` ends where the code begins.
-        //
-        // Building the document with both anyway is worse than the limit. `nodeFromJSON` does
-        // not enforce exclusions, so the marks would survive being loaded and then be stripped
-        // by the first edit that touched the paragraph — which makes what a SAVE writes depend
-        // on whether the writer happened to click there. A limit is a limit; a document the
-        // editor cannot hold is a file that changes on its own.
-        if (node.value !== '') out.push({ type: 'text', text: node.value, marks: [{ type: 'code' }] })
+        // THE MARKS AROUND IT ARE KEPT: a link, emphasis, strike or a pen stroke may cover a code
+        // span, as the reader's page has always drawn them. They were dropped here, so the first
+        // save of ``[`x`](url)`` wrote `` `x` `` and the link was gone from the published post.
+        // The schema allows every one of them (`schema-marks.ts`: code excludes only itself).
+        if (node.value !== '') out.push({ type: 'text', text: node.value, marks: [...marks, { type: 'code' }] })
         break
       case 'html':
         // Raw HTML is text in this editor (`Markdown.configure({ html: false })`), and showing
@@ -190,7 +184,9 @@ function blockNodes(blocks: Block[]): EditorNode[] {
  * blog's 92 posts writes one; every picture in all of them stands on its own line.
  */
 function liftLoneImage(inline: EditorNode[]): EditorNode[] {
-  if (inline.length === 1 && inline[0].type === 'image') return [inline[0]]
+  // Not a LINKED picture: a block node carries no marks, so lifting ``[![a](b)](url)`` dropped
+  // the link, and the badge on the published page stopped pointing anywhere after one save.
+  if (inline.length === 1 && inline[0].type === 'image' && !inline[0].marks?.length) return [inline[0]]
   return [{ type: 'paragraph', content: inline }]
 }
 

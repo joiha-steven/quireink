@@ -173,13 +173,11 @@ describe('the highlighter in the editor', () => {
     expect(await roundTrip('giá [$x^2$](https://a.test) đây')).toBe('giá [$x^2$](https://a.test) đây')
   })
 
-  it('ends the stroke at an inline code span, stably', async () => {
-    // The documented limit, pinned so it stays a KNOWN shortfall rather than becoming a
-    // surprise. `code` excludes every other mark at the schema level (see InkMark.ts), so
-    // the editor cannot hold this one. What matters is that the result is valid Markdown and
-    // a FIXED POINT: saving twice must not keep eating the stroke.
-    const once = await roundTrip('==chữ và cả `mã`==#orange đều thế.')
-    expect(once).toBe('==chữ và cả==#orange `mã` đều thế.')
-    expect(await roundTrip(once)).toBe(once)
+  it('carries the stroke across an inline code span', async () => {
+    // It used to END here: the code mark was taken as excluding everything, so the stroke
+    // broke before `mã` and the reader's page changed at the first save. The code mark
+    // excludes only itself since 2026-09-30, and the stroke runs through as it was drawn.
+    const md = '==chữ và cả `mã`==#orange đều thế.'
+    expect(await roundTrip(md)).toBe(md)
   })
 })

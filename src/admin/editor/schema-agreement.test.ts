@@ -179,10 +179,10 @@ describe('the three differences that are on purpose', () => {
    * and saving used to end the stroke before the code, which is a save that changes the
    * reader's page — the thing `editor-corpus.test.ts`'s second law exists to forbid.
    */
-  it('lets the three pen marks through a code span, where the old one excluded everything', () => {
+  it('lets every other mark through a code span, where the old one excluded everything', () => {
     // ⚠️ NOT `'_ ink underline ring'`. `_` is ProseMirror's word for "every mark", so a list
     // that starts with it still excludes every mark — the first term already said all of them.
-    expect(ours.marks.code!.spec.excludes).toBe('code bold italic strike link')
+    expect(ours.marks.code!.spec.excludes).toBe('code')
     // The recorded schema excluded all eight, itself included.
     const before = was.marks.code!.excludesByName as Record<string, boolean>
     expect(Object.values(before).every(Boolean)).toBe(true)
@@ -190,10 +190,12 @@ describe('the three differences that are on purpose', () => {
     // ⚠️ EVERY MARK IN THE SCHEMA, not a list copied from the one above it. A ninth mark added
     // later lands in one of these two groups by name, and if nobody thought about which, this
     // says so rather than letting it become legal inside a code span by default.
-    const PENS = new Set(['ink', 'underline', 'ring'])
+    //
+    // Since 2026-09-30 only `code` itself: a link, emphasis and strike around a code span are
+    // what the reader's page has always drawn, and excluding them wrote them out on save.
     for (const name of Object.keys(ours.marks)) {
       expect(`${name} excluded by code: ${ours.marks.code!.excludes(ours.marks[name]!)}`)
-        .toBe(`${name} excluded by code: ${!PENS.has(name)}`)
+        .toBe(`${name} excluded by code: ${name === 'code'}`)
     }
   })
 
