@@ -201,6 +201,17 @@ describe('authorize', () => {
     expect(html).toContain(id)
   })
 
+  // No scope mints a full token, and the page left the Scope row out, so the owner was never
+  // shown that write access was being granted (2026-09-30).
+  it('says what it grants, even when the client asked for no scope at all', async () => {
+    const { challenge } = pkce()
+    const id = await register(['https://example.com/cb'])
+    const none = await (await asOwner(authorizeUrl(id, 'https://example.com/cb', challenge))).text()
+    expect(none).toContain('(none requested) → full: read and write')
+    const read = await (await asOwner(`${authorizeUrl(id, 'https://example.com/cb', challenge)}&scope=read`)).text()
+    expect(read).toContain('read → read: read only')
+  })
+
   it('refuses an approve POST with no CSRF token', async () => {
     const { challenge } = pkce()
     const id = await register(['https://evil.example/cb'])

@@ -19,6 +19,7 @@ import { getCookie } from 'hono/cookie'
 import { COOKIE_NAME, resolveSession } from '@/auth/sessions'
 import { serverSecret } from '@/auth/secret'
 import { escapeHtml } from '@/utils'
+import type { McpScope } from '@/mcp/tokens'
 
 const secret = (): string => process.env.MCP_OAUTH_SECRET || serverSecret('mcp-oauth')
 
@@ -27,10 +28,11 @@ export type OAuthParams = { clientId: string; redirectUri: string; challenge: st
 /**
  * The session-bound value the CSRF token is keyed to.
  *
- * Was the raw next-auth session JWT. Here it is the stored session ID — the SHA-256 of
- * the cookie token, which never leaves the server. The property that matters is identical
- * and arguably stronger: an attacker who can make the owner's browser send its cookie
- * still cannot READ that cookie (HttpOnly), and cannot derive the ID without it.
+ * Was the raw next-auth session JWT. Here it is the stored session ID — the SHA-256 of the
+ * cookie token. It is NOT a secret: the owner's own session list (`/api/security`) carries
+ * every ID so a session can be revoked by it. What makes the CSRF token unforgeable is the
+ * HMAC key below, the server secret, which never leaves the server; the ID is what ties a
+ * token to one session. (This said the ID "never leaves the server" until 2026-09-30.)
  */
 function sessionKey(c: Context): string | null {
   const session = resolveSession(getCookie(c, COOKIE_NAME))
@@ -108,7 +110,7 @@ export function consentPage(p: OAuthParams, csrf: string, denyHref: string): str
   <dl>
     <dt>Client ID</dt><dd>${esc(p.clientId || '(none)')}</dd>
     <dt>Redirect URI</dt><dd>${esc(p.redirectUri)}</dd>
-    ${p.scope ? `<dt>Scope</dt><dd>${esc(p.scope)}</dd>` : ''}
+    <dt>Scope</dt><dd>${esc(p.scope || '(none requested)')} → ${tokenScope(p.scope ?? '') === 'full' ? 'full: read and write' : 'read: read only'}</dd>
   </dl>
   <div class="row">
     <form method="POST">
@@ -119,4 +121,18 @@ export function consentPage(p: OAuthParams, csrf: string, denyHref: string): str
     <a class="deny" href="${esc(denyHref)}">Deny</a>
   </div>
 </body></html>`
+}
+
+/**
+ * The scope a token gets: any writing scope an IndieAuth client asks for is `full`, and so is
+ * NO scope, which is what most MCP clients send. The consent page prints the answer, because
+ * an empty request left the Scope row out and the owner was never shown that write access was
+ * being granted (2026-09-30).
+ *
+ * Never `admin`. A connector negotiating a scope string is not the owner ticking a box, and
+ * the consent page has no wording for "may put script on every page" — so the grant that
+ * carries that is mintable only from the token card in Settings, by hand.
+ */
+export function tokenScope(requested: string): McpScope {
+  return !requested || /\b(full|create|update|delete|media|draft)\b/.test(requested) ? 'full' : 'read'
 }

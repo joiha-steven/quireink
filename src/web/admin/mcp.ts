@@ -15,7 +15,7 @@ import type { Context } from 'hono'
 import { isRedirectAllowed, registerClient } from '@/mcp/clients'
 import { createToken, deleteToken, listTokens, mintOAuthToken, type McpScope } from '@/mcp/tokens'
 import { issueCode, mcpEnabled, verifyCode } from '@/mcp/auth'
-import { consentPage, csrfToken, verifyCsrf, type OAuthParams } from '@/mcp/consent'
+import { consentPage, csrfToken, tokenScope, verifyCsrf, type OAuthParams } from '@/mcp/consent'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { logActivity } from '@/server/activity'
 import { currentOwner, ownerRouter, param, QUIET } from '@/web/guard'
@@ -91,17 +91,6 @@ export function isIndieAuthClient(clientId: string, redirectUri: string): boolea
   } catch {
     return false
   }
-}
-
-/**
- * The scope a token gets: any writing scope an IndieAuth client asks for is `full`.
- *
- * Never `admin`. A connector negotiating a scope string is not the owner ticking a box, and
- * the consent page has no wording for "may put script on every page" — so the grant that
- * carries that is mintable only from the token card in Settings, by hand.
- */
-function tokenScope(requested: string): McpScope {
-  return !requested || /\b(full|create|update|delete|media|draft)\b/.test(requested) ? 'full' : 'read'
 }
 
 /** Issue a code and 302 to the ALREADY VALIDATED redirect_uri, carrying state through. */
