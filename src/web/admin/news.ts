@@ -132,6 +132,9 @@ export function newsRoutes() {
     }
 
     const { sent, error } = await sendMail({ to, ...mail, kind: 'test' })
+    // No mail server set up is the OWNER's state, not an upstream failure: a 409 and no error
+    // line in the log. It was a 502 and an [ERROR] for pressing a key the page offered.
+    if (!sent && (error === 'smtp_not_configured' || error === 'smtp_off')) return fail(c, error, 409)
     // 502, not 500: the failure is the upstream mail server's, and the distinction is what
     // tells the owner to check their SMTP settings rather than report a bug.
     if (!sent) return fail(c, error || 'send_failed', 502)

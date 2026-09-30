@@ -125,7 +125,7 @@ export function sendPanel(t: AdminStrings, posts: Post[], open: boolean, timezon
  * actually work" step, not a setting. Each of the three sends ONE real message, to the address
  * typed or to the owner's own when that is empty.
  */
-export function testPanel(t: AdminStrings, open: boolean): string {
+export function testPanel(t: AdminStrings, open: boolean, mailConfigured = true): string {
   const kinds: [string, string][] = [
     ['smtp', t.nlTestSmtp], ['post', t.nlTestPost], ['subscribe', t.nlTestSubscribe],
   ]
@@ -137,7 +137,9 @@ export function testPanel(t: AdminStrings, open: boolean): string {
         + `<input id="nl-test-to" data-nl-test-to type="email" autocomplete="off" class="${CONTROL} mt-2 w-full"></div>`
         + `<div class="flex flex-wrap gap-2">`
         + kinds.map(([kind, label]) =>
-          `<button type="button" data-nl-test="${escapeAttr(kind)}" class="${buttonClass('secondary')}">${escapeHtml(label)}</button>`).join('')
+          // Off with no mail server, like Send: pressing one only ever came back with a code.
+          `<button type="button" data-nl-test="${escapeAttr(kind)}"${mailConfigured ? '' : ' disabled'}`
+          + ` class="${buttonClass('secondary')}">${escapeHtml(label)}</button>`).join('')
         + `</div></div>`,
     })
     + `</div>`

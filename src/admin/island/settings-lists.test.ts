@@ -141,6 +141,38 @@ describe('the MCP token table', () => {
     expect(text('data-mcp-expires')).toBe(formatDateTimeShort(ISO))
   })
 
+  // Switched on and saved, the manager opened still showing the 404 the first read got while
+  // MCP was off (2026-09-30): it asks again when it opens.
+  it('asks for the list again when the manager opens', async () => {
+    const block = root.querySelector<HTMLElement>('[data-gate-live="mcp.enabled"]')!
+    block.hidden = true
+    wireLists(root, {})
+    await settle()
+    expect(root.querySelectorAll('[data-mcp-token-row]').length).toBe(0)
+    routes.set('/api/mcp/tokens', [token()] satisfies McpTokenWire[])
+    block.hidden = false
+    await new Promise((r) => setTimeout(r, 0))
+    await settle()
+    expect(root.querySelectorAll('[data-mcp-token-row]').length).toBe(1)
+  })
+
+  // After a revoke the once-only box went on showing a plaintext token (2026-09-30).
+  it('takes the shown token off the page when a token is revoked', async () => {
+    routes.set('/api/mcp/tokens', [token()] satisfies McpTokenWire[])
+    const answers = (e: Event) => (e as CustomEvent).detail.respond('confirm')
+    window.addEventListener('quire:confirm', answers)
+    wireLists(root, {})
+    await settle()
+    const box = root.querySelector<HTMLElement>('[data-mcp-created]')!
+    box.hidden = false
+    root.querySelector<HTMLElement>('[data-mcp-token]')!.textContent = 'qi_plaintext_secret'
+    root.querySelector<HTMLButtonElement>('[data-mcp-delete]')!.click()
+    await settle()
+    window.removeEventListener('quire:confirm', answers)
+    expect(box.hidden).toBe(true)
+    expect(root.querySelector<HTMLElement>('[data-mcp-token]')!.textContent).toBe('')
+  })
+
   it('puts the row IN the table, not in a table of its own', async () => {
     // The one failure on this screen that every assertion about text goes green on. A `<tr>`
     // cannot be a template's first child and survive every parser, so it ships wrapped in a

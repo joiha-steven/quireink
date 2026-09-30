@@ -43,7 +43,7 @@ function words(t: AdminStrings): string {
     armed: t.nlArmed, send: t.nlSendButton, going: t.nlSendGoing, loading: t.loading,
     sendDone: t.nlSendDone, sendFailed: t.nlSendFailed,
     previewEmpty: t.nlPreviewEmpty, previewFailed: t.nlPreviewFailed,
-    testSent: t.nlTestSent, testFailed: t.nlTestFailed,
+    testSent: t.nlTestSent, testFailed: t.nlTestFailed, noSmtp: t.nlNoSmtpWarning.replace('{tab}', t.tabPeople),
     deleteFailed: t.deleteFailed, showing: t.nlShowing,
   }))
 }
@@ -81,7 +81,7 @@ export async function newsletterScreen(settings: SiteSettings, query: URLSearchP
       + peoplePanel(t, settings.language, people, open === 'people',
         pager(t, '/admin/newsletter', 'people', people.at, people.pages))
       + sendPanel(t, letter.posts, open === 'send', settings.timezone)
-      + testPanel(t, open === 'test')
+      + testPanel(t, open === 'test', letter.mailConfigured)
       + `<div class="${SHEET_FOOT}">${escapeHtml(t.nlPageHint)}</div>`)
     + `</div>`
 }

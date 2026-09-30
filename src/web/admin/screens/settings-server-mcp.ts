@@ -49,7 +49,7 @@ const TD_WIDE = 'hidden whitespace-nowrap px-3 py-2 text-neutral-500 sm:table-ce
  * `data-mcp-made`, away from the box that shows a just-minted token.
  */
 function tokenRow(t: AdminStrings): string {
-  const badge = `<span class="ml-2 rounded border border-neutral-300 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400" data-mcp-scope hidden>`
+  const badge = `<span class="ml-2 whitespace-nowrap rounded border border-neutral-300 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400" data-mcp-scope hidden>`
     + `<span data-mcp-badge-read hidden>${escapeHtml(t.mcpReadOnly)}</span>`
     + `<span data-mcp-badge-code hidden>${escapeHtml(t.mcpCustomCode)}</span></span>`
   // ⚠️ THE ROW IS WRAPPED IN A TABLE SKELETON INSIDE THE TEMPLATE, and the island reads
@@ -70,7 +70,9 @@ function tokenRow(t: AdminStrings): string {
     + `<span class="font-medium text-neutral-900 dark:text-white" data-mcp-expired hidden>`
     + `${escapeHtml(t.mcpExpired)}</span>`
     + `<span class="text-neutral-500 dark:text-neutral-400" data-mcp-expires></span></td>`
-    + `<td class="px-3 py-2 text-right">`
+    // STUCK TO THE RIGHT EDGE of the scroller: the table is wider than the card at 1440, and
+    // the only way to revoke a token sat past the edge, cut to "Delet" on a phone (2026-09-30).
+    + `<td class="sticky right-0 bg-white px-3 py-2 text-right dark:bg-neutral-900">`
     + `<button type="button" data-mcp-delete class="rounded-lg px-2.5 py-1 text-xs text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white">`
     + `${escapeHtml(t.delete)}</button></td></tr></tbody></table></template>`
 }
@@ -124,7 +126,7 @@ function tokens(t: AdminStrings): string {
     + `<th class="hidden ${TH} sm:table-cell">${escapeHtml(t.mcpColCreated)}</th>`
     + `<th class="hidden ${TH} sm:table-cell">${escapeHtml(t.mcpColLastUsed)}</th>`
     + `<th class="hidden ${TH} sm:table-cell">${escapeHtml(t.mcpColExpires)}</th>`
-    + `<th class="px-3 py-2"></th></tr>`
+    + `<th class="sticky right-0 bg-neutral-50 px-3 py-2 dark:bg-neutral-900"></th></tr>`
   // The empty line and the table are mutually exclusive, so they share ONE box: a stack that
   // hides one of a pair hands the other a margin it never had (`docs/admin-one-dom.md`, trap 5).
   const table = `<div>`

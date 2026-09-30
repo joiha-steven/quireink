@@ -101,6 +101,11 @@ async function revoke(screen: HTMLElement, id: string, name: string, w: ListWord
   const res = await fetch(`/api/mcp/tokens/${id}`, { method: 'DELETE' }).catch(() => null)
   if (!res?.ok) { say(w.deleteFailed ?? '', 'error'); return }
   say(w.mcpTokenDeleted ?? '')
+  // The once-only box goes too: after a revoke it went on showing a plaintext token for a
+  // grant that no longer exists, possibly the one just revoked (2026-09-30).
+  const box = screen.querySelector<HTMLElement>('[data-mcp-created]')
+  put(box ?? screen, 'data-mcp-token', '')
+  show(box, false)
   await fillTokens(screen)
 }
 
@@ -150,6 +155,13 @@ function paintTokens(rows: HTMLElement, tokens: McpTokenWire[]): void {
 
 export function wireMcp(screen: HTMLElement, w: ListWords): void {
   void fillTokens(screen)
+  // THE LIST IS ASKED FOR AGAIN WHEN THE MANAGER OPENS. With MCP off the first read answered
+  // 404, and switching it on and saving opened a manager still showing that failure until a
+  // reload (2026-09-30). The gate is opened by the card's save, so its `hidden` is watched.
+  for (const block of screen.querySelectorAll<HTMLElement>('[data-gate-live="mcp.enabled"]')) {
+    new MutationObserver(() => { if (!block.hidden) void fillTokens(screen) })
+      .observe(block, { attributes: true, attributeFilter: ['hidden'] })
+  }
 
   // ⚠️ THE TWO SCOPES ARE MUTUALLY EXCLUSIVE and nothing on the server enforces it, because
   // neither box stores anything: they describe the NEXT token, not a setting. "Reads nothing

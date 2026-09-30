@@ -101,15 +101,17 @@ describe('the test send', () => {
     expect(await res.json()).toEqual({ success: false, error: 'invalid_kind' })
   })
 
-  // 502, not 500. The failure is the upstream mail server's, and the distinction is what
-  // tells the owner to check their SMTP settings rather than report a bug.
-  it('reports an upstream failure as 502', async () => {
+  // No mail server set up is the owner's own state: a 409 naming it, which the screen turns
+  // into its sentence, and no [ERROR] line. It was a 502, as if an upstream server had failed
+  // (2026-09-30); a real upstream failure is still the 502 in `news/mail.ts`'s path.
+  it('names a missing mail server rather than calling it an upstream failure', async () => {
     const res = await post('/api/mail/test', { kind: 'smtp' })
-    expect(res.status).toBe(502)
+    expect(res.status).toBe(409)
+    expect(await res.json()).toEqual({ success: false, error: 'smtp_not_configured' })
   })
 
   it('defaults the recipient to the signed-in owner', async () => {
-    // Unconfigured SMTP still fails, but reaching 502 rather than 400 proves a recipient
+    // Unconfigured SMTP still fails, but reaching 409 rather than 400 proves a recipient
     // was resolved: `no_recipient` is the 400 that would fire otherwise.
     const res = await post('/api/mail/test', { kind: 'smtp' })
     expect(res.status).not.toBe(400)

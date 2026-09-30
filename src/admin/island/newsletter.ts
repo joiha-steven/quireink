@@ -20,7 +20,7 @@ const root = document.querySelector<HTMLElement>('[data-screen="newsletter"]')
 
 type Words = Partial<Record<
   'digest' | 'already' | 'armed' | 'send' | 'going' | 'loading' | 'sendDone' | 'sendFailed'
-  | 'previewEmpty' | 'previewFailed' | 'testSent' | 'testFailed' | 'deleteFailed' | 'showing', string>>
+  | 'previewEmpty' | 'previewFailed' | 'testSent' | 'testFailed' | 'deleteFailed' | 'showing' | 'noSmtp', string>>
 
 type Run = { sent: number; failed: number; recipients: number; done: boolean }
 
@@ -224,7 +224,7 @@ if (root) {
         })
         const body = await res.json() as { success?: boolean; error?: string; data?: Run }
         if (!body?.success || !body.data) {
-          say(`${words.sendFailed ?? ''}: ${body?.error ?? ''}`, 'error')
+          say(body?.error?.startsWith('smtp_') ? words.noSmtp ?? '' : `${words.sendFailed ?? ''}: ${body?.error ?? ''}`, 'error')
           return
         }
         for (const b of postBoxes) if (b.checked) b.dataset.sent = '1'
@@ -254,6 +254,8 @@ if (root) {
       .then((r) => r.json() as Promise<{ success?: boolean; error?: string; data?: { to: string } }>)
       .then((body) => {
         if (body?.success && body.data) say((words.testSent ?? '').replace('{to}', body.data.to))
+        // The owner's own sentence for a missing mail server; a code only for what has none.
+        else if (body?.error?.startsWith('smtp_')) say(words.noSmtp ?? words.testFailed ?? '', 'error')
         else say(`${words.testFailed ?? ''}: ${body?.error ?? ''}`, 'error')
       })
       .catch(() => say(words.testFailed ?? '', 'error'))
