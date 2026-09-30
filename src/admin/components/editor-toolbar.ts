@@ -19,6 +19,7 @@ import { el, svgGlyph } from './node-dom'
 import { withTip } from './editor-tooltip'
 import { editLink } from './editor-link'
 import { tip } from './editorKeys'
+import { TOOLBAR_MIDDLE, TOOLBAR_RUN, TOOLBAR_STRIP } from '@/admin-shared/toolbar-shape'
 
 /**
  * EVERY CLASS THIS FILE WRITES, IN ONE TABLE — see `CaptionedImage.ts` for why the name is
@@ -47,8 +48,8 @@ const className = {
    * scrolls a strip of tools sideways in every application they have ever used, and they cannot
    * scroll the paper back up past chrome that is stuck to it.
    */
-  strip: 'no-scrollbar scroll-fade-x overflow-x-auto px-4 py-1.5 lg:flex lg:overflow-x-visible',
-  middle: 'lg:justify-center',
+  strip: TOOLBAR_STRIP,
+  middle: TOOLBAR_MIDDLE,
   /**
    * The run of buttons inside a line, and the two widths that make it behave.
    *
@@ -58,12 +59,13 @@ const className = {
    * of tools should do. Centring every line put five buttons adrift in the middle of an empty
    * row, which is how it read at 1440 with the attributes sheet docked beside the writing.
    */
-  run: 'flex flex-nowrap items-center gap-3 lg:w-max lg:max-w-full lg:flex-wrap',
+  run: TOOLBAR_RUN,
   /**
    * One cluster, kept together when the run wraps. The clusters used to be told apart by a
    * hairline, and a hairline is the one thing that must not be the first mark on a line:
    * wrapped at 1440 with the attributes sheet docked, the second line opened with a stray
-   * vertical tick. The gap between clusters was 13px with the rule and is 12px without.
+   * vertical tick. The gap between clusters was 13px with the rule, 12px without, and is 8px
+   * since 2026-09-30: at 1280 the fifth cluster wrapped to a second 48px row for want of 8px.
    */
   group: 'flex items-center gap-0.5',
   bar: 'sticky z-10 border-b border-neutral-200/70 bg-neutral-50/80 backdrop-blur-xl'
@@ -263,7 +265,9 @@ export function mountToolbar(host: HTMLElement, hooks: ToolbarHooks): Toolbar {
   tableLine.hidden = true
 
   bar.append(line, tableLine)
-  host.appendChild(bar)
+  // REPLACES what the server drew there: a blank row of the bar's height, held so the paper
+  // does not drop when this lands (`web/admin/screens/sheet.ts`).
+  host.replaceChildren(bar)
 
   const sync = (): void => {
     for (const { key, button } of lit) {

@@ -17,6 +17,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { CARD } from '@/admin-shared/kit'
 import { READING } from '@/admin-shared/scale'
 import { sheetActions, type SheetLinks } from './sheet-actions'
+import { TOOLBAR_CLUSTERS, TOOLBAR_MIDDLE, TOOLBAR_RUN, TOOLBAR_STRIP, clusterWidth } from '@/admin-shared/toolbar-shape'
 
 export type SheetPiece = {
   /** Empty for a piece that has never been saved. */
@@ -89,7 +90,10 @@ export function writingSheet(frame: SheetFrame): string {
     // whole height of the paper, which is what a writer means by a toolbar. Measured at 1440
     // on a 24-paragraph draft: scrolled 1,500px, the strip was at y=-1406 before and holds at
     // its offset after.
-    + `<div data-toolbar-slot class="contents"></div>`
+    //
+    // ⚠️ AND IT IS NOT EMPTY: it holds a blank bar of the real one's shape, which wraps onto the
+    // same rows at any width and which the bar replaces when it lands (`toolbar-shape.ts`).
+    + `<div data-toolbar-slot class="contents">${toolbarPlace()}</div>`
     // `pb-20` below `lg`: the action bar is FIXED to the bottom edge on a phone, so without room
     // under the paper the last line of a post sits behind Publish and cannot be scrolled clear.
     + `<div class="mx-auto w-full pb-20 lg:pb-0" style="max-width:${Number(contentWidth)}px">`
@@ -105,4 +109,12 @@ export function writingSheet(frame: SheetFrame): string {
     + frame.overlays
     + `<script type="application/json" data-sheet-data>${json}</script>`
     + `</div>`
+}
+
+/** A blank bar of the toolbar's shape, so the paper is where it will be before the script runs. */
+function toolbarPlace(): string {
+  const clusters = TOOLBAR_CLUSTERS
+    .map((keys) => `<span class="h-9 shrink-0" style="width:${clusterWidth(keys)}px"></span>`).join('')
+  return `<div aria-hidden="true" class="border-b border-transparent">`
+    + `<div class="${TOOLBAR_STRIP} ${TOOLBAR_MIDDLE}"><div class="${TOOLBAR_RUN}">${clusters}</div></div></div>`
 }

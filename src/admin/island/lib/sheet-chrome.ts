@@ -87,6 +87,8 @@ export function mountChrome(parts: ChromeParts, hooks: ChromeHooks): Chrome {
 
   const sync = (): void => {
     const wantBar = !hooks.raw() && !hooks.focus()
+    // No bar wanted and none drawn yet: the row the server held for it goes too.
+    if (!wantBar && !toolbar) parts.toolbarSlot.replaceChildren()
     if (wantBar && !toolbar) {
       toolbar = mountToolbar(parts.toolbarSlot, {
         editor,
