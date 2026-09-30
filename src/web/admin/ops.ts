@@ -21,10 +21,9 @@ import { clearCache } from '@/server/cache'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
+import { MAX_IMPORT_BYTES } from '@/web/body-cap'
 import { ownerRouter } from '@/web/guard'
 
-/** WXR is text. Anything larger than this is not an export, it is a mistake or an attack. */
-const MAX_IMPORT_BYTES = 100 * 1024 * 1024
 
 /** Per-IP cap on the cron tick. See the comment at the route for why it needs one. */
 const CRON_PER_MINUTE = 12

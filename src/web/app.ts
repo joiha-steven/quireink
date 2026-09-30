@@ -33,6 +33,7 @@ import { userRedirects } from '@/web/redirects'
 import { cacheHeaders } from '@/web/cache-headers'
 import { securityHeaders } from '@/web/security-headers'
 import { updatePing } from '@/web/update-ping'
+import { capPublicBodies } from '@/web/body-cap'
 import { compression } from '@/web/compress'
 import { errorHandler, notFoundHandler, requestLogger } from '@/web/api'
 import { contentRoutes } from '@/web/admin/content'
@@ -140,6 +141,9 @@ export function createApp(): Hono {
   // line of it on the request path. See `web/update-ping.ts` for why it is a reader rather
   // than a timer, and `server/update-check.ts` for what the call carries.
   app.use('*', updatePing())
+
+  // A stranger's body is kilobytes; see `web/body-cap.ts` for the two layers.
+  capPublicBodies(app)
 
   // `/` is the post list, or a page the owner chose. Resolved per request rather than when
   // the routes are built, because the mode is a setting: see `web/home-mode.ts`.

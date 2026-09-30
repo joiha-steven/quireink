@@ -16,7 +16,7 @@ Everything that configures Quire Ink from outside the admin, in one place. Two m
 | `PORT` | Defaults to `3000` |
 | `HOST` | Which interface to listen on. Defaults to `127.0.0.1`, right when a reverse proxy sits in front on the same machine. Set `0.0.0.0` when it does not |
 | `SETUP_CODE` | Twelve characters or more; then `/setup` asks for it instead of the log link. For installs where nobody reads a log: cloud-init, a hosting panel |
-| `MAX_UPLOAD_MB` | Largest single upload. Defaults to `64`, matching the `client_max_body_size` in the recommended vhost so the two refuse the same file. `0` = no limit |
+| `MAX_UPLOAD_MB` | Largest single upload. Defaults to `64`, matching the `client_max_body_size` in the recommended vhost so the two refuse the same file. The whole request may carry this or 100 MB, whichever is larger, plus 1 MB; a raised value is no longer stopped at Bun's own 128 MB. Routes a stranger can write to (sign-in, comments, subscribe) take 64 KB whatever this says. `0` = no limit |
 | `STORAGE_QUOTA_GB` | Largest the uploads folder may grow, counting the smaller copies of each image. Defaults to `5`, and an upload that would go past it is refused. `0` = no limit |
 | `PAGE_CACHE_MB` | How much rendered HTML this process keeps in memory. Defaults to `8`, which is chosen for the smallest box this runs on: an ordinary blog fits its whole archive inside it and never notices, and a 1,000-post archive stops at about 330 pages instead of holding all of them. Raise it if you have memory to spare; `0` = no cache kept in memory |
 | `CRON_SECRET` | Guards `/api/cron`, which publishes scheduled posts and tidies image variants |

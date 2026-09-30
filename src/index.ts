@@ -16,6 +16,7 @@ import { createApp } from '@/web/app'
 import pkg from '../package.json' with { type: 'json' }
 import { enableBackgroundCache } from '@/server/warm'
 import { startClock, clockBlockedBy } from '@/server/tick'
+import { requestCeiling } from '@/web/body-cap'
 
 const env = readEnv()
 try {
@@ -52,6 +53,8 @@ const server = Bun.serve({
   hostname: env.host,
   port: env.port,
   idleTimeout: 120,
+  // Follows MAX_UPLOAD_MB rather than Bun's 128 MB default; see `web/body-cap.ts`.
+  maxRequestBodySize: requestCeiling(env.maxUploadBytes),
   fetch: app.fetch,
 })
 // The REAL version, read from package.json the way the dashboard and the update check
