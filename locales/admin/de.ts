@@ -1083,6 +1083,8 @@ const de = {
   aiTaskCommentsDesc: 'Jeder neue Kommentar wird zur Bewertung an Ihren konfigurierten KI-Anbieter gesendet. Erwähnen Sie das in Ihrer Datenschutzerklärung.',
   aiDescribeAll: "Bilder ohne Alt-Text beschreiben",
   aiDescribeAllStarted: "Beschreibung läuft im Hintergrund — Bilder eingereiht",
+  mediaAltLabel: 'Beschreibung (Alt-Text)',
+  mediaAltSaved: 'Beschreibung gespeichert',
   aiNotConfigured: "Noch kein KI-Modell — Einstellungen → {tab}",
   aiCannotSeeImages: 'Dieses Modell kann keine Bilder sehen — wähle eines, das das kann, oder lass Alt-Text aus.',
   navAssistant: "Assistent",

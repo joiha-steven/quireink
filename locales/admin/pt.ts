@@ -1084,6 +1084,8 @@ const pt = {
   aiTaskCommentsDesc: 'Cada novo comentário é enviado ao provedor de IA configurado para avaliação. Mencione isso na sua política de privacidade.',
   aiDescribeAll: 'Descrever imagens sem texto alternativo',
   aiDescribeAllStarted: 'Descrevendo em segundo plano — imagens na fila',
+  mediaAltLabel: 'Descrição (texto alternativo)',
+  mediaAltSaved: 'Descrição guardada',
   aiNotConfigured: 'Ainda sem modelo de IA — Configurações → {tab}',
   aiCannotSeeImages: 'Este modelo não vê imagens — escolha um que veja, ou deixe o texto alternativo desligado.',
   navAssistant: 'Assistente',

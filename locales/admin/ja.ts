@@ -1083,6 +1083,8 @@ const ja = {
   aiTaskCommentsDesc: '新しいコメントは設定済みのAIプロバイダーに送信され判定されます。プライバシーポリシーに明記してください。',
   aiDescribeAll: "代替テキストのない画像を説明する",
   aiDescribeAllStarted: "バックグラウンドで説明中 — キュー内の画像",
+  mediaAltLabel: '説明（代替テキスト）',
+  mediaAltSaved: '説明を保存しました',
   aiNotConfigured: "AI モデル未設定 — 設定 → {tab}",
   aiCannotSeeImages: 'このモデルは画像を見られません — 画像を扱えるモデルを選ぶか、代替テキストをオフのままにしてください。',
   navAssistant: "アシスタント",

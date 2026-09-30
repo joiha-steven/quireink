@@ -326,3 +326,22 @@ describe('upload limits', () => {
       .rejects.toThrow(/Blob too large/)
   })
 })
+
+describe('a description written by hand', () => {
+  const altOf = (): string | null =>
+    db().query<{ alt: string | null }, []>(`select alt from media`).get()?.alt ?? null
+
+  it('is stored for the picture, squeezed to one line, and cleared as a decision', async () => {
+    const [m] = await payload<Array<{ url: string }>>(await upload('/api/media/upload', [['one.png', 'image/png']]))
+    expect((await postJson('/api/media/alt', { url: m!.url, alt: '  A plate of\n type  ' })).status).toBe(200)
+    expect(altOf()).toBe('A plate of type')
+    // '' is "cleared", which the AI describer leaves alone; NULL would invite it back.
+    expect((await postJson('/api/media/alt', { url: m!.url, alt: '' })).status).toBe(200)
+    expect(altOf()).toBe('')
+  })
+
+  it('refuses a picture that is not in the library, and a body that is not two strings', async () => {
+    expect((await postJson('/api/media/alt', { url: '/media/nothing.png', alt: 'x' })).status).toBe(404)
+    expect((await postJson('/api/media/alt', { url: 7, alt: 'x' })).status).toBe(400)
+  })
+})

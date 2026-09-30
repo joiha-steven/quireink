@@ -1341,6 +1341,9 @@ export type AdminStrings = {
   aiTaskCommentsDesc: string
   aiDescribeAll: string
   aiDescribeAllStarted: string
+  /** The picture's description, edited by hand in the library's full-size view. */
+  mediaAltLabel: string
+  mediaAltSaved: string
   aiNotConfigured: string
   aiCannotSeeImages: string
   navAssistant: string

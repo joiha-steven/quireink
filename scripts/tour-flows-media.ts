@@ -221,7 +221,14 @@ export function registerMediaFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       if (!box.matches(':modal')) return 'the dialog is not modal, so the grid behind it is still live'
       if (!box.getAttribute('aria-label')) return 'the dialog has no name'
       if (!box.contains(document.activeElement)) return 'focus stayed behind the dialog'
-      const close = box.querySelector('button')
+      // The description can be read and changed here since 2026-09-30, and the picture, the box
+      // and Close all have to fit the window together.
+      const alt = box.querySelector('[data-media-alt] input')
+      if (!alt) return 'the full-size view has no description box'
+      if (!box.querySelector('[data-media-alt] label').textContent.trim()) return 'the description box has no name'
+      const low = Math.max(...[...box.children].map((el) => el.getBoundingClientRect().bottom))
+      if (low > innerHeight + 1) return 'the view runs past the window: ' + Math.round(low) + ' > ' + innerHeight
+      const close = [...box.querySelectorAll(':scope > button')].pop()
       if (!close || !close.textContent.trim()) return 'the dialog has no named way out'
       close.click()
       await sleep(200)

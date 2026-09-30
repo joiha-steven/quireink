@@ -1083,6 +1083,8 @@ const en = {
   aiTaskCommentsDesc: 'Each new comment is sent to your configured AI provider for scoring. Mention this in your privacy policy.',
   aiDescribeAll: "Describe images missing alt text",
   aiDescribeAllStarted: "Describing in the background — images queued",
+  mediaAltLabel: 'Description (alt text)',
+  mediaAltSaved: 'Description saved',
   aiNotConfigured: "No AI model yet — Settings → {tab}",
   aiCannotSeeImages: 'This model cannot see images — pick one that can, or leave alt text off.',
   navAssistant: "Assistant",

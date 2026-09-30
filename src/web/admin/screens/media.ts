@@ -53,6 +53,7 @@ function words(t: AdminStrings): string {
     describing: t.aiDescribeAllStarted, noVision: t.aiCannotSeeImages,
     noModel: t.aiNotConfigured.replace('{tab}', t.tabServer),
     loadFailed: t.loadMediaFailed, close: t.close,
+    altLabel: t.mediaAltLabel, altSaved: t.mediaAltSaved, save: t.save, saveFailed: t.saveFailed,
   }))
 }
 

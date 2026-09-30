@@ -1083,6 +1083,8 @@ const es = {
   aiTaskCommentsDesc: 'Cada comentario nuevo se envía a tu proveedor de IA configurado para evaluarlo. Menciónalo en tu política de privacidad.',
   aiDescribeAll: 'Describir las imágenes sin texto alternativo',
   aiDescribeAllStarted: 'Describiendo en segundo plano — imágenes en cola',
+  mediaAltLabel: 'Descripción (texto alternativo)',
+  mediaAltSaved: 'Descripción guardada',
   aiNotConfigured: 'Todavía no hay modelo de IA — Ajustes → {tab}',
   aiCannotSeeImages: 'Este modelo no puede ver imágenes — elige uno que sí pueda, o deja el texto alternativo desactivado.',
   navAssistant: 'Asistente',

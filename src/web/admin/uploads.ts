@@ -20,7 +20,7 @@ import {
 } from '@/media/files'
 import { collapseBlob, readBlob } from '@/media/blob'
 import { mimeOf } from '@/media/mime'
-import { describeUpload } from '@/media/alt-text'
+import { describeUpload, setMediaAlt } from '@/media/alt-text'
 import { getIntegrationKeys } from '@/store/integration-keys'
 import { seesImages } from '@/server/ai-provider'
 import { all } from '@/store/query'
@@ -188,6 +188,16 @@ export function uploadRoutes() {
       void logActivity('media.upload', `alt backfill: ${done}/${images.length}`)
     })()
     return json({ queued: images.length })
+  })
+
+  // A description written by hand, from the picture's own view in the library.
+  router.post('/api/media/alt', async (c) => {
+    const input = await body<{ url: unknown; alt: unknown }>(c)
+    if (typeof input.url !== 'string' || typeof input.alt !== 'string') return fail(c, 'bad_input', 400)
+    if (!setMediaAlt(input.url, input.alt)) return fail(c, 'not_found', 404)
+    // The description is in every page that shows the picture.
+    clearCache()
+    return json({ ok: true })
   })
 
   router.get('/api/media/debug', async (c) => {

@@ -1083,6 +1083,8 @@ const it = {
   aiTaskCommentsDesc: 'Ogni nuovo commento viene inviato al provider IA configurato per la valutazione. Indicalo nella tua informativa sulla privacy.',
   aiDescribeAll: 'Descrivi le immagini senza testo alternativo',
   aiDescribeAllStarted: 'Descrizione in sottofondo — immagini in coda',
+  mediaAltLabel: 'Descrizione (testo alternativo)',
+  mediaAltSaved: 'Descrizione salvata',
   aiNotConfigured: 'Ancora nessun modello di IA — Impostazioni → {tab}',
   aiCannotSeeImages: 'Questo modello non vede le immagini — scegline uno che possa, o lascia disattivato il testo alternativo.',
   navAssistant: 'Assistente',

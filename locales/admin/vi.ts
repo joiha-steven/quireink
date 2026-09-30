@@ -1083,6 +1083,8 @@ const vi = {
   aiTaskCommentsDesc: 'Mỗi bình luận mới sẽ được gửi tới nhà cung cấp AI bạn đã cấu hình để chấm điểm. Hãy nêu điều này trong chính sách riêng tư của site.',
   aiDescribeAll: "Mô tả ảnh thiếu alt text",
   aiDescribeAllStarted: "Đang mô tả nền — số ảnh xếp hàng",
+  mediaAltLabel: 'Mô tả ảnh (alt)',
+  mediaAltSaved: 'Đã lưu mô tả',
   aiNotConfigured: "Chưa cắm model AI — Cài đặt → {tab}",
   aiCannotSeeImages: 'Model này không nhìn được ảnh — chọn model nhìn được, hoặc tắt viết alt.',
   navAssistant: "Trợ lý",

@@ -1083,6 +1083,8 @@ const ko = {
   aiTaskCommentsDesc: '새 댓글은 설정한 AI 제공자에게 전송되어 판정됩니다. 개인정보 처리방침에 명시하세요.',
   aiDescribeAll: "대체 텍스트 없는 이미지 설명하기",
   aiDescribeAllStarted: "백그라운드에서 설명 중 — 대기 중인 이미지",
+  mediaAltLabel: '설명(대체 텍스트)',
+  mediaAltSaved: '설명을 저장했습니다',
   aiNotConfigured: "아직 AI 모델 없음 — 설정 → {tab}",
   aiCannotSeeImages: '이 모델은 이미지를 볼 수 없습니다 — 이미지를 다루는 모델을 고르거나 대체 텍스트를 꺼 두세요.',
   navAssistant: "어시스턴트",

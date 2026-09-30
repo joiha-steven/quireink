@@ -301,7 +301,7 @@ export async function registerMediaBatch(items: { url: string; filename: string 
 
 // Extract the store-relative `media/...` pathname from any URL form (host-independent,
 // so a host mismatch can never make a delete silently no-op).
-function mediaKey(s: string): string | null {
+export function mediaKey(s: string): string | null {
   return s.match(/media\/[^?#"')\s]+/)?.[0] ?? null
 }
 

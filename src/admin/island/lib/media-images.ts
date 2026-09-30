@@ -16,6 +16,7 @@ import { mediaTileMark, type MediaWords } from '@/admin-shared/media-marks'
 import { elOf } from './mark-dom'
 import { wireGrid } from './media-grid'
 import { ask, owned, say, sendImages, wellIn, wireWell, type Words } from './media-bridge'
+import { altEditor } from './media-alt'
 
 const show = (el: Element | null, on: boolean): void => {
   if (el instanceof HTMLElement) el.hidden = !on
@@ -245,7 +246,7 @@ export function wireImages(panel: HTMLElement, tools: HTMLElement | null, w: Wor
     const open = (e.target as HTMLElement).closest<HTMLElement>('[data-open]')
     if (!open?.dataset.open) return
     const tile = open.closest<HTMLElement>('[data-media]')
-    zoom(open.dataset.open, tile?.dataset.name ?? '', open.getAttribute('aria-label') ?? '')
+    zoom(open.dataset.open, tile ?? null, open.getAttribute('aria-label') ?? '')
   })
 
   /**
@@ -257,21 +258,22 @@ export function wireImages(panel: HTMLElement, tools: HTMLElement | null, w: Wor
    * focus inside, closes on Escape, and hands focus back to the tile that opened it — all four
    * by itself, which is why none of them is written here.
    */
-  function zoom(url: string, _name: string, label: string): void {
+  function zoom(url: string, tile: HTMLElement | null, label: string): void {
     const dialog = document.createElement('dialog')
     dialog.setAttribute('aria-label', label)
     dialog.dataset.mediaZoom = ''
     const img = document.createElement('img')
     img.src = url
     img.alt = label
-    img.className = 'max-h-[85vh] max-w-full rounded-lg object-contain'
+    // 76vh, not 85: the description box and Close stand under it now.
+    img.className = 'max-h-[76vh] max-w-full rounded-lg object-contain'
     img.addEventListener('click', (e) => e.stopPropagation())
     const close = document.createElement('button')
     close.type = 'button'
     close.textContent = w.close ?? ''
     close.className = buttonClass('secondary', 'sm')
     close.addEventListener('click', (e) => { e.stopPropagation(); dialog.close() })
-    dialog.append(img, close)
+    dialog.append(img, altEditor(tile, url, w), close)
     dialog.addEventListener('click', () => dialog.close())
     dialog.addEventListener('close', () => dialog.remove())
     document.body.append(dialog)

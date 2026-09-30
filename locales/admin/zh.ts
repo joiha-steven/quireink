@@ -1083,6 +1083,8 @@ const zh = {
   aiTaskCommentsDesc: '每条新评论都会发送给你配置的 AI 服务商进行判定。请在隐私政策中说明。',
   aiDescribeAll: "为缺少替代文字的图片撰写描述",
   aiDescribeAllStarted: "正在后台描述 — 已排队的图片",
+  mediaAltLabel: '描述（替代文本）',
+  mediaAltSaved: '描述已保存',
   aiNotConfigured: "尚未接入 AI 模型 — 设置 → {tab}",
   aiCannotSeeImages: '该模型无法查看图片 — 请选择能看图的模型，或让替代文本保持关闭。',
   navAssistant: "助手",

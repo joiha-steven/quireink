@@ -14,6 +14,7 @@ import { getSettings } from '@/content/settings'
 import { logActivity } from '@/server/activity'
 import { ask, buildParts, parseText } from '@/server/ai-provider'
 import { liveOnly } from '@/store/db'
+import { mediaKey } from '@/media/media'
 
 // Compatibility exports: the provider plumbing moved to `server/ai-provider.ts` on
 // 2026-08-23; these keep every existing caller and test honest about where it lives.
@@ -76,4 +77,19 @@ export async function describeUpload(path: string, body: ArrayBuffer, mime: stri
   } catch (error) {
     console.error(`[ERROR] alt-text: ${(error as Error).message}`)
   }
+}
+
+/** The most a hand-written description keeps; the describer stops at 300. */
+export const MAX_ALT_CHARS = 500
+
+/**
+ * The owner's own words for a picture (2026-09-30). The library had no way to read or change a
+ * description by hand: the AI button was the only door, and a wrong one stayed wrong. An empty
+ * string is kept as '' — "cleared", which the describer above will not refill.
+ */
+export function setMediaAlt(url: string, alt: string): boolean {
+  const path = mediaKey(url)
+  if (!path) return false
+  const text = alt.replace(/\s+/g, ' ').trim().slice(0, MAX_ALT_CHARS)
+  return run(`update media set alt = ? where path = ? and ${liveOnly('media')}`, text, path).changes > 0
 }
