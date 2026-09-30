@@ -203,8 +203,8 @@ function activityCard(t: AdminStrings, lang: SiteLang, entries: ActivityEntry[],
     ? `<p class="${QUIET}">${escapeHtml(t.logEmpty)}</p>`
     : `<ul class="${FEED_LIST}">` + runs(entries).slice(0, 6).map(({ e, times }) => {
       // The stamp and the sentence in full; never the machine code (2026-09-30).
-      const title = `${formatDateTimeShort(e.at)} · ${logSentence(t, e.action, e.detail)}`
-      const when = (ago(e.at, now, lang) || formatDateTimeShort(e.at)) + (times > 1 ? ` · ×${times}` : '')
+      const title = `${formatDateTimeShort(e.at, lang)} · ${logSentence(t, e.action, e.detail)}`
+      const when = (ago(e.at, now, lang) || formatDateTimeShort(e.at, lang)) + (times > 1 ? ` · ×${times}` : '')
       return `<li class="${FEED_ROW}" title="${escapeAttr(title)}">`
         + `<span class="${FEED_MARK} ${inkFor(e.action)}">`
         + `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"`

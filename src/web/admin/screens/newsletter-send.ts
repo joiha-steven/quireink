@@ -18,6 +18,7 @@
 // message HTML on every visit to a screen most visits never open this half of. The island
 // fetches it when the tab opens, exactly as the React face did on mount.
 import type { AdminStrings } from '@/i18n/admin-i18n'
+import type { SiteLang } from '@/types'
 import { escapeAttr, escapeHtml, isoToZonedInput } from '@/utils'
 import { postName } from '@/content/untitled'
 import { CHECK, CONTROL } from '@/admin-shared/kit'
@@ -38,7 +39,7 @@ const PICK_ROW = 'flex cursor-pointer items-start gap-3 border-b border-neutral-
  * the send LOG rather than from `posts.broadcast_at`: the log is what the server's own consent
  * check reads, so the button and the server agree about what "already sent" means.
  */
-function pick(t: AdminStrings, p: Post, first: boolean, timezone: string): string {
+function pick(t: AdminStrings, lang: SiteLang, p: Post, first: boolean, timezone: string): string {
   const done = (p.stats?.sent ?? 0) > 0
   return `<label class="${PICK_ROW}">`
     + `<input type="checkbox" data-nl-post value="${escapeAttr(p.slug)}" data-sent="${done ? '1' : ''}"`
@@ -50,11 +51,11 @@ function pick(t: AdminStrings, p: Post, first: boolean, timezone: string): strin
     + `<span class="mt-0.5 block text-xs tabular-nums text-neutral-500 dark:text-neutral-400">`
     // The day on the SITE's clock, as the page and every other list print it: the ISO date is
     // UTC, and a post published at 06:00 in Hanoi showed the day before (2026-09-30).
-    + `${escapeHtml(formatDateShort(isoToZonedInput(p.date, timezone)))}${done ? ` · ${escapeHtml(t.nlAlreadySentShort)}` : ''}</span>`
+    + `${escapeHtml(formatDateShort(isoToZonedInput(p.date, timezone), lang))}${done ? ` · ${escapeHtml(t.nlAlreadySentShort)}` : ''}</span>`
     + `</span></label>`
 }
 
-export function sendPanel(t: AdminStrings, posts: Post[], open: boolean, timezone = ''): string {
+export function sendPanel(t: AdminStrings, lang: SiteLang, posts: Post[], open: boolean, timezone = ''): string {
   const shell = (body: string): string =>
     `<div data-nl-panel="send" class="px-5 py-4"${open ? '' : ' hidden'}>${body}</div>`
 
@@ -95,7 +96,7 @@ export function sendPanel(t: AdminStrings, posts: Post[], open: boolean, timezon
     title: escapeHtml(t.nlPickPost),
     body: `<div class="space-y-4">`
       + `<div class="scroll-fade max-h-80 overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-800">`
-      + posts.map((p, i) => pick(t, p, i === 0, timezone)).join('')
+      + posts.map((p, i) => pick(t, lang, p, i === 0, timezone)).join('')
       + `</div>${hints}${consent}${button}</div>`,
   })
 

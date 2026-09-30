@@ -85,7 +85,7 @@ describe('the snapshot list', () => {
     expect(text('data-backup-when')).not.toContain('Invalid')
     expect(text('data-backup-when')).not.toContain('undefined')
     // The admin's one stamp, not the browser's `toLocaleString()` (2026-09-30).
-    expect(text('data-backup-when')).toBe(formatDateTimeShort(ISO))
+    expect(text('data-backup-when')).toBe(formatDateTimeShort(ISO, 'en'))
   })
 
   it('reports a size a small blog can believe', async () => {
@@ -138,9 +138,9 @@ describe('the MCP token table', () => {
     await settle()
     expect(root.querySelectorAll('[data-mcp-token-row]').length).toBe(1)
     expect(text('data-mcp-name')).toBe('laptop')
-    expect(text('data-mcp-made')).toBe(formatDateTimeShort(ISO))
-    expect(text('data-mcp-used')).toBe(formatDateTimeShort(ISO))
-    expect(text('data-mcp-expires')).toBe(formatDateTimeShort(ISO))
+    expect(text('data-mcp-made')).toBe(formatDateTimeShort(ISO, 'en'))
+    expect(text('data-mcp-used')).toBe(formatDateTimeShort(ISO, 'en'))
+    expect(text('data-mcp-expires')).toBe(formatDateTimeShort(ISO, 'en'))
   })
 
   // Switched on and saved, the manager opened still showing the 404 the first read got while
@@ -283,13 +283,13 @@ describe('a stamp that is a number', () => {
   it('reads the same instant whether it arrives as epoch or as text', () => {
     // The whole bug in one line: `lastSeenAt` is an integer and every other stamp in the admin
     // is ISO text, so the formatter has to take both or the next caller reaches for `.slice()`.
-    expect(formatDateTimeShort(WHEN)).toBe(formatDateTimeShort(ISO))
-    expect(formatDateTimeShort(WHEN)).not.toContain('Invalid')
+    expect(formatDateTimeShort(WHEN, 'en')).toBe(formatDateTimeShort(ISO, 'en'))
+    expect(formatDateTimeShort(WHEN, 'en')).not.toContain('Invalid')
   })
 
   it('hands back something printable for a stamp it cannot read', () => {
-    expect(formatDateTimeShort('not a date')).toBe('not a date')
-    expect(formatDateTimeShort(Number.NaN)).toBe('NaN')
+    expect(formatDateTimeShort('not a date', 'en')).toBe('not a date')
+    expect(formatDateTimeShort(Number.NaN, 'en')).toBe('NaN')
   })
 
   it('is what a session row is typed to carry', () => {
@@ -299,7 +299,7 @@ describe('a stamp that is a number', () => {
       currentSessionId: 'a', recoveryLeft: 8, totpEnabled: true,
       sessions: [{ id: 'a', device: null, createdAt: WHEN, lastSeenAt: WHEN, current: true }],
     }
-    expect(formatDateTimeShort(wire.sessions[0]!.lastSeenAt)).toBe(formatDateTimeShort(ISO))
+    expect(formatDateTimeShort(wire.sessions[0]!.lastSeenAt, 'en')).toBe(formatDateTimeShort(ISO, 'en'))
   })
 })
 

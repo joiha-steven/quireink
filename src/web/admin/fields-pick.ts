@@ -93,39 +93,22 @@ export function pickControl(f: PickSpec): string {
     + ` dark:text-neutral-400">${icon('down', 'h-4 w-4')}</span></span>`
 }
 
-export const pick = (f: SettingText & PickSpec & { inline?: boolean }): string =>
-  settingRow({ ...f, control: pickControl(f), inline: f.inline })
-
 /**
- * A select with the PLATFORM's own chevron still on it.
+ * A settings row whose control is a dressed select.
  *
- * ⚠️ This is drift, reproduced deliberately. Seven selects on this screen were written by hand
- * as `CONTROL w-full` without `appearance-none`, so they wear the OS control where every other
- * dropdown in the admin wears the drawn one. Converting the screen is not the moment to change
- * how seven controls look — that is a decision about the design, and it belongs in a commit that
- * says so. The name is what makes the drift countable.
+ * ⚠️ `attrs` BELONGS TO THE SELECT AND NOT TO THE ROW AROUND IT. Spreading `...f` handed both
+ * the same attribute, so `querySelector('[data-strip-columns]')` found the wrapping `<div>`
+ * first and read `undefined` off it — a hook that resolves to the wrong element is worse than
+ * one that resolves to nothing, because it resolves.
+ *
+ * Seven selects on the Home tab and the writing sheet's panel used to come through a sibling,
+ * `plainPick`, that kept the PLATFORM's chevron: drift reproduced on purpose when the screen was
+ * converted, named so it could be counted. They wear the drawn chevron since 2026-09-30, the
+ * day the rule in `docs/conventions/layout.md` was settled, and the sibling is gone.
  */
-export function plainPick(f: SettingText & {
-  k?: string
-  value: string
-  options: [string, string][]
-  numeric?: boolean
-  attrs?: string
-}): string {
-  const opts = f.options.map(([v, label]) =>
-    `<option value="${escapeAttr(v)}"${v === f.value ? ' selected' : ''}>${escapeHtml(label)}</option>`).join('')
-  // ⚠️ `attrs` BELONGS TO THE SELECT AND NOT TO THE ROW AROUND IT. Spreading `...f` handed both
-  // the same attribute, so `querySelector('[data-strip-columns]')` found the wrapping `<div>`
-  // first and read `undefined` off it — a hook that resolves to the wrong element is worse than
-  // one that resolves to nothing, because it resolves.
+export const pick = (f: SettingText & PickSpec & { inline?: boolean }): string => {
   const { attrs, ...row } = f
-  return settingRow({
-    ...row,
-    control: `<select class="${CONTROL} ${FIELD_W.full}"`
-      + (f.k ? ` data-k="${escapeAttr(f.k)}"` : '')
-      + (f.numeric ? ' data-k-number' : '')
-      + `${attrs ? ` ${attrs}` : ''}>${opts}</select>`,
-  })
+  return settingRow({ ...row, control: pickControl({ ...row, attrs }), inline: f.inline })
 }
 
 const WELL = 'relative h-[1.05rem] w-[1.05rem] shrink-0 rounded-full ring-1 ring-black/15'

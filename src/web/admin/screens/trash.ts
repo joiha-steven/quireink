@@ -14,7 +14,7 @@
 // EVERY DESTRUCTIVE ACTION ASKS, through `quire:confirm` rather than the browser's own dialog.
 // The reason is the log island's and it matters more here: an unheard question is a REFUSAL,
 // because this is the one screen where the answer cannot be walked back.
-import type { AdminComment, FileItem, MediaItem, Note, Page, Post, SiteSettings } from '@/types'
+import type { AdminComment, FileItem, MediaItem, Note, Page, Post, SiteLang, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml, formatDateTimeShort } from '@/utils'
@@ -83,7 +83,7 @@ const NAME = 'truncate text-sm font-medium text-neutral-800 dark:text-neutral-20
  * back out of the markup it drew — a name with a comma or a quote in it survives the trip as an
  * attribute and would not survive being re-parsed out of a paragraph.
  */
-function row(t: AdminStrings, kind: Kind, id: string, name: string, deletedAt: string | null | undefined, body: string): string {
+function row(t: AdminStrings, lang: SiteLang, kind: Kind, id: string, name: string, deletedAt: string | null | undefined, body: string): string {
   const key = (attrs: string, label: string, glyph: 'restore' | 'trash', cls: string): string =>
     `<button type="button" ${attrs} aria-label="${escapeAttr(label)}" title="${escapeAttr(label)}"`
     + ` class="${escapeAttr(cls)}">${icon(glyph, 'h-4 w-4')}</button>`
@@ -99,8 +99,8 @@ function row(t: AdminStrings, kind: Kind, id: string, name: string, deletedAt: s
     // for a pointer that asks.
     + (deletedAt
       ? `<span class="${META} hidden shrink-0 whitespace-nowrap sm:inline"`
-        + ` title="${escapeAttr(`${t.colDeletedAt} ${formatDateTimeShort(deletedAt)}`)}">`
-        + `${escapeHtml(formatDateTimeShort(deletedAt))}</span>`
+        + ` title="${escapeAttr(`${t.colDeletedAt} ${formatDateTimeShort(deletedAt, lang)}`)}">`
+        + `${escapeHtml(formatDateTimeShort(deletedAt, lang))}</span>`
       : '')
     + `<span class="flex shrink-0 items-center">`
     + key(`data-trash-restore data-kind="${kind}" data-id="${escapeAttr(id)}"`, t.restore, 'restore', ICON_KEY)
@@ -118,23 +118,23 @@ function row(t: AdminStrings, kind: Kind, id: string, name: string, deletedAt: s
  * nobody could tell apart before restoring or destroying one (2026-09-30). The slug is the one
  * thing two of them cannot share.
  */
-const slugRows = (t: AdminStrings, kind: Kind, rows: (Post | Page | Note)[]): string =>
-  rows.map((r) => row(t, kind, r.slug, r.title || t.untitled, r.deletedAt,
+const slugRows = (t: AdminStrings, lang: SiteLang, kind: Kind, rows: (Post | Page | Note)[]): string =>
+  rows.map((r) => row(t, lang, kind, r.slug, r.title || t.untitled, r.deletedAt,
     `<p class="${NAME} truncate">${escapeHtml(r.title || t.untitled)}`
     + ` <span class="${META}">${escapeHtml(r.slug)}</span></p>`)).join('')
 
-const mediaRows = (t: AdminStrings, rows: MediaItem[]): string =>
-  rows.map((m) => row(t, 'media', m.url, m.filename, m.deletedAt,
+const mediaRows = (t: AdminStrings, lang: SiteLang, rows: MediaItem[]): string =>
+  rows.map((m) => row(t, lang, 'media', m.url, m.filename, m.deletedAt,
     `<div class="flex items-center gap-3">`
     + `<img src="${escapeAttr(m.thumb || m.url)}" alt="" width="40" height="40" class="h-10 w-10 shrink-0 rounded-md object-cover">`
     + `<span class="truncate ${NAME}">${escapeHtml(m.filename)}</span></div>`)).join('')
 
-const fileRows = (t: AdminStrings, rows: FileItem[]): string =>
-  rows.map((f) => row(t, 'files', f.url, f.filename, f.deletedAt,
+const fileRows = (t: AdminStrings, lang: SiteLang, rows: FileItem[]): string =>
+  rows.map((f) => row(t, lang, 'files', f.url, f.filename, f.deletedAt,
     `<p class="${NAME}">${escapeHtml(f.filename)}</p>`)).join('')
 
-const commentRows = (t: AdminStrings, rows: AdminComment[]): string =>
-  rows.map((c) => row(t, 'comments', String(c.id), c.name, c.deletedAt,
+const commentRows = (t: AdminStrings, lang: SiteLang, rows: AdminComment[]): string =>
+  rows.map((c) => row(t, lang, 'comments', String(c.id), c.name, c.deletedAt,
     `<p class="line-clamp-1 text-sm text-neutral-800 dark:text-neutral-200">${escapeHtml(c.content)}</p>`
     + `<p class="${NOTE_TEXT}">${escapeHtml(c.name)} · ${escapeHtml(c.postTitle ?? '')}</p>`)).join('')
 
@@ -144,11 +144,11 @@ const commentRows = (t: AdminStrings, rows: AdminComment[]): string =>
  * The status rides along so a restored row's meaning is visible before restoring it: putting
  * back a confirmed reader is not the same act as putting back a bot's pending sign-up.
  */
-function subscriberRows(t: AdminStrings, rows: { id: number; email: string; status: string; deletedAt?: string }[]): string {
+function subscriberRows(t: AdminStrings, lang: SiteLang, rows: { id: number; email: string; status: string; deletedAt?: string }[]): string {
   const label: Record<string, string> = {
     confirmed: t.nlConfirmed, pending: t.nlPending, unsubscribed: t.nlUnsub,
   }
-  return rows.map((s) => row(t, 'subscribers', String(s.id), s.email, s.deletedAt,
+  return rows.map((s) => row(t, lang, 'subscribers', String(s.id), s.email, s.deletedAt,
     `<p class="truncate ${NAME}" title="${escapeAttr(s.email)}">${escapeHtml(s.email)}</p>`
     + `<p class="${NOTE_TEXT}">${escapeHtml(label[s.status] ?? s.status)}</p>`)).join('')
 }
@@ -233,13 +233,13 @@ export async function trashScreen(settings: SiteSettings, query: URLSearchParams
     + `<button type="button" data-trash-restore-picked class="${SHEET_TOOL}" hidden>${escapeHtml(t.restore)} (<span data-trash-picked>0</span>)</button>`
     + `<button type="button" data-trash-empty class="${SHEET_TOOL_DANGER}"${counts[open] > 0 ? '' : ' hidden'}>${escapeHtml(t.emptyTrash)}</button>`
 
-  const body = panel(t, 'posts', open, slugRows(t, 'posts', posts), keys('posts'))
-    + panel(t, 'pages', open, slugRows(t, 'pages', pages), keys('pages'))
-    + panel(t, 'notes', open, slugRows(t, 'notes', notes), keys('notes'))
-    + panel(t, 'media', open, mediaRows(t, media), keys('media'))
-    + panel(t, 'files', open, fileRows(t, files), keys('files'))
-    + panel(t, 'comments', open, commentRows(t, comments), keys('comments'))
-    + panel(t, 'subscribers', open, subscriberRows(t, subscribers), keys('subscribers'))
+  const body = panel(t, 'posts', open, slugRows(t, settings.language, 'posts', posts), keys('posts'))
+    + panel(t, 'pages', open, slugRows(t, settings.language, 'pages', pages), keys('pages'))
+    + panel(t, 'notes', open, slugRows(t, settings.language, 'notes', notes), keys('notes'))
+    + panel(t, 'media', open, mediaRows(t, settings.language, media), keys('media'))
+    + panel(t, 'files', open, fileRows(t, settings.language, files), keys('files'))
+    + panel(t, 'comments', open, commentRows(t, settings.language, comments), keys('comments'))
+    + panel(t, 'subscribers', open, subscriberRows(t, settings.language, subscribers), keys('subscribers'))
 
   // The words the island can need to SAY, and only those: every other string on this screen is
   // already written into the markup above. `{name}` and `{n}` stay unreplaced — the island fills

@@ -92,3 +92,29 @@ describe('the anchor', () => {
     expect(flatten(prose()).text).not.toContain('my own words')
   })
 })
+
+describe('the anchor across a change of quotes', () => {
+  // The page curls quotes since 2026-09-30; marks were stored with the straight ones typed.
+  const THIN = String.fromCharCode(0x202f)
+
+  it('finds a mark stored over a straight apostrophe on a page that prints it curled', () => {
+    page('<div class="prose"><p>It’s a reed, and it’s cut with a knife.</p></div>')
+    const flat = flatten(prose())
+    const hit = locate(flat, { exact: "it's cut", prefix: 'a reed, and ', suffix: ' with a knife.' })!
+    expect(flat.text.slice(hit.start, hit.end)).toBe('it’s cut')
+  })
+
+  it('finds a mark over straight double quotes behind French guillemets, thin spaces and all', () => {
+    page(`<div class="prose"><p>Il a dit «${THIN}plume${THIN}» deux fois.</p></div>`)
+    const flat = flatten(prose())
+    const hit = locate(flat, { exact: '"plume"', prefix: 'Il a dit ', suffix: ' deux fois.' })!
+    expect(flat.text.slice(hit.start, hit.end)).toBe(`«${THIN}plume${THIN}»`)
+  })
+
+  it('and the other way: a mark stored with curled quotes on a page with straight ones', () => {
+    page('<div class="prose"><p>He wrote "wet" twice.</p></div>')
+    const flat = flatten(prose())
+    const hit = locate(flat, { exact: '“wet”', prefix: 'He wrote ', suffix: ' twice.' })!
+    expect(flat.text.slice(hit.start, hit.end)).toBe('"wet"')
+  })
+})

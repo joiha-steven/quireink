@@ -333,10 +333,11 @@ export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 // one strength wherever it appears, held down.
 //
 // The INK on it flips with the theme, and only the ink. In light the pen is #d5f856 and the
-// mark is written in near-black, as a highlighter over a page is. In dark the pen is #7e7028
+// mark is written in near-black, as a highlighter over a page is. In dark the pen is dimmed
 // — a highlighter seen under low light, not a lime slab — and near-black on it measured
 // 3.8:1, under the 4.5 a label has to clear, which is why it read as grey smeared on
-// mustard. White on that same olive measures 5.0:1.
+// mustard. White on it clears: 5.38:1 on #5e721d, the pen's own hue since 2026-09-30
+// (it was the mustard #7e7028 before; `admin.css` says why it moved).
 // THE BAR AT THE RAIL'S EDGE, added 2026-09-07, and it is drawn OUTSIDE the key.
 //
 // The wash alone is a mark you have to be looking at the rail to read — a pale field on a pale

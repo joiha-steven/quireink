@@ -79,9 +79,17 @@
 .dark {
   --c-meta: #85858c;
   --c-rule: #27272a;
-  --pen: #7e7028;
-  --pen-edge: #93832f;
-  --on-pen: #f6f2dd;
+  /* THE PEN'S OWN HUE, 73, since 2026-09-30. It was #7e7028, the reader's dark YELLOW pigment
+     (`PEN_DARK` in `src/pen/pigments.ts`), which is warmed to hue 50 on purpose: on a dark
+     page yellow and green highlights have to stay two inks. The admin has one pen and no
+     green beside it, so the admin paid for a separation it never uses — the held key, the
+     active tab and the progress bar came out mustard beside a light theme that is chartreuse,
+     and its label on it measured 4.41:1, under 4.5. Same hue as #d5f856, dimmed: white on
+     it 5.38, this label ink 4.93, the edge 5.54 against the page. The pigment and the dark
+     wordmark keep #7e7028; this is the admin's accent only. */
+  --pen: #5e721d;
+  --pen-edge: #7f9929;
+  --on-pen: #f4f7e2;
   /* PEN_AUX_DARK: brighter than a naive darkening, because a LINE owes the page visibility
      rather than a text-contrast ceiling — the same argument `pen.ts` makes for the underline. */
   --pen-red: #a3524a;

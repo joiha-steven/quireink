@@ -84,13 +84,44 @@ const sharedStart = (a: string, b: string) => {
 }
 
 /**
+ * The text with every kind of quote made one kind, and where each folded character came from.
+ *
+ * ⚠️ THE PAGE CURLS QUOTES SINCE 2026-09-30 (`render/curly-quotes.ts`), and a mark is stored as
+ * the words it covered. A mark drawn over `it's` the day before looked for `it's` on a page that
+ * now says `it’s`, and did not land. Folding both sides — the page and the stored words — makes
+ * the two spellings one, in either direction. The thin spaces French sets inside guillemets are
+ * dropped rather than folded, so a mark on `"mot"` still finds the guillemets; `at` maps each
+ * folded offset back to the page.
+ */
+const SINGLE = /[\u2018-\u201b\u2039\u203a\u300e\u300f]/
+const DOUBLE = /[\u201c-\u201f\u00ab\u00bb\u300c\u300d]/
+
+export function fold(s: string): { text: string; at: number[] } {
+  let text = ''
+  const at: number[] = []
+  // By UTF-16 unit, not by `[...s]`: the offsets are the page's, and a spread counts an emoji
+  // as one where the page counts two.
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i]!
+    if (c === '\u202f') continue
+    text += SINGLE.test(c) ? "'" : DOUBLE.test(c) ? '"' : c
+    at.push(i)
+  }
+  at.push(s.length)
+  return { text, at }
+}
+
+/**
  * Find the quote in the text. Every occurrence of `exact` is a candidate and the one whose
  * surroundings agree best with the stored prefix and suffix wins; if the exact string is
  * nowhere (whitespace re-flowed, say), the same words are tried with any run of whitespace
  * allowed between them. Null when the words are gone.
  */
-export function locate(flat: Flat, sel: Selector): { start: number; end: number } | null {
-  const { text } = flat
+export function locate(flat: Flat, raw: Selector): { start: number; end: number } | null {
+  const folded = fold(flat.text)
+  const { text } = folded
+  const f = (x: string) => fold(x).text
+  const sel = { exact: f(raw.exact), prefix: f(raw.prefix), suffix: f(raw.suffix) }
   let best: { start: number; end: number; score: number } | null = null
   const consider = (start: number, end: number) => {
     const score = sharedEnd(text.slice(Math.max(0, start - CONTEXT), start), sel.prefix)
@@ -109,7 +140,9 @@ export function locate(flat: Flat, sel: Selector): { start: number; end: number 
   // the paragraph before, on 2 characters of agreeing context out of 64 (2026-09-30). The
   // surroundings have to agree on 8 characters, or on all there were to store.
   const need = Math.min(8, sel.prefix.length + sel.suffix.length)
-  return best && (best as { score: number }).score >= need ? best : null
+  if (!best || (best as { score: number }).score < need) return null
+  const { start, end } = best as { start: number; end: number }
+  return { start: folded.at[start]!, end: folded.at[end - 1]! + 1 }
 }
 
 /** A live range over flat offsets [start, end). */

@@ -10,7 +10,7 @@
 // in Berlin should say good evening when it is evening where the eyes are — so all four
 // greetings are drawn and `data-daypart`, stamped by the boot script before the first paint,
 // decides which one shows. The rail's Mac chord works the same way for the same reason.
-import type { SiteSettings } from '@/types'
+import type { SiteLang, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml, formatBytes, formatDateTimeShort } from '@/utils'
@@ -149,7 +149,7 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
  * to be a list; past four the band SAYS there are more, because a cap nobody is told about
  * reads as "this is all of it".
  */
-function pickUp(t: AdminStrings, band: { items: { title: string; href: string; touched: string; untitledNo?: number }[]; total: number }): string {
+function pickUp(t: AdminStrings, lang: SiteLang, band: { items: { title: string; href: string; touched: string; untitledNo?: number }[]; total: number }): string {
   if (band.items.length === 0) return ''
   return card({
     title: escapeHtml(t.dashPickUp),
@@ -163,7 +163,7 @@ function pickUp(t: AdminStrings, band: { items: { title: string; href: string; t
       // `truncate` on the TITLE only, so a long headline shortens and the timestamp beside it
       // is never pushed out of the chip.
       + `<span class="truncate">${escapeHtml(it.title || `${t.untitled} #${it.untitledNo ?? 1}`)}</span>`
-      + (it.touched ? `<span class="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(formatDateTimeShort(it.touched))}</span>` : '')
+      + (it.touched ? `<span class="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(formatDateTimeShort(it.touched, lang))}</span>` : '')
       + `</a>`).join('') + `</div>`,
   })
 }
@@ -230,7 +230,7 @@ export async function dashboardScreen(settings: SiteSettings): Promise<string> {
     // zeroes is the least useful thing a new owner can be shown first.
     + firstRun(t, d.firstRunDone, d.setup as unknown as Record<string, boolean>)
     + trafficCard(t, lang, d.dashboard.traffic)
-    + pickUp(t, d.dashboard.pickUp)
+    + pickUp(t, lang, d.dashboard.pickUp)
     + `<div class="grid ${CARD_GAP} lg:grid-cols-2">${widgets(t, lang, d.dashboard, d.recent, d.activityEnabled)}</div>`
     + statBand(
       statCard({ bare: true, label: t.statPosts, value: String(d.posts), href: '/admin/content' })

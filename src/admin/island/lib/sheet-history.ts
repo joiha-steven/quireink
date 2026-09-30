@@ -9,6 +9,7 @@
 import type { PostRevision } from '@/types'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { formatDateTimeShort } from '@/admin-shared/when'
+import { pageLang } from '@/admin/island/lib/page-lang'
 import { buttonClass, INSET } from '@/admin-shared/kit'
 import { el } from '@/admin/components/node-dom'
 
@@ -66,7 +67,7 @@ export function wireHistory(
       const when = el('div', { className: className.when })
       // No "Latest" on the first row: a revision is the text as it was BEFORE a save, so the
       // newest one is never the newest text, and the label said it was (2026-09-30).
-      when.textContent = formatDateTimeShort(rev.savedAt)
+      when.textContent = formatDateTimeShort(rev.savedAt, pageLang())
       who.append(name, when)
       const key = el('button', { className: buttonClass('secondary'), type: 'button' })
       key.textContent = t.restore

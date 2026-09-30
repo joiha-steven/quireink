@@ -212,8 +212,11 @@ const BUDGET: Record<string, number> = {
   // refusing to land on the same word elsewhere once its sentence changed; the bar kept on a
   // phone's screen; and the copied quote widened to whole words. 14,600 the same day (14,350
   // measured): no bar over the reader's own note card, where an ink made nothing, and the
-  // notebook's address box taking Enter and saying when an address is not one.
-  'reader-pen.js': 14_600,
+  // notebook's address box taking Enter and saying when an address is not one. 14,900 the
+  // same day again (14,764 measured, +414): the anchor folds every kind of quote to one, because
+  // the page now curls the quotes an author types and a mark stored over `it's` has to find
+  // `it’s` (`fold` in pen-anchor.ts). Without it every older mark over a quote stops landing.
+  'reader-pen.js': 14_900,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

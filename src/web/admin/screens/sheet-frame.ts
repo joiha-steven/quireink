@@ -9,7 +9,7 @@
 // body, the attributes and the taxonomy lists all travel INSIDE the HTML. The React editor
 // fetched `/api/admin/view/editor` after its bundle booted, which is a blank sheet for as long
 // as that took on a piece the server already had in hand.
-import type { NoteWithContent, PageWithContent, PostWithContent, SiteSettings } from '@/types'
+import type { NoteWithContent, PageWithContent, PostWithContent, SiteLang, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml, isScheduled, isoToZonedInput } from '@/utils'
@@ -96,14 +96,14 @@ function draftOf(kind: SheetKind, row: Loaded['row'], timezone: string): SheetDr
 }
 
 /** `Page · Draft · 15/9/26 - 13:14`: what this is, what state it is in, when it was touched. */
-function metaLine(kind: SheetKind, t: AdminStrings, draft: SheetDraft, touched: string): string {
+function metaLine(kind: SheetKind, t: AdminStrings, lang: SiteLang, draft: SheetDraft, touched: string): string {
   const state = isScheduled(draft.status, draft.date)
     ? t.scheduled
     : draft.status === 'published' ? t.statusPublished : t.statusDraft
   // A post says only its state: it is the default kind, and the write column beside it
   // already says which of the three is open.
   const head = kind === 'post' ? state : `${kind === 'page' ? t.kindPage : t.kindNote} · ${state}`
-  return [head, touched ? formatDateTimeShort(touched) : ''].filter(Boolean).join(' · ')
+  return [head, touched ? formatDateTimeShort(touched, lang) : ''].filter(Boolean).join(' · ')
 }
 
 /**
@@ -233,8 +233,8 @@ export async function writingFrame(
       slug: row?.slug ?? '',
       title: draft.title,
       content,
-      metaLine: metaLine(kind, t, draft, row?.updatedAt ?? ''),
-      touched: row?.updatedAt ? formatDateTimeShort(row.updatedAt) : '',
+      metaLine: metaLine(kind, t, settings.language, draft, row?.updatedAt ?? ''),
+      touched: row?.updatedAt ? formatDateTimeShort(row.updatedAt, settings.language) : '',
       kind,
     },
     links: {

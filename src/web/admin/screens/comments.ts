@@ -14,7 +14,7 @@
 // THE BAND'S FOUR NUMBERS ARE OFF THE FULL SET, not the filtered one. A total that changes as
 // you type is not a total, and the React face said so; the server can therefore write them once
 // and the island never touches them.
-import type { AdminComment, SiteSettings } from '@/types'
+import type { AdminComment, SiteLang, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml, formatDateTimeShort } from '@/utils'
@@ -53,7 +53,7 @@ const FORENSICS = 'mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutr
  * typed. Not folded — this screen keeps `accent.ts`'s rule, where a word typed WITH accents
  * means them, and folding here would throw them away before the browser saw them.
  */
-function comment(t: AdminStrings, c: AdminComment, title: string): string {
+function comment(t: AdminStrings, lang: SiteLang, c: AdminComment, title: string): string {
   const mark = (text: string, cls: string): string =>
     `<span data-mark data-text="${escapeAttr(text)}" class="${cls}">${escapeHtml(text)}</span>`
   return `<li data-comment="${c.id}" data-at="${Date.parse(c.createdAt) || 0}" data-who="${escapeAttr((c.email || c.name).toLowerCase())}"`
@@ -62,7 +62,7 @@ function comment(t: AdminStrings, c: AdminComment, title: string): string {
     + `<span aria-hidden="true" class="${INITIAL}">${escapeHtml(initialOf(c.name))}</span>`
     + `<div class="min-w-0 flex-1">`
     + `<div class="${META}">${mark(c.name, WHO)}`
-    + `<span class="whitespace-nowrap">${escapeHtml(formatDateTimeShort(c.createdAt))}</span>`
+    + `<span class="whitespace-nowrap">${escapeHtml(formatDateTimeShort(c.createdAt, lang))}</span>`
     // Delete waits for the pointer and takes no room while it waits: a moderator reads far more
     // rows than they act on. Red ballpoint, the ink this admin reserves for striking out.
     + `<button type="button" data-comment-delete data-id="${c.id}"`
@@ -88,7 +88,7 @@ function comment(t: AdminStrings, c: AdminComment, title: string): string {
 }
 
 /** A post, and the comments under it. The count on the card is what says "look here first". */
-function card(t: AdminStrings, g: { slug: string; title: string; items: AdminComment[]; newest: number }): string {
+function card(t: AdminStrings, lang: SiteLang, g: { slug: string; title: string; items: AdminComment[]; newest: number }): string {
   // ⚠️ THE MARK RIDES ON THE LINK ITSELF, not on a span inside it. The link holds nothing but
   // the title, so a wrapper would buy nothing and would put an element in the tree that the
   // React face did not have: measured against it, the first span inside this row stopped being
@@ -98,7 +98,7 @@ function card(t: AdminStrings, g: { slug: string; title: string; items: AdminCom
     + `<a href="/${escapeAttr(g.slug)}" target="_blank" rel="noopener" title="${escapeAttr(g.title)}"`
     + ` data-mark data-text="${escapeAttr(g.title)}" class="${TITLE_LINK}">${escapeHtml(g.title)}</a>`
     + `<span data-card-count class="${BADGE}">${g.items.length}</span></div>`
-    + `<ul>${g.items.map((c) => comment(t, c, g.title)).join('')}</ul></section>`
+    + `<ul>${g.items.map((c) => comment(t, lang, c, g.title)).join('')}</ul></section>`
 }
 
 export async function commentsScreen(settings: SiteSettings): Promise<string> {
@@ -170,7 +170,7 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
     + pageHeader({ title: t.commentsNavTitle })
     + sheet(sheetTop(tools) + band
       + `<p data-comment-nomatch class="px-5 py-8 text-sm text-neutral-500 dark:text-neutral-400" hidden>${escapeHtml(t.filterEmpty)}</p>`
-      + `<div data-comment-cards class="paper-cols">${groups.map((g) => card(t, g)).join('')}</div>`
+      + `<div data-comment-cards class="paper-cols">${groups.map((g) => card(t, settings.language, g)).join('')}</div>`
       + `<div class="${SHEET_FOOT}">${escapeHtml(t.commentsFootHint)} ${escapeHtml(t.commentsWalkHint)}</div>`)
     + `</div>`
 }

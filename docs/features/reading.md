@@ -141,7 +141,8 @@
 - **Underline & ring:** `++text++` → `<u data-pen>` (graphite pencil; `#green` picks a
   ballpoint-strength ink) and `@@word@@` → `<mark data-form="o" data-pen>` (red ballpoint). Same
   grammar guards, same hash-dealt dies; the ring is two fixed-width caps plus a stretching middle
-  so its end curves never flatten on a long word. Owner toggles `features.penUnderline` /
+  so its end curves never flatten on a long word. A ringed phrase that wraps is one closed ring
+  per line (`box-decoration-break: clone`), by owner's call 2026-09-30 — not `nowrap`. Owner toggles `features.penUnderline` /
   `features.penRing` flip the CSS only — cached bodies never re-render. ADR 0026.
 - **The reader's pen:** `src/assets/js/reader-pen.ts` (own bundle, `features.readerPen`), anchored by
   text-quote selector in `pen-anchor.ts`, stored per path in `localStorage` (`pen-store.ts`).
@@ -172,6 +173,11 @@
   `<div class="callout callout-<type>">` with a bold label; an unknown `[!FOO]` or a plain quote
   is untouched. Styling is monochrome (accent left-border + label) to stay on the palette — no
   semantic colours. CSS in `src/web/public.css.ts` (`.callout`, `.callout-label`).
+- **Curly quotes (2026-09-30):** the published page curls the straight quotes an author types, in
+  the piece's language — “ ” by default, „ “ German, « » French/Spanish/Italian/Portuguese/Russian,
+  「 」 Japanese, `'` → ’ everywhere; code and maths are left alone. Display only
+  (`render/curly-quotes.ts`, after the body cache): the Markdown, the editor and exports keep what
+  was typed. `pen-anchor.ts` folds quote kinds so a reader's older marks still land.
 - **Copy-code:** `codeCopy()` in `post.js` attaches a "Copy" button to every `.prose pre`. Shiki
   highlights server-side at save time, so the button is the one part that has to be added in the
   browser.

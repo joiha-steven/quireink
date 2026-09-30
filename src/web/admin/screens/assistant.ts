@@ -16,7 +16,7 @@
 //
 // ⚠️ DRAWING THIS PAGE NEVER ASKS THE MODEL ANYTHING. It reads two booleans, a list of titles
 // and at most one stored conversation; `src/server/assistant.ts` is not reachable from here.
-import type { SiteSettings } from '@/types'
+import type { SiteLang, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
@@ -39,7 +39,7 @@ const AI_SETTINGS = '/admin/settings?tab=server'
  * `{tab}` is already filled here — which tab it names does not depend on anything the browser
  * learns later.
  */
-function words(t: AdminStrings): AssistantWords {
+function words(t: AdminStrings, lang: SiteLang): AssistantWords {
   const tabbed = (s: string) => s.replace('{tab}', t.tabServer)
   return {
     busy: t.assistantBusy, send: t.assistantSend,
@@ -51,6 +51,7 @@ function words(t: AdminStrings): AssistantWords {
     untitled: t.assistantUntitled, noChats: t.assistantNoChats,
     deleteOne: t.assistantDelete, deleteYes: t.assistantDeleteYes,
     didNothing: t.assistantDidNothing,
+    lang,
   }
 }
 
@@ -127,7 +128,7 @@ function composer(t: AdminStrings, configured: boolean): string {
 
 export async function assistantScreen(settings: SiteSettings, query: URLSearchParams): Promise<string> {
   const t = adminT(settings.language)
-  const w = words(t)
+  const w = words(t, settings.language)
   const view = await assistantScreenView(query.get('chat'))
   const turns = view.open?.turns ?? []
   const blocks = htmlOf(blockMarks(turns, w))

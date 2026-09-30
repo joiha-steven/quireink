@@ -12,7 +12,7 @@ import { NOTE_TEXT, SETTING_GAP, SETTING_LABEL } from '@/admin-shared/scale'
 import { settingRow, textControl, textField, switchRow } from '@/web/admin/fields'
 import { pairGrid } from '@/web/admin/fields-box'
 import { gate } from '@/web/admin/fields-pic'
-import { choice, plainPick } from '@/web/admin/fields-pick'
+import { choice, pick } from '@/web/admin/fields-pick'
 import { addPick, listField, BAND } from '@/web/admin/screens/settings-home-kit'
 import type { HomeTabView } from '@/web/admin/screens/settings-home'
 
@@ -32,7 +32,7 @@ function rowSize(t: AdminStrings, k: string, count: number, columns: number, max
   return pairGrid(
     textField({ k: `${k}.count`, label: t.frontCount, type: 'number', value: count,
       attrs: `min="1" max="${max}"` })
-    + plainPick({ k: `${k}.columns`, label: t.frontColumns, value: String(columns), numeric: true,
+    + pick({ k: `${k}.columns`, label: t.frontColumns, value: String(columns), numeric: true,
       options: [['1', '1'], ['2', '2'], ['3', '3']] }),
   )
 }
@@ -48,7 +48,7 @@ function stripSize(t: AdminStrings, count: number, columns: number): string {
       control: textControl({ value: count, type: 'number', label: t.frontCount,
         attrs: 'min="1" max="12" data-strip-count' }),
     })
-    + plainPick({ label: t.frontColumns, value: String(columns), attrs: 'data-strip-columns',
+    + pick({ label: t.frontColumns, value: String(columns), attrs: 'data-strip-columns',
       options: [['1', '1'], ['2', '2'], ['3', '3']] }),
   )
 }
@@ -88,13 +88,13 @@ export function frontCard(t: AdminStrings, f: FrontSettings, v: HomeTabView): st
     })
     // ----- the lead -----
     + `<div class="${BAND}">` + toggle(`${k}.lead.on`, t.frontLead, f.lead.on, t.frontLeadHint)
-    + gate(f.lead.on, plainPick({
+    + gate(f.lead.on, pick({
       k: `${k}.lead.source`, label: t.frontLeadSource, value: f.lead.source,
       options: [['latest', t.frontLeadLatest], ['pinned', t.frontLeadPinned]],
     })
       // Its only name was its first option, which stops being on screen the moment something is
       // chosen and was never announced as a name at all.
-      + gate(f.lead.source === 'pinned', plainPick({
+      + gate(f.lead.source === 'pinned', pick({
         k: `${k}.lead.slug`, value: f.lead.slug, options: [['', t.frontLeadPickPost],
           ...v.posts.map((p) => [p.slug, p.title] as [string, string])],
         attrs: `aria-label="${escapeAttr(t.frontLeadPickPost)}"`,
@@ -127,7 +127,7 @@ export function frontCard(t: AdminStrings, f: FrontSettings, v: HomeTabView): st
         value: f.popular.count, attrs: 'min="1" max="12"' })
       // `numeric: true` for the same reason the columns need it: `settings-front.ts` compares
       // against 7, 30 and 0, and a string never equals any of them.
-      + plainPick({ k: `${k}.popular.days`, label: t.frontWindow, value: String(f.popular.days),
+      + pick({ k: `${k}.popular.days`, label: t.frontWindow, value: String(f.popular.days),
         numeric: true,
         options: [['7', t.frontWindow7], ['30', t.frontWindow30], ['0', t.frontWindowAll]] }),
     ), `class="mt-3" data-gate="${k}.popular.on"`) + `</div>`

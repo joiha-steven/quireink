@@ -117,11 +117,48 @@ export const DAY_PARTS: DayPart[] = ['greetNight', 'greetMorning', 'greetAfterno
 export const dayPartName = (part: DayPart): string => part.slice('greet'.length).toLowerCase()
 
 /**
- * Terse date + 24h time for the admin tables, e.g. "4/6/26 - 14:05".
+ * The numeric day in the admin's language: "9/3/26" in English, "3.9.26" in German, "26/9/3"
+ * in Japanese. `Intl` decides the order and the separator, so no table here goes stale.
+ *
+ * ⚠️ IT WAS ONE SHAPE FOR EVERY LANGUAGE, `d/m/yy`, until 2026-09-30, on the reasoning that one
+ * shape across the admin beats four. The shape was right to be one; the ORDER was not ours to
+ * pick. An English reader takes "3/9/26" for the ninth of March, and the admin that printed it
+ * was otherwise speaking their language. So it is still one shape per admin, in that admin's
+ * own order.
+ *
+ * `utc` is for a calendar day, which is that day wherever the reader sits; everything else is a
+ * moment, printed on the clock of whoever asks. A tag `Intl` refuses falls back to `d/m/yy`.
+ */
+const DAY_FMT = new Map<string, Intl.DateTimeFormat | null>()
+
+function numericDay(d: Date, lang: SiteLang, withDay: boolean, utc: boolean): string {
+  const key = `${lang}|${withDay}|${utc}`
+  if (!DAY_FMT.has(key)) {
+    try {
+      DAY_FMT.set(key, new Intl.DateTimeFormat(dateLocale(lang), {
+        ...(withDay ? { day: 'numeric' } : {}), month: 'numeric', year: '2-digit',
+        ...(utc ? { timeZone: 'UTC' } : {}),
+      }))
+    } catch {
+      DAY_FMT.set(key, null)
+    }
+  }
+  const fmt = DAY_FMT.get(key)
+  if (fmt) return fmt.format(d)
+  const [day, month, year] = utc
+    ? [d.getUTCDate(), d.getUTCMonth() + 1, d.getUTCFullYear()]
+    : [d.getDate(), d.getMonth() + 1, d.getFullYear()]
+  const yy = String(year).slice(-2)
+  return withDay ? `${day}/${month}/${yy}` : `${month}/${yy}`
+}
+
+/**
+ * Terse date + 24h time for the admin tables, e.g. "9/4/26 - 14:05" in English.
  *
  * In whichever timezone is asking: the server prints it for the rows it draws, and the island
  * prints it for a row it adds afterwards. On a blog whose owner sits in the server's own
  * timezone — which is the ordinary case for something self-hosted — those are the same clock.
+ * The time stays `HH:mm` in every language: a column of them has to line up.
  *
  * ⚠️ A STRING **OR** EPOCH MILLISECONDS, and the second is not a convenience. The admin holds
  * both: content stamps are ISO text, and a session row's `lastSeenAt` is the integer the
@@ -130,29 +167,28 @@ export const dayPartName = (part: DayPart): string => part.slice('greet'.length)
  * The next reader of that field reached for `.slice()` instead and the device list threw on
  * every load (2026-09-15). Saying out loud what may arrive is what stops the next one.
  */
-export function formatDateTimeShort(at: string | number): string {
+export function formatDateTimeShort(at: string | number, lang: SiteLang): string {
   const d = new Date(at)
   if (Number.isNaN(d.getTime())) return String(at)
-  const yy = String(d.getFullYear()).slice(-2)
   const hh = String(d.getHours()).padStart(2, '0')
   const mm = String(d.getMinutes()).padStart(2, '0')
-  return `${d.getDate()}/${d.getMonth() + 1}/${yy} - ${hh}:${mm}`
+  return `${numericDay(d, lang, true, false)} - ${hh}:${mm}`
 }
 
 /**
- * The date half of `formatDateTimeShort`, for the lines that carry no time: "19/9/26".
+ * The date half of `formatDateTimeShort`, for the lines that carry no time.
  *
  * ONE SHAPE FOR A DATE ACROSS THE ADMIN. The newsletter printed "2026-09-19" and the Analytics
  * axis "2026-08-25" beside tables printing "23/9/26 - 11:42" — four formats on as many screens
  * (counted 2026-09-23). A calendar DAY (`2026-09-19`) is read as that day wherever the reader
- * is, never shifted by a timezone; a MONTH (`2026-09`) comes out as "9/26". Anything else is
- * returned as it came, which is the honest answer to a shape this does not know.
+ * is, never shifted by a timezone; a MONTH (`2026-09`) keeps month and year only. Anything else
+ * is returned as it came, which is the honest answer to a shape this does not know.
  */
-export function formatDateShort(at: string): string {
+export function formatDateShort(at: string, lang: SiteLang): string {
   const day = /^(\d{4})-(\d{2})-(\d{2})/.exec(at)
-  if (day) return `${Number(day[3])}/${Number(day[2])}/${day[1]!.slice(-2)}`
+  if (day) return numericDay(new Date(Date.UTC(+day[1]!, +day[2]! - 1, +day[3]!)), lang, true, true)
   const month = /^(\d{4})-(\d{2})$/.exec(at)
-  if (month) return `${Number(month[2])}/${month[1]!.slice(-2)}`
+  if (month) return numericDay(new Date(Date.UTC(+month[1]!, +month[2]! - 1, 1)), lang, false, true)
   return at
 }
 

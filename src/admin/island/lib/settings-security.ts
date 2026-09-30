@@ -17,6 +17,7 @@
 // the reply that mints them and nowhere else; the markup ships empty and this writes them in.
 import type { SecurityWire } from '@/admin-shared/wire'
 import { formatDateTimeShort } from '@/admin-shared/when'
+import { pageLang } from '@/admin/island/lib/page-lang'
 import type { SiteLang } from '@/types'
 import { plural } from '@/i18n/plural'
 import { ask, say } from './media-bridge'
@@ -245,7 +246,7 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
       const seen = clone.querySelector<HTMLElement>('[data-sec-seen]')
       // THE ADMIN'S OWN STAMP, not string arithmetic on the field. `lastSeenAt` is epoch
       // milliseconds (`admin-shared/wire.ts`), and the same words the React card printed.
-      if (seen) seen.textContent = formatDateTimeShort(s.lastSeenAt)
+      if (seen) seen.textContent = formatDateTimeShort(s.lastSeenAt, pageLang())
       show(clone.querySelector('[data-sec-this]'), s.current)
       show(clone.querySelector('[data-sec-end-this]'), s.current)
       show(clone.querySelector('[data-sec-end-other]'), !s.current)

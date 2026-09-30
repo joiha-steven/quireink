@@ -38,7 +38,7 @@ type People = Awaited<ReturnType<typeof subscribersView>>
 type Row = People['subscribers'][number]
 
 
-const shortDate = (iso?: string): string => (iso ? formatDateShort(iso) : '—')
+const shortDate = (iso: string | undefined, lang: SiteLang): string => (iso ? formatDateShort(iso, lang) : '—')
 
 /**
  * A status word as a HEADING — a tab or a figure's label — beside "All" and "Subscribers".
@@ -112,7 +112,7 @@ export function peoplePanel(
       + `<td class="whitespace-nowrap px-2 py-2 align-middle">`
       + `<span class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">`
       + lamp({ state: LAMP[s.status] }) + escapeHtml(statusLabel[s.status] ?? s.status) + `</span></td>`
-      + `<td class="whitespace-nowrap px-2 py-2 align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${escapeHtml(shortDate(s.createdAt))}</td>`
+      + `<td class="whitespace-nowrap px-2 py-2 align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${escapeHtml(shortDate(s.createdAt, lang))}</td>`
       // Failures are the whole point of keeping the log. Never hide them.
       + `<td class="whitespace-nowrap px-2 py-2 text-right align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${n(s.stats?.sent ?? 0)}${failed}</td>`
       + `<td class="whitespace-nowrap px-2 py-2 text-right align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${escapeHtml(rate ?? '—')}</td>`
@@ -131,7 +131,7 @@ export function peoplePanel(
       + `<span class="block truncate text-sm font-medium text-neutral-800 dark:text-neutral-200" title="${escapeAttr(s.email)}">${escapeHtml(s.email)}</span>`
       + `<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">`
       + `<span class="flex items-center gap-1.5">${lamp({ state: LAMP[s.status] })}${escapeHtml(statusLabel[s.status] ?? s.status)}</span>`
-      + `<span class="tabular-nums">${escapeHtml(shortDate(s.createdAt))}</span>`
+      + `<span class="tabular-nums">${escapeHtml(shortDate(s.createdAt, lang))}</span>`
       + `<span class="tabular-nums">${escapeHtml(t.nlColSent)} ${n(s.stats?.sent ?? 0)}</span>`
       + (rate ? `<span class="tabular-nums">${escapeHtml(t.nlColOpenRate)} ${escapeHtml(rate)}</span>` : '')
       + `</div></div>`

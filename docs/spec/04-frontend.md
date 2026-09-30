@@ -73,7 +73,8 @@ section originally specified inlining the whole thing; measurement said otherwis
 reasoning is in [`../performance.md`](../performance.md) "CSS — one hashed sheet".
 
 Conventions from `docs/conventions/` carry over unchanged and are now easier to hold:
-theme tokens only, one typeface, no hardcoded sizes, one divider style, no all-caps.
+theme tokens only, one typeface, no hardcoded sizes, one divider style, all-caps only in the
+two roles [layout.md](../conventions/layout.md) names.
 
 ## Fonts: DONE 2026-07-27, 51 KB off the critical path
 

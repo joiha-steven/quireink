@@ -158,7 +158,7 @@ function boot(root: HTMLElement, data: Payload): void {
         ? t.scheduled
         : draft.status === 'published' ? t.statusPublished : t.statusDraft
       const head = kind === 'post' ? state : `${kind === 'page' ? t.kindPage : t.kindNote} · ${state}`
-      metaLine.textContent = [head, savedAt ? formatDateTimeShort(savedAt) : touchedAt]
+      metaLine.textContent = [head, savedAt ? formatDateTimeShort(savedAt, lang) : touchedAt]
         .filter(Boolean).join(' · ')
     }
   }

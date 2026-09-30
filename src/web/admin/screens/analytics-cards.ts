@@ -106,7 +106,7 @@ export function deliveryPanel(t: AdminStrings, lang: SiteLang, summary: Analytic
       bare: true,
       label: t.analyticsCache,
       value: rate === null ? '—' : `${rate}%`,
-      sub: `${fraction}${t.analyticsCacheSince} ${formatDateTimeShort(new Date(cache.since).toISOString())}`,
+      sub: `${fraction}${t.analyticsCacheSince} ${formatDateTimeShort(new Date(cache.since).toISOString(), lang)}`,
     }) + `<p class="${NOTE_TEXT} mt-2 px-5">${escapeHtml(t.analyticsCacheNote)}</p></div>`)
   }
 

@@ -26,7 +26,7 @@ import { PUBLIC_SHEET } from '@/web/assets'
 // the same wrong shape, which is what the next person copies.
 import { escapeAttr, escapeHtml } from '@/utils'
 import { postName } from '@/content/untitled'
-import { calloutWords } from '@/render/callout-words'
+import { pieceWords } from '@/render/callout-words'
 
 /**
  * The words the editor has NOT saved, when there are any newer than the row.
@@ -69,9 +69,9 @@ export async function handlePreview(c: Context): Promise<Response> {
   // markdown, same slug — so sharing the row would let every refresh here evict what the
   // readers are being served and make them pay the render back. One row per piece previewed,
   // which is what keeps the owner's refresh as fast as it is today (ADR 0062).
-  const body = calloutWords(await renderPostContent({
+  const body = pieceWords(await renderPostContent({
     markdown: entry.content, cards: await cardFacts(settings), slot: `preview:${entry.slug}`,
-  }), t(settings.language))
+  }), t(settings.language), settings.language)
   noteLinks(standaloneUrls(body), settings.siteUrl)
   const meta = post
     ? `<p class="meta"><time datetime="${escapeAttr(post.date)}">${

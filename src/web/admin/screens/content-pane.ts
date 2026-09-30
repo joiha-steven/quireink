@@ -163,7 +163,7 @@ function rowBody(it: WriteItem, t: RowWords, views: Record<string, number>, lang
     // SCHEDULED is its own word. The lamp beside this line already knew and pulsed amber, while
     // the line said "Published" under a date that had not come yet (seen 2026-09-23).
     + escapeHtml(drafty ? t.statusDraft : queued ? t.scheduled : t.statusPublished)
-    + (when ? ` · ${escapeHtml(formatDateTimeShort(when))}` : '')
+    + (when ? ` · ${escapeHtml(formatDateTimeShort(when, lang))}` : '')
     // The count says what it counts: a bare "· 124" after a date read as part of the date.
     + (!drafty && seen ? ` · ${escapeHtml(plural(t.writeViews, seen, lang, formatCount(seen, lang)))}` : '')
     + `</span>`

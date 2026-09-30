@@ -64,7 +64,16 @@ inside it. In book mode the same break becomes the asterism.
   laid out as a row; an item that opts out of the box, or a larger wordmark aligned by
   `items-baseline`, is the drift this rule exists for. The public bar's rule is above.
 - **One divider style site-wide:** the global `<hr>` (full width, faint). Never bespoke
-  `border-t`/`border-b` as content dividers; never ALL-CAPS (no `uppercase`) in shipped UI.
+  `border-t`/`border-b` as content dividers.
+- **ALL-CAPS in exactly two roles, each from one source** (rule rewritten 2026-09-30 to match
+  what ships; it said "never" while both roles below had shipped for weeks). The admin's
+  eyebrow, `UTIL` in [`admin-shared/scale.ts`](../../src/admin-shared/scale.ts): two or three
+  words naming a group of rows, never a sentence, because 12px capitals are the slowest thing
+  the admin sets. And the Paper look's kickers in
+  [`look-paper.css.ts`](../../src/web/look-paper.css.ts) and `look-paper-shelf.css.ts` (the rail
+  headings, the section over a piece, the series head), which is that look's newspaper voice.
+  No other label gets `uppercase`: one that wants capitals is either one of those two roles or
+  it is not capitals. (A hex colour typed in a field is data, not a label.)
 - **The sidebar rail never moves the reading column.** `.rail` is absolutely placed inside
   `.with-rail` (which wraps the content, not the header, so the rail's first line is level with
   the article's first line) and sticks on scroll. Its breakpoint is COMPUTED from `contentWidth`
@@ -83,10 +92,19 @@ inside it. In book mode the same break becomes the asterism.
   its own 10 / 8 / 6px hierarchy (sheet, nested panel, control), held by the kit and described
   in [admin-design.md](../admin-design.md); change `CARD`/`CONTROL` in
   [`admin-shared/kit.ts`](../../src/admin-shared/kit.ts), or `select`/`tabs` in
-  [`web/admin/kit.ts`](../../src/web/admin/kit.ts), rather than inventing a one-off. Admin
-  `<select>` uses the styled `select()` and free-text-with-suggestions uses `pickField`
-  ([`screens/sheet-fields.ts`](../../src/web/admin/screens/sheet-fields.ts)) — never a raw native
-  `<select>`/`<datalist>` (their OS popups can't be themed: wrong font, cramped, no hover).
+  [`web/admin/kit.ts`](../../src/web/admin/kit.ts), rather than inventing a one-off.
+- **An admin choice-from-a-list is the NATIVE `<select>`, dressed** (rewritten 2026-09-30: the
+  rule said "never native" while every select in the admin was one). `select()` in
+  [`web/admin/kit.ts`](../../src/web/admin/kit.ts), and `pick()`/`pickControl()` in
+  [`web/admin/fields-pick.ts`](../../src/web/admin/fields-pick.ts) for a settings row, give
+  the closed box the control's radius, border and font, `appearance-none` and the chevron. The
+  OPEN list stays the operating system's, and that is the trade taken on purpose: it is the
+  list a phone, a screen reader and a keyboard already know how to drive, which a hand-built
+  dropdown has to re-earn. Never a bare `<select>` without that dress, and no home-made
+  dropdown for a fixed list. Free text WITH suggestions is different — there is no native
+  control worth keeping — and uses `pickField`
+  ([`screens/sheet-fields.ts`](../../src/web/admin/screens/sheet-fields.ts)), never
+  `<datalist>`.
 
 ## The article's right gutter — the info panel (HARD RULES)
 

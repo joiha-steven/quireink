@@ -25,7 +25,7 @@ import { glyphOf, kindOf, logSentence, type LogKind } from '@/admin-shared/log-s
 import { fold } from '@/admin-shared/fold'
 import { emptyState, pageHeader, select, sheet, sheetTop } from '@/web/admin/kit'
 import { logView } from '@/web/admin/views'
-import type { SiteSettings } from '@/types'
+import type { SiteLang, SiteSettings } from '@/types'
 import { plural } from '@/i18n/plural'
 
 /**
@@ -56,7 +56,7 @@ const rowGlyph = (action: string): string =>
  * `data-find` is the folded haystack — sentence, detail and code, accents stripped — so a
  * keystroke is one `includes` per row rather than a fold of two hundred strings.
  */
-function row(t: AdminStrings, e: ActivityEntry, i: number): string {
+function row(t: AdminStrings, lang: SiteLang, e: ActivityEntry, i: number): string {
   // PAST THE FIRST PAGE IT ARRIVES HIDDEN, so the first paint is one page and not two hundred
   // rows. The island owns it from there: a filter changes WHICH rows, so the count cannot be
   // baked into the markup beyond this first answer.
@@ -70,7 +70,7 @@ function row(t: AdminStrings, e: ActivityEntry, i: number): string {
     + ` data-find="${escapeAttr(find)}" style="--i:${i}"`
     + ` title="${escapeAttr(title)}"`
     + ` class="flex items-center gap-2.5 border-b border-neutral-100 px-5 py-2 text-xs transition-colors hover:bg-neutral-50/70 dark:border-neutral-800 dark:hover:bg-neutral-800/30">`
-    + `<span class="whitespace-nowrap tabular-nums text-neutral-500 dark:text-neutral-400">${escapeHtml(formatDateTimeShort(e.at))}</span>`
+    + `<span class="whitespace-nowrap tabular-nums text-neutral-500 dark:text-neutral-400">${escapeHtml(formatDateTimeShort(e.at, lang))}</span>`
     + rowGlyph(e.action)
     + `<span class="min-w-0 truncate ${e.action === 'error'
       ? 'font-medium text-neutral-900 dark:text-white'
@@ -119,7 +119,7 @@ export async function logScreen(settings: SiteSettings): Promise<string> {
   const body = entries.length === 0
     ? emptyState({ title: t.logEmpty, description: t.logEmptyHint, glyph: 'blankPage' })
     : `${emptyState({ title: t.logNoMatch, glyph: 'lens', hidden: true, attrs: 'data-log-nomatch' })}`
-      + `<ul data-log-list class="admin-stagger">${entries.map((e: ActivityEntry, i: number) => row(t, e, i)).join('')}</ul>`
+      + `<ul data-log-list class="admin-stagger">${entries.map((e: ActivityEntry, i: number) => row(t, lang, e, i)).join('')}</ul>`
       + `<div data-log-more class="px-5 py-3"${entries.length > PAGE ? '' : ' hidden'}>`
       + `<button type="button" class="${SHEET_TOOL}">${escapeHtml(t.logShowMore.replace('{n}', String(PAGE)))}</button></div>`
 

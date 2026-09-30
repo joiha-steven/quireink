@@ -14,7 +14,7 @@
 // load. What is lost with it is the column's in-page memory — scroll position, the search text,
 // the open drawer — so the island puts the first two back through `sessionStorage`, which is
 // the only part of that state a person would notice going.
-import type { Post, SiteSettings } from '@/types'
+import type { Post, SiteLang, SiteSettings } from '@/types'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeHtml } from '@/utils'
 import { CARD, buttonClass } from '@/admin-shared/kit'
@@ -46,13 +46,13 @@ async function paneData(): Promise<{
 }
 
 /** The empty paper: the invitation, and what was touched last. */
-function blankSheet(items: WriteItem[], t: ReturnType<typeof adminT>): string {
+function blankSheet(items: WriteItem[], t: ReturnType<typeof adminT>, lang: SiteLang): string {
   const keys = `<div class="flex flex-col items-center">`
     + `<div class="flex items-center gap-2">`
     + `<a href="/admin/note-editor" class="${buttonClass('secondary')}">${escapeHtml(t.newNote)}</a>`
     + `<a href="/admin/page-editor" class="${buttonClass('secondary')}">${escapeHtml(t.newPage)}</a>`
     + `<a href="/admin/editor" class="${buttonClass('primary')}">${escapeHtml(t.newPost)}</a>`
-    + `</div>${recentPieces(items, t)}</div>`
+    + `</div>${recentPieces(items, t, lang)}</div>`
   // Hidden where the pane takes the whole width — the list IS the screen there.
   return `<div data-write-empty class="hidden min-w-0 flex-1 xl:block ${CARD} lg:min-h-[calc(100vh-1.5rem)]">`
     + `<div class="flex min-h-[calc(100vh-1.5rem)] flex-col items-center justify-center">`
@@ -76,7 +76,7 @@ export async function contentScreen(_settings: SiteSettings, query: URLSearchPar
     t, lang: _settings.language, items, views,
     needs: needsFrom(query), openKey: '', alone: true, now: Date.now(),
   })
-  return `<div class="flex items-start gap-6">${pane}${blankSheet(items, t)}</div>`
+  return `<div class="flex items-start gap-6">${pane}${blankSheet(items, t, _settings.language)}</div>`
     + writeDrawers(t, posts)
 }
 

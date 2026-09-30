@@ -25,7 +25,7 @@ import { renderInlineMarkdown } from '@/render/inline-md'
 import { CONTROL, ICON_KEY, buttonClass } from '@/admin-shared/kit'
 import { FIELD_W, NOTE_ALERT, NOTE_TEXT, SETTING_GAP, SETTING_LABEL } from '@/admin-shared/scale'
 import { panelCard, switchRow, textField } from '@/web/admin/fields'
-import { choice, plainPick } from '@/web/admin/fields-pick'
+import { choice, pick } from '@/web/admin/fields-pick'
 import { panelList } from '@/web/admin/fields-box'
 import { gate } from '@/web/admin/fields-pic'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
@@ -153,7 +153,7 @@ function layout(t: AdminStrings, s: SiteSettings, v: HomeTabView): string {
     // ⚠️ `data-gate-not`: this row is every value BUT one, and the island knows `key=value`.
     + `<div class="space-y-4 border-l-2 border-neutral-200 pl-4 dark:border-neutral-800"`
     + ` data-gate-not="home.mode=list"${home.mode === 'list' ? ' hidden' : ''}>`
-    + gate(home.mode === 'page', plainPick({
+    + gate(home.mode === 'page', pick({
       k: 'home.page', label: t.homePageLabel, note: t.homePageHint, value: home.page,
       options: [['', t.homePageNone], ...v.pages.map((p) => [p.slug, p.title] as [string, string])],
     }), 'data-gate-when="home.mode=page"')

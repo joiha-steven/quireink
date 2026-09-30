@@ -16,6 +16,7 @@ import { META } from '@/admin-shared/scale'
 import { buttonClass, SHEET_TOOL } from '@/admin-shared/kit'
 import { richMarks } from '@/admin-shared/rich-text'
 import { formatDateTimeShort } from '@/admin-shared/when'
+import type { SiteLang } from '@/types'
 import {
   argsJson, blocksOf, clock, entriesOf, foldMarks, jsonMarks, tokens,
   type Block, type Entry, type Pending, type Turn,
@@ -29,6 +30,8 @@ export type AssistantWords = {
   showAll: string; close: string
   untitled: string; noChats: string; deleteOne: string; deleteYes: string
   didNothing: string
+  /** The admin's language, for the date on each chat row. */
+  lang: SiteLang
 }
 
 const ASKED = 'rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm leading-relaxed'
@@ -186,7 +189,7 @@ export type ChatRow = { id: number; title: string; updatedAt: string; context: n
  */
 export function chatRowMark(c: ChatRow, activeId: number | null, w: AssistantWords): Mark {
   const active = c.id === activeId
-  const meta: Mark[] = [leaf('span', '', formatDateTimeShort(c.updatedAt))]
+  const meta: Mark[] = [leaf('span', '', formatDateTimeShort(c.updatedAt, w.lang))]
   if (c.context > 0) meta.push(leaf('span', 'tabular-nums', tokens(c.context)))
 
   return el('li', 'relative border-b border-neutral-100 dark:border-neutral-800', [

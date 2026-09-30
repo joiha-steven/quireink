@@ -16,7 +16,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { buttonClass, OVERLAY_LIFT } from '@/admin-shared/kit'
 import { textArea, textField } from '@/web/admin/fields'
 import { chipField, fieldNote, pickField, pictureField, statusPair, typedDate } from './sheet-fields'
-import { plainPick } from '@/web/admin/fields-pick'
+import { pick } from '@/web/admin/fields-pick'
 import { SITE_LANGS } from '@/locales/langs'
 
 export type SheetKind = 'post' | 'page' | 'note'
@@ -72,7 +72,7 @@ export type PanelLists = { categories: string[]; tags: string[]; series: string[
 function translationFields(t: AdminStrings, piece: PanelPiece, lists: PanelLists): string {
   if (piece.kind === 'note') return ''
   return `<div class="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
-    + plainPick({
+    + pick({
       k: 'lang', label: t.pieceLanguage, value: piece.lang,
       note: t.pieceLanguageHint,
       options: [['', t.pieceLanguageSame], ...SITE_LANGS.map((l) => [l.value, l.label] as [string, string])],

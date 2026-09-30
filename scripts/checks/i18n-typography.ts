@@ -16,25 +16,13 @@
 // a rule that is wrong in four languages.
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { DEFAULT_QUOTES, QUOTES } from '../../src/i18n/quotes'
 
 /** `key: '…'` on one line, which is how every locale file is written. */
 const LINE = /^\s{2,}([a-zA-Z][\w]*):\s*(['"`])((?:\\.|(?!\2).)*)\2\s*,?\s*$/gm
 
-/** The pair a language opens and closes a quotation with. */
-const QUOTES: Record<string, [string, string]> = {
-  de: ['„', '“'],
-  // Guillemets, and it is the languages' own preference rather than a French import: Spanish
-  // calls them comillas latinas and puts them first, Italian and European Portuguese the same.
-  // Counted before this check: es 37 to 0, it 32 to 5, pt 29 to 7 — the minority was drift.
-  es: ['«', '»'],
-  fr: ['«', '»'],
-  it: ['«', '»'],
-  pt: ['«', '»'],
-  ru: ['«', '»'],
-  ja: ['「', '」'],
-}
-/** English, Vietnamese, Korean and Chinese: the curly pair. */
-const DEFAULT_QUOTES: [string, string] = ['“', '”']
+// The table itself lives in `src/i18n/quotes.ts` since 2026-09-30, because the published page
+// now curls an author's straight quotes with the same pairs.
 
 /**
  * Strings whose content is typed into somebody else's interface, character for character.
@@ -58,7 +46,7 @@ for (const dir of ['locales', 'locales/admin']) {
 
 for (const file of files) {
   const lang = file.slice(file.lastIndexOf('/') + 1, -3)
-  const [open, close] = QUOTES[lang] ?? DEFAULT_QUOTES
+  const [open, close] = QUOTES[lang as keyof typeof QUOTES] ?? DEFAULT_QUOTES
   const src = readFileSync(file, 'utf8')
   for (const m of src.matchAll(LINE)) {
     const key = m[1] ?? ''

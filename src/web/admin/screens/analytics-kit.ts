@@ -132,7 +132,7 @@ export function trendChart({ points, peakLabel, viewsLabel, visitorsLabel, parti
   // no time on either (release review, 2026-09-23).
   const axis = (day: string): string => {
     const hour = /\d{2}:\d{2}$/.exec(day)
-    return hour ? `${formatDateShort(day)} ${hour[0]}` : formatDateShort(day)
+    return hour ? `${formatDateShort(day, lang)} ${hour[0]}` : formatDateShort(day, lang)
   }
   const ends = n > 1 && drawn[0] && drawn[n - 1]
     ? `<div class="mt-1.5 flex justify-between text-xs text-neutral-500 dark:text-neutral-400">`

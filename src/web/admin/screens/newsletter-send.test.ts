@@ -13,10 +13,10 @@ const post = (over: Partial<Post>): Post => ({
 
 describe('the send list', () => {
   it('names an untitled post by its words, dates it on the site clock, and cannot widen the page', () => {
-    const html = sendPanel(t, [{ ...post({}), stats: null }] as never, true, 'Asia/Ho_Chi_Minh')
+    const html = sendPanel(t, 'en', [{ ...post({}), stats: null }] as never, true, 'Asia/Ho_Chi_Minh')
     expect(html).toContain('Just a quick thought')
     // 23:30 UTC on the 29th is the 30th in Hanoi.
-    expect(html).toContain('30/9/26')
+    expect(html).toContain('9/30/26')
     expect(html).toContain('grid grid-cols-1')
   })
 })

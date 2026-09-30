@@ -34,7 +34,7 @@ export async function notFoundScreen(settings: SiteSettings): Promise<string> {
     + `${escapeHtml(t.paletteTitle)}</button>`
     + `<a href="/admin" class="${escapeAttr(buttonClass('secondary'))}">${escapeHtml(t.navHome)}</a>`
     + `</div>`
-    + recentPieces(writeItems(posts, pages, notes), t)
+    + recentPieces(writeItems(posts, pages, notes), t, settings.language)
     + `</div>`
 
   return `<div class="min-w-0 flex-1" data-admin-404>`

@@ -97,7 +97,7 @@ describe('the signed-in devices', () => {
     const seen = root.querySelector<HTMLElement>('[data-sec-seen]')?.textContent ?? ''
     // The bug this file exists for: `.slice()` on an integer throws, the whole `.map()` goes
     // with it, and the list stays empty behind the server's own "no devices" state.
-    expect(seen).toBe(formatDateTimeShort(WHEN))
+    expect(seen).toBe(formatDateTimeShort(WHEN, 'en'))
     expect(seen).not.toContain('Invalid')
   })
 

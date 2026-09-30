@@ -15,6 +15,7 @@ import { broke, put, read, row, show, type ListWords } from './list-dom'
 import { fillTokens, wireMcp } from './settings-mcp'
 import { wireApi } from './settings-api'
 import { formatDateTimeShort } from '@/admin-shared/when'
+import { pageLang } from '@/admin/island/lib/page-lang'
 
 export type { ListWords }
 
@@ -220,7 +221,7 @@ async function dropBackup(row: HTMLElement, name: string, w: ListWords): Promise
 
 // The admin's one stamp, as everywhere else: `toLocaleString()` printed "9/30/2026, 11:13:13 AM"
 // beside rows that said `30/9/26 - 11:11`.
-const backupWhen = (iso: string): string => formatDateTimeShort(iso)
+const backupWhen = (iso: string): string => formatDateTimeShort(iso, pageLang())
 
 async function fillBackups(screen: HTMLElement): Promise<void> {
   const list = screen.querySelector<HTMLElement>('[data-backup-list]')

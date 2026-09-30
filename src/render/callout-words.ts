@@ -6,7 +6,9 @@
 // same place the rest of the piece's chrome gets its language — and a Japanese post stops
 // opening its warning box with an English word.
 import type { Dict } from '@/locales/types'
+import type { SiteLang } from '@/types'
 import { escapeHtml } from '@/utils'
+import { curlyQuotes } from '@/render/curly-quotes'
 
 const KEY: Record<string, keyof Dict> = {
   note: 'calloutNote', tip: 'calloutTip', warning: 'calloutWarning',
@@ -18,4 +20,12 @@ const LABEL = /(<div class="callout callout-(note|tip|warning|important|caution)
 export function calloutWords(html: string, s: Dict): string {
   return html.replace(LABEL, (_, open: string, type: string, close: string) =>
     `${open}${escapeHtml(String(s[KEY[type]!]))}${close}`)
+}
+
+/**
+ * Everything a finished body gets from its language when the page is put together: the callout
+ * labels above, and the quotes curled the way `lang` writes them (`curly-quotes.ts`).
+ */
+export function pieceWords(html: string, s: Dict, lang: SiteLang): string {
+  return curlyQuotes(calloutWords(html, s), lang)
 }
