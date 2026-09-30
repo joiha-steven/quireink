@@ -45,6 +45,17 @@ describe('the anchor', () => {
     expect(locate(flatten(prose()), { exact: 'a sentence nobody wrote', prefix: '', suffix: '' })).toBeNull()
   })
 
+  // The owner rewrote the sentence the mark was in; the same word elsewhere is not it
+  // (2026-09-30). Two characters of agreeing context used to be enough to land there.
+  it('does not land on the same word elsewhere once its own sentence has changed', () => {
+    const flat = flatten(prose())
+    // Stored where "writer" stood in a sentence that now reads differently.
+    const moved = { exact: 'stroke', prefix: 'The engraver sharpened the ', suffix: ' and waited.' }
+    expect(locate(flat, moved)).toBeNull()
+    // With nothing stored around it, the words alone still decide.
+    expect(locate(flat, { exact: 'fading stroke', prefix: '', suffix: '' })).not.toBeNull()
+  })
+
   it('wraps across an inline element as one mark in several pieces, and unwraps clean', () => {
     const flat = flatten(prose())
     const hit = locate(flat, { exact: 'the fading stroke became', prefix: '', suffix: '' })!

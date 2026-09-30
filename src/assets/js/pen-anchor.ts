@@ -104,7 +104,12 @@ export function locate(flat: Flat, sel: Selector): { start: number; end: number 
     const loose = new RegExp(sel.exact.trim().split(/\s+/).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'), 'g')
     for (let m = loose.exec(text); m; m = loose.exec(text)) consider(m.index, m.index + m[0].length)
   }
-  return best
+  // ⚠️ A FLOOR, or the promise above is not kept. With none, the best of bad candidates won: a
+  // mark on "punchcutter" in a paragraph the owner rewrote was drawn on the "punchcutter" of
+  // the paragraph before, on 2 characters of agreeing context out of 64 (2026-09-30). The
+  // surroundings have to agree on 8 characters, or on all there were to store.
+  const need = Math.min(8, sel.prefix.length + sel.suffix.length)
+  return best && (best as { score: number }).score >= need ? best : null
 }
 
 /** A live range over flat offsets [start, end). */

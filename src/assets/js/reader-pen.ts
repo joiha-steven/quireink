@@ -21,7 +21,7 @@
 
 import { el, label } from './dom'
 import { flatten, locate, rangeFrom, selectorFor, unwrap, wrap } from './pen-anchor'
-import { fragment } from './quote'
+import { fragment, wholeWords } from './quote'
 import { load, newId, save, type Ann, type Kind } from './pen-store'
 import { codeHere, forgetAll, keepsHere, mint, pull, push, whoami, writeKey, type Via } from './pen-sync'
 
@@ -117,13 +117,19 @@ function readerPen(): void {
   }
   // The server's list replaces this browser's once the page has one there; a page it has
   // never seen is seeded from here. Local marks are drawn first so nothing waits on the wire.
+  //
+  // MERGED, not replaced (2026-09-30): a mark made here before the code was entered was
+  // silently dropped by the server's list. What this browser has that the server lacks is
+  // kept and sent back up.
   const adopt = async () => {
     const remote = await pull(path)
     if (remote) {
+      const mine = items.filter((a) => !remote.some((r) => r.id === a.id))
       clearAll()
-      items = remote
+      items = [...remote, ...mine]
       save(path, items)
       drawAll()
+      if (mine.length) void push(path, items)
     } else if (items.length) {
       void push(path, items)
     }
@@ -148,9 +154,12 @@ function readerPen(): void {
   }
   const word = (cls: string, text: string) => el('button', { type: 'button', class: cls }, text)
   const sep = () => el('span', { class: 'pen-sep' })
+  // The way in to a notebook kept elsewhere, for a reader with no mark on this page yet: the
+  // panel lived only in a mark's card, so a new device had to make a throwaway mark to reach it.
+  const keepKey = word('pen-k', label('readerPenKeep'))
   bar.append(...INKS.map(swatch), sep(),
     word('pen-u', label('readerPenUnderline')), word('pen-o', label('readerPenRing')),
-    word('pen-n', label('readerPenNote')), sep(), word('pen-q', label('quoteCopy')))
+    word('pen-n', label('readerPenNote')), sep(), word('pen-q', label('quoteCopy')), keepKey)
   document.body.appendChild(bar)
 
   let range: Range | null = null
@@ -159,8 +168,10 @@ function readerPen(): void {
 
   const place = (box: DOMRect, node: HTMLElement, below: boolean) => {
     const w = node.offsetWidth
-    const x = Math.min(Math.max(8, box.left + box.width / 2 - w / 2),
-      document.documentElement.clientWidth - w - 8)
+    // The 8px margin wins over centring when the two disagree: clamped the other way round, a
+    // bar wider than the room was pushed off the left edge (x = -75 on a phone).
+    const x = Math.max(8, Math.min(box.left + box.width / 2 - w / 2,
+      document.documentElement.clientWidth - w - 8))
     node.style.left = `${x + scrollX}px`
     node.style.top = `${(below ? box.bottom + 8 : box.top - node.offsetHeight - 8) + scrollY}px`
   }
@@ -173,6 +184,7 @@ function readerPen(): void {
       return hideBar()
     }
     range = r.cloneRange()
+    keepKey.hidden = !!kept || items.length > 0
     bar.hidden = false
     // Below on a touch screen, where the platform's own callout sits above; above otherwise.
     place(r.getBoundingClientRect(), bar, matchMedia('(hover: none)').matches)
@@ -207,8 +219,9 @@ function readerPen(): void {
     if (b.classList.contains('pen-u')) return make('u', '', false)
     if (b.classList.contains('pen-o')) return make('o', '', false)
     if (b.classList.contains('pen-n')) return make('hl', '', true)
+    if (b.classList.contains('pen-k') && range) { const at = range.getBoundingClientRect(); hideBar(); return openKeep(at) }
     if (b.classList.contains('pen-q') && range && navigator.clipboard?.writeText) {
-      const picked = range.toString().replace(/\s+/g, ' ').trim()
+      const picked = wholeWords(range)
       void navigator.clipboard.writeText(`“${picked}”\n${location.href.split('#')[0]}#${fragment(picked)}`)
       hideBar()
     }
@@ -315,11 +328,22 @@ function readerPen(): void {
     const first = prose.querySelector<HTMLElement>(`[data-reader="${a.id}"]`)
     if (!first) return
     open = a
+    area.hidden = send.hidden = del.hidden = false
     area.value = a.note
     renderKeep()
     pop.hidden = false
     place(first.getBoundingClientRect(), pop, true)
     area.focus()
+  }
+  /** The card with only its keeping half, where there is no mark to be the card of. */
+  const openKeep = (at: DOMRect) => {
+    open = null
+    area.hidden = send.hidden = del.hidden = true
+    renderKeep()
+    panel.hidden = false
+    pop.hidden = false
+    place(at, pop, true)
+    codeIn.focus()
   }
   // The note that is still waiting to be drawn and kept. Flushed on close: the card is written
   // 300 ms after the last key, and a note closed sooner used to find `open` already null — a

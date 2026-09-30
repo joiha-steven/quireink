@@ -78,11 +78,22 @@ export const ISLANDS_CSS = `
 /* The reader's pen (reader-pen.ts): the bar over a selection, the card over a mark, and
    the note under a paragraph. Same footing as the quote pill — the heading colour on the
    paper's, so it reads as a control and not as part of the text. The five swatches take
-   the pen's own pigments inline: a highlighter is not UI (ADR 0018). */
-.pen-bar{position:absolute;z-index:40;display:flex;align-items:center;gap:.2rem;
-  padding:.3rem .5rem;border-radius:999px;background:var(--c-heading);color:var(--c-bg);
+   the pen's own pigments inline: a highlighter is not UI (ADR 0018).
+
+   NEVER WIDER THAN THE SCREEN (2026-09-30): nine keys in one unbreakable pill were 457px on a
+   390px phone, placed at x = -75 with three inks off the edge. It wraps now, centred, and on a
+   touch screen every key is a 44px target (a swatch's circle stays small, its hit area not). */
+.pen-bar{position:absolute;z-index:40;display:flex;flex-wrap:wrap;justify-content:center;
+  align-items:center;gap:.2rem;max-width:calc(100vw - 1rem);
+  padding:.3rem .5rem;border-radius:1.2rem;background:var(--c-heading);color:var(--c-bg);
   font-family:var(--font-sans);font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small);white-space:nowrap}
+@media (hover:none){
+  .pen-bar{gap:.45rem;padding:.35rem .6rem}
+  .pen-bar button{min-height:44px}
+  .pen-swatch{position:relative;width:1.6rem;height:1.6rem}
+  .pen-swatch::after{content:'';position:absolute;inset:-.6rem}
+}
 .pen-bar[hidden]{display:none}
 .pen-bar button{border:0;background:none;color:inherit;font:inherit;cursor:pointer;
   padding:.15rem .5rem;border-radius:999px}

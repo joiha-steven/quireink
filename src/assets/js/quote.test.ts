@@ -8,7 +8,7 @@
 // and `encodeURIComponent` leaves both alone.
 
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { quote } from './quote'
+import { quote, wholeWords } from './quote'
 import { page, useDom } from './test-dom'
 
 useDom()
@@ -111,5 +111,18 @@ describe('the quote gesture', () => {
     quote()
     await select(46)
     expect(button()).toBeNull()
+  })
+})
+
+// A drag that starts or ends mid-word made a fragment Chrome will not match, so the link
+// opened at the top of the page (2026-09-30).
+describe('a quote whose selection cuts a word', () => {
+  it('takes the whole word at each edge', () => {
+    document.body.innerHTML = '<p id="w">Widen the leading before you write another word.</p>'
+    const node = document.getElementById('w')!.firstChild!
+    const range = document.createRange()
+    range.setStart(node, 2) // "den the …"
+    range.setEnd(node, 30) // "… before you w"
+    expect(wholeWords(range)).toBe('Widen the leading before you write')
   })
 })

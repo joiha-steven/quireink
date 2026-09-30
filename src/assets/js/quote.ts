@@ -45,6 +45,31 @@ const words = (slice: string, from: 'start' | 'end') => {
 }
 
 /**
+ * The selection's text, widened to whole words at both edges.
+ *
+ * A text fragment only matches on word boundaries, so a drag that began or ended mid-word
+ * (`…before you w`) made a link that opened at the top of the page (2026-09-30). The quote
+ * takes the whole word at each edge instead, which is also what the reader meant.
+ */
+export function wholeWords(range: Range): string {
+  const r = range.cloneRange()
+  const inWord = (c: string | undefined): boolean => c !== undefined && /[\p{L}\p{N}\p{M}]/u.test(c)
+  if (r.startContainer.nodeType === Node.TEXT_NODE) {
+    const t = r.startContainer.textContent ?? ''
+    let i = r.startOffset
+    while (i > 0 && inWord(t[i - 1]) && inWord(t[i])) i--
+    r.setStart(r.startContainer, i)
+  }
+  if (r.endContainer.nodeType === Node.TEXT_NODE) {
+    const t = r.endContainer.textContent ?? ''
+    let i = r.endOffset
+    while (i < t.length && inWord(t[i - 1]) && inWord(t[i])) i++
+    r.setEnd(r.endContainer, i)
+  }
+  return r.toString().replace(/\s+/g, ' ').trim()
+}
+
+/**
  * The `#:~:text=` fragment for a quote.
  *
  * Short quotes travel whole, so the reader who follows the link sees exactly the sentence
@@ -85,7 +110,7 @@ export function quote(): void {
       : null
     // Both ends inside the article, or it is not a quote from the article.
     if (!range || !prose.contains(range.commonAncestorContainer)) return hide()
-    picked = selection!.toString().replace(/\s+/g, ' ').trim()
+    picked = wholeWords(range)
     if (picked.length < MIN_CHARS) return hide()
     const box = range.getBoundingClientRect()
     button.hidden = false
