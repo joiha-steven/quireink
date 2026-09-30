@@ -18,6 +18,19 @@ import { SUBSCRIBERS_PER_PAGE as PER_PAGE } from '@/admin-shared/analytics'
 
 export type SubscriberWords = { showing?: string; deleteFailed?: string }
 
+/**
+ * One CSV cell, RFC 4180 quoted.
+ *
+ * ⚠️ A CELL A SPREADSHEET WOULD RUN IS DEFUSED (2026-09-30). A subscriber's address comes from the
+ * public form, so `=1+2@example.com` — or worse — went into the owner's file raw, and Excel and
+ * Sheets evaluate a cell that starts with = + - @ (or a tab or return before one). A leading
+ * apostrophe is the conventional defuse: shown, never evaluated.
+ */
+export function csvCell(raw: string): string {
+  const v = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw
+  return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
+}
+
 export function wireSubscribers(screen: HTMLElement, opts: {
   lang: SiteLang
   words: SubscriberWords
@@ -165,7 +178,7 @@ export function wireSubscribers(screen: HTMLElement, opts: {
     const table = screen.querySelector('[data-nl-panel="people"] thead tr')
     const head = [...(table?.children ?? [])].map((th) => th.textContent?.trim() ?? '')
       .filter(Boolean)
-    const cell = (v: string): string => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
+    const cell = csvCell
     const lines = [head.map(cell).join(',')]
     for (const id of chosen()) {
       const tr = entries.find((e) => e.id === id)?.tr

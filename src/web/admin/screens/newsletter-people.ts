@@ -100,7 +100,8 @@ export function peoplePanel(
     // from the file the React face wrote in exactly two columns.
     return `<tr data-sub data-id="${s.id}" data-status="${escapeAttr(s.status)}"`
       + ` data-find="${escapeAttr(s.email.toLowerCase())}" data-email="${escapeAttr(s.email)}"`
-      + ` data-joined="${escapeAttr(shortDate(s.createdAt))}" data-sent="${s.stats?.sent ?? 0}"`
+      // ISO for the export: `30/9/26` in a CSV is a different day on every machine that opens it.
+      + ` data-joined="${escapeAttr(s.createdAt.slice(0, 10))}" data-sent="${s.stats?.sent ?? 0}"`
       + ` data-rate="${escapeAttr(rate ?? '')}" class="${TROW}"${i < PER_PAGE ? '' : ' hidden'}>`
       + `<td class="px-4 py-2 align-middle">${tick({ label: s.email, attrs: `data-sub-pick data-id="${s.id}"` })}</td>`
       // `max-w-0` beside the head's `w-full`: without it every column shared the width evenly
