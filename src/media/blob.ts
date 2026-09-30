@@ -10,18 +10,46 @@
 
 const LOCAL_BASE = '/uploads' // serving-route prefix; also the public URL prefix
 
-// Strip the `/uploads/` prefix (with or without an origin) → store-relative pathname,
-// so stored content carries no origin and renders after a host change (Invariant 3).
+// Strip the `/uploads/` prefix → store-relative pathname, so stored content carries no origin
+// and renders after a host change (Invariant 3).
 //
 // The prefix only counts where a URL BEGINS: at the start of the string, or right after
 // `](` / `src="` / `href="`, mirroring how expandWith() anchors. An unanchored global
 // `/uploads/` also matches mid-path in somebody else's URL, and every WordPress site
 // serves its images from `/wp-content/uploads/…` — collapsing that silently rewrote
 // imported posts to point at `…/wp-contentphoto.jpg`, an image that does not exist.
-const STORE_PREFIX = String.raw`(?:https?:\/\/[^/\s"')<]+)?\/uploads\/`
+//
+// ⚠️ AND ONLY WHAT THIS STORE HOLDS, ON THIS SITE (2026-09-30). It took `/uploads/` on ANY
+// host and with any path after it. Discourse, CarrierWave and a good share of CMSes serve from
+// `/uploads/` too, so `https://meta.discourse.org/uploads/default/x.png` was stored as the
+// relative `default/x.png` — a broken image — and `https://other.org/uploads/media/a.pdf` read
+// back as THIS site's `/uploads/media/a.pdf`, a different file. Now: only the two namespaces
+// `expandWith` puts back (`media/`, `files/`), and an origin only when it is one of this site's
+// own (`setOwnOrigins`). A relative `/uploads/2024/x.jpg` stays as written for the same reason.
+const STORE_PREFIX = String.raw`(https?:\/\/[^/\s"')<]+)?\/uploads\/(?=(?:media|files)\/)`
 const STORE_PREFIX_HEAD_RE = new RegExp(`^${STORE_PREFIX}`, 'i')
 const STORE_PREFIX_MD_RE = new RegExp(`(\\]\\()${STORE_PREFIX}`, 'gi')
 const STORE_PREFIX_ATTR_RE = new RegExp(`((?:src|href)=["'])${STORE_PREFIX}`, 'gi')
+
+/** The origins this site answers at, lower-cased. Empty until the server says (client bundles: always). */
+let ownOrigins = new Set<string>()
+
+/**
+ * Tell the collapse which absolute URLs are this site's own. Called by `content/settings.ts`
+ * each time settings load, with the configured address and `SITE_URL`. With none known, an
+ * absolute `/uploads/` URL is left as written — a link that keeps working, rather than one
+ * rewritten to a file that may not be here.
+ */
+export function setOwnOrigins(urls: readonly string[]): void {
+  const next = new Set<string>()
+  for (const url of urls) {
+    try { if (url) next.add(new URL(url).origin.toLowerCase()) } catch { /* not an address */ }
+  }
+  ownOrigins = next
+}
+
+const ours = (origin: string | undefined): boolean =>
+  origin === undefined || ownOrigins.has(origin.toLowerCase())
 
 // Expand store-relative `media/`/`files/` refs to `${base}/...` (idempotent;
 // external links + body text outside link/src/href positions untouched).
@@ -53,9 +81,9 @@ export function blobUrl(pathname: string): string {
 // Persist form: strip the store prefix → store-relative pathname. Idempotent.
 export function collapseBlob(s: string): string {
   return s
-    .replace(STORE_PREFIX_HEAD_RE, '')
-    .replace(STORE_PREFIX_MD_RE, '$1')
-    .replace(STORE_PREFIX_ATTR_RE, '$1')
+    .replace(STORE_PREFIX_HEAD_RE, (all, origin?: string) => (ours(origin) ? '' : all))
+    .replace(STORE_PREFIX_MD_RE, (all, lead: string, origin?: string) => (ours(origin) ? lead : all))
+    .replace(STORE_PREFIX_ATTR_RE, (all, lead: string, origin?: string) => (ours(origin) ? lead : all))
 }
 
 // Render form: pathname → public URL. Idempotent; external links untouched.

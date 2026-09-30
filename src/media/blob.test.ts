@@ -1,10 +1,12 @@
 import { describe, it, expect } from '@/test/vitest'
-import { blobUrl, collapseBlob, expandBlob } from '@/media/blob'
+import { afterEach } from 'bun:test'
+import { blobUrl, collapseBlob, expandBlob, setOwnOrigins } from '@/media/blob'
 
 // Binaries are served same-origin under /uploads (the local filesystem store).
 const BASE = '/uploads'
 
 describe('blob store-relative refs (collapse <-> expand)', () => {
+  afterEach(() => setOwnOrigins([]))
   it('expands a media pathname into a public /uploads URL', () => {
     expect(expandBlob('media/photo.jpg')).toBe(`${BASE}/media/photo.jpg`)
   })
@@ -17,8 +19,37 @@ describe('blob store-relative refs (collapse <-> expand)', () => {
     expect(collapseBlob(`${BASE}/media/photo.jpg`)).toBe('media/photo.jpg')
   })
 
-  it('collapses a /uploads URL carrying an origin too', () => {
+  it('collapses a /uploads URL carrying THIS site\'s origin too', () => {
+    setOwnOrigins(['https://example.com'])
     expect(collapseBlob(`https://example.com${BASE}/media/photo.jpg`)).toBe('media/photo.jpg')
+    expect(collapseBlob(`https://EXAMPLE.com${BASE}/files/r.pdf`)).toBe('files/r.pdf')
+  })
+
+  // Regression (2026-09-30): the prefix was taken on ANY host and before ANY path. Discourse
+  // and many CMSes serve from `/uploads/`, so a picture from one was stored as a broken
+  // relative path, and another site's `/uploads/media/…` became a file on this one.
+  it('leaves another site\'s /uploads/ URL alone, even under media/', () => {
+    setOwnOrigins(['https://example.com'])
+    for (const foreign of [
+      'https://meta.discourse.org/uploads/default/original/1X/abc.png',
+      'https://other.org/uploads/media/whitepaper.pdf',
+    ]) {
+      expect(collapseBlob(foreign)).toBe(foreign)
+      expect(collapseBlob(`![x](${foreign})`)).toBe(`![x](${foreign})`)
+      expect(collapseBlob(`<a href="${foreign}">`)).toBe(`<a href="${foreign}">`)
+    }
+  })
+
+  it('leaves an absolute URL alone while this site\'s address is not known', () => {
+    setOwnOrigins([])
+    const url = `https://example.com${BASE}/media/photo.jpg`
+    expect(collapseBlob(url)).toBe(url)
+  })
+
+  it('collapses only the namespaces the store puts back', () => {
+    // `/uploads/nope.png` collapsed to `nope.png`, which nothing expands again.
+    expect(collapseBlob(`![a](${BASE}/nope.png)`)).toBe(`![a](${BASE}/nope.png)`)
+    expect(collapseBlob(`${BASE}/2024/05/photo.jpg`)).toBe(`${BASE}/2024/05/photo.jpg`)
   })
 
   it('round-trips a bare pathname (collapse after expand is identity)', () => {

@@ -4,7 +4,7 @@
 
 import type { SiteSettings, SiteLook } from '@/types'
 import { DEFAULT_INKS } from '@/pen/palette'
-import { expandBlob } from '@/media/blob'
+import { expandBlob, setOwnOrigins } from '@/media/blob'
 import { one } from '@/store/query'
 import { EMPTY_NAV_ORDER, sanitizeNavOrder } from '@/content/nav-order'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, isScheme, getFontPreset } from '@/content/themes'
@@ -331,6 +331,8 @@ export async function getSettings(): Promise<SiteSettings> {
     }
     cachedRaw = raw
     cachedSettings = built
+    // Which absolute `/uploads/` URLs are this site's own, for the collapse on save.
+    setOwnOrigins([built.siteUrl, process.env.SITE_URL ?? ''])
     return built
   } catch (error) {
     console.error(`[ERROR] settings.getSettings: ${(error as Error).message}`)
