@@ -321,13 +321,22 @@ function readerPen(): void {
     place(first.getBoundingClientRect(), pop, true)
     area.focus()
   }
-  const closePop = () => { pop.hidden = true; ask.hidden = true; open = null }
+  // The note that is still waiting to be drawn and kept. Flushed on close: the card is written
+  // 300 ms after the last key, and a note closed sooner used to find `open` already null — a
+  // TypeError, no card, and the note gone at the next reload (2026-09-30).
+  let pendingNote: Ann | null = null
+  const flushNote = () => {
+    clearTimeout(noteTimer)
+    if (pendingNote) { noteCard(pendingNote); persist(); pendingNote = null }
+  }
+  const closePop = () => { flushNote(); pop.hidden = true; ask.hidden = true; open = null }
 
   area.addEventListener('input', () => {
     if (!open) return
     open.note = area.value
+    pendingNote = open
     clearTimeout(noteTimer)
-    noteTimer = window.setTimeout(() => { noteCard(open!); persist() }, 300)
+    noteTimer = window.setTimeout(flushNote, 300)
   })
   del.addEventListener('click', () => {
     if (open) remove(open.id)

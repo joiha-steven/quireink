@@ -251,4 +251,46 @@ export function registerSweepFlows({ flow, expect }: Tour): void {
         body: JSON.stringify({ kind: 'posts', action: 'purge', ids: ['${AIR}'] }) })
       return verdict
     })()`, 1500))
+
+  // A reader's note closed within 300 ms of the last key was lost: the card is drawn on a timer,
+  // and the timer found the note already closed — a TypeError, and nothing kept.
+  flow('reader pen: a note closed at once is still kept', () => expect('/kerning-is-not-tracking', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      localStorage.removeItem('quire:pen:' + location.pathname)
+      // A run of plain words: a paragraph may OPEN with <strong>, whose first child is no text.
+      const walk = document.createTreeWalker(document.querySelector('.prose'), NodeFilter.SHOW_TEXT)
+      let text = null
+      while (walk.nextNode()) {
+        const n = walk.currentNode
+        if (n.parentElement.tagName === 'P' && n.data.trim().length > 40) { text = n; break }
+      }
+      if (!text) return 'no run of words to mark'
+      const para = text.parentElement
+      para.scrollIntoView({ block: 'center' })
+      const range = document.createRange()
+      range.setStart(text, 2); range.setEnd(text, 30)
+      getSelection().removeAllRanges(); getSelection().addRange(range)
+      document.dispatchEvent(new Event('selectionchange'))
+      para.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+      await sleep(500)
+      const note = [...document.querySelectorAll('.pen-bar button')].find((b) => /pen-n/.test(b.className))
+      if (!note) return 'the pen bar offered no Note'
+      note.click()
+      // The mark is made after the pen's stylesheet loads, and the note box opens after that.
+      const pop = document.querySelector('.pen-pop')
+      for (let i = 0; i < 60 && (!pop || pop.hidden); i++) await sleep(50)
+      const area = pop && !pop.hidden ? pop.querySelector('textarea') : null
+      if (!area) return 'the note box never opened'
+      area.value = 'kept though closed at once'
+      area.dispatchEvent(new Event('input', { bubbles: true }))
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await sleep(600)
+      const kept = JSON.parse(localStorage.getItem('quire:pen:' + location.pathname) || '{"items":[]}')
+      const saved = (kept.items || []).some((a) => a.note === 'kept though closed at once')
+      const card = [...document.querySelectorAll('.pen-note')].some((n) => n.textContent.includes('kept though'))
+      localStorage.removeItem('quire:pen:' + location.pathname)
+      if (!saved) return 'the note was not kept'
+      return card ? 'ok' : 'kept, but no card under the paragraph'
+    })()`, 1500))
 }
