@@ -73,7 +73,8 @@ export function opsRoutes() {
     // that never came from WordPress — which is most of them, forever — never loads them. The
     // shape check above runs first, so a wrong file is rejected without the import.
     const { parseWxr } = await import('@/import/wordpress')
-    return json(await persist(parseWxr(xml, new Date().toISOString()), 'wordpress'))
+    const now = new Date().toISOString()
+    return json(await persist(parseWxr(xml, now), 'wordpress', now))
   })
 
   // One save loop for every importer; the parsers are pure and the persistence is
@@ -102,6 +103,8 @@ export function opsRoutes() {
   const persist = async (
     result: import('@/import/convert').ImportResult,
     source: string,
+    /** The date a parser gave an item that had none, which says nothing about sameness. */
+    parsedAt: string,
   ) => {
     let importedPosts = 0
     let importedPages = 0
@@ -113,7 +116,7 @@ export function opsRoutes() {
     // A date that will not parse skips its item; an item already here, same slug and same
     // title and date, is not imported a second time.
     const unparseable = (d: string | undefined) => d !== undefined && Number.isNaN(Date.parse(d))
-    const sameDate = (a: string, b: string | undefined) => b === undefined || Date.parse(a) === Date.parse(b)
+    const sameDate = (a: string, b: string | undefined) => b !== undefined && b !== parsedAt && Date.parse(a) === Date.parse(b)
     for (const { slug, path, ...rest } of result.posts) {
       if (unparseable(rest.date)) { skipped++; continue }
       const here = await getPost(slug)
@@ -168,7 +171,8 @@ export function opsRoutes() {
     }
     const { looksLikeGhost, parseGhost } = await import('@/import/ghost')
     if (!looksLikeGhost(doc)) return fail(c, 'not_a_ghost_export', 400)
-    return json(await persist(parseGhost(doc, new Date().toISOString()), 'ghost'))
+    const now = new Date().toISOString()
+    return json(await persist(parseGhost(doc, now), 'ghost', now))
   })
 
   router.post('/api/import/archive', async (c) => {
@@ -207,9 +211,9 @@ export function opsRoutes() {
     // OURS FIRST, because its sniff is the most specific of the three: a `site.json` beside
     // Markdown under `posts/`. Substack and Medium carry neither, so the order is not what
     // keeps them apart — it is that the most exact test should not be the last one asked.
-    if (isQuireInk(entries)) return json(await persist(parseQuireInk(entries, now), 'quireink'))
-    if (isSubstack(entries)) return json(await persist(parseSubstack(entries, now), 'substack'))
-    if (isMedium(entries)) return json(await persist(parseMedium(entries, now), 'medium'))
+    if (isQuireInk(entries)) return json(await persist(parseQuireInk(entries, now), 'quireink', now))
+    if (isSubstack(entries)) return json(await persist(parseSubstack(entries, now), 'substack', now))
+    if (isMedium(entries)) return json(await persist(parseMedium(entries, now), 'medium', now))
     return fail(c, 'not_a_recognised_export', 400)
   })
 
