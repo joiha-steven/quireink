@@ -73,6 +73,12 @@ body{
    three-columns-not-level the owner spotted. Rhythm INSIDE the body copy is restored by
    .prose > * + * in prose.css.ts, exactly as the frozen tree restores it. */
 h1,h2,h3,h4,h5,h6,p,figure,blockquote,ol,ul,dl,dd,pre{margin:0}
+/* A word longer than the column breaks rather than widening the page: a 300-letter URL made
+   it 3436px wide at 1280 (2026-09-30). Headings break ANYWHERE, a title often being a flex item
+   whose min-content is its longest word; running text breaks only a word that cannot fit.
+   Tables and code are left to scroll in their own boxes. */
+h1,h2,h3,h4,h5,h6{overflow-wrap:anywhere}
+p,li,blockquote,figcaption,dd,dt{overflow-wrap:break-word}
 /* The SECOND thing the frozen tree got free from Tailwind's preflight, and the second one
    to go missing. A form control does not inherit its font: left alone, every button on the
    site paints in the browser's UI face at the browser's size, not in the owner's typeface
@@ -289,7 +295,7 @@ ${ARCHIVE_CSS}
 /* One link, so it hangs on the right where the pager's "older" already sits. Only a reader
    with no JavaScript sees it: the island reads its address, hides it, and puts it back if
    the fetch fails. */
-.feed-more{justify-content:flex-end}
+.feed-more{justify-content:flex-end}.feed-back{justify-content:flex-start;margin:0 0 1.5rem}
 form.search{display:flex;gap:.5rem;margin:0 0 2rem}
 /* min-width:0 is what stops this row leaving the viewport. An <input> carries an intrinsic
    width from its size attribute, a flex item will not shrink below its own min-content by

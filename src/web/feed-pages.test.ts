@@ -76,6 +76,10 @@ describe('a page of the feed', () => {
     // not become one indexed URL per thirty posts.
     expect(html).toContain('name="robots" content="noindex, follow"')
     expect(html).toContain('href="/page/3"')
+    // ...and back: `/page/2` had no way to newer posts but the site title (2026-09-30).
+    expect(html).toContain('<a rel="prev" href="/">')
+    expect(await (await get('/page/3')).text()).toContain('<a rel="prev" href="/page/2">')
+    expect(await (await get('/')).text()).not.toContain('rel="prev"')
     // ...and the walk ends rather than running forever.
     const last = await get('/page/4')
     expect(last.status).toBe(200)

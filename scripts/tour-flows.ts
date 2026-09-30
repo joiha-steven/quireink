@@ -29,6 +29,7 @@ import { registerGuardFlows } from './tour-flows-guard'
 import { registerPageFlows } from './tour-flows-pages'
 import { registerSweepFlows } from './tour-flows-sweep'
 import { registerWriterFlows } from './tour-flows-writer'
+import { registerReaderFlows } from './tour-flows-reader'
 
 export function registerFlows({ flow, expect, atWidth }: Tour): void {
   // ---------------------------------------------------------------------------------------------
@@ -344,4 +345,6 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
   registerSweepFlows({ flow, expect, atWidth })
   // The writing surface, phase 4 of the same sweep's fix list.
   registerWriterFlows({ flow, expect, atWidth })
+  // The reader's side, phase 5.
+  registerReaderFlows({ flow, expect, atWidth })
 }

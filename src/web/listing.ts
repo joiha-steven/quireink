@@ -123,6 +123,18 @@ function pager(paged: Paged<Post>, basePath: string, tx: Dict): string {
 }
 
 /**
+ * The way BACK, from page two on: `/page/2` had a way onward and none back but the site title
+ * (2026-09-30). Above the feed rather than in the bar below it, because the island hides that
+ * bar while it loads the next page by itself.
+ */
+function feedBack(paged: Paged<Post>, basePath: string, tx: Dict): string {
+  if (paged.page <= 1) return ''
+  const href = paged.page === 2 ? basePath || '/' : `${basePath}/page/${paged.page - 1}`
+  return `<nav class="feed-more feed-back" aria-label="${escapeAttr(tx.pagerLabel)}">`
+    + `<a rel="prev" href="${escapeAttr(href)}">${escapeHtml(tx.pagerNewer)}</a></nav>`
+}
+
+/**
  * The way on to the next page of the feed, on a timeline that has one.
  *
  * A REAL LINK, and that is the whole design. The feed's tail is fetched by the island, but
@@ -219,7 +231,7 @@ export function renderListing(view: ListingView, settings: SiteSettings): string
     // once. With the page capped at three chunks the alternative is thirty, so hiding is
     // cost without a benefit: each reveal moved the footer under a reader who had already
     // reached it. Measured at 390px on the demo, the home page went from 0.136 CLS to 0.
-    return `${head}<div class="post-list tl-feed">${
+    return `${head}${feedBack(view.paged, view.basePath, t(settings.language))}<div class="post-list tl-feed">${
       timeline(view.paged.items, settings, lead, view.ready)
     }</div>${feedMore(view.paged, view.basePath, t(settings.language))}`
   }
