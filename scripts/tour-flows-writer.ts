@@ -43,4 +43,28 @@ export function registerWriterFlows({ flow, expect }: Tour): void {
       if (!content.includes('two')) return 'the typing never reached the save: ' + JSON.stringify(content)
       return content.includes('\\u00a0') ? 'a no-break space was stored: ' + JSON.stringify(content) : 'ok'
     })()`, 1500))
+
+  // A future date schedules, but the panel's key said "Publish" and the toast "✓ Published"
+  // while the bar said "Schedule"; nothing named the zone the date box is read in.
+  const LATER = 'tour-a-later-post'
+  flow('writer: a draft to schedule', () => expect('/admin', draft(LATER, 'Tour a later post', 'Words for later.')))
+  flow('writer: a future date turns Publish into Schedule, and the date names its zone', () => expect(`/admin/editor/${LATER}`, `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const bar = document.querySelector('[data-sheet-publish]')
+      const key = document.querySelector('[data-panel-publish]')
+      const box = document.querySelector('[data-date-box]')
+      if (!bar || !key || !box) return 'no publish keys or date box'
+      const label = document.querySelector('label[for="' + box.id + '"]')
+      const zoned = label && /\\([^)]+\\)/.test(label.textContent)
+      box.value = box.value.replace(/20\\d\\d/, '2099')
+      box.dispatchEvent(new Event('input', { bubbles: true }))
+      await sleep(200)
+      const want = bar.dataset.saySchedule
+      const verdict = key.textContent.trim() !== want ? 'the panel key says ' + JSON.stringify(key.textContent.trim())
+        : bar.textContent.trim() !== want ? 'the bar says ' + JSON.stringify(bar.textContent.trim())
+        : zoned ? 'ok' : 'the date label names no zone: ' + (label ? label.textContent : 'no label')
+      ${discard(LATER)}
+      return verdict
+    })()`, 1500))
 }

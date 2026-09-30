@@ -215,6 +215,7 @@ export async function writingFrame(
     // Already worded, server-side: the group's members in their own language names. The panel
     // only prints it, because the island holds no dictionary and no list of pieces.
     translations: await groupMembersLine(draft.slug, draft.translationGroup),
+    zone: settings.timezone || 'UTC',
     scheduledNote: scheduled
       ? `${t.scheduledForPrefix} ${formatWallClock(draft.date, settings.language)}`
       : '',

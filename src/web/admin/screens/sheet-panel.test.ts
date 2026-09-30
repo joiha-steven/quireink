@@ -20,7 +20,7 @@ const piece = (kind: SheetKind, over: Partial<PanelPiece> = {}): PanelPiece => (
   date: kind === 'page' ? '' : '2027-03-04T09:30',
   categories: [], tags: [], series: '', seriesOrder: 0,
   featuredImage: '', coverImage: '', metaTitle: '', metaDescription: '', excerpt: '',
-  sourceUrl: '', sourceTitle: '', quote: '', scheduledNote: '',
+  sourceUrl: '', sourceTitle: '', quote: '', scheduledNote: '', zone: '',
   lang: '', translationGroup: '', translations: '',
   ...over,
 })
@@ -111,6 +111,8 @@ describe('a date that can be typed', () => {
     // restyle look like a regression.
     expect(draw('post')).toMatch(/data-date-note class="[^"]*" hidden/)
     expect(draw('post', { scheduledNote: 'Scheduled for later' })).toContain('>Scheduled for later<')
+    // The clock the box is read on is named; nothing said which until 2026-09-30.
+    expect(draw('post', { zone: 'Asia/Ho_Chi_Minh' })).toContain('(Asia/Ho_Chi_Minh)')
   })
 })
 

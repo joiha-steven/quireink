@@ -47,6 +47,11 @@ export type PanelPiece = {
   translations: string
   /** `Scheduled for 4 March 2027, 09:30`, already worded; empty when it is not scheduled. */
   scheduledNote: string
+  /**
+   * The clock the date box is read on: the site's zone, or UTC when none is set. Named on the
+   * label because nothing said which, and the rest of the screen shows the viewer's own clock.
+   */
+  zone: string
 }
 
 export type PanelLists = { categories: string[]; tags: string[]; series: string[]; groups: string[] }
@@ -90,7 +95,8 @@ function common(t: AdminStrings, lang: SiteLang, piece: PanelPiece): string {
   })
   // A page has no date and no schedule: it is not in the archive and nothing waits for it.
   const date = piece.kind === 'page' ? '' : typedDate({
-    k: 'date', label: t.publishDate, value: piece.date, lang, t, note: piece.scheduledNote,
+    k: 'date', label: piece.zone ? `${t.publishDate} (${piece.zone})` : t.publishDate,
+    value: piece.date, lang, t, note: piece.scheduledNote,
   })
   return slug + date + statusPair(t, piece.status)
 }

@@ -122,6 +122,8 @@ function boot(root: HTMLElement, data: Payload): void {
 
   // A page has no date at all, so it is never scheduled — `isScheduled` says so on its own.
   const scheduled = (): boolean => isScheduled(draft.status, draft.date)
+  // What Publish WOULD do: a future date schedules, whatever the status (was "Publish" till 09-30).
+  const future = (): boolean => isScheduled('published', draft.date)
 
   function sayState(): void {
     sheetBar.setStatus(
@@ -129,7 +131,8 @@ function boot(root: HTMLElement, data: Payload): void {
       saving,
     )
     sheetBar.setDirty(dirty)
-    sheetBar.setState(draft.status === 'published', scheduled())
+    sheetBar.setState(draft.status === 'published', future())
+    at('[data-panel-publish]')?.replaceChildren(future() ? t.schedule : t.publish)
     sheetBar.setSaveWord(savedStatus === 'published')
     const live = draft.status === 'published' && slug !== '' && !scheduled()
     sheetBar.setLive(live ? LIVE_PATH[kind](slug) : null)
@@ -181,9 +184,7 @@ function boot(root: HTMLElement, data: Payload): void {
       if (slugBox) slugBox.value = draft.slug
     }
     markDirty()
-    // A FIELD changed, so the sheet may have to say something different: the Publish key's word,
-    // the scheduled line, the live link. The body changing says nothing new, which is the whole
-    // point of the split above.
+    // A FIELD changed, so the Publish key's word, the scheduled line or the live link may too.
     sayState()
   }
 
@@ -215,7 +216,7 @@ function boot(root: HTMLElement, data: Payload): void {
         sheetBar.setAttrs(true)
         return
       }
-      void saveAs('published', scheduled() ? t.scheduled : t.published)
+      void saveAs('published', future() ? t.scheduled : t.published)
     },
     // ⚠️ A LIVE PIECE IS PREVIEWED FROM ITS SNAPSHOT (`web/preview.ts`), NEVER SAVED FIRST:
     // saving put the half-typed sentence on the public page.
@@ -325,7 +326,7 @@ function boot(root: HTMLElement, data: Payload): void {
   at('[data-panel-publish]')?.addEventListener('click', () => {
     // ⚠️ THE PANEL STAYS OPEN ON A REFUSAL. Closing it regardless would take the writer away
     // from the one screen carrying the field that was refused — a taken slug is answered here.
-    void saveAs('published', scheduled() ? t.scheduled : t.published).then((went) => {
+    void saveAs('published', future() ? t.scheduled : t.published).then((went) => {
       if (went) { asking = false; panel.hide() }
     })
   })
