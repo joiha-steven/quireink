@@ -26,6 +26,7 @@ import { fold } from '@/admin-shared/fold'
 import { emptyState, pageHeader, select, sheet, sheetTop } from '@/web/admin/kit'
 import { logView } from '@/web/admin/views'
 import type { SiteSettings } from '@/types'
+import { plural } from '@/i18n/plural'
 
 /**
  * How many rows stand on screen before "show more". A rendering decision, not a round trip.
@@ -79,6 +80,7 @@ function row(t: AdminStrings, e: ActivityEntry, i: number): string {
 
 export async function logScreen(settings: SiteSettings): Promise<string> {
   const t = adminT(settings.language)
+  const lang = settings.language
   const { entries, enabled } = await logView()
 
   const kindOptions: [string, string][] = [
@@ -90,7 +92,8 @@ export async function logScreen(settings: SiteSettings): Promise<string> {
     }[k]] as [string, string]),
   ]
 
-  const tools = `<span data-log-count class="${SHEET_TOOL}">${entries.length} · ${escapeHtml(t.logTitle.toLowerCase())}</span>`
+  const tools = `<span data-log-count data-tpl="${escapeAttr(t.logEntries)}" class="${SHEET_TOOL}">`
+    + `${escapeHtml(plural(t.logEntries, entries.length, lang))}</span>`
     + select({ name: 'kind', label: t.logKindAll, options: kindOptions, value: 'all', attrs: 'data-log-kind' })
     + select({
       name: 'when',
@@ -126,7 +129,7 @@ export async function logScreen(settings: SiteSettings): Promise<string> {
     title: t.askClearLogTitle, body: t.askClearLogBody,
     yes: t.askClear, no: t.askCancel, failed: t.deleteFailed,
   }))
-  return `<div data-screen="log" data-log-page="${PAGE}" data-log-ask="${ask}">`
+  return `<div data-screen="log" data-lang="${escapeAttr(lang)}" data-log-page="${PAGE}" data-log-ask="${ask}">`
     + pageHeader({ title: t.logTitle })
     + sheet(sheetTop(tools) + off + body)
     + `</div>`

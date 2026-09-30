@@ -1040,6 +1040,8 @@ input[type='color']::-moz-color-swatch {
 .chord-mac { display: none; }
 :root[data-mac='1'] .chord-mac { display: inline; }
 :root[data-mac='1'] .chord-other { display: none; }
+/* A phone has no keyboard to press the chord on: the badge is noise there (2026-09-30). */
+@media (hover: none) and (pointer: coarse) { [data-chord] { display: none; } }
 
 /* The wordmark is `Q.` at 72px and `quireINK` above it: the same logo at the size where the
    word would be a smear. Both are in the markup; this picks. */

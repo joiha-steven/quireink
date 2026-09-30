@@ -108,7 +108,7 @@ function branding(t: AdminStrings, s: SiteSettings): string {
   // only background it will ever be seen on.
   const dark = `<div class="border-t border-neutral-200 pt-5 dark:border-neutral-800">`
     + settingRow({
-      label: t.chooseLogoDark, note: t.logoDarkHint,
+      label: t.logoDarkLabel, note: t.logoDarkHint,
       control: pickedImage({
         k: 'logoDarkUrl', value: s.logoDarkUrl, chooseLabel: t.chooseLogoDark,
         removeLabel: t.removeLogo, emptyLabel: t.noLogoDark, alt: 'Logo (dark)',

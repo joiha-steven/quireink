@@ -11,6 +11,8 @@
 //
 // The same shape as the rail: the DOM does not change, an attribute does.
 import { fold } from '@/admin-shared/fold'
+import type { SiteLang } from '@/types'
+import { plural } from '@/i18n/plural'
 
 const root = document.querySelector<HTMLElement>('[data-screen="log"]')
 
@@ -24,7 +26,8 @@ if (root) {
   const count = root.querySelector<HTMLElement>('[data-log-count]')
   const more = root.querySelector<HTMLElement>('[data-log-more]')
   const noMatch = root.querySelector<HTMLElement>('[data-log-nomatch]')
-  const noun = count?.textContent?.replace(/^\d+\s*·\s*/, '') ?? ''
+  // The count in the language's own plural forms, from the template the server drew beside it.
+  const lang = (root.dataset.lang ?? 'en') as SiteLang
 
   /** How many rows are on screen. Reset by any control, raised by "show more". */
   let shown = PAGE
@@ -46,7 +49,7 @@ if (root) {
       if (ok) matched++
       row.hidden = !ok || matched > shown
     }
-    if (count) count.textContent = `${matched} · ${noun}`
+    if (count) count.textContent = plural(count.dataset.tpl ?? '{n}', matched, lang)
     if (more) more.hidden = matched <= shown
     // The lens, not the blank page: "nothing matched what you typed" and "nothing has happened
     // yet" are different facts, and the server draws the second one instead of a list at all.

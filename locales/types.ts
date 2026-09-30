@@ -735,6 +735,8 @@ export type AdminStrings = {
   noLogo: string
   noLogoDark: string
   chooseLogoDark: string
+  /** The dark logo's row label; the key under it says chooseLogoDark. */
+  logoDarkLabel: string
   logoDarkHint: string
   chooseLogo: string
   removeLogo: string
@@ -1275,6 +1277,8 @@ export type AdminStrings = {
   logActions: Record<string, string>
   logDisabled: string
   logClear: string
+  /** The log's count, in plural forms. */
+  logEntries: string
   /** A settings save that moved nothing, as the log says it. */
   logNoChange: string
   // system info panel (Overview)

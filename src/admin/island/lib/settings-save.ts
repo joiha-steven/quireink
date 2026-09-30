@@ -10,6 +10,8 @@
 // form is dirty, the product's own question is asked through `quire:confirm`, and only then does
 // the navigation happen. `beforeunload` stays underneath it for the ways out a click handler
 // cannot see: a typed address, a closed tab, a reload.
+import type { SiteLang } from '@/types'
+import { plural } from '@/i18n/plural'
 import { changedCount, fieldsIn, partialOf, settle, type Field } from './settings-form'
 
 export type SaveWords = Partial<Record<string, string>>
@@ -32,6 +34,7 @@ export type Form = {
 }
 
 export function wireSave(screen: HTMLElement, w: SaveWords): Form {
+  const lang = (screen.dataset.lang ?? 'en') as SiteLang
   /**
    * ⚠️ A LEAVE THE OWNER HAS ALREADY AGREED TO IS NOT ASKED ABOUT AGAIN.
    *
@@ -63,7 +66,7 @@ export function wireSave(screen: HTMLElement, w: SaveWords): Form {
       key.disabled = saving || n === 0
       key.textContent = saving
         ? (w.saving ?? '')
-        : n === 0 ? (w.save ?? '') : (w.saveCount ?? '').replace('{n}', String(n))
+        : n === 0 ? (w.save ?? '') : plural(w.saveCount ?? '', n, lang)
     }
     // The receipt clears the moment the form is dirty again: a stale "Saved at 14:02" beside
     // three unsaved changes is a lie.
@@ -136,7 +139,7 @@ export function wireSave(screen: HTMLElement, w: SaveWords): Form {
         // admin uses is back out, the alternative, then the answer that acts, and here the
         // answer that acts is the one that throws work away.
         request: {
-          title: (w.leaveTitle ?? '').replace('{n}', String(count())),
+          title: plural(w.leaveTitle ?? '', count(), lang),
           body: w.leaveBody ?? '',
           altLabel: w.leaveSave ?? '',
           confirmLabel: w.leaveDiscard ?? '',

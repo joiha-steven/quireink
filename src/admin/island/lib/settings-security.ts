@@ -17,6 +17,8 @@
 // the reply that mints them and nowhere else; the markup ships empty and this writes them in.
 import type { SecurityWire } from '@/admin-shared/wire'
 import { formatDateTimeShort } from '@/admin-shared/when'
+import type { SiteLang } from '@/types'
+import { plural } from '@/i18n/plural'
 import { ask, say } from './media-bridge'
 
 export type SecWords = Partial<Record<string, string>>
@@ -30,6 +32,7 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
   const card = screen.querySelector<HTMLElement>('[data-security-current]')?.closest('section')
   if (!card) return
   const box = card as HTMLElement
+  const lang = (screen.dataset.lang ?? 'en') as SiteLang
 
   const current = (): string =>
     box.querySelector<HTMLInputElement>('[data-security-current]')?.value ?? ''
@@ -92,7 +95,7 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
     if (was) was.value = ''
     arm()
     const other = typeof out.signedOut === 'number' ? out.signedOut : 0
-    say((w.passwordChanged ?? '').replace('{n}', String(other)))
+    say(plural(w.passwordChanged ?? '', other, lang))
     void refresh()
   })
 
@@ -206,7 +209,7 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
     const out = await post('/sessions/revoke-others', {})
     if (!out) return
     // `signedOut`, which is what the server answers; `count` was read, so it said 0 every time.
-    say((w.signedOut ?? '').replace('{n}', String(typeof out.signedOut === 'number' ? out.signedOut : 0)))
+    say(plural(w.signedOut ?? '', typeof out.signedOut === 'number' ? out.signedOut : 0, lang))
     void refresh()
   })
 

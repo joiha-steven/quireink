@@ -120,16 +120,27 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       const rows = () => [...document.querySelectorAll('main ul li')].filter((r) => r.offsetParent !== null)
       const first = rows()[0]
       if (!first) return 'the log is empty; the fixture should have written to it'
-      // The row's own title holds the code; the face must not repeat it. Compared against THE
-      // ACTUAL CODE rather than against a pattern for one — "media.upload" and a filename like
-      // "nib-angles.png" look identical to a regex, and the first version of this flow failed
-      // on a perfectly good row because of that. No regex at all: this whole body is a template
-      // literal, and a backslash in it is one escape from meaning something else in the page.
-      const title = first.getAttribute('title') || ''
-      const code = title.split(' — ')[0].trim()
-      if (!code.includes('.')) return 'the row dropped the machine code entirely: ' + title
+      // The machine code is in reach through the FILTER, never in anything the owner reads
+      // (2026-09-30: the tooltip held auth.login — via totp). It is the last word of the row's
+      // folded haystack, and the face and the tooltip must both be free of it.
+      const code = (first.dataset.find || '').split(' ').pop() || ''
+      if (!code.includes('.')) return 'the row dropped the machine code from the filter entirely'
       const text = first.textContent || ''
       if (text.includes(code)) return 'a row still prints its machine code: ' + text.slice(0, 60)
+      const title = first.getAttribute('title') || ''
+      if (title.includes(code)) return 'the tooltip still shows the machine code: ' + title
+      const search = document.querySelector('[data-log-search]')
+      if (search) {
+        const put = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+        put.call(search, code)
+        search.dispatchEvent(new Event('input', { bubbles: true }))
+        await sleep(300)
+        const hits = rows().length
+        put.call(search, '')
+        search.dispatchEvent(new Event('input', { bubbles: true }))
+        await sleep(300)
+        if (!hits) return 'typing the code ' + code + ' into the filter found nothing'
+      }
       const before = rows().length
       const kind = document.querySelector('main select')
       if (!kind) return 'no kind filter on the log'

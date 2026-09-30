@@ -168,7 +168,8 @@ export function securityRoutes() {
   router.post('/api/security/sessions/revoke-others', async (c) => {
     const { user, session } = owner(c)
     const ended = revokeAllSessions(user.id, session.id)
-    void logActivity('security.session', `revoked ${ended} other session(s)`)
+    // Its own sentence: "Signed a device out" was logged for a press that ended two.
+    void logActivity('auth.sessions.revoked', String(ended))
     return json({ signedOut: ended })
   }, QUIET)
 

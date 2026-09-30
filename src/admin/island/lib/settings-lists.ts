@@ -14,6 +14,7 @@ import { ask, owned, say } from './media-bridge'
 import { broke, put, read, row, show, type ListWords } from './list-dom'
 import { fillTokens, wireMcp } from './settings-mcp'
 import { wireApi } from './settings-api'
+import { formatDateTimeShort } from '@/admin-shared/when'
 
 export type { ListWords }
 
@@ -217,7 +218,9 @@ async function dropBackup(row: HTMLElement, name: string, w: ListWords): Promise
   else say(w.deleteFailed ?? '', 'error')
 }
 
-const backupWhen = (iso: string): string => new Date(iso).toLocaleString()
+// The admin's one stamp, as everywhere else: `toLocaleString()` printed "9/30/2026, 11:13:13 AM"
+// beside rows that said `30/9/26 - 11:11`.
+const backupWhen = (iso: string): string => formatDateTimeShort(iso)
 
 async function fillBackups(screen: HTMLElement): Promise<void> {
   const list = screen.querySelector<HTMLElement>('[data-backup-list]')

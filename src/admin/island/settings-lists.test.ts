@@ -84,6 +84,8 @@ describe('the snapshot list', () => {
     expect(text('data-backup-when')).not.toBe('')
     expect(text('data-backup-when')).not.toContain('Invalid')
     expect(text('data-backup-when')).not.toContain('undefined')
+    // The admin's one stamp, not the browser's `toLocaleString()` (2026-09-30).
+    expect(text('data-backup-when')).toBe(formatDateTimeShort(ISO))
   })
 
   it('reports a size a small blog can believe', async () => {
