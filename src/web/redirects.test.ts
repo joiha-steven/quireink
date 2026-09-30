@@ -129,6 +129,18 @@ describe('the URLs that are a second spelling of another URL', () => {
   })
 })
 
+// An owner's redirect dropped the query, and with it every campaign tag (2026-09-30). It comes
+// along now, unless the destination names a query of its own.
+describe('an owner\'s redirect and the query string', () => {
+  it('carries it over, and leaves a destination that has its own alone', async () => {
+    await saveRedirect({ source: '/the-measure', destination: '/the-measure-is-the-design' })
+    await saveRedirect({ source: '/campaign', destination: 'https://shop.example/landing?from=campaign' })
+    expect((await get('/the-measure?utm_source=x')).headers.get('location')).toBe('/the-measure-is-the-design?utm_source=x')
+    expect((await get('/the-measure')).headers.get('location')).toBe('/the-measure-is-the-design')
+    expect((await get('/campaign?utm_source=x')).headers.get('location')).toBe('https://shop.example/landing?from=campaign')
+  })
+})
+
 describe('what redirects do NOT touch', () => {
   it('leaves the admin and the API alone', async () => {
     // Rows as an older release could have stored them: saving one is refused now.

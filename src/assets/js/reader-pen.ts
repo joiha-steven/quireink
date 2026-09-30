@@ -179,7 +179,11 @@ function readerPen(): void {
   const update = () => {
     const sel = getSelection()
     const r = sel && !sel.isCollapsed && sel.rangeCount ? sel.getRangeAt(0) : null
-    if (!r || !prose.contains(r.commonAncestorContainer) || r.toString().trim().length < MIN_CHARS) {
+    // Nor inside the reader's own note cards (`data-pen-skip`), where an ink made nothing and
+    // the bar stayed up over the note (2026-09-30).
+    const skip = (n: Node) => (n instanceof Element ? n : n.parentElement)?.closest('[data-pen-skip]')
+    if (!r || !prose.contains(r.commonAncestorContainer) || skip(r.startContainer) || skip(r.endContainer)
+      || r.toString().trim().length < MIN_CHARS) {
       range = null
       return hideBar()
     }

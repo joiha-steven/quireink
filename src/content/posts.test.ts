@@ -172,6 +172,12 @@ describe('search', () => {
     expect(Array.isArray(hits)).toBe(true)
     expect(await searchPosts(long.slice(0, 200))).toEqual(hits)
   })
+
+  // A NUL ended the string SQLite's parser saw: an error in the log and nothing found (2026-09-30).
+  it('reads past a control character in the query', async () => {
+    await savePost({ title: 'Findable', content: 'a needle in a haystack', status: 'published', date: PAST })
+    expect((await searchPosts('needle \u0000 haystack')).map((p) => p.slug)).toEqual(['findable'])
+  })
 })
 
 describe('lists and visibility', () => {
