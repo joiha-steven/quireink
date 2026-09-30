@@ -146,6 +146,10 @@ export async function handleEnrol(c: Context): Promise<Response> {
 
   if (!wantsHtml) return json({ status: 'codes', codes })
   return html(recoveryCodesScreen(settings, {
+    // The form posts it back to `enrol/done`, which finds the codes by it. Without this
+    // field every first run ended here with "That sign-in expired": the unit tests posted
+    // the ticket by hand and never read the form they were standing in for.
+    ticket: values.ticket,
     codes,
     // A data URI, so saving the codes needs no extra route and no second request that
     // would have to be authorised all over again.

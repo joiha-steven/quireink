@@ -221,7 +221,7 @@ ${opts.skippable === true ? `<form method="post" action="/api/auth/enrol/skip" c
  */
 export function recoveryCodesScreen(
   settings: SiteSettings,
-  opts: { codes: string[]; download: string },
+  opts: { ticket: string; codes: string[]; download: string },
 ): string {
   const s = adminT(settings.language)
   const list = opts.codes.map((code) => `<li><code>${escapeHtml(code)}</code></li>`).join('')
@@ -234,6 +234,7 @@ ${setupStep(settings, s, 3, 2)}
   <a href="${escapeAttr(opts.download)}" download="quire-recovery-codes.txt">${escapeHtml(s.authCodesDownload)}</a>
 </p>
 <form method="post" action="/api/auth/enrol/done" class="login-form">
+<input type="hidden" name="ticket" value="${escapeAttr(opts.ticket)}">
 <label class="login-check">
   <input type="checkbox" name="saved" value="1" required>
   <span>${escapeHtml(s.authCodesSaved)}</span>

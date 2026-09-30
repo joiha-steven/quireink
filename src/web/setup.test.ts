@@ -226,6 +226,40 @@ describe('where enrolment lets you out', () => {
   })
 })
 
+// The first run as a BROWSER walks it: every request built only from the form the previous
+// page drew, never from a value the test already knows. Every test above posts `ticket` by
+// hand, and that is how a codes form with no ticket field shipped: each first run from 2.0 to
+// 2.2.15 ended on "That sign-in expired" at step 3.
+describe('the first run, form by form', () => {
+  /** The fields a browser would submit for the form posting to `action`. */
+  const formFields = (page: string, action: string): Record<string, string> => {
+    const form = page.match(new RegExp(`<form[^>]*action="${action}"[^>]*>([\\s\\S]*?)</form>`))?.[1] ?? ''
+    const out: Record<string, string> = {}
+    for (const tag of form.match(/<input[^>]*>/g) ?? []) {
+      const name = tag.match(/name="([^"]+)"/)?.[1]
+      if (name === undefined) continue
+      out[name] = tag.match(/value="([^"]*)"/)?.[1] ?? ''
+    }
+    return out
+  }
+
+  it('reaches the site step from the claim, through the QR and the codes', async () => {
+    const enrolPage = await (await claim()).text()
+    const secret = (enrolPage.match(/<code[^>]*>([A-Z2-7 ]{16,})<\/code>/)?.[1] ?? '').replace(/ /g, '')
+    const enrol = formFields(enrolPage, '/api/auth/enrol')
+    const codesPage = await (await post('/api/auth/enrol', {
+      ...enrol, code: codeForStep(secret, stepAt(Date.now()))!,
+    })).text()
+    expect(codesPage).toContain('/api/auth/enrol/done')
+
+    // `saved` is the checkbox the owner ticks; everything else is what the page carried.
+    const done = await post('/api/auth/enrol/done', { ...formFields(codesPage, '/api/auth/enrol/done'), saved: '1' })
+    expect(done.status).toBe(303)
+    expect(done.headers.get('location')).toBe('/setup/site')
+    expect(done.headers.get('set-cookie')).toContain('quire_session=')
+  })
+})
+
 // The second way in: a code the operator chose, for the installs where nobody reads a log.
 describe('a chosen setup code', () => {
   const CODE = 'Paste-Once-4821'
