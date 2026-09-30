@@ -176,6 +176,23 @@ describe('deferring two-factor', () => {
     expect(res.headers.get('set-cookie')).toBeNull()
   })
 
+  it('REFUSES the ticket of an owner who has an authenticator, address or not', async () => {
+    // The hole: a `need-2fa` ticket from an ordinary sign-in was accepted here, so on any
+    // install with no site address the password alone bought a session.
+    const page = await (await claim()).text()
+    const ticket = page.match(/name="ticket" value="([^"]+)"/)?.[1] ?? ''
+    const secret = (page.match(/<code[^>]*>([A-Z2-7 ]{16,})<\/code>/)?.[1] ?? '').replace(/ /g, '')
+    await post('/api/auth/enrol', { ticket, code: codeForStep(secret, stepAt(Date.now()))! })
+    await post('/api/auth/enrol/done', { ticket, saved: '1' })
+
+    const login = await post('/api/auth/login', { username: 'owner', password: PASSWORD })
+    const twoFactorTicket = (await login.text()).match(/name="ticket" value="([^"]+)"/)?.[1] ?? ''
+    expect(twoFactorTicket).not.toBe('')
+    const res = await post('/api/auth/enrol/skip', { ticket: twoFactorTicket })
+    expect(res.status).toBe(401)
+    expect(res.headers.get('set-cookie')).toBeNull()
+  })
+
   it('writes nothing, so the next sign-in asks for enrolment again', async () => {
     const ticket = await ticketFrom()
     await post('/api/auth/enrol/skip', { ticket })

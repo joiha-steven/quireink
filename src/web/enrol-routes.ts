@@ -16,7 +16,7 @@ import { adminT } from '@/i18n/admin-i18n'
 import { clientIp } from '@/server/rate-limit'
 import { logAuthEvent } from '@/server/activity'
 import { otpauthUri, verifyCode } from '@/auth/totp'
-import { setTotpLastStep, setTotpSecret } from '@/auth/users'
+import { setTotpLastStep, setTotpSecret, totpStateFor } from '@/auth/users'
 import { regenerateCodes } from '@/auth/recovery'
 import { completeEnrolment, pendingUser } from '@/auth/login'
 import { qrSvg } from '@/render/qr'
@@ -210,7 +210,13 @@ export async function handleEnrolSkip(c: Context): Promise<Response> {
   }
 
   if (!enrolmentSkippable(settings)) return refuse()
-  if (pendingUser(values.ticket) === null) return refuse()
+  const userId = pendingUser(values.ticket)
+  if (userId === null) return refuse()
+  // Only an account with NO authenticator may defer one. A `need-2fa` ticket is a ticket too,
+  // and without this line it bought a session with the password alone on every install with
+  // no site address, from an owner who HAD enrolled. The reasoning above — before anyone has
+  // enrolled, two-factor protects nothing — holds only while nobody has.
+  if (totpStateFor(userId)?.secret) return refuse()
 
   const session = completeEnrolment(values.ticket, {
     ip: clientIp(c),
