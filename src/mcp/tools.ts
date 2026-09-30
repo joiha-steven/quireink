@@ -108,10 +108,13 @@ function registerPostTools(server: ToolHost): void {
 
   server.registerTool(
     'update_post',
-    { description: 'Overwrite an existing post by slug. This REPLACES the post, so pass the complete post (title, content, status, categories, tags…); omitted fields reset to defaults. To change only a few fields (title, tags, categories…) without touching the body, use patch_post instead. Returns the saved metadata.', inputSchema: { ...postFields, slug: z.string() } },
-    async ({ slug, ...rest }) => {
+    { description: 'Overwrite an existing post by slug. This REPLACES the post, so pass the complete post (title, content, status, categories, tags…); omitted fields reset to defaults. To change only a few fields (title, tags, categories…) without touching the body, use patch_post instead. Returns the saved metadata.', inputSchema: { ...postFields, slug: z.string(), newSlug: z.string().optional().describe('Rename it: the new slug. Omit to keep the current one — the slug is never derived from the title here.') } },
+    // ⚠️ THE SLUG GOES THROUGH. It was stripped from the arguments, so the saver built one from
+    // the title and every update of a post whose slug was not its title's renamed it, with a
+    // 301 left behind. The slug stays unless `newSlug` asks otherwise.
+    async ({ slug, newSlug, ...rest }) => {
       try {
-        const meta = await savePost(rest as Partial<PostWithContent>, slug)
+        const meta = await savePost({ ...rest, slug: newSlug?.trim() || slug } as Partial<PostWithContent>, slug)
         clearCache()
         await logActivity('post.update', meta.title || meta.slug)
         return asJson(meta)
@@ -208,10 +211,13 @@ function registerPageTools(server: ToolHost): void {
 
   server.registerTool(
     'update_page',
-    { description: 'Update a page by slug (savePage overwrites — pass the full page).', inputSchema: { ...pageFields, slug: z.string() } },
-    async ({ slug, ...rest }) => {
+    { description: 'Update a page by slug (savePage overwrites — pass the full page).', inputSchema: { ...pageFields, slug: z.string(), newSlug: z.string().optional().describe('Rename it: the new slug. Omit to keep the current one — the slug is never derived from the title here.') } },
+    // ⚠️ THE SLUG GOES THROUGH. It was stripped from the arguments, so the saver built one from
+    // the title and every update of a page whose slug was not its title's renamed it, with a
+    // 301 left behind. The slug stays unless `newSlug` asks otherwise.
+    async ({ slug, newSlug, ...rest }) => {
       try {
-        const meta = await savePage(rest as Partial<PageWithContent>, slug)
+        const meta = await savePage({ ...rest, slug: newSlug?.trim() || slug } as Partial<PageWithContent>, slug)
         clearCache()
         await logActivity('page.update', meta.title || meta.slug)
         return asJson(meta)

@@ -97,7 +97,9 @@
   for owners: [`agent-cookbook.md`](./agent-cookbook.md). Content is Markdown verbatim — no HTML
   conversion. Deletes are soft (→ Trash). **`update_post` REPLACES the whole post; `patch_post`
   merges only the passed fields over the current post (body preserved)** — use it to change just
-  the title/tags/categories/etc. **`list_settings` names every setting that can be
+  the title/tags/categories/etc. The three `update_*` tools **keep the slug they are given**;
+  `newSlug` renames (and leaves a 301). Until 2.2.15 the slug was rebuilt from the title, so an
+  update renamed any piece whose slug was not its title's. **`list_settings` names every setting that can be
   changed — path, type, current value — and `update_settings` takes any one of those paths**
   (2.2.4; it wrote three fields before, and said the rest could not be changed over MCP).
   Two things had to move first: a token now carries a SCOPE, and a `read` token's door never

@@ -62,10 +62,13 @@ export function registerNoteTools(server: ToolHost): void {
 
   server.registerTool(
     'update_note',
-    { description: 'Update a note by slug (saveNote overwrites — pass the full note).', inputSchema: { ...noteFields, slug: z.string() } },
-    async ({ slug, ...rest }) => {
+    { description: 'Update a note by slug (saveNote overwrites — pass the full note).', inputSchema: { ...noteFields, slug: z.string(), newSlug: z.string().optional().describe('Rename it: the new slug. Omit to keep the current one — the slug is never derived from the title here.') } },
+    // ⚠️ THE SLUG GOES THROUGH. It was stripped from the arguments, so the saver built one from
+    // the title and every update of a note whose slug was not its title's renamed it, with a
+    // 301 left behind. The slug stays unless `newSlug` asks otherwise.
+    async ({ slug, newSlug, ...rest }) => {
       try {
-        const meta = await saveNote(rest as Partial<NoteWithContent>, slug)
+        const meta = await saveNote({ ...rest, slug: newSlug?.trim() || slug } as Partial<NoteWithContent>, slug)
         clearCache()
         await logActivity('note.update', meta.title || meta.slug)
         afterNoteSaved(meta, resolveSiteUrl(await getSettings()))
