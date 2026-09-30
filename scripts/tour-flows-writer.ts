@@ -67,4 +67,25 @@ export function registerWriterFlows({ flow, expect }: Tour): void {
       ${discard(LATER)}
       return verdict
     })()`, 1500))
+
+  // Enter in the title typed a line break, which then reached <title>, the <h1> and the feeds.
+  flow('writer: Enter in the title goes to the writing and adds no line', () => expect('/admin/editor', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const title = document.querySelector('[data-sheet-title]')
+      const surface = document.querySelector('.ProseMirror')
+      if (!title || !surface) return 'no title or writing surface'
+      title.focus()
+      title.value = 'Title line'
+      title.dispatchEvent(new Event('input', { bubbles: true }))
+      const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })
+      title.dispatchEvent(enter)
+      await sleep(150)
+      if (!enter.defaultPrevented) return 'Enter in the title was left to type a line break'
+      if (!surface.contains(document.activeElement) && document.activeElement !== surface) return 'Enter did not move to the writing'
+      // A line break pasted in becomes a space.
+      title.value = 'Pasted\\nacross two lines'
+      title.dispatchEvent(new Event('input', { bubbles: true }))
+      return title.value === 'Pasted across two lines' ? 'ok' : 'a pasted line break stayed: ' + JSON.stringify(title.value)
+    })()`, 1200))
 }

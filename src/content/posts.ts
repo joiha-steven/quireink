@@ -177,7 +177,8 @@ export function settleExcerptKinds(excerptWords: number): number {
 // auto-excerpt length when the author leaves it blank.
 function normalize(input: Partial<PostWithContent>, excerptWords = 50): PostWithContent {
   const content = (input.content ?? '').trim()
-  const title = (input.title ?? '').trim()
+  // One line, whichever door it came in by: a line break in a title reached <title> and the feeds.
+  const title = (input.title ?? '').replace(/\s*[\r\n]+\s*/g, ' ').trim()
   // slugify() can reduce a non-empty title/slug (emoji, punctuation-only, an empty
   // import title) to '' — an empty slug makes the row unreachable in the editor and
   // Trash. Fall back to a timestamped slug so every post keeps an editable identity.

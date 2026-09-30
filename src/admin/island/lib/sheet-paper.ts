@@ -7,6 +7,7 @@
 // two empty slots and gets back an editor.
 //
 // ⚠️ THE TWO VIEWS ARE BOTH IN THE MARKUP, and this only flips `hidden`. See `sheet-raw.ts`.
+import { Selection } from 'prosemirror-state'
 import { Editor } from '@/admin/editor/editor'
 import type { KeySound } from '@/admin/components/key-sound'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
@@ -59,6 +60,8 @@ export type Paper = {
   /** Swap between the writing and the raw Markdown source. */
   toggleRaw: () => void
   readonly raw: boolean
+  /** The caret at the start of the writing: where Enter in the title goes. */
+  focusStart: () => void
   destroy: () => void
 }
 
@@ -221,6 +224,11 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
     },
     toggleRaw: () => raw.toggle(),
     get raw() { return raw.on },
+    focusStart: () => {
+      const box = raw.on ? parts.sourceSlot.querySelector('textarea') : null
+      if (box) { box.focus(); box.setSelectionRange(0, 0); return }
+      editor.commands.focus(Selection.atStart(editor.state.doc).from)
+    },
     destroy: () => {
       stopFocus()
       find.destroy()

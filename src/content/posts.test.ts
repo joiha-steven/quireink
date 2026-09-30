@@ -308,3 +308,16 @@ describe('soft delete (Invariant 6)', () => {
     expect((await getIndex()).map((p) => p.title)).toEqual(['Two'])
   })
 })
+
+// A title is one line whichever door it came in by: `Title line\nbody after enter` reached
+// <title>, og:title, the <h1> and the feeds (2026-09-30).
+describe('a title with a line break in it', () => {
+  it('is kept as one line, for a post, a page and a note', async () => {
+    const { savePage } = await import('@/content/pages')
+    const { saveNote } = await import('@/content/notes')
+    expect((await savePost({ title: 'Title line\n  body after enter', content: 'x', status: 'draft' })).title)
+      .toBe('Title line body after enter')
+    expect((await savePage({ title: 'A\r\nB', content: 'x', status: 'draft' })).title).toBe('A B')
+    expect((await saveNote({ title: 'N\nM', content: 'x', status: 'draft', date: '2020-01-01T00:00:00.000Z' })).title).toBe('N M')
+  })
+})

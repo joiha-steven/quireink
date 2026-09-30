@@ -92,7 +92,8 @@ export async function getPage(slug: string): Promise<PageWithContent | null> {
 // Normalize incoming data into a complete Page + content pair.
 function normalize(input: Partial<PageWithContent>): PageWithContent {
   const content = (input.content ?? '').trim()
-  const title = (input.title ?? '').trim()
+  // One line, whichever door it came in by: a line break in a title reached <title> and the feeds.
+  const title = (input.title ?? '').replace(/\s*[\r\n]+\s*/g, ' ').trim()
   // Guard an empty slug (slugify can empty an emoji/punctuation title) — see posts.ts.
   const slug = (input.slug?.trim() ? slugify(input.slug) : slugify(title)) || `page-${Date.now()}`
   return {

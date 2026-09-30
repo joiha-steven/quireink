@@ -28,6 +28,7 @@ import { say } from './lib/media-bridge'
 import { readSnapshot, sendSnapshot } from './lib/sheet-keep'
 import { nameEnough, payloadOf, savePiece, statusForSave, worthSaving } from './lib/sheet-save'
 import { mountPaper } from './lib/sheet-paper'
+import { wireTitle } from './lib/sheet-title'
 import { wireBar } from './lib/sheet-bar'
 import { wireFields, askForPicture } from './lib/sheet-fields'
 import { wirePanel } from './lib/sheet-open'
@@ -338,9 +339,8 @@ function boot(root: HTMLElement, data: Payload): void {
       .then(() => { trashKey.disabled = false })
   })
 
-  // ---- the title, which is part of the writing rather than of the form --------------------
-
-  titleBox?.addEventListener('input', () => edit({ title: titleBox.value }))
+  // The title, part of the writing rather than the form: one line, and Enter goes to the body.
+  if (titleBox) wireTitle(titleBox, (title) => edit({ title }), () => paper.focusStart())
 
   // ---- pictures ---------------------------------------------------------------------------
 

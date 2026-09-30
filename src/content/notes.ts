@@ -108,7 +108,8 @@ const cleanUrl = (raw: string | undefined): string | undefined => {
 
 function normalize(input: Partial<NoteWithContent>): NoteWithContent {
   const content = (input.content ?? '').trim()
-  const title = (input.title ?? '').trim()
+  // One line, whichever door it came in by: a line break in a title reached <title> and the feeds.
+  const title = (input.title ?? '').replace(/\s*[\r\n]+\s*/g, ' ').trim()
   const sourceTitle = (input.sourceTitle ?? '').trim() || undefined
   // A clip with no title of its own is named after where it came from; a note with
   // neither gets a dated name rather than an empty one.
