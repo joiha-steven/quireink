@@ -47,7 +47,11 @@ export async function readFields(c: Context, names: string[]): Promise<{
 export function safeNext(raw: string | undefined): string {
   if (raw === undefined || raw === '') return '/admin'
   if (!raw.startsWith('/') || raw.startsWith('//') || UNSAFE_PATH_CHARS.test(raw)) return '/admin'
-  return raw
+  // ⚠️ AND NOT A BYTE OUTSIDE ASCII (2026-09-30). A header value cannot carry one, so a `next`
+  // of `/admin/posts?q=café` threw at `headers.set('location', …)` AFTER the second factor had
+  // been spent and the session row written: a 500, a code used up, and nobody signed in. Only
+  // the non-ASCII characters are escaped — an escape already in the path stays as it is.
+  return raw.replace(/[^\x00-\x7f]/gu, (c) => encodeURIComponent(c))
 }
 
 /** ASCII controls, whitespace and backslashes: nothing a same-site path needs, and each one a way off it. */

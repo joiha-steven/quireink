@@ -4,6 +4,14 @@ import { safeNext } from '@/web/auth-http'
 // The post-sign-in destination is the one place a stranger's URL is honoured on the login
 // page, which makes it the open-redirect surface. Each case here was a way off the site.
 describe('safeNext', () => {
+  // A header cannot carry a byte outside ASCII: `café` in `next` threw after the second factor
+  // was spent, a 500 with the code used up and no session delivered.
+  it('escapes what a header cannot carry, and nothing already escaped', () => {
+    const next = safeNext('/admin/posts?q=café&t=bài%20viết')
+    expect(next).toBe('/admin/posts?q=caf%C3%A9&t=b%C3%A0i%20vi%E1%BA%BFt')
+    expect(() => new Headers({ location: next })).not.toThrow()
+  })
+
   it('keeps a same-site path', () => {
     expect(safeNext('/admin/content')).toBe('/admin/content')
     expect(safeNext('/a-post?x=1#c')).toBe('/a-post?x=1#c')
