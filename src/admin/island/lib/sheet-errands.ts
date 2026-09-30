@@ -4,7 +4,7 @@
 // Both are one request and a navigation, and both are easy to get subtly wrong — which is why
 // they are here rather than inline in the entry.
 import type { SheetKind, SheetWords } from '@/admin-shared/sheet-wire'
-import { uploadImages } from '@/admin/upload-client'
+import { refusalWords, uploadImages } from '@/admin/upload-client'
 import { say } from './media-bridge'
 import { sayAcross } from './say-across'
 
@@ -20,8 +20,9 @@ export async function uploadInline(t: SheetWords, file: File): Promise<string | 
     const [item] = await uploadImages([file])
     return item?.url ?? null
   } catch (err) {
-    const unsupported = err instanceof Error && err.message === 'unsupported_type'
-    say(unsupported ? t.unsupportedType : t.imageUploadFailed, 'error')
+    say(refusalWords(err, {
+      badType: t.unsupportedType, tooLarge: t.uploadTooLarge, noRoom: t.uploadNoRoom, failed: t.imageUploadFailed,
+    }), 'error')
     return null
   }
 }

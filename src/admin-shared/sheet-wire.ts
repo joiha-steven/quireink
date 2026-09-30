@@ -138,7 +138,7 @@ export const SHEET_WORD_KEYS = [
   'tbMarkdown', 'tbMath', 'tbMathInline', 'tbParagraph', 'tbQuote', 'tbRing', 'tbRowAdd',
   'tbRowDel', 'tbStrike', 'tbTable', 'tbTableDelete', 'tbTask', 'tbUnderline',
   'titlePlaceholder', 'tmLatest', 'trashFailed', 'trashedOne', 'undo', 'unsaved',
-  'unsupportedType', 'untitled', 'unusedBadge',
+  'unsupportedType', 'untitled', 'unusedBadge', 'uploadNoRoom', 'uploadTooLarge',
 ] as const
 
 export type SheetWords = Pick<AdminStrings, (typeof SHEET_WORD_KEYS)[number]>

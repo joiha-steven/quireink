@@ -382,6 +382,10 @@ export type AdminStrings = {
   savedChanges: string
   published: string
   imageUploadFailed: string
+  /** `{size}` and `{limit}` in megabytes: a file over the upload cap. */
+  uploadTooLarge: string
+  /** `{size}` and `{limit}` in megabytes: the store would pass its quota. */
+  uploadNoRoom: string
   // local (offline) autosave recovery bar
   /**
    * The OFFER: this piece has work in it that was never saved, here is where that copy

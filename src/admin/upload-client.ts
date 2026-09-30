@@ -7,6 +7,30 @@ import type { MediaItem, FileItem, ApiResponse } from '@/types'
 
 type Progress = (pct: number) => void
 
+/**
+ * A refusal the server gave a reason for, with the two numbers a size refusal carries.
+ *
+ * The message is the reason code (`unsupported_type`, `file_too_large`, `quota_exceeded`), the
+ * shape callers already compared against; the numbers are what let a refusal name the size and
+ * the limit instead of "Image upload failed" (2026-09-30).
+ */
+export class UploadRefused extends Error {
+  constructor(reason: string, readonly limit?: number, readonly actual?: number) { super(reason) }
+}
+
+/** The sentence for an upload that did not land, from the words the screen carries. */
+export function refusalWords(
+  err: unknown, w: { badType?: string; tooLarge?: string; noRoom?: string; failed?: string },
+): string {
+  const mb = (bytes: number): string => (bytes / 1048576).toFixed(bytes < 10 * 1048576 ? 1 : 0)
+  if (err instanceof Error && err.message === 'unsupported_type') return w.badType ?? ''
+  if (err instanceof UploadRefused && err.limit && err.actual) {
+    const say = err.message === 'file_too_large' ? w.tooLarge : err.message === 'quota_exceeded' ? w.noRoom : undefined
+    if (say) return say.replace('{size}', mb(err.actual)).replace('{limit}', mb(err.limit))
+  }
+  return w.failed ?? ''
+}
+
 // POST files as multipart to a server route, reporting overall upload progress via
 // XHR (fetch can't surface upload progress). Resolves the parsed API rows.
 function postFiles<T>(url: string, files: File[], onProgress?: Progress): Promise<T[]> {
@@ -20,8 +44,8 @@ function postFiles<T>(url: string, files: File[], onProgress?: Progress): Promis
     }
     xhr.onload = () => {
       try {
-        const json = JSON.parse(xhr.responseText) as ApiResponse<T[]>
-        if (!json.success || !json.data) reject(new Error(json.error ?? 'upload failed'))
+        const json = JSON.parse(xhr.responseText) as ApiResponse<T[]> & { limit?: number; actual?: number }
+        if (!json.success || !json.data) reject(new UploadRefused(json.error ?? 'upload failed', json.limit, json.actual))
         else resolve(json.data)
       } catch {
         reject(new Error(`upload failed (${xhr.status})`))

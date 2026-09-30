@@ -79,7 +79,9 @@ async function formFiles(c: Context): Promise<File[]> {
  */
 async function refuseOversize(c: Context, files: File[]): Promise<Response | null> {
   const refusal = await checkUpload(files.map((f) => f.size))
-  return refusal === null ? null : fail(c, refusal.reason, 413)
+  // Both numbers ride along, so the refusal can say how large the file was and what is allowed.
+  return refusal === null ? null
+    : c.json({ success: false, error: refusal.reason, limit: refusal.limit, actual: refusal.actual }, 413)
 }
 
 export function uploadRoutes() {

@@ -6,7 +6,7 @@
 // of it per screen, and two live confirm dialogs over one page is worse than none. So both go
 // out as events, the bridge ADR 0054 established: `quire:toast` and `quire:confirm`.
 import type { FileItem, MediaItem } from '@/types'
-import { uploadAttachments, uploadImages } from '@/admin/upload-client'
+import { refusalWords, uploadAttachments, uploadImages } from '@/admin/upload-client'
 
 export type Words = Partial<Record<string, string>>
 
@@ -111,8 +111,7 @@ export async function sendImages(well: Well, files: File[], w: Words): Promise<M
     say(w.uploaded ?? '')
     return items
   } catch (err) {
-    const bad = err instanceof Error && err.message === 'unsupported_type'
-    say((bad ? w.badType : w.uploadFailed) ?? '', 'error')
+    say(refusalWords(err, { badType: w.badType, tooLarge: w.tooLarge, noRoom: w.noRoom, failed: w.uploadFailed }), 'error')
     return null
   } finally {
     progress(well.bar, null)
@@ -126,8 +125,8 @@ export async function sendFiles(well: Well, files: File[], w: Words): Promise<Fi
     const items = await uploadAttachments(files, (pct) => progress(well.bar, pct))
     say(w.uploaded ?? '')
     return items
-  } catch {
-    say(w.uploadFailed ?? '', 'error')
+  } catch (err) {
+    say(refusalWords(err, { badType: w.badType, tooLarge: w.tooLarge, noRoom: w.noRoom, failed: w.uploadFailed }), 'error')
     return null
   } finally {
     progress(well.bar, null)

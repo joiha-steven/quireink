@@ -65,6 +65,7 @@ function words(t: AdminStrings): string {
     copyUrl: t.copyUrl, download: t.download, delete: t.delete, unusedBadge: t.unusedBadge,
     // An icon goes straight to the files store, and says so when it lands.
     uploaded: t.uploaded, uploadFailed: t.uploadFailed, loading: t.loading,
+    badType: t.unsupportedType, tooLarge: t.uploadTooLarge, noRoom: t.uploadNoRoom,
     // The three lists, and the two of them that delete.
     //
     // ⚠️ `removed`, NOT `movedToTrash`. A snapshot and a redirect are both deleted outright —

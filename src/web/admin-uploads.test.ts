@@ -283,7 +283,8 @@ describe('upload limits', () => {
     process.env.MAX_UPLOAD_MB = '1'
     const res = await asOwner('/api/media/upload', { method: 'POST', body: big('huge.png', 2) })
     expect(res.status).toBe(413)
-    expect(await res.json()).toEqual({ success: false, error: 'file_too_large' })
+    // With both numbers, so the client can say how large and what is allowed (2026-09-30).
+    expect(await res.json()).toEqual({ success: false, error: 'file_too_large', limit: 1024 * 1024, actual: 2 * 1024 * 1024 })
     // And nothing landed: the whole batch is refused, as with a bad type.
     expect((await payload<unknown[]>(asOwner('/api/media'))).length).toBe(0)
   })
@@ -311,7 +312,7 @@ describe('upload limits', () => {
     process.env.STORAGE_QUOTA_GB = '0.00000001' // ~10 bytes
     const res = await upload('/api/media/upload', [['second.png', 'image/png']])
     expect(res.status).toBe(413)
-    expect(await res.json()).toEqual({ success: false, error: 'quota_exceeded' })
+    expect(await res.json()).toMatchObject({ success: false, error: 'quota_exceeded', limit: 11 })
   })
 
   /**
