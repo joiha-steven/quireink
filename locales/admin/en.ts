@@ -827,6 +827,7 @@ const en = {
   tmEmpty: 'No older versions yet. Versions appear after a post is overwritten.',
   revisionLoaded: 'Loaded this version into the editor. Press Save to apply.',
   previewDraft: 'Preview draft',
+  previewChanges: 'Preview changes',
   tabTaxonomy: 'Taxonomy',
   rename: 'Rename',
   renamePrompt: 'New name:',

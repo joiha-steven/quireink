@@ -827,6 +827,7 @@ const it = {
   tmEmpty: 'Ancora nessuna versione precedente. Compaiono quando un articolo viene sovrascritto.',
   revisionLoaded: 'Versione caricata nell’editor. Premi Salva per applicarla.',
   previewDraft: 'Anteprima della bozza',
+  previewChanges: 'Anteprima delle modifiche',
   tabTaxonomy: 'Tassonomia',
   rename: 'Rinomina',
   renamePrompt: 'Nuovo nome:',

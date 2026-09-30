@@ -827,6 +827,7 @@ const vi = {
   tmEmpty: 'Chưa có phiên bản cũ nào. Các phiên bản sẽ xuất hiện sau khi bài viết được lưu đè.',
   revisionLoaded: 'Đã nạp phiên bản này vào trình soạn thảo. Nhấn Lưu để áp dụng.',
   previewDraft: 'Xem nháp',
+  previewChanges: 'Xem trước thay đổi',
   tabTaxonomy: 'Phân loại',
   rename: 'Đổi tên',
   renamePrompt: 'Tên mới:',

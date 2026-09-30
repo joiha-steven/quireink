@@ -828,6 +828,7 @@ const pt = {
   tmEmpty: 'Ainda não há versões antigas. Elas aparecem quando um post é sobrescrito.',
   revisionLoaded: 'Versão carregada no editor. Aperte Salvar para aplicar.',
   previewDraft: 'Prévia do rascunho',
+  previewChanges: 'Pré-visualizar alterações',
   tabTaxonomy: 'Taxonomia',
   rename: 'Renomear',
   renamePrompt: 'Novo nome:',

@@ -827,6 +827,7 @@ const de = {
   tmEmpty: 'Noch keine älteren Versionen. Versionen erscheinen, nachdem ein Beitrag überschrieben wurde.',
   revisionLoaded: 'Diese Version wurde in den Editor geladen. Zum Anwenden auf Speichern drücken.',
   previewDraft: 'Entwurf ansehen',
+  previewChanges: 'Änderungen ansehen',
   tabTaxonomy: 'Taxonomie',
   rename: 'Umbenennen',
   renamePrompt: 'Neuer Name:',

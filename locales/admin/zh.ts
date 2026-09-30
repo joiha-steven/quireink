@@ -827,6 +827,7 @@ const zh = {
   tmEmpty: '还没有旧版本。版本将在文章被覆盖保存后出现。',
   revisionLoaded: '已将此版本载入编辑器。按“保存”以应用。',
   previewDraft: '预览草稿',
+  previewChanges: '预览修改',
   tabTaxonomy: '分类',
   rename: '重命名',
   renamePrompt: '新名称：',

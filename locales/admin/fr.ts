@@ -827,6 +827,7 @@ const fr = {
   tmEmpty: 'Pas encore d’anciennes versions. Elles apparaissent quand un article est écrasé.',
   revisionLoaded: 'Version chargée dans l’éditeur. Appuyez sur Enregistrer pour l’appliquer.',
   previewDraft: 'Aperçu du brouillon',
+  previewChanges: 'Aperçu des modifications',
   tabTaxonomy: 'Taxonomie',
   rename: 'Renommer',
   renamePrompt: 'Nouveau nom :',

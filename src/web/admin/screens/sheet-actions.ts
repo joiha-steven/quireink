@@ -54,6 +54,8 @@ export type SheetLinks = {
  * is a thing a designer may reasonably rename.
  */
 export function sheetActions(t: AdminStrings, links: SheetLinks): string {
+  // On a live piece the preview shows the unsaved edit, and "Preview draft" called it a draft.
+  const previewWord = links.published ? t.previewChanges : t.previewDraft
   const saveWord = links.published ? t.save : t.saveDraft
   const quiet = escapeAttr(QUIET)
   const menuItem = (attr: string, label: string, extra = ''): string =>
@@ -95,7 +97,7 @@ export function sheetActions(t: AdminStrings, links: SheetLinks): string {
     // Preview is a post's alone, on the phone as on the desktop: the other two kinds have no
     // preview route, and an item that answers nothing is worse than an item that is not there.
     + (links.canPreview
-      ? menuItem('data-sheet-preview', t.previewDraft, links.previewNow ? '' : ' hidden')
+      ? menuItem('data-sheet-preview', previewWord, links.previewNow ? '' : ' hidden')
       : '')
     + `<a data-sheet-live href="${escapeAttr(links.live.href)}" target="_blank" rel="noopener"`
     + ` class="${quiet} text-left"${links.liveNow ? '' : ' hidden'}>${escapeHtml(links.live.label)}</a>`
@@ -123,8 +125,8 @@ export function sheetActions(t: AdminStrings, links: SheetLinks): string {
     // left it on screen at 390 and squeezed "← Write" to "← Writ".
     + (links.canPreview
       ? `<span data-sheet-preview-wrap class="hidden lg:contents"${links.previewNow ? '' : ' hidden'}>`
-        + `<button type="button" data-sheet-preview title="${escapeAttr(t.previewDraft)}"`
-        + ` class="${escapeAttr(buttonClass('secondary'))}">${escapeHtml(t.previewDraft)}</button></span>`
+        + `<button type="button" data-sheet-preview title="${escapeAttr(previewWord)}"`
+        + ` class="${escapeAttr(buttonClass('secondary'))}">${escapeHtml(previewWord)}</button></span>`
       : '')
     // Beside Preview, because the pair answers one question — how does this read? — with the
     // draft on the left and the live piece on the right.

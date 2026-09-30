@@ -202,7 +202,7 @@ function boot(root: HTMLElement, data: Payload): void {
   const sheetBar = wireBar(root, {
     t,
     lang,
-    getText: () => `${draft.title} ${body()}`,
+    getText: body, // the body alone, as the page counts it: the title made the two disagree
     onSaveDraft: () => {
       const status = statusForSave(savedStatus, draft.status)
       void saveAs(status, status === 'published' ? t.savedChanges : t.savedDraft)

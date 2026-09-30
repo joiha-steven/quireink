@@ -827,6 +827,7 @@ const es = {
   tmEmpty: 'Todavía no hay versiones antiguas. Aparecen cuando una entrada se sobrescribe.',
   revisionLoaded: 'Versión cargada en el editor. Pulsa Guardar para aplicarla.',
   previewDraft: 'Vista previa del borrador',
+  previewChanges: 'Vista previa de cambios',
   tabTaxonomy: 'Taxonomía',
   rename: 'Renombrar',
   renamePrompt: 'Nuevo nombre:',

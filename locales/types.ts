@@ -1149,6 +1149,8 @@ export type AdminStrings = {
   tmEmpty: string
   revisionLoaded: string
   previewDraft: string
+  /** The same key on a piece that is already live: what it shows is the unsaved edit, not a draft. */
+  previewChanges: string
   // analytics (Admin → Analytics)
   navAnalytics: string
   analyticsTitle: string

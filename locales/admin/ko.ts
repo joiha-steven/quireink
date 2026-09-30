@@ -827,6 +827,7 @@ const ko = {
   tmEmpty: '아직 이전 버전이 없습니다. 버전은 게시물을 덮어쓴 후에 표시됩니다.',
   revisionLoaded: '이 버전을 편집기에 불러왔습니다. 적용하려면 저장을 누르세요.',
   previewDraft: '초안 미리보기',
+  previewChanges: '변경 사항 미리 보기',
   tabTaxonomy: '분류',
   rename: '이름 변경',
   renamePrompt: '새 이름:',
