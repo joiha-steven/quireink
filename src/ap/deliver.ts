@@ -33,6 +33,24 @@ export type RemoteActor = {
  */
 const keyCache = new Map<string, { actor: RemoteActor; at: number }>()
 const KEY_TTL_MS = 60 * 60 * 1000
+/**
+ * ⚠️ AND IT HAS A CEILING (2026-09-30). The TTL was read on a hit and nothing ever evicted, so a
+ * stranger naming a fresh `keyId` per unsigned POST grew this for good — 400 of them held about
+ * 128 MB, in a process that ships in a 128 MB container. Oldest out first (a Map keeps insertion
+ * order), and a key longer than any real one is not kept at all.
+ */
+const KEY_CACHE_MAX = 500
+const MAX_PEM_CHARS = 16 * 1024
+
+function remember(url: string, actor: RemoteActor): void {
+  if (actor.publicKeyPem.length > MAX_PEM_CHARS) return
+  keyCache.delete(url)
+  keyCache.set(url, { actor, at: Date.now() })
+  while (keyCache.size > KEY_CACHE_MAX) keyCache.delete(keyCache.keys().next().value!)
+}
+
+/** Test seam: how many actors are held. */
+export const rememberedActors = (): number => keyCache.size
 
 export const forgetRemoteActors = (): void => { keyCache.clear() }
 
@@ -86,7 +104,7 @@ export async function fetchActor(
     const res = await using(clean, { headers: signed?.headers ?? { accept: 'application/activity+json' } })
     if (!res.ok) return null
     const actor = readActor(JSON.parse(await readTextCapped(res, MAX_ACTOR_BYTES)) as unknown)
-    if (actor) keyCache.set(clean, { actor, at: Date.now() })
+    if (actor) remember(clean, actor)
     return actor
   } catch {
     return null
