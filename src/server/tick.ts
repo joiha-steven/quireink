@@ -63,8 +63,8 @@ export async function publishTick(): Promise<number> {
   // The cheapest possible read, which doubles as a liveness probe for whoever called this
   // over HTTP.
   one<{ id: number }>(`select id from settings limit 1`)
+  // The sweep flushes and purges on its own when anything crossed.
   const published = await sweepScheduled(PUBLISH_TICK_LOOKBACK_MS)
-  if (published > 0) clearCache()
   // Isolated: a link nobody can reach must not stop a post going live at the minute it was
   // scheduled for, which is the one thing this tick exists to do.
   try {
@@ -131,7 +131,6 @@ export async function fullTick(opts: { purge?: boolean } = {}): Promise<FullTick
   let published = 0
   try {
     published = await sweepScheduled(HOURLY_LOOKBACK_MS)
-    if (published > 0) clearCache()
   } catch (error) {
     console.error(`[ERROR] tick publish sweep: ${(error as Error).message}`)
   }

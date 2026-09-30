@@ -3,7 +3,7 @@
 // A post saved with status 'published' and a FUTURE date is already hidden by the read
 // layer (`isPublicallyVisible`) — no separate 'scheduled' status exists. What still needs
 // a nudge is the caches in front of it: the in-process page cache, and any 404 the edge
-// (Cloudflare) cached for the not-yet-live URL. This sweep, run by the cron, detects posts
+// (Cloudflare) cached for the not-yet-live URL. This sweep, run by the cron, detects posts and notes
 // that crossed their scheduled time within a bounded lookback window and flushes both.
 //
 // The window is derived from the cron cadence (no watermark stored): the 5-min publish
@@ -41,38 +41,48 @@ export function newlyLive(posts: Crossable[], since: number, now: number): strin
 }
 
 /**
- * Where the last sweep stopped looking. Module state, so it resets on a restart and the
- * lookback below is what covers the gap.
+ * Where each tick's last sweep stopped looking, keyed by its lookback. Module state, so it
+ * resets on a restart and the lookback below is what covers the gap.
+ *
+ * ONE PER TICK, not one shared (2026-09-30). A single watermark let the minute tick cut the
+ * hourly backstop down to the last minute, so the backstop covered nothing the minute tick had
+ * not. And it moves only after the query has answered: set first, a sweep that threw lost its
+ * window for good.
  */
-let lastSweepAt = 0
+const lastSweepAt = new Map<number, number>()
 
-/** Only for tests: forget where the last sweep stopped. */
+/** Only for tests: forget where the last sweeps stopped. */
 export function resetSweepWindow(): void {
-  lastSweepAt = 0
+  lastSweepAt.clear()
 }
 
 /**
- * Find posts that just became live and, if any, flush the caches. Returns how many crossed
- * (0 = nothing to do, no flush). The caller (cron) isolates it so a sweep failure can't
+ * Find posts and notes that just became live and, if any, flush the caches. Returns how many
+ * crossed (0 = nothing to do, no flush). The caller (cron) isolates it so a sweep failure can't
  * skip other maintenance.
  *
- * THE WINDOW STARTS WHERE THE LAST ONE ENDED, and the fixed lookback is only the floor.
+ * THE WINDOW STARTS WHERE THIS TICK'S LAST ONE ENDED, and the fixed lookback is only the floor.
  * A fixed window is wrong once the tick is faster than the window: the minute tick runs
  * with a six-minute lookback, so an ordinary publish (whose date is now) sat inside it for
  * six consecutive ticks and answered "newly live" every time. Each of those calls flushed
  * the page cache and asked the CDN to purge, so one post cost six stop-the-world warms and
  * a burst of purges the edge rate-limits. Crossing is a one-time event and now reports as
  * one.
+ *
+ * NOTES TOO (2026-09-30). A note saved published with a future date (Micropub clients schedule
+ * that way, and so can MCP) left `/notes` and both notes feeds cached without it until some
+ * unrelated write happened.
  */
 export async function sweepScheduled(lookbackMs: number): Promise<number> {
   const now = Date.now()
-  const since = Math.max(now - lookbackMs, lastSweepAt)
-  lastSweepAt = now
-  const rows = all<{ slug: string; date: number; status: string }>(
-    `select slug, date, status from posts
-      where ${liveOnly('posts')} and status = 'published' and date > ? and date <= ?`,
+  const since = Math.max(now - lookbackMs, lastSweepAt.get(lookbackMs) ?? 0)
+  const window = (table: 'posts' | 'notes') => all<{ slug: string; date: number; status: string }>(
+    `select slug, date, status from ${table}
+      where ${liveOnly(table)} and status = 'published' and date > ? and date <= ?`,
     since, now,
   )
+  const rows = [...window('posts'), ...window('notes')]
+  lastSweepAt.set(lookbackMs, now)
   // `newlyLive` still takes ISO strings: it is the pure, tested definition of "went live",
   // and the window query is an optimisation on top of it rather than a replacement.
   const crossed = newlyLive(
