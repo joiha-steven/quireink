@@ -9,7 +9,7 @@ import { runAssistant, type Turn } from '@/server/assistant'
 import { createChat, deleteChat, getChat, listChats, renameChat, saveChat } from '@/server/assistant-chats'
 import type { Context } from 'hono'
 import { fail, json } from '@/web/api'
-import { ownerRouter, param } from '@/web/guard'
+import { ownerRouter, param, QUIET } from '@/web/guard'
 
 // The same local helper the other admin route files carry.
 const body = async <T>(c: Context): Promise<Partial<T>> =>
@@ -44,7 +44,7 @@ export function assistantRoutes() {
     return chat ? json(chat) : fail(c, 'not_found', 404)
   })
 
-  router.post('/api/assistant/chats', async () => json({ id: createChat() }, 201))
+  router.post('/api/assistant/chats', async () => json({ id: createChat() }, 201), QUIET)
 
   router.patch('/api/assistant/chats/:id', async (c) => {
     const id = Number(param(c, 'id'))
@@ -53,12 +53,12 @@ export function assistantRoutes() {
     if (!title) return fail(c, 'bad_title', 400)
     renameChat(id, title)
     return json({ ok: true })
-  })
+  }, QUIET)
 
   router.delete('/api/assistant/chats/:id', async (c) => {
     if (!deleteChat(Number(param(c, 'id')))) return fail(c, 'not_found', 404)
     return json({ ok: true })
-  })
+  }, QUIET)
 
   router.post('/api/assistant', async (c) => {
     const input = await body<{ turns: unknown }>(c)

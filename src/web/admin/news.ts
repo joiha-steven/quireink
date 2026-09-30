@@ -25,7 +25,7 @@ import { AI_PROVIDERS } from '@/server/ai-provider'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
-import { owner, ownerRouter, param } from '@/web/guard'
+import { owner, ownerRouter, param, QUIET } from '@/web/guard'
 import { escapeHtml } from '@/utils'
 import type { MailWire } from '@/admin-shared/wire'
 
@@ -137,7 +137,7 @@ export function newsRoutes() {
     if (!sent) return fail(c, error || 'send_failed', 502)
     void logActivity('mail.test', kind)
     return json({ to })
-  })
+  }, QUIET)
 
   // ----- the broadcast --------------------------------------------------------
 
@@ -290,7 +290,7 @@ export function newsRoutes() {
     // that question, and the envelope's single `error` string had nowhere to put the
     // provider's own sentence.
     return json(await listModels(provider, key))
-  })
+  }, QUIET)
 
   return router
 }

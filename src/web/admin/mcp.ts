@@ -18,7 +18,7 @@ import { issueCode, mcpEnabled, verifyCode } from '@/mcp/auth'
 import { consentPage, csrfToken, verifyCsrf, type OAuthParams } from '@/mcp/consent'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { logActivity } from '@/server/activity'
-import { currentOwner, ownerRouter, param } from '@/web/guard'
+import { currentOwner, ownerRouter, param, QUIET } from '@/web/guard'
 import { fail, json } from '@/web/api'
 import type { McpTokenWire } from '@/admin-shared/wire'
 
@@ -142,7 +142,7 @@ export function mcpAdminRoutes() {
       if ((error as Error).message === 'token_limit') return fail(c, 'token_limit', 409)
       throw error
     }
-  })
+  }, QUIET)
 
   router.delete('/api/mcp/tokens/:id', async (c) => {
     const id = Number(param(c, 'id'))
@@ -151,7 +151,7 @@ export function mcpAdminRoutes() {
     await deleteToken(id)
     void logActivity('mcp.token.delete', gone?.name ?? `#${id}`)
     return json({ id })
-  })
+  }, QUIET)
 
   return router
 }

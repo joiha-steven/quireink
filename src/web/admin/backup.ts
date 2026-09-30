@@ -27,7 +27,7 @@ import { offsiteTest } from '@/server/backup-offsite'
 import { buildExportZip, exportName } from '@/server/export-md'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
-import { ownerRouter } from '@/web/guard'
+import { ownerRouter, QUIET } from '@/web/guard'
 import type { Context } from 'hono'
 import type { BackupListWire } from '@/admin-shared/wire'
 
@@ -136,7 +136,7 @@ export function backupRoutes() {
       console.error(`[ERROR] backup.run: ${(error as Error).message}`)
       return fail(c, 'Could not take the snapshot', 500)
     }
-  })
+  }, QUIET)
 
   router.get('/api/backup/download', async (c) => {
     const name = c.req.query('name') ?? ''
@@ -160,7 +160,7 @@ export function backupRoutes() {
     if (!name || !(await deleteSnapshot(name))) return fail(c, 'Unknown snapshot', 400)
     logActivity('backup.delete', name)
     return json({ deleted: name })
-  })
+  }, QUIET)
 
   // One marker object written and deleted. The transport's own words come back on
   // failure, because "test failed" teaches the owner nothing about a wrong endpoint.
@@ -171,7 +171,7 @@ export function backupRoutes() {
     } catch (error) {
       return fail(c, (error as Error).message, 400)
     }
-  })
+  }, QUIET)
 
   /**
    * Make the two recipients, and hand the identity over ONCE.
@@ -205,7 +205,7 @@ export function backupRoutes() {
     })
     logActivity('backup.keys', 'new recipients')
     return json({ secret: identity.secret, publicKey: identity.publicKey })
-  })
+  }, QUIET)
 
   return router
 }

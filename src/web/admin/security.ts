@@ -25,7 +25,7 @@ import { logActivity } from '@/server/activity'
 import { rateLimited } from '@/server/rate-limit'
 import { clientIp } from '@/server/rate-limit'
 import { fail, json } from '@/web/api'
-import { owner, ownerRouter, param } from '@/web/guard'
+import { owner, ownerRouter, param, QUIET } from '@/web/guard'
 import type { SecurityWire } from '@/admin-shared/wire'
 
 const body = async <T>(c: Context): Promise<Partial<T>> =>
@@ -100,7 +100,7 @@ export function securityRoutes() {
     const ended = revokeAllSessions(ok.id, ok.sessionId)
     void logActivity('security.password', `signed out ${ended} other session(s)`)
     return json({ signedOut: ended })
-  })
+  }, QUIET)
 
   /**
    * A fresh set of recovery codes, shown ONCE.
@@ -114,7 +114,7 @@ export function securityRoutes() {
     const codes = await regenerateCodes(ok.id)
     void logActivity('security.recovery', `${codes.length} new code(s)`)
     return json({ codes })
-  })
+  }, QUIET)
 
   /**
    * Step one of re-enrolling 2FA: a secret to scan. NOTHING IS STORED YET.
@@ -130,7 +130,7 @@ export function securityRoutes() {
     const secret = generateSecret()
     const uri = otpauthUri(secret, user?.username ?? 'owner')
     return json({ secret, uri, qr: qrSvg(uri) })
-  })
+  }, QUIET)
 
   /** Step two: a code from the new authenticator, and only then does the secret replace the old. */
   router.post('/api/security/totp/confirm', async (c) => {
@@ -149,7 +149,7 @@ export function securityRoutes() {
     setTotpLastStep(ok.id, proof.step)
     void logActivity('security.totp', 're-enrolled')
     return json({ ok: true })
-  })
+  }, QUIET)
 
   /**
    * End one session. No password: this only ever REMOVES access, so the worst a misfired
@@ -162,7 +162,7 @@ export function securityRoutes() {
     if (!revokeSession(user.id, id)) return fail(c, 'not_found', 404)
     void logActivity('security.session', 'revoked one')
     return json({ ok: true })
-  })
+  }, QUIET)
 
   /** Sign out everywhere else. Same reasoning: it only takes access away. */
   router.post('/api/security/sessions/revoke-others', async (c) => {
@@ -170,7 +170,7 @@ export function securityRoutes() {
     const ended = revokeAllSessions(user.id, session.id)
     void logActivity('security.session', `revoked ${ended} other session(s)`)
     return json({ signedOut: ended })
-  })
+  }, QUIET)
 
   return router
 }

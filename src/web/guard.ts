@@ -50,7 +50,8 @@ export function currentOwner(c: Context): Owner | null {
  * together: a cookie-authenticated write is exactly the request that needs both, and
  * splitting them creates the possibility of mounting one without the other.
  */
-export function requireOwner(): MiddlewareHandler<OwnerEnv> {
+export function requireOwner(opts: RouteOptions = {}): MiddlewareHandler<OwnerEnv> {
+  const flush = opts.flush ?? true
   return async (c, next) => {
     if (isStateChanging(c.req.method)) {
       const origin = checkOrigin(c)
@@ -76,9 +77,20 @@ export function requireOwner(): MiddlewareHandler<OwnerEnv> {
     // say something sharper (flush only if something actually published); this line is
     // the one that cannot be forgotten. A flush is one Map.clear() — cheap by design,
     // which is what makes the blunt form affordable (docs/invariants.md, "Why 1 is blunt").
-    if (isStateChanging(c.req.method) && c.res.status < 400) clearCache()
+    //
+    // `flush: false` is for a write that changes nothing a reader can see: an autosave, the
+    // assistant, a connection test. Each flush also purges the CDN and re-warms the site, and
+    // until 2026-09-30 an autosave every 15 seconds did that while the owner typed. The default
+    // stays "flush", so the opt-out is a word at the registration, never a line forgotten.
+    if (flush && isStateChanging(c.req.method) && c.res.status < 400) clearCache()
   }
 }
+
+/** Per-registration options. `flush: false` only where no reader-visible byte can change. */
+export type RouteOptions = { flush?: boolean }
+
+/** A write that changes nothing a reader sees, so it neither empties the cache nor purges the CDN. */
+export const QUIET: RouteOptions = { flush: false }
 
 type Handler = (c: Context) => Response | Promise<Response>
 
@@ -128,12 +140,14 @@ export class OwnerRouter {
   /** Exposed so the caller can `app.route('/', ownerRouter.routes)`. */
   readonly routes = new Hono<OwnerEnv>()
   private readonly gate = requireOwner()
+  private readonly quiet = requireOwner({ flush: false })
+  private pick = (opts?: RouteOptions) => (opts?.flush === false ? this.quiet : this.gate)
 
   get(path: string, handler: Handler): void { this.routes.get(path, this.gate, handler) }
-  post(path: string, handler: Handler): void { this.routes.post(path, this.gate, handler) }
-  put(path: string, handler: Handler): void { this.routes.put(path, this.gate, handler) }
-  patch(path: string, handler: Handler): void { this.routes.patch(path, this.gate, handler) }
-  delete(path: string, handler: Handler): void { this.routes.delete(path, this.gate, handler) }
+  post(path: string, handler: Handler, opts?: RouteOptions): void { this.routes.post(path, this.pick(opts), handler) }
+  put(path: string, handler: Handler, opts?: RouteOptions): void { this.routes.put(path, this.pick(opts), handler) }
+  patch(path: string, handler: Handler, opts?: RouteOptions): void { this.routes.patch(path, this.pick(opts), handler) }
+  delete(path: string, handler: Handler, opts?: RouteOptions): void { this.routes.delete(path, this.pick(opts), handler) }
 }
 
 export function ownerRouter(): OwnerRouter {

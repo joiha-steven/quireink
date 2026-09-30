@@ -15,7 +15,7 @@ import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
 import { afterNoteSaved } from '@/server/webmention'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
-import { ownerRouter, param } from '@/web/guard'
+import { ownerRouter, param, QUIET } from '@/web/guard'
 import type { Context } from 'hono'
 
 /** The same ceiling the post and page autosaves have (`content.ts`). */
@@ -81,7 +81,7 @@ export function noteRoutes() {
     return putAutosave('note', slug, input.snapshot)
       ? json({ slug, at: Date.now() })
       : fail(c, 'Note not found', 404)
-  })
+  }, QUIET)
 
   router.get('/api/notes/:slug/autosave', async (c) => {
     const found = getAutosave('note', param(c, 'slug'))

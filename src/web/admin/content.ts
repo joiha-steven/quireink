@@ -29,7 +29,7 @@ import { finalizeContentMedia } from '@/media/finalize'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
-import { ownerRouter, param } from '@/web/guard'
+import { ownerRouter, param, QUIET } from '@/web/guard'
 
 /**
  * The ceiling on one autosave snapshot, in characters of JSON.
@@ -155,7 +155,7 @@ export function contentRoutes() {
     return putAutosave('post', slug, input.snapshot)
       ? json({ slug, at: Date.now() })
       : fail(c, 'Post not found', 404)
-  })
+  }, QUIET)
 
   router.get('/api/posts/:slug/autosave', async (c) => {
     const found = getAutosave('post', param(c, 'slug'))
@@ -220,7 +220,7 @@ export function contentRoutes() {
     return putAutosave('page', slug, input.snapshot)
       ? json({ slug, at: Date.now() })
       : fail(c, 'Page not found', 404)
-  })
+  }, QUIET)
 
   router.get('/api/pages/:slug/autosave', async (c) => {
     const found = getAutosave('page', param(c, 'slug'))
