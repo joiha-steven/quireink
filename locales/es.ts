@@ -77,6 +77,7 @@ const es = {
   // and the word before a clip's source.
   notesTitle: 'Notas',
   alsoIn: 'También en',
+  footerDefault: '© {year} {title} · [hecho con Quire Ink](https://quireink.com)',
   calloutNote: 'Nota',
   calloutTip: 'Consejo',
   calloutWarning: 'Advertencia',

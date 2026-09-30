@@ -94,6 +94,8 @@ export type Dict = {
   notesTitle: string
   /** The label before a piece's other languages, on the article itself (ADR 0056). */
   alsoIn: string
+  /** The footer a blog has until its owner writes one; `{year}` and `{title}` stay as they are. */
+  footerDefault: string
   /** The label on a `> [!NOTE]` callout and its four siblings, in the piece's language. */
   calloutNote: string
   calloutTip: string

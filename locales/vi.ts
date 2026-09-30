@@ -77,6 +77,7 @@ const vi = {
   // and the word before a clip's source.
   notesTitle: 'Sổ tay',
   alsoIn: 'Cũng có bằng',
+  footerDefault: '© {year} {title} · [chạy bằng Quire Ink](https://quireink.com)',
   calloutNote: 'Ghi chú',
   calloutTip: 'Mẹo',
   calloutWarning: 'Cảnh báo',

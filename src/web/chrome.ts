@@ -17,6 +17,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { SW_PATH } from '@/web/assets'
 import { ICONS } from '@/icons'
 import { isSafeHref } from '@/content/safe-href'
+import { DEFAULT_SETTINGS } from '@/content/settings'
 
 /**
  * Inline SVG rather than an icon font: no extra request, and it inherits `currentColor`.
@@ -266,8 +267,11 @@ export function siteFooter(settings: SiteSettings, opts: ChromeOptions): string 
   void opts
   // Limited inline markdown with {year} and {title} tokens, exactly as the frozen tree
   // rendered it. `renderInlineMarkdown` is the sanitiser, so this is not raw owner HTML.
-  const footerText = settings.footer
-    ? `<p class="footer-text">${renderInlineMarkdown(expandFooterTokens(settings.footer, settings.title))}</p>`
+  // THE UNTOUCHED DEFAULT speaks the blog's language (FIXLIST 8.2): it is stored in English, and
+  // a Vietnamese blog printed "powered by". A footer the owner wrote is left exactly as written.
+  const footer = settings.footer === DEFAULT_SETTINGS.footer ? t(settings.language).footerDefault : settings.footer
+  const footerText = footer
+    ? `<p class="footer-text">${renderInlineMarkdown(expandFooterTokens(footer, settings.title))}</p>`
     : ''
   return `<footer class="site">${footerText}</footer>`
 }

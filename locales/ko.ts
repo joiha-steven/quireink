@@ -77,6 +77,7 @@ const ko = {
   // and the word before a clip's source.
   notesTitle: '노트',
   alsoIn: '다른 언어',
+  footerDefault: '© {year} {title} · [Quire Ink로 운영](https://quireink.com)',
   calloutNote: '참고',
   calloutTip: '팁',
   calloutWarning: '경고',

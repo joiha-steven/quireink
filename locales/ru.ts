@@ -77,6 +77,7 @@ const ru = {
   // and the word before a clip's source.
   notesTitle: 'Заметки',
   alsoIn: 'Также на',
+  footerDefault: '© {year} {title} · [работает на Quire Ink](https://quireink.com)',
   calloutNote: 'Примечание',
   calloutTip: 'Совет',
   calloutWarning: 'Предупреждение',

@@ -77,6 +77,7 @@ const ja = {
   // and the word before a clip's source.
   notesTitle: 'ノート',
   alsoIn: '他の言語',
+  footerDefault: '© {year} {title} · [Quire Ink で運営](https://quireink.com)',
   calloutNote: '注記',
   calloutTip: 'ヒント',
   calloutWarning: '警告',

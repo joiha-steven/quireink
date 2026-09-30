@@ -77,6 +77,7 @@ const zh = {
   // and the word before a clip's source.
   notesTitle: '笔记',
   alsoIn: '其他语言',
+  footerDefault: '© {year} {title} · [由 Quire Ink 驱动](https://quireink.com)',
   calloutNote: '注意',
   calloutTip: '提示',
   calloutWarning: '警告',

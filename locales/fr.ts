@@ -77,6 +77,7 @@ const fr = {
   // and the word before a clip's source.
   notesTitle: 'Notes',
   alsoIn: 'Aussi en',
+  footerDefault: '© {year} {title} · [propulsé par Quire Ink](https://quireink.com)',
   calloutNote: 'Remarque',
   calloutTip: 'Astuce',
   calloutWarning: 'Avertissement',
