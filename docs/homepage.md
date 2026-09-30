@@ -24,7 +24,9 @@ What `/` serves. [ADR 0014](decisions/0014-homepage-modes.md). `home.mode` is **
 - **A missing homepage falls back to the list rather than 404ing.** `renderArticle` returns
   null when the chosen page is unset, deleted, unpublished or scheduled forward — four
   things that happen without anybody revisiting this setting — and a 404 there is the whole
-  site's front door.
+  site's front door. Two of them are closed off: renaming the chosen page moves the setting
+  with it, and sending it to the Trash is refused (editor, list and MCP alike) until another
+  front page is chosen.
 - **The chosen page's own slug 301s to `/`**, and the sitemap names the root, not the slug;
   it also names `listPath`, which appears in no table and would otherwise be listed nowhere.
 - `warm.ts` warms `/`.

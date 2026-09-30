@@ -16,7 +16,8 @@
   an error message to a bot author is a specification of the next bot. Then a per-ADDRESS
   cooldown (`confirm_sent_at`, one confirm email an hour) caps what a subscription-bombing
   run can make this site send to one victim, whatever IPs it uses. Finally the hourly cron
-  sweeps pending rows older than 30 days (`sweepPendingSubscribers`) — hard-deleted with
+  sweeps pending rows whose last confirm went out over 30 days ago (`sweepPendingSubscribers`,
+  aged from `confirm_sent_at` so a reader signing up again is not swept) — hard-deleted with
   their confirm-log rows, not moved to the Trash, because bot droppings swept into a bin the
   owner must empty by hand is the same chore relocated.
 - **Deleting a subscriber is a soft delete** (Invariant 6): the ✕ in People sends the row to
@@ -39,7 +40,10 @@
   the TLS checkbox from the port — implicit TLS is 465, 587 is STARTTLS; the wrong pair fails with
   an opaque OpenSSL "wrong version number"). Three tabs:
   - *People* — every subscriber with their send history from the log: emails sent, failures (with
-    the last error), open rate, last send. Counts + delete.
+    the last error), open rate, last send. Counts + delete. Ticked rows export as CSV; the
+    header tick selects every row the search and filter match, on every page. A cell starting
+    `=` `+` `-` `@` gets a leading apostrophe so a spreadsheet shows it rather than runs it (the
+    addresses come from a public form), and the join date is written as ISO.
   - *Send* — tick one or MORE published posts, review the REAL `broadcastEmail()` HTML in a
     `sandbox=""` iframe (scripts/forms/navigation all blocked), then send. Several posts go out as
     ONE digest, never one email each. A post that already has successful sends needs the resend
@@ -52,6 +56,8 @@
   SAME builder the live path uses, so a green test means the real send works. Recipient defaults
   to the signed-in owner's address; confirm/unsubscribe links carry a placeholder token, so they
   deliberately land on the "invalid link" page. Uses the SAVED config, not the unsaved form.
+  With no mail server configured the three buttons are off and say why, and the route answers
+  409 (`smtp_not_configured`, or `smtp_off` under `SMTP_OFF`), not a 502 and an error line.
 - **Send log** (`newsletter_sends`, `src/news/newsletter-log.ts`). `sendMail` writes ONE row per
   outgoing email — success or failure, all four kinds (`confirm`/`broadcast`/`reply`/`test`) — so
   no path can email an address without it showing up. Keyed by ADDRESS, not a subscriber FK:

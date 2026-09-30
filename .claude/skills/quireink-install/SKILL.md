@@ -32,26 +32,35 @@ docker run -d --name quire -p 127.0.0.1:3000:3000 \
 ```
 
 **Native, one command.** [`install.sh`](../../../install.sh) does the mechanical half — clone,
-install, build both artefacts, start it so the log prints the claim link — and deliberately
-none of the half that has consequences: no `sudo`, no Bun install, no systemd, no proxy. It
-refuses to run as root and re-running it on the same directory updates and rebuilds:
+install, build both artefacts — and deliberately none of the half that has consequences: no
+`sudo`, no Bun install, no systemd, no proxy. It refuses to run as root, and re-running it on
+the same directory updates and rebuilds. Run it as the blog's own user, made first with
+`adduser --system --group --home /home/quire quire` (no login shell, hence `sudo -u`), with Bun
+installed for that user by `sudo -u quire -H bash -lc 'curl -fsSL https://bun.sh/install | bash'`
+(`docs/self-host.md` §1–2):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh \
-  | SITE_URL=https://example.com QUIREINK_DIR=/home/quire/app NO_RUN=1 bash
+sudo -u quire -H bash -lc 'curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh \
+  | QUIREINK_DIR=/home/quire/app NO_RUN=1 bash'
 ```
 
 Settings go in front of `bash`. In front of `curl` they belong to the download and never
 reach the script — a mistake worth catching before you hand the line to somebody's server.
+**Keep `NO_RUN=1` on a server.** Without it the script starts the blog in the foreground of
+that terminal: closing the session stops it, and a reboot does not bring it back. The service
+(systemd or Docker) is what should run it.
 
 **Native, by hand.** Bun 1.3+, its own unprivileged user, and the checkout IS the deployment:
 
 ```bash
-git clone https://github.com/joiha-steven/quireink.git /home/quire/app
-cd /home/quire/app && bun install && bun run build:assets && bun run build:admin
-DATA_DIR=/var/lib/quire/data STORAGE_LOCAL_DIR=/var/lib/quire/uploads \
-  SITE_URL=https://example.com bun --smol src/index.ts
+sudo -u quire -H bash -lc 'git clone https://github.com/joiha-steven/quireink.git /home/quire/app'
+sudo -u quire -H bash -lc 'cd /home/quire/app && bun install && bun run build:assets && bun run build:admin'
 ```
+
+Then write the environment into `/home/quire/app/.env`, mode 600, owned by the blog's user
+(`DATA_DIR`, `STORAGE_LOCAL_DIR`, `SITE_URL`): the systemd unit in `docs/self-host.md` §4
+reads it with `EnvironmentFile=`, and a missing file stops the unit from starting. The unit
+runs `bun --smol src/index.ts` from the checkout.
 
 `bun run build` produces those two artefacts and nothing else. **There is no compiled
 binary** ([ADR 0022](../../../docs/decisions/0022-ship-from-source-not-a-compiled-binary.md)) — do not
@@ -62,14 +71,17 @@ go looking for one, and do not "helpfully" add a build step that emits one.
 A blog nobody owns prints a one-time `/setup?token=…` link **every time it starts**:
 
 ```bash
-docker logs quire | grep -A4 'no owner'      # or: journalctl -u quire | grep -A4 'no owner'
+docker logs quire | grep -A8 'no owner'      # or: journalctl -u quire | grep -A8 'no owner'
 ```
 
-Hand that link to the user and stop. The rest is their browser: username, email, password,
-then the authenticator QR and ten recovery codes, shown once. **Do not paste their password
-anywhere, and do not attempt to enrol two-factor on their behalf.** The token lives in
-memory, so a restart invalidates it — if they lose it, restart the service and read the log
-again.
+Hand that link to the user and stop. The rest is their browser: the language, username,
+email, password, then the authenticator QR and ten recovery codes, shown once, and four short
+questions about the site. **Do not paste their password anywhere, and do not attempt to enrol
+two-factor on their behalf.** The token lives in memory, so a restart invalidates it — if they
+lose it, restart the service and read the log again. With no `SITE_URL` the link names
+`127.0.0.1`, which their browser cannot open on a remote server: the log prints an `ssh -L`
+tunnel line under it, or set `SITE_URL` and restart. No log to read at all (some NAS panels)?
+`SETUP_CODE` (twelve characters or more) in the environment makes `/setup` ask for it instead.
 
 ## The reverse proxy, and the one trap that keeps biting
 
@@ -120,7 +132,7 @@ at boot inside a transaction, so there is no migration command.
 docker pull quireink/quireink:latest                 # published image: pull, then recreate
 docker rm -f quire && docker run -d --name quire ...  # same flags as the install above
 git pull && docker compose up -d --build             # a checkout that builds its own image
-cd /home/quire/app && git pull && bun install && bun run build:assets && bun run build:admin && systemctl restart quire
+sudo -u quire -H bash -lc 'cd /home/quire/app && git pull && bun install && bun run build:assets && bun run build:admin' && systemctl restart quire
 ```
 
 `docker-compose.yml` in this repository **builds** the image rather than pulling one, so
@@ -134,7 +146,10 @@ volumes and is untouched by either.
 - Do not put `DATA_DIR` or the uploads directory inside the app directory.
 - Do not run the app as root, and do not `chown` its data to root to "fix" a permission
   error — set `PUID`/`PGID` instead when using bind mounts.
-- Do not invent config files. Configuration is environment variables plus the admin;
-  there is no config file to write.
-- Do not create a second owner account to solve a lost-recovery-code problem. The software
-  refuses it by design; the answer is the recovery codes or database access.
+- Do not invent config files. Configuration is environment variables (for systemd, the one
+  `.env` its unit reads) plus the admin; there is no other config file to write.
+- Do not create a second owner account to solve a lost-password or lost-phone problem. The
+  software refuses it by design. The way back in is the recovery codes, or the user CLI run
+  at the machine (`set-password`, `reset-2fa`, `rename`, `list`), always with `DATA_DIR` set:
+  [`docs/account.md`](../../../docs/account.md). Hand those commands to the owner to run;
+  `set-password` reads the new password from their keyboard.

@@ -4,7 +4,7 @@
 
 - **Every delete is a soft delete.** `posts`/`pages`/`media`/`files` each have a nullable
   `deleted_at` (NULL = live, timestamp = trashed). `deleteX()` sets `deleted_at`; nothing is
-  hard-deleted on a normal delete. EVERY live read filters `.is('deleted_at', null)`
+  hard-deleted on a normal delete. EVERY live read filters through `liveOnly()` (`check:sql`)
   (index/search/getPost, page index/getPage, media/file lists, the finalize sweeps) so trashed
   items leave the site, lists, search, sitemap/feed/llms and the libraries at once.
 - **The way IN is the editor's Attributes panel** (`screens/sheet-frame.ts` draws it,
@@ -25,7 +25,7 @@
   revisions + settings); if any target image is still referenced it returns `in_use:<n>` (409) and
   the island re-asks with a stronger confirm, retrying with `force:true`. Stops a purge silently
   breaking a live page.
-- Per kind the lib exports `restoreX`, `purgeX` (hard delete: row + revisions/blobs), `getTrashedX`,
+- Per kind the lib exports `restoreX`, `purgeX` (hard delete of a TRASHED row only: row + revisions/blobs), `getTrashedX`,
   `emptyXTrash`. `screens/trash.ts` draws all seven lists and `island/trash.ts` acts via **`POST /api/trash`**
   `{ kind, action: restore|purge|empty, ids? }` (owner-gated) then reloads, which is why the kind is in the
   address as `?tab=media`: a kind held only in the page put the owner back on Posts after emptying the picture
@@ -35,11 +35,11 @@
 - Adding a mutating trash action → log it (activity actions `*.restore` / `*.purge` /
   `trash.empty`) and keep the i18n keys in sync.
 
-## Admin Help — `/admin/help`, `HelpGuide` + `HelpSections` + `HelpTables`
+## Admin Help — `/admin/help`, `screens/help.ts`
 
-- The in-admin manual. **Body copy is ENGLISH by design** (it mirrors the repo docs, which are
-  canonical); only the nav label + page title come from `adminT`. It is a lazily loaded route in
-  the admin's own bundle like any other, so a reader of the public site never fetches it.
+- The in-admin manual, **in the admin's language** since 2026-09-30: the words live in
+  `locales/help/<code>.ts`, and every tab or card they name is a `{t:key}` filled from the admin
+  dictionary, so it cannot name a tab that no longer exists. Server-drawn, no island.
 - Shape: a numbered **first-five-minutes** path (the order a new blog is actually set up in, each
   step a link), a **jump index** of chips, the reference **sections**, then two lookup **tables**.
   The index is kept in the same order the sections render, so a chip's position predicts where it
@@ -51,7 +51,7 @@
   callouts, footnotes, embeds) and **Troubleshooting** (symptom → fix, e.g. the 465-vs-587 TLS pair
   that produces an opaque OpenSSL "wrong version number", and Cloudflare caching HTML so a reader
   cannot refresh a stale page away).
-- `screens/help.ts` draws it, `admin-shared/help.ts` holds the content. The first screen registered with
+- `screens/help.ts` draws it, `admin-shared/help.ts` picks the language and dresses the HTML. The first screen registered with
   `island: null`: the only interactive thing on it is an index of `#` links.
 - **Adding a feature? Add it here too** — the page is the only place a non-technical owner learns it exists.
 

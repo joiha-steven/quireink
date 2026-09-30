@@ -165,7 +165,8 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - Reading progress bar; back to top; reveal-on-scroll (CSS first, JS fallback only where
   `animation-timeline` is missing)
 - Draft preview at `/preview/[slug]?key=<hmac>`, force-dynamic, noindex; the editor's
-  "Preview draft" saves pending edits first
+  "Preview draft" saves pending edits first (`✂` for a live piece: until 2.2.15 it was saved
+  too; now it is previewed from the editor's snapshot, so half-typed words stay off the page)
 - `✂` Themed skeleton while a blog route loads: 2.0 has none, pages are server-rendered
 - `✂` Book mode: 2.0 is a `<dialog>` spread (arrow keys, paper), a floating button under 767px
   and a scrolled reader under 640px; no `#read` hash ([reading.md](../features/reading.md))

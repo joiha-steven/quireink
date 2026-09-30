@@ -8,14 +8,20 @@ question setup asks is which one this blog speaks.
 
 ## Adding one
 
-Every language is a pair of files of quoted strings under [`locales/`](../locales):
+Every language is three files under [`locales/`](../locales):
 
 | File | Who reads it |
 |---|---|
 | `locales/<code>.ts` | the reader, on the published site |
 | `locales/admin/<code>.ts` | the owner, in the admin |
+| `locales/help/<code>.ts` | the owner, on the admin's Help screen |
 
-To add a language: copy the two `en` files, translate them, and register the code in
+The Help file holds HTML rather than one string per key. Translate the text and leave the
+tags, every `href`, each `{t:key}` (the screen fills it with the admin's own word for that tab or
+card) and what is inside `<code>` exactly as they are; the header of `locales/help/types.ts` lists
+them, and `help.test.ts` holds every language to the English one's shape.
+
+To add a language: copy the three `en` files, translate them, and register the code in
 `locales/langs.ts`, `SiteLang` in `src/types-content.ts`, `DATE_LOCALE` in `src/i18n/format.ts`
 and the plural-category table in `src/i18n/plural.ts`.
 
@@ -27,7 +33,8 @@ Pull requests welcome — a native speaker's ear beats ours.
 
 ## The typography guard
 
-`bun run check:i18n` holds eight conventions across all 22 files. The one that catches people
+`bun run check:i18n` holds eight conventions across the 22 dictionary files (`locales/` and
+`locales/admin/`; the Help files are not in it). The one that catches people
 first: **no straight apostrophe**. `'` is a typewriter mark; the letter is `’`, and French,
 English and Italian elision all want it. The guard also knows that French puts a space before
 `:` and `?`, that German and Russian have their own quotation marks, and that a locale should

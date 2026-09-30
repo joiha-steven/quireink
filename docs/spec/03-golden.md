@@ -25,7 +25,7 @@ This is strictly stronger than what the Go plan could have achieved, and it is c
 | Layer | Comparison | Strictness |
 |---|---|---|
 | Rendered article body | byte-for-byte after normalisation | **Must be identical.** No exceptions file |
-| Code blocks | byte-for-byte | Identical: same Shiki, same theme |
+| Code blocks | byte-for-byte | Identical: same Shiki, same theme, except token colours under 4.5:1, which `render/code-ink.ts` moves; the test passes the 1.x reference through the same `readable()` first |
 | `<head>` metadata (title, description, OG, canonical, JSON-LD) | field by field | Strict on values, not on attribute order |
 | Feeds, sitemap, robots, llms.txt | entry set and per-entry fields | Strict on values |
 | Page chrome (header, footer, rail, nav) | structural only | Loose. The markup is being rewritten on purpose |
@@ -126,7 +126,9 @@ porting bug in the surrounding pipeline, not a parser difference.
 (01-schema.md section 4). Two consequences for this harness:
 
 - The theme and the Shiki version are unchanged, so highlighted markup is expected to be
-  byte-identical to v1, not merely equivalent.
+  byte-identical to v1, not merely equivalent — once the 1.x colours are mapped through
+  `readable()` (2026-09-30), which moves only the Vitesse tokens that fell under 4.5:1 on a
+  palette's code panel.
 - The **importer** warms that cache for the whole corpus (the importer) and the
   golden comparison is what proves it did. The read path self-heals on a miss, so a
   failure here shows up as a slow first render rather than wrong output, which is exactly

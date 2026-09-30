@@ -311,7 +311,7 @@ server), not the public URL.
 ## 8. The ticks — nothing to do, unless you want to
 
 **The process runs its own clock** ([ADR 0031](decisions/0031-the-blog-winds-its-own-clock.md)):
-every minute it flips due scheduled posts into the caches in front of them, and hourly it
+every minute it flips due scheduled posts and notes into the caches in front of them, and hourly it
 finalises image variants, purges expired sessions and unconfirmed sign-ups, prunes
 both render caches and takes the on-server snapshot from [`backups.md`](backups.md). There is
 nothing to install and nothing to remember. Skip to section 9.
@@ -351,7 +351,7 @@ Add `&purge=1` to a one-off call after a deploy to clear the CDN.
 ## 9. Upgrading
 
 ```bash
-cd /home/quire/app && git pull && bun install && bun run build:assets && bun run build:admin
+sudo -u quire -H bash -lc 'cd /home/quire/app && git pull && bun install && bun run build:assets && bun run build:admin'
 systemctl restart quire
 ```
 

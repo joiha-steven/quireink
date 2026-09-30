@@ -57,6 +57,14 @@ sudo -u quire bash -lc 'cd /home/quire/app && DATA_DIR=/var/lib/quire/data bun r
 sudo -u quire bash -lc 'cd /home/quire/app && DATA_DIR=/var/lib/quire/data bun run user list'
 ```
 
+In a container the same commands run through the image's entrypoint, which already knows the
+data directory and drops to the user the blog runs as (`PUID`/`PGID`), so nothing it writes ends
+up owned by root:
+
+```bash
+docker exec -it quire docker-entrypoint.sh bun run user reset-2fa --username you
+```
+
 Only the phone lost? Nothing to run: on the code screen, choose *Use a recovery code instead*.
 
 ⚠ Set `DATA_DIR` when running any CLI command. Without it the CLI opens `./data`, which is

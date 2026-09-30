@@ -61,13 +61,13 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
   301 whenever a post/page slug is renamed (so existing links + search results survive a
   move). Rows live in the `redirects` table (`source` unique, `destination`, `permanent`).
 - **Served as a real HTTP 301/302 before any route runs** (`src/web/redirects.ts`, registered
-  in `app.ts` as the last middleware before the routes). The lookup is skipped for `/admin`,
-  `/api`, `/uploads/` and `/assets/`, and **fails open**: an unreadable table logs and lets the
+  in `app.ts` as the last middleware before the routes). The lookup is skipped for `/admin`
+  and every reserved path (below), and **fails open**: an unreadable table logs and lets the
   request through rather than taking the site down. `Location` is the destination **exactly as
-  stored** — a path stays relative, an absolute URL stays absolute — and the query string is
-  not carried over, because the destination is the whole of the new URL. ⚠ Do not "improve"
-  this by resolving against the request: TLS terminates at the proxy, so the origin sees
-  `http://` and every redirect would point there.
+  stored** — a path stays relative, an absolute URL stays absolute — and the request's query
+  string is appended unless the destination carries its own `?`, so a campaign tag survives
+  the move. ⚠ Do not "improve" this by resolving against the request: TLS terminates at the
+  proxy, so the origin sees `http://` and every redirect would point there.
   ⚠ Between the port and 2026-08-02 the rows were stored and **nothing served them**, which
   made the auto-301 below silently untrue: every rename in that window lost its old URL.
   There is no in-process cache; the frozen tree's 60s one paid for an HTTP fetch to PostgREST,
@@ -80,6 +80,15 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
   to win. And `saveRedirect` **refuses** a single-segment source that live content already
   holds (`live_content:`), rather than saving a row that would quietly make a post
   unreachable. A trashed slug is still redirectable: the restore is the other half.
+- **Reserved paths are never a source** (`isReservedPath`, `src/server/redirect-path.ts`): `/`,
+  `/login`, `/setup`, `/admin`, the feeds, the sitemap, `robots.txt`, `llms.txt` and the other
+  machine-read files, and everything under `/api/`, `/uploads/`, `/assets/`, `/.well-known/`
+  and the like. Refused when saved (`reserved:`) and skipped when served, so a row stored before
+  the list existed does nothing: a redirect on `/login` once locked the owner out.
 - **Admin:** a Redirects card (list + add + delete) in Settings → Server & connections. `source` is normalized
-  (leading slash, no query/trailing slash); `destination` is a path or an absolute http(s) URL;
-  a self-redirect is rejected. CRUD via the owner-gated `/api/redirects` (+ `/:id`).
+  (leading slash, no query/trailing slash); `destination` is a path or an absolute http(s) URL,
+  and a full URL on the site's own address is stored as its path. Refused, each as a code the
+  admin says in the owner's language: a self-redirect (`same_path`), a ring of rules that leads
+  back to the source (`loop:`, walked up to ten hops), and a source that already goes elsewhere
+  (`exists:`), which the card asks about and replaces only on a yes. CRUD via the owner-gated
+  `/api/redirects` (+ `/:id`).

@@ -239,8 +239,9 @@ card, a link) it is called by its first words; see
   **Scheduled**, a "Scheduled for <local time>" note shows under the date field, and the live
   "View post" button is not drawn (the URL 404s until it goes live). "Preview draft" still works.
 - **Going live on time:** `sweepScheduled` (called from `/api/cron`) is what makes it punctual —
-  it finds posts that crossed their time in the window since the LAST sweep (`newlyLive`, a
-  pure `(since, now]` window) and, when any did, calls `clearCache()`, which warms the origin
+  it finds posts, and notes (Micropub schedules that way), that crossed their time in the window
+  since that tick's LAST sweep (`newlyLive`, a pure `(since, now]` window; the minute tick and
+  the hourly one each keep their own) and, when any did, calls `clearCache()`, which warms the origin
   and purges the edge behind it. The **one-minute publish tick** (`/api/cron?publish=1`) does
   this and nothing else; the **hourly** tick sweeps as a backstop and also finalizes image
   variants, prunes `render_cache` and expired sessions, and takes a snapshot when one is due.
@@ -251,7 +252,7 @@ card, a link) it is called by its first words; see
   flushes and six edge purges. Since [ADR 0031](../decisions/0031-the-blog-winds-its-own-clock.md)
   the process runs the sweep itself (`src/server/tick.ts`: every minute for publishing, hourly
   for the rest). `/api/cron` stays for an operator who sets `CRON_INTERNAL=0` and schedules it
-  from outside; the crontab in [`self-host.md`](../self-host.md) §8 fires every five minutes.
+  from outside; the example crontab in [`self-host.md`](../self-host.md) §8 fires every five minutes.
 
 ## Per-post SEO + cover + dateModified — `posts` columns, `src/web/article.ts`
 
@@ -352,12 +353,18 @@ card, a link) it is called by its first words; see
   Categories/tags split by `@_domain`, `Uncategorized` dropped; dates via `wp:post_date_gmt`
   **falling back to `wp:post_date`** (WordPress leaves the GMT date as `0000-00-00` on anything
   never published, so drafts would otherwise all import dated today) and then to `now`;
-  status `publish`→`published` else `draft`; excerpt from `excerpt:encoded` or `deriveExcerpt`.
+  status `publish` and `future` (WordPress's scheduled post) → `published` with the item's own date,
+  so a future one stays scheduled; anything else → `draft`; excerpt from `excerpt:encoded` or
+  `deriveExcerpt`.
 - **The route persists** via `savePost`/`savePage` — new content is ADDED, a slug that collides with
-  existing content gets a numeric suffix (nothing overwritten). One `clearCache()` at the
-  end; logged as `import.wordpress`. **A published item's old path becomes a 301** in the
+  existing content gets a numeric suffix (nothing overwritten). **A re-run does not duplicate:**
+  a post already here with the same slug, title and date (a page: slug, title and body) is
+  counted as skipped, and so is an item whose date will not parse; a date the parser made up for
+  an undated item never counts as the same. One `clearCache()` at the end; logged as
+  `import.wordpress`. **A published item's old path becomes a 301** in the
   owner's redirects table (WXR `<link>`, Substack `/p/<slug>`; refused when it would shadow
-  live content, because the redirect middleware answers before the router — ADR 0034).
+  live content, because the redirect middleware answers before the router — ADR 0034 — and
+  never over a redirect the owner already has at that path).
 - **Images come home in batches** (`src/import/images.ts`, since 2.2.1): the admin client loops
   `POST /api/import/images` after the upload — each call rescans "what is still remote?",
   fetches up to five images through the SSRF guard and the upload caps, stores them in the
@@ -365,4 +372,6 @@ card, a link) it is called by its first words; see
   for an agent. Stateless by rescan (a crash loses nothing; a blog imported earlier is served
   the same); failures are reported once, not retried forever — the failure list is the
   owner's checklist before the old hosting lapses. Logged as `import.images`.
-- Max upload 100MB (`MAX_IMPORT_BYTES` in `src/web/admin/ops.ts`); non-WXR files are rejected.
+- Max upload 100MB (`MAX_IMPORT_BYTES` in `src/web/body-cap.ts`); non-WXR files are rejected. A
+  ZIP export (Substack, Medium, a Quire Ink bundle) is also capped once unpacked: 64 MB an entry
+  and 256 MB for all of them together (`src/import/unzip.ts`).

@@ -1,5 +1,150 @@
 # CHANGELOG
 
+## 2026-09-30 · Quire Ink 2.2.16
+
+Five days after 2.2.15, and most of it came out of reading the whole product again, screen by
+screen and route by route. What that found is mostly in **Fixed**, and some of it matters: on a
+blog with no site address, a sign-in ticket could be traded for a session without the second
+factor; the first-run questions skipped four of their seven steps; ⌘S on a live post saved it as
+a draft. Upgrading is the usual pull and restart. One database migration runs on its own, and
+the one new switch that changes how a published page looks is off on an upgraded blog.
+
+### Upgrading
+
+- **Migration 020 runs by itself** on the first start. It tells a summary the blog derived from
+  a summary somebody wrote, so a derived one follows the body again (see Fixed).
+- **Curly quotes are off on an existing blog and on for a new one.** They redraw every quote in
+  every piece, which an upgrade should not do by itself. The switch is in Settings, Posts, under
+  the body.
+
+### The admin speaks your language further
+
+- **Help is in all eleven languages**, the keyboard sheet too. It names every tab and card in
+  the admin's own words, so it can no longer describe a screen that has moved: the old English
+  page named five settings tabs that no longer existed.
+- **Dates in the admin follow the admin's language.** A short date was `d/m/yy` everywhere, so an
+  English reader took 3/9/26 for the ninth of March. It is now 9/3/26 in English, 3.9.26 in German
+  and 26/9/3 in Japanese, with the time still 24-hour so a column of them lines up.
+- **German addresses you as Sie throughout, and Portuguese is Brazilian throughout.** Both had
+  drifted: 24 German strings said du, and 164 places spoke European Portuguese.
+- **Counts agree with their nouns in every language**: 1 attempt, 1 comment on 1 post, a save
+  key that says how many changes are waiting. Font weight names, the Turnstile key labels and a
+  palette name were still in English in some languages.
+- **Callout labels and the default footer are in the piece's language**, so a Japanese post no
+  longer opens its warning box with an English word. A footer you wrote is left as you wrote it.
+
+### Curly quotes on the published page
+
+- **"word" reads “word” in English**, „word“ in German, « word » in French, 「word」 in Japanese,
+  and it's reads it’s. The language is the piece's own.
+- **Only on the page.** The Markdown you typed is what is stored, what the editor shows and what
+  an export gives back. Code, code blocks and formulas keep their straight quotes.
+- **A reader's older marks still land.** A highlight stored over it's finds it’s: the reader's pen
+  treats both kinds of quote as one when it looks for its words.
+
+### Smaller things you can do now
+
+- **Describe a picture by hand** in the library's full-size view. What you type is what readers
+  and screen readers get; an empty description stays empty.
+- **Select every matching subscriber** for an export, not just the ones on the page.
+- **The security card says where you stand**: how many recovery codes are left and whether the
+  second factor is on, always shown. New codes are asked for, not handed out on a click, and
+  they can be copied or downloaded.
+- **Recover an account at the machine**, with a page for it in the docs (`docs/account.md`).
+  `bun run user rename` changes the sign-in name, `reset-2fa` says how many unused codes it
+  cleared, and the command refuses a flag where a value should be, which used to become the
+  value.
+- **The two-factor mode switch is a form**, so the sign-in ticket no longer travels in the URL.
+
+### Easier to read
+
+- **Code is readable on every palette.** Each highlighted token clears 4.5:1 against its code
+  panel, light and dark; the worst now measures 4.86 on light and 5.01 on dark.
+- **A table keeps the alignment its Markdown asks for**, and a short post with no title starts
+  level with both rails.
+- **On a phone** the floating keys no longer cover the footer, Copy no longer covers the first
+  line of a code block, and header keys, Copy, Reply and term links are 44 px targets on touch.
+- **Long names wrap instead of being cut**: redirect targets, file names in the library,
+  featured titles on a phone, a hyphenated tag, a figure and its unit, a series "Part 2/5".
+- **The admin's accent in the dark theme is the pen's own green**, dimmed. It was a mustard
+  that sat beside a chartreuse light theme, and its label measured 4.41:1, under 4.5.
+- **Destructive labels are legible in the dark theme**: Delete, Clear log and Empty trash went
+  from 3.3 to 5.5:1.
+
+### Fixed
+
+**Security**
+
+- **A sign-in ticket could buy a session without the second factor** on a blog with no site
+  address set: the skip step of enrolment accepted a ticket from an ordinary sign-in. It now
+  refuses an owner who already has an authenticator.
+- **A redirect could take over the way in.** `/login`, `/setup`, `/admin`, `/api`, the feeds,
+  the sitemap and the root are refused as a redirect source when saved and skipped when served.
+- **Strangers could lock the owner out** by failing sign-ins with the owner's name. The name
+  allows five tries per address, and the wide limit across addresses slows guessing without
+  stopping the right password.
+- **Every route a stranger can write to caps its body at 64 KB**, and the process ceiling
+  follows `MAX_UPLOAD_MB`.
+- **The subscribe form told anyone whether an address already read the blog.** A confirmed
+  address now gets the same answer as a new one, and the form refuses outright while no mail
+  server is set.
+- **A subscriber CSV could carry a live spreadsheet formula** from an address typed into the
+  public form. Cells starting with `=`, `+`, `-` or `@` are defused.
+- **Pages that must not be shared were cached as if they could be**: the Markdown answer at
+  `/:slug` (now private, with `Vary: Accept`) and the first-run pages (now `no-store`).
+- **Menu links refuse `javascript:` and `data:` addresses**, on save, on render and in the editor.
+- **The ActivityPub key cache has a ceiling** of 500 actors; unsigned requests could fill memory.
+- **A sign-in whose return address held a non-ASCII character ended in a 500** after the code
+  was spent.
+
+**Things that could lose work**
+
+- **First run finished again.** Continue after the recovery codes said "That sign-in expired" and
+  skipped steps 4 to 7.
+- **Save never unpublishes and Preview never publishes.** ⌘S on a live post saved it as a draft,
+  and Preview saved half-typed words to the public page first.
+- **An older tab can no longer save over a newer one.** The server refuses a save made from
+  before somebody else's, and the editor keeps your words.
+- **A title fixed while a save was in the air was lost** without a warning on leaving.
+- **Purging from the Trash could delete a piece that had just been restored** from another tab.
+- **Two backups could delete each other**, and a failed one could leave half an archive.
+- **A reader who signed up again could be swept within the hour**, history and all.
+- **MCP `update_post` renamed any piece whose address was not its title's**, and renaming a
+  piece back to an earlier name threw a loop error after the rename had happened.
+- **Saving rewrote another site's `/uploads/` links** into broken local paths.
+- **Opening and saving changed what was written** in a handful of shapes: numbered checklists,
+  rules inside lists, formulas in tight lists, raw HTML, Markdown typed inside a code span, a
+  paragraph indented four columns, the text around a code span or a lone picture.
+- **A derived summary froze** the first time the editor saved it. Migration 020 tells the two
+  apart, and a derived one follows the body again.
+- **A reader's note closed straight after typing was not kept.**
+- **Undo survives a restore** and the way back from the Markdown view.
+- **Two-factor could not be enrolled again** from the account screen.
+
+**Other**
+
+- **Comments worked only for the first reader of a cached page.** Every later reader got a spent
+  challenge.
+- **A daily owner was signed out after a month**: the cookie did not follow the session's
+  sliding expiry.
+- **Scheduled notes went live late**, and autosave purged the CDN while the owner typed.
+- **Imports** stop cleanly half-way, say what they left out, keep scheduled posts scheduled and
+  keep Ghost's pictures.
+- **Comments stay off posts a reader cannot see**, and every JSON Feed item carries
+  `content_text`, as JSON Feed 1.1 requires.
+- **Test sends without a mail server are off and say why**, and several admin lists told half
+  the truth: the send list, the comments band, the question before purging a picture.
+
+### What 2.2.16 does not do
+
+- **Curly quotes are on the page only.** Titles, the feeds, the newsletter and the editor keep
+  the quotes as typed, and a quotation inside a quotation uses ‘ ’ in every language except
+  German and Japanese.
+- **Help is translated; the documents it links to are English.**
+- **The admin's time of day is 24-hour in every language.**
+- **The dark accent change is the admin's only.** A reader's yellow highlight in the dark theme,
+  and the dark wordmark, keep their own colour.
+
 ## 2026-09-25 · Quire Ink 2.2.15
 
 Two days after 2.2.14, and one feature that was asked for in an issue: a post can go out

@@ -27,8 +27,9 @@ export past it has to be split, and the answer is `file_too_large` (413), which 
 and not a crash. A wrong file is rejected with a specific reason
 (`not_a_wordpress_export`, `not_a_ghost_export`, `not_a_zip`) before anything is parsed.
 
-Posts and pages both come across, with their dates and their slugs. The count of skipped
-items comes back with the result — read it out, do not swallow it.
+Posts and pages both come across, with their dates and their slugs; a post scheduled on the
+old platform stays scheduled for its future date. The count of skipped items comes back with
+the result (the admin's toast names it) — read it out, do not swallow it.
 
 ## Then: check what the software did, and do the two jobs it left you
 
@@ -76,7 +77,9 @@ own job, with the subscribers' consent intact.
 
 ## Do not
 
-- Do not import twice "to be safe". Slugs are made unique on save, so a second run gives
-  every post a duplicate under `-2`, and cleaning that up is worse than the import was.
+- Do not import twice "to be safe". A second run skips what is already here (a post with the
+  same slug, title and date; a page with the same slug, title and body) and counts it as
+  skipped, but a post the export carries no date for is added again under `-2`, and cleaning
+  that up is worse than the import was.
 - Do not promise comments or subscribers will come with them.
 - Do not turn off the old blog on the same day. Its images are still doing work.

@@ -69,10 +69,13 @@ need one of those, say so and hand it back — do not look for a way around it.
 - **Write Markdown, in their voice.** Read two or three of their recent posts with
   `get_post` before writing the first one. The blog stores Markdown, so what you write is
   what is kept, not a conversion of it.
-- **Slugs are the site's memory.** Renaming one leaves a redirect behind automatically, but
-  do not rename slugs in bulk to tidy them. Old links in other people's posts are the point.
+- **Slugs are the site's memory.** `update_post`, `update_page` and `update_note` keep the slug
+  you pass; only `newSlug` renames, and a rename leaves a redirect behind automatically. Do
+  not rename slugs in bulk to tidy them. Old links in other people's posts are the point.
 - **Excerpt, categories, tags, every time.** They drive the front page, the rails and search.
-  An audit that finds them missing is the most common real job on this blog.
+  An excerpt left blank is derived from the opening and follows the body on every save
+  (`excerptAuto: true` on the post); write one when the opening is not a summary. An audit
+  that finds categories and tags missing is the most common real job on this blog.
 - **Deleting is soft.** Everything lands in Trash and the owner can restore it. You cannot
   destroy anything permanently; only they can, in the admin. This is not a reason to be
   casual — a trashed post is off the site immediately.
@@ -82,9 +85,9 @@ need one of those, say so and hand it back — do not look for a way around it.
 - **The Monday report.** `get_traffic` for 7 days against the 7 before, then plain words:
   what was read, where from, what grew, what fell — and one suggestion for the next post
   based on which existing posts still pull readers.
-- **The archive audit.** Walk published posts; report missing excerpts, categories and
-  tags, plus pairs that cover overlapping ground and should link to each other. Report
-  first, change nothing until told.
+- **The archive audit.** Walk published posts; report missing categories and tags, derived
+  excerpts where the opening does not summarise the post, plus pairs that cover overlapping
+  ground and should link to each other. Report first, change nothing until told.
 - **The moderation sweep.** `list_comments`, flag spam or abuse **with the reason**, and
   trash only after the owner confirms. Comments already pass a gate the blog runs itself
   (ADR 0032), so what reaches the queue is what got through it, not the raw firehose.

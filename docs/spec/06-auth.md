@@ -79,7 +79,9 @@ SHA-1, 30-second step, 6 digits. About 80 lines using `crypto.createHmac`, no li
   rendered as a QR code, with the base32 secret shown as text for manual entry.
 - 2FA is **required**, not optional. One user, no support desk, no reason for a weaker
   path to exist. (Amended by [ADR 0030](../decisions/0030-two-factor-can-wait-until-there-is-an-address.md):
-  while the blog has no public address, enrolment may be skipped once.)
+  while the blog has no public address, enrolment may be skipped once — and never by an owner
+  who already has an authenticator: `/api/auth/enrol/skip` refuses them, since a ticket from an
+  ordinary sign-in once bought a session there with the password alone.)
 
 ## Recovery codes
 
@@ -163,8 +165,11 @@ quire user create --username <username> --email <email>
 quire user set-password --username <username>
 ```
 
-Implemented as `bun run user <create|set-password|reset-2fa|list>` (`scripts/user.ts`;
-`reset-2fa` joined the three the spec named, for the owner who lost the phone).
+Implemented as `bun run user <create|set-password|reset-2fa|rename|list>` (`scripts/user.ts`;
+`reset-2fa` joined the three the spec named, for the owner who lost the phone, and `rename
+--to <new>` changes the sign-in name). A flag takes `--name value` or `--name=value`, and a
+value that starts with `--` is never read as one: `create --username --email me@x` once made
+the owner an account named `--email`. The email is checked for the shape of an address.
 
 The password is read from stdin, never from an argument, so it does not land in shell
 history. On a TTY it is read in raw mode with no echo; when stdin is a pipe it is read once
@@ -207,7 +212,9 @@ The brief is "looks trustworthy", so the details are the point.
   the account exists.
 - **2FA is its own screen**, reached after the password is accepted, with
   `autocomplete="one-time-code"` and a 6-digit input that accepts a paste of the whole
-  code. A "use a recovery code instead" link below.
+  code. A "use a recovery code instead" switch below: a small form that POSTs the pending
+  ticket to `/api/auth/2fa/mode`, not a link, so the ticket never sits in an address the
+  browser keeps.
 - No "remember me" checkbox. The session is already 30 days.
 
 **First-run enrolment:** the password already exists (the CLI set it), so the browser flow

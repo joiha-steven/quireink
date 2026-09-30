@@ -73,7 +73,7 @@
   back to a plain card grid. The `reveal` card easing is pure CSS so appended cards animate for free.
 - **Lead post** (`leadPost`): the newest post on home page 1 takes the `h1` role, the rest stay `h2`.
   Sizes come from the type roles, so the display size is an Admin → Appearance setting, not CSS.
-- **Category label** (`categoryLabel`) and **standfirst** (`deck`, the excerpt under a post title).
+- **Category label** (`categoryLabel`) and **standfirst** (`deck`, a WRITTEN excerpt under a post title; a derived one is not printed).
 - `/search` — **two layers:** a lean local index (`GET /api/search/index`, `{slug,title,date,terms}`,
   instant + accent-insensitive) merged with `GET /api/search?q=` (SQLite FTS5 over title + BODY via
   `searchPosts`, `posts_fts match ?` joined back to live published rows). FTS5 folds diacritics in
@@ -110,9 +110,9 @@
   `cache-control: no-store` and `x-robots-tag: noindex, nofollow`, and never entered in the page
   cache. `previewToken` = HMAC(slug, `serverSecret('preview-link')`) — **not** `AUTH_SECRET`,
   which left with next-auth and, while the code still read it, silently keyed every token with
-  the empty string. The editor's "Preview draft" button saves pending edits first, then opens the
-  URL in a new tab. The separate route is what keeps `/:slug` published-only, with no branch in it
-  that a token could reach.
+  the empty string. The editor's Preview saves a draft's pending edits first; a live piece is never
+  saved to be previewed — the editor sends its snapshot and `/preview` shows that. The separate
+  route is what keeps `/:slug` published-only, with no branch in it that a token could reach.
 
 ## Footnotes + music embeds — `src/render/footnotes.ts`, `src/render/video.ts`, `src/render/post-content.ts`
 
@@ -176,8 +176,9 @@
 - **Curly quotes (2026-09-30):** the published page curls the straight quotes an author types, in
   the piece's language — “ ” by default, „ “ German, « » French/Spanish/Italian/Portuguese/Russian,
   「 」 Japanese, `'` → ’ everywhere; code and maths are left alone. Display only
-  (`render/curly-quotes.ts`, after the body cache): the Markdown, the editor and exports keep what
-  was typed. `pen-anchor.ts` folds quote kinds so a reader's older marks still land.
+  (`render/curly-quotes.ts`, after the body cache): the Markdown, the editor, exports, titles, feeds
+  and the newsletter keep what was typed. `pen-anchor.ts` folds quote kinds so older marks still
+  land. Switch `features.curlyQuotes` (Settings → Posts): on for a new blog, off on an upgraded one.
 - **Copy-code:** `codeCopy()` in `post.js` attaches a "Copy" button to every `.prose pre`. Shiki
   highlights server-side at save time, so the button is the one part that has to be added in the
   browser.

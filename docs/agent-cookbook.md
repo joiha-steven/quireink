@@ -51,8 +51,8 @@ restore it. An agent cannot destroy a comment permanently; only you can, in the 
 ## The archive audit
 
 ```text
-Go through all my published posts. For each: does it have an excerpt, categories and
-tags? Search the archive for posts that cover overlapping ground and could link to
+Go through all my published posts. For each: does it have categories and tags, and
+a written excerpt where the opening does not summarise it? Search the archive for posts that cover overlapping ground and could link to
 each other. Give me a table of what is missing, worst first — change nothing yet.
 ```
 

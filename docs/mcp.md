@@ -38,7 +38,9 @@
 - **IndieAuth on the same server** ([ADR 0046](decisions/0046-the-notebook-speaks-the-open-standards.md)):
   an `https:` `client_id` whose `redirect_uri` shares its origin passes the redirect gate without
   registering (the consent page still names both); the requested `scope` rides inside the code and
-  a writing scope mints `full`, anything else `read`; `/token` returns `me`; `POST /authorize` with
+  a writing scope mints `full`, and so does NO scope, which is what most MCP clients send; anything
+  else mints `read` (`tokenScope`, `src/mcp/consent.ts`). The consent page always prints the
+  request and the grant beside it. `/token` returns `me`; `POST /authorize` with
   `grant_type=authorization_code` is the sign-in-only exchange and returns `{ me }`. The Micropub
   endpoint (`/micropub`, `docs/features/notes.md`) takes these tokens. All of it is behind the same
   switch as MCP, and the head advertises the `rel` links only while it is on.

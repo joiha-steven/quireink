@@ -23,7 +23,7 @@ On any behavior change, update the matching doc in the SAME change:
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (do NOT auto-bump):** the version is **`2.2.15`**, cut 2026-09-25, the release where a post can go out without a title: a short post is a post with an empty title, drawn by its words (ADR 0064), plus the writing list's kind tabs underlining the kind chosen (2.2.14 was 2026-09-23). From 2.0
+- **Versioning (do NOT auto-bump):** the version is **`2.2.16`**, cut 2026-09-30, the release that came out of reading the whole product again: Help and the admin's dates in the owner's language, curly quotes on the published page behind a switch, a picture described by hand, and the fixes that reading found, a second factor that could be skipped among them (2.2.15 was 2026-09-25). From 2.0
   the number is semver and means something (the 1.5.x `x` was a running counter): MAJOR for a
   break in how the thing is installed or run, MINOR for a feature, PATCH for a fix. The owner
   picks the number, and has taken the patch slot for minor-sized work nine releases running;

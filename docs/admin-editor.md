@@ -123,6 +123,14 @@ that file first; this one only adds what is true here.
   2026-09-07), everything typed after a new post's first save went on being written under
   `new`, where the editor that reopens that post never looks and the next blank sheet reopens
   it as a piece of its own.
+- **A save from an older copy is refused** (`web/admin/stale.ts`): the editor sends the row's
+  `updated_at` as it last loaded or saved it (`baseSavedAt`), and a row saved since — by another
+  tab, another device, MCP — answers **409 `stale`**. The editor keeps its text on the device and
+  says to reload; until 2.2.15 the second tab won and the first tab's words survived only in the
+  revision history. Callers that send no `baseSavedAt` (MCP, the API, imports) are not checked.
+- **A slug nobody typed is not the writer's to defend.** A new piece whose slug was derived
+  from its title or opening sends `slugDerived`, and the create route takes the next free
+  `-2`, `-3`… when it is taken; a slug the writer typed is still refused as taken.
 - The attributes are a right-hand sheet (`screens/sheet-panel.ts`, opened by
   `island/lib/sheet-open.ts`). The first Publish on an unpublished
   piece opens it as the PUBLISH sheet, footered "Later / Publish", and that one always lies

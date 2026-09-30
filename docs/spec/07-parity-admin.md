@@ -38,7 +38,8 @@ between a line here and the running software is either a bug or an unrecorded `�
 - Activity log, latest 200, with Clear
 - `⚠` Errors from every route catch land in the same log with a red badge. Validation 400s
   do not
-- Help page, English body, localized nav label and title, zero client JS
+- `✂` Help page with an English body: the body is in the admin's language since 2026-09-30
+  (`locales/help/`). Localized nav label and title, zero client JS, as before
 - Clear-all-cache action purges origin + Cloudflare and re-warms
 - Light/dark toggle in the admin; palette selection is public-side only
 - Sidebar collapse control at the top next to the wordmark; Sign out alone in the footer

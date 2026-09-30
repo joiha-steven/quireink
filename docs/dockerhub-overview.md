@@ -40,7 +40,7 @@ Open it and the rest is a browser: username, email, password, two-factor, then f
 exec` and no interactive terminal**, because a NAS log panel is enough on its own. The token
 lives in memory, so a restart mints a new one, and `/setup` answers 404 the moment an account
 exists. Anyone who would rather use the shell still can:
-`docker exec quire bun run user create --username you --email you@example.com`.
+`docker exec -it quire docker-entrypoint.sh bun run user create --username you --email you@example.com`.
 
 Put a reverse proxy in front of it for TLS. The port is bound to `127.0.0.1` on purpose, and
 [the setup guide](https://github.com/joiha-steven/quireink/blob/main/docs/self-host.md) has an
@@ -75,7 +75,7 @@ services:
 |---|---|
 | `latest` | The newest release. **The one to install**, because the newest release is the one carrying the fixes. |
 | `2.2` | Fixes within the 2.2 line, no feature surprises. For anyone who would rather step up a major version by hand. |
-| `2.2.15` | One exact release. Nothing moves, ever. |
+| `2.2.16` | One exact release. Nothing moves, ever. |
 
 `linux/amd64` and `linux/arm64`, each built on its own native runner. The same image is on
 GHCR as `ghcr.io/joiha-steven/quireink`, pushed by the same run with the same digest.
