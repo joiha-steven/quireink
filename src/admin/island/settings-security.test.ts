@@ -218,3 +218,23 @@ describe('ending one device', () => {
     expect(root.querySelectorAll('[data-security-session]').length).toBe(2)
   })
 })
+
+// The server answers `signedOut` and the island read `count`: "0 device(s) signed out" every time
+// (2026-09-30).
+describe('ending every other device', () => {
+  it('says how many the server ended', async () => {
+    globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url)
+      if (url.includes('revoke-others')) return Promise.resolve(answer({ success: true, data: { signedOut: 2 } }))
+      if (!init?.method && url.includes('/api/security')) return Promise.resolve(answer({ success: true, data: state() }))
+      return Promise.resolve(answer({ success: true }))
+    }) as typeof fetch
+    wireSecurity(root, { signedOut: '{n} signed out' })
+    await settle()
+    const pw = root.querySelector<HTMLInputElement>('[data-sec-current]')
+    if (pw) { pw.value = 'the current password'; pw.dispatchEvent(new Event('input', { bubbles: true })) }
+    root.querySelector<HTMLButtonElement>('[data-sec-signout-others]')!.click()
+    await settle()
+    expect(said.at(-1)?.message).toBe('2 signed out')
+  })
+})

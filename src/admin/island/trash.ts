@@ -18,6 +18,7 @@
 // live inside one folded spelling, so folding both sides makes a search for "lề" return "lệ".
 import { indexIn, lanes, type Lanes } from '@/accent'
 import { showTab } from './lib/tab-strip'
+import { pressKey } from './lib/press-key'
 
 const root = document.querySelector<HTMLElement>('[data-screen="trash"]')
 
@@ -35,15 +36,6 @@ if (root) {
   const restoreKey = root.querySelector<HTMLButtonElement>('[data-trash-restore-picked]')
   const pickedCount = root.querySelector<HTMLElement>('[data-trash-picked]')
 
-  /**
-   * THE TWO CLASS STRINGS A TAB CAN WEAR, read off the markup the server drew rather than
-   * re-typed here. One of the seven is pressed on the first frame and six are not, so both
-   * answers are already on the page — and taking them from there is the only way this island
-   * cannot drift from `tabItemClass`, which is where the strings actually live.
-   */
-  const anyTab = strip?.querySelector<HTMLElement>('[data-tab]')
-  const ON = strip?.querySelector<HTMLElement>('[aria-pressed="true"]')?.className ?? ''
-  const OFF = strip?.querySelector<HTMLElement>('[aria-pressed="false"]')?.className ?? anyTab?.className ?? ''
 
   const panelFor = (kind: string): HTMLElement | undefined =>
     panels.find((p) => p.dataset.trashPanel === kind)
@@ -119,8 +111,7 @@ if (root) {
     for (const p of panels) p.hidden = p.dataset.trashPanel !== kind
     for (const tab of strip?.querySelectorAll<HTMLElement>('[data-tab]') ?? []) {
       const on = tab.dataset.tab === kind
-      tab.setAttribute('aria-pressed', String(on))
-      tab.className = on ? ON : OFF
+      pressKey(tab, on)
     }
     showTab(strip)
     if (search) { search.value = ''; search.hidden = rowsOf(kind).length === 0 }

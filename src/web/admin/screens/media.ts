@@ -19,7 +19,7 @@ import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { SHEET_FOOT } from '@/admin-shared/kit'
 import { pageHeader, pager, sheet, sheetTop, tabs } from '@/web/admin/kit'
-import { SEGMENT_TRACK, edgeAt, tabItemClass } from '@/admin-shared/tabs'
+import { SEGMENT_TRACK, edgeAt, keyFaces, tabItemClass } from '@/admin-shared/tabs'
 import { ICONS } from '@/icons'
 import { mediaScreenView } from '@/web/admin/views-media'
 import { imageTools, imagesPanel } from '@/web/admin/screens/media-images'
@@ -69,6 +69,7 @@ function viewKeys(t: AdminStrings): string {
   const key = (view: 'grid' | 'list', icon: 'grid' | 'menu', label: string, i: number): string =>
     `<button type="button" data-media-view-key="${view}" title="${escapeAttr(label)}"`
     + ` aria-label="${escapeAttr(label)}"`
+    + keyFaces('sm', false, 'choice', edgeAt(i, 2), ' !px-2 flex items-center')
     + ` class="${tabItemClass(false, 'sm', false, 'choice', edgeAt(i, 2))} !px-2 flex items-center">`
     + `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"`
     + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[icon]}</svg></button>`

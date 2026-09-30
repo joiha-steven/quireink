@@ -105,6 +105,17 @@ const CORNERS: Record<TabEdge, string> = {
   none: '',
 }
 
+/**
+ * Both faces of ONE key, as attributes, for an island that presses it later.
+ *
+ * The islands read "on" and "off" off whichever keys were pressed at load and wrote that string
+ * onto every key, and a key's corners are part of its class: picking the last key of a strip
+ * gave it the first key's rounding, square against the track's end (2026-09-30). Each key now
+ * carries its own two faces, and `pressKey` (admin/island/lib/press-key.ts) swaps between them.
+ */
+export const keyFaces = (size: TabSize, dense: boolean, role: TabRole, edge: TabEdge, extra = ''): string =>
+  ` data-on="${tabItemClass(true, size, dense, role, edge)}${extra}" data-off="${tabItemClass(false, size, dense, role, edge)}${extra}"`
+
 export const tabItemClass = (
   active: boolean,
   size: TabSize = 'lg',

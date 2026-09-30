@@ -14,6 +14,7 @@ import { wireAttachments } from './lib/media-attachments'
 import type { Words } from './lib/media-bridge'
 import { showTab } from './lib/tab-strip'
 import { MEDIA_VIEW_KEYS, type MediaKind } from '@/admin-shared/rail'
+import { pressKey } from './lib/press-key'
 
 const root = document.querySelector<HTMLElement>('[data-screen="media"]')
 
@@ -24,8 +25,6 @@ if (root) {
   const panels = [...screen.querySelectorAll<HTMLElement>('[data-media-panel]')]
   const tools = screen.querySelector<HTMLElement>('[data-media-tools]')
   const strip = screen.querySelector<HTMLElement>('[data-media-tabs]')
-  const ON = strip?.querySelector<HTMLElement>('[aria-pressed="true"]')?.className ?? ''
-  const OFF = strip?.querySelector<HTMLElement>('[aria-pressed="false"]')?.className ?? ''
 
   /** How many pictures there are decides whether the tools row belongs on screen at all. */
   const anyImages = (): boolean => screen.querySelectorAll('[data-media]').length > 0
@@ -41,8 +40,7 @@ if (root) {
     if (tools) tools.hidden = kind !== 'images' || !anyImages()
     for (const b of strip?.querySelectorAll<HTMLElement>('[data-tab]') ?? []) {
       const on = b.dataset.tab === kind
-      b.setAttribute('aria-pressed', String(on))
-      b.className = on ? ON : OFF
+      pressKey(b, on)
     }
     showTab(strip)
   }

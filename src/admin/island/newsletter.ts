@@ -14,6 +14,7 @@ import { formatCount } from '@/i18n/format'
 import { buttonClass } from '@/admin-shared/kit'
 import { wireSubscribers } from './lib/subscriber-list'
 import { showTab } from './lib/tab-strip'
+import { pressKey } from './lib/press-key'
 
 const root = document.querySelector<HTMLElement>('[data-screen="newsletter"]')
 
@@ -36,8 +37,6 @@ if (root) {
   // ---- the three tabs ------------------------------------------------------------------
   const strip = pick('[data-nl-tabs]')
   const panels = [...screen.querySelectorAll<HTMLElement>('[data-nl-panel]')]
-  const ON = strip?.querySelector<HTMLElement>('[aria-pressed="true"]')?.className ?? ''
-  const OFF = strip?.querySelector<HTMLElement>('[aria-pressed="false"]')?.className ?? ''
 
   function swap(tab: string): void {
     screen.dataset.nlTab = tab
@@ -50,8 +49,7 @@ if (root) {
     for (const p of panels) p.hidden = p.dataset.nlPanel !== tab
     for (const b of strip?.querySelectorAll<HTMLElement>('[data-tab]') ?? []) {
       const on = b.dataset.tab === tab
-      b.setAttribute('aria-pressed', String(on))
-      b.className = on ? ON : OFF
+      pressKey(b, on)
     }
     showTab(strip)
     if (tab === 'send') void preview()

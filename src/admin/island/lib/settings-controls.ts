@@ -14,6 +14,7 @@
 //
 // Every one of them ships drawn in the state the server could see. Nothing here builds a row.
 import { KNOB_OFF, KNOB_ON, SWITCH_OFF, SWITCH_ON } from '@/admin-shared/controls'
+import { pressKey } from './press-key'
 
 /** What a control reports when it moves, so the form can recount without knowing what moved. */
 export type OnMove = () => void
@@ -113,13 +114,9 @@ function mirror(root: HTMLElement, el: HTMLElement, tell: (twin: HTMLElement) =>
 
 /** The strip's chosen key is CARVED into the track, and `aria-pressed` is what says so. */
 function pickChoice(track: HTMLElement, value: string): void {
-  const on = track.querySelector<HTMLElement>('[aria-pressed="true"]')?.className ?? ''
-  const off = track.querySelector<HTMLElement>('[aria-pressed="false"]')?.className ?? ''
-  for (const b of track.querySelectorAll<HTMLElement>('[data-choice]')) {
-    const is = b.dataset.choice === value
-    b.setAttribute('aria-pressed', String(is))
-    if (on && off) b.className = is ? on : off
-  }
+  // Each key's own two faces: copying one key's class to its siblings took its corners along,
+  // and a strip drawn with nothing pressed never changed class at all (2026-09-30).
+  for (const b of track.querySelectorAll<HTMLElement>('[data-choice]')) pressKey(b, b.dataset.choice === value)
   track.dataset.value = value
 }
 

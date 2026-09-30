@@ -22,7 +22,7 @@ import {
 } from '@/admin-shared/kit'
 import { META } from '@/admin-shared/scale'
 import {
-  SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE, TAB_TRACK, TAB_TRACK_DENSE, edgeAt, tabItemClass, type TabRole, type TabSize,
+  SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE, TAB_TRACK, TAB_TRACK_DENSE, edgeAt, keyFaces, tabItemClass, type TabRole, type TabSize,
 } from '@/admin-shared/tabs'
 import { HEADER_GAP, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
 
@@ -214,7 +214,7 @@ export function tabs({
         ? ` role="tab" aria-selected="${on}" tabindex="${on ? '0' : '-1'}"`
           + (panelId ? ` aria-controls="${escapeAttr(`${panelId}-${key}`)}"` : '')
         : ` aria-pressed="${on}"`
-      return `<button type="button" data-tab="${escapeAttr(key)}"${tab}`
+      return `<button type="button" data-tab="${escapeAttr(key)}"${tab}${keyFaces(size, dense, role, edgeAt(i, items.length))}`
         + ` class="${tabItemClass(on, size, dense, role, edgeAt(i, items.length))}">${escapeHtml(label)}</button>`
     }).join('')
     + `</div>`

@@ -181,7 +181,8 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
   box.querySelector('[data-sec-signout-others]')?.addEventListener('click', async () => {
     const out = await post('/sessions/revoke-others', {})
     if (!out) return
-    say((w.signedOut ?? '').replace('{n}', String(out.count ?? 0)))
+    // `signedOut`, which is what the server answers; `count` was read, so it said 0 every time.
+    say((w.signedOut ?? '').replace('{n}', String(typeof out.signedOut === 'number' ? out.signedOut : 0)))
     void refresh()
   })
 

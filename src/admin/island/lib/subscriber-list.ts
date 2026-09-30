@@ -15,6 +15,7 @@
 import type { SiteLang } from '@/types'
 import { formatCount } from '@/i18n/format'
 import { SUBSCRIBERS_PER_PAGE as PER_PAGE } from '@/admin-shared/analytics'
+import { pressKey } from './press-key'
 
 export type SubscriberWords = { showing?: string; deleteFailed?: string }
 
@@ -63,8 +64,6 @@ export function wireSubscribers(screen: HTMLElement, opts: {
   const bar = pick('[data-sub-bar]')
   const picked = pick('[data-pick-count]')
   const band = [...screen.querySelectorAll<HTMLElement>('[data-nl-panel="people"] .flex-1 b')]
-  const SCOPE_ON = scopeStrip?.querySelector<HTMLElement>('[aria-pressed="true"]')?.className ?? ''
-  const SCOPE_OFF = scopeStrip?.querySelector<HTMLElement>('[aria-pressed="false"]')?.className ?? ''
 
   const boxes = (): HTMLInputElement[] =>
     [...screen.querySelectorAll<HTMLInputElement>('[data-sub-pick]')]
@@ -112,8 +111,7 @@ export function wireSubscribers(screen: HTMLElement, opts: {
     page = 0
     for (const tab of scopeStrip.querySelectorAll<HTMLElement>('[data-tab]')) {
       const on = tab.dataset.tab === scope
-      tab.setAttribute('aria-pressed', String(on))
-      tab.className = on ? SCOPE_ON : SCOPE_OFF
+      pressKey(tab, on)
     }
     apply()
   })

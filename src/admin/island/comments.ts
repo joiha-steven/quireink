@@ -14,6 +14,7 @@
 // what is on screen changes with the filter.
 import { indexIn, lanes, type Lanes } from '@/accent'
 import { showTab } from './lib/tab-strip'
+import { pressKey } from './lib/press-key'
 
 const root = document.querySelector<HTMLElement>('[data-screen="comments"]')
 const cardHost = root?.querySelector<HTMLElement>('[data-comment-cards]')
@@ -31,8 +32,6 @@ if (root && cardHost) {
   const selection = root.querySelector<HTMLElement>('[data-comment-selection]')
   const pickedCount = root.querySelector<HTMLElement>('[data-pick-count]')
 
-  const ON = sortStrip?.querySelector<HTMLElement>('[aria-pressed="true"]')?.className ?? ''
-  const OFF = sortStrip?.querySelector<HTMLElement>('[aria-pressed="false"]')?.className ?? ''
   const pressed = (strip: HTMLElement | null): string =>
     strip?.querySelector<HTMLElement>('[aria-pressed="true"]')?.dataset.tab ?? ''
 
@@ -138,8 +137,7 @@ if (root && cardHost) {
   function press(strip: HTMLElement | null, key: string): void {
     for (const tab of strip?.querySelectorAll<HTMLElement>('[data-tab]') ?? []) {
       const on = tab.dataset.tab === key
-      tab.setAttribute('aria-pressed', String(on))
-      tab.className = on ? ON : OFF
+      pressKey(tab, on)
     }
     showTab(strip)
   }

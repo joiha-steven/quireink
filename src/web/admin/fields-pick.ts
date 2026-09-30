@@ -8,7 +8,7 @@
 import { escapeAttr, escapeHtml } from '@/utils'
 import { CONTROL, TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP } from '@/admin-shared/kit'
 import { CONTROL_GROUP, CONTROL_NUM } from '@/admin-shared/controls'
-import { SEGMENT_TRACK, edgeAt, tabItemClass } from '@/admin-shared/tabs'
+import { SEGMENT_TRACK, edgeAt, keyFaces, tabItemClass } from '@/admin-shared/tabs'
 import { FIELD_W, NOTE, SETTING_LABEL } from '@/admin-shared/scale'
 import { settingRow, type SettingText } from '@/web/admin/fields'
 import { icon } from '@/web/admin/kit'
@@ -44,7 +44,7 @@ export function choice(f: SettingText & {
   attrs?: string
 }): string {
   const items = f.options.map(([v, label], i) =>
-    `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${v === f.value}"`
+    `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${v === f.value}"${keyFaces('sm', false, 'choice', edgeAt(i, f.options.length))}`
     + ` class="${choiceKey(v === f.value, i, f.options.length)}">${escapeHtml(label)}</button>`).join('')
   return settingRow({
     ...f,
