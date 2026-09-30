@@ -140,12 +140,12 @@ if (root) {
    * out as an event. An unheard question is a REFUSAL — the only outcome that cannot be
    * regretted on the one screen whose actions cannot be walked back.
    */
-  const ask = (title: string, body: string): Promise<boolean> =>
+  const ask = (title: string, body: string, yes = words.yes): Promise<boolean> =>
     new Promise((resolve) => {
       const unheard = window.dispatchEvent(new CustomEvent('quire:confirm', {
         cancelable: true,
         detail: {
-          request: { title, body, confirmLabel: words.yes, cancelLabel: words.no, danger: true },
+          request: { title, body, confirmLabel: yes, cancelLabel: words.no, danger: true },
           respond: (answer: string) => resolve(answer === 'confirm'),
         },
       }))
@@ -157,17 +157,18 @@ if (root) {
   }
 
   /** Every write on this screen is this one request, which is the endpoint's own shape. */
+  type Answer = { ok: boolean; error?: string; inUse?: string[]; total?: number }
   async function act(
-    kind: string, action: 'restore' | 'purge' | 'empty', ids?: string[], force?: boolean,
-  ): Promise<{ ok: boolean; error?: string }> {
+    kind: string, action: 'restore' | 'purge' | 'empty', ids?: string[], force?: boolean, skipUsed?: boolean,
+  ): Promise<Answer> {
     try {
       const res = await fetch('/api/trash', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ kind, action, ids, force }),
+        body: JSON.stringify({ kind, action, ids, force, skipUsed }),
       })
-      const json = await res.json() as { success?: boolean; error?: string }
-      return json.success ? { ok: true } : { ok: false, error: json.error }
+      const json = await res.json() as { success?: boolean; error?: string; inUse?: string[]; total?: number }
+      return json.success ? { ok: true } : { ok: false, error: json.error, inUse: json.inUse, total: json.total }
     } catch {
       return { ok: false }
     }
@@ -178,9 +179,17 @@ if (root) {
    * a failure, it is a second question — and declining it leaves the file in the trash with no
    * error toast, because nothing went wrong.
    */
-  async function askInUse(error: string | undefined): Promise<boolean> {
-    if (!error?.startsWith('in_use')) return false
-    return await ask(words.inUseTitle.replace('{n}', error.split(':')[1] ?? ''), words.inUseBody)
+  //
+  // It NAMES them, and when only some of a batch are in use it offers to delete the others and
+  // keep these (2026-09-30): it said "1 of these is still used in a post" for a dark logo, for a
+  // single file, and offered only all or nothing.
+  async function settleInUse(r: Answer, kind: string, action: 'purge' | 'empty', ids?: string[]): Promise<Answer | null> {
+    const names = r.inUse ?? []
+    const title = words.inUseTitle.replace('{n}', String(names.length)).replace('{names}', names.join(', '))
+    if ((r.total ?? names.length) > names.length) {
+      return await ask(title, words.someInUseBody, words.unusedOnly) ? act(kind, action, ids, false, true) : null
+    }
+    return await ask(title, words.inUseBody) ? act(kind, action, ids, true) : null
   }
 
   /** A write that landed reloads the page; one that did not says so and leaves the screen. */
@@ -203,22 +212,20 @@ if (root) {
       const kind = gone.dataset.kind ?? ''
       const id = gone.dataset.id ?? ''
       if (!await ask(words.purgeTitle.replace('{name}', gone.dataset.name ?? ''), words.noUndo)) return
-      let r = await act(kind, 'purge', [id])
-      if (!r.ok && r.error?.startsWith('in_use')) {
-        if (!await askInUse(r.error)) return
-        r = await act(kind, 'purge', [id], true)
-      }
+      let r: Answer | null = await act(kind, 'purge', [id])
+      if (!r.ok && r.error?.startsWith('in_use')) r = await settleInUse(r, kind, 'purge', [id])
+      if (!r) return
       await finish(r, words.purged, words.purgeFailed)
       return
     }
     if (el.closest('[data-trash-empty]')) {
       const kind = current()
-      if (!await ask(words.emptyTitle, words.emptyBody)) return
-      let r = await act(kind, 'empty')
-      if (!r.ok && r.error?.startsWith('in_use')) {
-        if (!await askInUse(r.error)) return
-        r = await act(kind, 'empty', undefined, true)
-      }
+      // The tab by name: "everything in it goes" did not say it meant only this tab's things.
+      const tab = strip?.querySelector('[aria-pressed="true"]')?.textContent?.trim() ?? ''
+      if (!await ask(words.emptyTitle, words.emptyBody.replace('{tab}', tab))) return
+      let r: Answer | null = await act(kind, 'empty')
+      if (!r.ok && r.error?.startsWith('in_use')) r = await settleInUse(r, kind, 'empty')
+      if (!r) return
       await finish(r, words.emptied, words.purgeFailed)
       return
     }

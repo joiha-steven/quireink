@@ -80,7 +80,7 @@ export async function newsletterScreen(settings: SiteSettings, query: URLSearchP
     + sheet(sheetTop(strip) + warning
       + peoplePanel(t, settings.language, people, open === 'people',
         pager(t, '/admin/newsletter', 'people', people.at, people.pages))
-      + sendPanel(t, letter.posts, open === 'send')
+      + sendPanel(t, letter.posts, open === 'send', settings.timezone)
       + testPanel(t, open === 'test')
       + `<div class="${SHEET_FOOT}">${escapeHtml(t.nlPageHint)}</div>`)
     + `</div>`

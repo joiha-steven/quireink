@@ -219,10 +219,12 @@ export function siteRoutes() {
   // ----- trash ----------------------------------------------------------------
 
   router.post('/api/trash', async (c) => {
-    const input = await body<{ kind: unknown; action: unknown; ids: unknown; force: unknown }>(c)
+    const input = await body<{ kind: unknown; action: unknown; ids: unknown; force: unknown; skipUsed: unknown }>(c)
     const kind = input.kind as Kind
     const action = input.action as Action
     const force = input.force === true
+    // Delete what nothing uses and leave the rest in the trash: the answer to a mixed batch.
+    const skipUsed = input.skipUsed === true
     if (!KINDS.includes(kind) || !ACTIONS.includes(action)) {
       return fail(c, 'Invalid kind or action', 400)
     }
@@ -253,10 +255,23 @@ export function siteRoutes() {
         // breaks a published page. `in_use:<n>` is what lets the admin re-ask with force.
         if (!force) {
           const targets = action === 'purge' ? ids : (await getTrashedMedia()).map((m) => m.url)
-          if (targets.length > 0) {
-            const used = await usedMediaKeys()
-            const inUse = targets.filter((url) => used.has(collapseBlob(url)))
-            if (inUse.length > 0) return fail(c, `in_use:${inUse.length}`, 409)
+          const used = targets.length > 0 ? await usedMediaKeys() : new Set<string>()
+          const inUse = targets.filter((url) => used.has(collapseBlob(url)))
+          if (skipUsed) {
+            // Only the free ones go; the ones still on the site stay in the trash.
+            const free = targets.filter((url) => !used.has(collapseBlob(url)))
+            if (free.length > 0) await purgeMediaBatch(free)
+            count = free.length
+            break
+          }
+          // The NAMES, so the question can say which: it said "1 of these is still used in a
+          // post" for a dark logo, and for a single file (2026-09-30).
+          if (inUse.length > 0) {
+            return c.json({
+              success: false, error: `in_use:${inUse.length}`,
+              inUse: inUse.map((url) => decodeURIComponent(url.split('/').pop() ?? url)),
+              total: targets.length,
+            }, 409)
           }
         }
         if (action === 'purge') await purgeMediaBatch(ids)

@@ -248,6 +248,7 @@ export async function trashScreen(settings: SiteSettings, query: URLSearchParams
     purgeTitle: t.askPurgeTitle, noUndo: t.askNoUndo,
     emptyTitle: t.askEmptyTrashTitle, emptyBody: t.askEmptyTrashBody,
     inUseTitle: t.askPurgeInUseTitle, inUseBody: t.askPurgeInUseBody,
+    someInUseBody: t.askPurgeSomeInUseBody, unusedOnly: t.askPurgeUnusedOnly,
     yes: t.askDeleteForever, no: t.askCancel,
     restored: t.restored, restoreFailed: t.restoreFailed,
     purged: t.purged, purgeFailed: t.purgeFailed, emptied: t.trashEmptied,

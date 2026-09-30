@@ -322,6 +322,9 @@ export type AdminStrings = {
   askEmptyTrashBody: string
   askPurgeInUseTitle: string
   askPurgeInUseBody: string
+  /** When only SOME of the targets are in use: delete the rest, keep these. */
+  askPurgeSomeInUseBody: string
+  askPurgeUnusedOnly: string
   askDeleteUnusedTitle: string
   askDeleteUnusedBody: string
   askRemoveSeriesTitle: string

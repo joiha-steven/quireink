@@ -82,8 +82,26 @@ if (root && cardHost) {
     span.replaceChildren(...parts)
   }
 
+  /**
+   * The band's four numbers, recounted from every row still on the page (all of them, not the
+   * filtered ones: a total that moves as you type is not a total). The server wrote them once
+   * and nothing rewrote them after a delete or an undo.
+   */
+  const band = [...screen.querySelectorAll<HTMLElement>('[data-comment-band] b')]
+  function recountBand(): void {
+    if (band.length < 4) return
+    const all = [...screen.querySelectorAll<HTMLElement>('[data-comment]')]
+    const since = Date.now() - WEEK_MS
+    const fmt = (v: number) => v.toLocaleString(document.documentElement.lang || undefined)
+    band[0]!.textContent = fmt(all.length)
+    band[1]!.textContent = fmt(cards.filter((c) => c.querySelector('[data-comment]')).length)
+    band[2]!.textContent = fmt(all.filter((r) => Number(r.dataset.at) >= since).length)
+    band[3]!.textContent = fmt(new Set(all.map((r) => r.dataset.who ?? '')).size)
+  }
+
   /** Narrow, recount, hide the empty cards, and put the sentence back in step. */
   function apply(): void {
+    recountBand()
     const needle = search?.value.trim() ?? ''
     const week = pressed(ageStrip) === 'week'
     const since = Date.now() - WEEK_MS

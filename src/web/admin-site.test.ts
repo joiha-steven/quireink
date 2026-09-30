@@ -300,6 +300,23 @@ describe('trash', () => {
     expect((await payload<{ error: string }>(refused)).error).toBe('in_use:1')
   })
 
+  // The question named nothing and offered all or nothing (2026-09-30): the answer names what
+  // is in use, and `skipUsed` deletes the free ones and leaves those in the trash.
+  it('names what is in use, and can delete only the rest', async () => {
+    const used = blobUrl('media/on-a-page.jpg')
+    const free = blobUrl('media/nobody.jpg')
+    for (const [path, name] of [['media/on-a-page.jpg', 'on-a-page.jpg'], ['media/nobody.jpg', 'nobody.jpg']]) {
+      db().run(`insert into media (path, filename, uploaded_at) values (?, ?, ?)`, [path!, name!, Date.now()])
+    }
+    await newPost({ title: 'Pictured', content: `![alt](${used})`, status: 'published' })
+    db().run(`update media set deleted_at = ?`, [Date.now()])
+    const refused = await post('/api/trash', { kind: 'media', action: 'purge', ids: [used, free] })
+    expect(await refused.json()).toMatchObject({ error: 'in_use:1', inUse: ['on-a-page.jpg'], total: 2 })
+    expect((await post('/api/trash', { kind: 'media', action: 'purge', ids: [used, free], skipUsed: true })).status).toBe(200)
+    const left = db().query<{ path: string }, []>(`select path from media order by path`).all().map((r) => r.path)
+    expect(left).toEqual(['media/on-a-page.jpg'])
+  })
+
   it('lets an unreferenced image be purged without force', async () => {
     const url = blobUrl('media/orphan.jpg')
     db().run(`insert into media (path, filename, uploaded_at, deleted_at) values (?, ?, ?, ?)`,

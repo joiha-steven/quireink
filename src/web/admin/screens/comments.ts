@@ -54,7 +54,7 @@ const FORENSICS = 'mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutr
 function comment(t: AdminStrings, c: AdminComment, title: string): string {
   const mark = (text: string, cls: string): string =>
     `<span data-mark data-text="${escapeAttr(text)}" class="${cls}">${escapeHtml(text)}</span>`
-  return `<li data-comment="${c.id}" data-at="${Date.parse(c.createdAt) || 0}"`
+  return `<li data-comment="${c.id}" data-at="${Date.parse(c.createdAt) || 0}" data-who="${escapeAttr((c.email || c.name).toLowerCase())}"`
     + ` data-find="${escapeAttr(`${c.content} ${c.name} ${title}`)}" class="group flex gap-2.5 py-2">`
     + tick({ label: c.name, className: 'mt-1 self-start', attrs: `data-comment-pick data-id="${c.id}"` })
     + `<span aria-hidden="true" class="${INITIAL}">${escapeHtml(initialOf(c.name))}</span>`
@@ -123,12 +123,14 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
   groups.sort((a, b) => b.newest - a.newest)
 
   const since = Date.now() - WEEK_MS
-  const band = numBand([
+  // `data-comment-band`: the island recounts it from the rows left after a delete or an undo.
+  // The header moved and the band kept the old totals until a reload (2026-09-30).
+  const band = `<div data-comment-band>` + numBand([
     { n: n(rows.length), label: t.commentsNavTitle },
     { n: n(by.size), label: t.commentsStatPosts },
     { n: n(rows.filter((c) => (Date.parse(c.createdAt) || 0) >= since).length), label: t.commentsStatWeek },
     { n: n(new Set(rows.map((c) => (c.email || c.name).toLowerCase())).size), label: t.commentsStatPeople },
-  ])
+  ]) + `</div>`
 
   // TWO STRIPS, TWO QUESTIONS: how it is sorted, and how far back. Both are `choice` rather
   // than `place` — a filter is a value, not a destination — which is what keeps the sunken
