@@ -38,16 +38,27 @@ import type { Highlighter } from 'shiki'
 import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
 import { detectLang } from '@/render/detect-lang'
 import { plainCode } from '@/render/plain-code'
+import { readableTheme } from '@/render/code-ink'
 
+// VITESSE, MADE READABLE on this site's code panels (`code-ink.ts`, FIXLIST 7.3). The names stay,
+// so the `shiki-themes` classes on a block do not move; the KEY carries `aa`, so no cache row
+// written before can serve the old, fainter colours.
 const THEMES = { light: 'vitesse-light', dark: 'vitesse-dark' } as const
-const THEME_KEY = `${THEMES.light}/${THEMES.dark}`
+const THEME_KEY = `${THEMES.light}/${THEMES.dark}/aa`
 
 // One highlighter instance per server process, created lazily on first use, holding no
 // grammar until one is asked for.
 let hl: Promise<Highlighter> | null = null
 function highlighter(): Promise<Highlighter> {
-  hl ??= import('shiki')
-    .then((shiki) => shiki.createHighlighter({ themes: [THEMES.light, THEMES.dark], langs: [] }))
+  hl ??= Promise.all([
+    import('shiki'), import('shiki/themes/vitesse-light.mjs'), import('shiki/themes/vitesse-dark.mjs'),
+  ]).then(([shiki, light, dark]) => shiki.createHighlighter({
+    themes: [
+      readableTheme(light.default, 'light', THEMES.light),
+      readableTheme(dark.default, 'dark', THEMES.dark),
+    ],
+    langs: [],
+  }))
   return hl
 }
 

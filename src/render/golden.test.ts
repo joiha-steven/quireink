@@ -18,6 +18,7 @@
 // last one sat in this comment untrue from the day of the bump.
 import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
+import { readable } from '@/render/code-ink'
 import { join } from 'node:path'
 import { renderPostContent } from '@/render/post-content'
 import { classify, firstDifference } from '@/render/html-equivalence'
@@ -75,6 +76,18 @@ const SAME_PAGE: Record<string, string> = {
   'raw-html-block': 'a newline between text and a block tag',
 }
 
+/**
+ * 1.x's code colours, as `code-ink.ts` moves them (2026-09-30, FIXLIST 7.3). Vitesse's muted
+ * tokens sat under WCAG AA on this site's code panel, and each failing colour now takes the
+ * smallest step that clears 4.5:1 on all six palettes. Applied to the REFERENCE rather than
+ * filed as a divergence: this says exactly "only colours moved, each to `readable(old)`", which
+ * a re-captured file could not. (`fence-alias` and `mixed-everything` diverge for other reasons
+ * and their v2 answers were re-captured under the same check.)
+ */
+const inked = (html: string): string => html
+  .replace(/(?<=[";]color:)(#[0-9a-fA-F]{3,8})/g, (c) => readable(c, 'light'))
+  .replace(/(?<=--shiki-dark:)(#[0-9a-fA-F]{3,8})/g, (c) => readable(c, 'dark'))
+
 describe('golden: our own engine writes the same page in different bytes', () => {
   test('the tier stays small, and every name is a real fixture', () => {
     // Same guard as DIVERGED's, for the same reason: a tier that grows without anyone
@@ -86,7 +99,7 @@ describe('golden: our own engine writes the same page in different bytes', () =>
   for (const [name, rung] of Object.entries(SAME_PAGE)) {
     test(`${name} — ${rung}`, async () => {
       const markdown = readFileSync(join(CORPUS, `${name}.md`), 'utf8')
-      const expected = readFileSync(join(REFERENCE, `${name}.html`), 'utf8')
+      const expected = inked(readFileSync(join(REFERENCE, `${name}.html`), 'utf8'))
       const actual = await renderPostContent({ markdown })
       const kind = classify(expected, actual)
       // The rung is named, not merely required to exist: a fixture that starts differing for a
@@ -178,6 +191,7 @@ const DIVERGED: Record<string, { behaviour: string; why: string }> = {
   //    citations count on (`fnref-d-2`); the first keeps the plain id the back link points at.
   //    One attribute on one line differs from 1.x, checked with diff at capture time.
   'footnote-duplicate': { behaviour: 'footnote citation id', why: 'a second citation of one note gets its own id' },
+
 }
 
 describe('golden: the deliberate divergences from 1.x', () => {

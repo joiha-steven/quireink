@@ -265,4 +265,46 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
       if (!off.length) return 'no rail beside the post to line up with'
       return Math.max(...off) <= 8 ? 'ok ' + got.join('/') : 'the body starts off the rails: ' + got.join('/')
     })()`, 600))
+
+  // Every coloured token in a code block clears 4.5:1 on the panel it sits on, light and dark
+  // (FIXLIST 7.3). Measured in the browser, from the colours it actually painted.
+  const INKED = 'tour-code-ink'
+  flow('reader: plant a post with code in it', () => expect('/admin/editor', `
+    (async () => {
+      await fetch('/api/posts/${INKED}', { method: 'DELETE' })
+      const fence = String.fromCharCode(96).repeat(3)
+      const body = fence + 'ts\\n// a note\\nconst quote = "text" + 1 // the rest\\nexport function go(a: number): string { return String(a) }\\n' + fence
+      const r = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Code ink', slug: '${INKED}', content: body, status: 'published', categories: [], tags: [] }),
+      })
+      return r.ok ? 'ok' : 'POST /api/posts -> ' + r.status
+    })()`, 600))
+  flow('reader: every code token clears 4.5:1, light and dark', () => expect(`/${INKED}`, `
+    (async () => {
+      // color-mix() computes to color(srgb 0-1 ...), a plain colour to rgb(0-255 ...).
+      const rgb = (s) => (s.match(/[\\d.]+/g) || []).slice(0, 3).map(Number).map((v) => s.startsWith('color(') ? v * 255 : v)
+      const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]) }
+      const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05) }
+      const pre = document.querySelector('.prose pre.shiki')
+      if (!pre) return 'the code block was not highlighted'
+      const measure = () => {
+        const bg = rgb(getComputedStyle(pre).backgroundColor)
+        const spans = [...pre.querySelectorAll('.line span')].filter((s) => s.textContent.trim())
+        const all = spans.map((s) => [ratio(rgb(getComputedStyle(s).color), bg), s.textContent.trim()])
+        all.sort((a, b) => a[0] - b[0])
+        window.__worst = (window.__worst || '') + ' | ' + all[0][1]
+        return all[0][0]
+      }
+      const lightLow = measure()
+      const root = document.documentElement
+      const was = root.classList.contains('dark')
+      root.classList.add('dark')
+      await new Promise((r) => setTimeout(r, 50))
+      const darkLow = measure()
+      if (!was) root.classList.remove('dark')
+      await fetch('/api/posts/${INKED}', { method: 'DELETE' })
+      const say = lightLow.toFixed(2) + ' / ' + darkLow.toFixed(2)
+      return lightLow >= 4.5 && darkLow >= 4.5 ? 'ok ' + say : 'a token under 4.5:1 (light / dark): ' + say + window.__worst
+    })()`, 600))
 }
