@@ -79,6 +79,9 @@ function words(t: AdminStrings): string {
     backupDone: t.backupToastOk, backupFailed: t.backupToastFail, backupBusy: t.exportBusy,
     // A redirect is a row in its own table, not a setting, and it said "Settings saved".
     redirectSaved: t.redirectSaved, redirectFailed: t.redirectSaveFailed,
+    redirectErrSource: t.redirectErrSource, redirectErrDestination: t.redirectErrDestination,
+    redirectErrSame: t.redirectErrSame, redirectErrReserved: t.redirectErrReserved,
+    redirectErrLive: t.redirectErrLive, redirectErrLoop: t.redirectErrLoop,
     redirectReplaceTitle: t.redirectReplaceTitle, redirectReplaceBody: t.redirectReplaceBody, redirectReplace: t.redirectReplace,
     // The MCP card's five keys. Every one of them was drawn and wired to nothing until
     // 2026-09-15, so none of these had a reader either.

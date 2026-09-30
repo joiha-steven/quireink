@@ -88,10 +88,12 @@ export async function saveRedirect(input: {
   const typed = input.destination.trim()
   const local = !typed.startsWith('/') && isOwnUrl(typed) ? new URL(typed).pathname : typed
   const destination = local.startsWith('/') ? normalizePath(local) : local
-  if (!source) throw new RedirectInputError('A source path is required')
-  if (!isValidDestination(destination)) throw new RedirectInputError('Destination must be a path or an http(s) URL')
-  if (source === destination) throw new RedirectInputError('Source and destination are the same')
-  if (isReservedPath(source)) throw new RedirectInputError(`reserved: ${source} cannot be redirected`)
+  // CODES, not sentences: the admin says each in the owner's language, and `code:path` carries
+  // the one detail the sentence needs. "loop: /a would lead back to itself" was shown as typed.
+  if (!source) throw new RedirectInputError('source_required')
+  if (!isValidDestination(destination)) throw new RedirectInputError('bad_destination')
+  if (source === destination) throw new RedirectInputError('same_path')
+  if (isReservedPath(source)) throw new RedirectInputError(`reserved:${source}`)
   // Live content beats a redirect at the same path, and the middleware answers BEFORE the
   // router, so a redirect saved over a live slug does not lose the argument: it wins, and
   // the post simply stops being reachable with nothing anywhere saying why. Refusing is
@@ -99,7 +101,7 @@ export async function saveRedirect(input: {
   // `/2020/05/title` is never affected.
   const sourceSlug = source.slice(1)
   if (sourceSlug && !sourceSlug.includes('/') && liveSlugTaken(sourceSlug)) {
-    throw new RedirectInputError(`live_content: ${source} is a post or page`)
+    throw new RedirectInputError(`live_content:${source}`)
   }
   // ⚠️ AND A LOOP IS THE SAME REFUSAL ONE STEP FURTHER. `source === destination` above catches
   // the rule that points at itself; two rules pointing at each other were accepted in silence,
@@ -114,7 +116,7 @@ export async function saveRedirect(input: {
     let at = destination
     for (let hop = 0; hop < MAX_CHAIN_HOPS && at !== ''; hop++) {
       if (at === source) {
-        throw new RedirectInputError(`loop: ${source} would lead back to itself`)
+        throw new RedirectInputError(`loop:${source}`)
       }
       const next = findRedirect(at)
       at = next !== null && next.destination.startsWith('/') ? next.destination : ''

@@ -10,6 +10,7 @@
 // needs it and it costs nothing to keep.
 import type { AdminStrings } from '@/locales/types'
 import type { IconName } from '@/icons'
+import { settingsDetail } from '@/admin-shared/setting-names'
 
 /**
  * The KIND an action belongs to, which is what the filter offers.
@@ -74,8 +75,10 @@ export const glyphOf = (action: string): IconName => GLYPH[kindOf(action)]
  * is visible and honest rather than blank: a release that adds a logged action and forgets
  * this file should print something a person can still read.
  */
-export function logSentence(t: AdminStrings, action: string, detail: string): string {
+export function logSentence(t: AdminStrings, action: string, raw: string): string {
   const pattern = t.logActions[action]
+  // A settings save stores the paths it touched; the owner reads the names on the screen.
+  const detail = action === 'settings.save' && raw ? settingsDetail(t, raw) : raw
   if (!pattern) return detail ? `${action} — ${detail}` : action
   // A detail can be long (a settings diff, an error message); the row truncates, and the
   // full text stays in the row's `title`.

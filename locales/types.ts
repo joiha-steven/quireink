@@ -1273,6 +1273,8 @@ export type AdminStrings = {
   logActions: Record<string, string>
   logDisabled: string
   logClear: string
+  /** A settings save that moved nothing, as the log says it. */
+  logNoChange: string
   // system info panel (Overview)
   navTrash: string
   trashTitle: string
@@ -1488,6 +1490,13 @@ export type AdminStrings = {
   redirectReplaceBody: string
   redirectReplace: string
   redirectSaveFailed: string
+  /** Why a redirect was refused; `{path}` is the source that was typed. */
+  redirectErrSource: string
+  redirectErrDestination: string
+  redirectErrSame: string
+  redirectErrReserved: string
+  redirectErrLive: string
+  redirectErrLoop: string
   // newsletter (Settings → Integrations)
   cardNewsletter: string
   nlSmtpHint: string

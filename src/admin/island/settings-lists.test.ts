@@ -19,7 +19,7 @@ import { adminT } from '@/i18n/admin-i18n'
 import { DEFAULT_SETTINGS } from '@/content/settings'
 import { backupsCard } from '@/web/admin/screens/settings-server-ops'
 import { mcpCard } from '@/web/admin/screens/settings-server-mcp'
-import { wireLists } from './lib/settings-lists'
+import { refusal, wireLists } from './lib/settings-lists'
 
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
@@ -298,5 +298,16 @@ describe('a stamp that is a number', () => {
       sessions: [{ id: 'a', device: null, createdAt: WHEN, lastSeenAt: WHEN, current: true }],
     }
     expect(formatDateTimeShort(wire.sessions[0]!.lastSeenAt)).toBe(formatDateTimeShort(ISO))
+  })
+})
+
+describe('a refused redirect', () => {
+  // The server answered "loop: /dup-a would lead back to itself" and the card showed it as sent.
+  it('is said in the owner’s words, with the path in its place', () => {
+    const t = adminT('vi')
+    const w = { redirectErrLoop: t.redirectErrLoop, redirectErrSame: t.redirectErrSame }
+    expect(refusal(w, 'loop:/dup-a')).toBe(t.redirectErrLoop.replace('{path}', '/dup-a'))
+    expect(refusal(w, 'same_path')).toBe(t.redirectErrSame)
+    expect(refusal(w, 'something else')).toBe('')
   })
 })

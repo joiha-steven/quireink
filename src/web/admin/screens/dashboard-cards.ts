@@ -202,7 +202,8 @@ function activityCard(t: AdminStrings, lang: SiteLang, entries: ActivityEntry[],
   const body = !enabled || entries.length === 0
     ? `<p class="${QUIET}">${escapeHtml(t.logEmpty)}</p>`
     : `<ul class="${FEED_LIST}">` + runs(entries).slice(0, 6).map(({ e, times }) => {
-      const title = `${formatDateTimeShort(e.at)} · ${e.action}${e.detail ? ` — ${e.detail}` : ''}`
+      // The stamp and the sentence in full; never the machine code (2026-09-30).
+      const title = `${formatDateTimeShort(e.at)} · ${logSentence(t, e.action, e.detail)}`
       const when = (ago(e.at, now, lang) || formatDateTimeShort(e.at)) + (times > 1 ? ` · ×${times}` : '')
       return `<li class="${FEED_ROW}" title="${escapeAttr(title)}">`
         + `<span class="${FEED_MARK} ${inkFor(e.action)}">`

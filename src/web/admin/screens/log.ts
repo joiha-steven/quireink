@@ -61,9 +61,10 @@ function row(t: AdminStrings, e: ActivityEntry, i: number): string {
   // baked into the markup beyond this first answer.
   const sentence = logSentence(t, e.action, e.detail)
   const find = fold(`${sentence} ${e.detail} ${e.action}`)
-  // The machine's own words, kept where somebody debugging an install can reach them and
-  // nobody else has to read them.
-  const title = `${e.action}${e.detail ? ` — ${e.detail}` : ''}`
+  // THE WHOLE SENTENCE, which the row truncates. It held `auth.login — via totp`, the machine's
+  // words, in the one place a hovering owner reads. The code is still in `data-find`, so
+  // somebody debugging an install can type `auth.login` into the filter and get the rows.
+  const title = sentence
   return `<li data-log-row${i >= PAGE ? ' hidden' : ''} data-kind="${kindOf(e.action)}" data-at="${new Date(e.at).getTime()}"`
     + ` data-find="${escapeAttr(find)}" style="--i:${i}"`
     + ` title="${escapeAttr(title)}"`

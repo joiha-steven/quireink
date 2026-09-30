@@ -302,6 +302,18 @@ async function drop(line: HTMLElement, id: string, w: ListWords): Promise<void> 
   else say(w.deleteFailed ?? '', 'error')
 }
 
+/** `server/redirects.ts` refuses with `code` or `code:path`; this is that code in words. */
+const REFUSAL: Record<string, string> = {
+  source_required: 'redirectErrSource', bad_destination: 'redirectErrDestination', same_path: 'redirectErrSame',
+  reserved: 'redirectErrReserved', live_content: 'redirectErrLive', loop: 'redirectErrLoop',
+}
+export function refusal(w: ListWords, error: string): string {
+  const cut = error.indexOf(':')
+  const code = cut < 0 ? error : error.slice(0, cut)
+  const key = REFUSAL[code]
+  return key ? (w[key] ?? '').replace('{path}', cut < 0 ? '' : error.slice(cut + 1)) : ''
+}
+
 async function add(screen: HTMLElement, list: HTMLElement, w: ListWords): Promise<void> {
   const from = screen.querySelector<HTMLInputElement>('[data-redirect-source]')
   const to = screen.querySelector<HTMLInputElement>('[data-redirect-destination]')
@@ -326,7 +338,7 @@ async function add(screen: HTMLElement, list: HTMLElement, w: ListWords): Promis
     // `saveFailed` was the fallback for three days, which on a screen with one Save key reads
     // as the whole form having failed.
     const said = await res?.json().catch(() => null) as { error?: string } | null
-    say(said?.error || (w.redirectFailed ?? ''), 'error')
+    say(refusal(w, said?.error ?? '') || (w.redirectFailed ?? ''), 'error')
     return
   }
   // The list is re-read rather than guessed at: the server sanitises a path and may answer with
