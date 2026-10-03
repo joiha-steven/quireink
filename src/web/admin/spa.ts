@@ -10,6 +10,7 @@
 // under it is a router-group route (Invariant 4). A signed-out request is REDIRECTED to
 // sign in rather than 404'd: the admin is not a secret, only its contents are.
 
+import { contentHash } from '@/web/content-hash'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Context } from 'hono'
@@ -71,7 +72,7 @@ function fingerprint(name: string): string {
   const asset = ASSETS.get(name)
   // 'dev' when the bundle has not been built: the shell says so in words rather than
   // linking a name that resolves to nothing.
-  return asset ? Bun.hash(asset.body as Uint8Array<ArrayBuffer>).toString(36) : 'dev'
+  return asset ? contentHash(asset.body) : 'dev'
 }
 
 /**
@@ -153,7 +154,7 @@ const STALE_SHEET: Asset | null = (() => {
  * imports anything — an import would be a second request before the first paint.
  */
 const BOOT_BODY = railBootScript()
-const BOOT_NAME = `boot.${Bun.hash(new TextEncoder().encode(BOOT_BODY)).toString(36)}.js`
+const BOOT_NAME = `boot.${contentHash(BOOT_BODY)}.js`
 ASSETS.set(BOOT_NAME, { body: new TextEncoder().encode(BOOT_BODY), type: TYPES['.js'] ?? 'text/javascript' })
 const BOOT = `/admin/assets/${BOOT_NAME}`
 

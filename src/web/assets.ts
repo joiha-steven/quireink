@@ -5,6 +5,7 @@
 // response is `immutable` for a year and a deploy that changes the code changes the URL:
 // no cache busting to remember, and no reader stuck on a stale script.
 
+import { contentHash } from '@/web/content-hash'
 import coreJs from '@/assets/dist/core.js' with { type: 'text' }
 import postJs from '@/assets/dist/post.js' with { type: 'text' }
 import bookModeJs from '@/assets/dist/book-mode.js' with { type: 'text' }
@@ -27,12 +28,8 @@ const BUNDLES: Record<string, string> = {
   'reader-pen': readerPenJs,
 }
 
-/**
- * Short content hash. Not a security boundary, so speed matters more than collision
- * resistance: `Bun.hash` over the source is enough to change the URL whenever the bytes
- * change, which is the entire job.
- */
-const hashOf = (source: string): string => Bun.hash(source).toString(36).slice(0, 10)
+/** Short content hash, the same on both runtimes (`content-hash.ts`). */
+const hashOf = (source: string): string => contentHash(source)
 
 const PATHS = new Map<string, string>()
 const BY_PATH = new Map<string, string>()
