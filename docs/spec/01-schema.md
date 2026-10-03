@@ -96,9 +96,10 @@ Reasons for the split:
 - `analytics.db` grows without bound by design ("kept FOREVER"). Keeping it out of the
   content file keeps the precious file small and its backups fast.
 
-They are joined where needed with `ATTACH DATABASE`, which SQLite supports in a single
-connection with cross-database queries. Only `analytics_totals` (the "Views" column on
-the content tables) needs it.
+They are never joined. Each has its own connection and its own ledger of migrations
+(`schema_migrations`, `analytics_schema_migrations`). An `ATTACH DATABASE` for one
+cross-file join lasted until 2026-10-03, long after the join itself was gone, and was
+removed because a Cloudflare Durable Object refuses it (ADR 0066).
 
 ### Connection strategy
 

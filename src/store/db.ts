@@ -43,8 +43,7 @@ export type Db = Database
 // 121 ms), so nothing is given up on a large box either.
 //
 // 16 MB rather than the 2 MB that measured just as well: WHAT WAS MEASURED IS POINT LOOKUPS
-// BY PRIMARY KEY, and the request path also runs FTS search, taxonomy joins and the analytics
-// join across the ATTACHed file. Those are the shapes a page cache actually helps and none of
+// BY PRIMARY KEY, and the request path also runs FTS search and taxonomy joins. Those are the shapes a page cache actually helps and none of
 // them is in the number above, so the headroom stays until something measures them.
 //
 // It changes NOTHING for a blog whose database fits under the ceiling, which is every blog
@@ -61,23 +60,35 @@ const PRAGMAS = [
 let content: Database | null = null
 let analytics: Database | null = null
 
+/**
+ * Which of the two databases a connection is. Each keeps its own ledger of migrations, and each
+ * decides "is this new?" by its OWN tables — which matters once both live in one SQLite file, as
+ * they do in a Cloudflare Durable Object (ADR 0066), where the content tables would otherwise make
+ * a brand-new analytics schema look old and run a migration against columns it already has.
+ */
+export type Kind = 'content' | 'analytics'
+
+/** Each database's own ledger. Analytics' was `schema_migrations` too until 2026-10-03. */
+export const LEDGER: Record<Kind, string> = { content: 'schema_migrations', analytics: 'analytics_schema_migrations' }
+
 function open(
-  path: string, schema: string, synchronous: 'FULL' | 'NORMAL', migrations: string,
+  path: string, schema: string, synchronous: 'FULL' | 'NORMAL', migrations: string, kind: Kind,
 ): { db: Database; fresh: boolean } {
   const db = new Database(path, { create: true, strict: true })
   for (const p of PRAGMAS) db.run(`pragma ${p};`)
   // Content is worth an fsync per commit; analytics is not. Losing a day of pageviews is
   // an annoyance, losing a day of posts is a disaster.
   db.run(`pragma synchronous = ${synchronous};`)
+  if (kind === 'analytics') renameAnalyticsLedger(db)
   // Whether this file already held tables decides what migrations mean for it, and the
   // only moment that is knowable is BEFORE the schema is applied.
-  const fresh = isEmpty(db)
+  const fresh = isEmpty(db, kind)
   // And this is the other thing only knowable here: what the operator had before this boot
   // changed anything. The copy is taken ahead of the schema as well as the migrations —
   // `schema.sql` only ever adds what is missing, but a copy of "before" that was taken after
   // something is not a copy of before (ADR 0063).
   if (!fresh) {
-    const step = firstPending(db, migrations)
+    const step = firstPending(db, migrations, LEDGER[kind])
     if (step) copyBeforeMigrating(db, path, step)
   }
   db.transaction(() => db.run(schema))()
@@ -92,11 +103,11 @@ function open(
  * the copy on the oldest database anybody could be holding, which is the one most worth
  * copying.
  */
-function firstPending(db: Database, source: string): string | null {
+function firstPending(db: Database, source: string, ledger: string): string | null {
   let applied: Set<string>
   try {
     applied = new Set(
-      db.query<{ name: string }, []>(`select name from schema_migrations`).all().map((r) => r.name),
+      db.query<{ name: string }, []>(`select name from ${ledger}`).all().map((r) => r.name),
     )
   } catch {
     applied = new Set()
@@ -104,12 +115,38 @@ function firstPending(db: Database, source: string): string | null {
   return parseMigrations(source).find((step) => !applied.has(step.name))?.name ?? null
 }
 
-/** No tables at all — a database this process is about to create rather than open. */
-function isEmpty(db: Database): boolean {
+/**
+ * None of THIS database's tables yet — one this process is about to create rather than open.
+ *
+ * Tables that are not ours do not count: SQLite's own (`sqlite_…`), the ones a Cloudflare Durable
+ * Object creates beside ours (`_cf_KV`, the moment its key-value API is touched) and the one its
+ * local emulator adds (`__miniflare…`). Measured 2026-10-03: counting `_cf_KV` made a brand-new
+ * blog look like an old one, so the boot went looking for a database to copy before migrating and
+ * died on it. And the other database's tables do not count either, for when both share a file.
+ * `_` is a LIKE wildcard, hence the escapes.
+ */
+export function isEmpty(db: Database, kind: Kind = 'content'): boolean {
+  const ours = kind === 'analytics' ? `name like 'analytics\\_%' escape '\\'` : `name not like 'analytics\\_%' escape '\\'`
   const row = db.query<{ n: number }, []>(
-    `select count(*) as n from sqlite_master where type = 'table' and name not like 'sqlite_%'`,
+    `select count(*) as n from sqlite_master where type = 'table'
+       and name not like 'sqlite\\_%' escape '\\' and name not like '\\_cf\\_%' escape '\\'
+       and name not like '\\_\\_miniflare%' escape '\\' and ${ours}`,
   ).get()
   return (row?.n ?? 0) === 0
+}
+
+/**
+ * Analytics' ledger was called `schema_migrations`, the same name as the content database's. Fine
+ * while each had its own file; impossible once both share one, as on Cloudflare. Renamed once, in
+ * place, on an `analytics.db` that still has the old name — every row it holds kept.
+ */
+function renameAnalyticsLedger(db: Database): void {
+  const has = (name: string) => db.query<{ n: number }, [string]>(
+    `select count(*) as n from sqlite_master where type = 'table' and name = ?`,
+  ).get(name)!.n > 0
+  if (has('schema_migrations') && !has(LEDGER.analytics)) {
+    db.run(`alter table schema_migrations rename to ${LEDGER.analytics}`)
+  }
 }
 
 type Migration = { name: string; sql: string }
@@ -143,12 +180,12 @@ export function parseMigrations(source: string): Migration[] {
  * Returns whether anything RAN, which is not the same as whether anything was recorded: a
  * fresh database records every step and runs none, and has nothing to compact afterwards.
  */
-function applyMigrations(db: Database, source: string, fresh: boolean): boolean {
+function applyMigrations(db: Database, source: string, fresh: boolean, ledger: string): boolean {
   const applied = new Set(
-    db.query<{ name: string }, []>(`select name from schema_migrations`).all().map((r) => r.name),
+    db.query<{ name: string }, []>(`select name from ${ledger}`).all().map((r) => r.name),
   )
   const record = db.query<never, [string, number]>(
-    `insert or ignore into schema_migrations (name, applied_at) values (?, ?)`,
+    `insert or ignore into ${ledger} (name, applied_at) values (?, ?)`,
   )
   let ran = false
   for (const step of parseMigrations(source)) {
@@ -175,23 +212,23 @@ export function openDatabases(dir: string): { db: Database; analyticsDb: Databas
   closeDatabases()
   mkdirSync(dir, { recursive: true })
   const contentPath = join(dir, 'quire.db')
-  const opened = open(contentPath, contentSchema, 'FULL', contentMigrations)
+  const opened = open(contentPath, contentSchema, 'FULL', contentMigrations, 'content')
   content = opened.db
-  if (applyMigrations(content, contentMigrations, opened.fresh)
+  if (applyMigrations(content, contentMigrations, opened.fresh, LEDGER.content)
       && compactIfMostlyFree(content, contentPath)) {
     // The compaction closed it and replaced the file underneath. Opening it again runs a
     // schema of `if not exists` against the shape it already has, and finds nothing pending.
-    content = open(contentPath, contentSchema, 'FULL', contentMigrations).db
+    content = open(contentPath, contentSchema, 'FULL', contentMigrations, 'content').db
   }
-  const openedAnalytics = open(join(dir, 'analytics.db'), analyticsSchema, 'NORMAL', analyticsMigrations)
+  const openedAnalytics = open(join(dir, 'analytics.db'), analyticsSchema, 'NORMAL', analyticsMigrations, 'analytics')
   analytics = openedAnalytics.db
   // Analytics has its own ledger and its own steps. It went without one until 2026-08-29,
   // which was fine while the table never changed shape and stopped being fine the moment
   // it did: `if not exists` cannot add a column to a table that already exists.
-  applyMigrations(analytics, analyticsMigrations, openedAnalytics.fresh)
-  // Only `analytics_totals` (the Views column on the admin content tables) needs to join
-  // across the two files. ATTACH once here rather than per query.
-  content.run(`attach database ? as analytics;`, [join(dir, 'analytics.db')])
+  applyMigrations(analytics, analyticsMigrations, openedAnalytics.fresh, LEDGER.analytics)
+  // NO ATTACH since 2026-10-03. It was there for one cross-file join, `analytics_totals`, which no
+  // query has used for a long time (nothing in `src/` names an `analytics.` table), and a
+  // Durable Object refuses `ATTACH` outright. Each database is reached through its own connection.
   return { db: content, analyticsDb: analytics }
 }
 

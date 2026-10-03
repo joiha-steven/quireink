@@ -18,7 +18,9 @@
 -- there are installs in the wild, and `create table if not exists` cannot add a column to a
 -- table that already exists. Steps live in `migrations-analytics.sql` and run through the
 -- same `applyMigrations` the content database uses.
-create table if not exists schema_migrations (
+-- Its own name since 2026-10-03 (`analytics_schema_migrations`, not `schema_migrations`), so the
+-- two ledgers can share one file on Cloudflare (ADR 0066). `db.ts` renames an old one in place.
+create table if not exists analytics_schema_migrations (
   name       text primary key,
   applied_at integer not null
 );

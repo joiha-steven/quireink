@@ -128,8 +128,7 @@ unconstrained machine the four are indistinguishable (121 / 127 / 120 / 121 ms),
 server gives up nothing either.
 
 It is 16 MB and not the 2 MB that measured as well, because what was measured is point lookups
-by primary key: the request path also runs FTS search, taxonomy joins and the analytics join
-across the ATTACHed file, and those are the shapes a page cache actually helps. None of them is
+by primary key: the request path also runs FTS search and taxonomy joins, and those are the shapes a page cache actually helps. None of them is
 in the table above, so the headroom stays until something measures them.
 
 A database smaller than the cache — which is nearly every blog — behaves identically either

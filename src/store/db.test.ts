@@ -2,7 +2,8 @@
 // and the two data-corruption paths 01-schema.md calls out are closed.
 import { expect, test, afterAll } from 'bun:test'
 import { rmSync } from 'node:fs'
-import { openDatabases, closeDatabases, liveOnly } from './db'
+import { Database } from 'bun:sqlite'
+import { openDatabases, closeDatabases, liveOnly, isEmpty } from './db'
 
 const DIR = './.tmp/test-db'
 rmSync(DIR, { recursive: true, force: true })
@@ -32,6 +33,45 @@ test('analytics schema is a SEPARATE file, not the content one', () => {
   expect(t).toContain('analytics_events')
   expect(t).not.toContain('posts')
   expect(names(db)).not.toContain('analytics_events')
+})
+
+test('each database keeps its own ledger, under its own name', () => {
+  expect(names(db)).toContain('schema_migrations')
+  expect(names(analyticsDb)).toContain('analytics_schema_migrations')
+  expect(names(analyticsDb)).not.toContain('schema_migrations')
+})
+
+// ADR 0066: on Cloudflare both databases share one file, beside a table the platform makes.
+test('a table that is not ours does not make a new database look old', () => {
+  const d = new Database(':memory:')
+  d.run('create table _cf_KV (key text primary key, value blob)')
+  d.run('create table __miniflare_do_name (name text)')
+  expect(isEmpty(d, 'content')).toBe(true)
+  expect(isEmpty(d, 'analytics')).toBe(true)
+  d.run('create table posts (id integer)')
+  expect(isEmpty(d, 'content')).toBe(false)
+  expect(isEmpty(d, 'analytics')).toBe(true) // the content tables are not analytics' own
+  d.run('create table analytics_events (id integer)')
+  expect(isEmpty(d, 'analytics')).toBe(false)
+  d.close()
+})
+
+test('an analytics.db with the old ledger name keeps every row under the new one', () => {
+  const dir = './.tmp/test-db-ledger'
+  rmSync(dir, { recursive: true, force: true })
+  openDatabases(dir)
+  closeDatabases()
+  const file = new Database(`${dir}/analytics.db`)
+  const before = file.query<{ n: number }, []>('select count(*) as n from analytics_schema_migrations').get()!.n
+  file.run('alter table analytics_schema_migrations rename to schema_migrations') // as every install before 2026-10-03 has it
+  file.close()
+  const reopened = openDatabases(dir)
+  const after = reopened.analyticsDb.query<{ n: number }, []>('select count(*) as n from analytics_schema_migrations').get()!.n
+  expect(after).toBe(before)
+  expect(names(reopened.analyticsDb)).not.toContain('schema_migrations')
+  closeDatabases()
+  rmSync(dir, { recursive: true, force: true })
+  ;({ db, analyticsDb } = openDatabases(DIR))
 })
 
 test('applying the schema twice is a no-op, and does not leak the first handles', () => {
