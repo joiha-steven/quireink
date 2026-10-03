@@ -525,7 +525,6 @@ const ja = {
   cfLeaveDone: '削除しました。このアドレスはまもなく応答しなくなります。',
   cfLeaveGit: 'Deploy ボタンで作成したブログ:バックアップをダウンロードし、Cloudflare ダッシュボードで Worker を削除(Settings → Delete)、その R2 バケットを空にして削除し、GitHub 上の Quire Ink のコピーも削除してください。',
   cfConfirmMismatch: 'このブログのアドレスではありません。',
-  cfCheckTooBig: 'このブログは {size} あり、1 回の移行で運べる 95 MB を超えています。',
   cfErrNetwork: 'サーバーが応答しませんでした。少し待ってからもう一度お試しください。',
   cfInterrupted: '移行が中断されました:サーバーが再起動しました。もう一度「移行」を押してください。安全に続きから進みます。',
   cfUpdateLook: '新しいリリースを探す',

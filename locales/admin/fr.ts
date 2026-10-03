@@ -525,7 +525,6 @@ const fr = {
   cfLeaveDone: 'Supprimé. Cette adresse cessera de répondre dans un instant.',
   cfLeaveGit: 'Créé avec le bouton Deploy : téléchargez une sauvegarde puis, dans le tableau de bord Cloudflare, supprimez le Worker (Settings → Delete), videz et supprimez son bucket R2, et supprimez la copie de Quire Ink sur votre GitHub.',
   cfConfirmMismatch: 'Ce n’est pas l’adresse de ce blog.',
-  cfCheckTooBig: 'Ce blog pèse {size}, plus que les 95 Mo qu’un déménagement peut emporter d’un coup.',
   cfErrNetwork: 'Le serveur n’a pas répondu. Réessayez dans un instant.',
   cfInterrupted: 'Le déménagement a été interrompu : le serveur a redémarré. Appuyez de nouveau sur Déménager ; il reprend sans risque.',
   cfUpdateLook: 'Chercher une version plus récente',

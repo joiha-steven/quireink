@@ -21,7 +21,7 @@ type Status = {
   siteUrl: string
   error: string
 }
-type Check = { plan: 'paid' | 'free' | 'unknown'; scriptName: string; exists: boolean; siteUrl: string | null; bytes: number; tooBig: boolean }
+type Check = { plan: 'paid' | 'free' | 'unknown'; scriptName: string; exists: boolean; siteUrl: string | null; bytes: number }
 type Envelope<T> = { success?: boolean; data?: T; error?: string }
 
 const fill = (text: string | undefined, values: Record<string, string>): string =>
@@ -48,7 +48,7 @@ function reason(w: Words, code: string | undefined, prefix: string | undefined):
     network: w.network, wrong_password: w.wrongPassword, too_many_attempts: w.tooMany,
     move_running: w.running, site_url_needed: w.siteUrlNeeded, token_required: w.tokenRequired,
     account_and_token_required: w.tokenRequired, not_installed_by_api: w.notApi, already_newest: w.newest,
-    confirm_mismatch: w.mismatch, too_big: w.tooBig, bad_request: w.network,
+    confirm_mismatch: w.mismatch, bad_request: w.network,
   }
   const c = code ?? ''
   if (known[c]) return known[c]!
@@ -83,7 +83,7 @@ export function wireCloud(screen: HTMLElement): void {
 
   const say = (el: HTMLElement, text: string): void => { el.textContent = text; el.hidden = !text }
   const armMove = (): void => {
-    moveKey.disabled = !checked || !checked.siteUrl || checked.plan === 'free' || checked.tooBig || (checked.plan === 'unknown' && !confirmPaid.checked)
+    moveKey.disabled = !checked || !checked.siteUrl || checked.plan === 'free' || (checked.plan === 'unknown' && !confirmPaid.checked)
   }
 
   for (const el of [account, token]) {
@@ -101,7 +101,6 @@ export function wireCloud(screen: HTMLElement): void {
       const name = { name: r.data.scriptName }
       const lines = [!r.data.siteUrl ? w.siteUrlNeeded : fill(w[r.data.plan], name)]
       if (r.data.exists) lines.push(fill(w.exists, name))
-      if (r.data.tooBig) lines.push(fill(w.tooBig, { size: `${Math.round(r.data.bytes / 1024 / 1024)} MB` }))
       say(answer, lines.join(' '))
       paidRow.hidden = r.data.plan !== 'unknown'
       host = r.data.siteUrl ? new URL(r.data.siteUrl).hostname : ''

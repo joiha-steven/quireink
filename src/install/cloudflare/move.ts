@@ -5,7 +5,8 @@
 //   2. package   this version's Cloudflare package from its GitHub Release, checked (`package.ts`);
 //   3. install   the Worker, its Durable Object, its bucket, on workers.dev (`install.ts`);
 //   4. archive   a backup of this blog, unsealed — it goes over TLS to the owner's own Worker;
-//   5. upload    into the empty Worker through `/setup/restore`, with a SETUP_CODE minted here;
+//   5. upload    into the empty Worker through `/setup/restore/parts`, 16 MB a request, with a
+//                SETUP_CODE minted here — any size, since no one request carries more than a part;
 //   6. verify    the Worker answers as this version, and the newest post opens there.
 //
 // This blog keeps running throughout and afterwards: nothing here changes it. Pointing the domain
@@ -18,6 +19,10 @@ import { installOnCloudflare } from './install'
 import { CloudflareApi, CloudflareError } from './api'
 import { fetchPackage } from './package'
 import { APP_VERSION } from '@/version'
+import { PushRefused, pushArchive, type Sendable } from '@/server/restore-push'
+
+/** The archive to send, readable a part at a time, and how to remove it once it is sent or not. */
+export type MoveArchive = { file: Sendable; drop: () => Promise<void> }
 
 export const MOVE_STEPS = ['check', 'package', 'install', 'archive', 'upload', 'verify'] as const
 export type MoveStep = (typeof MOVE_STEPS)[number]
@@ -48,7 +53,7 @@ export type MoveOptions = {
   /** The owner said the account is on Workers Paid, for a token without Billing · Read. */
   confirmedPaid: boolean
   /** The archive of this blog, unsealed, built when the step comes (so it is fresh). */
-  archive: () => Promise<Blob>
+  archive: () => Promise<MoveArchive>
   /** The newest published post's path, e.g. `/hello`, or null when there is none. */
   newestPath: () => Promise<string | null>
   /** For tests. */
@@ -185,11 +190,23 @@ async function run(o: MoveOptions, s: MoveStatus): Promise<void> {
 
     step('archive')
     const archive = await o.archive()
-    s.detail = `${Math.round(archive.size / 1024 / 1024 * 10) / 10} MB`
-
-    step('upload', s.detail)
-    await waitForSetup(installed.url, using)
-    await upload(installed.url, code, archive, using)
+    try {
+      const total = mb(archive.file.size)
+      s.detail = total
+      step('upload', total)
+      await waitForSetup(installed.url, using)
+      await pushArchive(installed.url, code, archive.file, {
+        fetch: (url, init) => using(url, init),
+        onProgress: (sent) => { s.detail = `${mb(sent)} / ${total}` },
+      }).catch((error: unknown) => {
+        if (error instanceof PushRefused && error.code === 'claimed') {
+          throw new Error('a blog already lives in that Worker, so nothing was changed there')
+        }
+        throw error instanceof PushRefused ? new Error(`the Worker refused the backup: ${error.message}`) : error
+      })
+    } finally {
+      await archive.drop().catch(() => undefined)
+    }
 
     step('verify')
     const health = await (await using(`${installed.url}/api/health`)).json() as { version?: string; package?: string }
@@ -228,19 +245,7 @@ async function waitForSetup(url: string, using: typeof fetch): Promise<void> {
   throw new Error(`${url} did not settle on workers.dev within a minute`)
 }
 
-/** Through the first setup screen, as its form posts it (`web/setup-restore.ts`). */
-async function upload(url: string, code: string, archive: Blob, using: typeof fetch): Promise<void> {
-  const form = new FormData()
-  form.set('token', code)
-  form.set('identity', '')
-  form.set('passphrase', '')
-  form.set('archive', new File([archive], 'quire-backup.tar.gz', { type: 'application/gzip' }))
-  const res = await using(`${url}/setup/restore`, { method: 'POST', body: form, redirect: 'manual' })
-  if (res.status === 303) return
-  const text = (await res.text().catch(() => '')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-  if (res.status === 409) throw new Error(`a blog already lives in that Worker, so nothing was changed there (${text.slice(0, 160)})`)
-  throw new Error(`the Worker refused the backup: ${res.status} ${text.slice(0, 200)}`)
-}
+const mb = (bytes: number): string => `${Math.round(bytes / 1024 / 1024 * 10) / 10} MB`
 
 /**
  * Point the blog's own domain at the Worker (a Custom Domain), with the token the move used, while

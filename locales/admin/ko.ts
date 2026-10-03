@@ -525,7 +525,6 @@ const ko = {
   cfLeaveDone: '삭제했습니다. 이 주소는 곧 응답을 멈춥니다.',
   cfLeaveGit: 'Deploy 버튼으로 만든 블로그: 백업을 내려받은 뒤 Cloudflare 대시보드에서 Worker를 삭제하고(Settings → Delete) R2 버킷을 비운 다음 삭제하며, GitHub의 Quire Ink 사본도 삭제하세요.',
   cfConfirmMismatch: '이 블로그의 주소가 아닙니다.',
-  cfCheckTooBig: '이 블로그는 {size}로, 한 번의 이전이 옮길 수 있는 95 MB를 넘습니다.',
   cfErrNetwork: '서버가 응답하지 않았습니다. 잠시 후 다시 시도하세요.',
   cfInterrupted: '이전이 중단되었습니다: 서버가 다시 시작되었습니다. 이전을 다시 누르세요. 안전하게 이어서 진행합니다.',
   cfUpdateLook: '새 릴리스 찾기',

@@ -105,6 +105,9 @@
 
 ### Changed
 
+- **Move to Cloudflare carries a blog of any size.** It used to refuse a blog past 95 MB, because the
+  backup went in one request; it now writes the backup to disk and sends it in 16 MB parts, resending
+  a part when the connection drops, and the card shows how much has gone.
 - **The backup archive holds rows, not database files** ([ADR 0067](docs/decisions/0067-the-backup-is-rows-and-goes-only-into-an-empty-blog.md)).
   Same name, same place, same seal when encryption is on; inside, a `manifest.json`, each
   database's `schema.sql`, one `.jsonl` file per table and the uploads as before. The manifest

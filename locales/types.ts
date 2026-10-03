@@ -777,7 +777,6 @@ export type AdminStrings = {
   cfLeaveDone: string
   cfLeaveGit: string
   cfConfirmMismatch: string
-  cfCheckTooBig: string
   cfErrNetwork: string
   cfInterrupted: string
   cfUpdateLook: string

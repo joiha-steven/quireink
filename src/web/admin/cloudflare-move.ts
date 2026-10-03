@@ -19,10 +19,13 @@ import { archiveStream, withArchiveRetry } from '@/server/archive'
 import { logActivity } from '@/server/activity'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { CloudflareApi, CloudflareError } from '@/install/cloudflare/api'
-import { attachDomain, moveStatus, scriptNameFor, startMove } from '@/install/cloudflare/move'
+import { attachDomain, moveStatus, scriptNameFor, startMove, type MoveArchive } from '@/install/cloudflare/move'
 import { fail, json } from '@/web/api'
 import { storageStats } from '@/media/storage-stats'
 import { databaseBytes } from '@/runtime/impl/runtime-info'
+import { openKept, removeKept, writeKept } from '@/runtime/impl/archive'
+import type { KeptBody } from '@/runtime/ports'
+import type { Sendable } from '@/server/restore-push'
 import { owner, ownerRouter, QUIET } from '@/web/guard'
 
 type Creds = { accountId: string; token: string }
@@ -46,13 +49,25 @@ async function publicSiteUrl(): Promise<string | null> {
 }
 
 /**
- * What the archive will about weigh: the uploads plus the databases. It goes to the Worker in one
- * request, and Cloudflare refuses a request body past 100 MB — so a blog past this is refused at the
- * check, with a reason, rather than three steps in after a Worker has been created.
+ * What the archive will about weigh: the uploads plus the databases. Shown at the check, so the owner
+ * knows how long the upload step will take; any size moves, in 16 MB parts (`server/restore-push.ts`).
  */
-const MOVE_LIMIT = 95 * 1024 * 1024
 async function blogBytes(): Promise<number> {
   return (await storageStats()).totalBytes + databaseBytes()
+}
+
+/**
+ * The archive, written beside the backups and read back a part at a time as it is sent, so a blog of
+ * gigabytes never sits in memory. Not a snapshot name, so retention and the off-site copy leave it
+ * alone; removed when the move is done with it, and replaced by the next move if one died first.
+ */
+const MOVE_ARCHIVE = 'cloudflare-move.tar.gz'
+async function archiveOnDisk(settings: Awaited<ReturnType<typeof getSettings>>): Promise<MoveArchive> {
+  await withArchiveRetry(async () => writeKept(MOVE_ARCHIVE, await archiveStream(settings, { seal: false })))
+  const kept = await openKept(MOVE_ARCHIVE)
+  // The Move runs on Bun only (`here` above), where a kept archive is a `Bun.file`, which slices.
+  if (!kept || !('slice' in kept)) throw new Error('the archive could not be read back from the backup directory')
+  return { file: kept as KeptBody & Sendable, drop: () => removeKept(MOVE_ARCHIVE) }
 }
 
 export function cloudflareMoveRoutes() {
@@ -87,7 +102,7 @@ export function cloudflareMoveRoutes() {
     const scriptName = scriptNameFor(site ?? '')
     const bytes = await blogBytes()
     const exists = await api.call('script', `/accounts/:account/workers/scripts/${scriptName}/settings`).then(() => true, () => false)
-    return json({ plan, scriptName, exists, siteUrl: site, bytes, tooBig: bytes > MOVE_LIMIT })
+    return json({ plan, scriptName, exists, siteUrl: site, bytes })
   }, QUIET)
 
   /** Start the move. The password first; one move at a time. */
@@ -105,12 +120,11 @@ export function cloudflareMoveRoutes() {
     const site = await publicSiteUrl()
     if (!site) return fail(c, 'site_url_needed', 400)
     if (moveStatus()?.running) return fail(c, 'move_running', 409)
-    if ((await blogBytes()) > MOVE_LIMIT) return fail(c, 'too_big', 413)
     const settings = await getSettings()
     const started = startMove({
       accountId: input.accountId, token: input.token, siteUrl: site,
       selfUpdate: input.selfUpdate === true, confirmedPaid: input.confirmedPaid === true,
-      archive: () => withArchiveRetry(async () => new Response(await archiveStream(settings, { seal: false })).blob()),
+      archive: () => archiveOnDisk(settings),
       newestPath: async () => {
         const newest = (await getPublicPosts())[0]
         return newest ? `/${newest.slug}` : null

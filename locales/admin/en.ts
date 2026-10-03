@@ -525,7 +525,6 @@ const en = {
   cfLeaveDone: 'Deleted. This address stops answering in a moment.',
   cfLeaveGit: 'Made with the Deploy button: download a backup, then in the Cloudflare dashboard delete the Worker (Settings → Delete) and empty and delete its R2 bucket, and delete the copy of Quire Ink on your GitHub.',
   cfConfirmMismatch: 'That is not this blog’s address.',
-  cfCheckTooBig: 'This blog is {size}, past the 95 MB a move can carry at once.',
   cfErrNetwork: 'The server did not answer. Try again in a moment.',
   cfInterrupted: 'The move was interrupted: the server restarted. Press Move again; it carries on safely.',
   cfUpdateLook: 'Look for a newer release',

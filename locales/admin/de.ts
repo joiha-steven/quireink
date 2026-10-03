@@ -525,7 +525,6 @@ const de = {
   cfLeaveDone: 'Gelöscht. Diese Adresse antwortet gleich nicht mehr.',
   cfLeaveGit: 'Mit der Deploy-Schaltfläche erstellt: Sicherung herunterladen, dann im Cloudflare-Dashboard den Worker löschen (Settings → Delete), seinen R2-Bucket leeren und löschen und die Kopie von Quire Ink auf Ihrem GitHub löschen.',
   cfConfirmMismatch: 'Das ist nicht die Adresse dieses Blogs.',
-  cfCheckTooBig: 'Dieses Blog ist {size} groß, mehr als die 95 MB, die ein Umzug auf einmal tragen kann.',
   cfErrNetwork: 'Der Server hat nicht geantwortet. Versuchen Sie es gleich noch einmal.',
   cfInterrupted: 'Der Umzug wurde unterbrochen: Der Server wurde neu gestartet. Drücken Sie erneut auf Umziehen; er setzt sicher fort.',
   cfUpdateLook: 'Nach einer neueren Version suchen',

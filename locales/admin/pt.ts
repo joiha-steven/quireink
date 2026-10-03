@@ -526,7 +526,6 @@ const pt = {
   cfLeaveDone: 'Apagado. Este endereço para de responder em instantes.',
   cfLeaveGit: 'Criado com o botão Deploy: baixe um backup e, no painel da Cloudflare, apague o Worker (Settings → Delete), esvazie e apague o bucket R2 dele e apague a cópia do Quire Ink no seu GitHub.',
   cfConfirmMismatch: 'Esse não é o endereço deste blog.',
-  cfCheckTooBig: 'Este blog tem {size}, mais que os 95 MB que uma mudança leva de uma vez.',
   cfErrNetwork: 'O servidor não respondeu. Tente de novo daqui a pouco.',
   cfInterrupted: 'A mudança foi interrompida: o servidor reiniciou. Pressione Mudar de novo; ela continua com segurança.',
   cfUpdateLook: 'Procurar uma versão mais nova',

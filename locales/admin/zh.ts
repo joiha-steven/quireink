@@ -525,7 +525,6 @@ const zh = {
   cfLeaveDone: '已删除。这个地址很快会停止响应。',
   cfLeaveGit: '用 Deploy 按钮建的博客:先下载备份,再在 Cloudflare 控制台删除 Worker(Settings → Delete),清空并删除它的 R2 存储桶,并删除你 GitHub 上的 Quire Ink 副本。',
   cfConfirmMismatch: '这不是这个博客的地址。',
-  cfCheckTooBig: '这个博客有 {size},超过一次迁移能带走的 95 MB。',
   cfErrNetwork: '服务器没有响应。请稍后再试。',
   cfInterrupted: '迁移被中断:服务器重启了。再按一次迁移,它会安全地接着进行。',
   cfUpdateLook: '查找更新的版本',

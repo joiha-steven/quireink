@@ -525,7 +525,6 @@ const vi = {
   cfLeaveDone: 'Đã xoá. Địa chỉ này sẽ ngừng trả lời trong giây lát.',
   cfLeaveGit: 'Tạo bằng nút Deploy: tải bản sao lưu, rồi trong bảng điều khiển Cloudflare xoá Worker (Settings → Delete), làm trống và xoá bucket R2 của nó, và xoá bản sao Quire Ink trên GitHub của bạn.',
   cfConfirmMismatch: 'Đó không phải địa chỉ của blog này.',
-  cfCheckTooBig: 'Blog này nặng {size}, vượt 95 MB mà một lần chuyển mang được.',
   cfErrNetwork: 'Máy chủ không trả lời. Thử lại sau giây lát.',
   cfInterrupted: 'Việc chuyển bị ngắt: máy chủ đã khởi động lại. Bấm Chuyển lần nữa; nó tiếp tục an toàn.',
   cfUpdateLook: 'Tìm bản mới hơn',

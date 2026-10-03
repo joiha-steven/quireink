@@ -93,7 +93,7 @@ describe('moving onto a Worker that already exists', () => {
     const claimed = (async (url: string) => (String(url).endsWith('/setup') ? new Response('', { status: 404 }) : new Response('', { status: 404 }))) as typeof fetch
     startMove({
       accountId: 'a', token: 't', siteUrl: 'https://blog.test', selfUpdate: false, confirmedPaid: true,
-      archive: async () => new Blob(['x']), newestPath: async () => null, apiBase, fetchImpl: claimed,
+      archive: async () => ({ file: { size: 1, slice: () => new Blob(['x']) }, drop: async () => {} }), newestPath: async () => null, apiBase, fetchImpl: claimed,
     })
     for (let i = 0; i < 50 && moveStatus()?.running; i++) await Bun.sleep(20)
     const s = moveStatus()!

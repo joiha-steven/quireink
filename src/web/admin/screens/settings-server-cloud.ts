@@ -34,7 +34,7 @@ function words(t: AdminStrings): string {
     paid: t.cfCheckPaid, free: t.cfCheckFree, unknown: t.cfCheckUnknown, exists: t.cfCheckExists,
     done: t.cfDone, domainNote: t.cfDomainNote, attach: t.cfAttach, attached: t.cfAttached,
     siteUrlNeeded: t.cfSiteUrlNeeded, wrongPassword: t.cfWrongPassword, running: t.cfRunning,
-    failed: t.cfFailed, tooMany: t.cfTooMany, tooBig: t.cfCheckTooBig, network: t.cfErrNetwork,
+    failed: t.cfFailed, tooMany: t.cfTooMany, network: t.cfErrNetwork,
     interrupted: t.cfInterrupted, tokenRequired: t.cfErrToken,
   }))
 }

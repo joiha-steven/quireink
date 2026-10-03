@@ -130,7 +130,9 @@ Cloudflare**. Paste your account ID and an API token (the card lists the permiss
 password again, and press *Move to Cloudflare*. It checks the token and the plan, fetches this
 version's Cloudflare package from its GitHub Release, creates the Worker, its storage and its
 `workers.dev` address in your account, and loads a backup of the blog into it — posts, pictures,
-accounts, settings. Measured on 2026-10-03: a blog with a 3.7 MB backup moved in 45 seconds.
+accounts, settings. Measured on 2026-10-03: a blog with a 3.7 MB backup moved in 45 seconds. A blog of
+any size moves: the backup is written beside your other backups (so the disk needs room for one more)
+and sent in 16 MB parts, a part resent if the connection drops, then removed.
 
 The blog you moved from keeps serving until you point your domain at the Worker: the card does it
 when the token may edit your domain, or you delete the domain's DNS record and add it as a Custom
