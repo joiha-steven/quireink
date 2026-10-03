@@ -12,6 +12,7 @@ import { savePost } from '@/content/posts'
 import {
   buildArchive, isSnapshotName, lastRunAt, listSnapshots, maybeRunBackup, runBackup,
   snapshotName, deleteSnapshot,
+  tarVerdict,
 } from '@/server/backup'
 import { db } from '@/store/db'
 import { Database } from 'bun:sqlite'
@@ -35,6 +36,27 @@ beforeEach(() => {
   rmSync(SNAPSHOTS, { recursive: true, force: true })
   mkdirSync(UPLOADS, { recursive: true })
   writeFileSync(join(UPLOADS, 'photo.jpg'), 'not really a jpeg')
+})
+
+describe('tarVerdict', () => {
+  // GNU tar's exit 1 for a file that changed under it, with the archive whole (the release matrix
+  // found it in the image on 2026-10-03); anything else stays a failure.
+  it('passes a clean exit', () => expect(tarVerdict(0, '')).toEqual({}))
+
+  it('passes GNU tar\'s "file changed as we read it", and says so', () => {
+    const v = tarVerdict(1, 'tar: uploads: file changed as we read it\n')
+    expect(v.error).toBeUndefined()
+    expect(v.warning).toContain('uploads: file changed as we read it')
+  })
+
+  it('fails exit 1 when anything else is on stderr too', () => {
+    expect(tarVerdict(1, 'tar: uploads: file changed as we read it\ntar: x: Cannot open: Permission denied\n').error).toContain('Permission denied')
+  })
+
+  it('fails exit 1 with nothing said, and every other code', () => {
+    expect(tarVerdict(1, '').error).toBeDefined()
+    expect(tarVerdict(2, 'tar: Error is not recoverable').error).toContain('tar exited 2')
+  })
 })
 
 describe('snapshotName / isSnapshotName', () => {

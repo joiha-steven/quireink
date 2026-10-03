@@ -210,13 +210,35 @@ export async function buildArchive(dest: string): Promise<number> {
       await writer.end()
     }
     const code = await proc.exited
-    if (code !== 0) {
-      throw new Error(`tar exited ${code}: ${(await new Response(proc.stderr).text()).trim()}`)
-    }
+    const verdict = tarVerdict(code, await new Response(proc.stderr).text())
+    if (verdict.error) throw new Error(verdict.error)
+    if (verdict.warning) console.warn(`[WARN] backup: ${verdict.warning}`)
     return (await stat(dest)).size
   } finally {
     await rm(stage, { recursive: true, force: true })
   }
+}
+
+/**
+ * Whether tar's exit means the archive is whole.
+ *
+ * ⚠️ GNU TAR EXITS 1 FOR "file changed as we read it", and the archive it wrote is complete.
+ * Found by the release matrix on 2026-10-03 (ADR 0065): in the image, a backup taken while the
+ * maintenance tick was writing the variants of a picture just uploaded answered 500 —
+ * `tar: uploads: file changed as we read it` — and the same request a second later answered 200.
+ * A Mac never shows it, because its tar is BSD tar, which does not complain; every Linux server
+ * and every container does. The variants are written to a temporary name and renamed
+ * (`media/finalize.ts`), so what changed under tar is the directory listing, never the bytes of
+ * a file it copied. Exit 1 with ONLY that warning on stderr is therefore success, said in the
+ * log; exit 1 with anything else, or any other code, is still a failure.
+ */
+export function tarVerdict(code: number, stderr: string): { error?: string; warning?: string } {
+  if (code === 0) return {}
+  const lines = stderr.split('\n').map((l) => l.trim()).filter(Boolean)
+  if (code === 1 && lines.length > 0 && lines.every((l) => /file changed as we read it$/.test(l))) {
+    return { warning: `a file changed while it was archived, which tar reports and the archive survives: ${lines.join('; ')}` }
+  }
+  return { error: `tar exited ${code}: ${lines.join('\n')}` }
 }
 
 /** Newest first. An unreadable or absent directory is an empty list, not an error. */

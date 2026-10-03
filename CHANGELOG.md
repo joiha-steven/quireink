@@ -19,6 +19,15 @@
   for the image (or the NAS app's Update button), and syncing the fork for Cloudflare. In all
   eleven languages.
 
+### Fixed
+
+- **A backup taken on Linux while a picture's smaller copies were being written failed with a 500**
+  and `tar: uploads: file changed as we read it`; the same request a second later worked. GNU tar
+  reports a file that changed under it with exit 1 and writes a whole archive anyway; BSD tar, on a
+  Mac, says nothing, which is why it never showed up there. That one warning is now logged and the
+  archive kept; any other tar complaint is still a failure. Found by the new install matrix, in the
+  image.
+
 ### Changed
 
 - **`install.sh` installs a release, not `main`** ([ADR 0065](docs/decisions/0065-every-install-runs-a-release.md)).
