@@ -62,6 +62,10 @@
       // find them without knowing the tree — the specifier stays `@/locales/*` on purpose,
       // and the longest-prefix rule makes this entry win over the generic one below.
       "@/locales/*": ["./locales/*"],
+      // THE RUNTIME SEAM (ADR 0066, `src/runtime/ports.ts`): the tree imports `@/runtime/impl/x`
+      // and this resolves it to the Bun side. The Cloudflare build maps the same specifier to
+      // `src/runtime/cf/`. Longest prefix wins, as for `@/locales/*` above.
+      "@/runtime/impl/*": ["./src/runtime/bun/*"],
       "@/*": ["./src/*"]
     }
   },

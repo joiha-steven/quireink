@@ -39,6 +39,7 @@ import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
 import { detectLang } from '@/render/detect-lang'
 import { plainCode } from '@/render/plain-code'
 import { readableTheme } from '@/render/code-ink'
+import { regexEngine } from '@/runtime/impl/shiki-engine'
 
 // VITESSE, MADE READABLE on this site's code panels (`code-ink.ts`, FIXLIST 7.3). The names stay,
 // so the `shiki-themes` classes on a block do not move; the KEY carries `aa`, so no cache row
@@ -58,6 +59,9 @@ function highlighter(): Promise<Highlighter> {
       readableTheme(dark.default, 'dark', THEMES.dark),
     ],
     langs: [],
+    // From the runtime seam: Bun and Cloudflare load Oniguruma's WASM differently, and must
+    // still be the same engine, because the golden compare holds both to the same bytes.
+    engine: regexEngine(),
   }))
   return hl
 }
@@ -128,7 +132,12 @@ function ensureGrammar(h: Highlighter, id: string): Promise<boolean> {
       .then(() => true)
       // A grammar that will not load is not a crash: the block falls back like any fence
       // naming a language nobody has. Dropped from the map so a transient failure can retry.
-      .catch(() => { loads.delete(id); return false })
+      // SAID IN THE LOG, never swallowed: see the `catch` at the bottom of this file.
+      .catch((error: unknown) => {
+        console.error(`[ERROR] highlight: the ${id} grammar did not load: ${(error as Error).message}`)
+        loads.delete(id)
+        return false
+      })
     loads.set(id, p)
   }
   return p
@@ -183,7 +192,12 @@ export async function highlightCode(code: string, lang: string): Promise<string 
     })
     writeRendered(key, html)
     return html
-  } catch {
+  } catch (error) {
+    // ⚠️ THIS WAS A BARE `catch {}` until 2026-10-03, and it hid a whole engine failing. Inside a
+    // Cloudflare Worker the default engine cannot compile its WASM, so every block on every page
+    // fell back to uncoloured code and nothing anywhere said why (measured in the G0 spike). The
+    // fallback stays — a page with plain code beats a 500 — but it is never silent again.
+    console.error(`[ERROR] highlight: ${language} block fell back to plain: ${(error as Error).message}`)
     return null
   }
 }
