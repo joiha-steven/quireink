@@ -80,17 +80,28 @@ Every part, in detail and against the alternatives: [**Quire Ink, in full**](./d
 
 ## Install
 
-You need a domain and a machine you can point it at; the cheapest VPS tier is enough. On a VPS with [Bun](https://bun.sh) 1.3 or newer, one command clones, builds and starts it:
+**Try it first, nothing to install:** [demo.quireink.com](https://demo.quireink.com), or your own throwaway blog at [try.quireink.com](https://try.quireink.com), wiped twice an hour.
+
+Then one question — **what do you have?**
+
+| You have | The way in | Upgrading |
+|:--|:--|:--|
+| **A fresh VPS** (Ubuntu or Debian, the cheapest tier) and a domain pointed at it | The one command below ([`server.sh`](./server.sh)) | `docker compose pull && docker compose up -d` in `/opt/quireink`; a new release line: run it again |
+| **A NAS** | Unraid: **Apps → `QuireInk`**. Synology, QNAP, Runtipi: paste one compose file ([step by step](./docs/self-host-docker.md#on-a-nas-or-a-home-server)) | The container app's **Update** |
+| **Docker already**, and a domain | [`docker-compose.image.yml`](./docker-compose.image.yml) + the [`Caddyfile`](./Caddyfile) ([how](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
+| **A server you look after yourself**, with Bun 1.3+ | [`install.sh`](./install.sh), then systemd and nginx ([self-hosting](./docs/self-host.md)) | `bun run upgrade` |
+| **Kubernetes**, or **a DigitalOcean droplet** | [The manifests](./deploy/kubernetes/README.md) · [one pasted file](./deploy/digitalocean/README.md) | Change the tag · as the VPS row |
+
+On a fresh VPS, with the domain's DNS already pointing at it:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/server.sh \
+  | sudo bash -s -- --domain blog.example.com --setup-code 'twelve-or-more-characters'
 ```
 
-It installs the newest release, never uses `sudo` and refuses to run as root. Later, `bun run upgrade` in the same directory moves it to a newer release and back if that one does not come up. It runs the blog in the foreground, so closing the terminal stops it: on a server, make it a service ([self-host guide](./docs/self-host.md) §4, or Docker). Then [`deploy/caddy/setup.sh`](./deploy/caddy/setup.sh) adds the HTTPS certificate. The log prints a one-time `/setup` link: open it, and a short setup — account, authenticator, the look — ends in the editor.
+It installs Docker, runs the image of the newest release with a Let's Encrypt certificate, and stops on any machine that already serves something. Then open `https://blog.example.com/setup`, type the code, and a short setup — account, authenticator, the look — ends in the editor.
 
-**Would rather use Docker?** Pull `quireink/quireink` (`amd64` and `arm64`); with HTTPS that is [`docker-compose.image.yml`](./docker-compose.image.yml) plus the [`Caddyfile`](./Caddyfile).
-
-It also runs on a DigitalOcean droplet from [one pasted file](./deploy/digitalocean/README.md), on a NAS (Unraid, Synology, QNAP — [step by step](./docs/self-host-docker.md#on-a-nas-or-a-home-server)) and on Kubernetes ([the manifests](./deploy/kubernetes/README.md)). By hand, with systemd and nginx: [self-hosting](./docs/self-host.md).
+**Every way in installs a release**, never unreleased work ([ADR 0065](./docs/decisions/0065-every-install-runs-a-release.md)), and every release is installed and upgraded through each of them before it is published. Images exist for `amd64` and `arm64`. **Setting it up once is the technical part:** hand the server to an AI agent and the [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) skill walks it through, checks included.
 
 ## Let an AI agent write for you
 

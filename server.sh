@@ -12,7 +12,7 @@
 #
 # THE ONE SCRIPT IN THIS PROJECT THAT USES sudo, and the reason it is allowed to: it refuses to run
 # anywhere but a BLANK machine. Something already listening on 80 or 443, nginx, Apache or Caddy
-# installed as a service, or any Docker container that is not ours, and it stops before changing
+# running or enabled as a service, or any Docker container that is not ours, and it stops before changing
 # anything and says what it found. `install.sh` keeps its own rule — no sudo, never root — for
 # people who want to run things themselves.
 #
@@ -70,9 +70,12 @@ if [ "$UPDATE" = "0" ]; then
   if command -v ss >/dev/null 2>&1 && ss -ltnH 2>/dev/null | awk '{print $4}' | grep -qE '(^|[:.])(80|443)$'; then
     found="$found\n  - something is already listening on port 80 or 443"
   fi
+  # RUNNING OR SET TO START, not merely installed: an image may ship nginx disabled (GitHub's
+  # runners carry both nginx and apache2, stopped), and that fights nobody. One that runs, or
+  # comes back at the next boot, takes port 80 from Caddy.
   for svc in nginx apache2 httpd caddy; do
-    if systemctl list-unit-files "$svc.service" >/dev/null 2>&1 && systemctl list-unit-files "$svc.service" | grep -q "^$svc.service"; then
-      found="$found\n  - $svc is installed as a service"
+    if systemctl is-active --quiet "$svc" 2>/dev/null || systemctl is-enabled --quiet "$svc" 2>/dev/null; then
+      found="$found\n  - $svc is running, or starts at boot"
     fi
   done
   if command -v docker >/dev/null 2>&1 && [ -n "$(docker ps -aq 2>/dev/null)" ]; then

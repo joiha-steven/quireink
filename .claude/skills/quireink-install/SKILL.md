@@ -22,6 +22,17 @@ does not fit the machine in front of you.
 
 ## The install
 
+**A blank Ubuntu or Debian server: `server.sh`, and stop there.** It is the default for a fresh
+VPS (ADR 0065): Docker, the newest release's image, Caddy with a certificate when given
+`--domain`, data in `/var/lib/quireink`, claimed with `--setup-code`, tested on every release.
+It refuses a machine that already serves anything — if it stops, do NOT work around it, use one
+of the paths below instead. Running it again is an update.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/server.sh \
+  | sudo bash -s -- --domain blog.example.com --setup-code 'twelve-or-more-characters'
+```
+
 **Docker, published image.** Nothing to clone, no build step, `amd64` and `arm64` both exist:
 
 ```bash
@@ -32,7 +43,7 @@ docker run -d --name quire -p 127.0.0.1:3000:3000 \
 ```
 
 **Native, one command.** [`install.sh`](../../../install.sh) does the mechanical half — clone,
-install, build both artefacts — and deliberately none of the half that has consequences: no
+install, build both artefacts, on the newest release — and deliberately none of the half that has consequences: no
 `sudo`, no Bun install, no systemd, no proxy. It refuses to run as root, and re-running it on
 the same directory updates and rebuilds. Run it as the blog's own user, made first with
 `adduser --system --group --home /home/quire quire` (no login shell, hence `sudo -u`), with Bun
@@ -133,6 +144,7 @@ docker pull quireink/quireink:latest                 # published image: pull, th
 docker rm -f quire && docker run -d --name quire ...  # same flags as the install above
 docker compose pull && docker compose up -d          # any of the three compose files
 sudo -u quire -H bash -lc 'cd /home/quire/app && bun run upgrade'   # native: release, build, restart, verify, roll back
+sudo bash /opt/quireink/server.sh                                   # a server.sh install: the newest release line
 ```
 
 All three compose files run the published image (`QUIREINK_TAG` pins a line); building from the

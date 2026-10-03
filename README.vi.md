@@ -79,17 +79,28 @@ Từng phần, chi tiết và so với các lựa chọn khác: [**Quire Ink, b�
 
 ## Cài đặt
 
-Bạn cần một tên miền và một máy trỏ được tên miền về; gói VPS rẻ nhất là đủ. Trên VPS có [Bun](https://bun.sh) 1.3 trở lên, một lệnh là tải, build và chạy:
+**Thử trước, không cài gì:** [demo.quireink.com](https://demo.quireink.com), hoặc một blog nháp của riêng bạn ở [try.quireink.com](https://try.quireink.com), xoá sạch hai lần mỗi giờ.
+
+Rồi một câu hỏi — **bạn đang có gì?**
+
+| Bạn có | Cách vào | Nâng cấp |
+|:--|:--|:--|
+| **Một VPS mới** (Ubuntu hoặc Debian, gói rẻ nhất) và một tên miền đã trỏ về | Một lệnh bên dưới ([`server.sh`](./server.sh)) | `docker compose pull && docker compose up -d` trong `/opt/quireink`; lên dòng phát hành mới: chạy lại lệnh đó |
+| **Một NAS** | Unraid: **Apps → `QuireInk`**. Synology, QNAP, Runtipi: dán một file compose ([từng bước](./docs/self-host-docker.md#on-a-nas-or-a-home-server)) | Nút **Update** của ứng dụng container |
+| **Đã có Docker** và tên miền | [`docker-compose.image.yml`](./docker-compose.image.yml) + [`Caddyfile`](./Caddyfile) ([cách làm](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
+| **Một máy chủ bạn tự lo**, có Bun 1.3+ | [`install.sh`](./install.sh), rồi systemd và nginx ([tự host](./docs/self-host.md)) | `bun run upgrade` |
+| **Kubernetes**, hoặc **một droplet DigitalOcean** | [Manifest](./deploy/kubernetes/README.md) · [một file dán vào](./deploy/digitalocean/README.md) | Đổi tag · như dòng VPS |
+
+Trên một VPS mới, khi DNS của tên miền đã trỏ về máy:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/server.sh \
+  | sudo bash -s -- --domain blog.example.com --setup-code 'muoi-hai-ky-tu-tro-len'
 ```
 
-Nó cài bản phát hành mới nhất, không dùng `sudo` và từ chối chạy bằng root. Về sau, `bun run upgrade` trong cùng thư mục đưa nó lên bản mới hơn, và quay về bản cũ nếu bản mới không chạy. Sau đó [`deploy/caddy/setup.sh`](./deploy/caddy/setup.sh) lo chứng chỉ HTTPS. Log in ra một đường dẫn `/setup` dùng một lần: mở nó ra, qua vài bước ngắn — tài khoản, ứng dụng xác thực, giao diện — là vào thẳng trình soạn.
+Lệnh này cài Docker, chạy image của bản phát hành mới nhất kèm chứng chỉ Let's Encrypt, và dừng lại nếu máy đã đang phục vụ thứ gì khác. Sau đó mở `https://blog.example.com/setup`, gõ mã, qua vài bước ngắn — tài khoản, ứng dụng xác thực, giao diện — là vào thẳng trình soạn.
 
-**Thích Docker hơn?** Kéo `quireink/quireink` (`amd64` và `arm64`); có HTTPS thì dùng [`docker-compose.image.yml`](./docker-compose.image.yml) cùng [`Caddyfile`](./Caddyfile).
-
-Nó cũng chạy trên droplet DigitalOcean từ [một file dán vào](./deploy/digitalocean/README.md), trên NAS (Unraid, Synology, QNAP — [từng bước](./docs/self-host-docker.md#on-a-nas-or-a-home-server)) và trên Kubernetes ([manifest](./deploy/kubernetes/README.md)). Cài tay với systemd và nginx: [tự host](./docs/self-host.md).
+**Cách nào cũng cài một bản phát hành**, không bao giờ là code chưa phát hành ([ADR 0065](./docs/decisions/0065-every-install-runs-a-release.md)), và bản phát hành nào cũng được cài thử và nâng cấp thử qua từng cách trước khi đưa ra. Image có cho `amd64` và `arm64`. **Dựng lần đầu là phần kỹ thuật:** giao máy chủ cho một AI agent, skill [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) dẫn nó đi từng bước, có cả bước kiểm tra.
 
 ## Để AI viết hộ
 
