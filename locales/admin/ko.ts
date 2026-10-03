@@ -471,6 +471,8 @@ const ko = {
   clearSelection: '지우기',
   iconsGroupTitle: '사이트 아이콘',
   iconsManaged: '설정',
+  iconsUnused: '사용 안 함',
+  iconInUse: '이 아이콘은 아직 설정에서 사용 중입니다. 먼저 설정에서 다른 아이콘을 고르세요.',
   copiedUrl: 'URL이 복사되었습니다',
   loadMediaFailed: '미디어를 불러오지 못했습니다',
   dropzone: '여기에 이미지를 끌어다 놓거나 클릭하여 선택하세요',

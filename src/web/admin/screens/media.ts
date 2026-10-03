@@ -45,7 +45,7 @@ function words(t: AdminStrings): string {
     askOne: t.askPurgeTitle, askMany: t.askPurgeManyTitle,
     askUnusedTitle: t.askDeleteUnusedTitle, askUnused: t.askDeleteUnusedBody,
     noUndo: t.askNoUndo, yes: t.askDeleteForever, no: t.askCancel,
-    trashed: t.movedToTrash, deleteFailed: t.deleteFailed, noMatch: t.deleteNoMatch,
+    trashed: t.movedToTrash, deleteFailed: t.deleteFailed, iconInUse: t.iconInUse, noMatch: t.deleteNoMatch,
     copied: t.copiedUrl, uploaded: t.uploaded, uploadFailed: t.uploadFailed,
     badType: t.unsupportedType, tooLarge: t.uploadTooLarge, noRoom: t.uploadNoRoom,
     checkFailed: t.checkUnusedFailed,

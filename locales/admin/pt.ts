@@ -472,6 +472,8 @@ const pt = {
   clearSelection: 'Limpar',
   iconsGroupTitle: 'Ícones do site',
   iconsManaged: 'Configurações',
+  iconsUnused: 'Sem uso',
+  iconInUse: 'Esse ícone ainda é usado nas Configurações. Escolha outro lá primeiro.',
   copiedUrl: 'URL copiada',
   loadMediaFailed: 'Não foi possível carregar as imagens',
   dropzone: 'Arraste imagens para cá ou clique para escolher',

@@ -471,6 +471,8 @@ const es = {
   clearSelection: 'Quitar selección',
   iconsGroupTitle: 'Iconos del sitio',
   iconsManaged: 'Ajustes',
+  iconsUnused: 'Sin usar',
+  iconInUse: 'Ese icono aún se usa en Ajustes. Elige otro allí primero.',
   copiedUrl: 'URL copiada',
   loadMediaFailed: 'No se pudieron cargar las imágenes',
   dropzone: 'Arrastra imágenes aquí o haz clic para elegir',

@@ -471,6 +471,8 @@ const de = {
   clearSelection: 'Aufheben',
   iconsGroupTitle: 'Website-Icons',
   iconsManaged: 'Einstellungen',
+  iconsUnused: 'Nicht verwendet',
+  iconInUse: 'Dieses Symbol wird in den Einstellungen noch verwendet. Wählen Sie dort zuerst ein anderes.',
   copiedUrl: 'URL kopiert',
   loadMediaFailed: 'Medien konnten nicht geladen werden',
   dropzone: 'Bilder hierher ziehen oder zum Auswählen klicken',

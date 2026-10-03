@@ -471,6 +471,8 @@ const vi = {
   clearSelection: 'Bỏ chọn',
   iconsGroupTitle: 'Icon trang',
   iconsManaged: 'Cài đặt',
+  iconsUnused: 'Không dùng',
+  iconInUse: 'Icon này vẫn đang được dùng trong Cài đặt. Hãy chọn icon khác ở đó trước.',
   copiedUrl: 'Đã sao chép URL',
   loadMediaFailed: 'Không tải được thư viện',
   dropzone: 'Kéo thả ảnh vào đây hoặc bấm để chọn',

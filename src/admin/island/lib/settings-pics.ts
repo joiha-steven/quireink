@@ -59,7 +59,9 @@ export function wirePics(screen: HTMLElement, w: PicWords): void {
 
   screen.addEventListener('change', (e) => {
     const input = e.target
-    if (!(input instanceof HTMLInputElement) || !input.dataset.iconFile) return
+    // `matches`, not `dataset.iconFile`: the attribute carries no value, so the dataset answer is
+    // '' — falsy — and every icon upload stopped right here without a word (issue #69).
+    if (!(input instanceof HTMLInputElement) || !input.matches('[data-icon-file]')) return
     const box = input.closest<HTMLElement>('[data-icon]')
     const file = input.files?.[0]
     if (box && file) void toFileStore(box, file, w)
@@ -115,12 +117,15 @@ async function toFileStore(box: HTMLElement, file: File, w: PicWords): Promise<v
       location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`
       return
     }
-    const json = await res.json() as { success?: boolean; data?: { url: string } }
-    if (!json.success || !json.data) throw new Error('failed')
+    const json = await res.json().catch(() => ({})) as { success?: boolean; data?: { url: string }; error?: string }
+    if (!json.success || !json.data) throw new Error(json.error ?? 'failed')
     paint(box, json.data.url)
     say(w.uploaded ?? '')
-  } catch {
-    say(w.uploadFailed ?? '', 'error')
+  } catch (error) {
+    // The server names the reason; the owner should read it rather than "Upload failed".
+    const why = (error as Error).message
+    const said = why === 'unsupported_type' ? w.badType : why === 'file_too_large' ? w.tooLarge : why === 'quota_exceeded' ? w.noRoom : undefined
+    say(said || w.uploadFailed || '', 'error')
   } finally {
     if (key) { key.disabled = false; key.textContent = label }
   }

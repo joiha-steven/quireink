@@ -37,6 +37,17 @@
 
 ### Fixed
 
+- **A favicon, app icon or author portrait could not be uploaded, and a removed one could not be
+  deleted** ([#69](https://github.com/joiha-steven/quireink/issues/69)). Picking a file in Settings
+  sent nothing at all, with no message. Remove cleared the setting but kept the file, and Library →
+  Files then listed it under Site icons with no way to delete it; deleting it anyway said "Moved to
+  Trash", changed nothing, and it was back on the next load. Now: picking a file uploads it, and a
+  refusal says why (wrong type, too large, no room left). Under Site icons, an icon Settings still
+  uses says so and is not deleted — with a message naming why; one nothing uses is marked *Not used*,
+  ticks like any file and goes to the Trash, from where it can be restored or deleted for good. An
+  icon uploaded with no kind (`icon-…`), which was listed nowhere, now shows there too. The
+  assistant's `delete_file` no longer reports a deletion that did not happen.
+
 - **A backup taken on Linux while a picture's smaller copies were being written failed with a 500**
   and `tar: uploads: file changed as we read it`; the same request a second later worked. Found by
   the new install matrix, in the image. The archive is no longer written by `tar` at all (see

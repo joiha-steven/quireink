@@ -471,6 +471,8 @@ const zh = {
   clearSelection: '清除',
   iconsGroupTitle: '站点图标',
   iconsManaged: '设置',
+  iconsUnused: '未使用',
+  iconInUse: '该图标仍在设置中使用。请先在设置里换一个。',
   copiedUrl: '已复制 URL',
   loadMediaFailed: '加载媒体库失败',
   dropzone: '将图片拖到此处或点击选择',

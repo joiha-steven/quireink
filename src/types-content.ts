@@ -114,6 +114,7 @@ export type FileItem = {
   contentType: string // MIME type as uploaded
   uploadedAt: string // ISO 8601
   deletedAt?: string // ISO 8601; set only on trashed (soft-deleted) rows, else undefined
+  inUse?: boolean // site icons only: true while Settings points at it (favicon, app icon, portrait)
 }
 
 // Site-wide settings, stored at settings/site.json.

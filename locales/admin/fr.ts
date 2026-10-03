@@ -471,6 +471,8 @@ const fr = {
   clearSelection: 'Annuler',
   iconsGroupTitle: 'Icônes du site',
   iconsManaged: 'Réglages',
+  iconsUnused: 'Inutilisée',
+  iconInUse: 'Cette icône est encore utilisée dans les Réglages. Choisissez-en une autre là d’abord.',
   copiedUrl: 'URL copiée',
   loadMediaFailed: 'Impossible de charger les images',
   dropzone: 'Glissez des images ici ou cliquez pour choisir',

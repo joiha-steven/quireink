@@ -32,11 +32,10 @@ export function wireAttachments(panel: HTMLElement, w: Words, kind: 'video' | 'f
   }
 
   function recount(): void {
-    // The icons list is not deletable and is not counted here: it belongs to Settings, and this
-    // tab lists it only so the owner can see the space being used.
     const left = list?.querySelectorAll('[data-file]').length ?? 0
     show(list, left > 0)
-    const icons = panel.querySelectorAll('[data-file]').length - left
+    const icons = panel.querySelector('[data-icon-list]')?.querySelectorAll('[data-file]').length ?? 0
+    show(panel.querySelector('[data-icon-group]'), icons > 0)
     show(empty, left === 0 && icons === 0)
     show(panel.querySelector('[data-file-lists]'), left > 0 || icons > 0)
     show(panel.querySelector('[data-video-list]'), left > 0)
@@ -60,10 +59,17 @@ export function wireAttachments(panel: HTMLElement, w: Words, kind: 'video' | 'f
         method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ urls }),
       })
       if (!await owned(res)) return
-      const json = await res.json() as { success?: boolean; data?: FileItem[] }
+      const json = await res.json() as { success?: boolean; data?: FileItem[]; error?: string }
+      if (json.error === 'icon_in_use') { say(w.iconInUse ?? w.deleteFailed ?? '', 'error'); return }
       if (!json.success || !json.data) throw new Error('failed')
+      // Only what was asked for. The answer lists the library's rows and never the site icons, so
+      // "not in the answer" used to remove every icon row too, until a reload put them back (#69).
       const alive = new Set(json.data.map((f) => f.url))
-      for (const row of rows()) if (!alive.has(row.dataset.file ?? '')) row.remove()
+      const asked = new Set(urls)
+      for (const row of rows()) {
+        const url = row.dataset.file ?? ''
+        if (asked.has(url) && !alive.has(url)) row.remove()
+      }
       retell()
       recount()
       say(w.trashed ?? '')

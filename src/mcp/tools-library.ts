@@ -12,7 +12,8 @@ import { z } from 'zod'
 import type { ToolHost } from '@/mcp/registry'
 import type { SiteSettings } from '@/types'
 import { getMedia, addMedia, deleteMedia, restoreMediaBatch, getTrashedMedia } from '@/media/media'
-import { getFiles, deleteFile, restoreFilesBatch, getTrashedFiles } from '@/media/files'
+import { getFiles, deleteFile, restoreFilesBatch, getTrashedFiles, getSiteIcons, iconsInUseAmong } from '@/media/files'
+import { collapseBlob } from '@/media/blob'
 import { checkUpload, readCapped, uploadLimits } from '@/media/limits'
 import { getSettings, saveSettings } from '@/content/settings'
 import { SETTING_PATHS, getAt, isSettingPath, patchAt, typeOfPath } from '@/content/settings-path'
@@ -125,6 +126,12 @@ function registerFileTools(server: ToolHost): void {
     'delete_file',
     { description: 'Move a file attachment to the Trash (soft delete — the blob is kept; recoverable).', inputSchema: { url: z.string() } },
     async ({ url }) => {
+      // Issue #69: this said "Moved file to Trash" for a file it had not touched.
+      if ((await iconsInUseAmong([url])).length) {
+        return asError(`Not deleted: ${url} is a site icon Settings still uses (favicon, app icon or author portrait). Choose another in Settings first.`)
+      }
+      const before = new Set([...(await getFiles()), ...(await getSiteIcons())].map((f) => collapseBlob(f.url)))
+      if (!before.has(collapseBlob(url))) return asError(`No such file in the library: ${url}`)
       await deleteFile(url)
       await logActivity('file.delete', '1 file')
       return asText(`Moved file to Trash: ${url}`)

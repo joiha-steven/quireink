@@ -16,7 +16,7 @@ import {
 import { findUnusedMedia } from '@/media/media-usage'
 import {
   getFiles, addFilesBatch, registerFilesBatch, deleteFilesBatch, deleteFile,
-  getSiteIcons, isAllowedIconType, uploadIcon, isAllowedFontType, uploadFont,
+  getSiteIcons, iconsInUseAmong, isAllowedIconType, uploadIcon, isAllowedFontType, uploadFont,
 } from '@/media/files'
 import { collapseBlob, readBlob } from '@/media/blob'
 import { mimeOf } from '@/media/mime'
@@ -245,6 +245,8 @@ export function uploadRoutes() {
   router.post('/api/files/delete', async (c) => {
     const urls = strings((await body<{ urls: unknown }>(c)).urls)
     if (urls.length === 0) return fail(c, 'No urls provided', 400)
+    // Issue #69: nothing in the request could be deleted, so saying success would be a lie.
+    if ((await iconsInUseAmong(urls)).length === urls.length) return fail(c, 'icon_in_use', 409)
     const items = await deleteFilesBatch(urls)
     void logActivity('file.delete', `${urls.length} file(s)`)
     return json(items)
@@ -253,6 +255,7 @@ export function uploadRoutes() {
   router.delete('/api/files/by', async (c) => {
     const url = c.req.query('url')
     if (!url) return fail(c, 'Missing url', 400)
+    if ((await iconsInUseAmong([url])).length) return fail(c, 'icon_in_use', 409)
     const items = await deleteFile(url)
     void logActivity('file.delete', url.split('/').pop() || url)
     return json(items)

@@ -719,6 +719,10 @@ export type AdminStrings = {
   clearSelection: string
   iconsGroupTitle: string
   iconsManaged: string
+  /** A site icon nothing in Settings uses any more: it can be deleted (issue #69). */
+  iconsUnused: string
+  /** Said when a delete asked only for icons Settings still uses. */
+  iconInUse: string
   copiedUrl: string
   loadMediaFailed: string
   // uploader

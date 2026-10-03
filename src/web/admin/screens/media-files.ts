@@ -30,18 +30,22 @@ const tickBox = (f: FileItem, cls: string): string =>
   `<input type="checkbox" class="${cls} h-4 w-4 shrink-0 ${CHECK}" data-pick="${escapeAttr(f.url)}"`
   + ` aria-label="${escapeAttr(f.filename)}">`
 
+const BADGE = 'rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+
 /**
  * One attachment.
  *
- * `managed` is the site icons, which are uploaded in Settings and listed here only so the owner
- * can see that the space is being used. They carry no tick and no delete: the screen that put
- * them there is the screen that takes them away.
+ * `managed` is a site icon Settings still uses (favicon, app icon, author portrait): no tick and
+ * no delete, because taking it away is choosing another in Settings. An icon nothing uses any more
+ * is an ordinary file with a "not used" badge: it ticks, and a delete puts it in the Trash. Until
+ * issue #69 every icon was `managed`, and Settings' Remove never deleted the file, so a replaced or
+ * removed icon stayed here for good with no way to take it out.
  */
 function fileRow(t: AdminStrings, lang: SiteLang, f: FileItem, managed: boolean): string {
   const actions = managed
-    ? `<span class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500`
-      + ` dark:bg-neutral-800 dark:text-neutral-400">${escapeHtml(t.iconsManaged)}</span>`
-    : `<button type="button" data-copy="${escapeAttr(f.url)}" class="${TAP} ${QUIET}">`
+    ? `<span class="${BADGE}">${escapeHtml(t.iconsManaged)}</span>`
+    : (f.inUse === false ? `<span class="${BADGE}">${escapeHtml(t.iconsUnused)}</span>` : '')
+      + `<button type="button" data-copy="${escapeAttr(f.url)}" class="${TAP} ${QUIET}">`
       + `${escapeHtml(t.copyUrl)}</button>`
       + `<a href="${escapeAttr(f.url)}" download="${escapeAttr(f.filename)}" class="${QUIET}">`
       + `${escapeHtml(t.download)}</a>`
@@ -61,7 +65,7 @@ export function filesPanel(
   t: AdminStrings, lang: SiteLang, files: FileItem[], icons: FileItem[], open: boolean, pagerHtml = '',
 ): string {
   const rows = files.map((f) => fileRow(t, lang, f, false)).join('')
-  const iconRows = icons.map((f) => fileRow(t, lang, f, true)).join('')
+  const iconRows = icons.map((f) => fileRow(t, lang, f, f.inUse !== false)).join('')
   const empty = files.length === 0 && icons.length === 0
   return `<div data-media-panel="files" class="px-4 pt-4 pb-2"${open ? '' : ' hidden'}>`
     + `<div class="space-y-5">`
@@ -70,10 +74,10 @@ export function filesPanel(
     + `<div data-file-body>`
     + `<div class="space-y-6" data-file-lists${empty ? ' hidden' : ''}>`
     + `<ul class="${FRAME}" data-file-frame data-file-list${files.length ? '' : ' hidden'}>${rows}</ul>`
-    + `<div class="space-y-2"${icons.length ? '' : ' hidden'}>`
+    + `<div class="space-y-2" data-icon-group${icons.length ? '' : ' hidden'}>`
     + `<h3 class="text-xs font-semibold text-neutral-500 dark:text-neutral-400">`
     + `${escapeHtml(t.iconsGroupTitle)}</h3>`
-    + `<ul class="${FRAME}" data-file-frame>${iconRows}</ul></div></div>`
+    + `<ul class="${FRAME}" data-file-frame data-icon-list>${iconRows}</ul></div></div>`
     + `<div data-file-empty${empty ? '' : ' hidden'}>${emptyState({ title: t.noFiles })}</div>`
     + `</div>` + pagerHtml + `</div></div>`
 }

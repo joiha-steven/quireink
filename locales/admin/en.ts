@@ -471,6 +471,8 @@ const en = {
   clearSelection: 'Clear',
   iconsGroupTitle: 'Site icons',
   iconsManaged: 'Settings',
+  iconsUnused: 'Not used',
+  iconInUse: 'That icon is still used in Settings. Choose another there first.',
   copiedUrl: 'URL copied',
   loadMediaFailed: 'Failed to load media',
   dropzone: 'Drag images here or click to choose',

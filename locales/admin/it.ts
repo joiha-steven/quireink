@@ -471,6 +471,8 @@ const it = {
   clearSelection: 'Annulla selezione',
   iconsGroupTitle: 'Icone del sito',
   iconsManaged: 'Impostazioni',
+  iconsUnused: 'Non usata',
+  iconInUse: 'Questa icona è ancora usata nelle Impostazioni. Scegline prima un’altra lì.',
   copiedUrl: 'URL copiato',
   loadMediaFailed: 'Impossibile caricare le immagini',
   dropzone: 'Trascina qui le immagini o clicca per scegliere',

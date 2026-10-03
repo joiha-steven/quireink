@@ -471,6 +471,8 @@ const ja = {
   clearSelection: 'クリア',
   iconsGroupTitle: 'サイトアイコン',
   iconsManaged: '設定',
+  iconsUnused: '未使用',
+  iconInUse: 'このアイコンはまだ設定で使われています。先に設定で別のものを選んでください。',
   copiedUrl: 'URLをコピーしました',
   loadMediaFailed: 'メディアの読み込みに失敗しました',
   dropzone: '画像をここにドラッグするか、クリックして選択',
