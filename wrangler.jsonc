@@ -1,0 +1,27 @@
+// Quire Ink on Cloudflare (ADR 0066). The defaults here are what the Deploy to Cloudflare button
+// provisions: one Durable Object class (the blog, with its own SQLite), one R2 bucket for uploads
+// and backups, the Images binding, and the fonts and icons as Static Assets.
+//
+// Workers Paid only (ADR 0066): the Free plan fails closed at 100,000 requests a day.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "quireink",
+  "main": "dist/worker/worker.js",
+  "compatibility_date": "2026-09-30",
+  "compatibility_flags": ["nodejs_compat"],
+  // Built by `bun run build:worker` (Bun's bundler, the same loaders the server uses), so wrangler
+  // uploads the result as it is: the worker, and the WebAssembly modules beside it. NO `build` here:
+  // `wrangler dev` reruns it on every change under src/, and `bun run build` empties src/admin/dist
+  // while it does — under a test run, that read as half the admin missing. `bun run deploy` builds.
+  "no_bundle": true,
+  "base_dir": "dist/worker",
+  "find_additional_modules": true,
+  "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": false }],
+  "assets": { "directory": "dist/public", "binding": "ASSETS" },
+  "durable_objects": { "bindings": [{ "name": "BLOG", "class_name": "Blog" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Blog"] }],
+  "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "quireink-blobs" }],
+  "images": { "binding": "IMAGES" },
+  "vars": { "QUIREINK_PACKAGE": "cloudflare" },
+  "observability": { "enabled": true }
+}

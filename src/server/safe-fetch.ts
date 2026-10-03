@@ -203,5 +203,5 @@ export async function readTextCapped(res: Response, maxBytes: number): Promise<s
   } finally {
     reader.releaseLock()
   }
-  return new TextDecoder('utf-8', { fatal: false }).decode(Buffer.concat(chunks))
+  return new TextDecoder('utf-8', { fatal: false, ignoreBOM: false }).decode(Buffer.concat(chunks))
 }

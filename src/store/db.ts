@@ -104,11 +104,15 @@ export function isEmpty(db: Connection, kind: Kind = 'content'): boolean {
  * while each had its own file; impossible once both share one, as on Cloudflare. Renamed once, in
  * place, on an `analytics.db` that still has the old name — every row it holds kept.
  */
-function renameAnalyticsLedger(db: Connection): void {
+export function renameAnalyticsLedger(db: Connection): void {
   const has = (name: string) => db.one<{ n: number }>(
     `select count(*) as n from sqlite_master where type = 'table' and name = ?`, name,
   )!.n > 0
-  if (has('schema_migrations') && !has(LEDGER.analytics)) {
+  // ONLY IN A FILE THAT HOLDS NO CONTENT. On Cloudflare both databases share one file, and there
+  // `schema_migrations` is the CONTENT ledger: renaming it made a fresh blog look half-migrated and
+  // run the analytics steps again ("duplicate column name: bytes", the first boot in workerd,
+  // 2026-10-03). An analytics.db on Bun never has a `posts` table; a shared file always does.
+  if (has('schema_migrations') && !has(LEDGER.analytics) && !has('posts')) {
     db.exec(`alter table schema_migrations rename to ${LEDGER.analytics}`)
   }
 }

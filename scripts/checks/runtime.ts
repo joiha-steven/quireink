@@ -41,7 +41,8 @@ function walk(dir: string, out: string[] = []): string[] {
     if (statSync(path).isDirectory()) {
       if (['src/runtime/bun', 'src/runtime/cf', 'src/test', 'src/assets', 'src/admin'].includes(rel)) continue
       walk(path, out)
-    } else if (rel.endsWith('.ts') && !rel.endsWith('.test.ts') && !rel.endsWith('.d.ts')) {
+    } else if (rel.endsWith('.ts') && !rel.endsWith('.test.ts') && !rel.endsWith('.d.ts') && rel !== 'src/worker.ts') {
+      // `src/worker.ts` is the Cloudflare entry, as `src/runtime/bun/main.ts` is Bun's.
       out.push(rel)
     }
   }

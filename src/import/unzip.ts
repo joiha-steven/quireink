@@ -82,7 +82,7 @@ const u64 = (b: Uint8Array, at: number): number => u32(b, at) + u32(b, at + 4) *
 /** The value a four-byte field carries when the real one moved into a Zip64 extra field. */
 const OVERFLOWED = 0xffffffff
 
-const utf8 = new TextDecoder('utf-8', { fatal: true })
+const utf8 = new TextDecoder('utf-8', { fatal: true, ignoreBOM: false })
 const latin1 = new TextDecoder('latin1')
 
 /**

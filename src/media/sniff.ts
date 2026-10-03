@@ -35,7 +35,7 @@ export function sniffImage(buffer: ArrayBuffer): string | null {
  * before it allowed, because real exports carry all four.
  */
 function sniffSvg(b: Uint8Array): boolean {
-  const head = new TextDecoder('utf-8', { fatal: false })
+  const head = new TextDecoder('utf-8', { fatal: false, ignoreBOM: false })
     .decode(b.subarray(0, 1024))
     .replace(/^﻿/, '')
   let rest = head.trimStart()

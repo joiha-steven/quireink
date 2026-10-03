@@ -1,0 +1,21 @@
+{
+  // THE CLOUDFLARE SIDE OF THE RUNTIME SEAM, type-checked (ADR 0066, `src/runtime/ports.ts`).
+  //
+  // The same tree as `tsconfig.json`, with `@/runtime/impl/*` pointing at `src/runtime/cf/` instead
+  // of `src/runtime/bun/`, and the Workers types instead of Bun's. If a `cf/` file does not fit a
+  // call site the `bun/` file fits, it fails here. Run by `bun run typecheck`.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "paths": {
+      "@/locales/*": ["./locales/*"],
+      "@/runtime/impl/*": ["./src/runtime/cf/*"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "locales", "src/runtime/cf/worker-configuration.d.ts"],
+  "exclude": [
+    "src/**/*.test.ts", "src/test", "src/runtime/bun", "src/index.ts",
+    "src/assets/js", "src/assets/dist", "src/admin", "src/admin/dist"
+  ]
+}

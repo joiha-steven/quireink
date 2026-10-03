@@ -65,3 +65,7 @@ media-index-backup-*.json
 # knows how to install it, work it over MCP and move a blog into it.
 .claude/*
 !.claude/skills/
+
+# Cloudflare (ADR 0066): wrangler's local state, and the runtime types `wrangler types` writes.
+.wrangler/
+src/runtime/cf/worker-configuration.d.ts

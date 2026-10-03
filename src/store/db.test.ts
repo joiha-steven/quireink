@@ -5,7 +5,7 @@ import { rmSync } from 'node:fs'
 import { Database } from 'bun:sqlite'
 import { wrap } from '@/runtime/bun/db'
 import { openSqlite } from '@/test/sqlite'
-import { openDatabases, closeDatabases, liveOnly, isEmpty } from './db'
+import { openDatabases, closeDatabases, liveOnly, isEmpty, renameAnalyticsLedger } from './db'
 
 const DIR = './.tmp/test-db'
 rmSync(DIR, { recursive: true, force: true })
@@ -55,6 +55,19 @@ test('a table that is not ours does not make a new database look old', () => {
   expect(isEmpty(wrap(d), 'analytics')).toBe(true) // the content tables are not analytics' own
   d.run('create table analytics_events (id integer)')
   expect(isEmpty(wrap(d), 'analytics')).toBe(false)
+  d.close()
+})
+
+// ADR 0066: on Cloudflare one file holds both databases, and there `schema_migrations` is CONTENT's.
+test('a shared file keeps the content ledger under its own name', () => {
+  const d = new Database(':memory:')
+  d.run('create table schema_migrations (name text primary key, applied_at integer not null)')
+  d.run('create table posts (id integer)')
+  d.run("insert into schema_migrations values ('001-content', 1)")
+  renameAnalyticsLedger(wrap(d))
+  const tables = d.query<{ name: string }, []>("select name from sqlite_master where type = 'table'").all().map((r) => r.name)
+  expect(tables).toContain('schema_migrations')
+  expect(tables).not.toContain('analytics_schema_migrations')
   d.close()
 })
 
