@@ -59,12 +59,24 @@ export type CompressPort = {
  * `connect()` from `cloudflare:sockets` and its `startTls()` (ports 587 and 465; 25 is blocked).
  */
 export type TextSocket = {
-  /** Every chunk as it arrives, decoded as UTF-8. One listener; set again after `startTls`. */
-  onData: (listener: (chunk: string) => void) => void
-  /** The connection ended: with the error that ended it, or null when the server closed it. */
-  onEnd: (listener: (error: Error | null) => void) => void
+  /**
+   * The next chunk, decoded as UTF-8; null once the server has closed the connection, and a
+   * rejection with the error that ended it otherwise.
+   *
+   * ⚠️ PULLED, NOT PUSHED, and only while a reply is awaited. It was a listener until 2026-10-03,
+   * which meant the Cloudflare side kept a read outstanding at all times — and workerd will not let
+   * go of a stream with a read outstanding, so every STARTTLS on port 587 failed there with
+   * "Cannot call releaseLock() on a reader with outstanding read promises". SMTP is strictly a
+   * reply per command, so a client that reads only while it waits has nothing in flight when it
+   * upgrades.
+   */
+  read: () => Promise<string | null>
+  /** Errors surface on the next `read`. */
   write: (text: string) => void
-  /** STARTTLS: the same connection, encrypted from here on. This socket is spent; use the one returned. */
+  /**
+   * STARTTLS: the same connection, encrypted from here on. This socket is spent; use the one
+   * returned. Never called with a `read` outstanding (see `read`).
+   */
   startTls: (host: string) => Promise<TextSocket>
   close: () => void
   readonly encrypted: boolean

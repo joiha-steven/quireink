@@ -8,42 +8,26 @@ function wrap(socket: Socket, encrypted: boolean): TextSocket {
   const encoder = new TextEncoder()
   const writer = socket.writable.getWriter()
   const reader = socket.readable.getReader()
-  const listeners: { data?: (chunk: string) => void; end?: (error: Error | null) => void } = {}
-  let early = ''
-  let stopped = false
-  void (async () => {
-    try {
-      for (;;) {
-        const { done, value } = await reader.read()
-        if (done || stopped) break
-        const text = decoder.decode(value, { stream: true })
-        if (listeners.data) listeners.data(text)
-        else early += text
-      }
-      if (!stopped) listeners.end?.(null)
-    } catch (error) {
-      if (!stopped) listeners.end?.(error as Error)
-    }
-  })()
   return {
-    onData: (listener) => {
-      listeners.data = listener
-      if (early) { listener(early); early = '' }
+    read: async () => {
+      const { done, value } = await reader.read()
+      if (done) return null
+      return decoder.decode(value, { stream: true })
     },
-    onEnd: (listener) => { listeners.end = listener },
-    write: (text) => { void writer.write(encoder.encode(text)) },
-    startTls: async (host) => {
-      stopped = true
+    // A failed write is the connection failing, and the next read reports that.
+    write: (text) => { writer.write(encoder.encode(text)).catch(() => {}) },
+    startTls: async () => {
+      // Both locks go back before the upgrade, which workerd requires — and can only do because no
+      // read is outstanding here (ports.ts, `read`). No `expectedServerHostname`: local workerd
+      // refuses the option, and the certificate is checked against the host given to `connect()`,
+      // which is the same host.
       reader.releaseLock()
       writer.releaseLock()
-      const secured = socket.startTls({ expectedServerHostname: host })
+      const secured = socket.startTls()
       await secured.opened
       return wrap(secured, true)
     },
-    close: () => {
-      stopped = true
-      void socket.close()
-    },
+    close: () => { void socket.close() },
     encrypted,
   }
 }

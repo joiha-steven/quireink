@@ -19,17 +19,37 @@ const sniFor = (host: string): string | undefined =>
 
 function wrap(socket: net.Socket | tls.TLSSocket): TextSocket {
   socket.setEncoding('utf8')
+  // Node pushes; the port pulls (ports.ts, `read`). What arrives between reads waits here.
+  const chunks: string[] = []
+  let ended: { error: Error | null } | null = null
+  let wake: (() => void) | null = null
+  const nudge = () => {
+    const w = wake
+    wake = null
+    w?.()
+  }
+  const onData = (chunk: string) => { chunks.push(chunk); nudge() }
+  const onError = (error: Error) => { ended ??= { error }; nudge() }
+  const onClose = () => { ended ??= { error: null }; nudge() }
+  socket.on('data', onData)
+  socket.on('error', onError)
+  socket.on('close', onClose)
   return {
-    onData: (listener) => { socket.on('data', listener) },
-    onEnd: (listener) => {
-      socket.on('error', (error: Error) => listener(error))
-      socket.on('close', () => listener(null))
+    read: async () => {
+      for (;;) {
+        if (chunks.length) return chunks.shift()!
+        if (ended) {
+          if (ended.error) throw ended.error
+          return null
+        }
+        await new Promise<void>((resolve) => { wake = resolve })
+      }
     },
     write: (text) => { socket.write(text) },
     startTls: (host) => new Promise((resolve, reject) => {
-      socket.removeAllListeners('data')
-      socket.removeAllListeners('error')
-      socket.removeAllListeners('close')
+      socket.off('data', onData)
+      socket.off('error', onError)
+      socket.off('close', onClose)
       const secured = tls.connect({ socket: socket as net.Socket, servername: sniFor(host) }, () => resolve(wrap(secured)))
       secured.once('error', reject)
     }),

@@ -47,37 +47,16 @@ const isLoopback = (host: string): boolean =>
  * hyphen there means another line is coming.
  */
 class Wire {
-  private socket: TextSocket
   private buffer = ''
-  private waiting: ((reply: Reply | Error) => void) | null = null
-  private failure: Error | null = null
+  /** A read that outlived a timeout, kept so what it brings is not lost to the next one. */
+  private pending: Promise<string | null> | null = null
 
-  constructor(socket: TextSocket, private readonly timeoutMs: number) {
-    this.socket = socket
-    this.listen()
-  }
+  constructor(private socket: TextSocket, private readonly timeoutMs: number) {}
 
-  private listen(): void {
-    this.socket.onData((chunk) => {
-      this.buffer += chunk
-      this.settle()
-    })
-    this.socket.onEnd((error) => {
-      this.failure = error ?? new SmtpError(0, 'the server closed the connection')
-      this.settle()
-    })
-  }
-
-  private settle(): void {
-    if (!this.waiting) return
-    if (this.failure) {
-      const send = this.waiting
-      this.waiting = null
-      send(this.failure)
-      return
-    }
+  /** A whole reply off the front of the buffer, or null while it is still arriving. */
+  private take(): Reply | null {
     const end = /^(\d{3}) [^\n]*\r?\n/m.exec(this.buffer)
-    if (!end) return
+    if (!end) return null
     // ⚠️ CUT WHERE THE MATCH IS, not where the TEXT first appears. `indexOf` finds the earliest
     // copy of the final line's text, and a multi-line reply whose continuation happens to carry
     // the same characters would be cut in the wrong place, leaving half a reply in the buffer to
@@ -85,27 +64,40 @@ class Wire {
     const at = end.index + end[0].length
     const block = this.buffer.slice(0, at)
     this.buffer = this.buffer.slice(at)
-    const send = this.waiting
-    this.waiting = null
-    send({
+    return {
       code: Number(end[1]),
       lines: block.split(/\r?\n/).filter(Boolean).map((line) => line.slice(4)),
-    })
+    }
   }
 
-  read(): Promise<Reply> {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.waiting = null
-        reject(new SmtpError(0, `the server did not answer within ${this.timeoutMs}ms`))
-      }, this.timeoutMs)
-      this.waiting = (reply) => {
+  /**
+   * The next reply. Reads only from here, so nothing is read while nothing is awaited — which is
+   * what lets STARTTLS hand the connection over (`TextSocket.read` in runtime/ports.ts).
+   */
+  async read(): Promise<Reply> {
+    const deadline = Date.now() + this.timeoutMs
+    for (;;) {
+      const reply = this.take()
+      if (reply) return reply
+      this.pending ??= this.socket.read()
+      let timer: ReturnType<typeof setTimeout> | undefined
+      const late = new Promise<'late'>((resolve) => {
+        timer = setTimeout(() => resolve('late'), Math.max(0, deadline - Date.now()))
+      })
+      let chunk: string | null | 'late'
+      try {
+        chunk = await Promise.race([this.pending, late])
+      } catch (error) {
+        this.pending = null
+        throw error
+      } finally {
         clearTimeout(timer)
-        if (reply instanceof Error) reject(reply)
-        else resolve(reply)
       }
-      this.settle()
-    })
+      if (chunk === 'late') throw new SmtpError(0, `the server did not answer within ${this.timeoutMs}ms`)
+      this.pending = null
+      if (chunk === null) throw new SmtpError(0, 'the server closed the connection')
+      this.buffer += chunk
+    }
   }
 
   write(line: string): void {
@@ -116,7 +108,6 @@ class Wire {
   async upgrade(host: string): Promise<void> {
     this.socket = await this.socket.startTls(host)
     this.buffer = ''
-    this.listen()
   }
 
   end(): void {

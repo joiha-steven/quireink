@@ -10,14 +10,17 @@ import { hash as cfHash, verify as cfVerify } from '@/runtime/cf/password'
 import { regexEngine } from '@/runtime/cf/shiki-engine'
 import { generateKeyPairSync } from 'node:crypto'
 import { signRequest, verifySignature } from '@/ap/signature'
+import { SmtpSession } from '@/news/smtp'
 
-type Case = { name: string; body: () => void }
+type Case = { name: string; body: () => void | Promise<void> }
 
 /** The cases a suite registers, collected rather than run, so one object runs exactly one. */
 function collect(): Case[] {
   const cases: Case[] = []
   dbContract((name, body) => cases.push({ name: `db: ${name}`, body }), () => open('contract.db', 'NORMAL'))
   cases.push({ name: 'ap: an RSA-2048 key is made, signs a delivery, and the signature verifies', body: apRoundTrip })
+  cases.push({ name: 'smtp: one connection authenticates and hands over two messages, then quits', body: smtpTwoMessages })
+  cases.push({ name: 'smtp: STARTTLS lets go of the plain streams and reaches the TLS handshake', body: smtpReachesHandshake })
   return cases
 }
 
@@ -42,6 +45,40 @@ function apRoundTrip(): void {
   if (tampered !== 'bad-digest') throw new Error(`a changed body was not refused (got ${tampered})`)
 }
 
+/** The fake relay `scripts/test-cf.ts` listens with, on loopback (so a password may go in the clear). */
+let smtpPort = 0
+
+/**
+ * G3.3: mail goes out through `cloudflare:sockets` (`runtime/cf/socket.ts`), read only while a reply
+ * is awaited. A relay only answers 250 to DATA once the closing `.` has arrived, so two 250s mean
+ * both bodies crossed whole. STARTTLS needs a certificate this test cannot have; it was checked by
+ * hand against smtp.gmail.com:587 on 2026-10-03 (encrypted, 1.6 s) after the pull-based port fixed
+ * "Cannot call releaseLock() on a reader with outstanding read promises".
+ */
+async function smtpTwoMessages(): Promise<void> {
+  if (!smtpPort) throw new Error('no fake relay port (CF_TEST_SMTP_PORT)')
+  const session = await SmtpSession.open({ host: '127.0.0.1', port: smtpPort, secure: false, auth: { user: 'u', pass: 'p' }, timeoutMs: 5000 })
+  await session.send({ from: 'blog@blog.test', to: 'a@reader.test', body: 'Subject: one\r\n\r\nfirst\r\n.a line that starts with a dot\r\n' })
+  await session.send({ from: 'blog@blog.test', to: 'b@reader.test', body: 'Subject: two\r\n\r\nsecond\r\n' })
+  await session.close()
+}
+
+/**
+ * The regression this port change fixed, pinned without a certificate: the relay accepts STARTTLS
+ * and hangs up at the handshake, so the open must fail THERE — not before it, at the streams.
+ */
+async function smtpReachesHandshake(): Promise<void> {
+  if (!smtpPort) throw new Error('no fake relay port (CF_TEST_SMTP_PORT)')
+  try {
+    await SmtpSession.open({ host: '127.0.0.1', port: smtpPort + 1, secure: false, timeoutMs: 5000 })
+  } catch (error) {
+    const message = String((error as Error).message)
+    if (/releaseLock|locked/i.test(message)) throw new Error(`the upgrade never started: ${message}`)
+    return
+  }
+  throw new Error('a handshake with a relay that hung up succeeded')
+}
+
 export class Probe extends DurableObject<CfEnv> {
   constructor(ctx: DurableObjectState, env: CfEnv) {
     super(ctx, env)
@@ -49,11 +86,12 @@ export class Probe extends DurableObject<CfEnv> {
   }
 
   override async fetch(request: Request): Promise<Response> {
+    smtpPort = Number((this.env as unknown as { CF_TEST_SMTP_PORT?: string }).CF_TEST_SMTP_PORT ?? 0)
     const index = Number(new URL(request.url).searchParams.get('case'))
     const c = collect()[index]
     if (!c) return Response.json({ error: `no case ${index}` }, { status: 404 })
     try {
-      c.body()
+      await c.body()
       return Response.json({ name: c.name, ok: true })
     } catch (error) {
       return Response.json({ name: c.name, ok: false, error: String((error as Error).message ?? error) })
