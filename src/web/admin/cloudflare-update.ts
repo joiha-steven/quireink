@@ -16,7 +16,10 @@ import { storageStats } from '@/media/storage-stats'
 import { updateState } from '@/server/update-check'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
-import { ownerRouter, QUIET } from '@/web/guard'
+import { owner, ownerRouter, QUIET } from '@/web/guard'
+import { verifyPassword } from '@/auth/password'
+import { passwordHashFor } from '@/auth/users'
+import { clientIp, rateLimited } from '@/server/rate-limit'
 import { APP_VERSION } from '@/version'
 import { databaseBytes } from '@/runtime/impl/runtime-info'
 
@@ -73,6 +76,25 @@ export function cloudflareUpdateRoutes() {
     const u = updateState()
     void logActivity('cloudflare.update', u.state === 'behind' ? `${APP_VERSION} → ${u.release.latest}` : APP_VERSION)
     return json({ current: APP_VERSION, latest: u.state === 'behind' ? u.release.latest : null, siteUrl: resolveSiteUrl(await getSettings()) })
+  }, QUIET)
+
+  /**
+   * The Worker's question before it deletes this blog from Cloudflare: the owner, their password,
+   * and the blog's own address typed out. Three, because nothing is behind this — no Trash, and
+   * the Durable Object's 30 days of bookmarks go with it. The archive the card offers first is the
+   * only way back.
+   */
+  router.post('/api/cloudflare/uninstall/authorize', async (c) => {
+    const no = here(c)
+    if (no) return no
+    const { user } = owner(c)
+    if (rateLimited(`security:${clientIp(c)}`, 10, 5 * 60_000)) return fail(c, 'too_many_attempts', 429)
+    const input = (await c.req.json().catch(() => ({}))) as { current?: unknown; confirm?: unknown }
+    const stored = passwordHashFor(user.username)
+    if (!stored || typeof input.current !== 'string' || !(await verifyPassword(stored.hash, input.current))) return fail(c, 'wrong_password', 403)
+    const host = new URL(resolveSiteUrl(await getSettings())).hostname
+    if (typeof input.confirm !== 'string' || input.confirm.trim().toLowerCase() !== host) return fail(c, 'confirm_mismatch', 400)
+    return json({ host })
   }, QUIET)
 
   return router

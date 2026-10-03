@@ -170,6 +170,7 @@ type Live = {
   latest: string | null
   updates: 'api' | 'git' | 'cli'
   hasToken: boolean
+  siteUrl: string
   cost: { views30: number; requests: number; r2Bytes: number; dbBytes: number; usd: number }
 }
 
@@ -198,8 +199,13 @@ export function wireCloudLive(screen: HTMLElement): void {
     say($('[data-cf-version]'), fill(w.version, { v: s.current }))
     for (const el of card.querySelectorAll<HTMLElement>('[data-cf-path]')) el.hidden = el.dataset.cfPath !== s.updates
     target = s.latest
+    $('[data-cf-leave]')!.hidden = s.updates !== 'api'
+    $('[data-cf-leave-git]')!.hidden = s.updates !== 'git'
+    const confirm = $<HTMLInputElement>('[data-cf-leave-confirm]')
+    if (confirm && s.siteUrl) confirm.placeholder = new URL(s.siteUrl).hostname
     if (s.updates === 'api') {
-      $('[data-cf-ask-token]')!.hidden = s.hasToken || !s.latest
+      // The token boxes serve the update and the delete alike; shown whenever none is kept.
+      $('[data-cf-ask-token]')!.hidden = s.hasToken
       key.hidden = !s.latest
       key.textContent = fill(w.updateTo, { v: s.latest ?? '' })
       if (!s.latest) say(line, w.newest ?? '')
@@ -208,6 +214,23 @@ export function wireCloudLive(screen: HTMLElement): void {
     say($('[data-cf-cost]'), fill(w.cost, {
       views: c.views30.toLocaleString(), requests: c.requests.toLocaleString(), r2: size(c.r2Bytes), db: size(c.dbBytes), usd: c.usd.toFixed(2),
     }))
+  })
+
+  // Leaving (G5.4): the password and the address typed out, then one long request to the Worker.
+  const leaveKey = $<HTMLButtonElement>('[data-cf-leave-key]')
+  leaveKey?.addEventListener('click', async () => {
+    leaveKey.disabled = true
+    say(error, '')
+    const r = await post<{ deleted: string }>('/api/cloudflare/uninstall', {
+      current: $<HTMLInputElement>('[data-cf-leave-current]')?.value ?? '',
+      confirm: $<HTMLInputElement>('[data-cf-leave-confirm]')?.value ?? '',
+      token: $<HTMLInputElement>('[data-cf-u-token]')?.value ?? '',
+      accountId: $<HTMLInputElement>('[data-cf-u-account]')?.value ?? '',
+    }).catch(() => ({ success: false, error: 'network' }) as Envelope<never>)
+    leaveKey.disabled = false
+    if (r.success) { say($('[data-cf-leave-line]'), w.leaveDone ?? ''); leaveKey.hidden = true; return }
+    say(error, r.error === 'wrong_password' ? w.wrongPassword ?? '' : r.error === 'confirm_mismatch' ? w.mismatch ?? ''
+      : r.error === 'too_many_attempts' ? w.tooMany ?? '' : `${w.failed ?? ''} ${r.error ?? ''}`.trim())
   })
 
   key.addEventListener('click', async () => {

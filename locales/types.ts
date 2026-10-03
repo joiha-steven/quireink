@@ -769,6 +769,14 @@ export type AdminStrings = {
   cfUpdateGit: string
   cfUpdateCli: string
   cfCost: string
+  cfLeaveTitle: string
+  cfLeaveNote: string
+  cfLeaveDownload: string
+  cfLeaveConfirmLabel: string
+  cfLeaveDelete: string
+  cfLeaveDone: string
+  cfLeaveGit: string
+  cfConfirmMismatch: string
   copiedUrl: string
   loadMediaFailed: string
   // uploader

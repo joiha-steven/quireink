@@ -47,6 +47,8 @@ function onCloudflare(t: AdminStrings): string {
   const words = escapeAttr(JSON.stringify({
     version: t.cfVersion, updateTo: t.cfUpdateTo, newest: t.cfUpdateNewest, updating: t.cfUpdating,
     updated: t.cfUpdated, rolledBack: t.cfRolledBack, failed: t.cfUpdateFailed, cost: t.cfCost,
+    confirmLabel: t.cfLeaveConfirmLabel, leaveDone: t.cfLeaveDone, mismatch: t.cfConfirmMismatch,
+    wrongPassword: t.cfWrongPassword, tooMany: t.cfTooMany,
   }))
   return panelCard({
     title: t.cardCloudOn,
@@ -64,6 +66,17 @@ function onCloudflare(t: AdminStrings): string {
       + `<p class="${NOTE_TEXT}" data-cf-path="cli" hidden>${escapeHtml(t.cfUpdateCli)}</p>`
       + `<p class="${NOTE_ALERT}" data-cf-error role="alert" hidden></p>`
       + `<p class="${NOTE_TEXT}" data-cf-cost></p>`
+      // Leaving: the archive first, because nothing is behind the delete — no Trash, and the
+      // object's 30 days of bookmarks go with it.
+      + `<div class="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800" data-cf-leave hidden>`
+      + `<p class="${LINE} font-medium">${escapeHtml(t.cfLeaveTitle)}</p>`
+      + `<p class="${NOTE_TEXT}">${escapeHtml(t.cfLeaveNote)}</p>`
+      + `<a href="/api/backup/export" download class="${buttonClass('secondary', 'sm')}">${escapeHtml(t.cfLeaveDownload)}</a>`
+      + settingRow({ label: t.cfCurrentLabel, control: textControl({ value: '', type: 'password', label: t.cfCurrentLabel, attrs: 'data-cf-leave-current autocomplete="current-password"' }) })
+      + settingRow({ label: t.cfLeaveConfirmLabel, control: textControl({ value: '', label: t.cfLeaveConfirmLabel, attrs: 'data-cf-leave-confirm autocomplete="off" spellcheck="false"' }) })
+      + `<button type="button" data-cf-leave-key class="${buttonClass('danger', 'sm')}">${escapeHtml(t.cfLeaveDelete)}</button>`
+      + `<p class="${LINE}" data-cf-leave-line aria-live="polite" hidden></p></div>`
+      + `<p class="${NOTE_TEXT}" data-cf-leave-git hidden>${escapeHtml(t.cfLeaveGit)}</p>`
       + `</div>`,
   })
 }

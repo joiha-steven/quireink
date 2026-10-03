@@ -6,9 +6,25 @@
 import type { Tour } from './tour'
 
 export function registerCloudFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
+  // On the Cloudflare build (the release matrix's cloudflare-dev cell runs the whole tour there) the
+  // same place holds the version, the one way to update that applies, and the month's cost.
+  flow('admin: the Cloudflare card names the version, one way to update, and the cost', () => expect('/admin/settings?tab=server', `
+    (async () => {
+      const live = document.querySelector('[data-cf-live]')
+      if (!live) return document.querySelector('[data-cf-card]') ? 'ok (a Bun install: the move card instead)' : 'neither Cloudflare card is on the Server tab'
+      for (let i = 0; i < 40 && !live.querySelector('[data-cf-version]').textContent; i++) await new Promise((r) => setTimeout(r, 100))
+      if (!live.querySelector('[data-cf-version]').textContent) return 'the card never learned its version'
+      const paths = [...live.querySelectorAll('[data-cf-path]')].filter((el) => !el.hidden)
+      if (paths.length !== 1) return paths.length + ' ways to update shown, expected one'
+      if (!live.querySelector('[data-cf-cost]').textContent.includes('$')) return 'no cost line'
+      if ([...live.querySelectorAll('input')].some((el) => el.hasAttribute('data-k'))) return 'a box on the card is a setting'
+      return 'ok (' + paths[0].dataset.cfPath + ', ' + live.querySelector('[data-cf-cost]').textContent.slice(0, 40) + '…)'
+    })()`, 1500))
+
   flow('admin: Run on Cloudflare asks before it moves, and its secrets are not settings', () => expect('/admin/settings?tab=server', `
     (() => {
       const card = document.querySelector('[data-cf-card]')
+      if (!card && document.querySelector('[data-cf-live]')) return 'ok (on Cloudflare: nowhere to move to)'
       if (!card) return 'no Run on Cloudflare card on the Server tab of a Bun install'
       const move = card.querySelector('[data-cf-move]')
       if (!move || !move.disabled) return 'the Move key is armed before any check'

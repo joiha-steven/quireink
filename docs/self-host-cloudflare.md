@@ -128,6 +128,15 @@ Domain of the Worker in the dashboard. Then stop the old server. Your password i
 because the move copies every account, and because it re-hashes the password at today's strength,
 which a Worker can verify within its memory.
 
+## Leaving Cloudflare
+
+Settings → Server → Cloudflare → *Leaving Cloudflare*. Download a backup first: it is the only way
+back, and it loads into a new Quire Ink on a server, in Docker or on a NAS through *Start from a
+backup* on its first screen. Then type your password and the blog's address, and the Worker deletes
+the blog's pictures, files and backups, its bucket, and itself with its Durable Object and database.
+There is no Trash behind it. A blog made with the Deploy button is deleted in the dashboard instead
+(the card says how), together with its copy on GitHub.
+
 ## Coming before this leaves beta
 
 - A run on Cloudflare itself before every release, not only under `wrangler dev`. (Every release

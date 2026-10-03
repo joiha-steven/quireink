@@ -12,6 +12,8 @@
   button chose. The same card shows what the month should cost, from the blog's own views and sizes.
   The button installs the newest release (the `release` branch, moved by each release), not
   whatever was merged most recently.
+  And leaving: the card offers a backup to take away, then deletes the blog from Cloudflare —
+  uploads, bucket, Worker and database — once the password and the blog's address are typed.
 
 - **Run on Cloudflare: move a blog off its server from the admin** (Settings → Server). A Quire Ink on
   a server, in Docker or on a NAS copies itself — posts, pictures, accounts, settings — into a Worker
