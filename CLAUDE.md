@@ -16,8 +16,8 @@ it is the PRODUCT and stays — the private deploy script ships `scripts/` and t
 bun run check:all
 ```
 
-Typecheck, the fifteen static guards (`filesize` · `css` · `nul` · `sql` · `routes` · `type` · `admin-kit` ·
-`bundle` · `contract` · `docs` · `motion` · `i18n` · `deps` · `admin-css` · `admin-wired`) and
+Typecheck, the sixteen static guards (`filesize` · `css` · `nul` · `sql` · `routes` · `type` · `admin-kit` ·
+`bundle` · `contract` · `docs` · `motion` · `i18n` · `deps` · `admin-css` · `admin-wired` · `runtime`) and
 `bun test`. ~2 min; a change under `src/md`, `src/render` or `src/web` also runs the golden compare.
 
 `check:all` proves the code compiles and the seams hold. It cannot tell you a column
