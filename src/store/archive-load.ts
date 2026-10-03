@@ -35,7 +35,7 @@ const count = (conn: Connection, table: string): number =>
 export function firstNonEmptyTable(): string | null {
   for (const kind of KINDS) {
     const conn = live(kind)
-    for (const plan of exportPlan(conn)) {
+    for (const plan of exportPlan(conn, kind)) {
       if (plan.name === LEDGER[kind] || FRESH_TABLES.has(plan.name)) continue
       if (count(conn, plan.name) > 0) return plan.name
     }
@@ -50,7 +50,7 @@ export function liveLedgers(): Record<Kind, string[]> {
 
 /** The live table's columns in order, or null when this blog has no such table. */
 export function liveColumns(kind: Kind, table: string): string[] | null {
-  const plan = exportPlan(live(kind)).find((p) => p.name === table)
+  const plan = exportPlan(live(kind), kind).find((p) => p.name === table)
   return plan ? plan.columns : null
 }
 
@@ -74,7 +74,7 @@ export function beginLiveLoad(): LiveLoad {
     const conn = live(kind)
     conn.exec('pragma foreign_keys = OFF')
     conn.transaction(() => {
-      for (const plan of exportPlan(conn)) {
+      for (const plan of exportPlan(conn, kind)) {
         if (!FRESH_TABLES.has(plan.name)) continue
         conn.run(`delete from ${ident(plan.name)}`)
         touched.push({ kind, name: plan.name })

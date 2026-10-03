@@ -82,7 +82,7 @@ for (const f of ['docker-compose.yml', 'docker-compose.caddy.yml', 'docker-compo
 }
 if (!read('deploy/digitalocean/user-data.sh').includes('/server.sh')) faults.push('I2: deploy/digitalocean/user-data.sh no longer runs server.sh')
 const matrixWorkflow = read('.github/workflows/release-matrix.yml')
-for (const cell of ['source-fresh', 'source-upgrade', 'docker-fresh', 'docker-upgrade', 'server-http']) {
+for (const cell of ['source-fresh', 'source-upgrade', 'docker-fresh', 'docker-upgrade', 'server-http', 'cloudflare-dev']) {
   if (!matrixWorkflow.includes(cell)) faults.push(`I2: release-matrix.yml does not run the ${cell} cell`)
 }
 

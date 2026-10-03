@@ -113,3 +113,29 @@ describe('rows out and back', () => {
     await expect(loadTable(to, 't', ['a', 'b'], bad)).rejects.toThrow('2 columns')
   })
 })
+
+describe('two databases in one file, as in a Durable Object', () => {
+  // ⚠️ Found 2026-10-03 loading a backup into a brand-new blog on `wrangler dev`: both databases
+  // share one SQLite file there, every table was listed for both, and the content pass found
+  // analytics' ledger and called the blog occupied. Each pass must see its own tables only.
+  const conn = seeded('shared.db', 2)
+  conn.exec(`create table analytics_schema_migrations (name text primary key, applied_at integer not null);
+    create table analytics_events (id integer primary key, path text not null);
+    create index analytics_events_path on analytics_events (path);
+    insert into analytics_schema_migrations values ('a001', 1);`)
+
+  it('lists each table under its own database, and everything when no database is named', () => {
+    expect(exportPlan(conn, 'content').map((p) => p.name)).toEqual(['ledger', 'plain', 'posts', 'terms'])
+    expect(exportPlan(conn, 'analytics').map((p) => p.name)).toEqual(['analytics_events', 'analytics_schema_migrations'])
+    expect(exportPlan(conn).length).toBe(6)
+  })
+
+  it('writes each database the shape of its own tables, indexes and triggers', () => {
+    const content = schemaScript(conn, 'content')
+    const analytics = schemaScript(conn, 'analytics')
+    expect(content).toContain('posts_fts_ai')
+    expect(content).not.toContain('analytics_')
+    expect(analytics).toContain('analytics_events_path')
+    expect(analytics).not.toContain('posts')
+  })
+})

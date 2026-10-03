@@ -49,13 +49,25 @@ export function ident(name: string): string {
   return `"${name}"`
 }
 
+/**
+ * Which database a table belongs to: analytics' tables are all named `analytics_…`, content's never
+ * are. On Bun each database is a file of its own and this changes nothing. In a Durable Object both
+ * share ONE file (2026-10-03): without it every table was listed for both, so an archive carried
+ * each one twice and a brand-new blog looked occupied — the content pass found analytics' ledger.
+ * An index or a trigger goes with the table it is on (`tbl_name`).
+ */
+export type RowsKind = 'content' | 'analytics'
+export const tableKind = (name: string): RowsKind => (/^analytics_/.test(name) ? 'analytics' : 'content')
+
 /** Not ours: SQLite's own, a Durable Object's `_cf_*`, and the local emulator's (see `db.ts`). */
 const foreign = (name: string): boolean => /^(sqlite_|_cf_|__miniflare)/i.test(name)
 const isVirtual = (sql: string | null): boolean => /^create\s+virtual\s+table/i.test(sql ?? '')
 const withoutRowid = (sql: string | null): boolean => /\)\s*without\s+rowid\s*;?\s*$/i.test(sql ?? '')
 
-function master(conn: Connection): MasterRow[] {
-  return conn.all<MasterRow>('select type, name, tbl_name, sql from sqlite_master order by name')
+/** `kind` keeps one database's rows when two share the file; left out, everything. */
+function master(conn: Connection, kind?: RowsKind): MasterRow[] {
+  const rows = conn.all<MasterRow>('select type, name, tbl_name, sql from sqlite_master order by name')
+  return kind ? rows.filter((r) => tableKind(r.tbl_name) === kind) : rows
 }
 
 /** The shadow tables FTS5 makes for a virtual table, which recreating the table recreates. */
@@ -74,8 +86,8 @@ function shadows(rows: MasterRow[]): Set<string> {
  * SQLite stores each statement with `IF NOT EXISTS` already removed, so this builds a file
  * from nothing and refuses to build over one.
  */
-export function schemaScript(conn: Connection): string {
-  const rows = master(conn).filter((r) => r.sql !== null && !foreign(r.name))
+export function schemaScript(conn: Connection, kind?: RowsKind): string {
+  const rows = master(conn, kind).filter((r) => r.sql !== null && !foreign(r.name))
   const shadow = shadows(rows)
   const rank = (r: MasterRow): number =>
     r.type === 'table' ? (isVirtual(r.sql) ? 1 : 0) : r.type === 'index' ? 2 : 3
@@ -87,8 +99,8 @@ export function schemaScript(conn: Connection): string {
 }
 
 /** Every table whose rows the archive carries, sorted by name. */
-export function exportPlan(conn: Connection): TablePlan[] {
-  const rows = master(conn)
+export function exportPlan(conn: Connection, kind?: RowsKind): TablePlan[] {
+  const rows = master(conn, kind)
   const shadow = shadows(rows)
   return rows
     .filter((r) => r.type === 'table' && !foreign(r.name) && !isVirtual(r.sql) && !shadow.has(r.name))

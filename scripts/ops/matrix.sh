@@ -2,10 +2,14 @@
 # The release matrix (ADR 0065): install this commit, and upgrade to it from the release before,
 # through each package, and smoke-test what comes up.
 #
-#   scripts/ops/matrix.sh source-fresh | source-upgrade | docker-fresh | docker-upgrade | server-http
+#   scripts/ops/matrix.sh source-fresh | source-upgrade | docker-fresh | docker-upgrade | server-http | cloudflare-dev
 #
 # `server-http` runs server.sh for real, so it needs a disposable Linux machine with sudo: a CI
 # runner, never a workstation. It writes /opt/quireink and /var/lib/quireink and removes them.
+#
+# `cloudflare-dev` is the Cloudflare package under `wrangler dev`: a Bun blog moved into the real
+# worker through `/setup/restore`, then smoked like the rest (`scripts/ops/cloudflare-dev.ts`). It
+# builds this tree; installing it on Cloudflare for real is L10, from the release manager's machine.
 #
 # Run from the repository root, with the tags fetched (`git fetch --tags`). Each cell builds its
 # own world under a temporary directory and tears it down, so cells can run side by side.
@@ -21,7 +25,7 @@
 # today's seeder would test an upgrade nobody performs.
 set -euo pipefail
 
-CELL=${1:?usage: matrix.sh source-fresh|source-upgrade|docker-fresh|docker-upgrade|server-http}
+CELL=${1:?usage: matrix.sh source-fresh|source-upgrade|docker-fresh|docker-upgrade|server-http|cloudflare-dev}
 REPO=$(pwd)
 [ -f "$REPO/install.sh" ] || { echo "run from the repository root" >&2; exit 2; }
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/quire-matrix-XXXXXX")
@@ -191,6 +195,11 @@ EOF
     docker build --quiet -t "quireink:matrix-$NEXT" "$WORK/next" >/dev/null
     run_image quire-matrix-new "quireink:matrix-$NEXT" 3504 "$WORK/blog"
     smoke http://127.0.0.1:3504 docker "$SESSION" "$WORK/blog"
+    ;;
+
+  cloudflare-dev)
+    say "the Cloudflare build of this tree, a Bun blog moved into it, smoked"
+    ( cd "$REPO" && bun run build >/dev/null && bun run build:worker && bun scripts/ops/cloudflare-dev.ts )
     ;;
 
   server-http)

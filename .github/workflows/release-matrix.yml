@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cell: [source-fresh, source-upgrade, docker-fresh, docker-upgrade, server-http]
+        cell: [source-fresh, source-upgrade, docker-fresh, docker-upgrade, server-http, cloudflare-dev]
     steps:
       - uses: actions/checkout@v5
         with:

@@ -86,7 +86,7 @@ export async function openArchiveSource(): Promise<ArchiveSource> {
       if (copy) copies.push(copy)
       conns[kind] = copy?.conn ?? live[kind]
       const described = []
-      for (const plan of exportPlan(conns[kind])) described.push({ plan, digest: await digest(conns[kind], plan) })
+      for (const plan of exportPlan(conns[kind], kind)) described.push({ plan, digest: await digest(conns[kind], plan) })
       plans[kind] = described
       sections[kind] = {
         ledger: ledgerNames(conns[kind], LEDGER[kind]),
@@ -101,7 +101,7 @@ export async function openArchiveSource(): Promise<ArchiveSource> {
     sections,
     parts: async function* () {
       for (const kind of KINDS) {
-        const schema = enc.encode(schemaScript(conns[kind]))
+        const schema = enc.encode(schemaScript(conns[kind], kind))
         yield { name: `${kind}/schema.sql`, size: schema.length, body: schema }
         for (const { plan, digest: d } of plans[kind]) {
           yield { name: `${kind}/${plan.name}.jsonl`, size: d.bytes, body: replay(conns[kind], plan, d) }

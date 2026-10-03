@@ -15,6 +15,7 @@
     "build:admin": "bun scripts/build-admin.ts",
     "build:worker": "bun scripts/build-worker.ts",
     "test:cf": "bun scripts/test-cf.ts",
+    "smoke:cf": "bun run build && bun run build:worker && bun scripts/ops/cloudflare-dev.ts",
     "deploy": "bun run build && bun run build:worker && wrangler deploy",
     "typecheck:worker": "wrangler types src/runtime/cf/worker-configuration.d.ts > /dev/null && tsc --noEmit -p tsconfig.worker.json",
     "test": "bun run build:assets && bun test",
