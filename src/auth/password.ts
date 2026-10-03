@@ -1,7 +1,7 @@
 // Password hashing and policy.
 //
-// `Bun.password` is argon2id by default, so there is no dependency here and no cost
-// parameters to get wrong. Verification is deliberately slow (~100ms), which is the point,
+// `Bun.password` is argon2id, so there is no dependency here; the cost parameters are written out
+// below (ADR 0068). Verification is deliberately slow (tens of ms), which is the point,
 // and is why the rate limiter in front of it matters: without one, a slow hash is a
 // denial-of-service surface rather than a defence.
 
@@ -51,18 +51,34 @@ export function checkPassword(
   return null
 }
 
+/**
+ * argon2id at m = 19 MiB, t = 2, p = 1 for every NEW hash (ADR 0068) — OWASP's floor for this
+ * algorithm, where Bun's default is 64 MiB. Measured 2026-10-03: one 64 MiB hash in a 128 MB
+ * Cloudflare isolate allocated ~65 MB of WASM that was never handed back, beside a 40–46 MB heap,
+ * so a sign-in could be the request that killed the process. Both runtimes hash with these.
+ *
+ * Existing hashes need nothing: the PHC string (`$argon2id$v=19$m=65536,t=2,p=1$…`) carries its
+ * own parameters, and verifying reads them from there.
+ */
+export const HASH_PARAMS = { algorithm: 'argon2id', memoryCost: 19456, timeCost: 2 } as const
+
 export function hashPassword(password: string): Promise<string> {
-  return Bun.password.hash(password)
+  return Bun.password.hash(password, HASH_PARAMS)
 }
 
 /**
- * A hash of a value nobody knows, computed once at startup.
+ * A hash of a value nobody knows, made the first time it is needed and kept.
  *
  * Its only purpose is to be verified against when the username does not exist, so that
- * "no such account" costs the same ~100ms as "wrong password". Without it, sign-in failure
- * timing is an account-existence oracle: fast means no such user.
+ * "no such account" costs the same as "wrong password". Without it, sign-in failure timing is an
+ * account-existence oracle: fast means no such user.
+ *
+ * LAZY, not a top-level `await` (it was one until 2026-10-03): Cloudflare refuses to start a
+ * Worker that does I/O in global scope ("Disallowed operation called within global scope"), and
+ * a hash is the kind of work a module should not do merely by being imported.
  */
-const DUMMY_HASH = await Bun.password.hash(crypto.randomUUID())
+let dummy: Promise<string> | null = null
+const dummyHash = (): Promise<string> => (dummy ??= Bun.password.hash(crypto.randomUUID(), HASH_PARAMS))
 
 /**
  * Verify, spending the same time whether or not the account exists.
@@ -72,7 +88,7 @@ const DUMMY_HASH = await Bun.password.hash(crypto.randomUUID())
  */
 export async function verifyPassword(hash: string | null, password: string): Promise<boolean> {
   if (hash === null) {
-    await Bun.password.verify(password, DUMMY_HASH).catch(() => false)
+    await Bun.password.verify(password, await dummyHash()).catch(() => false)
     return false
   }
   // `verify` throws on a malformed hash rather than returning false. A row whose hash was

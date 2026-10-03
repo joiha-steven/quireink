@@ -45,6 +45,20 @@ describe('checkPassword', () => {
   })
 })
 
+describe('hashPassword', () => {
+  // ADR 0068: new hashes at OWASP's floor, which fits a 128 MB isolate; old ones keep working.
+  it('hashes new passwords with argon2id at 19 MiB, t = 2, p = 1', async () => {
+    expect(await hashPassword('a long enough passphrase')).toMatch(/^\$argon2id\$v=19\$m=19456,t=2,p=1\$/)
+  })
+
+  it('still verifies a hash made at Bun\'s old default of 64 MiB', async () => {
+    const old = await Bun.password.hash('the password from before', { algorithm: 'argon2id', memoryCost: 65536, timeCost: 2 })
+    expect(old).toContain('m=65536')
+    expect(await verifyPassword(old, 'the password from before')).toBe(true)
+    expect(await verifyPassword(old, 'not the password')).toBe(false)
+  })
+})
+
 describe('verifyPassword', () => {
   it('accepts the right password and rejects the wrong one', async () => {
     const hash = await hashPassword('a real passphrase')
