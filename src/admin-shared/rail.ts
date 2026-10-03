@@ -20,6 +20,7 @@ import type { IconName } from '@/icons'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { NavId } from '@/content/nav-order'
 import type { NavOrder } from '@/types'
+import { component } from '@/admin-shared/component'
 
 /**
  * A row the rail can draw.
@@ -303,8 +304,12 @@ export const RAIL_WIDTH = { shut: '4.5rem', open: '13rem', arranging: '16rem' } 
  * set at the same size as a table cell and a hint — measured 2026-09-07: four destinations
  * and a group, every row 40px of 14px grey, nothing on the column but text at one size.
  */
-export const SIDEBAR_NAV_QUIET =
-  'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-[0.9375rem] font-medium text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]'
+//
+// ⚠️ EVERY STRING IN THIS SECTION IS A COMPONENT since 2026-10-03 (`component.ts`): the rail is on
+// every admin page, and its rows were 570 to 660 characters of class each, twenty-odd rows deep.
+// The lists are the definitions; the page carries `kit-rail-*`.
+export const SIDEBAR_NAV_QUIET = component('kit-rail-row',
+  'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-[0.9375rem] font-medium text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]')
 
 // `neutral-200/70`, not `neutral-100`: the rail sits on the PAPER canvas (#f7f6f4), and
 // neutral-100 (#f5f5f5) is two points away from it — a hover nobody can see. Measured the
@@ -312,8 +317,8 @@ export const SIDEBAR_NAV_QUIET =
 // 120ms, written out rather than left to `--dur-fast` (150): a rail row is the control the
 // pointer crosses most often on the way to somewhere else, and the shorter curve is what
 // keeps a sweep down the column from lighting up behind the cursor like a trail.
-const SIDEBAR_NAV_HOVER =
-  'hover:bg-neutral-200/70 hover:text-neutral-900 hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.12)] dark:hover:bg-neutral-800 dark:hover:text-white dark:hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.4)]'
+const SIDEBAR_NAV_HOVER = component('kit-rail-hover',
+  'hover:bg-neutral-200/70 hover:text-neutral-900 hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.12)] dark:hover:bg-neutral-800 dark:hover:text-white dark:hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.4)]')
 
 export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 
@@ -352,15 +357,23 @@ export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 // it at 4.5 with 4.5 of paper each side. It was `-left-3`, which put it at 0 — hard against
 // the window's own edge, where it read as a sliver bleeding off the glass rather than as a
 // mark on the rail.
-export const SIDEBAR_NAV_ACTIVE =
-  'bg-[var(--pen)] font-medium text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)] before:absolute before:-left-[7.5px] before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-full before:bg-[var(--pen-edge)] before:content-[\'\']' 
+//
+// ⚠️ NO `before:content-['']`, and the bar is drawn all the same. That utility sat at the end of
+// this list until 2026-10-03 and never matched anything: the rule captured for it is spelled
+// `.before\:content-\[\\\'\\\'\]`, with the source file's own backslashes inside the class name,
+// so it selects a class nobody writes. The pseudo-element exists anyway because every `before:`
+// utility here sets `content: var(--u-content)`, whose registered initial value is the empty
+// string. The build refuses a component naming a utility no rule selects, which is how it came to
+// light; leaving it out changes no pixel, because it never painted one.
+export const SIDEBAR_NAV_ACTIVE = component('kit-rail-here',
+  'bg-[var(--pen)] font-medium text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)] before:absolute before:-left-[7.5px] before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-full before:bg-[var(--pen-edge)]')
 
 // The rail's UTILITY register. The footer's rows (theme, cache, sign out) are CONTROLS,
 // and for a while they wore SIDEBAR_NAV — four more destinations, one apparently a page
 // named "Light". A control is smaller and quieter than a place, and it always draws its
 // glyph: the glyph is what says "this does something" when the word alone reads as a name.
-export const SIDEBAR_UTIL =
-  'relative flex h-8 w-full items-center rounded-md px-3 text-left text-xs text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-neutral-700 hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.12)] disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]'
+export const SIDEBAR_UTIL = component('kit-rail-util',
+  'relative flex h-8 w-full items-center rounded-md px-3 text-left text-xs text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-neutral-700 hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.12)] disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]')
 
 // THE UTILITY STRIP at the rail's foot: one row of icon keys, each naming itself in a tooltip.
 //
@@ -369,8 +382,8 @@ export const SIDEBAR_UTIL =
 // a word in it is what a PLACE looks like. "Light" was the clearest symptom: read down the
 // rail it is a page you can go to. A control that fits in its own glyph should be one, and a
 // strip of them says "these are the tool's own switches" by being a different shape entirely.
-const SIDEBAR_ICON_SHAPE =
-  'relative grid h-8 w-8 shrink-0 place-items-center text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0'
+const SIDEBAR_ICON_SHAPE = component('kit-rail-key',
+  'relative grid h-8 w-8 shrink-0 place-items-center text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0')
 
 export const SIDEBAR_ICON = `${SIDEBAR_ICON_SHAPE} rounded-md`
 

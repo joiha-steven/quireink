@@ -37,6 +37,13 @@ describe('minifyCss', () => {
     expect(minifyCss('a::before{content:"("}')).toBe('a::before{content:"("}')
   })
 
+  // The admin's `before:content-[…]` utility. Its escaped quotes open nothing, and reading them
+  // as a string kept every comment after them in the built admin sheet until 2026-10-03.
+  it('reads an escaped quote outside a string as part of the token it sits in', () => {
+    expect(minifyCss(".before\\:content-\\[\\\\\\'\\]::before{--u-content: \\'\\';}\n/* don't ship me */\na { color : red }"))
+      .toBe(".before\\:content-\\[\\\\\\'\\]::before{--u-content: \\'\\'}a{color : red}")
+  })
+
   it('is idempotent, so serving it twice cannot degrade it', () => {
     const once = minifyCss(PUBLIC_CSS)
     expect(minifyCss(once)).toBe(once)

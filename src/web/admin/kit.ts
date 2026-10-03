@@ -17,7 +17,7 @@
 import { escapeAttr, escapeHtml } from '@/utils'
 import { ICONS, GLYPHS, type GlyphName, type IconName } from '@/icons'
 import {
-  CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOOL, SHEET_TOOL_DANGER, SHEET_TOP,
+  CONTROL_SM, GLYPH, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOOL, SHEET_TOOL_DANGER, SHEET_TOP,
   TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, buttonClass, type LampState,
 } from '@/admin-shared/kit'
 import { META } from '@/admin-shared/scale'
@@ -27,7 +27,7 @@ import {
 import { HEADER_GAP, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
 
 /** A glyph from the shared set, at the surface's own size. */
-export const icon = (name: IconName, cls = 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0'): string =>
+export const icon = (name: IconName, cls = GLYPH): string =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"`
   + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="${cls}">${ICONS[name]}</svg>`
 

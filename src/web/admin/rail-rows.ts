@@ -14,6 +14,7 @@ import {
   PALETTE_CHORD, SIDEBAR_GROUP, SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL,
   printChord, type RailRow,
 } from '@/admin-shared/rail'
+import { GLYPH } from '@/admin-shared/kit'
 
 /**
  * A glyph from the shared set.
@@ -25,8 +26,7 @@ import {
  */
 export const glyph = (name: keyof typeof ICONS): string =>
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"'
-  + ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"'
-  + ' class="h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0">'
+  + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="${GLYPH}">`
   + `${ICONS[name]}</svg>`
 
 /**

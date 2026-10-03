@@ -11,7 +11,20 @@
 // The rest of the original file's argument — why `lg` and `sm` are two different objects, and
 // why a `place` is not a `choice` — travels with the strings it is about, below.
 
+// The SEGMENTED family is made of components since 2026-10-03 (`component.ts`): a settings
+// screen draws ninety-odd segments and a few dozen tracks, and every key also carries both of
+// its faces as attributes for the island that presses it (`keyFaces`) — three copies of a
+// 200-character list per key. The underlined `lg` strip is a handful of keys per page and is
+// left spelled out. `no-scrollbar` and `scroll-fade-x` stay written out beside the names: the
+// tour finds a track by them.
+import { component } from '@/admin-shared/component'
+
 export type TabSize = 'lg' | 'sm'
+
+const TRACK = component('kit-track',
+  'flex min-h-8 overflow-x-auto rounded-md border border-neutral-200 dark:border-neutral-800')
+const GROOVE = component('kit-groove',
+  'bg-neutral-200 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]')
 
 // The tracks and the item are exported separately because Analytics' range control is made of
 // LINKS: the range lives in the URL, so it cannot be a `<Tabs>` with an `onChange`. It had its
@@ -51,14 +64,14 @@ export const TAB_TRACK_DENSE = 'flex w-full items-end gap-4 border-b border-neut
 // than its own track to be seen. That inverts the object: a pressed key is not darker than
 // the panel it is set into, it is the panel's face pushed down. With a real groove the key
 // can be white and carved, which is what a segmented control on a desk looks like.
-export const SEGMENT_TRACK = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar scroll-fade-x rounded-md border border-neutral-200 bg-neutral-200 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
+export const SEGMENT_TRACK = `${TRACK} w-fit max-w-full no-scrollbar scroll-fade-x ${GROOVE}`
 /** The quiet track a PLACE strip wears: an outline on the sheet, not a control set into it. */
-export const SEGMENT_TRACK_PLACE = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar scroll-fade-x rounded-md border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950/40'
+export const SEGMENT_TRACK_PLACE = `${TRACK} w-fit max-w-full no-scrollbar scroll-fade-x bg-neutral-50 dark:bg-neutral-950/40`
 // The dense variant is full-width with growing items: five segments whose right edge lands
 // on the pane's own edge instead of stopping short of it, which read as a gap left over.
-export const SEGMENT_TRACK_DENSE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar scroll-fade-x rounded-md border border-neutral-200 bg-neutral-200 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
+export const SEGMENT_TRACK_DENSE = `${TRACK} w-full no-scrollbar scroll-fade-x ${GROOVE}`
 /** Full-width and quiet: the write pane's scope strip is a place strip that fills its column. */
-export const SEGMENT_TRACK_DENSE_PLACE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar scroll-fade-x rounded-md border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950/40'
+export const SEGMENT_TRACK_DENSE_PLACE = `${TRACK} w-full no-scrollbar scroll-fade-x bg-neutral-50 dark:bg-neutral-950/40`
 
 /**
  * What an active item MEANS, which turns out to be two different things wearing one costume.
@@ -113,6 +126,15 @@ const CORNERS: Record<TabEdge, string> = {
  * gave it the first key's rounding, square against the track's end (2026-09-30). Each key now
  * carries its own two faces, and `pressKey` (admin/island/lib/press-key.ts) swaps between them.
  */
+/** The segmented key's faces, as components; `tabItemClass` below explains each list. */
+const SEGMENT = component('kit-seg', 'py-1 text-[0.8125rem] font-medium transition')
+const SEGMENT_HERE = component('kit-seg-here',
+  'bg-[var(--pen)] text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]')
+const SEGMENT_ON = component('kit-seg-on',
+  'bg-white font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.55)]')
+const SEGMENT_IDLE = component('kit-seg-idle',
+  'hover:bg-neutral-300/60 hover:text-neutral-900 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200')
+
 export const keyFaces = (size: TabSize, dense: boolean, role: TabRole, edge: TabEdge, extra = ''): string =>
   ` data-on="${tabItemClass(true, size, dense, role, edge)}${extra}" data-off="${tabItemClass(false, size, dense, role, edge)}${extra}"`
 
@@ -151,7 +173,7 @@ export const tabItemClass = (
     // of its own groove with four sharp corners. Rounding all four was the correction's first
     // cut and it was wrong in the other direction: a middle key butts against its neighbours,
     // and a curve there cuts a notch out of a straight run. See `TabEdge`.
-    : `${CORNERS[edge]} ${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1 text-[0.8125rem] font-medium transition ${
+    : `${CORNERS[edge]} ${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} ${SEGMENT} ${
         active
           // INK on the highlighter, not the reading site's olive `--on-pen`: on a control
           // the olive read as grey and dull, and the owner called it. A mark in running
@@ -167,11 +189,12 @@ export const tabItemClass = (
           ? role === 'place'
             // `dark:text-white` for the reason set out on SIDEBAR_NAV_ACTIVE: the dark pen is
             // an olive, and near-black on it measures 3.8:1 against the 5.0 white gets.
-            ? 'bg-[var(--pen)] text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
-            : 'bg-white font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.55)]'
+            ? SEGMENT_HERE
+            : SEGMENT_ON
           // `seg-off` and not a neutral step, because this label answers to two numbers at
           // once: 4.5:1 against the neutral-200 groove it sits in, and 3:1 against the chosen
           // label beside it. 500 gives 3.76 and 4.2; 600 gives 6.2 and 2.53. The class holds
           // the one value that clears both, with the measurements beside it in `admin.css`.
-          : 'seg-off hover:bg-neutral-300/60 hover:text-neutral-900 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200'
+          // Written out beside its hover's name, because it is `admin.css`'s own class.
+          : `seg-off ${SEGMENT_IDLE}`
       }`

@@ -19,6 +19,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { CARD, CONTROL, THEAD, TROW } from '@/admin-shared/kit'
 import { NOTE, NOTE_TEXT, PAGE_TITLE_FACE, READING, SETTING_LABEL } from '@/admin-shared/scale'
+import { expandComponents } from '@/admin-shared/component'
 
 const ADMIN_CSS = readFileSync('src/admin/admin.css', 'utf8')
 
@@ -83,7 +84,9 @@ describe('the admin wears one face', () => {
     // The hint was the last holder. It is what a person READS on a settings screen, which is
     // exactly why it was the most tempting to set in the reading face, and exactly why it was
     // the most visible when the answer changed. Its distinction is now size and leading only.
-    for (const role of [NOTE_TEXT, NOTE, SETTING_LABEL, CONTROL, THEAD, TROW, CARD]) {
+    // Through the component names, which since 2026-10-03 are what the roles are spelled as:
+    // a face hidden inside a name's list is still a face on the role.
+    for (const role of [NOTE_TEXT, NOTE, SETTING_LABEL, CONTROL, THEAD, TROW, CARD].map(expandComponents)) {
       expect(role.split(' ')).not.toContain(READING)
       expect(role.split(' ')).not.toContain(PAGE_TITLE_FACE)
     }

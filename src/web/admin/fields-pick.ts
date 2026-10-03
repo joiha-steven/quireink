@@ -7,7 +7,7 @@
 // than an eleventh variant of a control the admin already has.
 import { escapeAttr, escapeHtml } from '@/utils'
 import { CONTROL, TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP } from '@/admin-shared/kit'
-import { CONTROL_GROUP, CONTROL_NUM } from '@/admin-shared/controls'
+import { COLOUR_HEX, COLOUR_WELL, CONTROL_GROUP, CONTROL_NUM } from '@/admin-shared/controls'
 import { SEGMENT_TRACK, edgeAt, keyFaces, tabItemClass } from '@/admin-shared/tabs'
 import { FIELD_W, NOTE, SETTING_LABEL } from '@/admin-shared/scale'
 import { settingRow, type SettingText } from '@/web/admin/fields'
@@ -111,12 +111,6 @@ export const pick = (f: SettingText & PickSpec & { inline?: boolean }): string =
   return settingRow({ ...row, control: pickControl({ ...row, attrs }), inline: f.inline })
 }
 
-const WELL = 'relative h-[1.05rem] w-[1.05rem] shrink-0 rounded-full ring-1 ring-black/15'
-  + ' shadow-[inset_0_1.5px_2px_rgba(0,0,0,.35),inset_0_-1px_1px_rgba(255,255,255,.28)] dark:ring-white/20'
-
-const HEX = 'h-full min-w-0 flex-1 border-0 bg-transparent font-mono text-xs uppercase tabular-nums'
-  + ' text-neutral-900 outline-none dark:text-neutral-100'
-
 /**
  * A COLOUR: the OS picker welded to the hex that names it.
  *
@@ -134,14 +128,14 @@ const HEX = 'h-full min-w-0 flex-1 border-0 bg-transparent font-mono text-xs upp
 export function colourField(f: { k: string; value: string; label?: string }): string {
   const hex = f.value.startsWith('#') ? f.value : `#${f.value}`
   return `<span class="flex h-8 shrink-0 items-center gap-1.5 px-2 ${CONTROL_GROUP} w-[8.25rem]">`
-    + `<span class="${WELL}" style="background:${escapeAttr(hex)}">`
+    + `<span class="${COLOUR_WELL}" style="background:${escapeAttr(hex)}">`
     + `<input type="color" data-k-echo="${escapeAttr(f.k)}" value="${escapeAttr(hex)}"`
     + (f.label ? ` aria-label="${escapeAttr(f.label)}"` : ' aria-hidden="true" tabindex="-1"')
     + ` class="absolute inset-0 h-full w-full cursor-pointer rounded-full opacity-0"></span>`
     + `<span aria-hidden="true" class="font-mono text-xs text-neutral-400 dark:text-neutral-500">#</span>`
     + `<input type="text" data-k="${escapeAttr(f.k)}" value="${escapeAttr(hex.slice(1))}"`
     + (f.label ? ` aria-label="${escapeAttr(f.label)}"` : '')
-    + ` class="${HEX}"></span>`
+    + ` class="${COLOUR_HEX}"></span>`
 }
 
 /** One colour on its own line, named at the left and picked at the right. */

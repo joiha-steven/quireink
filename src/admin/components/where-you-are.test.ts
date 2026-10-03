@@ -14,8 +14,16 @@
 
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { tabItemClass } from '@/admin-shared/tabs'
-import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET } from '@/admin-shared/rail'
+import { tabItemClass as tabItemNames } from '@/admin-shared/tabs'
+import * as rail from '@/admin-shared/rail'
+import { expandComponents } from '@/admin-shared/component'
+
+// What each key is STYLED AS, through its component names (`admin-shared/component.ts`): the
+// ink this file defends lives in the lists, and a name is only how the page spells them.
+const tabItemClass = (...a: Parameters<typeof tabItemNames>) => expandComponents(tabItemNames(...a))
+const SIDEBAR_NAV = expandComponents(rail.SIDEBAR_NAV)
+const SIDEBAR_NAV_ACTIVE = expandComponents(rail.SIDEBAR_NAV_ACTIVE)
+const SIDEBAR_NAV_QUIET = expandComponents(rail.SIDEBAR_NAV_QUIET)
 
 describe('the highlighter marks a place', () => {
   it('paints an active tab you navigated to', () => {

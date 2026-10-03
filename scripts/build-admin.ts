@@ -86,7 +86,15 @@ const styles = minifyCss(`${utilities}\n${chrome}`)
 // comments were being served; two of the four sheets were not being asked.
 const { PROSE_CSS } = await import(`${ROOT}src/web/prose.css.ts`)
 const { INK_CSS } = await import(`${ROOT}src/pen/ink.css.ts`)
-await Bun.write(`${OUT}/admin.css`, minifyCss(`${styles}\n${PROSE_CSS}`))
+// THE KIT'S COMPONENT NAMES, given to the rules of the utilities they stand for — last, on the
+// finished sheet, so a utility selected by the prose sheet or the chrome is covered as well as
+// one in `utilities.css`. `admin-shared/component.ts` says why a component is a name and not a
+// rule; `web/css-compose.ts` is the rewrite, and it throws on a list it cannot honour, which
+// fails this build rather than shipping a field without its border.
+const { composeComponents } = await import(`${ROOT}src/web/css-compose.ts`)
+const { registeredComponents } = await import(`${ROOT}src/admin-shared/components.ts`)
+await Bun.write(`${OUT}/admin.css`,
+  composeComponents(minifyCss(`${styles}\n${PROSE_CSS}`), registeredComponents()))
 await Bun.write(`${OUT}/admin-ink.css`, minifyCss(INK_CSS))
 
 // The ENTRIES only, largest first: the chunks they share are counted in the total and would

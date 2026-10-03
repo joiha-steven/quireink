@@ -14,6 +14,7 @@ import { indexIn, lanes } from '@/accent'
 import { el } from '@/admin/components/node-dom'
 import { say } from './media-bridge'
 import { composing } from '@/admin/components/composing'
+import { FOUND_NAME, FOUND_ROW, FOUND_WHERE } from '@/admin-shared/kit'
 
 /**
  * Asked for by name, so nothing has to hold a setter.
@@ -160,7 +161,7 @@ export function wirePalette(words: PaletteWords): () => void {
       for (const hit of (json.data?.hits ?? []).slice(0, 5)) {
         const label = hit.title || hit.slug
         const row = el('li', {
-          className: 'flex cursor-pointer items-baseline justify-between gap-4 px-4 py-2 text-sm',
+          className: FOUND_ROW,
           role: 'option', 'aria-selected': 'false',
           id: `pal-p-${hit.kind}-${hit.slug.replace(/[^a-z0-9]+/gi, '-')}`,
           'data-pal-row': '', 'data-pal-group': 'post',
@@ -168,9 +169,9 @@ export function wirePalette(words: PaletteWords): () => void {
           'data-pal-search': label,
           'data-pal-href': `/admin/${hit.kind === 'page' ? 'page-editor' : 'editor'}/${hit.slug}`,
         })
-        const name = el('span', { className: 'min-w-0 truncate text-neutral-900 dark:text-white' })
+        const name = el('span', { className: FOUND_NAME })
         name.textContent = label
-        const kind = el('span', { className: 'shrink-0 text-xs text-neutral-500 dark:text-neutral-400' })
+        const kind = el('span', { className: FOUND_WHERE })
         kind.textContent = hit.kind === 'page' ? words.kindPage : words.scopePosts
         row.append(name, kind)
         postSlot.appendChild(row)

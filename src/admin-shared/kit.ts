@@ -14,6 +14,11 @@
 // imports from `src/admin`, the server can no longer read it.
 
 import { TAP, TAP_TOUCH } from '@/admin-shared/scale'
+// ⚠️ THE LONG STRINGS BELOW ARE DEFINITIONS, NOT WHAT THE PAGE CARRIES. Each primitive the
+// admin repeats by the dozen is registered as a component (`component.ts` says why), so the
+// markup wears `kit-btn kit-btn-md kit-btn-primary` and the stylesheet gives those names the
+// rules of the utilities listed here. Change a list and the name follows it at the next build.
+import { component, utilitiesOf } from '@/admin-shared/component'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'armed'
 
@@ -101,6 +106,17 @@ const SIZES: Record<ButtonSize, string> = {
 }
 
 /**
+ * The button as the page carries it: one name per axis. Spelled out, one key was 460 to 917
+ * characters depending on its variant, and the settings screen drew 71 of them (measured
+ * 2026-10-03). The names keep the axes the type already has — a variant never needs to know a
+ * size — so eight components cover all ten buttons the kit can make.
+ */
+const BUTTON_SHAPE = component('kit-btn', SHAPE)
+const BUTTON_SIZE = { md: component('kit-btn-md', SIZES.md), sm: component('kit-btn-sm', SIZES.sm) }
+const BUTTON_STYLE = Object.fromEntries(Object.entries(STYLES)
+  .map(([variant, list]) => [variant, component(`kit-btn-${variant}`, list)])) as Record<ButtonVariant, string>
+
+/**
  * The same button, for something that is a LINK and not a button.
  *
  * Exported because the alternative is what was already happening: an `<a>` that wants to look
@@ -111,7 +127,7 @@ const SIZES: Record<ButtonSize, string> = {
  * public reading interface only. Four primary buttons, four sizes.
  */
 export const buttonClass = (variant: ButtonVariant = 'primary', size: ButtonSize = 'md', className = ''): string =>
-  `${SHAPE} ${SIZES[size]} ${STYLES[variant]} ${className}`
+  `${BUTTON_SHAPE} ${BUTTON_SIZE[size]} ${BUTTON_STYLE[variant]} ${className}`
 
 
 /**
@@ -148,10 +164,13 @@ export const INSET = 'rounded-lg border border-neutral-100 p-4 dark:border-neutr
 export const CARD =
   'rounded-[10px] border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,.05)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none'
 
-export const CONTROL_CHROME =
+// A component: the page carries `kit-field`, 9 characters for the 460 these were before
+// 2026-10-03 — on 115 fields of the settings screen, and 93 colour pairs wore the group's copy
+// of it. `controls.ts` derives that copy from this list with `utilitiesOf`, never by hand.
+export const CONTROL_CHROME = component('kit-field',
   // The inset is the relief grammar's other half: raised means pressable, CARVED means it
   // holds something — and a field holds the value. 1px of shading, not a style.
-  'rounded-md border border-neutral-300 bg-white text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+  'rounded-md border border-neutral-300 bg-white text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500')
 
 // The canonical control — chrome plus the size nearly every field wants. `textField` and
 // `textArea` in `web/admin/fields.ts` IMPORT this rather than keeping a matching copy, and a
@@ -236,20 +255,22 @@ export const SHEET_TOOL_ON_CANVAS = SHEET_TOOL.replace('text-neutral-500', 'text
  * first row, move down on the last. A key that cannot act has to look unavailable rather than
  * absent, or the row's controls move as you use them.
  */
-export const ICON_KEY = `${TAP_TOUCH} grid h-9 w-9 shrink-0 place-items-center rounded-md`
+export const ICON_KEY = `${TAP_TOUCH} ${component('kit-key', 'grid h-9 w-9 shrink-0 place-items-center rounded-md'
   + ' text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900'
   + ' disabled:opacity-30 disabled:hover:bg-transparent'
-  + ' dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
+  + ' dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white')}`
 
 /**
  * The same square key, in red, for the one on a row that DESTROYS something. Built by replacing
  * the neutral's inks, so a change to the key's box cannot reach one of the pair and miss the other.
+ * `tap-touch` rides beside both names rather than inside them: it is `admin.css`'s own class,
+ * and one a reader of the markup should still be able to see.
  */
-export const ICON_KEY_DANGER = ICON_KEY
+export const ICON_KEY_DANGER = `${TAP_TOUCH} ${component('kit-key-danger', utilitiesOf('kit-key')
   .replace('text-neutral-500', 'text-[var(--ink-danger)]')
   .replace(' hover:text-neutral-900', '')
   .replace(' dark:text-neutral-400', '')
-  .replace(' dark:hover:text-white', '')
+  .replace(' dark:hover:text-white', ''))}`
 
 // `--ink-danger`, not the pen's red, which read 3.3:1 in dark (FIXLIST 7.7); it has its own dark.
 export const SHEET_TOOL_DANGER = SHEET_TOOL
@@ -265,6 +286,30 @@ export const SHEET_TOOL_DANGER = SHEET_TOOL
  */
 export const SHEET_TOP =
   'flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-neutral-100 px-4 py-2.5 dark:border-neutral-800'
+
+/**
+ * An icon drawn at the admin's glyph size, which `--admin-glyph` sets per surface. A component
+ * because `icon()` (`web/admin/kit.ts`) draws fifty of them on an ordinary screen.
+ */
+export const GLYPH = component('kit-glyph', 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0')
+
+// ═══ THE TWO LISTS EVERY PAGE CARRIES HIDDEN ════════════════════════════════════════════════
+//
+// The command palette (`web/admin/overlays.ts`, on every admin page) and the settings finder
+// (`screens/settings-shell.ts`) are drawn whole and narrowed with `hidden`, because the server
+// holds the dictionary and the islands do not. That is about 130 rows on every page and 113
+// more on Settings, so a row's class list is paid that many times over for a list most visits
+// never open. Measured 2026-10-03 on the settings screen: about 50 KB of the page was these
+// rows' classes. Components, and shared, because the palette's island draws post hits in the same
+// row (`island/lib/overlay-palette.ts`) and the two faces must not drift.
+
+/** One option in a found list: the name at the left, where it lives at the right. */
+export const FOUND_ROW = component('kit-found-row', 'flex cursor-pointer items-baseline justify-between gap-4 px-4 py-2 text-sm')
+/** The settings finder's row, which is a button inside its option and so carries its own hover. */
+export const FOUND_KEY = component('kit-found-key',
+  'flex w-full items-baseline justify-between gap-4 px-4 py-2.5 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/60')
+export const FOUND_NAME = component('kit-found-name', 'min-w-0 truncate text-neutral-900 dark:text-white')
+export const FOUND_WHERE = component('kit-found-where', 'shrink-0 text-xs text-neutral-500 dark:text-neutral-400')
 
 // ═══ THE HELP SCREEN'S FIVE ═══════════════════════════════════════════════════════════════
 //
@@ -320,13 +365,15 @@ export const TROW = 'border-b border-neutral-100 last:border-0 hover:bg-neutral-
  * Here since the trash became a page (ADR 0054) and the server draws the same box. There was a
  * React `Tick` around it reading these strings; it left with React.
  */
-export const TICK_BOX =
-  'peer h-4 w-4 shrink-0 cursor-pointer appearance-none rounded border border-neutral-300 bg-white transition-colors shadow-[inset_0_1px_1.5px_rgba(0,0,0,.07)] checked:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.4)] '
+// `peer` stays written out beside the name: it is the marker `TICK_MARK`'s `peer-checked:`
+// reads from a SIBLING, and a component may not stand in for a marker (`component.ts`).
+export const TICK_BOX = `peer ${component('kit-tick',
+  'h-4 w-4 shrink-0 cursor-pointer appearance-none rounded border border-neutral-300 bg-white transition-colors shadow-[inset_0_1px_1.5px_rgba(0,0,0,.07)] checked:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.4)] '
   + 'checked:border-neutral-900 checked:bg-neutral-900 '
   + 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 '
   + 'disabled:cursor-not-allowed disabled:opacity-50 '
   + 'dark:border-neutral-600 dark:bg-neutral-900 dark:checked:border-white dark:checked:bg-white '
-  + 'dark:focus-visible:ring-neutral-700'
+  + 'dark:focus-visible:ring-neutral-700')}`
 
 /** The wrapper that holds the box and the tick drawn over it on one 16px square. */
 export const TICK_WRAP = 'relative inline-flex h-4 w-4 shrink-0'

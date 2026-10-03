@@ -79,9 +79,19 @@ export function minifyCss(css: string): string {
 
     // An ordinary run: everything up to the next character one of the branches above cares
     // about. This is the whole saving — the scan is unchanged, the copy is one slice.
+    //
+    // ⚠️ AN ESCAPE TRAVELS WITH THE CHARACTER IT ESCAPES. The admin's utilities carry one rule
+    // whose selector and value are full of escaped quotes — `.before\:content-\[\\\'\\\'\]` and
+    // `--u-content: \'\'` — and an escaped quote opens no string. Reading it as one put this
+    // scanner inside a "string" from there to the next apostrophe, flipping in and out for the
+    // rest of the sheet: measured 2026-10-03, the built `admin.css` still carried `admin.css`'s
+    // own header comment and two more, apostrophes and all, because the scanner thought they were
+    // quoted — 10 KB of commentary on every admin load. The public sheets have no escape outside
+    // a string, so their bytes, and their hashes, do not move.
     let j = i
     while (j < css.length) {
       const d = css[j]!
+      if (d === '\\') { j += 2; continue }
       if (d === '"' || d === "'" || (d === '/' && css[j + 1] === '*') || ' \n\r\t\f'.includes(d)) break
       j++
     }

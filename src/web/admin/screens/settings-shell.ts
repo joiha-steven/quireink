@@ -10,7 +10,7 @@
 // saveable.
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { CONTROL_SM, SHEET, SHEET_TOOL, SHEET_TOP, buttonClass } from '@/admin-shared/kit'
+import { CONTROL_SM, FOUND_KEY, FOUND_WHERE, SHEET, SHEET_TOOL, SHEET_TOP, buttonClass } from '@/admin-shared/kit'
 import { NOTE_TEXT } from '@/admin-shared/scale'
 import { TAB_IDS, type Tab } from '@/admin-shared/settings-tabs'
 import { SETTINGS_INDEX, fold } from '@/admin-shared/settings-index'
@@ -124,11 +124,9 @@ function search(t: AdminStrings): string {
     const note = r.note ? String(t[r.note] ?? '') : ''
     return `<li id="settings-found-${i}" role="option" aria-selected="false" data-found="${escapeAttr(r.tab)}"`
       + ` data-label="${escapeAttr(label)}" data-find="${escapeAttr(fold(`${label} ${note}`))}" hidden>`
-      + `<button type="button" class="flex w-full items-baseline justify-between gap-4 px-4 py-2.5`
-      + ` text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/60">`
+      + `<button type="button" class="${FOUND_KEY}">`
       + `<span class="text-sm text-neutral-800 dark:text-neutral-200">${escapeHtml(label)}</span>`
-      + `<span class="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">`
-      + `${escapeHtml(tabLabel(t, r.tab))}</span></button></li>`
+      + `<span class="${FOUND_WHERE}">${escapeHtml(tabLabel(t, r.tab))}</span></button></li>`
   }).join('')
 
   // NO BOTTOM MARGIN: this sits in a row that is `items-center`, which centres a flex item's

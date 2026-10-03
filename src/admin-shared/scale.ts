@@ -41,6 +41,11 @@
 //
 // One face, Inter, since 2026-08-15; the reading face is confined to the EDITOR, which is
 // WYSIWYG. So ranking here is done entirely by SIZE and WEIGHT.
+//
+// The two roles a settings screen prints on nearly every row — the label and the note — are
+// components since 2026-10-03 (`component.ts`): 168 labels and 158 notes on that one page, each
+// carrying its list spelled out. The lists below are still the definition.
+import { component } from '@/admin-shared/component'
 
 /**
  * The reading face — the EDITOR ONLY, and exactly two holders: `PostForm`'s title field (the
@@ -81,7 +86,7 @@ export const TITLE = `${PAGE_TITLE_FACE} text-[1.75rem] font-semibold leading-ti
 export const SECTION = 'text-base font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100'
 
 /** The label on one setting. One step under SECTION — a peer of the other labels, not a heading. */
-export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:text-neutral-200'
+export const SETTING_LABEL = component('kit-label', 'block text-sm font-medium text-neutral-800 dark:text-neutral-200')
 
 /**
  * The hint's TYPE, with no spacing in it. Split from `NOTE` so a hint standing alone in a
@@ -109,7 +114,7 @@ const NOTE_SHAPE = 'text-[0.8125rem] italic leading-[1.55]'
  * connection that did not answer. Hiding one to tidy the screen would hide the reason
  * something is broken.
  */
-export const NOTE_TEXT = `${NOTE_SHAPE} admin-note text-neutral-500 dark:text-neutral-400`
+export const NOTE_TEXT = `${component('kit-note', `${NOTE_SHAPE} text-neutral-500 dark:text-neutral-400`)} admin-note`
 
 /**
  * The same note, in the admin's one "look at this" ink: a hint the owner has to act on

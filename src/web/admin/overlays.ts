@@ -15,7 +15,7 @@ import type { SiteLook, SiteSettings } from '@/types'
 import { APP_VERSION } from '@/version'
 import { REPO, helpText } from '@/admin-shared/help'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { buttonClass, CONTROL, OVERLAY } from '@/admin-shared/kit'
+import { buttonClass, CONTROL, FOUND_NAME, FOUND_ROW, FOUND_WHERE, OVERLAY } from '@/admin-shared/kit'
 import { chordSpellings } from '@/web/admin/rail-rows'
 import { BUILTIN, SHORTCUTS, type Shortcut } from '@/admin-shared/keys'
 import { SETTINGS_INDEX } from '@/admin-shared/settings-index'
@@ -163,11 +163,9 @@ function palette(t: AdminStrings): string {
       // query reaches it, with the same `lanes`.
       + ` data-pal-search="${escapeAttr(`${r.search} ${r.hint}`)}"`
       + (r.run ? ` data-pal-run="${escapeAttr(r.run)}"` : ` data-pal-href="${escapeAttr(r.href)}"`)
-      + ` hidden class="flex cursor-pointer items-baseline justify-between gap-4 px-4 py-2 text-sm">`
-      + `<span class="min-w-0 truncate text-neutral-900 dark:text-white">${escapeHtml(r.label)}</span>`
-      + (r.hint
-        ? `<span class="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(r.hint)}</span>`
-        : '')
+      + ` hidden class="${FOUND_ROW}">`
+      + `<span class="${FOUND_NAME}">${escapeHtml(r.label)}</span>`
+      + (r.hint ? `<span class="${FOUND_WHERE}">${escapeHtml(r.hint)}</span>` : '')
       + `</li>`
   }
 

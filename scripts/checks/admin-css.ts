@@ -27,6 +27,7 @@
 // the build forgot to include is not a rule.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { registeredComponents } from '@/admin-shared/components'
 
 /**
  * WHERE ADMIN MARKUP IS WRITTEN. It was one directory until 2026-09-14; ADR 0054 makes the
@@ -312,6 +313,32 @@ const classes = used(files, rulesOf)
 for (const [token, where] of constants(files, rulesOf)) {
   if (!classes.has(token)) classes.set(token, where)
 }
+/**
+ * THE KIT'S COMPONENT NAMES, which no scan above can see.
+ *
+ * Since 2026-10-03 the kit's primitives reach the markup as names (`kit-field`, `kit-btn-md`) that
+ * `admin-shared/component.ts` registers and `scripts/build-admin.ts` writes into this sheet. The
+ * markup interpolates them, so `used()` skips them, and their LISTS are arguments to a call rather
+ * than constants, so `constants()` skips those. Two things can still go wrong, and both are this
+ * guard's question one level down: a name registered in a module `components.ts` does not import,
+ * which the build never sees and the browser never styles; and a list naming a utility with no
+ * rule, which the build itself refuses — so here it is enough to ask the sheet for every name
+ * written in the source.
+ */
+for (const file of files) {
+  for (const m of readFileSync(file, 'utf8').matchAll(/\bcomponent\(\s*(['`])(kit-[a-z0-9-]+)\1/g)) {
+    const name = m[2]!
+    const seen = classes.get(name) ?? []
+    if (!seen.includes(file)) seen.push(file)
+    classes.set(name, seen)
+  }
+}
+// And every name the registry holds, which covers the ones built from a template — the button's
+// variants are `kit-btn-${variant}` — that the source scan above cannot read.
+for (const name of registeredComponents().keys()) {
+  if (!classes.has(name)) classes.set(name, ['src/admin-shared/components.ts'])
+}
+
 const missing: string[] = []
 for (const [token, files] of classes) {
   if (rulesOf.has(token) || ELSEWHERE.has(token)) continue
