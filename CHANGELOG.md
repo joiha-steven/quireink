@@ -11,6 +11,16 @@
   and its address, and loads a backup into it, step by step on screen. The old blog keeps serving
   until the domain is pointed at the Worker, which the card can do when the token may edit the
   domain. The password is asked again first.
+- **Deploy to Cloudflare (beta): a blog from one button**, in both READMEs and first in
+  `docs/self-host-cloudflare.md`. Cloudflare copies the repository into the owner's GitHub or
+  GitLab, creates the Worker, the Durable Object and the R2 bucket, asks for `SETUP_CODE` with a
+  sentence saying it is how the blog is claimed (`.dev.vars.example`, the `cloudflare` section of
+  `package.json`), and deploys on every push to the copy. `bun run deploy` is now
+  `scripts/deploy-cloudflare.ts`: Cloudflare's build machine has Bun 1.2.15, whose bundler writes a
+  different Worker, so there the script builds under the Bun 1.3.14 that CI tests every release
+  with. `wrangler.jsonc` keeps the variables set in the dashboard (`keep_vars`), and CI runs only
+  here and in forks, not in the copies the button makes. The guide says how a button install takes
+  a newer release, and why the Free plan is not supported.
 
 - **`/api/health` names the version and the package it runs** (`version`, `package`), so an install
   test, a monitor or a person can tell which release answered and whether it came from the source,

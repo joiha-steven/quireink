@@ -1,0 +1,11 @@
+# The secrets a Quire Ink Worker reads (ADR 0066). The Deploy to Cloudflare button reads this file
+# and asks for each name below before it deploys; package.json ("cloudflare" → "bindings") holds
+# the sentence it shows beside each one. For `wrangler dev`, copy it to `.dev.vars`, which git
+# ignores.
+#
+# SETUP_CODE is how you claim the blog: twelve characters or more that you make up and keep to
+# yourself. After the deploy, open the blog's address with /setup on the end and type it. Left
+# empty, or shorter than twelve, it is ignored and /setup asks for a one-time link that only the
+# Worker's log shows. Deliberately no example value here: a value printed in a public file, left
+# as it is in the form, would be a code anyone can read.
+SETUP_CODE=

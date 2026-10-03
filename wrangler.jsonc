@@ -1,6 +1,8 @@
 // Quire Ink on Cloudflare (ADR 0066). The defaults here are what the Deploy to Cloudflare button
 // provisions: one Durable Object class (the blog, with its own SQLite), one R2 bucket for uploads
-// and backups, the Images binding, and the fonts and icons as Static Assets.
+// and backups, the Images binding, and the fonts and icons as Static Assets. The button asks for
+// the bucket's name (the sentence beside it is in package.json, "cloudflare") and for the secrets
+// in `.dev.vars.example`, and writes the names it was given into the copy of this file it makes.
 //
 // Workers Paid only (ADR 0066): the Free plan fails closed at 100,000 requests a day.
 {
@@ -12,7 +14,9 @@
   // Built by `bun run build:worker` (Bun's bundler, the same loaders the server uses), so wrangler
   // uploads the result as it is: the worker, and the WebAssembly modules beside it. NO `build` here:
   // `wrangler dev` reruns it on every change under src/, and `bun run build` empties src/admin/dist
-  // while it does — under a test run, that read as half the admin missing. `bun run deploy` builds.
+  // while it does — under a test run, that read as half the admin missing. Workers Builds ignores
+  // the field anyway. `bun run deploy` (scripts/deploy-cloudflare.ts) builds, on a laptop and on
+  // Cloudflare's build machine alike.
   "no_bundle": true,
   "base_dir": "dist/worker",
   "find_additional_modules": true,
@@ -23,5 +27,9 @@
   "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "quireink-blobs" }],
   "images": { "binding": "IMAGES" },
   "vars": { "QUIREINK_PACKAGE": "cloudflare" },
+  // A button install has no terminal: SITE_URL or UPDATE_CHECK are set in the dashboard (Settings →
+  // Variables and Secrets), and without this every later deploy — each push to the owner's copy —
+  // would delete them. A deploy never touches secrets either way.
+  "keep_vars": true,
   "observability": { "enabled": true }
 }

@@ -9,6 +9,9 @@
 //   I2  every place has its file, is in the README's install table, and is installed by a test;
 //       the compose files run the published image and only the build override builds
 //   I5  the install skill names the default way in for each package
+//   B1  the Deploy to Cloudflare button: both READMEs carry it; every secret it asks for has a
+//       sentence beside it and no value in the public template; wrangler.jsonc has no `build`
+//       and keeps the dashboard's variables; the deploy builds with CI's Bun
 //
 // Comments are stripped before reading code, so a variable a comment remembers is not "read".
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
@@ -108,6 +111,31 @@ for (const page of ['docs/self-host.md', 'docs/self-host-docker.md', 'docs/runti
 }
 if (existsSync(join(ROOT, 'docs/self-host-cloudflare.md')) && !installIndex.includes('(self-host-cloudflare.md')) {
   faults.push('P4.4: docs/install.md does not link docs/self-host-cloudflare.md')
+}
+
+// ---- B1 (ADR 0066): what the Deploy to Cloudflare button reads ---------------------------------
+
+const BUTTON = '[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink)'
+for (const [name, text] of [['README.md', readme], ['README.vi.md', readmeVi]] as const) {
+  if (!text.includes(BUTTON)) faults.push(`B1: ${name}'s install table has no Deploy to Cloudflare button pointing at the repository`)
+}
+const pkg = JSON.parse(read('package.json')) as { scripts: Record<string, string>; cloudflare?: { bindings?: Record<string, { description?: string }> } }
+const described = pkg.cloudflare?.bindings ?? {}
+const secrets = read('.dev.vars.example').split('\n').filter((l) => /^[A-Z]/.test(l))
+if (!secrets.some((l) => l.startsWith('SETUP_CODE='))) faults.push('B1: .dev.vars.example does not ask for SETUP_CODE, so the button would deploy a blog nobody can claim with a code')
+for (const line of secrets) {
+  const [name, ...rest] = line.split('=')
+  // The button may offer the example's value as the answer: a value here is a code anyone can read.
+  if (rest.join('=').trim() !== '') faults.push(`B1: .dev.vars.example gives ${name} a value; it is public, so it names secrets and never fills them`)
+  if (!described[name!]?.description) faults.push(`B1: ${name} is asked for by the button and has no description in package.json "cloudflare"."bindings"`)
+}
+const wrangler = stripComments(read('wrangler.jsonc'))
+if (/"build"\s*:/.test(wrangler)) faults.push('B1: wrangler.jsonc has a `build` field; `wrangler dev` reruns it mid-session and empties src/admin/dist (scripts/deploy-cloudflare.ts builds)')
+if (!/"keep_vars"\s*:\s*true/.test(wrangler)) faults.push('B1: wrangler.jsonc does not keep_vars, so every deploy would delete the variables a button install set in the dashboard')
+if (!pkg.scripts.deploy?.includes('scripts/deploy-cloudflare.ts')) faults.push('B1: the `deploy` script, which Workers Builds runs, does not go through scripts/deploy-cloudflare.ts')
+const buildBun = read('scripts/deploy-cloudflare.ts').match(/BUILD_BUN = '([^']+)'/)?.[1]
+for (const m of read('.github/workflows/ci.yml').matchAll(/bun-version:\s*([\d.]+)/g)) {
+  if (m[1] !== buildBun) faults.push(`B1: CI tests with Bun ${m[1]} and scripts/deploy-cloudflare.ts builds button installs with ${buildBun}`)
 }
 
 // ---- I5 -------------------------------------------------------------------------------------

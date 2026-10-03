@@ -68,4 +68,9 @@ media-index-backup-*.json
 
 # Cloudflare (ADR 0066): wrangler's local state, and the runtime types `wrangler types` writes.
 .wrangler/
+# ...and the secrets `wrangler dev` reads. The template is tracked: the Deploy to Cloudflare button
+# reads it to know which secrets to ask for, and it carries names, never values.
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 src/runtime/cf/worker-configuration.d.ts

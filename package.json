@@ -7,6 +7,19 @@
   "engines": {
     "bun": ">=1.3"
   },
+  "cloudflare": {
+    "bindings": {
+      "SETUP_CODE": {
+        "description": "**How you claim the blog.** Twelve characters or more that you make up and keep to yourself. When the deploy finishes, open your blog's address with `/setup` on the end and type it. Shorter than twelve, it is ignored."
+      },
+      "BLOBS": {
+        "description": "The R2 bucket for pictures, uploads and backups. Keep `quireink-blobs` unless this account already has a bucket by that name: an upgrade takes the name from the release, so a changed one has to be put back by hand ([upgrading](https://github.com/joiha-steven/quireink/blob/main/docs/self-host-cloudflare.md#upgrading))."
+      },
+      "BLOG": {
+        "description": "The blog itself, a Durable Object with its own SQLite database. Nothing to choose. Needs **Workers Paid** ($5/month per account): on the Free plan the blog stops at 100,000 requests a day and cannot send mail ([why](https://github.com/joiha-steven/quireink/blob/main/docs/self-host-cloudflare.md))."
+      }
+    }
+  },
   "scripts": {
     "dev": "bun run build:assets && bun --watch src/index.ts",
     "start": "bun --smol src/index.ts",
@@ -16,7 +29,7 @@
     "build:worker": "bun scripts/build-worker.ts",
     "test:cf": "bun scripts/test-cf.ts",
     "smoke:cf": "bun run build && bun run build:worker && bun scripts/ops/cloudflare-dev.ts",
-    "deploy": "bun run build && bun run build:worker && wrangler deploy",
+    "deploy": "bun scripts/deploy-cloudflare.ts",
     "typecheck:worker": "wrangler types src/runtime/cf/worker-configuration.d.ts > /dev/null && tsc --noEmit -p tsconfig.worker.json",
     "test": "bun run build:assets && bun test",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src/assets/js && tsc --noEmit -p src/admin",

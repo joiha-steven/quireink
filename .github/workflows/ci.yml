@@ -21,9 +21,15 @@ permissions:
 # UBUNTU 24.04 BY NAME, not ubuntu-latest (2026-09-23): the label moves to Ubuntu 26 from
 # 2026-10-19, and a runner image changing under a release is a failure nobody asked for. Moving
 # to 26 is a change to make on purpose, with CI watching, and then to pin again.
+#
+# THIS REPOSITORY AND ITS FORKS ONLY (2026-10-03). The Deploy to Cloudflare button copies the whole
+# repository into a blog owner's own GitHub account, as a new repository rather than a fork, and
+# this file with it. There it would run the tour and build the image on every push the owner makes
+# to bring in a release, and on Monday's clock, on the owner's Actions minutes, to answer a question
+# about code this project has already answered. A contributor's fork still runs everything.
 jobs:
   check:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' && (github.repository == 'joiha-steven/quireink' || github.event.repository.fork)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -72,7 +78,7 @@ jobs:
   # green check is a real state — the code is consistent AND a page is broken — and the
   # log should be able to show it.
   tour:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' && (github.repository == 'joiha-steven/quireink' || github.event.repository.fork)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -108,7 +114,7 @@ jobs:
   # the same suites in `check`. Separate job for the same reason `tour` is: a red Cloudflare side on
   # a green Bun side is a real state, and the log should say which.
   cf:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' && (github.repository == 'joiha-steven/quireink' || github.event.repository.fork)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -137,7 +143,7 @@ jobs:
   # behaves as if it belonged to the container user. Do not "simplify" this onto a developer
   # machine and believe the result.
   image:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' && (github.repository == 'joiha-steven/quireink' || github.event.repository.fork)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -237,6 +243,7 @@ jobs:
   # is ever unreachable AND unfixable, `bun audit --ignore=<id>` takes it, and the reason
   # and the date belong in a comment here beside it. Not silently.
   audit:
+    if: (github.repository == 'joiha-steven/quireink' || github.event.repository.fork)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5

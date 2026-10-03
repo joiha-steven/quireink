@@ -24,7 +24,41 @@ What a typical blog costs on Paid, from the included amounts (10 million request
 Durable Object requests, 50 million rows written, 5 GB of SQLite, 3,000 emails, 10 GB of R2, 5,000
 image transformations a month): **$5.00** for 100,000 views a month; about **$5.50** for a million.
 
-## Installing from the source (works today)
+## With the Deploy to Cloudflare button (the easy way)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink)
+
+No terminal and nothing to install. Cloudflare copies this repository into your GitHub or GitLab
+account, builds it on its own machines and deploys it into your account
+([how the button works](https://developers.cloudflare.com/workers/platform/deploy-buttons/)).
+
+1. **Move the account to Workers Paid first** (Workers & Pages → Plans). The button does not look at
+   the plan: on Free it deploys a blog that works until the first busy day, for the reasons above.
+2. **Click the button**, sign in to Cloudflare and connect GitHub or GitLab. The copy it makes is a
+   new repository of yours, not a fork; from now on it is the source your blog is built from.
+3. **On the setup page:**
+   - the **Worker's name** is also the blog's first address, `https://<name>.<your subdomain>.workers.dev`;
+   - keep the bucket name **`quireink-blobs`** unless the account already has one by that name
+     ([why it matters later](#upgrading));
+   - **`SETUP_CODE`**: twelve characters or more that you make up and keep to yourself. It is how you
+     claim the blog, and whoever types it first owns it;
+   - leave the build and deploy commands as they are filled in. The deploy command runs the
+     `deploy` script of `package.json` ([`scripts/deploy-cloudflare.ts`](../scripts/deploy-cloudflare.ts)),
+     which builds with the exact Bun every release is tested with — Cloudflare's build machine has an
+     older one — and then deploys.
+4. **Deploy.** The first build takes a few minutes. It creates the Worker, the Durable Object that
+   holds the blog's database, the R2 bucket, and a link between the Worker and your copy: every push
+   to the copy's `main` branch builds and deploys again.
+5. Open the address, add **`/setup`**, and type the code. A short setup — account, authenticator,
+   the look — ends in the editor.
+
+Missed the code, or typed fewer than twelve characters? In the dashboard, the Worker → Settings →
+Variables and Secrets → add a **Secret** named `SETUP_CODE`. Saving it deploys again, and `/setup`
+asks for it. The same page takes `SITE_URL` once the blog has its own domain, and `UPDATE_CHECK`
+([all the settings](environment.md)); later deploys keep what you set there (`keep_vars` in
+[`wrangler.jsonc`](../wrangler.jsonc)).
+
+## From the command line
 
 With [Bun](https://bun.sh) 1.3+ and a Cloudflare account on Workers Paid:
 
@@ -43,9 +77,29 @@ it there if your account already has one), the Images binding and the static ass
 
 ## Upgrading
 
-Check out the newer release and run `bun run deploy` again. The database migrates when the blog
-next starts, after Cloudflare has bookmarked the moment before (a bookmark restores the whole blog
-to that point, for 30 days, from the dashboard or the API).
+The database migrates when the blog next starts, after Cloudflare has bookmarked the moment before
+(a bookmark restores the whole blog to that point, for 30 days, from the dashboard or the API).
+
+**Installed with the button:** Cloudflare deploys whatever reaches your copy's `main` branch, so an
+upgrade is bringing the newer release into the copy. GitHub's "Sync fork" is not there, because the
+copy is not a fork. With git, from any machine:
+
+```bash
+git clone https://github.com/<you>/<your copy>.git blog && cd blog
+git fetch --depth 1 https://github.com/joiha-steven/quireink.git refs/tags/v<newest release>
+git rm -rq . && git checkout FETCH_HEAD -- .      # the release, file for file
+git diff --cached -- wrangler.jsonc               # see below
+git commit -m "Quire Ink v<newest release>" && git push
+```
+
+The release's `wrangler.jsonc` carries the default names. If the button wrote a different Worker
+`name` or `bucket_name` into your copy, the diff shows those lines going back to `quireink` and
+`quireink-blobs`: put your values back and `git add wrangler.jsonc` before committing. Every other
+line in that diff is the release's and stays: a bucket name left at the default would point the blog
+at another bucket, without its uploads and backups. A few minutes after the push, the blog's `/api/health`
+answers with the new version.
+
+**Installed from the command line:** check out the newer release and run `bun run deploy` again.
 
 ## Moving a blog you already run
 
@@ -64,8 +118,7 @@ which a Worker can verify within its memory.
 
 ## Coming before this leaves beta
 
-- The **Deploy to Cloudflare** button, so none of the above needs a terminal.
-- A **one-click upgrade** in the admin.
+- An upgrade with **no terminal** for a button install, and a **one-click upgrade** in the admin.
 - A run on Cloudflare itself before every release, not only under `wrangler dev`. (Every release
   already moves a Bun blog onto this build through `/setup/restore`, compares every page with Bun's,
   runs the whole tour of the product — 286 flows — and checks that a backup taken there restores to
