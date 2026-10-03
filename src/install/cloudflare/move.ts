@@ -93,6 +93,24 @@ function setupCode(): string {
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
+/**
+ * A Worker by this name already in the account: carry on only if it holds no blog yet (an empty one
+ * a failed move left behind), and find that out BEFORE anything is uploaded. The installer would
+ * otherwise replace its code first — this blog's version over a blog that may have been updated past
+ * it, on a database that version already migrated — and only the archive upload would be refused.
+ * A Worker that cannot be asked (its workers.dev address switched off) is treated as occupied.
+ */
+async function refuseOccupied(o: MoveOptions, scriptName: string, using: typeof fetch): Promise<void> {
+  const api = new CloudflareApi(o.token, o.accountId, o.apiBase)
+  const exists = await api.call('script', `/accounts/:account/workers/scripts/${scriptName}/settings`).then(() => true, () => false)
+  if (!exists) return
+  const { subdomain } = await api.call<{ subdomain: string }>('script', '/accounts/:account/workers/subdomain')
+  const setup = await using(`https://${scriptName}.${subdomain}.workers.dev/setup`, { redirect: 'manual' }).then((r) => r.status, () => 0)
+  if (setup !== 200) {
+    throw new CloudflareError('script', 409, `a Worker named ${scriptName} already holds a blog (or cannot be asked), so nothing was changed; delete it in the Cloudflare dashboard to move again`)
+  }
+}
+
 /** The installer's own first two steps, asked before anything is fetched or created. */
 async function checkAccount(o: MoveOptions): Promise<void> {
   const api = new CloudflareApi(o.token, o.accountId, o.apiBase)
@@ -138,6 +156,7 @@ async function run(o: MoveOptions, s: MoveStatus): Promise<void> {
     // before twenty megabytes of package are fetched for nothing. The installer asks both again.
     step('check')
     await checkAccount(o)
+    await refuseOccupied(o, s.scriptName, using)
     step('package', APP_VERSION)
     const pkg = await fetchPackage(APP_VERSION, using)
     s.steps.package = 'done'

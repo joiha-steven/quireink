@@ -146,7 +146,9 @@ export async function installOnCloudflare(o: InstallOptions): Promise<InstallRes
   // 6. The Worker.
   say('worker', existing ? 'upgrade' : 'first install')
   // `QUIREINK_UPDATES: api`: this blog updates the way it was installed, through the API (Settings).
-  const vars = { QUIREINK_UPDATES: 'api', ...(o.vars ?? {}), QUIREINK_PACKAGE: 'cloudflare' }
+  // The Worker's own name and bucket go in too: the one-key update and the delete in Settings need
+  // them to act on the Worker they run in, whoever installed it — the move, or a script of its own.
+  const vars = { QUIREINK_UPDATES: 'api', QUIREINK_SCRIPT: o.scriptName, QUIREINK_BUCKET: o.bucket, ...(o.vars ?? {}), QUIREINK_PACKAGE: 'cloudflare' }
   const metadata = {
     main_module: o.manifest.main.replace(/^worker\//, ''),
     compatibility_date: o.manifest.compatibilityDate,

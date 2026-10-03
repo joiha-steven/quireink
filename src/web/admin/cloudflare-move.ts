@@ -21,6 +21,8 @@ import { clientIp, rateLimited } from '@/server/rate-limit'
 import { CloudflareApi, CloudflareError } from '@/install/cloudflare/api'
 import { attachDomain, moveStatus, scriptNameFor, startMove } from '@/install/cloudflare/move'
 import { fail, json } from '@/web/api'
+import { storageStats } from '@/media/storage-stats'
+import { databaseBytes } from '@/runtime/impl/runtime-info'
 import { owner, ownerRouter, QUIET } from '@/web/guard'
 
 type Creds = { accountId: string; token: string }
@@ -41,6 +43,16 @@ async function publicSiteUrl(): Promise<string | null> {
   } catch {
     return null
   }
+}
+
+/**
+ * What the archive will about weigh: the uploads plus the databases. It goes to the Worker in one
+ * request, and Cloudflare refuses a request body past 100 MB — so a blog past this is refused at the
+ * check, with a reason, rather than three steps in after a Worker has been created.
+ */
+const MOVE_LIMIT = 95 * 1024 * 1024
+async function blogBytes(): Promise<number> {
+  return (await storageStats()).totalBytes + databaseBytes()
 }
 
 export function cloudflareMoveRoutes() {
@@ -73,8 +85,9 @@ export function cloudflareMoveRoutes() {
       plan = subs.some((s) => /workers_paid|workers_ent|partners_workers/i.test(s.rate_plan?.id ?? '')) ? 'paid' : 'free'
     } catch { /* no Billing · Read: the owner confirms instead */ }
     const scriptName = scriptNameFor(site ?? '')
+    const bytes = await blogBytes()
     const exists = await api.call('script', `/accounts/:account/workers/scripts/${scriptName}/settings`).then(() => true, () => false)
-    return json({ plan, scriptName, exists, siteUrl: site })
+    return json({ plan, scriptName, exists, siteUrl: site, bytes, tooBig: bytes > MOVE_LIMIT })
   }, QUIET)
 
   /** Start the move. The password first; one move at a time. */
@@ -92,6 +105,7 @@ export function cloudflareMoveRoutes() {
     const site = await publicSiteUrl()
     if (!site) return fail(c, 'site_url_needed', 400)
     if (moveStatus()?.running) return fail(c, 'move_running', 409)
+    if ((await blogBytes()) > MOVE_LIMIT) return fail(c, 'too_big', 413)
     const settings = await getSettings()
     const started = startMove({
       accountId: input.accountId, token: input.token, siteUrl: site,

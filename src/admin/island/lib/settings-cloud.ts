@@ -21,19 +21,39 @@ type Status = {
   siteUrl: string
   error: string
 }
-type Check = { plan: 'paid' | 'free' | 'unknown'; scriptName: string; exists: boolean; siteUrl: string | null }
+type Check = { plan: 'paid' | 'free' | 'unknown'; scriptName: string; exists: boolean; siteUrl: string | null; bytes: number; tooBig: boolean }
 type Envelope<T> = { success?: boolean; data?: T; error?: string }
 
 const fill = (text: string | undefined, values: Record<string, string>): string =>
   (text ?? '').replace(/\{(\w+)\}/g, (_, k: string) => values[k] ?? '')
 
+/**
+ * Every request here answers, even when the network does not: a key left disabled with nothing on
+ * screen after a dropped connection is a card that looks broken. `network` is the one error the
+ * island makes itself; the rest are the server's codes, put into words by `reason`.
+ */
 async function call<T>(url: string, init?: RequestInit): Promise<Envelope<T>> {
-  const res = await fetch(url, init)
+  const res = await fetch(url, init).catch(() => null)
+  if (!res) return { success: false, error: 'network' }
   if (res.status === 401) {
     location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`
     return {}
   }
   return (await res.json().catch(() => ({}))) as Envelope<T>
+}
+
+/** A server code, said in the owner's language; an unknown one after the step's own prefix. */
+function reason(w: Words, code: string | undefined, prefix: string | undefined): string {
+  const known: Record<string, string | undefined> = {
+    network: w.network, wrong_password: w.wrongPassword, too_many_attempts: w.tooMany,
+    move_running: w.running, site_url_needed: w.siteUrlNeeded, token_required: w.tokenRequired,
+    account_and_token_required: w.tokenRequired, not_installed_by_api: w.notApi, already_newest: w.newest,
+    confirm_mismatch: w.mismatch, too_big: w.tooBig, bad_request: w.network,
+  }
+  const c = code ?? ''
+  if (known[c]) return known[c]!
+  if (c.startsWith('token_cannot')) return w.tokenCannot ?? c
+  return `${prefix ?? ''} ${c}`.trim()
 }
 
 const post = <T>(url: string, body: unknown) =>
@@ -63,7 +83,7 @@ export function wireCloud(screen: HTMLElement): void {
 
   const say = (el: HTMLElement, text: string): void => { el.textContent = text; el.hidden = !text }
   const armMove = (): void => {
-    moveKey.disabled = !checked || !checked.siteUrl || checked.plan === 'free' || (checked.plan === 'unknown' && !confirmPaid.checked)
+    moveKey.disabled = !checked || !checked.siteUrl || checked.plan === 'free' || checked.tooBig || (checked.plan === 'unknown' && !confirmPaid.checked)
   }
 
   for (const el of [account, token]) {
@@ -76,11 +96,12 @@ export function wireCloud(screen: HTMLElement): void {
     say(error, '')
     try {
       const r = await post<Check>('/api/cloudflare/check', { accountId: account.value, token: token.value })
-      if (!r.success || !r.data) { checked = null; say(answer, r.error ?? w.failed ?? ''); return }
+      if (!r.success || !r.data) { checked = null; say(answer, reason(w, r.error, w.failed)); return }
       checked = r.data
       const name = { name: r.data.scriptName }
       const lines = [!r.data.siteUrl ? w.siteUrlNeeded : fill(w[r.data.plan], name)]
       if (r.data.exists) lines.push(fill(w.exists, name))
+      if (r.data.tooBig) lines.push(fill(w.tooBig, { size: `${Math.round(r.data.bytes / 1024 / 1024)} MB` }))
       say(answer, lines.join(' '))
       paidRow.hidden = r.data.plan !== 'unknown'
       host = r.data.siteUrl ? new URL(r.data.siteUrl).hostname : ''
@@ -114,8 +135,10 @@ export function wireCloud(screen: HTMLElement): void {
   async function follow(): Promise<void> {
     for (;;) {
       const r = await call<Status | null>('/api/cloudflare/move')
-      if (r.data) paint(r.data)
-      if (!r.data || !r.data.running) break
+      // Nothing to report, mid-move: the server restarted and the move's state went with it.
+      if (!r.success || !r.data) { say(error, r.success ? w.interrupted ?? '' : reason(w, r.error, w.failed)); break }
+      paint(r.data)
+      if (!r.data.running) break
       await new Promise((resolve) => setTimeout(resolve, 1500))
     }
     moveKey.disabled = false
@@ -131,12 +154,7 @@ export function wireCloud(screen: HTMLElement): void {
       selfUpdate: selfUpdate.checked, confirmedPaid: confirmPaid.checked,
     })
     if (!r.success || !r.data) {
-      const reason = r.error === 'wrong_password' ? w.wrongPassword
-        : r.error === 'too_many_attempts' ? w.tooMany
-          : r.error === 'move_running' ? w.running
-            : r.error === 'site_url_needed' ? w.siteUrlNeeded
-              : `${w.failed ?? ''} ${r.error ?? ''}`.trim()
-      say(error, reason ?? '')
+      say(error, reason(w, r.error, w.failed))
       armMove()
       return
     }
@@ -155,7 +173,7 @@ export function wireCloud(screen: HTMLElement): void {
       say($('[data-cf-domain-note]')!, fill(w.attached, { host: r.data.attached }))
       domainKey.hidden = true
     } else {
-      say(error, `${w.failed ?? ''} ${r.error ?? ''}`.trim())
+      say(error, reason(w, r.error, w.failed))
     }
   })
 
@@ -168,6 +186,7 @@ export function wireCloud(screen: HTMLElement): void {
 type Live = {
   current: string
   latest: string | null
+  state: 'behind' | 'current' | 'unknown'
   updates: 'api' | 'git' | 'cli'
   hasToken: boolean
   siteUrl: string
@@ -195,20 +214,22 @@ export function wireCloudLive(screen: HTMLElement): void {
 
   void call<Live>('/api/cloudflare/status').then((r) => {
     const s = r.data
-    if (!s) return
+    if (!s) { say(error, reason(w, r.error, w.failed)); return }
     say($('[data-cf-version]'), fill(w.version, { v: s.current }))
     for (const el of card.querySelectorAll<HTMLElement>('[data-cf-path]')) el.hidden = el.dataset.cfPath !== s.updates
     target = s.latest
     $('[data-cf-leave]')!.hidden = s.updates !== 'api'
     $('[data-cf-leave-git]')!.hidden = s.updates !== 'git'
+    $('[data-cf-leave-cli]')!.hidden = s.updates !== 'cli'
     const confirm = $<HTMLInputElement>('[data-cf-leave-confirm]')
     if (confirm && s.siteUrl) confirm.placeholder = new URL(s.siteUrl).hostname
     if (s.updates === 'api') {
       // The token boxes serve the update and the delete alike; shown whenever none is kept.
       $('[data-cf-ask-token]')!.hidden = s.hasToken
-      key.hidden = !s.latest
-      key.textContent = fill(w.updateTo, { v: s.latest ?? '' })
-      if (!s.latest) say(line, w.newest ?? '')
+      // Newest only when the daily check SAID so; unknown is a key that asks (the Worker asks GitHub).
+      key.hidden = s.state === 'current'
+      key.textContent = s.latest ? fill(w.updateTo, { v: s.latest }) : w.look ?? ''
+      if (s.state === 'current') say(line, w.newest ?? '')
     }
     const c = s.cost
     say($('[data-cf-cost]'), fill(w.cost, {
@@ -229,8 +250,7 @@ export function wireCloudLive(screen: HTMLElement): void {
     }).catch(() => ({ success: false, error: 'network' }) as Envelope<never>)
     leaveKey.disabled = false
     if (r.success) { say($('[data-cf-leave-line]'), w.leaveDone ?? ''); leaveKey.hidden = true; return }
-    say(error, r.error === 'wrong_password' ? w.wrongPassword ?? '' : r.error === 'confirm_mismatch' ? w.mismatch ?? ''
-      : r.error === 'too_many_attempts' ? w.tooMany ?? '' : `${w.failed ?? ''} ${r.error ?? ''}`.trim())
+    say(error, reason(w, r.error, w.leaveFailed))
   })
 
   key.addEventListener('click', async () => {
@@ -249,6 +269,6 @@ export function wireCloudLive(screen: HTMLElement): void {
       return
     }
     say(line, '')
-    say(error, r.data?.rolledBack ? fill(w.rolledBack, { why: r.error ?? '' }) : `${w.failed ?? ''} ${r.error ?? ''}`.trim())
+    say(error, r.data?.rolledBack ? fill(w.rolledBack, { why: r.error ?? '' }) : reason(w, r.error, w.failed))
   })
 }

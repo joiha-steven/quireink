@@ -777,6 +777,15 @@ export type AdminStrings = {
   cfLeaveDone: string
   cfLeaveGit: string
   cfConfirmMismatch: string
+  cfCheckTooBig: string
+  cfErrNetwork: string
+  cfInterrupted: string
+  cfUpdateLook: string
+  cfErrToken: string
+  cfErrNotApi: string
+  cfErrTokenCannot: string
+  cfLeaveFailed: string
+  cfLeaveCli: string
   copiedUrl: string
   loadMediaFailed: string
   // uploader

@@ -18,9 +18,7 @@ import { setupBanner } from '@/web/setup-routes'
 import { flushAnalytics } from '@/analytics/buffer'
 import { fullTick, publishTick } from '@/server/tick'
 import { APP_VERSION } from '@/version'
-import { newestRelease, updateSelf } from '@/install/cloudflare/update'
-import { CloudflareApi } from '@/install/cloudflare/api'
-import { isNewer } from '@/server/update-check'
+import { runUninstall, runUpdate, type AskObject } from '@/install/cloudflare/self'
 
 /** Due posts every minute and housekeeping every hour: the clock Bun's `startClock` keeps (ADR 0031). */
 const MINUTE = 60_000
@@ -79,68 +77,17 @@ export class Blog extends DurableObject<CfEnv> {
 }
 
 /**
- * The one-click update (G5.4), run HERE and not in the object: replacing the code restarts the
- * object, and an update running inside it would cut itself off halfway. This request finishes on
- * the version it started on. The object is asked first, through its owner gate, whether the request
- * is the owner's (`web/admin/cloudflare-update.ts`); that answer is the only authority this acts on.
+ * Update and delete (G5.4) run HERE and not in the object: replacing or deleting the code restarts
+ * the object, and work running inside it would cut itself off. A request in flight finishes on the
+ * version it started on. Both live in `install/cloudflare/self.ts`, where they are tested; this only
+ * gives them the object to ask (with this request's cookie and origin headers) and the bucket.
  */
-async function update(request: Request, env: CfEnv, blog: DurableObjectStub): Promise<Response> {
-  const input = (await request.json().catch(() => ({}))) as { target?: unknown; token?: unknown; accountId?: unknown }
-  const headers = new Headers(request.headers)
-  headers.set('content-type', 'application/json')
-  const asked = await blog.fetch(new Request(new URL('/api/cloudflare/update/authorize', request.url), { method: 'POST', headers, body: '{}' }))
-  if (!asked.ok) return asked
-  const { data } = (await asked.json()) as { data: { current: string; latest: string | null; siteUrl: string } }
-  const say = (error: string, status: number) => Response.json({ success: false, error }, { status })
-  const wanted = typeof input.target === 'string' && /^\d+\.\d+\.\d+$/.test(input.target) ? input.target : null
-  const target = wanted ?? data.latest ?? await newestRelease()
-  if (!target || !isNewer(target, data.current)) return say('already_newest', 409)
-  const token = env.CLOUDFLARE_API_TOKEN || (typeof input.token === 'string' ? input.token.trim() : '')
-  const accountId = env.CLOUDFLARE_ACCOUNT_ID || (typeof input.accountId === 'string' ? input.accountId.trim() : '')
-  if (!token || !accountId) return say('token_required', 400)
-  if (!env.QUIREINK_SCRIPT || !env.QUIREINK_BUCKET) return say('not_installed_by_api', 409)
-  try {
-    const result = await updateSelf({
-      token, accountId, scriptName: env.QUIREINK_SCRIPT, bucket: env.QUIREINK_BUCKET,
-      siteUrl: data.siteUrl || new URL(request.url).origin, target,
-    })
-    return Response.json({ success: !result.error, data: result, ...(result.error ? { error: result.error } : {}) })
-  } catch (error) {
-    return say((error as Error).message, 502)
-  }
-}
-
-/**
- * Delete this blog from Cloudflare (G5.4): its uploads and backups, its bucket, then the Worker and
- * with it the Durable Object and its database. Here and not in the object for the same reason as
- * the update, and only after the object has checked the owner, their password and the blog's
- * address typed out (`/api/cloudflare/uninstall/authorize`). The uploads go through the binding —
- * a thousand keys a call — rather than one API call each; the bucket and the Worker through the API.
- */
-async function uninstall(request: Request, env: CfEnv, blog: DurableObjectStub): Promise<Response> {
-  const raw = await request.text()
-  const input = (JSON.parse(raw || '{}') ?? {}) as { token?: unknown; accountId?: unknown }
-  const headers = new Headers(request.headers)
-  headers.set('content-type', 'application/json')
-  const asked = await blog.fetch(new Request(new URL('/api/cloudflare/uninstall/authorize', request.url), { method: 'POST', headers, body: raw || '{}' }))
-  if (!asked.ok) return asked
-  const say = (error: string, status: number) => Response.json({ success: false, error }, { status })
-  const token = env.CLOUDFLARE_API_TOKEN || (typeof input.token === 'string' ? input.token.trim() : '')
-  const accountId = env.CLOUDFLARE_ACCOUNT_ID || (typeof input.accountId === 'string' ? input.accountId.trim() : '')
-  if (!token || !accountId) return say('token_required', 400)
-  if (!env.QUIREINK_SCRIPT || !env.QUIREINK_BUCKET) return say('not_installed_by_api', 409)
-  try {
-    for (;;) {
-      const page = await env.BLOBS.list({ limit: 1000 })
-      if (page.objects.length === 0) break
-      await env.BLOBS.delete(page.objects.map((o) => o.key))
-    }
-    const api = new CloudflareApi(token, accountId)
-    await api.call('bucket', `/accounts/:account/r2/buckets/${env.QUIREINK_BUCKET}`, { method: 'DELETE' }).catch(() => undefined)
-    await api.call('worker', `/accounts/:account/workers/scripts/${env.QUIREINK_SCRIPT}?force=true`, { method: 'DELETE' })
-    return Response.json({ success: true, data: { deleted: env.QUIREINK_SCRIPT } })
-  } catch (error) {
-    return say((error as Error).message, 502)
+function askObject(blog: DurableObjectStub, request: Request): AskObject {
+  return (path, body) => {
+    const headers = new Headers(request.headers)
+    headers.set('content-type', 'application/json')
+    headers.delete('content-length')
+    return blog.fetch(new Request(new URL(path, request.url), { method: 'POST', headers, body }))
   }
 }
 
@@ -148,8 +95,8 @@ export default {
   fetch(request: Request, env: CfEnv): Promise<Response> {
     const blog = env.BLOG.get(env.BLOG.idFromName('blog'))
     const path = new URL(request.url).pathname
-    if (request.method === 'POST' && path === '/api/cloudflare/update') return update(request, env, blog)
-    if (request.method === 'POST' && path === '/api/cloudflare/uninstall') return uninstall(request, env, blog)
+    if (request.method === 'POST' && path === '/api/cloudflare/update') return runUpdate(request, env, askObject(blog, request))
+    if (request.method === 'POST' && path === '/api/cloudflare/uninstall') return runUninstall(request, env, env.BLOBS, askObject(blog, request))
     return blog.fetch(request)
   },
 } satisfies ExportedHandler<CfEnv>

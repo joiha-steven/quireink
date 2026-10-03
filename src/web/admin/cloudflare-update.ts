@@ -22,6 +22,7 @@ import { passwordHashFor } from '@/auth/users'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { APP_VERSION } from '@/version'
 import { databaseBytes } from '@/runtime/impl/runtime-info'
+import { listKept } from '@/runtime/impl/archive'
 
 /** How this blog takes a newer release (`QUIREINK_UPDATES`): set by whatever deployed it. */
 export type UpdatePath = 'api' | 'git' | 'cli'
@@ -37,11 +38,13 @@ const updatePath = (): UpdatePath => {
  * one Durable Object request; the estimate is that, and storage past what is included.
  */
 export function estimateMonthly(views30: number, r2Bytes: number, dbBytes: number): { requests: number; usd: number } {
+  // At least: a view is the page and its beacon, and the Worker hands EVERY request to the object,
+  // so each one is a Durable Object request too. Pictures, feeds and bots come on top.
   const requests = views30 * 2
   const over = (n: number, free: number) => Math.max(0, n - free)
   const usd = 5
     + over(requests, 10e6) / 1e6 * 0.30
-    + over(views30, 1e6) / 1e6 * 0.15
+    + over(requests, 1e6) / 1e6 * 0.15
     + over(r2Bytes / 1e9, 10) * 0.015
     + over(dbBytes / 1e9, 5) * 0.20
   return { requests, usd: Math.round(usd * 100) / 100 }
@@ -57,14 +60,20 @@ export function cloudflareUpdateRoutes() {
     const u = updateState()
     const views30 = Object.values(await getViewTotalsSince(30)).reduce((n, v) => n + v, 0)
     const stats = await storageStats()
+    // The uploads listing leaves out `private/`, where the kept backups live — each holding every
+    // upload again. R2 bills them all.
+    const kept = (await listKept()).reduce((n, k) => n + k.size, 0)
     const dbBytes = databaseBytes()
     return json({
       current: APP_VERSION,
       latest: u.state === 'behind' ? u.release.latest : null,
+      // `unknown` is not `current` (`update-check.ts`): the check is off, has not run, or is stale.
+      // The card says "newest" only for `current`, and otherwise offers to ask.
+      state: u.state,
       updates: updatePath(),
       hasToken: Boolean(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID),
       siteUrl: resolveSiteUrl(await getSettings()),
-      cost: { views30, r2Bytes: stats.totalBytes, dbBytes, ...estimateMonthly(views30, stats.totalBytes, dbBytes) },
+      cost: { views30, r2Bytes: stats.totalBytes + kept, dbBytes, ...estimateMonthly(views30, stats.totalBytes + kept, dbBytes) },
     })
   })
 

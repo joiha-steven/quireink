@@ -12,6 +12,7 @@ const server = Bun.serve({
     const url = new URL(req.url)
     seen.push({ method: req.method, path: url.pathname + url.search, auth: req.headers.get('authorization') ?? '' })
     const key = decodeURIComponent(url.pathname.replace(/^\/bucket\/?/, ''))
+    if (req.method === 'PUT' && key === 'denied') return new Response('<Error><Code>AccessDenied</Code><Message>no</Message></Error>', { status: 403 })
     if (req.method === 'PUT') { stored.set(key, new Uint8Array(await req.arrayBuffer())); return new Response('') }
     if (req.method === 'DELETE') { stored.delete(key); return new Response(null, { status: 204 }) }
     // Two pages, to prove the continuation is followed.
@@ -39,8 +40,12 @@ describe('the off-site copy from a Worker', () => {
     expect(seen.some((r) => r.path.includes('continuation-token=p%262'))).toBe(true)
   })
 
-  it('names the step and the status when the bucket says no', async () => {
-    const refused = s3Client({ accessKeyId: 'AKID', secretAccessKey: 'secret', bucket: 'bucket', region: 'auto', endpoint: 'http://127.0.0.1:9' })
-    await expect(refused.write('x', 'y')).rejects.toThrow()
+  it('names the step, the status and S3\'s own code when the bucket says no', async () => {
+    await expect(client.write('denied', 'y')).rejects.toThrow('put denied: 403 AccessDenied')
+  })
+
+  it('fails, rather than hangs, when there is no bucket at the address', async () => {
+    const nowhere = s3Client({ accessKeyId: 'AKID', secretAccessKey: 'secret', bucket: 'bucket', region: 'auto', endpoint: 'http://127.0.0.1:9' })
+    await expect(nowhere.write('x', 'y')).rejects.toThrow()
   })
 })

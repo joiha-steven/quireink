@@ -25,9 +25,15 @@ export const put: BlobPort['put'] = async (pathname, body, opts) => {
     throw new Error(`Blob too large: ${body.byteLength} bytes for ${pathname} exceeds MAX_UPLOAD_MB (${ceiling} bytes)`)
   }
   const bucket = bound().env.BLOBS
-  // `exclusive` is the import's rule that a name is never overwritten. One object, one thread: a
-  // head and then a put cannot be interleaved by another request of the same blog.
-  if (opts?.exclusive && (await bucket.head(key))) throw new Error(`EEXIST: ${pathname} already exists`)
+  // `exclusive` is the rule that a name is never overwritten, and the callers retry the next free
+  // name on `code === 'EEXIST'` (as Node's O_EXCL write reports it on Bun). R2's own conditional put
+  // does it in one step: a head and then a put COULD be interleaved, because an R2 call is not a
+  // storage operation and the object's input gate opens while it waits.
+  if (opts?.exclusive) {
+    const written = await bucket.put(key, body, { onlyIf: new Headers({ 'if-none-match': '*' }) })
+    if (!written) throw Object.assign(new Error(`EEXIST: ${pathname} already exists`), { code: 'EEXIST' })
+    return `/uploads/${pathname}`
+  }
   await bucket.put(key, body)
   return `/uploads/${pathname}`
 }

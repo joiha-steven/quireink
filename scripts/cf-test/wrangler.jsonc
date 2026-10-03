@@ -8,6 +8,7 @@
   "base_dir": "../../dist/cf-test",
   "find_additional_modules": true,
   "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": false }],
+  "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "quireink-contracts" }],
   "durable_objects": { "bindings": [{ "name": "PROBE", "class_name": "Probe" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Probe"] }]
 }

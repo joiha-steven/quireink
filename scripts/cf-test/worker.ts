@@ -11,7 +11,7 @@ import { regexEngine } from '@/runtime/cf/shiki-engine'
 import { generateKeyPairSync } from 'node:crypto'
 import { signRequest, verifySignature } from '@/ap/signature'
 import { SmtpSession } from '@/news/smtp'
-import { read as blobRead, statSize as blobStatSize } from '@/runtime/cf/blob'
+import { put as blobPut, read as blobRead, statSize as blobStatSize } from '@/runtime/cf/blob'
 import { gunzipStage, gzipStage } from '@/server/gzip'
 import { clientCountry, clientIp } from '@/server/rate-limit'
 import { identityFromSecret, newIdentity, opener, passphraseRecipient, sealer, unseal } from '@/server/backup-crypt'
@@ -26,6 +26,7 @@ function collect(): Case[] {
   cases.push({ name: 'smtp: one connection authenticates and hands over two messages, then quits', body: smtpTwoMessages })
   cases.push({ name: 'blob: `private/` is refused before the bucket is asked, so /uploads cannot serve a backup', body: blobPrivateRefused })
   cases.push({ name: 'ip: with no socket to ask, the reader is the edge\'s CF-Connecting-IP and CF-IPCountry', body: edgeAddress })
+  cases.push({ name: 'blob: an exclusive put of a name that exists says EEXIST with the code callers retry on', body: exclusivePut })
   cases.push({ name: 'archive: the node:zlib gzip stage round-trips a stream', body: gzipRoundTrip })
   cases.push({ name: 'archive: an X25519 seal (ADR 0060) opens with its identity and not with another', body: sealRoundTrip })
   cases.push({ name: 'archive: a passphrase recipient derives (scrypt, N=65536 r=8: 64 MB)', body: () => { passphraseRecipient('correct horse battery staple') } })
@@ -83,6 +84,8 @@ async function smtpReachesHandshake(): Promise<void> {
   } catch (error) {
     const message = String((error as Error).message)
     if (/releaseLock|locked/i.test(message)) throw new Error(`the upgrade never started: ${message}`)
+    // And not a failure BEFORE the upgrade, which would pass this case without reaching STARTTLS.
+    if (/could not reach|refused|did not answer|was refused/i.test(message)) throw new Error(`failed before STARTTLS: ${message}`)
     return
   }
   throw new Error('a handshake with a relay that hung up succeeded')
@@ -109,6 +112,20 @@ function edgeAddress(): void {
   if (a !== '203.0.113.7' || b !== '198.51.100.9') throw new Error(`readers came out as ${a} and ${b}`)
   const country = clientCountry(ctx({ 'cf-connecting-ip': '203.0.113.7', 'cf-ipcountry': 'vn' }))
   if (country !== 'VN') throw new Error(`country came out as ${JSON.stringify(country)}`)
+}
+
+/** `files.ts`, `media.ts` and the backup load take the next free name on `code === 'EEXIST'`. */
+async function exclusivePut(): Promise<void> {
+  const name = `files/exclusive-${crypto.randomUUID()}.txt`
+  await blobPut(name, Buffer.from('first'), { exclusive: true })
+  try {
+    await blobPut(name, Buffer.from('second'), { exclusive: true })
+  } catch (error) {
+    if ((error as { code?: string }).code !== 'EEXIST') throw new Error(`refused without the code: ${(error as Error).message}`)
+    if ((await blobRead(name)).toString() !== 'first') throw new Error('the refused put overwrote the file')
+    return
+  }
+  throw new Error('a second exclusive put of the same name was accepted')
 }
 
 /** ADR 0067's archive gzips through `node:zlib`, which workerd provides behind `nodejs_compat`. */

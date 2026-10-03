@@ -34,7 +34,8 @@ function words(t: AdminStrings): string {
     paid: t.cfCheckPaid, free: t.cfCheckFree, unknown: t.cfCheckUnknown, exists: t.cfCheckExists,
     done: t.cfDone, domainNote: t.cfDomainNote, attach: t.cfAttach, attached: t.cfAttached,
     siteUrlNeeded: t.cfSiteUrlNeeded, wrongPassword: t.cfWrongPassword, running: t.cfRunning,
-    failed: t.cfFailed, tooMany: t.cfTooMany,
+    failed: t.cfFailed, tooMany: t.cfTooMany, tooBig: t.cfCheckTooBig, network: t.cfErrNetwork,
+    interrupted: t.cfInterrupted, tokenRequired: t.cfErrToken,
   }))
 }
 
@@ -48,7 +49,8 @@ function onCloudflare(t: AdminStrings): string {
     version: t.cfVersion, updateTo: t.cfUpdateTo, newest: t.cfUpdateNewest, updating: t.cfUpdating,
     updated: t.cfUpdated, rolledBack: t.cfRolledBack, failed: t.cfUpdateFailed, cost: t.cfCost,
     confirmLabel: t.cfLeaveConfirmLabel, leaveDone: t.cfLeaveDone, mismatch: t.cfConfirmMismatch,
-    wrongPassword: t.cfWrongPassword, tooMany: t.cfTooMany,
+    wrongPassword: t.cfWrongPassword, tooMany: t.cfTooMany, look: t.cfUpdateLook, network: t.cfErrNetwork,
+    tokenRequired: t.cfErrToken, notApi: t.cfErrNotApi, tokenCannot: t.cfErrTokenCannot, leaveFailed: t.cfLeaveFailed,
   }))
   return panelCard({
     title: t.cardCloudOn,
@@ -77,6 +79,7 @@ function onCloudflare(t: AdminStrings): string {
       + `<button type="button" data-cf-leave-key class="${buttonClass('danger', 'sm')}">${escapeHtml(t.cfLeaveDelete)}</button>`
       + `<p class="${LINE}" data-cf-leave-line aria-live="polite" hidden></p></div>`
       + `<p class="${NOTE_TEXT}" data-cf-leave-git hidden>${escapeHtml(t.cfLeaveGit)}</p>`
+      + `<p class="${NOTE_TEXT}" data-cf-leave-cli hidden>${escapeHtml(t.cfLeaveCli)}</p>`
       + `</div>`,
   })
 }
