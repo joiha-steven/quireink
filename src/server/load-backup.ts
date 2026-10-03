@@ -32,22 +32,47 @@ export class LoadRefusal extends Error {
   }
 }
 
-/** One load at a time, and the claim waits for it: two owners racing for one empty blog is not a race either may win. */
-let loading = false
-export const backupLoading = (): boolean => loading
+/**
+ * Who has the empty blog right now: a load, or a claim between its last check and its account
+ * existing. One at a time, and both ways round — two owners racing for one empty blog is not a
+ * race either may win. A claim that checked `noUsersYet` and then awaited its settings write and
+ * its password hash used to leave a window in which a load began, so the load's `insert or replace`
+ * met the claim's new account; and two claims in the same window made two owners.
+ */
+let holder: 'load' | 'claim' | null = null
+export const backupLoading = (): boolean => holder === 'load'
+
+/**
+ * Run a claim's writes with the blog held, or answer null when a load or another claim has it.
+ * `fn` re-checks that nobody owns the blog, inside the hold, before it writes anything.
+ */
+export async function holdingForClaim<T>(fn: () => Promise<T>): Promise<T | null> {
+  if (holder !== null) return null
+  holder = 'claim'
+  try {
+    return await fn()
+  } finally {
+    holder = null
+  }
+}
 
 const sameList = (a: string[], b: string[]): boolean =>
   a.length === b.length && [...a].sort().every((x, i) => x === [...b].sort()[i])
 
-/** Every byte of one upload, which the blob store takes whole. Bounded by the upload's own size. */
+/**
+ * Every byte of one upload, which the blob store takes whole. Gathered as it arrives rather than
+ * allocated from the size the tar header states: that number is the archive's word, and a header
+ * claiming 8 GiB in front of three bytes would otherwise cost 8 GiB before anything noticed.
+ */
 async function bytesOf(body: AsyncIterable<Uint8Array>, size: number): Promise<Buffer> {
-  const out = Buffer.alloc(size)
+  const pieces: Uint8Array[] = []
   let at = 0
   for await (const piece of body) {
-    out.set(piece, at)
+    pieces.push(piece)
     at += piece.length
   }
-  return out
+  if (at !== size) throw new ArchiveFault(`truncated: an upload ended at ${at} of ${size} bytes`)
+  return Buffer.concat(pieces, at)
 }
 
 /**
@@ -56,8 +81,8 @@ async function bytesOf(body: AsyncIterable<Uint8Array>, size: number): Promise<B
  * again and every upload it wrote removed, and the error is thrown.
  */
 export async function loadBackupIntoEmptyBlog(source: AsyncIterable<Uint8Array>, keys: ArchiveKeys): Promise<RowsReport & { version: string }> {
-  if (loading) throw new LoadRefusal('busy')
-  loading = true
+  if (holder !== null) throw new LoadRefusal('busy')
+  holder = 'load'
   try {
     if (!noUsersYet()) throw new LoadRefusal('claimed')
     const occupied = firstNonEmptyTable()
@@ -71,7 +96,7 @@ export async function loadBackupIntoEmptyBlog(source: AsyncIterable<Uint8Array>,
       await items.return(undefined).catch(() => undefined)
     }
   } finally {
-    loading = false
+    holder = null
   }
 }
 

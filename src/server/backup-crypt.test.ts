@@ -99,6 +99,14 @@ describe('the cost comes out of the archive, not out of this build', () => {
     expect(costFrom({ n: 65_536, r: 8, p: 1 })).toEqual({ n: 65_536, r: 8, p: 1 })
   })
 
+  it('refuses fields each within range whose product a small box cannot pay', () => {
+    // 2^20 at r=16 is 2 GiB of scrypt memory, and `maxmem` would have doubled it.
+    expect(() => costFrom({ n: 2 ** 20, r: 16, p: 1 })).toThrow('bad-kdf')
+    expect(() => costFrom({ n: 2 ** 18, r: 16, p: 1 })).toThrow('bad-kdf') // 512 MiB
+    expect(() => costFrom({ n: 2 ** 16, r: 8, p: 16 })).toThrow('bad-kdf') // sixteen times the time
+    expect(costFrom({ n: 2 ** 17, r: 8, p: 2 })).toEqual({ n: 2 ** 17, r: 8, p: 2 })
+  })
+
   it('writes the cost it actually spent into the header', () => {
     const pass = passphraseRecipient('sau chu va mot con so 7')
     const archive = seal(SMALL, [pass.publicKey], pass.salt)

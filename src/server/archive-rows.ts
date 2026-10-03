@@ -10,6 +10,7 @@ import { ArchiveFault, textOf } from '@/server/archive-open'
 import type { Manifest } from '@/server/archive'
 import type { TarItem } from '@/server/tar'
 import type { Kind } from '@/store/db'
+import { splitSql } from '@/store/sql-split'
 
 export type TableEntry = Manifest['databases'][Kind]['tables'][number]
 
@@ -42,6 +43,30 @@ export function uploadPath(name: string): string | null {
   return path
 }
 
+/**
+ * A statement that only builds a shape: a table, an index, a trigger, a view, or an fts5 index.
+ * `temp` falls outside it, which is the point — a temporary table is not part of any schema.
+ */
+const SHAPE = /^create\s+(?:(?:unique\s+)?index|table|trigger|view|virtual\s+table\s+(?:if\s+not\s+exists\s+)?(?:"[^"]+"|`[^`]+`|\[[^\]]+\]|\w+)\s+using\s+fts5\b)/i
+
+/**
+ * The archive's `schema.sql`, refused unless every statement in it is a `SHAPE`.
+ *
+ * ⚠️ `scripts/restore.ts` RUNS THIS TEXT, and the archive may have come from anywhere. What this
+ * code writes is `sqlite_master`'s own `CREATE …` lines and nothing else, so anything else in the
+ * file was put there by somebody: an `ATTACH` makes a database file at any path the restoring user
+ * can write — which is root's, under `docker exec` — and a `PRAGMA` changes how the rows that
+ * follow are checked. The setup screen ignores the schema (it loads into this release's own), so
+ * this matters to the command line; it runs for both, so a bad archive fails the same way in each.
+ */
+export function checkedSchema(sql: string): string {
+  for (const statement of splitSql(sql)) {
+    const head = statement.replace(/^(?:\s+|--[^\n]*(?:\n|$)|\/\*[\s\S]*?\*\/)+/, '')
+    if (!SHAPE.test(head)) throw new ArchiveFault(`bad-schema: ${head.slice(0, 60).replace(/\s+/g, ' ')}`)
+  }
+  return sql
+}
+
 /** Everything after the manifest, in order, into `target`. Throws on the first thing that is wrong. */
 export async function readRows(items: AsyncGenerator<TarItem>, manifest: Manifest, target: RowsTarget): Promise<RowsReport> {
   const report: RowsReport = { tables: [], uploads: 0, bytes: 0 }
@@ -53,7 +78,7 @@ export async function readRows(items: AsyncGenerator<TarItem>, manifest: Manifes
     if (item.kind === 'dir') continue
     const kind = KINDS.find((k) => name.startsWith(`${k}/`))
     if (kind && name === `${kind}/schema.sql`) {
-      await target.schema(kind, await textOf(item))
+      await target.schema(kind, checkedSchema(await textOf(item)))
       seenSchema.add(kind)
       continue
     }

@@ -21,6 +21,7 @@ import { newIdentity, passphraseRecipient } from '@/server/backup-crypt'
 import { tarEntries, tarStream, type TarEntry } from '@/server/tar'
 import { resetLimits } from '@/server/rate-limit'
 import { resetSetupToken, setupToken } from '@/server/setup-token'
+import { holdingForClaim, loadBackupIntoEmptyBlog } from '@/server/load-backup'
 
 const ROOT = join(process.cwd(), '.tmp/test-setup-restore')
 const PASS = 'a passphrase somebody would actually type'
@@ -147,6 +148,25 @@ describe('a backup loaded into an empty blog', () => {
 })
 
 describe('what it refuses', () => {
+  it('a form of endless small fields, before the token is even looked at', async () => {
+    const form = new FormData()
+    for (let i = 0; i < 20; i++) form.set(`f${i}`, 'x')
+    form.set('archive', new File([PLAIN], 'quire.tar.gz'))
+    const res = await app.request('/setup/restore', { method: 'POST', body: form })
+    expect(res.status).toBe(400)
+    expect(noUsersYet()).toBe(true)
+  })
+
+  it('an archive whose schema does more than build tables, even where the schema is not used', async () => {
+    const hostile = await rewritten((name, bytes) => name === 'content/schema.sql'
+      ? new TextEncoder().encode(`attach database '${join(ROOT, 'planted.db')}' as x;\n${new TextDecoder().decode(bytes)}`)
+      : bytes)
+    const res = await load(hostile)
+    expect(res.status).toBe(422)
+    expect(count('posts')).toBe(0)
+    expect(existsSync(join(ROOT, 'planted.db'))).toBe(false)
+  })
+
   it('a blog somebody has already written in, even with no owner yet', async () => {
     db().run(`insert into posts (slug, title, content, status, date, updated_at, created_at) values ('mine', 'Mine', 'x', 'draft', 1, 1, 1)`)
     const res = await load(PLAIN)
@@ -179,6 +199,20 @@ describe('what it refuses', () => {
     expect(noUsersYet()).toBe(true)
     expect(existsSync(join(process.env.STORAGE_LOCAL_DIR!, 'media', 'photo.webp'))).toBe(false)
     // And the door is still open: the right archive goes in afterwards.
+    expect((await load(PLAIN)).status).toBe(303)
+  })
+})
+
+describe('a claim and a load, never both', () => {
+  it('a load refuses while a claim holds the blog, and a second claim is told to wait', async () => {
+    const seen = await holdingForClaim(async () => {
+      const second = await holdingForClaim(async () => 'second')
+      const loaded = await loadBackupIntoEmptyBlog((async function* () { yield PLAIN })(), {}).then(() => 'loaded', (e: Error) => e.message)
+      return { second, loaded }
+    })
+    expect(seen).toEqual({ second: null, loaded: 'busy' })
+    expect(count('posts')).toBe(0)
+    // Released: the load goes in now.
     expect((await load(PLAIN)).status).toBe(303)
   })
 })

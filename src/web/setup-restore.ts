@@ -30,6 +30,9 @@ import { CHUNK_ABOVE_BYTES, PART_BYTES } from '@/server/restore-parts'
 import type { SiteSettings } from '@/types'
 import { APP_VERSION } from '@/version'
 
+/** The fields the form sends before its file — token, identity, passphrase — with room to spare. */
+const MAX_FIELDS = 8
+
 const html = (body: string, status = 200): Response =>
   new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8' } })
 
@@ -141,8 +144,13 @@ async function decide(c: Context, parts: AsyncGenerator<Part> | null): Promise<R
   try {
     // By hand rather than `for await`: leaving that loop at the file would close the reader the
     // file is about to be read from.
+    // Counted as well as each one capped, because all of this happens before the token is
+    // checked: the form has four fields, and a stranger posting ten thousand small ones is not
+    // filling it in.
+    let count = 0
     for (let next = await parts.next(); !next.done; next = await parts.next()) {
       if (next.value.filename !== null) { archive = next.value; break }
+      if (++count > MAX_FIELDS) throw new Error('multipart: more fields than the form has')
       fields[next.value.name] = (await fieldText(next.value)).trim()
     }
   } catch {

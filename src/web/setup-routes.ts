@@ -32,7 +32,7 @@ import { saveSettings } from '@/content/settings'
 import { isSiteLang } from '@/locales/langs'
 import { siteStepScreen, faceStepScreen, readerStepScreen, lookStepScreen } from '@/web/setup-page'
 import { APP_VERSION } from '@/version'
-import { backupLoading } from '@/server/load-backup'
+import { backupLoading, holdingForClaim } from '@/server/load-backup'
 
 const html = (body: string, status = 200): Response =>
   new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8' } })
@@ -163,11 +163,22 @@ export async function handleSetupClaim(c: Context): Promise<Response> {
   // line above may already have made a settings row, and a row with no answer in it reads as
   // an install that predates the question (`fromStored`). This is the one moment anything
   // knows for certain that a first run is starting.
-  await saveSettings({
-    setupDone: false,
-    ...(settings.language !== stored.language ? { language: settings.language } : {}),
+  // HELD while it writes, and asked again inside the hold: everything above awaited, and in that
+  // time a backup may have started loading or another claim may have got here first.
+  const made = await holdingForClaim(async () => {
+    if (!noUsersYet()) return false
+    await saveSettings({
+      setupDone: false,
+      ...(settings.language !== stored.language ? { language: settings.language } : {}),
+    })
+    await createUser({ username, email, password })
+    return true
   })
-  await createUser({ username, email, password })
+  if (made === null) return refuse(s.setupRestoreBusy, 409)
+  if (!made) {
+    if (!wantsHtml) return fail(c, s.setupClaimed, 409)
+    return html(claimedScreen(settings), 409)
+  }
   forgetSetupToken()
   logAuthEvent('auth.owner.claimed')
 

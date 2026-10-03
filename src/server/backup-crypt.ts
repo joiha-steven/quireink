@@ -151,8 +151,17 @@ export function costFrom(kdf: unknown): Cost {
   const n = num(k?.n, 1 << 14, 1 << 20)
   // scrypt requires a power of two and reports it as an obscure OpenSSL error; say so here.
   if ((n & (n - 1)) !== 0) throw new Error('bad-kdf')
-  return { n, r: num(k?.r, 1, 16), p: num(k?.p, 1, 16) }
+  const cost = { n, r: num(k?.r, 1, 16), p: num(k?.p, 1, 16) }
+  // Each field within its range is not enough: n = 2^20 with r = 16 is 2 GiB of memory, which
+  // `passphraseIdentity` would ask for (its `maxmem` doubles it) and a small box dies of. What
+  // scrypt holds is 128·n·r and what it costs in time is that times p, so those are bounded too:
+  // 256 MiB and eight times what this build writes, room for a later build to raise its cost.
+  if (128 * cost.n * cost.r > MAX_KDF_MEMORY || cost.n * cost.r * cost.p > 8 * COST.n * COST.r * COST.p) throw new Error('bad-kdf')
+  return cost
 }
+
+/** The most memory an archive's header may ask scrypt for (`costFrom`). */
+const MAX_KDF_MEMORY = 256 * 1024 * 1024
 
 /** What this build writes. Readers take the archive's word instead (`costFrom`). */
 export const COST: Cost = { n: KDF.N, r: KDF.r, p: KDF.p }
@@ -301,7 +310,9 @@ export function unseal(head: Buffer, identity: KeyObject): { fileKey: Buffer; st
   } catch {
     throw new Error('bad-header')
   }
-  if (parsed.v !== 1 || !Array.isArray(parsed.recipients)) throw new Error('wrong-version')
+  // The frame size too: the reader gathers one whole frame before it decrypts it, so a header that
+  // named a frame of gigabytes would have it hold the archive in memory. Every archive is CHUNK.
+  if (parsed.v !== 1 || !Array.isArray(parsed.recipients) || parsed.chunk !== CHUNK) throw new Error('wrong-version')
   let fileKey: Buffer | null = null
   for (const stanza of parsed.recipients) {
     fileKey = open(stanza, identity)

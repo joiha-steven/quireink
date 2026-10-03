@@ -72,6 +72,16 @@
 
 ### Fixed
 
+- **A backup from somewhere else is held to what a backup can be.** `scripts/restore.ts` ran the
+  archive's `schema.sql` as it found it; it now refuses any statement that is not a `CREATE` of a
+  table, index, trigger, view or full-text index, so an archive cannot attach a file at a path of
+  its choosing. Reading one is bounded too: a tar name header past 64 KB, an upload or a row that
+  claims more than it carries, a sealed archive with an unusual frame size, and a passphrase cost
+  past 256 MB of memory are each refused before anything is allocated for them. The first setup
+  screen counts the form's fields before it checks the token, and a claim and a backup load can no
+  longer both go in at once.
+- **The Deploy-button update installs published releases only**, never a draft, a pre-release or
+  a version older than the one running.
 - **On Cloudflare, a kept backup past 64 MB could not be downloaded or copied off-site.** The
   archive was read whole into the Worker to be sent; it now streams from the bucket, and the
   off-site copy goes up as a multipart upload 16 MB at a time. A download from Cloudflare also says

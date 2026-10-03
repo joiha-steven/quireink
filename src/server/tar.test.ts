@@ -120,6 +120,17 @@ describe('tarEntries', () => {
     expect(seen).toEqual(['a', 'b', 'c'])
   })
 
+  it('refuses a long-name header larger than any name, before holding it', async () => {
+    const big = 70 * 1024
+    const raw = await bytes(tarStream([{ name: '././@LongLink', size: big, body: new Uint8Array(big).fill(0x61) }]))
+    raw[156] = 'L'.charCodeAt(0)
+    let sum = 0
+    raw.fill(0x20, 148, 156)
+    for (let i = 0; i < 512; i++) sum += raw[i]!
+    raw.set(enc.encode(sum.toString(8).padStart(6, '0') + '\0 '), 148)
+    await expect(readAll(raw)).rejects.toThrow('extended header')
+  })
+
   it('refuses a damaged header rather than reading garbage as a file', async () => {
     const archive = await bytes(tarStream([{ name: 'a', size: 1, body: enc.encode('a') }]))
     archive[10] = 0x41

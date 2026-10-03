@@ -6,12 +6,12 @@
 //   - it binds `?` only: one object of named values is turned into an ordered list (`namedOrder`);
 //   - a boolean is bound as 1/0, a bigint as a number, a `Uint8Array` as its ArrayBuffer, and a blob
 //     comes back as an ArrayBuffer, which is handed out as a `Uint8Array`;
-//   - one statement per call: `exec` splits a script (`sql-split.ts`);
+//   - one statement per call: `exec` splits a script (`store/sql-split.ts`);
 //   - no BEGIN or SAVEPOINT: `transactionSync`, which nests, an inner throw undoing only the inner part;
 //   - no changes/last-insert-rowid on the cursor: one more `select` asks SQLite for them.
 import type { Connection, DbPort, SqlParams, SqlValue } from '@/runtime/ports'
 import { bound } from './bindings'
-import { namedOrder, splitSql } from './sql-split'
+import { namedOrder, splitSql } from '@/store/sql-split'
 
 type Bindable = string | number | null | ArrayBuffer
 

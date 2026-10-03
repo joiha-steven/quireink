@@ -233,6 +233,9 @@ function paxFields(text: string): Record<string, string> {
   return out
 }
 
+/** The most a PAX or GNU long-name header may carry. Linux's longest path is 4 KiB. */
+const META_MAX = 64 * 1024
+
 /** Every entry of a tar stream, one at a time. A header that fails its checksum stops it. */
 export async function* tarEntries(source: AsyncIterable<Uint8Array>): AsyncGenerator<TarItem> {
   const reader = new ByteReader(source)
@@ -250,8 +253,12 @@ export async function* tarEntries(source: AsyncIterable<Uint8Array>): AsyncGener
       const prefix = cstring(h.subarray(345, 500))
       const ustarName = cstring(h.subarray(0, 100))
       const size = pax.size !== undefined ? Number(pax.size) : number(h.subarray(124, 136))
+      if (!Number.isSafeInteger(size) || size < 0) throw new Error('tar: a header states no usable size')
       const padded = size + padding(size).length
       if (type === 'x' || type === 'g' || type === 'L') {
+        // Read whole, so bounded: a name is at most a few KiB, and a header that says it is
+        // gigabytes is asking to be held in memory before anything has checked it.
+        if (size > META_MAX) throw new Error('tar: an extended header is larger than any name needs')
         const text = dec.decode(await reader.read(size))
         await reader.read(padded - size)
         if (type === 'x') pax = paxFields(text)

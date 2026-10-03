@@ -1,8 +1,9 @@
 // A SQL script into single statements, the way `sqlite3_complete` reads one: quotes and comments
 // respected, and a trigger body (`CREATE TRIGGER … BEGIN … END;`, with `CASE … END` inside it) kept
 // whole. A Durable Object runs one statement per call, so the schema, every migration step and any
-// multi-statement `exec` go through here first (measured in the G0 spike on schema.sql: 76 statements,
-// 0 split wrongly).
+// multi-statement `exec` go through here first (measured in the G0 spike on schema.sql: 76
+// statements, 0 split wrongly). So does an archive's `schema.sql`, checked a statement at a time
+// before a restore runs it (`server/archive-rows.ts`), which is why this lives outside `runtime/cf`.
 const stripComments = (s: string): string => s.replace(/--[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '')
 
 export function splitSql(src: string): string[] {

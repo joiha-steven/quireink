@@ -189,6 +189,13 @@ export function ledgerNames(conn: Connection, table: string): string[] {
 }
 
 /**
+ * The longest line `loadTable` holds. A row is a post at most, and the longest post anybody writes
+ * is a few hundred KB of HTML; 32 Mi characters is a hundred times that and still a bound, so an
+ * archive with no newlines in it stops here instead of being gathered into one string.
+ */
+export const MAX_LINE = 32 * 1024 * 1024
+
+/**
  * Put JSON Lines back into `table`, `LOAD_ROWS` rows per transaction, and hash the exact bytes
  * as they pass so a damaged archive is caught by the same SHA-256 that described it. Each batch
  * is synchronous, as `transaction` requires; the bytes in between arrive as they arrive.
@@ -231,6 +238,8 @@ export async function loadTable(
     const text = carry + decoder.decode(chunk, { stream: true })
     const parts = text.split('\n')
     carry = parts.pop() ?? ''
+    // A line is one row, held whole while it is parsed; one that never ends is not a row.
+    if (carry.length > MAX_LINE) throw new Error(`rows: a line of ${table} is longer than ${MAX_LINE} characters`)
     for (const line of parts) take(line)
   }
   take(carry + decoder.decode())
