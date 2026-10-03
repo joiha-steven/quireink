@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+
+- **The setup screens look like one product again.** On a fresh install the setup-code screen's
+  Continue was the browser's own button, small and bright blue on Safari, glued to the field
+  above it: it was the one submit button on those screens written without its class. The
+  language picker drew the platform's double arrow beside fields that have none, and now carries
+  the same drawn chevron as the admin. The secondary links in the card ("Start from a backup",
+  "Download" on the recovery codes, "Set it up later") read as plain text on the default palette,
+  whose link colour is the text colour, and are now underlined. On "Start from a backup", the
+  archive picker's button matches the card and the note about encrypted backups sits under the
+  two fields it explains. A test now fails on any submit button on these screens without a class.
+
 ## 2026-10-03 · Quire Ink 2.2.17
 
 Three days after 2.2.16, and the biggest change since the rewrite: **Quire Ink runs on Cloudflare**,

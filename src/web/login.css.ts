@@ -78,6 +78,17 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
      and its own copy of the press, and the gates never reached it at all. */
   transition:border-color var(--dur-fast), box-shadow var(--dur-fast)}
 .login-form input::placeholder{color:var(--c-meta)}
+/* The archive picker. Left to the platform its button was the browser's grey "Choose File" in
+   a box of its own, the one control on the restore screen that looked borrowed. The field keeps
+   the input's box (the rule above); the button inside it is a small outlined one in the card's
+   own inks, the same weight as the secondary actions elsewhere in setup. */
+.login-form input[type=file]{padding:.45rem .55rem;cursor:pointer;color:var(--c-meta);font-size:.875rem}
+.login-form input[type=file]::file-selector-button{margin-right:.75rem;padding:.35rem .8rem;
+  font:inherit;font-size:.8125rem;font-weight:500;color:var(--c-heading);background:var(--c-bg);
+  border:1px solid var(--c-rule);border-radius:6px;cursor:pointer;
+  transition:border-color var(--dur-fast)}
+.login-form input[type=file]:hover::file-selector-button{
+  border-color:color-mix(in srgb, var(--c-text) 30%, var(--c-rule))}
 .login-form input:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
 /* A ring, not a 2px outline box. autofocus fires on load, so whatever this draws is the
    first thing anyone sees, and the old one drew a solid red rectangle. */
@@ -140,19 +151,23 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
 .login-warn[hidden]{display:none}
 
 .login-alt{margin:1.25rem 0 0;font-size:.875rem;text-align:center}
-.login-alt a{color:var(--c-link);text-decoration:none}
-.login-alt a:hover{text-decoration:underline}
+/* UNDERLINED AT REST, since 2026-10-04. On the default palette --c-link IS the text colour, so
+   with the underline only on hover "Download", "Start from a backup" and "Set it up later"
+   read as captions: measured on the recovery-codes screen, the download link was rgb(26,25,25)
+   on rgb(26,25,25) text, 14px, no line. A thin line in the meta ink says "this goes somewhere"
+   without competing with the dark button above it; hover darkens it. */
+:where(.login-alt a,.login-link,.login-linkish){text-decoration:underline;text-underline-offset:.2em;
+  text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb, var(--c-meta) 60%, transparent)}
+.login-alt a{color:var(--c-link)}
+:where(.login-alt a,.login-link,.login-linkish):hover{text-decoration-color:currentColor}
 /* The mode switch under the code box is a form (it carries the ticket in its body), dressed as
    the link it always looked like. */
 .login-alt form{display:inline}
 .login-link{border:0;background:none;padding:0;font:inherit;color:var(--c-link);cursor:pointer}
-.login-link:hover{text-decoration:underline}
 /* A button that has to read as a way out rather than as the answer. It is a real <button>
    because it POSTs — a link cannot — but it must not look like the submit above it, or the
    screen offers two equal doors and the safe one stops being obvious. */
-.login-linkish{background:none;border:0;padding:0;font:inherit;color:var(--c-link);
-  text-decoration:none;cursor:pointer}
-.login-linkish:hover{text-decoration:underline}
+.login-linkish{background:none;border:0;padding:0;font:inherit;color:var(--c-link);cursor:pointer}
 
 /* First run, step two: two drawings of a front page, side by side.
    Bars and blocks rather than screenshots. The difference between a list and a composed
@@ -243,9 +258,16 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
    when a token moves. The inputs above pin line-height:1.5 for the same reason: without
    it their content box is whatever normal means in the current face, and this sum stops
    being true. */
-.login-form select{width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;
+/* appearance:none and a drawn chevron, since 2026-10-04: left to the platform, Safari drew its
+   own double arrow in a box of its own and the field read as a different control from the four
+   inputs around it. The chevron is the admin's (one stroke, the meta ink); padding-right keeps
+   a long language name from running under it. */
+.login-form select{width:100%;padding:.625rem 2.25rem .625rem .75rem;font:inherit;font-size:.9375rem;
   min-height:calc(1.5 * .9375rem + 2 * .625rem + 2px);
-  color:var(--c-text);background:var(--field);border:1px solid var(--c-rule);
+  -webkit-appearance:none;appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .8rem center;background-size:12px 12px;
+  color:var(--c-text);background-color:var(--field);border:1px solid var(--c-rule);
   border-radius:8px;box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07);
   transition:border-color var(--dur-fast), box-shadow var(--dur-fast)}
 .login-form select:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}

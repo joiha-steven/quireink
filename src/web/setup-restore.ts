@@ -66,11 +66,11 @@ ${errorBox(opts.error)}
  data-chunk-above="${CHUNK_ABOVE_BYTES}" data-part-bytes="${PART_BYTES}" data-sending="${escapeAttr(s.setupRestoreSending)}"
  data-loading="${escapeAttr(s.setupRestoreLoading)}" data-retrying="${escapeAttr(s.setupRestoreRetrying)}" data-stopped="${escapeAttr(s.setupRestoreStopped)}">
 ${tokenField}
-<p class="login-hint">${escapeHtml(s.setupRestoreSealed)}</p>
 <label for="identity">${escapeHtml(s.setupRestoreIdentity)}</label>
 <input id="identity" name="identity" type="password" autocomplete="off" spellcheck="false">
 <label for="passphrase">${escapeHtml(s.setupRestorePassphrase)}</label>
 <input id="passphrase" name="passphrase" type="password" autocomplete="off">
+<p class="login-hint">${escapeHtml(s.setupRestoreSealed)}</p>
 <label for="archive">${escapeHtml(s.setupRestoreFile)}</label>
 <input id="archive" name="archive" type="file" required accept=".gz,.enc,application/gzip,application/octet-stream">
 <p class="login-hint">${escapeHtml(fillTemplate(s.setupRestoreFileHint, { version: APP_VERSION }))}</p>

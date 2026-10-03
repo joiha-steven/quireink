@@ -270,7 +270,7 @@ ${errorBox(opts.error)}
 <label for="token">${escapeHtml(s.setupCodeLabel)}</label>
 <input id="token" name="token" type="text" required autofocus autocomplete="off"
   autocapitalize="none" spellcheck="false" inputmode="text">
-<button type="submit">${escapeHtml(s.setupCodeGo)}</button>
+<button type="submit" class="login-submit">${escapeHtml(s.setupCodeGo)}</button>
 </form>`
     : `<p class="login-lede">${escapeHtml(s.setupUnclaimedLede)}</p>
 ${errorBox(opts.error)}
