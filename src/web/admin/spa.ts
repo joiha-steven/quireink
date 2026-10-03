@@ -70,8 +70,7 @@ try {
  */
 function fingerprint(name: string): string {
   const asset = ASSETS.get(name)
-  // 'dev' when the bundle has not been built: the shell says so in words rather than
-  // linking a name that resolves to nothing.
+  // 'dev' when unbuilt: the shell says so in words rather than linking a name that resolves to nothing.
   return asset ? contentHash(asset.body) : 'dev'
 }
 

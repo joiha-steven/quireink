@@ -49,7 +49,7 @@ describe('the column', () => {
   })
 
   it('records the migration in analytics.db, which had no ledger before this', () => {
-    const applied = analyticsQuery.all<{ name: string }>(`select name from schema_migrations`)
+    const applied = analyticsQuery.all<{ name: string }>(`select name from analytics_schema_migrations`)
       .map((r) => r.name)
     expect(applied).toContain('a001-visit-bytes')
   })

@@ -4,7 +4,7 @@
 
 import { describe, expect, it, afterAll, beforeEach } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db, analyticsDb } from '@/store/db'
 import { createUser } from '@/auth/users'
 import { createSession } from '@/auth/sessions'
 import { isInternalIp } from '@/analytics/exclude'
@@ -28,13 +28,13 @@ const track = (ip: string, extra: Record<string, string> = {}) =>
   })
 
 const viewCount = (): number =>
-  db().query<{ n: number }, []>(`select count(*) as n from analytics.analytics_events`).get()?.n ?? 0
+  analyticsDb().query<{ n: number }, []>(`select count(*) as n from analytics_events`).get()?.n ?? 0
 
 let owner: { id: number }
 let ownerCookie = ''
 
 beforeEach(async () => {
-  db().run(`delete from analytics.analytics_events`)
+  analyticsDb().run(`delete from analytics_events`)
   db().run(`delete from sessions`)
   db().run(`delete from users`)
   owner = await createUser({ username: 'owner', email: 'owner@example.com', password: 'kx7Qm-vault-heron-92' })
