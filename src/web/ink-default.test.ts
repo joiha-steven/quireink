@@ -10,7 +10,7 @@
 import { describe, expect, it, afterAll } from 'bun:test'
 import { PUBLIC_CSS } from '@/web/public.css'
 import { INK_CSS, INK_HIGHLIGHT_CSS, INK_LINES_CSS } from '@/pen/ink.css'
-import { assetBody, penSheetsFor, PEN_LINES_SHEET, PEN_MARKS_SHEET, PUBLIC_SHEET } from '@/web/assets'
+import { assetBody, penStyleFor, PEN_LINES_SHEET, PEN_MARKS_SHEET, PUBLIC_SHEET } from '@/web/assets'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { pageStyles, renderDocument } from '@/web/layout'
 import { DEFAULT_SETTINGS } from '@/content/settings'
@@ -180,34 +180,43 @@ describe('the pen deal', () => {
   })
 })
 
-describe('the pen ships only where it wrote something (ADR 0027)', () => {
+describe('the pen ships only what it wrote (ADR 0027, 0070)', () => {
   it('reads the page for the elements the gestures render as', () => {
-    expect(penSheetsFor('<p>không một giọt mực</p>')).toEqual([])
-    expect(penSheetsFor('<p><mark data-pen="3">một câu</mark></p>')).toEqual([PEN_MARKS_SHEET])
-    expect(penSheetsFor('<p><u data-pen="1">gạch chân</u></p>')).toEqual([PEN_LINES_SHEET])
+    expect(penStyleFor('<p>không một giọt mực</p>')).toBe('')
+    const mark = penStyleFor('<p><mark data-pen="3">một câu</mark></p>')
+    expect(mark).toContain('.prose mark{color:inherit')
+    expect(mark).toContain('.prose mark[data-pen="3"]{')
+    expect(mark).not.toContain('[data-pen="4"]')
+    expect(mark).not.toContain('.prose u')
+    const under = penStyleFor('<p><u data-pen="1">gạch chân</u></p>')
+    expect(under).toContain('.prose u{text-decoration:none')
+    expect(under).not.toContain('.prose mark')
     // A ring is a mark, so a ringed page needs BOTH halves: the loop from the lines sheet
     // and the base mark rules (blend mode, dark colour) from the highlighter's.
-    expect(penSheetsFor('<mark data-form="o" data-pen="2">cease</mark>'))
-      .toEqual([PEN_MARKS_SHEET, PEN_LINES_SHEET])
+    const ring = penStyleFor('<mark data-form="o" data-pen="2">cease</mark>')
+    expect(ring).toContain('.dark .prose mark{mix-blend-mode:normal')
+    expect(ring).toContain('.prose mark[data-form=o]{padding')
     // `<ul>` is not `<u>`: a list must not pull the pen in.
-    expect(penSheetsFor('<ul><li>một</li></ul>')).toEqual([])
+    expect(penStyleFor('<ul><li>một</li></ul>')).toBe('')
     // Escaped prose about the pen is prose, not a tag.
-    expect(penSheetsFor('<p>viết chữ &lt;mark&gt; vào bài</p>')).toEqual([])
+    expect(penStyleFor('<p>viết chữ &lt;mark&gt; vào bài</p>')).toBe('')
   })
 
-  it('links a pen sheet render-blocking on the pages that need it, and never elsewhere', () => {
+  it('inlines the ink where the sheets were linked, and links neither whole sheet', () => {
     const page = (body: string) => renderDocument(DEFAULT_SETTINGS,
-      { title: 't', stylesheet: PUBLIC_SHEET }, '', body)
+      { title: 't', stylesheet: PUBLIC_SHEET }, 'SETTINGS', body)
     const marked = page('<div class="prose"><mark data-pen="0">chỗ này</mark></div>')
-    expect(marked).toContain(`<link rel="stylesheet" href="${PUBLIC_SHEET}">`
-      + `<link rel="stylesheet" href="${PEN_MARKS_SHEET}">`)
+    // Right after site.css and before the settings block, which is allowed to win.
+    expect(marked).toContain(`<link rel="stylesheet" href="${PUBLIC_SHEET}"><style data-pen-ink>.prose mark{`)
+    expect(marked.indexOf('<style data-pen-ink>')).toBeLessThan(marked.indexOf('<style>SETTINGS'))
+    expect(marked).not.toContain('pen-marks.')
+    expect(marked).not.toContain('pen-lines.')
     const plain = page('<div class="prose"><p>trang trắng</p></div>')
     expect(plain).toContain(`<link rel="stylesheet" href="${PUBLIC_SHEET}">`)
-    expect(plain).not.toContain('pen-marks.')
-    expect(plain).not.toContain('pen-lines.')
+    expect(plain).not.toContain('data-pen-ink')
     // No stylesheet, no pen: the sign-in page stays exactly one <style> block.
     expect(renderDocument(DEFAULT_SETTINGS, { title: 't' }, '', '<mark>x</mark>'))
-      .not.toContain('pen-marks.')
+      .not.toContain('data-pen-ink')
   })
 
   it('serves both pen sheets at their hashed paths, and answers a stale hash with the current bytes', () => {

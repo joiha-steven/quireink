@@ -14,7 +14,7 @@
 import type { SiteSettings, SiteLang } from '@/types'
 import { fontPreloadHrefs } from '@/content/themes'
 import { resolveAppIcon, getDefaultTheme } from '@/content/settings'
-import { penSheetsFor, lookSheet } from '@/web/assets'
+import { penStyleFor, lookSheet } from '@/web/assets'
 
 // The settings half of the sheet lives in `layout-styles.ts` now, and is re-exported here for
 // the same reason `utils.ts` re-exports the two clock helpers: nine call sites had this import
@@ -157,17 +157,23 @@ export function renderDocument(
   // Before the inline block, because that block is allowed to win: it carries the palette,
   // the type scale and the owner's own CSS, all of which override the sheet.
   //
-  // The pen's two sheets follow the same rule, and only board the pages that used the pen:
-  // `penSheetsFor` reads the assembled body for the elements the gestures render as
-  // (ADR 0027). Render-blocking like the main sheet on purpose — a deferred stylesheet
-  // shows bare words before the ink lands. After site.css so the cascade reads exactly as
-  // it did when the ink lived inside it, and gated on `head.stylesheet` because a page
-  // that declines the public sheet (sign-in) has no prose to ink.
+  // The pen follows the same rule, and only boards the pages that used it — and since ADR 0070
+  // only the strokes they used: `penStyleFor` reads the assembled body for the elements the
+  // gestures render as and inlines the rules those elements match (`web/assets.ts` says why
+  // inline beats a sheet here). It sits exactly where the two pen links sat, after site.css
+  // and the dialect and before the settings block, so the cascade reads as it did when the
+  // ink lived inside site.css — and the settings block's pen toggles still win by coming
+  // later — which is also why the reader's pen puts the whole sheets in front of the FIRST
+  // `<style>` in the head when a reader starts marking, rather than after everything. Gated on
+  // `head.stylesheet` because a page that declines the public sheet (sign-in) has no prose to
+  // ink. `data-pen-ink` names the block for a test or a person reading the source; nothing
+  // selects on it.
+  const ink = head.stylesheet ? penStyleFor(body, settings.inks) : ''
   const sheet = head.stylesheet
-    ? [head.stylesheet, lookSheet(settings.look), ...penSheetsFor(body, settings.inks)]
+    ? [head.stylesheet, lookSheet(settings.look)]
         .filter(Boolean)
         .map((href) => `<link rel="stylesheet" href="${escapeAttr(href)}">`)
-        .join('')
+        .join('') + (ink ? `<style data-pen-ink>${ink}</style>` : '')
     : ''
   // `rel="icon"` stays conditional ON PURPOSE, and an audit that wants it unconditional is
   // asking for bytes that buy nothing: `/favicon.ico` is the path a browser asks for when

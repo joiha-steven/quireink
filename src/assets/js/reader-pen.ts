@@ -54,6 +54,13 @@ function readerPen(): void {
   let items = load(path)
 
   /* ---- the two sheets, linked once and only when a mark needs them ---------------- */
+  // In front of the head's FIRST `<style>`, not at the end of it. That is where the pen's
+  // links sat when the server still wrote them: the first `<style>` is the writer's own ink
+  // inlined (ADR 0070) or, on an unmarked page, the settings block — and the settings block
+  // carries the owner's pen toggles and custom CSS, which win their ties with the sheet only
+  // by coming later. Appended at the end, the sheet won those ties instead — on a marked page
+  // too, now that a marked page no longer links it up front. `insertBefore(x, null)` appends,
+  // for a head with no style at all.
   let ready: Promise<void> | null = null
   const ensureSheets = () => (ready ??= Promise.all(sheets.split(' ').map((href) =>
     new Promise<void>((done) => {
@@ -61,7 +68,7 @@ function readerPen(): void {
       const link = el('link', { rel: 'stylesheet', href })
       link.addEventListener('load', () => done(), { once: true })
       link.addEventListener('error', () => done(), { once: true })
-      document.head.appendChild(link)
+      document.head.insertBefore(link, document.head.querySelector('style'))
     }))).then(() => undefined))
 
   /* ---- notes: a card under the block the mark begins in ---------------------------- */

@@ -6,7 +6,7 @@
 // answering, because a page rendered a second before the save still names it.
 
 import { describe, expect, it } from 'bun:test'
-import { assetBody, penSheets, penSheetsFor, PEN_LINES_SHEET, PEN_MARKS_SHEET } from '@/web/assets'
+import { assetBody, penSheets, penStyleFor, PEN_LINES_SHEET, PEN_MARKS_SHEET } from '@/web/assets'
 import { DEFAULT_INKS } from '@/pen/palette'
 import { PEN_LIGHT } from '@/pen/pigments'
 
@@ -15,7 +15,13 @@ const MARKED = '<p><mark data-pen="3">một câu</mark></p>'
 describe('penSheets', () => {
   it('is the prebuilt pair when nothing has been chosen', () => {
     expect(penSheets(DEFAULT_INKS)).toEqual({ marks: PEN_MARKS_SHEET, lines: PEN_LINES_SHEET })
-    expect(penSheetsFor(MARKED, DEFAULT_INKS)).toEqual([PEN_MARKS_SHEET])
+    expect(penStyleFor(MARKED, DEFAULT_INKS)).toBe(penStyleFor(MARKED))
+  })
+
+  it('inlines a chosen ink from the chosen sheet, not the built-in one', () => {
+    const style = penStyleFor(MARKED, { ...DEFAULT_INKS, yellow: '#ff8ad8' })
+    expect(style).toContain('ff8ad8')
+    expect(style).not.toContain(PEN_LIGHT.yellow)
   })
 
   it('mints a new sheet for a chosen ink, and serves it', () => {

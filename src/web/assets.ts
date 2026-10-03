@@ -16,6 +16,7 @@ import setupRestoreJs from '@/assets/dist/setup-restore.js' with { type: 'text' 
 import swJs from '@/assets/dist/sw.js' with { type: 'text' }
 import { inkHighlightCss, inkLinesCss } from '@/pen/ink.css'
 import { inkSignature, resolveInks } from '@/pen/palette'
+import { inkedElements, inkSubset, parseInk, type ParsedInk } from '@/pen/ink-subset'
 import type { InkSettings, SiteLook } from '@/types'
 import { minifyCss } from '@/web/css-min'
 import { SERVED_CSS } from '@/web/served-css'
@@ -75,6 +76,11 @@ BY_PATH.set(PUBLIC_SHEET, PUBLIC_CSS_SERVED)
  * box rules ride `<mark>` — a ringed page contains `<mark data-form="o">`, which the
  * highlighter detection matches too, so both sheets arrive and the cascade reads exactly
  * as it did when the ink was one string. ADR 0027 records the trade.
+ *
+ * ⚠️ A PAGE NO LONGER LINKS THEM (ADR 0070). It inlines the few rules its own marks match —
+ * `penStyleFor` below — and these two whole sheets stay for the callers that cannot know in
+ * advance which strokes they will need: the reader's pen, which links them the moment a reader
+ * marks something, and an edge-cached page from before the change. The hashes are unchanged.
  */
 const PEN_MARKS_CSS_SERVED = SERVED_CSS['pen-marks']
 const PEN_LINES_CSS_SERVED = SERVED_CSS['pen-lines']
@@ -85,21 +91,56 @@ BY_PATH.set(PEN_MARKS_SHEET, PEN_MARKS_CSS_SERVED)
 BY_PATH.set(PEN_LINES_SHEET, PEN_LINES_CSS_SERVED)
 
 /**
- * Which pen sheets this HTML needs, decided by looking at the HTML itself.
+ * The pen's CSS for one page: the rules its own marks match, as the body of an inline
+ * `<style>`, or '' on a page with no ink at all (ADR 0070).
  *
- * The renderer stamps every gesture as an element — `<mark …>` for a highlight or a ring,
- * `<u …>` for an underline — and rendered bodies are trusted, escaped output: a literal
- * "<mark" in someone's prose arrives as &lt;mark. So a tag scan is exact, not heuristic.
- * The `[\\s>]` guard keeps `<u` from matching `<ul>`. Scanning the assembled page costs
- * microseconds against bodies that are already cached, and it is the reason no route, no
- * cache key and no setting had to learn what a page contains.
+ * WHY INLINE, AND NOT SMALLER SHEETS. Three shapes were weighed for a page that wears six dies
+ * out of a case of a hundred and twenty, and the deciding question was the FIRST visit, because
+ * that is the visit a reader arriving from a link makes, and very often the only one:
+ *
+ *   - THE TWO WHOLE SHEETS, which ADR 0027 shipped: cached for a year and shared by every
+ *     article, but 34.8 KB gzipped and one or two render-blocking requests in front of the
+ *     first paint of any marked page. A reader who opens one post pays for 114 dies it lacks.
+ *   - A SHEET PER DIE, OR PER GROUP OF DIES: small and still cacheable, but six dies are six
+ *     blocking requests, and on a cold connection a request costs its round trip whatever it
+ *     weighs. The pen's own rule forbids loading them late (bare words first, then the ink),
+ *     so nothing can take them off the critical path; cutting finer only lengthens it.
+ *   - INLINE, only what this page wrote: no request at all, so the first paint waits for
+ *     nothing the pen adds, and the bytes ride the HTML response that was coming anyway.
+ *     The numbers are in `docs/performance.md`.
+ *
+ * The cost is real and accepted: inline rules are not cached ACROSS pages, so a reader who
+ * goes on to a second marked article pays that article's dies again — measured at 1.5 to 4 KB
+ * compressed, against 34.8 KB once. It takes a dozen marked articles in one visit before the
+ * whole sheets come out ahead, and the HTML carrying the rules is cached at the edge and in
+ * this process exactly as it was.
+ *
+ * Nothing about the PICTURE changes, and that is the property `pen/ink-subset.ts` exists to
+ * keep: what is inlined is the full sheet with every selector that matches no element on this
+ * page removed — the same rules, in the same order, at the same place in the cascade (right
+ * after `site.css` and the dialect, before the settings block that may override them). Both
+ * modes ride along, because dark is decided in the browser after the server has finished.
+ *
+ * The full sheets are still built, hashed and served: the reader's pen links them the moment a
+ * reader marks something (any die, any ink), and a page an edge cache kept from before this
+ * change still names them. Parsing one is done once per sheet, not once per page.
  */
-export function penSheetsFor(body: string, inks?: InkSettings): string[] {
+const PARSED = new Map<string, ParsedInk>()
+
+function parsedSheet(path: string): ParsedInk {
+  let sheet = PARSED.get(path)
+  if (!sheet) {
+    sheet = parseInk(BY_PATH.get(path) ?? '')
+    PARSED.set(path, sheet)
+  }
+  return sheet
+}
+
+export function penStyleFor(body: string, inks?: InkSettings): string {
+  const elements = inkedElements(body)
+  if (elements.length === 0) return ''
   const { marks, lines } = inks ? penSheets(inks) : { marks: PEN_MARKS_SHEET, lines: PEN_LINES_SHEET }
-  const sheets: string[] = []
-  if (/<mark[\s>]/.test(body)) sheets.push(marks)
-  if (/<u[\s>]/.test(body) || body.includes('data-form="o"')) sheets.push(lines)
-  return sheets
+  return inkSubset(parsedSheet(marks), elements) + inkSubset(parsedSheet(lines), elements)
 }
 
 /**
@@ -141,8 +182,8 @@ export function penSheets(inks: InkSettings): { marks: string; lines: string } {
     if (gone) {
       // Never evict the built-ins: a custom pen can hash to the same bytes as the default
       // one if every override happens to match a measured value.
-      if (gone.marks !== PEN_MARKS_SHEET) BY_PATH.delete(gone.marks)
-      if (gone.lines !== PEN_LINES_SHEET) BY_PATH.delete(gone.lines)
+      if (gone.marks !== PEN_MARKS_SHEET) { BY_PATH.delete(gone.marks); PARSED.delete(gone.marks) }
+      if (gone.lines !== PEN_LINES_SHEET) { BY_PATH.delete(gone.lines); PARSED.delete(gone.lines) }
     }
     CUSTOM_PEN.delete(oldest!)
   }
