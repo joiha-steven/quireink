@@ -24,6 +24,7 @@ import type { SatoriOptions } from 'satori'
 import { sharp as sharpModule } from '@/media/sharp'
 import { DEFAULT_THEME } from '@/content/themes'
 import { PEN_LIGHT, penStrokeFlat } from '@/pen/pigments'
+import { readAsset } from '@/runtime/impl/assets'
 import interLatin from '@/render/fonts/inter-latin.woff' with { type: 'file' }
 import interLatinExt from '@/render/fonts/inter-latin-ext.woff' with { type: 'file' }
 import interVietnamese from '@/render/fonts/inter-vietnamese.woff' with { type: 'file' }
@@ -54,10 +55,10 @@ let fonts: SatoriOptions['fonts'] | null = null
 async function interFonts(): Promise<SatoriOptions['fonts']> {
   if (fonts) return fonts
   const [latin, latinExt, vietnamese, cyrillic] = await Promise.all([
-    Bun.file(interLatin).arrayBuffer(),
-    Bun.file(interLatinExt).arrayBuffer(),
-    Bun.file(interVietnamese).arrayBuffer(),
-    Bun.file(interCyrillic).arrayBuffer(),
+    readAsset(interLatin),
+    readAsset(interLatinExt),
+    readAsset(interVietnamese),
+    readAsset(interCyrillic),
   ])
   // DISTINCT names with an explicit fallback chain. Under ONE name satori treats
   // overlapping subsets as a single font and double-renders any glyph present in more than

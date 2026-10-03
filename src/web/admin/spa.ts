@@ -1,18 +1,15 @@
 // Serving the admin: the shell HTML, and the bundle behind it.
 //
 // The bundle is code-split, so unlike the three public files there is no fixed list to
-// import as text — the chunk names carry a hash the bundler chose. The whole directory is
-// therefore read at startup and held in memory, which also keeps the compiled binary
-// self-contained in the one way that matters: `Bun.embeddedFiles` covers the entry point
-// and `import.meta.dir` covers running from source.
+// import as text — the chunk names carry a hash the bundler chose. The runtime hands over the
+// whole directory, read once and held in memory (`@/runtime/impl/assets`).
 //
 // The gate is the important part. The shell is served only to the owner, and everything
 // under it is a router-group route (Invariant 4). A signed-out request is REDIRECTED to
 // sign in rather than 404'd: the admin is not a secret, only its contents are.
 
 import { contentHash } from '@/web/content-hash'
-import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { adminDist } from '@/runtime/impl/assets'
 import type { Context } from 'hono'
 import type { SiteSettings } from '@/types'
 import { getIntegrationStatus } from '@/store/integration-keys'
@@ -26,32 +23,14 @@ import { allFontFaceCss } from '@/render/font-faces'
 import { fontPresetCss, themesToCss } from '@/content/themes'
 import { typographyToCss, fontToCss, tableToCss } from '@/content/settings'
 
-const DIR = join(import.meta.dir, '../../admin/dist')
-
 type Asset = { body: Uint8Array; type: string }
 
 const TYPES: Record<string, string> = {
   '.js': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.map': 'application/json; charset=utf-8',
 }
 
-/**
- * Every built file, by name. Read once: the admin is a build artefact, so a change to it
- * arrives with a restart, and re-reading per request would buy nothing but syscalls.
- */
-const ASSETS = new Map<string, Asset>()
-try {
-  for (const name of readdirSync(DIR)) {
-    const ext = name.slice(name.lastIndexOf('.'))
-    const type = TYPES[ext]
-    if (!type) continue
-    ASSETS.set(name, { body: new Uint8Array(readFileSync(join(DIR, name))), type })
-  }
-} catch {
-  // A source checkout that has not run `bun run build:admin` yet. The route below says so
-  // in plain words rather than serving a blank page that looks like a broken admin.
-}
+/** Every built file, by name (the runtime's `adminDist`), plus the boot script made below. */
+const ASSETS = new Map<string, Asset>(adminDist())
 
 /**
  * The stylesheet, served under a name that carries a fingerprint.

@@ -29,7 +29,6 @@ const PENDING: Record<string, string> = {
   'src/media/blob-local.ts': 'the local blob store -> src/runtime/bun/blob.ts (G1.7)',
   'src/media/encode-variant.ts': 'the sharp child process -> src/runtime/bun/ (G1.7)',
   'src/media/image.ts': 'Bun.spawn -> @/runtime/impl/image (G1.7)',
-  'src/render/og-card.ts': 'Bun.file -> the Assets port (G1.7)',
   'src/server/backup-offsite.ts': 'Bun.S3Client, Bun.file -> the Archive port (G1.8)',
   'src/server/backup.ts': 'tar via Bun.spawn -> the pure-JS archive writer (G1.8)',
   'src/server/export-md.ts': 'Bun.file -> the Archive port (G1.8)',
@@ -38,8 +37,6 @@ const PENDING: Record<string, string> = {
   'src/store/upgrade.ts': 'bun:sqlite, VACUUM INTO -> @/runtime/impl/snapshot (G1.7)',
   'src/web/admin/ops.ts': 'node:fs/promises in the storage health check -> the Blob port (G1.7)',
   'src/web/admin/backup.ts': 'Bun.file -> the Archive port (G1.8)',
-  'src/web/admin/spa.ts': 'Bun.embeddedFiles, node:fs -> @/runtime/impl/assets (G1.7)',
-  'src/web/static.ts': 'Bun.file -> @/runtime/impl/assets (G1.7)',
 }
 
 const stripComments = (code: string): string =>

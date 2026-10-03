@@ -76,3 +76,17 @@ export type SocketPort = {
   /** The name this machine gives itself in EHLO. */
   mailHostname: () => string
 }
+
+/**
+ * `assets.ts`: files that ship with the code — fonts, icons, the admin's built bundle. A file is
+ * named by what `import x from '…' with { type: 'file' }` gives (`ref`): on Bun a path on disk, on
+ * Cloudflare a path in the Static Assets the Worker was deployed with.
+ */
+export type AssetsPort = {
+  /** The bytes, e.g. a font for the OG card. */
+  readAsset: (ref: string) => Promise<ArrayBuffer>
+  /** A body to stream the file in a Response. */
+  assetBody: (ref: string) => Promise<Blob | ReadableStream<Uint8Array> | ArrayBuffer>
+  /** The admin's built files by name, loaded once and synchronously (the shell needs their names). */
+  adminDist: () => ReadonlyMap<string, { body: Uint8Array; type: string }>
+}

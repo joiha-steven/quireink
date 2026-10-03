@@ -1,9 +1,9 @@
 // The files a reader's browser fetches directly: reading fonts, the favicon, the app icon.
 //
-// Every one is imported with `with { type: 'file' }`, which yields a path that `Bun.file`
-// reads and that `bun build --compile` EMBEDS. That is the whole reason they are listed by
-// name rather than read from a directory at runtime: a compiled Quire Ink is one binary, and a
-// binary that needs a `public/` folder beside it is not one binary.
+// Every one is imported with `with { type: 'file' }`, which yields a reference the runtime's
+// `assetBody` streams (`@/runtime/impl/assets`): on Bun a path on disk, on Cloudflare a path in the
+// Static Assets the Worker ships with. Listed by name rather than read from a directory, so a
+// bundler can see every file the server serves and carry it along.
 //
 // The list is explicit and slightly tedious on purpose. There is no glob import that the
 // compiler can follow, so a font that is not named here is a font that silently 404s in
@@ -14,6 +14,7 @@
 // Next's scaffolding SVGs (`next.svg`, `vercel.svg`, `window.svg`, `globe.svg`, `file.svg`)
 // were deliberately NOT carried over. Nothing referenced them.
 
+import { assetBody } from '@/runtime/impl/assets'
 import appIcon from '@/assets/static/app-icon.png' with { type: 'file' }
 import favicon from '@/assets/static/favicon.ico' with { type: 'file' }
 import inter_latin from '@/assets/static/fonts/inter-latin.woff2' with { type: 'file' }
@@ -88,7 +89,7 @@ export async function staticFile(path: string): Promise<Response | null> {
   const file = FILES[path]
   if (!file) return null
   const ext = path.split('.').pop() ?? ''
-  return new Response(Bun.file(file), {
+  return new Response(await assetBody(file), {
     headers: {
       'content-type': TYPES[ext] ?? 'application/octet-stream',
       'cache-control': 'public, max-age=31536000, immutable',
