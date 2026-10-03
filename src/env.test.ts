@@ -48,6 +48,16 @@ describe('readEnv', () => {
     expect(() => readEnv({ PORT: '70000' })).toThrow(/PORT/)
   })
 
+  it('says which package it came from, source when nothing labelled it', () => {
+    expect(readEnv({}).package).toBe('source')
+    expect(readEnv({ QUIREINK_PACKAGE: 'docker' }).package).toBe('docker')
+    expect(readEnv({ QUIREINK_PACKAGE: ' Cloudflare ' }).package).toBe('cloudflare')
+  })
+
+  it('refuses a package nobody ships, rather than guessing', () => {
+    expect(() => readEnv({ QUIREINK_PACKAGE: 'snap' })).toThrow('QUIREINK_PACKAGE')
+  })
+
   it('strips trailing slashes from SITE_URL and leaves it empty when unset', () => {
     expect(readEnv({ SITE_URL: 'https://example.com//' }).siteUrl).toBe('https://example.com')
     expect(readEnv({}).siteUrl).toBe('')

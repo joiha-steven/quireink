@@ -73,7 +73,18 @@ export type Env = {
    * that means something different on every blog.
    */
   pageCacheBytes: number
+  /**
+   * Which of the three packages this install came from (ADR 0065): `source` (a checkout, run by
+   * Bun), `docker` (the published image) or `cloudflare` (the Cloudflare bundle). Set BY THE
+   * PACKAGE, not by the owner: the `Dockerfile` bakes `docker` in, `install.sh` writes `source`
+   * into `.env`. The admin reads it to show the upgrade that actually applies to this install,
+   * and `/api/health` reports it so an install test can tell what it is looking at.
+   */
+  package: Package
 }
+
+export const PACKAGES = ['source', 'docker', 'cloudflare'] as const
+export type Package = (typeof PACKAGES)[number]
 
 const MB = 1024 * 1024
 const GB = 1024 * MB
@@ -122,5 +133,17 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
     // nowhere near it and behaves exactly as it always did; an operator with memory to spare
     // raises it and gets the old behaviour back.
     pageCacheBytes: readSize(source, 'PAGE_CACHE_MB', MB, 8 * MB),
+    package: readPackage(source.QUIREINK_PACKAGE),
   }
+}
+
+/**
+ * `QUIREINK_PACKAGE`, refused rather than guessed when it names nothing we ship — the same rule as
+ * `PORT`. Unset is `source`: a checkout started by hand is the one install no package labelled.
+ */
+function readPackage(raw: string | undefined): Package {
+  if (raw === undefined || raw === '') return 'source'
+  const value = raw.trim().toLowerCase()
+  if ((PACKAGES as readonly string[]).includes(value)) return value as Package
+  throw new Error(`env: QUIREINK_PACKAGE must be one of ${PACKAGES.join(', ')}, got ${JSON.stringify(raw)}`)
 }

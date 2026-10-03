@@ -109,7 +109,7 @@ between a line here and the running software is either a bug or an unrecorded `â
 
 ## 14. Operations
 
-- `/api/health` reports database and storage separately
+- `/api/health` reports database and storage separately, and names the version and the package it runs (ADR 0065)
 - Boot fails fast on a missing required setting
 - Tracked SQL migrations, applied once, aborting startup on failure
 - Cron: publish tick, variant sweep, backup, cache purge

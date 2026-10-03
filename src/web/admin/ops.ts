@@ -21,6 +21,8 @@ import { clearCache } from '@/server/cache'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
+import { readEnv } from '@/env'
+import { APP_VERSION } from '@/version'
 import { MAX_IMPORT_BYTES } from '@/web/body-cap'
 import { ownerRouter } from '@/web/guard'
 
@@ -287,8 +289,11 @@ export function publicOpsRoutes(): Hono {
     const healthy = database && storage
     // 503 when degraded, so a load balancer takes this instance out of rotation. A 200
     // with `status: degraded` in the body would be read by nothing.
+    // `version` and `package` (ADR 0065) so an install test can tell WHICH release it reached and
+    // through which package. Nothing new leaves: the version is already in every page's
+    // `generator` and in the update check.
     return c.json(
-      { status: healthy ? 'ok' : 'degraded', checks: { database, storage } },
+      { status: healthy ? 'ok' : 'degraded', version: APP_VERSION, package: readEnv().package, checks: { database, storage } },
       healthy ? 200 : 503,
       { 'cache-control': 'no-store' },
     )

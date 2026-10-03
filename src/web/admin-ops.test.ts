@@ -9,6 +9,7 @@ import { mkdirSync, rmSync } from 'node:fs'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { createApp } from '@/web/app'
+import { APP_VERSION } from '@/version'
 import { createUser } from '@/auth/users'
 import { COOKIE_NAME, createSession } from '@/auth/sessions'
 import { resetSecretCache } from '@/auth/secret'
@@ -187,6 +188,14 @@ describe('the health probe', () => {
     const body = await payload<{ status: string; checks: { database: boolean; storage: boolean } }>(res)
     expect(body.status).toBe('ok')
     expect(body.checks.database).toBe(true)
+  })
+
+  // An install test asks this one URL which release it reached and through which package
+  // (ADR 0065): a blog answering 200 on the old version is the upgrade that silently did not happen.
+  it('names the version and the package it runs', async () => {
+    const body = await payload<{ version: string; package: string }>(await app.request('/api/health'))
+    expect(body.version).toBe(APP_VERSION)
+    expect(body.package).toBe('source')
   })
 
   // 503 when degraded, so a load balancer takes the instance out of rotation. A 200 with

@@ -155,7 +155,10 @@ WORKDIR /app
 # nothing outside it could ever connect and the published port would answer refused. What
 # keeps that from meaning "exposed to the internet" is the PUBLISH side — compose binds
 # 127.0.0.1:3000:3000 on the host, for the reasons written beside it in docker-compose.yml.
+# QUIREINK_PACKAGE says which of the three packages this is (ADR 0065), so the admin shows the
+# upgrade that applies here (pull the image) and `/api/health` can tell an install test so.
 ENV NODE_ENV=production \
+    QUIREINK_PACKAGE=docker \
     HOST=0.0.0.0 \
     PORT=3000 \
     DATA_DIR=/var/lib/quire/data \

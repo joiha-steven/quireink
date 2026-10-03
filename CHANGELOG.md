@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Unreleased
+
+### Added
+
+- **`/api/health` names the version and the package it runs** (`version`, `package`), so an install
+  test, a monitor or a person can tell which release answered and whether it came from the source,
+  the image or Cloudflare ([ADR 0065](docs/decisions/0065-every-install-runs-a-release.md)).
+- **`QUIREINK_PACKAGE`**: set by the package, never by hand. The image carries `docker`; unset means
+  `source`. A value nobody ships stops the boot.
+
 ## 2026-09-30 · Quire Ink 2.2.16
 
 Five days after 2.2.15, and most of it came out of reading the whole product again, screen by
