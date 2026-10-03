@@ -11,9 +11,8 @@
 // is neither implicit TLS nor upgraded by STARTTLS, this refuses to authenticate rather than
 // putting the password on the wire in the clear. The exception is a loopback host, where there
 // is no wire to put it on; a blog relaying through `127.0.0.1` keeps working.
-import net from 'node:net'
-import tls from 'node:tls'
-import os from 'node:os'
+import { mailHostname, openSocket } from '@/runtime/impl/socket'
+import type { TextSocket } from '@/runtime/ports'
 
 export type SmtpOptions = {
   host: string
@@ -41,17 +40,6 @@ const isLoopback = (host: string): boolean =>
   host === 'localhost' || host === '::1' || /^127\./.test(host)
 
 /**
- * The name to put in the TLS handshake, or nothing.
- *
- * SNI carries a HOSTNAME, and `tls.connect` throws outright when handed an IP literal rather
- * than quietly ignoring it. A relay configured by address is an ordinary thing to configure —
- * a box on the same network, a VPS with no name yet — and without this the upgrade throws
- * before a single message goes out. Found by pointing the client at 127.0.0.1.
- */
-const sniFor = (host: string): string | undefined =>
-  /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(':') ? undefined : host
-
-/**
  * The socket, as one thing that can be written to, read a reply from, and upgraded.
  *
  * Replies arrive in whatever chunks the network felt like, so reads are served from a buffer:
@@ -59,28 +47,25 @@ const sniFor = (host: string): string | undefined =>
  * hyphen there means another line is coming.
  */
 class Wire {
-  private socket: net.Socket | tls.TLSSocket
+  private socket: TextSocket
   private buffer = ''
   private waiting: ((reply: Reply | Error) => void) | null = null
   private failure: Error | null = null
 
-  constructor(socket: net.Socket | tls.TLSSocket, private readonly timeoutMs: number) {
+  constructor(socket: TextSocket, private readonly timeoutMs: number) {
     this.socket = socket
     this.listen()
   }
 
   private listen(): void {
-    this.socket.setEncoding('utf8')
-    this.socket.on('data', (chunk: string) => {
+    this.socket.onData((chunk) => {
       this.buffer += chunk
       this.settle()
     })
-    const die = (error: Error): void => {
-      this.failure = error
+    this.socket.onEnd((error) => {
+      this.failure = error ?? new SmtpError(0, 'the server closed the connection')
       this.settle()
-    }
-    this.socket.on('error', die)
-    this.socket.on('close', () => die(new SmtpError(0, 'the server closed the connection')))
+    })
   }
 
   private settle(): void {
@@ -128,51 +113,29 @@ class Wire {
   }
 
   /** STARTTLS: the same TCP connection, from here on encrypted. */
-  upgrade(host: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.socket.removeAllListeners('data')
-      this.socket.removeAllListeners('error')
-      this.socket.removeAllListeners('close')
-      const secured = tls.connect({ socket: this.socket as net.Socket, servername: sniFor(host) }, () => {
-        this.socket = secured
-        this.buffer = ''
-        this.listen()
-        resolve()
-      })
-      secured.once('error', reject)
-    })
+  async upgrade(host: string): Promise<void> {
+    this.socket = await this.socket.startTls(host)
+    this.buffer = ''
+    this.listen()
   }
 
   end(): void {
-    this.socket.removeAllListeners()
-    this.socket.destroy()
+    this.socket.close()
   }
 
   get encrypted(): boolean {
-    return this.socket instanceof tls.TLSSocket
+    return this.socket.encrypted
   }
 }
 
-/** Opens the socket, plain or wrapped, and answers when the server has greeted. */
-function connect(opts: SmtpOptions, timeoutMs: number): Promise<Wire> {
-  return new Promise((resolve, reject) => {
-    const socket = opts.secure
-      ? tls.connect({ host: opts.host, port: opts.port, servername: sniFor(opts.host) })
-      : net.connect({ host: opts.host, port: opts.port })
-    const timer = setTimeout(() => {
-      socket.destroy()
-      reject(new SmtpError(0, `could not reach ${opts.host}:${opts.port} within ${timeoutMs}ms`))
-    }, timeoutMs)
-    socket.once('error', (error: Error) => {
-      clearTimeout(timer)
-      reject(error)
-    })
-    socket.once(opts.secure ? 'secureConnect' : 'connect', () => {
-      clearTimeout(timer)
-      socket.removeAllListeners('error')
-      resolve(new Wire(socket, timeoutMs))
-    })
-  })
+/** Opens the socket, plain or wrapped (the runtime's: `@/runtime/impl/socket`). */
+async function connect(opts: SmtpOptions, timeoutMs: number): Promise<Wire> {
+  try {
+    return new Wire(await openSocket({ host: opts.host, port: opts.port, secure: opts.secure }, timeoutMs), timeoutMs)
+  } catch (error) {
+    const message = (error as Error).message
+    throw message.startsWith('could not reach') ? new SmtpError(0, message) : error
+  }
 }
 
 /** One connection, good for as many messages as the caller has. */
@@ -198,7 +161,7 @@ export class SmtpSession {
       if (greeting.code !== 220) {
         throw new SmtpError(greeting.code, `the server did not greet: ${greeting.lines.join(' ')}`)
       }
-      const me = os.hostname() || 'localhost'
+      const me = mailHostname()
       let caps = (await SmtpSession.say(wire, `EHLO ${me}`, [250])).lines
 
       if (!opts.secure && caps.some((line) => /^STARTTLS\b/i.test(line))) {

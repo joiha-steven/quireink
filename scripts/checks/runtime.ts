@@ -30,7 +30,6 @@ const PENDING: Record<string, string> = {
   'src/media/blob-local.ts': 'the local blob store -> src/runtime/bun/blob.ts (G1.7)',
   'src/media/encode-variant.ts': 'the sharp child process -> src/runtime/bun/ (G1.7)',
   'src/media/image.ts': 'Bun.spawn -> @/runtime/impl/image (G1.7)',
-  'src/news/smtp.ts': 'node:net, node:tls -> @/runtime/impl/socket (G1.7)',
   'src/render/og-card.ts': 'Bun.file -> the Assets port (G1.7)',
   'src/server/backup-offsite.ts': 'Bun.S3Client, Bun.file -> the Archive port (G1.8)',
   'src/server/backup.ts': 'tar via Bun.spawn -> the pure-JS archive writer (G1.8)',

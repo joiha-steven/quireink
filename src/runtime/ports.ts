@@ -52,3 +52,27 @@ export type RuntimeInfoPort = {
 export type CompressPort = {
   compression: () => import('hono').MiddlewareHandler
 }
+
+/**
+ * `socket.ts`: a text connection to a mail server, for `news/smtp.ts`, whose protocol stays ONE
+ * implementation on both runtimes. Bun opens it with `node:net`/`node:tls`; Cloudflare with
+ * `connect()` from `cloudflare:sockets` and its `startTls()` (ports 587 and 465; 25 is blocked).
+ */
+export type TextSocket = {
+  /** Every chunk as it arrives, decoded as UTF-8. One listener; set again after `startTls`. */
+  onData: (listener: (chunk: string) => void) => void
+  /** The connection ended: with the error that ended it, or null when the server closed it. */
+  onEnd: (listener: (error: Error | null) => void) => void
+  write: (text: string) => void
+  /** STARTTLS: the same connection, encrypted from here on. This socket is spent; use the one returned. */
+  startTls: (host: string) => Promise<TextSocket>
+  close: () => void
+  readonly encrypted: boolean
+}
+
+export type SocketPort = {
+  /** Connected and, when `secure`, already through the TLS handshake. Rejects after `timeoutMs`. */
+  openSocket: (opts: { host: string; port: number; secure: boolean }, timeoutMs: number) => Promise<TextSocket>
+  /** The name this machine gives itself in EHLO. */
+  mailHostname: () => string
+}
