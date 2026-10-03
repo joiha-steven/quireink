@@ -129,8 +129,6 @@
   the same colours to the byte; the admin's files, the public scripts and stylesheets and the
   reading fonts are served by Cloudflare directly, before the blog's code runs, with the same
   addresses and the same caching as before. Nothing changes for a blog on a server.
-  A blog that updates itself from Settings gets the new caching from the update after this one:
-  the update is carried out by the version already running.
 - **Move to Cloudflare carries a blog of any size.** It used to refuse a blog past 95 MB, because the
   backup went in one request; it now writes the backup to disk and sends it in 16 MB parts, resending
   a part when the connection drops, and the card shows how much has gone.
