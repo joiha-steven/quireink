@@ -85,7 +85,7 @@ Bạn cần một tên miền và một máy trỏ được tên miền về; g�
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh | bash
 ```
 
-Nó không dùng `sudo` và từ chối chạy bằng root; chạy lại là cập nhật. Sau đó [`deploy/caddy/setup.sh`](./deploy/caddy/setup.sh) lo chứng chỉ HTTPS. Log in ra một đường dẫn `/setup` dùng một lần: mở nó ra, qua vài bước ngắn — tài khoản, ứng dụng xác thực, giao diện — là vào thẳng trình soạn.
+Nó cài bản phát hành mới nhất, không dùng `sudo` và từ chối chạy bằng root. Về sau, `bun run upgrade` trong cùng thư mục đưa nó lên bản mới hơn, và quay về bản cũ nếu bản mới không chạy. Sau đó [`deploy/caddy/setup.sh`](./deploy/caddy/setup.sh) lo chứng chỉ HTTPS. Log in ra một đường dẫn `/setup` dùng một lần: mở nó ra, qua vài bước ngắn — tài khoản, ứng dụng xác thực, giao diện — là vào thẳng trình soạn.
 
 **Thích Docker hơn?** Kéo `quireink/quireink` (`amd64` và `arm64`); có HTTPS thì dùng [`docker-compose.image.yml`](./docker-compose.image.yml) cùng [`Caddyfile`](./Caddyfile).
 

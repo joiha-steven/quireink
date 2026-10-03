@@ -19,9 +19,19 @@
 #   PORT=3000
 #   NO_RUN=1                    install and build, but do not start it
 #   QUIREINK_SOURCE=            clone from somewhere else (a fork, or a local path)
+#   QUIREINK_VERSION=           a release to install, e.g. 2.2.16; empty means the newest
+#   QUIREINK_CHANNEL=main       follow the main branch instead of releases (for developers)
+#
+# IT INSTALLS A RELEASE, not whatever was pushed last (ADR 0065). The newest tag is found with
+# `git ls-remote`, so nothing but the git remote is asked. Run again, it moves to a newer release
+# when there is one, and NEVER to older code than the checkout already has: a checkout that was
+# following `main` before this script followed releases stays where it is until a release newer
+# than it appears, then moves onto that.
 set -euo pipefail
 
 SOURCE=${QUIREINK_SOURCE:-https://github.com/joiha-steven/quireink.git}
+CHANNEL=${QUIREINK_CHANNEL:-release}
+WANT=${QUIREINK_VERSION:-}
 DIR=${1:-${QUIREINK_DIR:-./quireink}}
 PORT=${PORT:-3000}
 SITE_URL=${SITE_URL:-}
@@ -60,17 +70,75 @@ if [ "$BUN_MAJOR" -lt 1 ] || { [ "$BUN_MAJOR" -eq 1 ] && [ "$BUN_MINOR" -lt 3 ];
   die "Bun $BUN_VERSION is too old; 1.3 or newer is required. Upgrade with: bun upgrade"
 fi
 
+# --- which release ----------------------------------------------------------------------
+
+# X.Y.Z only: a pre-release (2.3.0-beta.1) is something to ask for by name, never a default.
+# Sorted numerically field by field rather than with `sort -V`, which not every sort has.
+newest_release() {
+  git ls-remote --tags --refs "$SOURCE" 'v*' 2>/dev/null \
+    | sed -n 's#.*refs/tags/v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$#\1#p' \
+    | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1
+}
+
+# 0 when $1 is a strictly newer version than $2.
+newer() {
+  [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1)" = "$1" ]
+}
+
+# The version a checkout holds, read from package.json. It only changes on a release commit and
+# only goes up, so "the checkout says 2.2.15 and the newest release is 2.2.16" means the checkout
+# is OLDER than that release, wherever on main it sits, and moving to the tag moves forward.
+checkout_version() {
+  sed -n 's/^  "version": "\([^"]*\)".*/\1/p' "$1/package.json" | head -n 1
+}
+
+if [ "$CHANNEL" = "main" ]; then
+  TAG=""
+else
+  [ "$CHANNEL" = "release" ] || die "QUIREINK_CHANNEL is either main or unset, got: $CHANNEL"
+  if [ -n "$WANT" ]; then
+    VERSION=${WANT#v}
+  else
+    VERSION=$(newest_release)
+    [ -n "$VERSION" ] || die "could not list the releases of $SOURCE. Is the address right, and is there a network?"
+  fi
+  TAG="v$VERSION"
+fi
+
 # --- get the code ----------------------------------------------------------------------
 
 if [ -d "$DIR/.git" ]; then
   say "Updating the checkout in $DIR"
-  git -C "$DIR" pull --ff-only
+  HAVE=$(checkout_version "$DIR")
+  BRANCH=$(git -C "$DIR" symbolic-ref --quiet --short HEAD 2>/dev/null || true)
+  if [ -z "$TAG" ]; then
+    # The developer's channel: onto main, and pulled.
+    [ "$BRANCH" = "main" ] || { git -C "$DIR" fetch origin main && git -C "$DIR" checkout main; }
+    git -C "$DIR" pull --ff-only
+  elif newer "$VERSION" "$HAVE"; then
+    step "$HAVE -> $VERSION"
+    git -C "$DIR" fetch --quiet --depth 1 origin "refs/tags/$TAG:refs/tags/$TAG"
+    git -C "$DIR" checkout --quiet --detach "$TAG"
+  elif [ "$VERSION" = "$HAVE" ] && [ "$BRANCH" != "main" ]; then
+    step "Already on $VERSION."
+  elif [ -n "$WANT" ] && [ "$VERSION" != "$HAVE" ]; then
+    die "this checkout holds $HAVE, newer than the $VERSION asked for. An update never goes back:
+  restore the copy taken before the last upgrade instead (docs/backups.md)."
+  else
+    # On main at or past the newest release. Moving to the tag would be moving BACK.
+    step "This checkout follows main at $HAVE, at or past the newest release ($VERSION)."
+    step "It stays where it is, and moves onto the next release when there is one."
+  fi
 elif [ -e "$DIR" ] && [ -n "$(ls -A "$DIR" 2>/dev/null)" ]; then
   die "$DIR exists and is not an empty directory or a Quire Ink checkout.
   Pick another with: QUIREINK_DIR=/path/to/blog"
-else
-  say "Cloning Quire Ink into $DIR"
+elif [ -z "$TAG" ]; then
+  say "Cloning Quire Ink (main) into $DIR"
   git clone --depth 1 "$SOURCE" "$DIR"
+else
+  say "Cloning Quire Ink $VERSION into $DIR"
+  git clone --quiet --depth 1 --branch "$TAG" "$SOURCE" "$DIR" \
+    || die "there is no release $VERSION at $SOURCE."
 fi
 
 cd "$DIR"
@@ -84,7 +152,8 @@ DIR_ABS=$(pwd)
 # and again after a pull.
 
 say "Installing dependencies"
-bun install
+# A release installs exactly what its lockfile says; main is allowed to resolve.
+if [ -n "${TAG:-}" ]; then bun install --frozen-lockfile; else bun install; fi
 
 say "Building the islands and the admin"
 bun run build:assets
@@ -97,13 +166,21 @@ bun run build:admin
 
 mkdir -p data uploads
 
+# Which package this is (ADR 0065): the admin reads it to show the upgrade that applies. Added
+# once, never rewritten, and nothing else in a .env the owner may have filled is touched.
+if ! grep -qs '^QUIREINK_PACKAGE=' .env; then
+  printf 'QUIREINK_PACKAGE=source\n' >> .env
+fi
+
 say "Installed"
 step "Directory   $DIR_ABS"
 step "Data        $DIR_ABS/data  (quire.db + analytics.db)"
 step "Uploads     $DIR_ABS/uploads"
 step "Address     ${SITE_URL:-not set — feeds and emails will say http://localhost:3000}"
 step ""
-step "Upgrading later:  cd $DIR_ABS && git pull && bun install && bun run build:assets && bun run build:admin"
+step "Version     $(checkout_version .)${TAG:+ (release)}${TAG:- (main)}"
+step ""
+step "Upgrading later:  cd $DIR_ABS && bun run upgrade"
 
 # HTTPS, named here rather than left to the reader to go looking for. This script stops at a
 # blog on loopback on purpose -- it uses no sudo and touches no service, because those are

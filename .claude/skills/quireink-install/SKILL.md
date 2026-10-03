@@ -132,13 +132,15 @@ at boot inside a transaction, so there is no migration command.
 docker pull quireink/quireink:latest                 # published image: pull, then recreate
 docker rm -f quire && docker run -d --name quire ...  # same flags as the install above
 git pull && docker compose up -d --build             # a checkout that builds its own image
-sudo -u quire -H bash -lc 'cd /home/quire/app && git pull && bun install && bun run build:assets && bun run build:admin' && systemctl restart quire
+sudo -u quire -H bash -lc 'cd /home/quire/app && bun run upgrade'   # native: release, build, restart, verify, roll back
 ```
 
 `docker-compose.yml` in this repository **builds** the image rather than pulling one, so
 `docker compose pull` does nothing there — it is `--build` that upgrades it. Native installs
-must rebuild both artefacts: they are read from disk at runtime, so a `git pull` without a
-rebuild serves the previous release's admin against the new server. Content lives in the
+use `bun run upgrade`: it moves to the newest release (never `main`, never backwards), rebuilds
+both artefacts, restarts, waits for `/api/health` to report the new `version`, and rolls back
+if it does not. A `git pull` alone would serve the previous release's admin against the new
+server, and on `main` would install unreleased work. Content lives in the
 volumes and is untouched by either.
 
 ## Do not

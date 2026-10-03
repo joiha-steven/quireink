@@ -31,6 +31,7 @@
     "check:admin-kit": "bun scripts/checks/admin-kit.ts",
     "check:bundle": "bun scripts/checks/admin-bundle.ts",
     "user": "bun scripts/user.ts",
+    "upgrade": "bun scripts/upgrade.ts",
     "shot": "bun scripts/shot.ts",
     "drive": "bun scripts/drive.ts",
     "tour": "scripts/ops/tour.sh",

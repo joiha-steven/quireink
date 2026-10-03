@@ -36,20 +36,16 @@ through `sudo -u quire`:
 
 ```bash
 sudo -u quire -H bash -lc 'curl -fsSL https://bun.sh/install | bash'
-sudo -u quire -H bash -lc 'git clone https://github.com/joiha-steven/quireink.git /home/quire/app'
-sudo -u quire -H bash -lc 'cd /home/quire/app && bun install && bun run build:assets && bun run build:admin'
-```
-
-Those three lines are also one line, and it is the same three:
-[`install.sh`](../install.sh) clones, installs, builds, and starts the blog so the log prints
-the claim link. It refuses to run as root, never uses `sudo` and touches nothing outside the
-directory you give it, which is why the rest of this guide is still yours to do: the user,
-the service, the proxy.
-
-```bash
 sudo -u quire -H bash -lc 'curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh \
   | QUIREINK_DIR=/home/quire/app NO_RUN=1 bash'
 ```
+
+[`install.sh`](../install.sh) checks out **the newest release** — not `main`, which carries work
+that has not been released ([ADR 0065](decisions/0065-every-install-runs-a-release.md)) — then
+installs, builds, and writes `QUIREINK_PACKAGE=source` into `.env`. `QUIREINK_VERSION=2.2.16` asks
+for one release; `QUIREINK_CHANNEL=main` follows `main`, for development. It refuses to run as
+root, never uses `sudo` and touches nothing outside the directory you give it, which is why the
+rest of this guide is still yours to do: the user, the service, the proxy.
 
 Without `NO_RUN=1` the installer starts the blog **in the foreground**, which is right for
 trying it and wrong for a server: closing the SSH session stops it, and nothing starts it
@@ -351,12 +347,16 @@ Add `&purge=1` to a one-off call after a deploy to clear the CDN.
 ## 9. Upgrading
 
 ```bash
-sudo -u quire -H bash -lc 'cd /home/quire/app && git pull && bun install && bun run build:assets && bun run build:admin'
-systemctl restart quire
+sudo -u quire -H bash -lc 'cd /home/quire/app && bun run upgrade'          # the newest release
+sudo -u quire -H bash -lc 'cd /home/quire/app && bun run upgrade 2.2.17'   # or one by name
 ```
 
-Re-run both builds, not just `git pull`: the reader's islands and the admin's are build
-outputs, and a restart that skips them serves yesterday's JavaScript against today's HTML.
+It fetches the release, installs, runs both builds, restarts the service and waits until
+`/api/health` reports the new version. If any step fails it checks the old release out again,
+rebuilds, restarts, and names the copy of the database the new version took before migrating.
+It never goes back to an older release on purpose. To let it restart the service itself rather
+than ask you to, allow exactly that one command: `echo 'quire ALL=(root) NOPASSWD: /usr/bin/systemctl restart quire' > /etc/sudoers.d/quire`.
+`QUIREINK_RESTART` names any other command.
 
 Schema changes are applied at boot, inside a transaction. **Take a backup first anyway** —
 see [`backups.md`](backups.md), which also covers getting a copy off the server on a schedule.

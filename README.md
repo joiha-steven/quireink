@@ -86,7 +86,7 @@ You need a domain and a machine you can point it at; the cheapest VPS tier is en
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh | bash
 ```
 
-It never uses `sudo` and refuses to run as root; running it again updates the install. It runs the blog in the foreground, so closing the terminal stops it: on a server, make it a service ([self-host guide](./docs/self-host.md) §4, or Docker). Then [`deploy/caddy/setup.sh`](./deploy/caddy/setup.sh) adds the HTTPS certificate. The log prints a one-time `/setup` link: open it, and a short setup — account, authenticator, the look — ends in the editor.
+It installs the newest release, never uses `sudo` and refuses to run as root. Later, `bun run upgrade` in the same directory moves it to a newer release and back if that one does not come up. It runs the blog in the foreground, so closing the terminal stops it: on a server, make it a service ([self-host guide](./docs/self-host.md) §4, or Docker). Then [`deploy/caddy/setup.sh`](./deploy/caddy/setup.sh) adds the HTTPS certificate. The log prints a one-time `/setup` link: open it, and a short setup — account, authenticator, the look — ends in the editor.
 
 **Would rather use Docker?** Pull `quireink/quireink` (`amd64` and `arm64`); with HTTPS that is [`docker-compose.image.yml`](./docker-compose.image.yml) plus the [`Caddyfile`](./Caddyfile).
 

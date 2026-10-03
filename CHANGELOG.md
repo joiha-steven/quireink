@@ -9,6 +9,20 @@
   the image or Cloudflare ([ADR 0065](docs/decisions/0065-every-install-runs-a-release.md)).
 - **`QUIREINK_PACKAGE`**: set by the package, never by hand. The image carries `docker`; unset means
   `source`. A value nobody ships stops the boot.
+- **`bun run upgrade`** for an install from source: it moves to the newest release (or the one you
+  name), installs, runs both builds, restarts the service and waits for `/api/health` to report the
+  new version. If any step fails it checks the old release out again, rebuilds, restarts, and names
+  the copy of the database the new version took before migrating. It never goes back on purpose.
+  Replaces the four commands in `docs/self-host.md` §9.
+
+### Changed
+
+- **`install.sh` installs a release, not `main`** ([ADR 0065](docs/decisions/0065-every-install-runs-a-release.md)).
+  Until now it cloned `main` and updated with `git pull`, so an install from source ran whatever was
+  pushed last while the image only ever moved on a tag. It now finds the newest release with
+  `git ls-remote` and checks that out; `QUIREINK_VERSION` asks for one, `QUIREINK_CHANNEL=main`
+  follows `main` for development. **An existing checkout of `main` is never moved backwards:** it
+  stays where it is until a release newer than it appears, then moves onto that.
 
 ## 2026-09-30 · Quire Ink 2.2.16
 
