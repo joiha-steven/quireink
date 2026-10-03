@@ -112,6 +112,37 @@ jobs:
   # Tags come later, once both exist: tagging here would mean the two architectures fight
   # over the same tag and the last one to finish wins, which is how a multi-arch image
   # quietly becomes single-arch.
+  # PACKAGE C, THE CLOUDFLARE BUNDLE (ADR 0065, rule L11): built here and nowhere else, from the
+  # tagged commit, with its manifest of hashes, attested by GitHub (who built it, from what), and
+  # attached to the release the tag belongs to. A running Quire Ink installs or upgrades a Cloudflare
+  # blog from exactly this file and refuses one whose hashes do not match.
+  cloudflare:
+    needs: gate
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run build && bun run build:worker && bun scripts/pack-worker.ts
+      - uses: actions/attest-build-provenance@v2
+        if: env.DRY != 'true'
+        with:
+          subject-path: dist/quireink-cf-*.tar
+      - name: Attach to the release
+        if: env.DRY != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${GITHUB_REF_NAME}" dist/quireink-cf-*.tar dist/quireink-cf-*.tar.sha256 --clobber
+      - name: Dry run, so nothing is attached
+        if: env.DRY == 'true'
+        run: ls -la dist/quireink-cf-* >> "$GITHUB_STEP_SUMMARY"
+
   build:
     needs: gate
     strategy:
