@@ -129,6 +129,17 @@
 
 ### Changed
 
+- **A highlighted post loads about a third of what it did, and no stylesheet for its ink.** A post
+  with highlights, underlines or rings carried the pen's two whole sheets — 120 hand-drawn strokes
+  and more, 35 KB compressed, before the page could paint — to show the handful it used. It now
+  carries only the strokes on the page, inside the page, looking exactly the same in light and dark.
+  On the demo's 31 marked posts the first visit fell from 1,084 KB to 344 KB in all; a post with one
+  highlight went from 28 KB to 10 KB. The editor and the reader's own pen still have every stroke.
+- **The admin's pages are a quarter to a third smaller.** Settings went from 881 KB to 571 KB of
+  HTML, the dashboard from 230 KB to 180 KB, the posts list, editor, analytics and library by 17–24%:
+  the same fields, buttons and switches, named once in the stylesheet instead of spelled out in full
+  on every control. Nothing on screen moves. The admin stylesheet also stops shipping 10 KB of its
+  own comments.
 - **An import ZIP is read a slice at a time.** The importer read the uploaded archive whole; it now
   reads the end of the file, the directory, and then only the entries it keeps, so a large export
   costs memory for one entry rather than the whole file. On Cloudflare the import limit is 30 MB.

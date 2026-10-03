@@ -154,7 +154,7 @@ the pen's ink — 280 SVG data-URIs after 0025/0026 — had grown to ~21 of `sit
 gzipped, paid by every page including the ones with no ink on them. It now ships as
 `pen-marks.‹hash›.css` (the highlighter) and `pen-lines.‹hash›.css` (underline and ring),
 same immutable footing, linked render-blocking right after `site.css` — but only when
-`penSheetsFor` (`web/assets.ts`) finds the elements they paint in the page's HTML. After
+`web/assets.ts` found the elements they paint in the page's HTML (until ADR 0070, below). After
 the split `site.css` is **7.6 KB gzipped**; an inkless page carries nothing of the pen, a
 marked page carries exactly what it shows, and no page's pixels or paint order change. Since [ADR 0042](./decisions/0042-the-pen-inks-unevenly.md) the two sheets weigh **19.6 KB and 15.2 KB gzipped**: each stroke carries its felt, a filter and a gradient inside the data-URI.
 Deferred loading was rejected: a stylesheet that arrives late shows bare words before the
@@ -165,6 +165,17 @@ Measured after (origin, `127.0.0.1`, median of three cold loads): HTML per page 
 at ~11 ms and done at ~18 ms; LCP 100 ms home / 132 ms post; CLS 0. A loopback measurement
 cannot price the extra round trip a real network charges on the FIRST visit — that is the
 cost this trade accepts, and it is paid once.
+
+**Since 2026-10-03 a page links neither sheet: it inlines the strokes it wrote** ([ADR 0070](./decisions/0070-the-pen-inlines-only-the-strokes-a-page-wrote.md)).
+31 of the showcase's 35 articles linked one or both, and the one reviewed wore 6 of the 120 dies.
+`penStyleFor` (`web/assets.ts`) reads the page's `<mark>`/`<u>` and `pen/ink-subset.ts` keeps each
+selector of the full sheet that matches one of them and wins a declaration in light or dark — same
+rules, same order, in a `<style data-pen-ink>` where the links sat. Inline beat a sheet per die
+because six dies are six blocking requests on a cold connection; the price is re-sending a page's
+dies on the next article (1.2–7.3 KB gzipped) against 19.6–34.8 KB once. Measured on the 31: first
+visit HTML + pen CSS **1,084 KB → 344 KB gzipped** in all, a one-mark article **28.1 → 9.7 KB**
+and the 15-mark one **44.3 → 16.8 KB**, with no pen request at all; 112 screenshot pairs identical.
+The whole sheets are still served, for the reader's pen to link when a reader marks something.
 
 ### The sheet is minified before it is hashed
 
@@ -308,6 +319,13 @@ again every time". Two things were wrong and both are cheap:
 Dynamic imports are deliberately NOT preloaded: arrange mode is a dynamic import the owner may
 never open, and preloading it would trade one problem for a worse one.
 
+- **The HTML was mostly class names** (2026-10-03): `/admin/settings` was 880,942 bytes, 504,665 of
+  them inside `class`. The kit's repeated primitives now reach the page as component names
+  (`admin-shared/component.ts`); `web/css-compose.ts` adds each name to every rule of the utilities
+  it stands for, at build time, so the cascade is unchanged. Settings **880,942 → 570,956** (81.5 KB
+  gzipped from 91.7), dashboard 229,505 → 179,764, posts 440,820 → 334,906, editor 488,916 →
+  371,612, analytics 281,671 → 233,748, library 326,762 → 267,881; `admin.css` 134 → 131 KB.
+
 ## JS — ship only what's used, only when it's used
 
 1. **Five bundles on public pages, plus `login.js` on the sign-in page and the service worker
@@ -372,7 +390,7 @@ through these, not straight to the driver**, or it is the next freeze on the day
 - **Reader JS size:** `bun run build:assets` prints each bundle's bytes against its budget
   and exits non-zero when one is over. That is the check; there is nothing to diff by hand.
 - **What a reader loads:** `bun run start`, fetch a post, extract `<script src>` + `<link
-  rel=stylesheet>`; confirm `site.css` — **plus `pen-marks` / `pen-lines` if and only if the
+  rel=stylesheet>`; confirm `site.css` — **plus a `<style data-pen-ink>` (ADR 0070) if and only if the
   post carries a highlight or an underline** (ADR 0027) — `core.js` + `post.js`, plus
   `book-mode.js` / `comment-thread.js` / `reader-pen.js` if and only if that switch is on, and nothing else,
   and the correct font preloads for the site language.

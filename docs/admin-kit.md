@@ -9,6 +9,17 @@ The recurring failure is not a wrong design. It is SEVERAL of the same design: t
 a thing once, a screen says it again slightly differently, and the difference is what the
 owner sees. Every rule here was found by photographing and measuring the running admin.
 
+**A PRIMITIVE THE PAGE REPEATS IS A NAME, AND ITS LIST IS THE DEFINITION** (2026-10-03). The field,
+the button's three axes, the switch, the colour pair, the label, the note, the segmented key, the
+rail's rows and the two hidden found-lists reach the markup as `kit-*` names: `component()` in
+`admin-shared/component.ts` registers a name for a utility list written where the primitive always
+was, and `web/css-compose.ts` adds the name to every rule that selects one of those utilities, at
+build time — same rules, same order, same layer, so nothing a call site adds beside the name ties
+differently. `/admin/settings` went from 880 KB to 571 KB. A hook an island or the tour looks for
+(`admin-note`, `font-mono` on the hex, `no-scrollbar`, `tap-touch`) and a marker (`group`, `peer`)
+stay written beside the name; the build refuses a marker in a list, and a utility no rule selects.
+A test about a primitive's LOOK reads it through `expandComponents()`, never the name.
+
 **A CARD'S TITLE OUTRANKS WHAT IS INSIDE IT.** 15 / 14 / 13 at 600 / 500 / 400 — heading,
 label, note. Since 2026-08-29 `Card panel` imports `SECTION` rather than typing a size; a
 hand-typed size is how a scale stops being one.
