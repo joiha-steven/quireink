@@ -45,6 +45,7 @@ copies of a rule means one is wrong within a month
 | [conventions/](conventions/README.md) | One file per surface — [type](conventions/type.md) · [layout](conventions/layout.md) · [colour](conventions/colour.md) · [motion](conventions/motion.md) · [looks](conventions/looks.md) · [i18n](conventions/i18n.md) · [scripts](conventions/scripts.md) · [releases](conventions/releases.md) |
 | [performance.md](performance.md) | The resource-loading law: images, fonts, CSS split, island JS, and the no-inline-script rule |
 | [navigation-speculation.md](navigation-speculation.md) | Prefetch every link, prerender on hover: the journey BETWEEN pages |
+| [runtimes.md](runtimes.md) | Bun and Cloudflare: one codebase, and the seven things each does its own way |
 | [delivery.md](delivery.md) | What the server does before it answers: the render cache, the switch, the CDN purge, compression |
 | [admin-design.md](admin-design.md) | The admin visual contract |
 | [admin-one-dom.md](admin-one-dom.md) | One DOM per state: the rule the server-rendered admin is built on, and its four traps |

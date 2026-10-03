@@ -75,7 +75,7 @@ history is never needed to fix or understand code.
 | Admin screens, the editor | `src/web/admin/` (the markup the server draws), `src/admin/` (the browser half: `island/` and the editor), `src/admin-shared/` (what both sides read) |
 | Sign-in, TOTP, sessions, recovery codes | `src/auth/`, `src/web/auth-routes.ts`, `src/web/enrol-routes.ts` (first run) |
 | Posts, pages, slugs, series, revisions, settings | `src/content/` |
-| Uploads, image variants, ranges | `src/media/` |
+| Uploads, image variants, ranges · anything Bun or Cloudflare does its own way | `src/media/` · `src/runtime/` (`ports.ts` first, then [`docs/runtimes.md`](./docs/runtimes.md)); I/O changes both sides in one commit |
 | Newsletter, broadcast, SMTP | `src/news/` |
 | Comments · Analytics | `src/comments/` · `src/analytics/` (writes go through `buffer.ts`) |
 | SQL, migrations, the live/trashed predicate | `src/store/` |

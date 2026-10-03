@@ -86,6 +86,19 @@ for (const cell of ['source-fresh', 'source-upgrade', 'docker-fresh', 'docker-up
   if (!matrixWorkflow.includes(cell)) faults.push(`I2: release-matrix.yml does not run the ${cell} cell`)
 }
 
+// ---- L5 (ADR 0066): every difference between the runtimes has a name and a row ----------------
+
+const keysOf = (rel: string): string[] => [...read(rel).matchAll(/^\s+(\w+): '/gm)].map((m) => m[1]!)
+const bunKeys = keysOf('src/runtime/bun/capabilities.ts')
+const cfKeys = keysOf('src/runtime/cf/capabilities.ts')
+const runtimesDoc = read('docs/runtimes.md')
+const docKeys = [...runtimesDoc.matchAll(/^\| `(\w+)` \|/gm)].map((m) => m[1]!)
+for (const k of new Set([...bunKeys, ...cfKeys, ...docKeys])) {
+  if (!bunKeys.includes(k)) faults.push(`L5: ${k} is not in src/runtime/bun/capabilities.ts`)
+  if (!cfKeys.includes(k)) faults.push(`L5: ${k} is not in src/runtime/cf/capabilities.ts`)
+  if (!docKeys.includes(k)) faults.push(`L5: ${k} has no row in docs/runtimes.md`)
+}
+
 // ---- I5 -------------------------------------------------------------------------------------
 
 const skill = read('.claude/skills/quireink-install/SKILL.md')
@@ -93,7 +106,7 @@ for (const must of ['server.sh', 'install.sh', 'bun run upgrade', 'docker compos
   if (!skill.includes(must)) faults.push(`I5: the quireink-install skill never mentions ${must}`)
 }
 
-console.log(`  ${used.size} environment variable(s) read, ${PLACES.length} place(s), 1 skill`)
+console.log(`  ${used.size} environment variable(s) read, ${PLACES.length} place(s), ${docKeys.length} runtime difference(s), 1 skill`)
 if (faults.length) {
   console.error('✗ check:install-matrix')
   for (const f of faults) console.error(`  - ${f}`)

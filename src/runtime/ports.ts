@@ -208,3 +208,25 @@ export type SnapshotPort = {
 export type SatoriPort = {
   loadSatori: () => Promise<typeof import('satori').default>
 }
+
+/**
+ * `capabilities.ts`: every way the two runtimes DIFFER, by name (ADR 0066, rule 2). A difference that
+ * is not here is a bug; one that is here has a row in `docs/runtimes.md`, which
+ * `check:install-matrix` holds to this list key for key.
+ */
+export type Capabilities = {
+  /** Who compresses responses. */
+  compression: 'origin' | 'edge'
+  /** What makes the smaller copies of a picture. */
+  imageEngine: 'sharp' | 'cloudflare-images'
+  /** What draws the social card's PNG. */
+  cardRenderer: 'sharp' | 'resvg'
+  /** What hashes passwords (same PHC strings either way). */
+  passwordHash: 'bun-native' | 'noble'
+  /** What is kept before a migration changes the database. */
+  preMigrationCopy: 'file' | 'bookmark'
+  /** What winds the clock that publishes scheduled posts. */
+  clock: 'timer' | 'alarm'
+  /** Where uploads and backups live. */
+  store: 'disk' | 'r2'
+}
