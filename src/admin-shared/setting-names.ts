@@ -62,7 +62,7 @@ const NAMES: Record<string, Name> = {
   'backups.intervalDays': 'backupIntervalLabel', 'backups.keep': 'backupKeepLabel',
   autosaveSeconds: 'autosaveLabel', maxUploadMb: 'maxUploadLabel', storageQuotaGb: 'storageQuotaLabel',
   dashboard: 'dashboardSystemLine', firstRunDone: 'firstRunTitle', setupDone: 'firstRunTitle',
-  seenRelease: 'updateCheckLabel',
+  seenRelease: 'updateCheckLabel', sourceRepo: 'cfWfRepoLabel',
 
   // Details written by hand rather than by the diff, before and after this file.
   'offsite bucket': 'offsiteTitle', 'ai keys': 'cardAi', 'appearance (MCP)': 'navAppearance',

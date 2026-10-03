@@ -22,6 +22,7 @@ import {
 import { sanitizeTypography, sanitizeFont } from '@/content/settings-type'
 import { sanitizePostImage, sanitizeShape, sanitizeAuthor } from '@/content/settings-shape'
 import { sanitizeTable } from '@/content/settings-table'
+import { readRepo } from '@/admin-shared/source-repo'
 
 /**
  * WHAT THE ROUTE HANDS OVER IS JSON, AND JSON HAS NO TYPES WORTH TRUSTING.
@@ -180,6 +181,11 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
     // admin and the only thing downstream does with it is compare it to the build's own.
     seenRelease: typeof input.seenRelease === 'string'
       ? input.seenRelease.trim().slice(0, 32) : current.seenRelease,
+    // The same reading as the card's (`admin-shared/source-repo.ts`), so a name the island built a
+    // link from is the name kept. Cleared is cleared; a name that does not read keeps the last good
+    // one, because the card has already said under the field why it does not.
+    sourceRepo: typeof input.sourceRepo !== 'string' ? current.sourceRepo
+      : !input.sourceRepo.trim() ? '' : readRepo(input.sourceRepo) ?? current.sourceRepo,
     contentWidth: clampNumber(input.contentWidth, 360, 1600, current.contentWidth),
     postsPerPage: clampNumber(input.postsPerPage, 1, 100, current.postsPerPage),
     relatedCount: clampNumber(input.relatedCount, 0, 12, current.relatedCount),

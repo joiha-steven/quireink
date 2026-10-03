@@ -93,9 +93,11 @@ The database migrates when the blog next starts, after Cloudflare has bookmarked
 (a bookmark restores the whole blog to that point, for 30 days, from the dashboard or the API).
 
 **Installed with the button:** Cloudflare deploys whatever reaches your copy's `main` branch, so an
-upgrade is bringing the newer release into the copy — and the copy carries the workflow that does it.
-On GitHub, open your copy → **Actions → Update Quire Ink → Run workflow** (leave the version blank
-for the newest). It brings the release in file for file, keeps the Worker and bucket names the button
+upgrade is bringing the newer release into the copy, and a workflow in the copy does it. **Cloudflare's
+import leaves `.github/workflows` out of the copy** (measured 2026-10-04), so add the workflow once:
+Settings → Server → Cloudflare asks for your copy's name (`owner/name`) and opens GitHub's new-file
+page with the file already written; press *Commit changes*. Then, on GitHub, open your copy →
+**Actions → Update Quire Ink → Run workflow** (leave the version blank for the newest). It brings the release in file for file, keeps the Worker and bucket names the button
 chose, commits and pushes; a few minutes later the blog's `/api/health` names the new version. It
 leaves `.github/workflows` alone, because the token a workflow gets may not change workflow files;
 the release notes say when one of those changed.

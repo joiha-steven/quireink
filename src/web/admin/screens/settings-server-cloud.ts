@@ -11,6 +11,7 @@
 // line, the error — because the words live here with the locales and a state built in JavaScript
 // is a second copy of this markup that drifts from it (`fields-pic.ts` states the rule).
 import type { AdminStrings } from '@/i18n/admin-i18n'
+import type { SiteSettings } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { readEnv } from '@/env'
 import { buttonClass } from '@/admin-shared/kit'
@@ -18,6 +19,8 @@ import { NOTE_ALERT, NOTE_TEXT } from '@/admin-shared/scale'
 import { panelCard, settingRow, textControl } from '@/web/admin/fields'
 import { lamp } from '@/web/admin/kit'
 import { MOVE_STEPS, type MoveStep } from '@/install/cloudflare/move'
+import { UPDATE_WORKFLOW } from '@/install/cloudflare/update-workflow'
+import { actionsUrl, newWorkflowUrl } from '@/admin-shared/source-repo'
 
 const LINE = 'text-sm text-neutral-700 dark:text-neutral-300'
 
@@ -40,11 +43,42 @@ function words(t: AdminStrings): string {
 }
 
 /**
+ * A blog made with the Deploy button takes a newer release through its copy on GitHub, and the copy
+ * arrives WITHOUT the workflow that does it. Measured 2026-10-04 on a real button install: Cloudflare's
+ * import brings `.github/ISSUE_TEMPLATE` and leaves `.github/workflows` out entirely, so "Actions,
+ * Update Quire Ink" pointed at nothing. This adds it in one commit: the owner names the copy once
+ * (a setting, so the Actions link is there months later on any device), and the link opens GitHub's
+ * new-file page with the file already written. The file is the release's own
+ * (`install/cloudflare/update-workflow.ts` holds it equal to `.github/workflows/update-quireink.yml`),
+ * and the fold below carries it whole for a browser that refuses the link. Links the server cannot
+ * build yet are drawn hidden and the island fills them as the name is typed.
+ */
+function workflowStep(t: AdminStrings, s: SiteSettings): string {
+  const repo = s.sourceRepo
+  const link = (attr: string, href: string, label: string, kind: 'primary' | 'secondary') =>
+    `<a ${attr} href="${escapeAttr(href)}" target="_blank" rel="noopener" class="${buttonClass(kind, 'sm')}"${repo ? '' : ' hidden'}>${escapeHtml(label)}</a>`
+  return `<div class="space-y-3" data-cf-path="git" data-cf-wf hidden>`
+    + `<p class="${NOTE_TEXT}">${escapeHtml(t.cfUpdateGit)}</p>`
+    + settingRow({ label: t.cfWfRepoLabel, note: t.cfWfRepoNote, control: textControl({ k: 'sourceRepo', value: repo, label: t.cfWfRepoLabel, placeholder: 'owner/name', attrs: 'data-cf-wf-repo autocomplete="off" spellcheck="false" autocapitalize="none"' }) })
+    + `<p class="${NOTE_ALERT}" data-cf-wf-bad hidden>${escapeHtml(t.cfWfRepoBad)}</p>`
+    + `<div class="flex flex-wrap gap-2">`
+    + link('data-cf-wf-open', repo ? newWorkflowUrl(repo, UPDATE_WORKFLOW) : '#', t.cfWfOpen, 'primary')
+    + link('data-cf-wf-actions', repo ? actionsUrl(repo) : '#', t.cfWfActions, 'secondary')
+    + `</div>`
+    + `<p class="${NOTE_TEXT}">${escapeHtml(t.cfWfOpenNote)}</p>`
+    + `<details class="text-sm"><summary class="cursor-pointer ${NOTE_TEXT}">${escapeHtml(t.cfWfCopyTitle)}</summary>`
+    + `<div class="mt-2 space-y-2"><button type="button" data-cf-wf-copy data-copied="${escapeAttr(t.cfWfCopied)}" class="${buttonClass('secondary', 'sm')}">${escapeHtml(t.cfWfCopy)}</button>`
+    + `<pre data-cf-wf-file class="max-h-64 overflow-auto rounded-md border border-neutral-200 p-3 text-xs dark:border-neutral-800">${escapeHtml(UPDATE_WORKFLOW)}</pre></div></details>`
+    + `<p class="${NOTE_TEXT}">${escapeHtml(t.cfWfGitlab)} <a class="underline" href="https://github.com/joiha-steven/quireink/blob/main/docs/self-host-cloudflare.md#upgrading" target="_blank" rel="noopener">${escapeHtml(t.cfWfGuide)}</a></p>`
+    + `</div>`
+}
+
+/**
  * On Cloudflare (G5.4): the version, how this blog takes a newer one, and what the month costs. All of
  * it comes from `GET /api/cloudflare/status`, which this render has not called — so every variant
  * ships drawn and hidden, and the island shows the one that applies.
  */
-function onCloudflare(t: AdminStrings): string {
+function onCloudflare(t: AdminStrings, s: SiteSettings): string {
   const words = escapeAttr(JSON.stringify({
     version: t.cfVersion, updateTo: t.cfUpdateTo, newest: t.cfUpdateNewest, updating: t.cfUpdating,
     updated: t.cfUpdated, rolledBack: t.cfRolledBack, failed: t.cfUpdateFailed, cost: t.cfCost,
@@ -64,7 +98,7 @@ function onCloudflare(t: AdminStrings): string {
       + `</div>`
       + `<button type="button" data-cf-update class="${buttonClass('primary', 'sm')}" hidden></button>`
       + `<p class="${LINE}" data-cf-update-line aria-live="polite" hidden></p></div>`
-      + `<p class="${NOTE_TEXT}" data-cf-path="git" hidden>${escapeHtml(t.cfUpdateGit)}</p>`
+      + workflowStep(t, s)
       + `<p class="${NOTE_TEXT}" data-cf-path="cli" hidden>${escapeHtml(t.cfUpdateCli)}</p>`
       + `<p class="${NOTE_ALERT}" data-cf-error role="alert" hidden></p>`
       + `<p class="${NOTE_TEXT}" data-cf-cost></p>`
@@ -85,8 +119,8 @@ function onCloudflare(t: AdminStrings): string {
 }
 
 /** The move on a Bun install; the version, the update and the cost on Cloudflare. */
-export function cloudCard(t: AdminStrings): string {
-  if (readEnv().package === 'cloudflare') return onCloudflare(t)
+export function cloudCard(t: AdminStrings, s: SiteSettings): string {
+  if (readEnv().package === 'cloudflare') return onCloudflare(t, s)
   const steps = MOVE_STEPS.map((step) =>
     `<li class="flex items-center gap-2.5" data-cf-step="${step}">`
     + lamp({ state: 'off', attrs: 'data-cf-lamp' })

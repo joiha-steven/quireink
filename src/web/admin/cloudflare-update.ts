@@ -25,9 +25,12 @@ import { databaseBytes } from '@/runtime/impl/runtime-info'
 import { listKept } from '@/runtime/impl/archive'
 import { stopBackups } from '@/server/backup'
 
-/** How this blog takes a newer release (`QUIREINK_UPDATES`): set by whatever deployed it. */
+/**
+ * How this blog takes a newer release (`QUIREINK_UPDATES`): set by whatever deployed it. Exported for
+ * the card, which draws the Deploy button's workflow step only on a `git` blog.
+ */
 export type UpdatePath = 'api' | 'git' | 'cli'
-const updatePath = (): UpdatePath => {
+export const updatePath = (): UpdatePath => {
   const v = process.env.QUIREINK_UPDATES
   return v === 'api' || v === 'git' || v === 'cli' ? v : 'cli'
 }

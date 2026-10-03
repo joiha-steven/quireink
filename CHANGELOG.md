@@ -4,6 +4,13 @@
 
 ### Fixed
 
+- **A blog made with the Deploy button can be updated.** Cloudflare's import copies the repository
+  into your GitHub without `.github/workflows`, so the *Update Quire Ink* workflow the guide and the
+  Settings card pointed to was in no copy at all (found on a real button install). Settings,
+  Server, Cloudflare now asks for the copy's name once and opens GitHub's new-file page with the
+  workflow already written: one *Commit changes* and Actions has it. The card also links the copy's
+  Actions page from then on, and carries the file to copy by hand if the link is refused. A copy on
+  GitLab updates by hand with git, as the guide shows. In all eleven languages.
 - **The setup screens look like one product again.** On a fresh install the setup-code screen's
   Continue was the browser's own button, small and bright blue on Safari, glued to the field
   above it: it was the one submit button on those screens written without its class. The

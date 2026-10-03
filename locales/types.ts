@@ -767,6 +767,17 @@ export type AdminStrings = {
   cfRolledBack: string
   cfUpdateFailed: string
   cfUpdateGit: string
+  cfWfRepoLabel: string
+  cfWfRepoNote: string
+  cfWfRepoBad: string
+  cfWfOpen: string
+  cfWfOpenNote: string
+  cfWfActions: string
+  cfWfCopyTitle: string
+  cfWfCopy: string
+  cfWfCopied: string
+  cfWfGitlab: string
+  cfWfGuide: string
   cfUpdateCli: string
   cfCost: string
   cfLeaveTitle: string

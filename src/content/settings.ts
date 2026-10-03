@@ -19,6 +19,7 @@ import {
   sanitizePostImage, sanitizeShape, sanitizeAuthor,
 } from '@/content/settings-shape'
 import { DEFAULT_TABLE, sanitizeTable } from '@/content/settings-table'
+import { readRepo } from '@/admin-shared/source-repo'
 import {
   DEFAULT_SEO, DEFAULT_BACKUPS, DEFAULT_FEATURES, DEFAULT_COMMENTS,
 } from '@/content/settings-defaults'
@@ -84,6 +85,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // reads as empty, and is exactly the blog that should be shown the panel and asked the
   // question. A fresh install is stamped at the end of setup.
   seenRelease: '',
+  // Empty: only a blog made with the Deploy button has a copy to name, and only its owner knows it.
+  sourceRepo: '',
   // On, and the reason is in `types.ts`. An operator who disagrees has one environment
   // variable; an owner who disagrees has one switch.
   // Empty, not 'UTC': an operator who set ANALYTICS_TZ on an existing install keeps their
@@ -260,6 +263,7 @@ export async function getSettings(): Promise<SiteSettings> {
       // Unlike `setupDone` above this does NOT fall back to `had`: a row written before the
       // field existed is precisely the case the panel is for, so it must read as empty.
       seenRelease: typeof stored.seenRelease === 'string' ? stored.seenRelease : '',
+      sourceRepo: typeof stored.sourceRepo === 'string' ? readRepo(stored.sourceRepo) ?? '' : '',
       logoWidth: clampNumber(stored.logoWidth, 24, 600, DEFAULT_SETTINGS.logoWidth),
       contentWidth: clampNumber(stored.contentWidth, 360, 1600, DEFAULT_SETTINGS.contentWidth),
       postsPerPage: clampNumber(stored.postsPerPage, 1, 100, DEFAULT_SETTINGS.postsPerPage),

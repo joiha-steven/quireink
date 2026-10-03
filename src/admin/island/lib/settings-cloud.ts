@@ -9,6 +9,7 @@
 // ⚠️ THE TOKEN AND THE PASSWORD ARE CLEARED once the move has started: they were sent, and a
 // password left in a field on a screen the owner walks away from is a password on the screen.
 import { setLamp } from './settings-cards'
+import { actionsUrl, newWorkflowUrl, readRepo } from '@/admin-shared/source-repo'
 
 type Words = Partial<Record<string, string>>
 type Step = 'check' | 'package' | 'install' | 'archive' | 'upload' | 'verify'
@@ -236,6 +237,8 @@ export function wireCloudLive(screen: HTMLElement): void {
     }))
   })
 
+  wireWorkflowStep(card)
+
   // Leaving (G5.4): the password and the address typed out, then one long request to the Worker.
   const leaveKey = $<HTMLButtonElement>('[data-cf-leave-key]')
   leaveKey?.addEventListener('click', async () => {
@@ -271,3 +274,39 @@ export function wireCloudLive(screen: HTMLElement): void {
     say(error, r.data?.rolledBack ? fill(w.rolledBack, { why: r.error ?? '' }) : reason(w, r.error, w.failed))
   })
 }
+
+/**
+ * The Deploy-button step (`workflowStep` in `settings-server-cloud.ts`): the copy's name, as typed,
+ * turned into the two links. The file comes from the page's own fold, so the link carries exactly
+ * what the server drew and nothing is copied into this bundle. The name itself is saved by the
+ * sheet like any setting (`data-k="sourceRepo"`); this only keeps the links in step with the field.
+ */
+export function wireWorkflowStep(card: HTMLElement): void {
+  const field = card.querySelector<HTMLInputElement>('[data-cf-wf-repo]')
+  if (!field) return
+  const file = card.querySelector('[data-cf-wf-file]')?.textContent ?? ''
+  const open = card.querySelector<HTMLAnchorElement>('[data-cf-wf-open]')
+  const actions = card.querySelector<HTMLAnchorElement>('[data-cf-wf-actions]')
+  const bad = card.querySelector<HTMLElement>('[data-cf-wf-bad]')
+  const update = (): void => {
+    const typed = field.value.trim()
+    const repo = readRepo(typed)
+    if (bad) bad.hidden = typed === '' || repo !== null
+    for (const [a, href] of [[open, repo ? newWorkflowUrl(repo, file) : '#'], [actions, repo ? actionsUrl(repo) : '#']] as const) {
+      if (!a) continue
+      a.href = href
+      a.hidden = repo === null
+    }
+  }
+  field.addEventListener('input', update)
+  update()
+  const copy = card.querySelector<HTMLButtonElement>('[data-cf-wf-copy]')
+  copy?.addEventListener('click', () => {
+    void navigator.clipboard?.writeText(file).then(() => {
+      const was = copy.textContent
+      copy.textContent = copy.dataset.copied ?? was
+      setTimeout(() => { copy.textContent = was }, 1500)
+    }, () => undefined)
+  })
+}
+

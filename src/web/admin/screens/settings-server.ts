@@ -82,7 +82,7 @@ export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView)
     + `</div><div class="${COL}">`
     + installCard(t, s, view.update)
     // Moving off this server altogether (G5.3), beside the card about running it. Empty on Cloudflare.
-    + cloudCard(t)
+    + cloudCard(t, s)
     + aiCard(t, s, view.integrations)
     + mcpCard(t, s, endpoint)
     // Under MCP: the two machine doors read as a pair, and this is the smaller one.

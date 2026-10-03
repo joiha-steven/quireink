@@ -191,6 +191,7 @@ export type SiteSettings = {
    *  the field existed reads as DONE: see `fromStored`. */
   setupDone: boolean
   seenRelease: string // the release this blog has been SHOWN; empty = never (web/admin/overlays.ts)
+  sourceRepo: string // `owner/repo` of the GitHub copy a Deploy-button blog is built from; '' = not told. Only the Cloudflare card reads it, to link the copy's new-file page and its Actions (admin-shared/source-repo.ts)
   contentWidth: number // px, max width of the content column (desktop)
   postsPerPage: number // posts shown per page on home/category/tag lists
   relatedCount: number // related posts shown at the end of an article (0 = none)
