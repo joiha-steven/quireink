@@ -18,11 +18,12 @@
 // (`store/rows.ts`), and neither are the full-text indexes: their triggers rebuild them as the
 // rows go back in.
 //
-// It STREAMS, end to end: rows a page at a time, through the tar writer, `CompressionStream`, the
-// sealer, into whatever the caller pipes it to. Nothing holds a table or the archive, which on a
+// It STREAMS, end to end: rows a page at a time, through the tar writer, gzip, the sealer, into
+// whatever the caller pipes it to. Nothing holds a table or the archive, which on a
 // Durable Object with 128 MB is the difference between a backup and none.
 import { getSettings } from '@/content/settings'
 import { sealer } from '@/server/backup-crypt'
+import { gzipStage } from '@/server/gzip'
 import { streamOf, tarChunks, type TarEntry } from '@/server/tar'
 import { openArchiveSource, type DatabaseSection } from '@/store/archive-db'
 import type { Kind } from '@/store/db'
@@ -72,6 +73,8 @@ async function* entries(): AsyncGenerator<TarEntry> {
     const head = new TextEncoder().encode(`${JSON.stringify(manifest, null, 1)}\n`)
     yield { name: 'manifest.json', size: head.length, body: head }
     yield* source.parts()
+    // The rows are written: let go of the databases before the uploads, which can take minutes.
+    source.dispose()
     for (const file of uploads) {
       // The size is asked again right before the header, because the header is written first and
       // has to be true. A file deleted since the listing — the owner purging an image while the
@@ -114,9 +117,7 @@ function sealStage(recipients: string[], salt: string): TransformStream<Uint8Arr
  */
 export async function archiveStream(settings?: SiteSettings): Promise<ReadableStream<Uint8Array>> {
   const s = settings ?? await getSettings()
-  // Through `unknown`: the DOM-less types declare CompressionStream over `BufferSource`, which a
-  // byte stream is, and the compiler cannot see that from here.
-  const gzip = new CompressionStream('gzip') as unknown as TransformStream<Uint8Array, Uint8Array>
+  const gzip = gzipStage()
   const gz = streamOf(tarChunks(entries())).pipeThrough(gzip)
   return encryptReady(s) ? gz.pipeThrough(sealStage([s.backups.pubKey, s.backups.passPub], s.backups.passSalt)) : gz
 }

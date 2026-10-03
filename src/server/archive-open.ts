@@ -5,10 +5,11 @@
 // walk the same path the bytes take, and none of them proves that a DIFFERENT file opens.
 //
 // Plain JS and streaming, like the writer: the seal (ADR 0060, unchanged) is opened a frame at a
-// time, the gzip by `DecompressionStream`, the tar by `server/tar.ts`. Nothing holds the archive.
+// time, the gzip by `server/gzip.ts`, the tar by `server/tar.ts`. Nothing holds the archive.
 import { costFrom, identityFromSecret, MAGIC, opener, passphraseIdentity, unseal } from '@/server/backup-crypt'
 import { ByteReader, streamOf, tarEntries, type TarItem } from '@/server/tar'
 import { ARCHIVE_FORMAT, type Manifest } from '@/server/archive'
+import { gunzipStage } from '@/server/gzip'
 
 /** What may open a sealed archive. Either one; neither is needed for a plain one. */
 export type ArchiveKeys = { identity?: string; passphrase?: string }
@@ -106,8 +107,7 @@ export async function openArchive(
 }
 
 function entriesOf(gz: AsyncGenerator<Uint8Array>): AsyncGenerator<TarItem> {
-  const gunzip = new DecompressionStream('gzip') as unknown as TransformStream<Uint8Array, Uint8Array>
-  return tarEntries(streamOf(gz).pipeThrough(gunzip))
+  return tarEntries(streamOf(gz).pipeThrough(gunzipStage()))
 }
 
 /** A whole small entry, as text. The manifest and a schema are kilobytes; nothing else is read so. */

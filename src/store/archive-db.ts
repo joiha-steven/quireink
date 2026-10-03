@@ -7,7 +7,8 @@
 import { createHash } from 'node:crypto'
 import { consistentCopy } from '@/runtime/impl/snapshot'
 import type { Connection } from '@/runtime/ports'
-import { analyticsDb, db, LEDGER, type Kind } from './db'
+import { join } from 'node:path'
+import { analyticsDb, dataDir, db, LEDGER, type Kind } from './db'
 import { exportPlan, ledgerNames, schemaScript, tablePages, type TableDigest, type TablePlan } from './rows'
 
 export const KINDS: readonly Kind[] = ['content', 'analytics']
@@ -51,9 +52,9 @@ async function digest(conn: Connection, plan: TablePlan): Promise<TableDigest> {
 /**
  * A table's bytes, read a second time and checked against the first. Two passes because a tar
  * header states a size before its bytes and the manifest states every table before any of them,
- * and holding a table to learn its size is what this format exists not to do. On Bun the rows
- * come from a copy that cannot change between the passes; anywhere they could, a difference is
- * an error rather than an archive whose manifest describes some other set of rows.
+ * and holding a table to learn its size is what this format exists not to do. On Bun both passes
+ * read inside one read transaction, which cannot change between them; anywhere the rows could, a
+ * difference is an error rather than an archive whose manifest describes some other set of rows.
  */
 async function* replay(conn: Connection, plan: TablePlan, expected: TableDigest): AsyncGenerator<Uint8Array> {
   const hash = createHash('sha256')
@@ -69,8 +70,9 @@ async function* replay(conn: Connection, plan: TablePlan, expected: TableDigest)
 }
 
 /**
- * Open both databases for the archive: a consistent copy each where the runtime makes one, then
- * one pass over every table to describe it. Call `dispose` when the archive is finished or failed.
+ * Open both databases for the archive: a consistent view of each where the runtime makes one
+ * (`SnapshotPort.consistentCopy`), then one pass over every table to describe it. Call `dispose`
+ * when the rows are written, or the archive failed.
  */
 export async function openArchiveSource(): Promise<ArchiveSource> {
   const live: Record<Kind, Connection> = { content: db(), analytics: analyticsDb() }
@@ -80,7 +82,7 @@ export async function openArchiveSource(): Promise<ArchiveSource> {
   const sections = {} as Record<Kind, DatabaseSection>
   try {
     for (const kind of KINDS) {
-      const copy = consistentCopy(live[kind])
+      const copy = consistentCopy(live[kind], join(dataDir(), kind === 'content' ? 'quire.db' : 'analytics.db'))
       if (copy) copies.push(copy)
       conns[kind] = copy?.conn ?? live[kind]
       const described = []
@@ -106,6 +108,8 @@ export async function openArchiveSource(): Promise<ArchiveSource> {
         }
       }
     },
+    // Twice is harmless: the archive ends the read as soon as the rows are written, and again on
+    // its way out in case it never got that far.
     dispose: () => { for (const c of copies) c.dispose() },
   }
 }

@@ -105,9 +105,11 @@ The archive (`quire-<stamp>.tar.gz`, `.enc` when sealed) is a gzipped tar in the
 
 Every table is carried, found in the database itself rather than listed by hand, except the two
 render caches (below) and the full-text indexes, which the triggers rebuild as the rows go back
-in. The rows are read from a `VACUUM INTO` copy taken when the archive starts, **never from the
-live file**: a live SQLite database has a write-ahead log, and reading it while the blog writes
-can capture a state that never existed. Rows rather than database files because a Cloudflare
+in. The rows are read inside **one read transaction** opened when the archive starts, on a
+connection of their own: under SQLite's write-ahead log that sees the database as it was at that
+moment while the blog goes on writing, so the archive never captures a state that never existed —
+the reason a backup has never been a file copy. (Until ADR 0067 it was a `VACUUM INTO` copy; the
+transaction gives the same consistency without filling the live page cache or the disk.) Rows rather than database files because a Cloudflare
 Durable Object can neither `VACUUM` nor hand over a file, and because a row stream is written a
 page at a time — the archive's size is never bounded by memory.
 

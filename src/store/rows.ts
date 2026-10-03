@@ -20,8 +20,18 @@ import type { Connection, SqlValue } from '@/runtime/ports'
 /** Rebuilt on demand from the Markdown beside them (ADR 0062), so their rows are not carried. */
 export const SKIPPED_TABLES: readonly string[] = ['render_cache', 'body_cache']
 
-/** Rows per read and per insert batch: a page is a few hundred KB of JSON at the widest. */
-export const PAGE_ROWS = 500
+/**
+ * Rows per read. Measured on 200,000 analytics events (2026-10-03), the whole archive built:
+ * 50, 100 and 250 rows came to +41, +41 and +44 MB of resident memory, 100 at two thirds of the
+ * time 50 took. What a page costs is the allocator's high-water mark, not the page itself.
+ */
+export const PAGE_ROWS = 100
+
+/**
+ * Rows per insert transaction when loading. Larger than a page: each commit of `quire.db` waits
+ * for the disk (`synchronous = FULL`), and a thousand rows decoded at once is still small.
+ */
+export const LOAD_ROWS = 1000
 
 export type TablePlan = {
   name: string
@@ -164,7 +174,7 @@ export function ledgerNames(conn: Connection, table: string): string[] {
 }
 
 /**
- * Put JSON Lines back into `table`, `PAGE_ROWS` rows per transaction, and hash the exact bytes
+ * Put JSON Lines back into `table`, `LOAD_ROWS` rows per transaction, and hash the exact bytes
  * as they pass so a damaged archive is caught by the same SHA-256 that described it. Each batch
  * is synchronous, as `transaction` requires; the bytes in between arrive as they arrive.
  *
@@ -194,7 +204,7 @@ export async function loadTable(
       throw new Error(`rows: a line of ${table} does not have its ${columns.length} columns`)
     }
     batch.push(parsed.map(decodeValue))
-    if (batch.length >= PAGE_ROWS) flush()
+    if (batch.length >= LOAD_ROWS) flush()
   }
   for await (const chunk of lines) {
     hash.update(chunk)

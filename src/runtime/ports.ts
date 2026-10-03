@@ -211,13 +211,13 @@ export type SnapshotPort = {
    */
   keepAside: (dataDir: string, name: string, text: string) => string
   /**
-   * A copy of `conn` that holds still while the backup archive reads it (ADR 0067), or null when
-   * this runtime reads the live connection instead. Bun: `VACUUM INTO` a temporary file, opened
-   * read-only, because the request path goes on writing while the archive streams. A Durable
-   * Object has neither the statement nor the file, and is single-threaded besides. `dispose`
-   * closes the copy and removes it.
+   * A view of the database at `path` (open as `conn`) that holds still while the backup archive
+   * reads it (ADR 0067), or null when this runtime reads the live connection instead. Bun: a
+   * second, read-only connection holding one read transaction, which under WAL sees one moment
+   * while the request path goes on writing. A Durable Object has no second connection and is
+   * single-threaded besides. `dispose` ends the view; calling it twice is harmless.
    */
-  consistentCopy: (conn: Connection) => { conn: Connection; dispose: () => void } | null
+  consistentCopy: (conn: Connection, path: string) => { conn: Connection; dispose: () => void } | null
 }
 
 /** A snapshot kept by this runtime, as `archive.ts` lists it. */

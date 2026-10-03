@@ -5,8 +5,7 @@
 // A Durable Object refuses every statement here (measured 2026-10-03), and has no file to copy:
 // recovering from a bad upgrade there is Cloudflare's point-in-time restore.
 import { Database } from 'bun:sqlite'
-import { mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import type { Connection, SnapshotPort } from '@/runtime/ports'
 import { wrap } from './db'
@@ -23,11 +22,12 @@ const MIN_FREE_SHARE = 0.25
 const MIN_FREE_BYTES = 64 * 1024 * 1024
 
 /**
- * ⚠️ SQL FROM A VARIABLE, and the second site in this codebase to do it. `VACUUM INTO` takes
- * a filename and SQLite accepts no bound parameter there, which is the same reason and the
- * same escape `server/backup.ts` documents at length. What goes in is a path derived from the
- * data directory this process was started with — never a request, never a setting. The rule
- * in CLAUDE.md stands everywhere else: a VALUE is bound, always.
+ * ⚠️ SQL FROM A VARIABLE, and the one site left in this codebase that does it (the backup did
+ * too until ADR 0067). `VACUUM INTO` takes a filename and SQLite accepts no bound parameter
+ * there, so there is no parameterised form to reach for; the single quotes are doubled, which is
+ * SQLite's own escape for a string literal. What goes in is a path derived from the data
+ * directory this process was started with — never a request, never a setting. The rule in
+ * CLAUDE.md stands everywhere else: a VALUE is bound, always.
  */
 const quoted = (path: string): string => `'${path.replace(/'/g, "''")}'`
 
@@ -156,28 +156,42 @@ export const keepAside: SnapshotPort['keepAside'] = (dataDir, name, text) => {
 }
 
 /**
- * The backup archive reads its rows from this (ADR 0067), not from the live file: the archive
- * streams for as long as the uploads take to read, and the blog goes on taking writes meanwhile.
- * `VACUUM INTO` is the one consistent copy of a database with a write-ahead log, for the reason
- * `backups.md` gives. Opened read-only and raw, like `intact` above, so nothing rewrites it.
+ * The backup archive reads its rows from this (ADR 0067), not from the live connection: the
+ * archive streams for as long as the uploads take, and the blog goes on taking writes meanwhile.
  *
- * In the system's temporary directory, where the tar's staging directory was before it.
+ * A SECOND CONNECTION HOLDING ONE READ TRANSACTION, not a `VACUUM INTO` copy. Under WAL a reader
+ * sees the database as it was when its transaction began, for as long as it stays open, while the
+ * writer carries on: that is the consistency a copy was for, without the copy. Measured on 200,000
+ * analytics events (2026-10-03): the copy cost +18 MB of resident memory before a row was read,
+ * all of it the live connection's 16 MB page cache filling as `VACUUM` read every page through it,
+ * plus a temporary file the size of the database. This connection's cache is held to 256 KB:
+ * it reads each page once, in order, and the kernel caches the file anyway.
+ *
+ * Read-only and raw, like `intact` above. The cost is that a checkpoint cannot pass the reader's
+ * snapshot until `dispose`, so the write-ahead log grows by whatever is written during the dump;
+ * the archive disposes as soon as the rows are written, before the uploads.
  */
-export const consistentCopy: SnapshotPort['consistentCopy'] = (conn) => {
-  const dir = mkdtempSync(join(tmpdir(), 'quire-archive-'))
-  const path = join(dir, 'copy.db')
+export const consistentCopy: SnapshotPort['consistentCopy'] = (_conn, path) => {
+  const raw = new Database(path, { readonly: true, strict: true })
   try {
-    conn.exec(`vacuum into ${quoted(path)}`)
-    const copy = wrap(new Database(path, { readonly: true, strict: true }))
-    return {
-      conn: copy,
-      dispose: () => {
-        try { copy.close() } finally { rmSync(dir, { recursive: true, force: true }) }
-      },
-    }
+    raw.exec('pragma cache_size = -256')
+    raw.exec('begin')
+    // A deferred `begin` takes its snapshot at the first read, so read now: the snapshot is
+    // this moment, not whenever the first table happens to be asked for.
+    raw.query('select count(*) from sqlite_master').get()
   } catch (error) {
-    rmSync(dir, { recursive: true, force: true })
+    raw.close()
     throw error
+  }
+  const conn = wrap(raw)
+  let open = true
+  return {
+    conn,
+    dispose: () => {
+      if (!open) return
+      open = false
+      try { raw.exec('commit') } finally { raw.close() }
+    },
   }
 }
 

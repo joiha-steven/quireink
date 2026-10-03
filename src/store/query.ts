@@ -27,7 +27,7 @@ type Primitives = {
   run: (sql: string, ...params: SqlParams) => { changes: number }
   /**
    * A script, with NO bound parameters: for the one statement SQLite gives no bound form,
-   * `VACUUM INTO` a filename (`server/backup.ts`, which says why its path may be quoted).
+   * `VACUUM INTO` a filename (`runtime/bun/snapshot.ts`, which says why its path may be quoted).
    * Everything else goes through `run`.
    */
   exec: (script: string) => void
