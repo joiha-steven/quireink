@@ -344,6 +344,28 @@ never open, and preloading it would trade one problem for a worse one.
 Moved to [`navigation-speculation.md`](./navigation-speculation.md) on 2026-09-14: this file hit
 its 400-line cap, and the journey between pages is a different subject from what one page loads.
 
+## The owner's analytics must not hold a reader's page
+
+Not a resource rule, but the same promise: the admin is never on a reader's critical path. The
+SQLite driver is synchronous on both runtimes, so one long statement holds every request behind
+it. Measured 2026-10-03 on a copy with 1,000,000 views over 365 days, server started as
+`bun run start` does:
+
+| On that copy | Before | After |
+|:--|--:|--:|
+| `/admin/analytics?range=365`, first load · again within a minute | 10.1 s · 10.3 s | 3.7 s · 16 ms |
+| `/admin/analytics` (30 days), first load | 1.5 s | 0.48 s, then 15 ms |
+| `/admin`, first load | 0.30 s | 0.48 s, then 3 ms |
+| One page's drill-down, 365 days of `/` | 11.2 s | 0.58 s |
+| Front page while the 365-day screen loads: worst wait | 12.7 s | 0.105 s |
+| Server memory while it loads | +381 MB | +121 MB |
+
+How: [`src/analytics/chunked.ts`](../src/analytics/chunked.ts) (why pieces cut by visitor, and why
+not a Bun Worker or a rollup table), [`window.ts`](../src/analytics/window.ts) (one pass for eight
+answers) and [`memo.ts`](../src/analytics/memo.ts) (the minute). Three statements that read the
+whole history for a short window are pinned by `src/analytics/plan.test.ts`, and every screen is
+held to its old numbers by `src/analytics/chunked.test.ts`. **A new read over a window goes
+through these, not straight to the driver**, or it is the next freeze on the day a blog gets big.
 
 ## Verify (no browser needed)
 

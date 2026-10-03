@@ -72,6 +72,16 @@
 
 ### Fixed
 
+- **Opening a year of analytics no longer freezes the blog.** On a blog with a million recorded
+  views, the 365-day Analytics screen took about ten seconds, and every reader asking for a page in
+  the meantime waited for it — up to twelve seconds for the front page. The long windows are now
+  read in small pieces with readers served between them (the front page waits a tenth of a second
+  at most), the year screen loads in under four seconds, and opening it again within a minute is
+  instant: the screens and the dashboard keep what they read for one minute, except "reading right
+  now", which stays live. One page's drill-down over a year went from eleven seconds to half a
+  second, and the "one page only" count stopped reading every view ever recorded for a 7-day
+  window. Every number on the screens is the same as before. Works the same on a server and on
+  Cloudflare.
 - **Uploading pictures on Cloudflare takes far less memory.** Every request to the Images binding
   copied the picture twice first, and an upload makes nine — a 25 MB picture came to 450 MB of
   copies in a blog that has 128 MB; it is now handed over as it is, with the same results byte for

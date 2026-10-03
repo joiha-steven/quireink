@@ -195,6 +195,13 @@ rows and the dashboard takes more than 300 ms, add a daily rollup table
 (`analytics_daily(day, path, views, visitors)`) maintained by the flush goroutine, and
 serve everything except drill-down from it. Do not build the rollup up front.
 
+*Measured, 2026-10-03, and the rollup was not the answer.* On 1,000,000 events the cost was
+`count(distinct visitor)`, which days cannot add up, and the harm was not the owner's wait but
+every reader's: the driver is synchronous, so the 365-day screen held the front page for 12.7 s.
+Long windows are now read in visitor-range pieces with the event loop's turn between them, and
+the screens keep a minute; the numbers and the reasons are in
+[`../performance.md`](../performance.md#the-owners-analytics-must-not-hold-a-readers-page).
+
 ### `restore_tables(payload jsonb, table_names text[])`
 
 The plpgsql version is 40 lines of dynamic SQL wrestling with identity columns,
