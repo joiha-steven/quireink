@@ -66,6 +66,7 @@
     "@noble/curves": "2",
     "@noble/hashes": "2",
     "@resvg/resvg-wasm": "^2.6.2",
+    "aws4fetch": "1",
     "hono": "^4.13.7",
     "prosemirror-commands": "^1.7.2",
     "prosemirror-dropcursor": "^1.8.3",
