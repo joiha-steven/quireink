@@ -94,7 +94,7 @@ export function isEmpty(db: Connection, kind: Kind = 'content'): boolean {
   const row = db.one<{ n: number }>(
     `select count(*) as n from sqlite_master where type = 'table'
        and name not like 'sqlite\\_%' escape '\\' and name not like '\\_cf\\_%' escape '\\'
-       and name not like '\\_\\_miniflare%' escape '\\' and ${ours}`,
+       and name not like '\\_\\_miniflare%' escape '\\' and name not like '\\_\\_load\\_%' escape '\\' and ${ours}`,
   )
   return (row?.n ?? 0) === 0
 }

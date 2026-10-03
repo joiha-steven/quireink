@@ -59,8 +59,11 @@ export function ident(name: string): string {
 export type RowsKind = 'content' | 'analytics'
 export const tableKind = (name: string): RowsKind => (/^analytics_/.test(name) ? 'analytics' : 'content')
 
-/** Not ours: SQLite's own, a Durable Object's `_cf_*`, and the local emulator's (see `db.ts`). */
-const foreign = (name: string): boolean => /^(sqlite_|_cf_|__miniflare)/i.test(name)
+/**
+ * Not ours: SQLite's own, a Durable Object's `_cf_*`, the local emulator's (see `db.ts`), and a
+ * load's staging tables (`__load_*`, `archive-load.ts`) should one outlive a load that died.
+ */
+const foreign = (name: string): boolean => /^(sqlite_|_cf_|__miniflare|__load_)/i.test(name)
 const isVirtual = (sql: string | null): boolean => /^create\s+virtual\s+table/i.test(sql ?? '')
 const withoutRowid = (sql: string | null): boolean => /\)\s*without\s+rowid\s*;?\s*$/i.test(sql ?? '')
 

@@ -11,6 +11,8 @@ import { regexEngine } from '@/runtime/cf/shiki-engine'
 import { generateKeyPairSync } from 'node:crypto'
 import { signRequest, verifySignature } from '@/ap/signature'
 import { SmtpSession } from '@/news/smtp'
+import { openDatabases, db } from '@/store/db'
+import { beginLiveLoad } from '@/store/archive-load'
 import { put as blobPut, read as blobRead, statSize as blobStatSize } from '@/runtime/cf/blob'
 import { gunzipStage, gzipStage } from '@/server/gzip'
 import { clientCountry, clientIp } from '@/server/rate-limit'
@@ -26,6 +28,7 @@ function collect(): Case[] {
   cases.push({ name: 'smtp: one connection authenticates and hands over two messages, then quits', body: smtpTwoMessages })
   cases.push({ name: 'blob: `private/` is refused before the bucket is asked, so /uploads cannot serve a backup', body: blobPrivateRefused })
   cases.push({ name: 'ip: with no socket to ask, the reader is the edge\'s CF-Connecting-IP and CF-IPCountry', body: edgeAddress })
+  cases.push({ name: 'restore: a child table that arrives before its parent still loads (recovery_codes before users)', body: childFirst })
   cases.push({ name: 'blob: an exclusive put of a name that exists says EEXIST with the code callers retry on', body: exclusivePut })
   cases.push({ name: 'archive: the node:zlib gzip stage round-trips a stream', body: gzipRoundTrip })
   cases.push({ name: 'archive: an X25519 seal (ADR 0060) opens with its identity and not with another', body: sealRoundTrip })
@@ -112,6 +115,27 @@ function edgeAddress(): void {
   if (a !== '203.0.113.7' || b !== '198.51.100.9') throw new Error(`readers came out as ${a} and ${b}`)
   const country = clientCountry(ctx({ 'cf-connecting-ip': '203.0.113.7', 'cf-ipcountry': 'vn' }))
   if (country !== 'VN') throw new Error(`country came out as ${JSON.stringify(country)}`)
+}
+
+/**
+ * `store/archive-load.ts`: an archive lists tables in name order, children before parents, and a
+ * Durable Object ignores `pragma foreign_keys = OFF` (2026-10-03) — so the load stages any table with
+ * foreign keys and moves it in once its parents are there. The real load, in a real object.
+ */
+async function childFirst(): Promise<void> {
+  openDatabases('./data')
+  const lines = async function* (rows: unknown[][]): AsyncGenerator<Uint8Array> {
+    yield new TextEncoder().encode(rows.map((r) => JSON.stringify(r)).join('\n') + '\n')
+  }
+  const load = beginLiveLoad()
+  await load.table('content', 'recovery_codes', ['user_id', 'code_hash', 'used_at'], lines([[1, 'h1', null], [1, 'h2', null]]))
+  await load.table('content', 'users', ['id', 'username', 'email', 'password_hash', 'totp_secret', 'totp_last_step', 'created_at', 'updated_at'],
+    lines([[1, 'owner', 'o@blog.test', 'hash', null, null, 1, 1]]))
+  load.finish()
+  const n = db().one<{ n: number }>('select count(*) as n from recovery_codes')?.n
+  if (n !== 2) throw new Error(`${n} recovery code(s) arrived, expected 2`)
+  const left = db().one<{ n: number }>(`select count(*) as n from sqlite_master where name like '__load%'`)?.n
+  if (left !== 0) throw new Error('a staging table was left behind')
 }
 
 /** `files.ts`, `media.ts` and the backup load take the next free name on `code === 'EEXIST'`. */
