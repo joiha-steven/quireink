@@ -107,39 +107,48 @@ function entryName(bytes: Uint8Array): string {
   }
 }
 
+/** Bytes `[start, end)` of the archive, however it is held: in memory, a file, an R2 object. */
+export type ZipReader = (start: number, end: number) => Promise<Uint8Array>
+
 /**
- * Where the central directory starts, and how many entries it holds.
+ * Where the central directory starts, how long it is, and how many entries it holds.
  *
  * The record is found by scanning BACKWARDS, because the archive ends with a comment of
  * arbitrary length and there is no other way to know where the record begins. Scanning forwards
  * for the signature would stop at the first four bytes of file DATA that happen to spell it.
+ * Only the last 64 KB is read for it (plus the Zip64 locator's 20 bytes before the record), so an
+ * archive of any size costs one small read here.
  */
-function readEnd(b: Uint8Array): { offset: number; count: number } {
+async function readEnd(read: ZipReader, size: number): Promise<{ offset: number; length: number; count: number }> {
+  const base = Math.max(0, size - EOCD_SCAN - 20)
+  const b = await read(base, size)
   const floor = Math.max(0, b.length - EOCD_SCAN)
   for (let at = b.length - 22; at >= floor; at--) {
     if (u32(b, at) !== EOCD) continue
 
     let count = u16(b, at + 10)
+    let length = u32(b, at + 12)
     let offset = u32(b, at + 16)
 
     // Some writers emit Zip64 for every archive, small ones included. The classic record then
     // carries all-ones in the fields that overflowed, and reading those literally means walking
     // to offset 4294967295 and finding nothing: an empty import, with no error anywhere.
-    if (count === 0xffff || offset === 0xffffffff) {
+    if (count === 0xffff || offset === 0xffffffff || length === 0xffffffff) {
       const locator = at - 20
       if (locator < 0 || u32(b, locator) !== LOCATOR64) {
         throw new ZipError('not_a_zip', 'a Zip64 archive with no Zip64 locator')
       }
       const record = u64(b, locator + 8)
-      if (record + 56 > b.length || u32(b, record) !== EOCD64) {
-        throw new ZipError('not_a_zip', 'the Zip64 locator points at no Zip64 record')
-      }
-      count = u64(b, record + 32)
-      offset = u64(b, record + 48)
+      if (record + 56 > size) throw new ZipError('not_a_zip', 'the Zip64 locator points at no Zip64 record')
+      const r = await read(record, record + 56)
+      if (u32(r, 0) !== EOCD64) throw new ZipError('not_a_zip', 'the Zip64 locator points at no Zip64 record')
+      count = u64(r, 32)
+      length = u64(r, 40)
+      offset = u64(r, 48)
     }
 
-    if (offset > b.length) throw new ZipError('not_a_zip', 'the directory starts past the end')
-    return { offset, count }
+    if (offset > size || offset + length > size) throw new ZipError('not_a_zip', 'the directory starts past the end')
+    return { offset, length, count }
   }
   throw new ZipError('not_a_zip', 'no end-of-central-directory record in the last 64 KB')
 }
@@ -181,25 +190,26 @@ function readZip64Extra(
 }
 
 /** The bytes of one entry, decompressed and checked against the CRC the directory recorded. */
-function readEntry(
-  b: Uint8Array,
+async function readEntry(
+  read: ZipReader,
+  size: number,
   name: string,
   head: { local: number; packed: number; unpacked: number; method: number; crc: number },
   limit: number,
-): Uint8Array {
-  if (head.local + 30 > b.length || u32(b, head.local) !== LOCAL) {
-    throw new ZipError('corrupt_entry', `${name} has no local header`)
-  }
+): Promise<Uint8Array> {
+  if (head.local + 30 > size) throw new ZipError('corrupt_entry', `${name} has no local header`)
+  const local = await read(head.local, head.local + 30)
+  if (u32(local, 0) !== LOCAL) throw new ZipError('corrupt_entry', `${name} has no local header`)
   // The name and extra lengths HERE, not the directory's: a writer may pad the local extra
   // field differently, and using the wrong pair starts the read a few bytes into the data.
-  const start = head.local + 30 + u16(b, head.local + 26) + u16(b, head.local + 28)
+  const start = head.local + 30 + u16(local, 26) + u16(local, 28)
   const end = start + head.packed
-  if (end > b.length) throw new ZipError('corrupt_entry', `${name} runs past the end`)
+  if (end > size) throw new ZipError('corrupt_entry', `${name} runs past the end`)
   if (head.unpacked > limit) {
     throw new ZipError('entry_too_large', `${name} declares ${head.unpacked} bytes`)
   }
 
-  const packed = b.subarray(start, end)
+  const packed = await read(start, end)
   let bytes: Uint8Array
   if (head.method === STORED) {
     bytes = packed
@@ -233,40 +243,42 @@ function readEntry(
  *
  * Directory entries (a name ending in `/`) are not entries and are dropped without asking.
  */
-export function unzip(
-  archive: Uint8Array,
+export async function unzipFrom(
+  read: ZipReader,
+  size: number,
   keep: (name: string) => boolean = () => true,
   limit: number = MAX_ENTRY_BYTES,
   total: number = MAX_TOTAL_BYTES,
-): ZipEntry[] {
-  const { offset, count } = readEnd(archive)
+): Promise<ZipEntry[]> {
+  const { offset, length, count } = await readEnd(read, size)
+  // The whole directory in one read: a few hundred bytes an entry, never the entries themselves.
+  const dir = await read(offset, offset + length)
   const out: ZipEntry[] = []
   let inflated = 0
 
-
-  let at = offset
+  let at = 0
   for (let i = 0; i < count; i++) {
-    if (at + 46 > archive.length || u32(archive, at) !== CENTRAL) {
+    if (at + 46 > dir.length || u32(dir, at) !== CENTRAL) {
       throw new ZipError('not_a_zip', `entry ${i + 1} of ${count} is not a directory record`)
     }
-    const nameLen = u16(archive, at + 28)
-    const extraLen = u16(archive, at + 30)
-    const commentLen = u16(archive, at + 32)
-    const name = entryName(archive.subarray(at + 46, at + 46 + nameLen))
+    const nameLen = u16(dir, at + 28)
+    const extraLen = u16(dir, at + 30)
+    const commentLen = u16(dir, at + 32)
+    const name = entryName(dir.subarray(at + 46, at + 46 + nameLen))
 
     if (!name.endsWith('/') && keep(name)) {
       const head = {
-        local: u32(archive, at + 42),
-        packed: u32(archive, at + 20),
-        unpacked: u32(archive, at + 24),
-        method: u16(archive, at + 10),
-        crc: u32(archive, at + 16),
+        local: u32(dir, at + 42),
+        packed: u32(dir, at + 20),
+        unpacked: u32(dir, at + 24),
+        method: u16(dir, at + 10),
+        crc: u32(dir, at + 16),
       }
       if (head.local === OVERFLOWED || head.packed === OVERFLOWED || head.unpacked === OVERFLOWED) {
-        readZip64Extra(archive, at + 46 + nameLen, extraLen, head)
+        readZip64Extra(dir, at + 46 + nameLen, extraLen, head)
       }
       // The entry is capped at what is still left of the total, so the sum cannot pass it.
-      const bytes = readEntry(archive, name, head, Math.max(1, Math.min(limit, total - inflated)))
+      const bytes = await readEntry(read, size, name, head, Math.max(1, Math.min(limit, total - inflated)))
       inflated += bytes.byteLength
       out.push({ name, bytes })
     }
@@ -274,3 +286,22 @@ export function unzip(
   }
   return out
 }
+
+/** The same over an archive already in memory. */
+export const unzip = (
+  archive: Uint8Array,
+  keep?: (name: string) => boolean,
+  limit?: number,
+  total?: number,
+): Promise<ZipEntry[]> => unzipFrom(async (start, end) => archive.subarray(start, end), archive.length, keep, limit, total)
+
+/**
+ * The same over a Blob — a `File` from a form, or one held on disk — read a slice at a time, so a
+ * large archive of pictures is never in memory for the sake of its few text entries.
+ */
+export const unzipBlob = (
+  blob: Blob,
+  keep?: (name: string) => boolean,
+  limit?: number,
+  total?: number,
+): Promise<ZipEntry[]> => unzipFrom(async (start, end) => new Uint8Array(await (blob as Blob & { slice(a: number, b: number): Blob }).slice(start, end).arrayBuffer()), blob.size, keep, limit, total)

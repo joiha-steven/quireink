@@ -227,7 +227,7 @@ describe('the archive', () => {
       expect(size).toBeGreaterThan(0)
 
       const dec = new TextDecoder()
-      const entries = unzip(new Uint8Array(await Bun.file(dest).arrayBuffer()))
+      const entries = (await unzip(new Uint8Array(await Bun.file(dest).arrayBuffer())))
         .map(({ name, bytes }) => ({ name, text: dec.decode(bytes) }))
       const names = entries.map((e) => e.name)
       expect(names).toContain('posts/hello.md')

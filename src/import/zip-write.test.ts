@@ -52,7 +52,7 @@ describe('the ZIP writer', () => {
     zip.addText('site.json', '{"title":"My Blog"}')
     zip.finish()
 
-    const out = unzip(c.bytes())
+    const out = await unzip(c.bytes())
     expect(out.map((e) => e.name)).toEqual(['posts/xin-chao.md', 'site.json'])
     expect(dec.decode(out[0]!.bytes)).toBe(body)
     expect(dec.decode(out[1]!.bytes)).toBe('{"title":"My Blog"}')
@@ -68,7 +68,7 @@ describe('the ZIP writer', () => {
     const bytes = c.bytes()
     expect(u32(bytes, 0)).toBe(0x04034b50)
     expect(u16(bytes, 6) & 0x0800).toBe(0x0800)
-    expect(unzip(bytes)[0]!.name).toBe('posts/thư-gửi-mẹ.md')
+    expect((await unzip(bytes))[0]!.name).toBe('posts/thư-gửi-mẹ.md')
   })
 
   it('stores a file that deflate would make bigger, and says so in the record', async () => {
@@ -78,7 +78,7 @@ describe('the ZIP writer', () => {
     zip.addText('b.md', 'yyyy'.repeat(500))       // compressible
     zip.finish()
     expect(u16(c.bytes(), 8)).toBe(0)             // first entry's method: stored
-    const out = unzip(c.bytes())
+    const out = await unzip(c.bytes())
     expect(dec.decode(out[0]!.bytes)).toBe('x')
     expect(dec.decode(out[1]!.bytes)).toBe('yyyy'.repeat(500))
     // And the compressible one really WAS deflated: its stored length in the record is under
@@ -105,7 +105,7 @@ describe('the ZIP writer', () => {
       await zip.addFile('uploads/photo.webp', Bun.file(path))
       zip.finish()
 
-      const out = unzip(c.bytes())
+      const out = await unzip(c.bytes())
       expect(out).toHaveLength(1)
       expect(out[0]!.name).toBe('uploads/photo.webp')
       expect(out[0]!.bytes).toEqual(blob)
@@ -125,8 +125,8 @@ describe('the ZIP writer', () => {
     // DATA — not the record — and the reader must refuse.
     const corrupt = new Uint8Array(bytes)
     corrupt[60] = corrupt[60]! ^ 0xff
-    expect(() => unzip(corrupt)).toThrow(ZipError)
-    expect(() => unzip(bytes)).not.toThrow()
+    await expect(unzip(corrupt)).rejects.toThrow(ZipError)
+    await expect(unzip(bytes)).resolves.toBeDefined()
   })
 
   it('handles an empty file and an empty archive', async () => {
@@ -134,11 +134,11 @@ describe('the ZIP writer', () => {
     const zip = new ZipWriter(c.sink, AT)
     zip.addText('empty.md', '')
     zip.finish()
-    expect(unzip(c.bytes())).toEqual([{ name: 'empty.md', bytes: new Uint8Array(0) }])
+    expect(await unzip(c.bytes())).toEqual([{ name: 'empty.md', bytes: new Uint8Array(0) }])
 
     const e = collector()
     new ZipWriter(e.sink, AT).finish()
-    expect(unzip(e.bytes())).toEqual([])
+    expect(await unzip(e.bytes())).toEqual([])
   })
 
   it('crosses into Zip64 when the entry count outgrows the classic record', async () => {
@@ -156,7 +156,7 @@ describe('the ZIP writer', () => {
     for (let i = 0; i < 0xffff + 1; i++) zip.addText(`n/${i}.md`, 'x')
     zip.finish()
     const bytes = c.bytes()
-    const out = unzip(bytes, (n) => n === 'n/0.md' || n === 'n/65535.md')
+    const out = await unzip(bytes, (n) => n === 'n/0.md' || n === 'n/65535.md')
     expect(out.map((e) => e.name).sort()).toEqual(['n/0.md', 'n/65535.md'])
     expect(dec.decode(out[0]!.bytes)).toBe('x')
   })

@@ -189,19 +189,21 @@ export function opsRoutes() {
     // the server tells them apart by structure (posts.csv vs h-entry markup), not by
     // asking. Only .html/.csv entries are read as text; images and everything else in
     // the archive stay untouched — this importer, like the others, keeps image URLs.
-    const { unzip, ZipError } = await import('@/import/unzip')
+    const { unzipBlob, ZipError } = await import('@/import/unzip')
     let entries: { name: string; text: string }[]
     try {
       // The filter is passed IN rather than applied after: `unzip` decompresses only what it
       // is asked for, and a blog export is mostly images. `fflate` inflated the whole archive
-      // into memory first and these two lines then threw most of it away.
+      // into memory first and these two lines then threw most of it away. And the archive is
+      // READ a slice at a time (`unzipBlob`): the directory from its end, then only the entries
+      // kept, so its pictures never pass through this process's memory either.
       const decoder = new TextDecoder()
-      entries = unzip(
-        new Uint8Array(await file.arrayBuffer()),
+      entries = (await unzipBlob(
+        file,
         // `.md` and `site.json` are this blog's OWN bundle (`server/export-md.ts`). Widening
         // the filter costs a Substack archive nothing, because those hold neither.
         (name) => /\.(html|csv|md)$/i.test(name) || /(^|\/)site\.json$/.test(name),
-      ).map(({ name, bytes }) => ({ name, text: decoder.decode(bytes) }))
+      )).map(({ name, bytes }) => ({ name, text: decoder.decode(bytes) }))
     } catch (cause) {
       // Two codes rather than four: `unzip` distinguishes a corrupt entry from an unreadable
       // container, but this route's answers are part of the API's contract and the admin knows

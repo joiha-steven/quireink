@@ -91,8 +91,8 @@ function findRecord(b: Uint8Array, signature: number, nth = 0): number {
 
 describe('the same five members, however they are stored', () => {
   for (const [how, archive] of ARCHIVES) {
-    it(`${how}: reads every file and drops the directory entry`, () => {
-      const found = unzip(archive)
+    it(`${how}: reads every file and drops the directory entry`, async () => {
+      const found = await unzip(archive)
       // Five members, four files: `posts/` is a directory and is not one of them.
       expect(found.map((e) => e.name).sort()).toEqual([
         'image.png',
@@ -107,8 +107,8 @@ describe('the same five members, however they are stored', () => {
       expect(by['image.png']).toBe('PNGDATA')
     })
 
-    it(`${how}: keep() decides before anything is decompressed`, () => {
-      const found = unzip(archive, (n) => /\.(html|csv)$/i.test(n))
+    it(`${how}: keep() decides before anything is decompressed`, async () => {
+      const found = await unzip(archive, (n) => /\.(html|csv)$/i.test(n))
       expect(found.map((e) => e.name).sort()).toEqual([
         'posts.csv',
         'posts/one.html',
@@ -122,26 +122,26 @@ describe('the same five members, however they are stored', () => {
 // flag rather than the bytes produces `tiáº¿ng-viá»t.html`. Both importers match the filename
 // with an ASCII pattern, so the wrong answer was never a live bug here; it is still the wrong
 // answer, and it would become one the moment a name reached a slug.
-it('a UTF-8 name with the flag clear is still a UTF-8 name', () => {
+it('a UTF-8 name with the flag clear is still a UTF-8 name', async () => {
   const flags = (() => {
     const at = findRecord(bytes(NORMAL), 0x02014b50, 3) // the fourth central record
     return bytes(NORMAL)[at + 8]! | (bytes(NORMAL)[at + 9]! << 8)
   })()
   expect((flags >> 11) & 1).toBe(0)
-  expect(unzip(bytes(NORMAL)).map((e) => e.name)).toContain('tiếng-việt.html')
+  expect((await unzip(bytes(NORMAL))).map((e) => e.name)).toContain('tiếng-việt.html')
 })
 
 describe('an archive that is wrong says which way', () => {
-  it('refuses bytes with no end record', () => {
-    expect(() => unzip(bytes(NORMAL).slice(0, 200))).toThrow(ZipError)
+  it('refuses bytes with no end record', async () => {
+    await expect(unzip(bytes(NORMAL).slice(0, 200))).rejects.toThrow(ZipError)
     try {
-      unzip(bytes(NORMAL).slice(0, 200))
+      await unzip(bytes(NORMAL).slice(0, 200))
     } catch (e) {
       expect((e as ZipError).code).toBe('not_a_zip')
     }
   })
 
-  it('refuses an entry whose bytes do not match its checksum', () => {
+  it('refuses an entry whose bytes do not match its checksum', async () => {
     const damaged = bytes(STORED)
     // `stored.zip` keeps its text uncompressed, so one flipped letter in the data region is a
     // truncated-upload simulation that needs no knowledge of deflate. The whole phrase is
@@ -151,28 +151,28 @@ describe('an archive that is wrong says which way', () => {
     expect(at).toBeGreaterThan(0)
     damaged[at] = 0x48 // 'H'
     try {
-      unzip(damaged)
+      await unzip(damaged)
       throw new Error('a corrupt entry was accepted')
     } catch (e) {
       expect((e as ZipError).code).toBe('corrupt_entry')
     }
   })
 
-  it('refuses a compression method it does not implement', () => {
+  it('refuses a compression method it does not implement', async () => {
     const odd = bytes(NORMAL)
     const at = findRecord(odd, 0x02014b50, 1) // posts/one.html, which is deflated
     odd[at + 10] = 12 // bzip2
     try {
-      unzip(odd, (n) => n.endsWith('one.html'))
+      await unzip(odd, (n) => n.endsWith('one.html'))
       throw new Error('an unknown method was accepted')
     } catch (e) {
       expect((e as ZipError).code).toBe('unsupported_compression')
     }
   })
 
-  it('refuses an entry that would inflate past the limit', () => {
+  it('refuses an entry that would inflate past the limit', async () => {
     try {
-      unzip(bytes(NORMAL), (n) => n.endsWith('one.html'), 8)
+      await unzip(bytes(NORMAL), (n) => n.endsWith('one.html'), 8)
       throw new Error('an oversized entry was accepted')
     } catch (e) {
       expect((e as ZipError).code).toBe('entry_too_large')
@@ -181,16 +181,16 @@ describe('an archive that is wrong says which way', () => {
 
   // Each entry was capped and the sum was not: a thousand small entries could inflate to
   // gigabytes between them (2026-09-30).
-  it('refuses an archive whose kept entries together pass the total', () => {
+  it('refuses an archive whose kept entries together pass the total', async () => {
     try {
-      unzip(bytes(NORMAL), () => true, 1024 * 1024, 8)
+      await unzip(bytes(NORMAL), () => true, 1024 * 1024, 8)
       throw new Error('an archive past its total was accepted')
     } catch (e) {
       expect((e as ZipError).code).toBe('entry_too_large')
     }
   })
 
-  it('holds the limit even when the entry lies about its size', () => {
+  it('holds the limit even when the entry lies about its size', async () => {
     // The declared size is checked first, so a hostile archive understates it. zlib's own
     // `maxOutputLength` is what actually stops the read, which is why the cap is passed down
     // rather than compared against the header and forgotten.
@@ -201,10 +201,38 @@ describe('an archive that is wrong says which way', () => {
     lying[at + 26] = 0
     lying[at + 27] = 0
     try {
-      unzip(lying, (n) => n.endsWith('one.html'), 8)
+      await unzip(lying, (n) => n.endsWith('one.html'), 8)
       throw new Error('a lying entry was accepted')
     } catch (e) {
       expect((e as ZipError).code).toBe('entry_too_large')
     }
   })
+})
+
+// The import reads an uploaded archive a slice at a time (`unzipBlob`): the directory from the
+// end, then only the entries kept. Held here by counting what was asked for — a reader that
+// fetched the pictures too would pass every test above and still hold a 100 MB upload in memory.
+it('reads only the end, the directory and the kept entries — never the rest', async () => {
+  const { unzipFrom } = await import('@/import/unzip')
+  const archive = bytes(NORMAL)
+  let read = 0
+  const found = await unzipFrom(async (start, end) => { read += end - start; return archive.subarray(start, end) }, archive.length, (n) => n.endsWith('.csv'))
+  expect(found.map((e) => e.name)).toEqual(['posts.csv'])
+  // The tail scan reads up to 64 KB, which on this small fixture is the whole file; so ask a
+  // big archive instead: a megabyte of picture behind a small text entry.
+  const { ZipWriter } = await import('@/import/zip-write')
+  const parts: Uint8Array[] = []
+  const zip = new ZipWriter({ write: (b: Uint8Array) => { parts.push(new Uint8Array(b)) } }, new Date('2026-10-03T00:00:00Z'))
+  zip.addText('post.md', 'hello')
+  // Random, so it does not deflate to nothing: a real picture's bytes stay its size in the archive.
+  zip.addText('picture.png', Buffer.from(crypto.getRandomValues(new Uint8Array(750_000))).toString('base64'))
+  zip.finish()
+  const big = new Uint8Array(parts.reduce((n, p) => n + p.length, 0))
+  let at = 0
+  for (const p of parts) { big.set(p, at); at += p.length }
+  read = 0
+  const md = await unzipFrom(async (start, end) => { read += end - start; return big.subarray(start, end) }, big.length, (n) => n.endsWith('.md'))
+  expect(md.map((e) => e.name)).toEqual(['post.md'])
+  expect(big.length).toBeGreaterThan(750_000)
+  expect(read).toBeLessThan(80_000)
 })
