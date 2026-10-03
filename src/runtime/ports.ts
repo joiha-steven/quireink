@@ -210,6 +210,61 @@ export type SnapshotPort = {
    * hand (the settings that would not parse). Returns where it went, for the log.
    */
   keepAside: (dataDir: string, name: string, text: string) => string
+  /**
+   * A copy of `conn` that holds still while the backup archive reads it (ADR 0067), or null when
+   * this runtime reads the live connection instead. Bun: `VACUUM INTO` a temporary file, opened
+   * read-only, because the request path goes on writing while the archive streams. A Durable
+   * Object has neither the statement nor the file, and is single-threaded besides. `dispose`
+   * closes the copy and removes it.
+   */
+  consistentCopy: (conn: Connection) => { conn: Connection; dispose: () => void } | null
+}
+
+/** A snapshot kept by this runtime, as `archive.ts` lists it. */
+export type KeptArchive = { name: string; size: number; mtimeMs: number }
+
+/**
+ * `archive.ts`: where finished backup archives live (ADR 0067). Bun: `BACKUP_DIR`, a directory
+ * beside the data. Names reach here already checked by `isSnapshotName`; the implementation
+ * refuses anything with a path in it all the same.
+ */
+export type ArchivePort = {
+  /** Every file in the snapshot store; the caller keeps the ones whose names it made. */
+  listKept: () => Promise<KeptArchive[]>
+  /**
+   * Write `body` under `name`, all of it or nothing: a failure leaves no file by that name and
+   * no half-written one either. Returns the size.
+   */
+  writeKept: (name: string, body: ReadableStream<Uint8Array>) => Promise<number>
+  /** The archive's bytes, read lazily, or null when there is none by that name. */
+  openKept: (name: string) => Promise<Blob | null>
+  removeKept: (name: string) => Promise<void>
+  /**
+   * Hold `body` somewhere until it has been sent once, for a download that has to declare its
+   * length before the first byte (a browser shows no progress without one). The returned body
+   * removes what it held when it ends or is cancelled.
+   */
+  stage: (name: string, body: ReadableStream<Uint8Array>) => Promise<{ size: number; body: ReadableStream<Uint8Array> }>
+}
+
+/** The three verbs the off-site copy needs from a bucket (ADR 0035). */
+export type OffsiteClient = {
+  write(key: string, data: Blob | string): Promise<number>
+  list(opts?: { prefix?: string }): Promise<{ contents?: { key: string }[] } | null>
+  delete(key: string): Promise<void>
+}
+
+export type OffsiteConfig = {
+  accessKeyId: string
+  secretAccessKey: string
+  bucket: string
+  region: string
+  endpoint?: string
+}
+
+/** `offsite.ts`: a client for an S3-compatible bucket. Bun: its own `S3Client`. */
+export type OffsitePort = {
+  s3Client: (config: OffsiteConfig) => OffsiteClient
 }
 
 /**

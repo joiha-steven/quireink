@@ -5,9 +5,11 @@
 // A Durable Object refuses every statement here (measured 2026-10-03), and has no file to copy:
 // recovering from a bad upgrade there is Cloudflare's point-in-time restore.
 import { Database } from 'bun:sqlite'
-import { mkdirSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import type { Connection, SnapshotPort } from '@/runtime/ports'
+import { wrap } from './db'
 
 /** This upgrade's copy and the one before it. See ADR 0063 for why two and not more. */
 const KEEP = 2
@@ -152,3 +154,31 @@ export const keepAside: SnapshotPort['keepAside'] = (dataDir, name, text) => {
   writeFileSync(file, text)
   return file
 }
+
+/**
+ * The backup archive reads its rows from this (ADR 0067), not from the live file: the archive
+ * streams for as long as the uploads take to read, and the blog goes on taking writes meanwhile.
+ * `VACUUM INTO` is the one consistent copy of a database with a write-ahead log, for the reason
+ * `backups.md` gives. Opened read-only and raw, like `intact` above, so nothing rewrites it.
+ *
+ * In the system's temporary directory, where the tar's staging directory was before it.
+ */
+export const consistentCopy: SnapshotPort['consistentCopy'] = (conn) => {
+  const dir = mkdtempSync(join(tmpdir(), 'quire-archive-'))
+  const path = join(dir, 'copy.db')
+  try {
+    conn.exec(`vacuum into ${quoted(path)}`)
+    const copy = wrap(new Database(path, { readonly: true, strict: true }))
+    return {
+      conn: copy,
+      dispose: () => {
+        try { copy.close() } finally { rmSync(dir, { recursive: true, force: true }) }
+      },
+    }
+  } catch (error) {
+    rmSync(dir, { recursive: true, force: true })
+    throw error
+  }
+}
+
+void ({ copyBeforeMigrating, compactIfMostlyFree, keepAside, consistentCopy } satisfies SnapshotPort)
