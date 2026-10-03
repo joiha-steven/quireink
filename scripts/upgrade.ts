@@ -3,7 +3,7 @@
 //
 //   1. find the release: the one named on the command line, or the newest tag on the remote;
 //   2. remember where the checkout is now, then check the release out;
-//   3. `bun install --frozen-lockfile` and the two builds the server reads from disk;
+//   3. `bun install --frozen-lockfile --production` and the two builds the server reads from disk;
 //   4. restart the blog: QUIREINK_RESTART if set, else systemd when it can be asked, else the
 //      person running this is told the command and the script waits for them;
 //   5. wait for /api/health to report the new version;
@@ -57,8 +57,10 @@ const versionOf = (): string => {
   return pkg.version
 }
 
+// --production for the reason `install.sh` gives beside its own install: the devDependencies are
+// the workshop (wrangler alone brings 125 MB of workerd), and neither build reads them.
 function build(): boolean {
-  return run(BUN, ['install', '--frozen-lockfile']).ok
+  return run(BUN, ['install', '--frozen-lockfile', '--production']).ok
     && run(BUN, ['run', 'build:assets']).ok
     && run(BUN, ['run', 'build:admin']).ok
 }

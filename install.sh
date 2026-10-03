@@ -146,14 +146,23 @@ DIR_ABS=$(pwd)
 
 # --- build ------------------------------------------------------------------------------
 #
-# The full install, not --production: TypeScript and the DOM stand-in the editor's suites use
-# are devDependencies, and the two build steps below need the tree complete. Those steps write
-# artefacts the server READS FROM DISK at runtime, which is why they run before it ever starts
-# and again after a pull.
+# A RELEASE GETS THE PRODUCTION SET (--production), what the server and the two build steps
+# need and nothing else. The devDependencies are the workshop: TypeScript, the DOM stand-in the
+# tests use, and since the Cloudflare runtime arrived, wrangler with its own copy of workerd.
+# Measured on this tree: the full install is 325 MB, of which workerd alone is 125 MB, against
+# 91 MB for the production set, and 2.2.16's full install was 132 MB, so a server that never
+# runs Cloudflare was going to download and keep 190 MB more on every install for nothing. Both
+# builds were run on the production set and their output compared with the full install's:
+# byte-identical, because they are Bun's bundler over this repository's own TypeScript. The
+# image has always installed this way (its `deps` stage). `main` is the developer's channel and
+# keeps the full tree, since that is where `bun run check:all` is run.
+#
+# The builds write artefacts the server READS FROM DISK at runtime, which is why they run before
+# it ever starts and again after a pull.
 
 say "Installing dependencies"
 # A release installs exactly what its lockfile says; main is allowed to resolve.
-if [ -n "${TAG:-}" ]; then bun install --frozen-lockfile; else bun install; fi
+if [ -n "${TAG:-}" ]; then bun install --frozen-lockfile --production; else bun install; fi
 
 say "Building the islands and the admin"
 bun run build:assets

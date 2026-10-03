@@ -83,7 +83,9 @@ beforeAll(() => {
   served = join(root, 'served')
   stub = join(root, 'bun-stub')
   mkdirSync(remote)
-  writeFileSync(stub, '#!/bin/sh\n[ "$1 $2" = "run build:admin" ] && [ -f BREAK_BUILD ] && exit 1\nexit 0\n')
+  // It also leaves its arguments in `bun-calls` in the checkout, untracked, so a test can read
+  // which install ran.
+  writeFileSync(stub, '#!/bin/sh\necho "$*" >> bun-calls\n[ "$1 $2" = "run build:admin" ] && [ -f BREAK_BUILD ] && exit 1\nexit 0\n')
   chmodSync(stub, 0o755)
   git(remote, 'init', '-q', '-b', 'main')
   release('2.2.14')
@@ -123,6 +125,8 @@ describe('bun run upgrade', () => {
     const dir = installAt('forward', '2.2.14')
     const r = await upgrade(dir, ['2.2.15'])
     expect(r.status).toBe(0)
+    // The production set: the devDependencies (wrangler, workerd) are nothing a Bun server reads.
+    expect(readFileSync(join(dir, 'bun-calls'), 'utf8').split('\n')).toContain('install --frozen-lockfile --production')
     expect(at(dir)).toBe('2.2.15')
     expect(readFileSync(served, 'utf8').trim()).toBe('2.2.15')
   })

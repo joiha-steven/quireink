@@ -43,8 +43,9 @@ beforeAll(() => {
   bin = join(root, 'bin')
   mkdirSync(remote)
   mkdirSync(bin)
-  // The stub: `bun --version` says 1.3.14, anything else succeeds and does nothing.
-  writeFileSync(join(bin, 'bun'), '#!/bin/sh\n[ "$1" = "--version" ] && echo 1.3.14\nexit 0\n')
+  // The stub: `bun --version` says 1.3.14, anything else succeeds, does nothing, and leaves its
+  // arguments in `$HOME/bun-calls` so a test can read which install ran.
+  writeFileSync(join(bin, 'bun'), '#!/bin/sh\n[ "$1" = "--version" ] && echo 1.3.14 && exit 0\necho "$*" >> "$HOME/bun-calls"\nexit 0\n')
   chmodSync(join(bin, 'bun'), 0o755)
   git(remote, 'init', '-q', '-b', 'main')
   commit('2.2.14', 'release 2.2.14', 'v2.2.14')
@@ -122,6 +123,17 @@ describe('install.sh', () => {
     const env = readFileSync(join(dir, '.env'), 'utf8')
     expect(env.match(/^QUIREINK_PACKAGE=source$/gm)?.length).toBe(1)
     expect(env).toContain('SITE_URL=https://example.org')
+  })
+
+  it('installs a release without the devDependencies, and main with them', () => {
+    // wrangler and its workerd are 190 MB a server running Bun never opens; neither build reads them.
+    const calls = join(root, 'bun-calls')
+    rmSync(calls, { force: true })
+    install(join(root, 'prod-set'))
+    expect(readFileSync(calls, 'utf8').split('\n')).toContain('install --frozen-lockfile --production')
+    rmSync(calls, { force: true })
+    install(join(root, 'dev-set'), { QUIREINK_CHANNEL: 'main' })
+    expect(readFileSync(calls, 'utf8').split('\n')).toContain('install')
   })
 
   it('names a release that does not exist instead of failing somewhere later', () => {
