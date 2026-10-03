@@ -7,7 +7,8 @@
 //
 //   1. seed a throwaway Bun blog with the showcase, serve it, and take its archive as its owner;
 //   2. start the real worker under `wrangler dev --local` with a SETUP_CODE, empty;
-//   3. load the archive through `/setup/restore`, as the form posts it;
+//   3. load the archive through `/setup/restore`, as the form posts it, and crawl both
+//      (`scripts/parity.ts`): every page the same, before anything writes to either;
 //   4. `smoke.ts` against workerd as package `cloudflare`, with the owner session the archive
 //      carried: health, the twelve smoke flows, restore-check and MCP.
 //
@@ -70,8 +71,6 @@ if (!(await waitFor(`${bunUrl}/api/health`, 40))) fail(`the Bun blog never answe
 const exported = await fetch(`${bunUrl}/api/backup/export`, { headers: { cookie: `__Host-quire_session=${session}` } })
 if (!exported.ok) fail(`the Bun blog's /api/backup/export answered ${exported.status}`)
 const archive = new Uint8Array(await exported.arrayBuffer())
-// Stopped now, so the files restore-check compares against hold still.
-bun.kill('SIGTERM')
 console.log(`✓ the showcase on Bun, archived (${Math.round(archive.length / 1024)} KB)`)
 
 // ----- 2. the worker, empty --------------------------------------------------------------------
@@ -99,6 +98,13 @@ if (loaded.status !== 303 || loaded.headers.get('location') !== '/login') {
   fail(`/setup/restore answered ${loaded.status} → ${loaded.headers.get('location')}\n${(await loaded.text()).slice(0, 600)}\n${log.slice(-1500)}`)
 }
 console.log('✓ the archive loaded into the empty worker through /setup/restore')
+
+// ----- 3½. the same pages from both, before anything writes to either --------------------------
+
+const parity = spawnSync(process.execPath, ['scripts/parity.ts', bunUrl, cfUrl], { cwd: ROOT, stdio: 'inherit' })
+// Stopped now, so the files restore-check compares against hold still.
+bun.kill('SIGTERM')
+if (parity.status !== 0 && process.env.PARITY_SOFT !== '1') fail('the two runtimes serve different pages for the same data')
 
 // ----- 4. the same smoke as every package ------------------------------------------------------
 
