@@ -24,8 +24,6 @@ const FORBIDDEN = /from\s+['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:t
 
 /** Still crossing the seam, and where each is going. Shrinks to nothing; never grows. */
 const PENDING: Record<string, string> = {
-  'src/auth/password.ts': 'Bun.password -> @/runtime/impl/password (G1.7)',
-  'src/auth/recovery.ts': 'Bun.password -> @/runtime/impl/password (G1.7)',
   'src/content/settings-save.ts': 'node:fs -> the Blob or Assets port (G1.7)',
   'src/import/zip-write.ts': 'Bun.file -> the Archive port (G1.8)',
   'src/index.ts': 'the Bun entry itself -> src/runtime/bun/ (G1.7)',
@@ -36,17 +34,13 @@ const PENDING: Record<string, string> = {
   'src/render/og-card.ts': 'Bun.file -> the Assets port (G1.7)',
   'src/server/backup-offsite.ts': 'Bun.S3Client, Bun.file -> the Archive port (G1.8)',
   'src/server/backup.ts': 'tar via Bun.spawn -> the pure-JS archive writer (G1.8)',
-  'src/server/build-info.ts': 'node:fs -> the Assets port (G1.7)',
   'src/server/export-md.ts': 'Bun.file -> the Archive port (G1.8)',
-  'src/server/safe-fetch.ts': 'node:net isIP -> a pure check (G1.7)',
-  'src/server/update-facts.ts': 'node:fs /.dockerenv -> QUIREINK_PACKAGE (G1.7)',
   'src/store/db.ts': 'bun:sqlite -> @/runtime/impl/db (G1.7)',
   'src/store/query.ts': 'bun:sqlite types -> @/runtime/impl/db (G1.7)',
   'src/store/upgrade.ts': 'bun:sqlite, VACUUM INTO -> @/runtime/impl/snapshot (G1.7)',
   'src/web/admin/ops.ts': 'node:fs/promises in the storage health check -> the Blob port (G1.7)',
   'src/web/admin/backup.ts': 'Bun.file -> the Archive port (G1.8)',
   'src/web/admin/spa.ts': 'Bun.embeddedFiles, node:fs -> @/runtime/impl/assets (G1.7)',
-  'src/web/admin/views-home.ts': 'Bun.version -> the runtime\'s own name and version (G1.7)',
   'src/web/compress.ts': 'Bun.hash, Bun.gzipSync -> src/runtime/bun/ (Cloudflare compresses at the edge) (G1.7)',
   'src/web/static.ts': 'Bun.file -> @/runtime/impl/assets (G1.7)',
 }

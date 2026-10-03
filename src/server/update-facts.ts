@@ -11,7 +11,7 @@
 // translations of `updateCheckDesc`. A field added here without moving all three is a field
 // this project promised it was not sending.
 
-import { statSync } from 'node:fs'
+import { readEnv } from '@/env'
 import { liveOnly } from '@/store/db'
 import { one } from '@/store/query'
 
@@ -63,17 +63,14 @@ export function sizeBucket(): string {
  *
  * `QUIRE_INSTALL` is set by the things that already know — the compose files, the Unraid
  * template, the droplet's cloud-init — and is the only way to tell a NAS from a laptop,
- * because from inside the process they look identical. Absent, the one honest distinction
- * left is whether there is a container around us, and `/.dockerenv` is the file Docker has
- * put there since 2013. Bounded and character-checked: it is a value from the environment,
- * and it goes into a URL.
+ * because from inside the process they look identical. Absent, the package says what it is
+ * (`QUIREINK_PACKAGE`, ADR 0065): `docker` baked into the image, `source` from a checkout,
+ * `cloudflare` from the Cloudflare bundle. Until 2026-10-03 the fallback looked for `/.dockerenv`
+ * on disk, which a Cloudflare Worker has no disk to look on. Bounded and character-checked: it is
+ * a value from the environment, and it goes into a URL.
  */
 export function installKind(): string {
   const declared = (process.env.QUIRE_INSTALL ?? '').trim().toLowerCase()
   if (/^[a-z0-9-]{1,16}$/.test(declared)) return declared
-  try {
-    return statSync('/.dockerenv').isFile() ? 'docker' : 'source'
-  } catch {
-    return 'source'
-  }
+  return readEnv().package
 }

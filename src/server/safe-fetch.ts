@@ -7,7 +7,7 @@
 // Edge runtime — do NOT import this from an edge route.
 
 import { lookup } from 'node:dns/promises'
-import { isIP } from 'node:net'
+import { isIP } from '@/server/ip'
 
 // Thrown when a URL is rejected by the SSRF guard (scheme or address). Typed so
 // callers can distinguish a policy block from a network/HTTP failure.

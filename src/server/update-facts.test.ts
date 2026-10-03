@@ -72,6 +72,12 @@ describe('the buckets say roughly, and never exactly', () => {
     expect(installKind()).toBe('source')
     process.env.QUIRE_INSTALL = ''
     expect(installKind()).toBe('source')
+    // No template name: the package says what it is (ADR 0065), not a file on a disk.
+    const pkg = process.env.QUIREINK_PACKAGE
+    process.env.QUIREINK_PACKAGE = 'docker'
+    expect(installKind()).toBe('docker')
+    if (pkg === undefined) delete process.env.QUIREINK_PACKAGE
+    else process.env.QUIREINK_PACKAGE = pkg
     if (keep === undefined) delete process.env.QUIRE_INSTALL
     else process.env.QUIRE_INSTALL = keep
   })

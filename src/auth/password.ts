@@ -1,9 +1,11 @@
 // Password hashing and policy.
 //
-// `Bun.password` is argon2id, so there is no dependency here; the cost parameters are written out
-// below (ADR 0068). Verification is deliberately slow (tens of ms), which is the point,
+// argon2id, from the runtime (`@/runtime/impl/password`: Bun's own, or WASM on Cloudflare); the cost
+// parameters are written out below (ADR 0068). Verification is deliberately slow (tens of ms), which is the point,
 // and is why the rate limiter in front of it matters: without one, a slow hash is a
 // denial-of-service surface rather than a defence.
+
+import { hash as runtimeHash, verify as runtimeVerify } from '@/runtime/impl/password'
 
 /**
  * The shortest password we accept. Length is the only rule.
@@ -60,10 +62,10 @@ export function checkPassword(
  * Existing hashes need nothing: the PHC string (`$argon2id$v=19$m=65536,t=2,p=1$…`) carries its
  * own parameters, and verifying reads them from there.
  */
-export const HASH_PARAMS = { algorithm: 'argon2id', memoryCost: 19456, timeCost: 2 } as const
+export const HASH_PARAMS = { memoryCost: 19456, timeCost: 2 } as const
 
 export function hashPassword(password: string): Promise<string> {
-  return Bun.password.hash(password, HASH_PARAMS)
+  return runtimeHash(password, HASH_PARAMS)
 }
 
 /**
@@ -78,7 +80,7 @@ export function hashPassword(password: string): Promise<string> {
  * a hash is the kind of work a module should not do merely by being imported.
  */
 let dummy: Promise<string> | null = null
-const dummyHash = (): Promise<string> => (dummy ??= Bun.password.hash(crypto.randomUUID(), HASH_PARAMS))
+const dummyHash = (): Promise<string> => (dummy ??= runtimeHash(crypto.randomUUID(), HASH_PARAMS))
 
 /**
  * Verify, spending the same time whether or not the account exists.
@@ -88,10 +90,9 @@ const dummyHash = (): Promise<string> => (dummy ??= Bun.password.hash(crypto.ran
  */
 export async function verifyPassword(hash: string | null, password: string): Promise<boolean> {
   if (hash === null) {
-    await Bun.password.verify(password, await dummyHash()).catch(() => false)
+    await runtimeVerify(password, await dummyHash())
     return false
   }
-  // `verify` throws on a malformed hash rather than returning false. A row whose hash was
-  // corrupted should fail the sign-in, not 500 it.
-  return Bun.password.verify(password, hash).catch(() => false)
+  // A malformed hash fails the sign-in rather than 500ing it: the port never throws.
+  return runtimeVerify(password, hash)
 }

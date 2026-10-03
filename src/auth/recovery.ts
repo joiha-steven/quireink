@@ -10,6 +10,7 @@
 // and machine-generated) would make the stored form materially weaker than the password
 // beside it for no user-visible gain.
 
+import { verify as verifyHash } from '@/runtime/impl/password'
 import { all, run, tx } from '@/store/query'
 import { nowMs } from '@/store/db'
 import { hashPassword } from './password'
@@ -91,7 +92,7 @@ export async function redeemCode(userId: number, input: string): Promise<boolean
     userId,
   )
   for (const row of rows) {
-    const matched = await Bun.password.verify(code, row.code_hash).catch(() => false)
+    const matched = await verifyHash(code, row.code_hash)
     if (!matched) continue
     const { changes } = run(
       `update recovery_codes set used_at = ? where user_id = ? and code_hash = ? and used_at is null`,

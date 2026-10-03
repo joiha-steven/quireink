@@ -17,22 +17,17 @@
 // admin simply shows the version alone, which is the correct thing to show when there is no
 // commit to name.
 
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readBuildSha } from '@/runtime/impl/runtime-info'
 
 /** Read once. The file cannot change under a running process without a restart. */
 let cached: string | null | undefined
 
 export function buildSha(): string | null {
   if (cached !== undefined) return cached
-  try {
-    const raw = readFileSync(resolve(process.cwd(), 'build-sha'), 'utf8').trim()
-    // A full hex SHA and nothing else. Anything shorter or stranger is a file that got
-    // there another way, and a wrong commit link is worse than none.
-    cached = /^[0-9a-f]{40}$/.test(raw) ? raw : null
-  } catch {
-    cached = null
-  }
+  const raw = readBuildSha()?.trim() ?? ''
+  // A full hex SHA and nothing else. Anything shorter or stranger is a file that got
+  // there another way, and a wrong commit link is worse than none.
+  cached = /^[0-9a-f]{40}$/.test(raw) ? raw : null
   return cached
 }
 

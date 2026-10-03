@@ -4,9 +4,8 @@
 // Split from `views.ts` because it is the one view that assembles rather than forwards,
 // and because that file is at the 400-line limit without it.
 
+import { machineLabel, runtimeLabel } from '@/runtime/impl/runtime-info'
 import { getActivity } from '@/server/activity'
-import { release, type } from 'node:os'
-import { readFileSync } from 'node:fs'
 import { lastRunAt } from '@/server/backup'
 import { buildSha } from '@/server/build-info'
 import { updateState } from '@/server/update-check'
@@ -54,29 +53,9 @@ function sqliteVersion(): string {
  * version, and calling it "macOS" was only right by the coincidence that Apple aligned the two.
  *
  * Read once. It cannot change while the process is up, and this runs on every dashboard load.
+ * The reading is the runtime's (`@/runtime/impl/runtime-info`): Cloudflare has no os-release.
  */
-let osCache: string | null = null
-function osLine(): string {
-  if (osCache === null) {
-    let name = ''
-    try {
-      // PRETTY_NAME="Ubuntu 26.04 LTS" — quoted by the spec, and some distributions leave the
-      // quotes off, so both shapes are accepted.
-      const found = /^PRETTY_NAME="?([^"\n]+)"?/m.exec(readFileSync('/etc/os-release', 'utf8'))
-      name = found?.[1]?.trim() ?? ''
-    } catch {
-      /* not a Linux with an os-release, or it is unreadable — the kernel answers instead */
-    }
-    if (!name) {
-      const version = (release().match(/^\d+\.\d+/) ?? [''])[0]
-      name = `${type()}${version ? ` ${version}` : ''}`
-    }
-    osCache = name
-  }
-  // The arch in parentheses, not behind a third `·`: the footer joins ITS facts with the
-  // same separator, and two weights of the same mark turn one fact into two.
-  return `${osCache} (${process.arch})`
-}
+const osLine = (): string => machineLabel()
 
 async function systemInfo() {
   let dbReachable = true
@@ -107,7 +86,7 @@ async function systemInfo() {
     database: 'SQLite',
     dbReachable,
     storage: 'Local filesystem',
-    runtime: `Bun ${Bun.version}`,
+    runtime: runtimeLabel(),
     framework: 'Hono',
     // The three VERSIONS the footer prints, and the one number that says how long this
     // process has been up. The line used to read "SQLite · online · Local filesystem" — three

@@ -26,3 +26,19 @@ import type { RegexEngine } from 'shiki'
 export type ShikiEnginePort = {
   regexEngine: () => Promise<RegexEngine>
 }
+
+/** `password.ts`: argon2id, with the parameters `@/auth/password` passes (ADR 0068). */
+export type PasswordPort = {
+  hash: (password: string, params: { memoryCost: number; timeCost: number }) => Promise<string>
+  /** False for a wrong password AND for a hash that will not parse; never throws. */
+  verify: (password: string, hash: string) => Promise<boolean>
+}
+
+/** `runtime-info.ts`: what to call this runtime on the dashboard's system line. */
+export type RuntimeInfoPort = {
+  runtimeLabel: () => string
+  /** The machine it runs on, e.g. `Ubuntu 26.04 LTS (x64)`. */
+  machineLabel: () => string
+  /** The raw contents of the build's commit file, or null; `server/build-info.ts` validates it. */
+  readBuildSha: () => string | null
+}
