@@ -8,8 +8,8 @@
 # runner, never a workstation. It writes /opt/quireink and /var/lib/quireink and removes them.
 #
 # `cloudflare-dev` is the Cloudflare package under `wrangler dev`: a Bun blog moved into the real
-# worker through `/setup/restore`, then smoked like the rest (`scripts/ops/cloudflare-dev.ts`). It
-# builds this tree; installing it on Cloudflare for real is L10, from the release manager's machine.
+# worker through `/setup/restore`, crawled against Bun page by page, toured in full (286 flows on
+# 2026-10-03) and smoked like the rest (`scripts/ops/cloudflare-dev.ts`). It builds this tree; installing it on Cloudflare for real is L10, from the release manager's machine.
 #
 # Run from the repository root, with the tags fetched (`git fetch --tags`). Each cell builds its
 # own world under a temporary directory and tears it down, so cells can run side by side.
@@ -199,7 +199,7 @@ EOF
 
   cloudflare-dev)
     say "the Cloudflare build of this tree, a Bun blog moved into it, smoked"
-    ( cd "$REPO" && bun run build >/dev/null && bun run build:worker && bun scripts/ops/cloudflare-dev.ts )
+    ( cd "$REPO" && bun run build >/dev/null && bun run build:worker && FULL_TOUR=1 bun scripts/ops/cloudflare-dev.ts )
     ;;
 
   server-http)

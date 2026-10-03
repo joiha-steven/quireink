@@ -52,7 +52,7 @@ to that point, for 30 days, from the dashboard or the API).
 - The **Deploy to Cloudflare** button, so none of the above needs a terminal.
 - **Move to Cloudflare** from a running Quire Ink on a VPS, Docker or a NAS, with its posts.
 - A **one-click upgrade** in the admin.
-- The full tour of the product on this runtime, and a crawl that serves the same backup from Bun and
-  from Cloudflare and compares every page. (Every release already moves a Bun blog onto this build
-  through `/setup/restore` and runs the install smoke on it: the twelve core flows, a backup that
-  restores to what Bun had, and MCP.)
+- A run on Cloudflare itself before every release, not only under `wrangler dev`. (Every release
+  already moves a Bun blog onto this build through `/setup/restore`, compares every page with Bun's,
+  runs the whole tour of the product — 286 flows — and checks that a backup taken there restores to
+  what Bun had.)

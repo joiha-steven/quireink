@@ -37,8 +37,8 @@ On any behavior change, update the matching doc in the SAME change:
   installed fresh and upgraded from the release before on data that release's own seeder wrote,
   each smoke-tested (`scripts/smoke.ts`: twelve tour flows, `/api/health` naming the version and
   the package, `restore-check`, MCP over the wire), plus `server.sh` run on a blank runner, plus the Cloudflare
-  build under `wrangler dev` with a Bun blog moved into it through `/setup/restore` (`cloudflare-dev`, whose
-  `restore-check` compares against the Bun blog's files: Bun → Cloudflare → Bun). `publish.yml` waits for every cell as it waits for CI. A
+  build under `wrangler dev` with a Bun blog moved into it through `/setup/restore` (`cloudflare-dev`: every
+  page compared with Bun's, the full tour, and a `restore-check` against the Bun blog's files: Bun → Cloudflare → Bun). `publish.yml` waits for every cell as it waits for CI. A
   change to anything an install touches — `install.sh`, `scripts/upgrade.ts`, the `Dockerfile`,
   the entrypoint, `server.sh`, a migration — is worth one local `scripts/ops/matrix.sh <cell>` before the tag,
   because the matrix is the only thing that installs it the way an owner does.

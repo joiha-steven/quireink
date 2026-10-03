@@ -17,7 +17,8 @@
 // Bun → archive → Cloudflare → archive → restore must give back what Bun had.
 //
 // Everything lives under `.tmp/cloudflare-dev/` and goes when it ends. KEEP=1 leaves both running
-// state on disk for a look afterwards.
+// state on disk for a look afterwards; FULL_TOUR=1 also drives every flow of the tour against the
+// worker before the smoke.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process'
 import { mkdirSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
@@ -106,6 +107,16 @@ const parity = spawnSync(process.execPath, ['scripts/parity.ts', bunUrl, cfUrl],
 bun.kill('SIGTERM')
 if (parity.status !== 0 && process.env.PARITY_SOFT !== '1') fail('the two runtimes serve different pages for the same data')
 
+// ----- 3¾. FULL_TOUR=1: every flow of the tour, not only the smoke's twelve ----------------------
+
+let tourFailed = false
+if (process.env.FULL_TOUR === '1') {
+  const tour = spawnSync(process.execPath, ['scripts/tour.ts', cfUrl], {
+    cwd: ROOT, stdio: 'inherit', env: { ...process.env, QUIRE_SESSION: session },
+  })
+  tourFailed = tour.status !== 0
+}
+
 // ----- 4. the same smoke as every package ------------------------------------------------------
 
 const smoke = spawnSync(process.execPath, ['scripts/smoke.ts', cfUrl], {
@@ -117,7 +128,8 @@ const smoke = spawnSync(process.execPath, ['scripts/smoke.ts', cfUrl], {
 })
 stopAll()
 if (process.env.KEEP !== '1') rmSync(WORK, { recursive: true, force: true })
-if (smoke.status !== 0) {
+if (tourFailed) console.error('✗ cloudflare-dev: the full tour failed on workerd (above)')
+if (smoke.status !== 0 || tourFailed) {
   console.error(`✗ cloudflare-dev: the smoke failed on workerd\n${log.slice(-2500)}`)
   process.exit(1)
 }
