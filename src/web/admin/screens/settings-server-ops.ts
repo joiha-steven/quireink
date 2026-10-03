@@ -120,7 +120,7 @@ function upgradeHow(t: AdminStrings): string {
   const pkg = readEnv().package
   const command = UPGRADE_COMMAND[pkg]
   const note = pkg === 'source' ? t.updateHowSource : pkg === 'docker' ? t.updateHowDocker : t.updateHowCloudflare
-  return `<div class="mt-5" data-upgrade-how="${pkg}">` + settingRow({
+  return `<div class="mt-5">` + settingRow({
     label: t.updateHowLabel,
     note,
     control: command

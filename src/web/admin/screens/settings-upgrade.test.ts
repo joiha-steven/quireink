@@ -26,7 +26,7 @@ function card(pkg: string, u: UpdateStatus = behind): string {
 describe('how to upgrade', () => {
   it('gives a source install bun run upgrade, and nothing for an image', () => {
     const html = card('source')
-    expect(html).toContain('data-upgrade-how="source"')
+    expect(html).toContain(t.updateHowSource)
     expect(html).toContain('bun run upgrade')
     expect(html).not.toContain('docker compose pull')
   })
@@ -44,6 +44,6 @@ describe('how to upgrade', () => {
   })
 
   it('says nothing about upgrading when there is nothing newer', () => {
-    expect(card('source', { blockedBy: null, update: { state: 'current' } })).not.toContain('data-upgrade-how')
+    expect(card('source', { blockedBy: null, update: { state: 'current' } })).not.toContain(t.updateHowLabel)
   })
 })
