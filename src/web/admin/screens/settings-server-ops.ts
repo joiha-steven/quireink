@@ -23,6 +23,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteSettings } from '@/types'
 import type { UpdateState } from '@/server/update-check'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { readEnv, type Package } from '@/env'
 import { SHEET_TOOL, SHEET_TOOL_DANGER, buttonClass } from '@/admin-shared/kit'
 import { META, NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { group, panelCard, settingRow, switchList, switchRow, textControl, textField } from '@/web/admin/fields'
@@ -97,6 +98,34 @@ function updates(t: AdminStrings, s: SiteSettings, u: UpdateStatus): string {
     control: `<a href="${escapeAttr(r.url)}" target="_blank" rel="noopener noreferrer"`
       + ` class="${META} underline underline-offset-2 hover:text-neutral-900 dark:hover:text-white">`
       + `${escapeHtml(t.updateAvailableLink)} (${escapeHtml(r.date)}) ↗</a>`,
+  }) + `</div>` + upgradeHow(t)
+}
+
+/** The command each package upgrades with (ADR 0065); Cloudflare has none to type. */
+const UPGRADE_COMMAND: Record<Package, string | null> = {
+  source: 'bun run upgrade',
+  docker: 'docker compose pull && docker compose up -d',
+  cloudflare: null,
+}
+
+const COPY_BOX = 'flex min-h-9 min-w-0 flex-1 items-center truncate rounded-lg border'
+
+/**
+ * HOW, under the news that there is something to upgrade to, and only the way that applies to
+ * THIS install: the package says which (`QUIREINK_PACKAGE`). A screen that listed all three would
+ * hand a Docker owner `bun run upgrade`, which on their machine either fails or, worse, builds a
+ * second copy beside the container. `select-all`, so one click takes the whole command.
+ */
+function upgradeHow(t: AdminStrings): string {
+  const pkg = readEnv().package
+  const command = UPGRADE_COMMAND[pkg]
+  const note = pkg === 'source' ? t.updateHowSource : pkg === 'docker' ? t.updateHowDocker : t.updateHowCloudflare
+  return `<div class="mt-5" data-upgrade-how="${pkg}">` + settingRow({
+    label: t.updateHowLabel,
+    note,
+    control: command
+      ? `<code class="${COPY_BOX} select-all bg-neutral-50 px-2 font-mono text-xs dark:bg-neutral-900">${escapeHtml(command)}</code>`
+      : '',
   }) + `</div>`
 }
 

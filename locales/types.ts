@@ -254,6 +254,11 @@ export type AdminStrings = {
   updateAvailable: string
   updateAvailableNote: string
   updateAvailableLink: string
+  /** How to upgrade, under the news of a newer release: one note per package (ADR 0065). */
+  updateHowLabel: string
+  updateHowSource: string
+  updateHowDocker: string
+  updateHowCloudflare: string
   /** Tooltip on the green dot beside the version. */
   updateCurrent: string
   // Settings -> Site. One zone for the whole site: post dates, month markers, analytics days.

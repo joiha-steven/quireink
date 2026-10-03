@@ -14,6 +14,10 @@
   new version. If any step fails it checks the old release out again, rebuilds, restarts, and names
   the copy of the database the new version took before migrating. It never goes back on purpose.
   Replaces the four commands in `docs/self-host.md` §9.
+- **Settings → Server shows how to upgrade, for this install only.** Under the news that a newer
+  release exists: `bun run upgrade` for a checkout, `docker compose pull && docker compose up -d`
+  for the image (or the NAS app's Update button), and syncing the fork for Cloudflare. In all
+  eleven languages.
 
 ### Changed
 
