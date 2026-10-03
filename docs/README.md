@@ -46,6 +46,7 @@ copies of a rule means one is wrong within a month
 | [performance.md](performance.md) | The resource-loading law: images, fonts, CSS split, island JS, and the no-inline-script rule |
 | [navigation-speculation.md](navigation-speculation.md) | Prefetch every link, prerender on hover: the journey BETWEEN pages |
 | [install.md](install.md) | Every way to install, on one table: package, file, upgrade, limits |
+| [self-host-cloudflare.md](self-host-cloudflare.md) | Quire Ink on Cloudflare (beta): why Workers Paid, installing from source, upgrading |
 | [runtimes.md](runtimes.md) | Bun and Cloudflare: one codebase, and the seven things each does its own way |
 | [delivery.md](delivery.md) | What the server does before it answers: the render cache, the switch, the CDN purge, compression |
 | [admin-design.md](admin-design.md) | The admin visual contract |

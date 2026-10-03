@@ -26,7 +26,7 @@ upgraded by the release matrix before anything is published (`.github/workflows/
 | Kubernetes | D | [`deploy/kubernetes/`](../deploy/kubernetes/README.md) | Change the pinned tag | No Caddy: the ingress terminates TLS | [deploy/kubernetes/README.md](../deploy/kubernetes/README.md) |
 | A DigitalOcean droplet | D | [`deploy/digitalocean/user-data.sh`](../deploy/digitalocean/user-data.sh), a shell around `server.sh` | As the blank-server row | As the blank-server row | [deploy/digitalocean/README.md](../deploy/digitalocean/README.md) |
 | A server you run yourself, with Bun | S | [`install.sh`](../install.sh), then systemd and nginx | `bun run upgrade` (goes back by itself if the new release does not come up) | You keep the machine | [self-host.md](self-host.md) |
-| Cloudflare (beta, from G6) | C | [`wrangler.jsonc`](../wrangler.jsonc) | Sync the fork; Workers Builds deploys | Workers Paid only ($5/month) | [runtimes.md](runtimes.md) |
+| Cloudflare (beta) | C | [`wrangler.jsonc`](../wrangler.jsonc) | `bun run deploy` from the newer release | Workers Paid only ($5/month); beta | [self-host-cloudflare.md](self-host-cloudflare.md) · [runtimes.md](runtimes.md) |
 
 ## Rules that keep this table true
 
