@@ -99,6 +99,17 @@ for (const k of new Set([...bunKeys, ...cfKeys, ...docKeys])) {
   if (!docKeys.includes(k)) faults.push(`L5: ${k} has no row in docs/runtimes.md`)
 }
 
+// ---- P4.4: every page that teaches an install is reached from docs/install.md ----------------
+
+const installIndex = read('docs/install.md')
+for (const page of ['docs/self-host.md', 'docs/self-host-docker.md', 'docs/runtimes.md', 'deploy/kubernetes/README.md', 'deploy/digitalocean/README.md']) {
+  const linked = page.startsWith('docs/') ? `(${page.slice('docs/'.length)}` : `(../${page}`
+  if (!installIndex.includes(linked)) faults.push(`P4.4: docs/install.md does not link ${page}`)
+}
+if (existsSync(join(ROOT, 'docs/self-host-cloudflare.md')) && !installIndex.includes('(self-host-cloudflare.md')) {
+  faults.push('P4.4: docs/install.md does not link docs/self-host-cloudflare.md')
+}
+
 // ---- I5 -------------------------------------------------------------------------------------
 
 const skill = read('.claude/skills/quireink-install/SKILL.md')

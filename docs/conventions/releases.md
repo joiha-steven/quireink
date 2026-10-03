@@ -64,6 +64,9 @@ On any behavior change, update the matching doc in the SAME change:
   their own server. A NAS and a Kubernetes cluster get no Caddy, and that is deliberate: not a
   bug, and it surprises somebody. A paragraph that lists only what was added is an advertisement; the limits are what make it a
   release note.
+  **When the packages differ, the limits are said per package** (source, image, Cloudflare —
+  [install.md](../install.md)): a limit true of one install and not another, stated without saying
+  which, is wrong for somebody.
 
 - **A feature that arrives SWITCHED OFF has to be named in the release note.** Some defaults
   change after this software already has installs, and an existing blog is deliberately left
