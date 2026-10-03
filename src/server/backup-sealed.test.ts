@@ -1,7 +1,7 @@
 // THE SEAL, WHERE IT ACTUALLY HAPPENS.
 //
 // `backup-crypt.test.ts` proves the envelope. This proves the PIPELINE puts the archive in one:
-// a real `buildArchive` against a real database and a real uploads tree, opened again with the
+// a real `archiveStream` against a real database and a real uploads tree, opened again with the
 // identity the route handed over, and untarred. The two are separate on purpose — a format that
 // round-trips in isolation while the builder never calls it is the failure this file exists for.
 
@@ -12,7 +12,12 @@ import { createPrivateKey } from 'node:crypto'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { saveSettings, getSettings } from '@/content/settings'
 import { DEFAULT_BACKUPS } from '@/content/settings-defaults'
-import { buildArchive, encryptReady, isSnapshotName, snapshotName } from '@/server/backup'
+import { encryptReady, isSnapshotName, snapshotName } from '@/server/backup'
+import { archiveStream } from '@/server/archive'
+
+const buildArchive = async (dest: string): Promise<void> => {
+  await Bun.write(dest, await new Response(await archiveStream()).arrayBuffer())
+}
 import { db } from '@/test/sqlite'
 import { sanitizeBackups } from '@/content/settings-sanitize'
 import {
@@ -95,7 +100,7 @@ describe('an archive the owner asked to be sealed', () => {
     const back = `${DIR}/back.tar.gz`
     await Bun.write(back, plain)
     const listed = await Bun.$`tar -tzf ${back}`.quiet().text()
-    expect(listed).toContain('quire.db')
+    expect(listed).toContain('content/settings.jsonl')
     expect(listed).toContain('uploads/photo.jpg')
   })
 
@@ -118,7 +123,7 @@ describe('an archive the owner asked to be sealed', () => {
     const plainPath = `${DIR}/plain.tar.gz`
     await buildArchive(plainPath)
     const gz = Buffer.from(await Bun.file(plainPath).arrayBuffer())
-    expect(await Bun.$`tar -xzOf ${plainPath} quire.db`.quiet().arrayBuffer()
+    expect(await Bun.$`tar -xzOf ${plainPath} content/settings.jsonl`.quiet().arrayBuffer()
       .then((b) => Buffer.from(b).includes(secret))).toBe(true)
     expect(gz.subarray(0, 2)).toEqual(Buffer.from([0x1f, 0x8b]))
 

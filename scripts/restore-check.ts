@@ -1,21 +1,24 @@
 // A backup nobody has restored is not a backup.
 //
 // `bun run tour` proves the archive BUILDS — it reads two bytes and confirms a gzip member.
-// That is the cheap half. It cannot tell you the databases inside open, that they hold the
-// owner's rows, or that the uploads tree came along, and every one of those has failed
+// That is the cheap half. It cannot tell you the archive restores, that what comes back holds
+// the owner's rows, or that the uploads tree came along, and every one of those has failed
 // somewhere in this project's history: a snapshot taken as a file copy captures a torn
 // write-ahead log that only reveals itself on restore, and the uploads directory has been read
 // from one path and written to another for months with no test going red.
 //
-// So this opens the archive and checks what a restore would actually get:
+// So this RESTORES the archive, with the same code `scripts/restore.ts` runs (ADR 0067), into a
+// scratch directory, and checks what a restore actually got:
 //
-//   1. the three members are there                — an archive missing uploads/ looks fine
-//   2. `pragma integrity_check` on both databases — a torn snapshot fails here and nowhere else
-//   3. every row count matches the live instance  — a VACUUM INTO that raced a write does not
+//   1. it restores at all                         — decrypted, every table rebuilt from rows,
+//                                                   each one hashing back to the manifest's
+//                                                   SHA-256, foreign keys whole
+//   2. `integrity_check` on both rebuilt files    — the restore made real databases
+//   3. no table has fewer rows than the live one  — a copy that raced a write does not
 //   4. every upload is byte-identical             — the failure mode that has actually bitten
 //
 // Run against a THROWAWAY instance, which `scripts/ops/tour.sh` hands it. It only reads: live
-// databases are opened read-only and the extraction goes under `.tmp/`.
+// databases are opened read-only and the restore goes under `.tmp/`.
 //
 //   bun scripts/restore-check.ts http://127.0.0.1:3399
 //
@@ -23,11 +26,9 @@
 // was started with, because the comparison is against ITS files.
 
 import { Database } from 'bun:sqlite'
-import { existsSync, readdirSync, renameSync, rmSync, statSync } from 'node:fs'
-import { createPrivateKey } from 'node:crypto'
-import { MAGIC, decodeSecret } from '@/server/backup-crypt'
-import { decryptFile } from './backup-decrypt'
+import { existsSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { restoreArchive } from './restore-lib'
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:3399'
 const SESSION = process.env.QUIRE_SESSION ?? ''
@@ -69,13 +70,13 @@ const SHADOW = /_fts($|_)/
  * perfectly good restore. This is the list to argue with; the one above is derived.
  */
 const TRANSIENT: Record<string, string> = {
-  // Deleted from the copy on purpose: `backup.ts` drops it before tarring, because it was 530
-  // of the 538 MB. Counting it would fail every single run.
-  render_cache: 'dropped from the archive on purpose',
+  // Left out of the archive on purpose (`store/rows.ts`), because it was 530 of the 538 MB.
+  // Counting it would fail every single run.
+  render_cache: 'left out of the archive on purpose',
   // The other half of the same cache since ADR 0062, dropped by the same code for the same
   // reason. It went red the first run after the split, which is the list doing its job: a
   // table that empties itself into the archive has to be argued for out loud, once.
-  body_cache: 'dropped from the archive on purpose',
+  body_cache: 'left out of the archive on purpose',
   // These drain, expire or are rewritten in the ordinary course of a minute, so "fewer rows
   // than before" is their normal state and says nothing about the archive.
   ap_queue: 'a delivery queue, drains as it is delivered',
@@ -84,7 +85,7 @@ const TRANSIENT: Record<string, string> = {
   update_check: 'a one-row cache of the last look',
 }
 
-function contentTables(dbPath: string): string[] {
+function tablesOf(dbPath: string): string[] {
   const db = new Database(dbPath, { readonly: true, strict: true })
   try {
     return (db.query(
@@ -96,8 +97,6 @@ function contentTables(dbPath: string): string[] {
     db.close()
   }
 }
-
-const ANALYTICS_TABLES = ['analytics_events', 'analytics_scroll'] as const
 
 function counts(dbPath: string, tables: readonly string[]): Record<string, number> {
   // Read-only: this opens the LIVE database of a running server, and a stray write here
@@ -202,13 +201,12 @@ await Bun.$`mkdir -p ${WORK}`.quiet()
 // looked, and may never hold less.
 const liveContent = join(DATA_DIR, 'quire.db')
 const liveAnalytics = join(DATA_DIR, 'analytics.db')
-// Derived from the LIVE database, before the archive exists. Taking it from the archive
+// Derived from the LIVE databases, before the archive exists. Taking them from the archive
 // instead would mean a table the restore lost is a table nobody thought to count.
-const TABLES = existsSync(liveContent) ? contentTables(liveContent) : []
+const TABLES = existsSync(liveContent) ? tablesOf(liveContent) : []
+const ANALYTICS_TABLES = existsSync(liveAnalytics) ? tablesOf(liveAnalytics) : []
 const before = existsSync(liveContent) ? counts(liveContent, TABLES) : null
-const beforeAnalytics = existsSync(liveAnalytics)
-  ? counts(liveAnalytics, ANALYTICS_TABLES)
-  : null
+const beforeAnalytics = existsSync(liveAnalytics) ? counts(liveAnalytics, ANALYTICS_TABLES) : null
 // The uploads are listed here for the SAME reason, and step 4 used to read them afterwards.
 // Image variants are built on demand, so anything that renders a page mid-export writes new
 // files into this directory — a `-1024.avif` that did not exist when the snapshot was taken
@@ -228,47 +226,39 @@ const archive = join(WORK, 'backup.tar.gz')
 await Bun.write(archive, await res.arrayBuffer())
 say(true, `the archive downloaded (${Math.round(statSync(archive).size / 1024)} KB)`)
 
-// SEALED OR NOT, DECIDED BY THE BYTES (ADR 0060).
-//
-// ⚠️ SNIFFED RATHER THAN ASKED. This script does not read the instance's settings — it only
-// has a session and a base URL — and the file it was handed is named by the route, not by it.
-// The first nine bytes say what the archive is, which is the whole reason the envelope opens
-// with a word instead of with a length.
-//
-// ⚠️ AND IT REFUSES TO PASS QUIETLY. An encrypted archive with no key here is not "nothing to
-// check": it is the one case where this harness could report a clean restore having restored
-// nothing. `QUIRE_BACKUP_IDENTITY` is the key the tour's own instance was set up with.
-if (Buffer.from(await Bun.file(archive).slice(0, 9).arrayBuffer()).toString() === MAGIC) {
-  const secret = (process.env.QUIRE_BACKUP_IDENTITY ?? '').trim()
-  if (!secret) {
-    console.log('✗ the archive is encrypted and QUIRE_BACKUP_IDENTITY is not set — cannot check it')
-    process.exit(1)
-  }
-  const sealed = join(WORK, 'backup.sealed')
-  renameSync(archive, sealed)
-  await decryptFile(sealed, archive, createPrivateKey({
-    key: Buffer.concat([Buffer.from('302e020100300506032b656e04220420', 'hex'), decodeSecret(secret)]),
-    format: 'der', type: 'pkcs8',
-  }))
-  say(true, `the archive decrypted (${Math.round(statSync(archive).size / 1024)} KB)`)
-}
+// ----- 1. it restores, by the owner's own command -----------------------------------------
 
-// BSD tar and GNU tar both extract this; only the deploy's `--transform` needs GNU.
-const extract = await Bun.$`tar -xzf ${archive} -C ${WORK}`.quiet().nothrow()
-if (extract.exitCode !== 0) {
-  console.log(`✗ tar refused the archive: ${extract.stderr.toString().trim()}`)
+// SEALED OR NOT is decided by the archive's first bytes inside the restore (ADR 0060), never by
+// this script, which only has a session and a base URL. ⚠️ AND IT REFUSES TO PASS QUIETLY: an
+// encrypted archive with no key here fails the restore with `needs-key` rather than being
+// "nothing to check". `QUIRE_BACKUP_IDENTITY` is the key the tour's own instance was set up with.
+const RESTORED = join(WORK, 'restored')
+const restoredData = join(RESTORED, 'data')
+const restoredUploads = join(RESTORED, 'uploads')
+let restoredOk = false
+try {
+  const report = await restoreArchive({
+    archive, dataDir: restoredData, uploadsDir: restoredUploads,
+    keys: { identity: process.env.QUIRE_BACKUP_IDENTITY },
+  })
+  restoredOk = true
+  say(report.format === 'rows', report.format === 'rows'
+    ? `the archive restored as rows (${report.sealed ? 'sealed, ' : ''}written by ${report.version}): ${report.tables.length} tables, each hashing back to its manifest digest`
+    : 'the archive is in the old file format — this build writes quire-rows/1')
+} catch (error) {
+  say(false, `the archive would not restore: ${(error as Error).message}`)
+}
+if (!restoredOk) {
+  rmSync(WORK, { recursive: true, force: true })
+  if (probeUrl) await removeProbe(probeUrl)
+  console.log(`\n${failures.length} restore check(s) failed`)
   process.exit(1)
 }
 
-for (const member of ['quire.db', 'analytics.db']) {
-  say(existsSync(join(WORK, member)), `the archive carries ${member}`)
-}
-
-// ----- 2. the databases open, and are not torn -------------------------------------------
+// ----- 2. the rebuilt databases are databases ---------------------------------------------
 
 for (const member of ['quire.db', 'analytics.db']) {
-  const path = join(WORK, member)
-  if (!existsSync(path)) continue
+  const path = join(restoredData, member)
   let verdict = 'unreadable'
   try {
     const db = new Database(path, { readonly: true, strict: true })
@@ -278,7 +268,7 @@ for (const member of ['quire.db', 'analytics.db']) {
   } catch (error) {
     verdict = (error as Error).message
   }
-  say(verdict === 'ok', `${member} passes integrity_check${verdict === 'ok' ? '' : `: ${verdict}`}`)
+  say(verdict === 'ok', `the rebuilt ${member} passes integrity_check${verdict === 'ok' ? '' : `: ${verdict}`}`)
 }
 
 // ----- 3. the rows the owner would miss ---------------------------------------------------
@@ -286,25 +276,25 @@ for (const member of ['quire.db', 'analytics.db']) {
 if (before === null) {
   say(false, `no live database at ${liveContent} to compare against (set DATA_DIR)`)
 } else {
-  const kept = counts(join(WORK, 'quire.db'), TABLES)
+  const kept = counts(join(restoredData, 'quire.db'), TABLES)
   const lost = TABLES.filter((t) => (kept[t] ?? 0) < (before[t] ?? 0))
   say(lost.length === 0, lost.length === 0
     ? `every row survived (${TABLES.length} tables: ${TABLES.map((t) => `${t} ${kept[t]}`).join(', ')})`
     : `rows lost: ${lost.map((t) => `${t} ${before[t]}→${kept[t]}`).join(', ')}`)
 }
 
-if (beforeAnalytics && existsSync(join(WORK, 'analytics.db'))) {
-  const kept = counts(join(WORK, 'analytics.db'), ANALYTICS_TABLES)
+if (beforeAnalytics) {
+  const kept = counts(join(restoredData, 'analytics.db'), ANALYTICS_TABLES)
   const lost = ANALYTICS_TABLES.filter((t) => (kept[t] ?? 0) < (beforeAnalytics[t] ?? 0))
   say(lost.length === 0, lost.length === 0
-    ? `analytics survived (events ${kept.analytics_events}, scroll ${kept.analytics_scroll})`
+    ? `analytics survived (${ANALYTICS_TABLES.map((t) => `${t} ${kept[t]}`).join(', ')})`
     : `analytics rows lost: ${lost.map((t) => `${t} ${beforeAnalytics[t]}→${kept[t]}`).join(', ')}`)
 }
 
 // ----- 4. the uploads, byte for byte ------------------------------------------------------
 
 const liveFiles = liveFilesBefore
-const keptFiles = filesUnder(join(WORK, 'uploads'))
+const keptFiles = filesUnder(restoredUploads)
 const missing = liveFiles.filter((f) => !keptFiles.includes(f))
 say(missing.length === 0, missing.length === 0
   ? `all ${liveFiles.length} upload(s) are in the archive`
@@ -314,7 +304,7 @@ const differing: string[] = []
 for (const f of liveFiles) {
   if (missing.includes(f)) continue
   const a = await Bun.file(join(UPLOADS, f)).arrayBuffer()
-  const b = await Bun.file(join(WORK, 'uploads', f)).arrayBuffer()
+  const b = await Bun.file(join(restoredUploads, f)).arrayBuffer()
   if (a.byteLength !== b.byteLength || Bun.hash(new Uint8Array(a)) !== Bun.hash(new Uint8Array(b))) {
     differing.push(f)
   }
@@ -325,7 +315,7 @@ if (liveFiles.length) {
     : `${differing.length} upload(s) differ: ${differing.slice(0, 5).join(', ')}`)
 }
 
-// The extraction is scratch and holds a copy of the owner's whole database; it does not
+// The restore is scratch and holds a copy of the owner's whole database; it does not
 // outlive the run. Neither does the probe image — a check that leaves rows behind changes
 // what the next run is testing, which is the rule the tour flows already follow.
 rmSync(WORK, { recursive: true, force: true })
@@ -336,4 +326,4 @@ if (failures.length) {
   console.log(`${failures.length} restore check(s) failed`)
   process.exit(1)
 }
-console.log('the archive restores: databases open, rows match, uploads intact')
+console.log('the archive restores: rows hash to the manifest, databases whole, nothing lost, uploads intact')

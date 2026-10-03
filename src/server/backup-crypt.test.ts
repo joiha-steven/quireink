@@ -31,7 +31,7 @@ const PKCS8 = Buffer.from('302e020100300506032b656e04220420', 'hex')
 const identityOf = (secret: string) =>
   createPrivateKey({ key: Buffer.concat([PKCS8, decodeSecret(secret)]), format: 'der', type: 'pkcs8' })
 
-/** Seal a whole buffer the way `buildArchive` does: header, pushes, then end. */
+/** Seal a whole buffer the way `archiveStream` does: header, pushes, then end. */
 function seal(plain: Buffer, recipients: string[], salt: string, pushes = 1): Buffer {
   const s = sealer(recipients, salt)
   const out = [s.header()]

@@ -1,7 +1,7 @@
 // The envelope a backup archive travels in, when the owner has asked for one (ADR 0060).
 //
-// WHAT THIS PROTECTS AND WHAT IT CANNOT. The archive is a `VACUUM INTO` of both databases
-// plus the uploads tree, so it carries `smtp_pass`, the AI key, the Cloudflare token, the S3
+// WHAT THIS PROTECTS AND WHAT IT CANNOT. The archive holds every row of both databases plus
+// the uploads tree (ADR 0067), so it carries `smtp_pass`, the AI key, the Cloudflare token, the S3
 // pair, `users.totp_secret`, the fediverse actor's private key and every subscriber's address.
 // It is also the one artifact here that LEAVES the machine: up to a bucket, and down to the
 // owner's laptop and onward. This closes that, and only that. A reader with root on the box
@@ -171,6 +171,9 @@ export const passphraseIdentity = (
   secretFromSeed(scryptSync(passphrase, Buffer.from(salt), 32, {
     N: cost.n, r: cost.r, p: cost.p, maxmem: 256 * cost.n * cost.r,
   }))
+
+/** The identity an owner saved (`quire-backup-key-1…`), as the key `unseal` takes. Throws when it is not one. */
+export const identityFromSecret = (text: string): KeyObject => secretFromSeed(decodeSecret(text.trim()))
 
 type Stanza = { t: 'x25519'; eph: string; key: string; tag: string }
 type Header = { v: 1; recipients: Stanza[]; kdf: { n: number; r: number; p: number; salt: string }; chunk: number }

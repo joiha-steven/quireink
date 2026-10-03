@@ -57,8 +57,8 @@ async function askPassphrase(): Promise<string> {
 /**
  * Open `src` into `dest`.
  *
- * Exported because `scripts/restore-check.ts` uses it: the harness that proves a backup restores
- * has to walk the same path the owner would, or it proves that a DIFFERENT file restores.
+ * Exported for a script that wants the plaintext tar on disk. Restoring does not need it:
+ * `scripts/restore.ts` opens a sealed archive on the way, through `server/archive-open.ts`.
  */
 export async function decryptFile(
   src: string, dest: string, identity: Parameters<typeof unseal>[1],
@@ -195,10 +195,11 @@ async function encrypt(): Promise<void> {
   await out.end()
 }
 
-// ⚠️ `import.meta.main`, AND IT IS NOT DEFENSIVE TIDINESS. `restore-check.ts` imports
-// `decryptFile` from this file, and without this guard that import RUNS the command line below
+// ⚠️ `import.meta.main`, AND IT IS NOT DEFENSIVE TIDINESS. `restore-check.ts` imported
+// `decryptFile` from this file, and without this guard that import RAN the command line below
 // against the restore check's own argv — whose first bare word is the base URL, so the harness
-// would try to decrypt `http://127.0.0.1:3399` and exit 1 before checking anything.
+// tried to decrypt `http://127.0.0.1:3399` and exited 1 before checking anything. Any importer
+// would meet the same.
 if (!import.meta.main) {
   // Imported for `decryptFile`. Nothing else here runs.
 } else if (has('--help') || argv.length === 0) {

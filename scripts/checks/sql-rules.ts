@@ -33,9 +33,7 @@ const DRIVER_SAY = 'go through @/store/query; a connection belongs to src/store/
  * Still breaking rule 3, and why. A ratchet like `check:runtime`'s: a new file fails, and a listed
  * file that stops breaking it fails until it comes off, so this only ever shrinks.
  */
-const DRIVER_PENDING: Record<string, string> = {
-  'src/server/backup.ts': 'opens its own VACUUM INTO copy to drop the caches; goes with the row archive (ADR 0067, G1.8)',
-}
+const DRIVER_PENDING: Record<string, string> = {}
 
 function walk(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

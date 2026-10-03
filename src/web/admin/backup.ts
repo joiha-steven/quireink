@@ -13,13 +13,11 @@
 // All owner-gated by where they are mounted (Invariant 4). What a snapshot IS, and why it
 // is built the way it is, lives in `src/server/backup.ts`.
 
-import { mkdtemp, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import {
-  buildArchive, deleteSnapshot, encryptReady, isSnapshotName, lastRunAt, listSnapshots,
-  runBackup, snapshotName, snapshotsDir,
+  deleteSnapshot, encryptReady, isSnapshotName, lastRunAt, listSnapshots, runBackup, snapshotName,
 } from '@/server/backup'
+import { archiveStream } from '@/server/archive'
+import { openKept, stage } from '@/runtime/impl/archive'
 import { newIdentity, passphraseRecipient } from '@/server/backup-crypt'
 import { getSettings } from '@/content/settings'
 import { saveSettings } from '@/content/settings-save'
@@ -39,72 +37,53 @@ export function backupRoutes() {
   // ----- take a copy away -----------------------------------------------------
 
   /**
-   * Build a file into a staging directory, stream it out, and sweep when the stream ends.
+   * Build a download, hold it until it is whole, then stream it out (`ArchivePort.stage`).
    *
    * ONE of these, for two downloads. The backup archive and the Markdown bundle are different
    * documents answering different questions, but getting them to the browser is the same job,
    * and it is a job with a trap in it that was found the hard way (see below). Two copies of
    * this would be two chances to reintroduce it.
+   *
+   * Held first rather than piped straight to the response, because the length has to be
+   * declared before the first byte — a browser download without one has no progress bar — and
+   * because a build that fails halfway must answer 500, not a 200 that stops short. STREAMED
+   * from where it is held: reading the whole archive into memory to send it held a second copy
+   * of a file the build had just held one of, and on a store near the 5 GB default quota that is
+   * the difference between a download and an OOM.
    */
   const streamed = async (
     c: Context,
     kind: string, name: string, type: string,
-    build: (path: string) => Promise<unknown>,
+    build: () => Promise<ReadableStream<Uint8Array>> | ReadableStream<Uint8Array>,
     log: (size: number) => void,
   ) => {
-    // A temp directory rather than the snapshots directory: this one is the owner's copy, and
-    // leaving it behind would make it count towards retention.
-    const stage = await mkdtemp(join(tmpdir(), 'quire-export-'))
-    const path = join(stage, name)
     try {
-      await build(path)
-      // STREAMED, with the staging directory swept when the stream ends. Reading the whole
-      // archive into memory to send it meant the export held a second copy of a file the
-      // build had just held one of; on a store near the 5 GB default quota that is the
-      // difference between a download and an OOM. The length is still declared, because a
-      // browser download without one has no progress bar.
-      const file = Bun.file(path)
-      const size = file.size
-      const sweep = () => { void rm(stage, { recursive: true, force: true }) }
-      const source = file.stream().getReader()
-      const body = new ReadableStream<Uint8Array>({
-        async pull(controller) {
-          const { done, value } = await source.read()
-          if (done) { controller.close(); sweep(); return }
-          controller.enqueue(value)
-        },
-        // A reader who cancels the download still gets their temp directory back.
-        cancel() { source.cancel().catch(() => {}); sweep() },
-      })
-      log(size)
-      return new Response(body, {
+      const held = await stage(name, await build())
+      log(held.size)
+      return new Response(held.body, {
         headers: {
           'content-type': type,
           'content-disposition': `attachment; filename="${name}"`,
-          'content-length': String(size),
+          'content-length': String(held.size),
         },
       })
     } catch (error) {
-      // NO `finally`, and that is the trap: the response body is a stream that is read AFTER
-      // this handler returns, so sweeping here would delete the file out from under the
-      // download. The stream sweeps when it ends or is cancelled; this catches the case where
-      // there is no stream because the build threw.
-      await rm(stage, { recursive: true, force: true })
       console.error(`[ERROR] ${kind}: ${(error as Error).message}`)
       // ONE SENTENCE FOR BOTH, and the word is 'download' rather than 'archive': this
-      // handler now answers for the Markdown bundle too, and a bundle is not an archive.
+      // handler answers for the Markdown bundle too, and a bundle is not an archive.
       return fail(c, 'Could not build the download', 500)
     }
   }
 
   router.get('/api/backup/export', async (c) => {
     // Asked BEFORE the build rather than sniffed after it, because `streamed` needs the name
-    // and the type up front. `buildArchive` reads the same settings a moment later, and the
-    // settings cache is what keeps the two answers the same.
-    const sealed = encryptReady(await getSettings())
+    // and the type up front — and the same settings are handed to the builder, so the name and
+    // the envelope cannot disagree.
+    const settings = await getSettings()
+    const sealed = encryptReady(settings)
     return streamed(c, 'backup.export', snapshotName(new Date(), sealed),
       sealed ? 'application/octet-stream' : 'application/gzip',
-      (path) => buildArchive(path), (size) => logActivity('backup.export', mb(size)))
+      () => archiveStream(settings), (size) => logActivity('backup.export', mb(size)))
   })
 
   /**
@@ -117,7 +96,7 @@ export function backupRoutes() {
    */
   router.get('/api/export/markdown', async (c) =>
     streamed(c, 'export.markdown', exportName(), 'application/zip',
-      (path) => buildExportZip(path), (size) => logActivity('export.markdown', mb(size))))
+      () => buildExportZip(), (size) => logActivity('export.markdown', mb(size))))
 
   // ----- the copies kept here -------------------------------------------------
 
@@ -144,8 +123,8 @@ export function backupRoutes() {
     // to read any file this process can reach.
     if (!isSnapshotName(name)) return fail(c, 'Unknown snapshot', 400)
 
-    const file = Bun.file(join(snapshotsDir(), name))
-    if (!(await file.exists())) return fail(c, 'Unknown snapshot', 404)
+    const file = await openKept(name)
+    if (!file) return fail(c, 'Unknown snapshot', 404)
     return new Response(file, {
       headers: {
         'content-type': name.endsWith('.enc') ? 'application/octet-stream' : 'application/gzip',

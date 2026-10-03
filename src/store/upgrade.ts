@@ -32,7 +32,7 @@ export const copyBeforeMigrating = (conn: Connection, path: string, step: string
  * handed back was sitting in `data/backups/`, and a disk without room for a second whole
  * database refused the boot, which under `restart: always` is a loop.
  *
- * Emptying them is safe for the same reason the backup drops them (`server/backup.ts`): both
+ * Emptying them is safe for the same reason the backup leaves them out (`store/rows.ts`): both
  * are rebuilt on demand, and step 019 empties `render_cache` anyway. Both spelled out, each
  * behind its own existence check, since a database from before 019 has only the first.
  */

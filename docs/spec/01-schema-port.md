@@ -138,12 +138,15 @@ from a fixed lookup table, never interpolated from input. This is the one place 
 assemble SQL from a variable **on the request path**, and the allowlist is the reason.
 
 There is one other site in the codebase, found by a sweep on 2026-08-22 while this
-paragraph still said "the one place": `server/backup.ts` builds `vacuum into '<path>'`.
+paragraph still said "the one place": `server/backup.ts` built `vacuum into '<path>'`.
 SQLite accepts no bound parameter for that filename, so there is no parameterised form to
 reach for; the path is one this process just made with `mkdtemp`, never a request or a
 setting, and its quotes are doubled. `store/upgrade.ts` (ADR 0063) became a second on
-2026-09-22, the same way, with a path derived from the data directory; that code has lived in
-`runtime/bun/snapshot.ts` since 2026-10-03 (ADR 0066). `runtime/bun/db.ts` interpolates two `pragma` statements as
+2026-09-22, the same way, with a path derived from the data directory; both live in
+`runtime/bun/snapshot.ts` since 2026-10-03 (ADR 0066, and `consistentCopy` for the backup
+since ADR 0067). The row archive's `store/rows.ts` interpolates table and column names read
+from `sqlite_master`: identifiers of the database's own schema, each checked against a plain
+name and double-quoted, never a value. `runtime/bun/db.ts` interpolates two `pragma` statements as
 well, and those are inside the rule already — a module constant and a closed `'FULL' |
 'NORMAL'` union, both fixed identifiers rather than values.
 

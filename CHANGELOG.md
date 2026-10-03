@@ -30,13 +30,25 @@
 ### Fixed
 
 - **A backup taken on Linux while a picture's smaller copies were being written failed with a 500**
-  and `tar: uploads: file changed as we read it`; the same request a second later worked. GNU tar
-  reports a file that changed under it with exit 1 and writes a whole archive anyway; BSD tar, on a
-  Mac, says nothing, which is why it never showed up there. That one warning is now logged and the
-  archive kept; any other tar complaint is still a failure. Found by the new install matrix, in the
-  image.
+  and `tar: uploads: file changed as we read it`; the same request a second later worked. Found by
+  the new install matrix, in the image. The archive is no longer written by `tar` at all (see
+  Changed); a file deleted while the archive is being written is now left out with a line in the
+  log, and the backup kept.
 
 ### Changed
+
+- **The backup archive holds rows, not database files** ([ADR 0067](docs/decisions/0067-the-backup-is-rows-and-goes-only-into-an-empty-blog.md)).
+  Same name, same place, same seal when encryption is on; inside, a `manifest.json`, each
+  database's `schema.sql`, one `.jsonl` file per table and the uploads as before. The manifest
+  records every table's row count and a SHA-256 of its rows, so a restore can prove nothing was
+  lost or changed. It is written as it streams, so its size is never bounded by memory, and it is
+  the same archive Quire Ink on Cloudflare will write.
+- **Restoring is one command:** `bun scripts/restore.ts <archive> --data-dir <dir>` (add
+  `--identity` or `--passphrase` for a sealed one), with the service stopped. It reads both the
+  new archives and every older one, refuses a data directory that still holds a database, rebuilds
+  and checks everything in a staging directory first, and moves the files into place only when all
+  of it has passed. `docs/backups.md` has the procedure; the `sqlite3` lines for old archives still
+  work.
 
 - **Every compose file runs the published image.** `docker-compose.yml` and
   `docker-compose.caddy.yml` said `build: .` and were upgraded with `git pull`, which built

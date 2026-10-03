@@ -242,7 +242,7 @@ describe('a blog leaves and comes back', () => {
 
     const dir = mkdtempSync(join(tmpdir(), 'quire-roundtrip-'))
     const dest = join(dir, 'export.zip')
-    await buildExportZip(dest)
+    await Bun.write(dest, await new Response(buildExportZip()).arrayBuffer())
     const bytes = await Bun.file(dest).arrayBuffer()
     try { rmSync(dir, { recursive: true, force: true }) } catch { /* ignore */ }
 

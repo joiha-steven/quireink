@@ -36,10 +36,10 @@ start if the port is taken (a tour on a busy port tours the wrong instance and f
 flow). `PORT=` moves it. Flows live in [`scripts/tour-flows.ts`](./scripts/tour-flows.ts); the
 browser plumbing is [`scripts/tour.ts`](./scripts/tour.ts).
 
-It then runs [`scripts/restore-check.ts`](./scripts/restore-check.ts), because a browser
-cannot untar an archive or open a SQLite file. The tour proves the backup BUILDS; this opens
-it — `integrity_check` on both databases, no table with fewer rows than before the snapshot except the rebuildable ones it skips on purpose,
-every upload byte-identical. A backup nobody has restored is not a backup.
+It then runs [`scripts/restore-check.ts`](./scripts/restore-check.ts): the tour proves the backup
+BUILDS; this restores it with `scripts/restore.ts`'s code — every table hashing back to the manifest,
+`integrity_check` on both rebuilt databases, no table with fewer rows than before the snapshot
+(caches aside), every upload byte-identical. A backup nobody has restored is not a backup.
 
 For one page, looked at rather than asserted: [`scripts/drive.ts`](./scripts/drive.ts) and
 [`scripts/shot.ts`](./scripts/shot.ts). Verify against the **origin**, never through the CDN. An install: `scripts/ops/matrix.sh <cell>` (ADR 0065).

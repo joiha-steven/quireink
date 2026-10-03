@@ -49,7 +49,7 @@ describe('replicateSnapshot', () => {
       'other/quire-2026-08-03T0100.tar.gz', // our shape, someone else's prefix
     ]
     const { client, calls } = fakeBucket(holding)
-    const ok = await replicateSnapshot('/tmp/x.tar.gz', 'quire-2026-08-27T0900.tar.gz', { client, prefix: 'blog/' })
+    const ok = await replicateSnapshot('quire-2026-08-27T0900.tar.gz', new Blob(['x']), { client, prefix: 'blog/' })
     expect(ok).toBe(true)
     expect(calls.written).toEqual(['blog/quire-2026-08-27T0900.tar.gz'])
     // keep=2: the new one + the newest old one stay; only the OLDEST of ours goes.
@@ -62,12 +62,12 @@ describe('replicateSnapshot', () => {
       list: async () => ({ contents: [] }),
       delete: async () => {},
     }
-    const ok = await replicateSnapshot('/tmp/x.tar.gz', 'quire-2026-08-27T0900.tar.gz', { client, prefix: '' })
+    const ok = await replicateSnapshot('quire-2026-08-27T0900.tar.gz', new Blob(['x']), { client, prefix: '' })
     expect(ok).toBe(false)
   })
 
   it('is a no-op with no bucket configured', async () => {
-    expect(await replicateSnapshot('/tmp/x.tar.gz', 'quire-2026-08-27T0900.tar.gz', null)).toBe(false)
+    expect(await replicateSnapshot('quire-2026-08-27T0900.tar.gz', new Blob(['x']), null)).toBe(false)
   })
 })
 

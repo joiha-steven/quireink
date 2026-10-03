@@ -20,11 +20,7 @@ import { getIndex, getPost } from '@/content/posts'
 import { getPageIndex, getPage } from '@/content/pages'
 import { getNoteIndex, getNote } from '@/content/notes'
 import { getSettings } from '@/content/settings'
-import { uploadsDir } from '@/server/backup'
 import { ZipWriter } from '@/import/zip-write'
-import { readdir, stat } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
-import { join, posix } from 'node:path'
 
 export type YamlValue = string | number | boolean | string[]
 
@@ -186,36 +182,34 @@ export async function exportTextFiles(): Promise<ExportFile[]> {
   return files.filter((f) => safeName(f.path))
 }
 
-/** Every file under the blob store, as `uploads/<relative path>` and its place on disk. */
-async function uploadEntries(root: string): Promise<{ name: string; from: string }[]> {
-  const out: { name: string; from: string }[] = []
-  const walk = async (dir: string, prefix: string): Promise<void> => {
-    for (const item of await readdir(dir, { withFileTypes: true })) {
-      const from = join(dir, item.name)
-      const name = posix.join(prefix, item.name)
-      if (item.isDirectory()) await walk(from, name)
-      else if (item.isFile() && safeName(name)) out.push({ name, from })
-    }
-  }
-  await walk(root, 'uploads')
-  return out
-}
-
 /**
- * Build the bundle at `dest`. Returns its size in bytes.
+ * Build the bundle, as bytes to pipe somewhere.
  *
- * Streamed to disk rather than assembled in memory, for the reason `buildArchive` learned by
- * being OOM-killed: the blob store may be gigabytes, and a download is not worth holding one.
+ * Streamed rather than assembled in memory, for the reason the backup archive learned by being
+ * OOM-killed: the blob store may be gigabytes, and a download is not worth holding one. The
+ * uploads come through the blob store (`@/runtime/impl/blob`), so the same code reads a
+ * directory on Bun and a bucket on Cloudflare.
  */
-export async function buildExportZip(dest: string): Promise<number> {
-  const sink = Bun.file(dest).writer()
-  const zip = new ZipWriter(sink)
-  for (const file of await exportTextFiles()) zip.addText(file.path, file.text)
-  const root = uploadsDir()
-  if (existsSync(root)) {
-    for (const entry of await uploadEntries(root)) await zip.addFile(entry.name, entry.from)
-  }
-  zip.finish()
-  await sink.end()
-  return (await stat(dest)).size
+export function buildExportZip(): ReadableStream<Uint8Array> {
+  const pipe = new TransformStream<Uint8Array, Uint8Array>()
+  const writer = pipe.writable.getWriter()
+  // The promise each write returns is what `addFile` waits on, which is the backpressure; a
+  // rejection there means the reader went away, and the failure arrives through `abort` below.
+  const zip = new ZipWriter({ write: (bytes) => writer.write(bytes).catch(() => undefined) })
+  void (async () => {
+    try {
+      for (const file of await exportTextFiles()) zip.addText(file.path, file.text)
+      const blob = await import('@/runtime/impl/blob')
+      for (const item of await blob.list()) {
+        const name = `uploads/${item.pathname}`
+        if (!safeName(name) || /\.[0-9a-f]{12}\.part$/.test(item.pathname)) continue
+        await zip.addFile(name, { size: item.size, stream: () => blob.stream(item.pathname) as ReadableStream<Uint8Array> })
+      }
+      zip.finish()
+      await writer.close()
+    } catch (error) {
+      await writer.abort(error).catch(() => undefined)
+    }
+  })()
+  return pipe.readable
 }

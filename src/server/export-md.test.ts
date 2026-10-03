@@ -223,7 +223,7 @@ describe('the archive', () => {
       await saveNote({ title: 'A note', content: 'x', status: 'published', date: PAST })
 
       const dest = join(dir, 'export.zip')
-      const size = await buildExportZip(dest)
+      const size = await Bun.write(dest, await new Response(buildExportZip()).arrayBuffer())
       expect(size).toBeGreaterThan(0)
 
       const dec = new TextDecoder()

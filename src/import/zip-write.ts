@@ -54,8 +54,15 @@ type Entry = {
   dos: { time: number; date: number }
 }
 
-/** Anything that takes bytes in order. `Bun.file(path).writer()` is one; an array is another. */
+/**
+ * Anything that takes bytes in order: an array, or a stream's writer. Whatever `write` returns is
+ * awaited while a file streams through, so a writer that answers with a promise holds the copy
+ * back to the pace of whoever reads the other end.
+ */
 export type ByteSink = { write(bytes: Uint8Array): unknown }
+
+/** A file to copy in: its size, known before its header, and its bytes. A `Blob` is one. */
+export type ZipSource = { size: number; stream(): ReadableStream<Uint8Array> }
 
 const enc = new TextEncoder()
 
@@ -101,9 +108,9 @@ export class ZipWriter {
     this.stamp = dosStamp(at)
   }
 
-  private put(bytes: Uint8Array): void {
-    this.sink.write(bytes)
+  private put(bytes: Uint8Array): unknown {
     this.offset += bytes.length
+    return this.sink.write(bytes)
   }
 
   /** The 30-byte local header, plus the name and any Zip64 extra. */
@@ -142,22 +149,21 @@ export class ZipWriter {
   }
 
   /**
-   * A file on disk: stored, and streamed a megabyte at a time.
+   * A stored file — an upload, through the blob store — copied as it streams.
    *
    * The size is taken ONCE, before the header is written, and exactly that many bytes are
    * then copied. A file being appended to while this runs would otherwise write more bytes
    * than its header declares, which produces an archive that opens and is wrong — the worst
    * of the three outcomes.
    */
-  async addFile(path: string, from: string): Promise<void> {
-    const file = Bun.file(from)
+  async addFile(path: string, file: ZipSource): Promise<void> {
     const size = file.size
     const name = enc.encode(path)
     const local = this.offset
     let crc = 0
     // The CRC is needed in the header, which is written first, so the file is read twice:
     // once to check it, once to copy it. Two sequential reads of a local file beat holding
-    // a video in memory, and this runs off the request path in a staging directory.
+    // a video in memory, and this runs off the request path.
     const stream = file.stream()
     for await (const chunk of stream) crc = crc32(chunk, crc)
     this.header(name, { crc, packed: size, unpacked: size, method: STORED })
@@ -166,12 +172,12 @@ export class ZipWriter {
       const room = size - written
       if (room <= 0) break
       const take = chunk.length <= room ? chunk : chunk.subarray(0, room)
-      this.put(take)
+      await this.put(take)
       written += take.length
     }
     // A file that SHRANK between the two reads would leave the archive short by the
     // difference, and every offset after it correct only by accident. Pad rather than lie.
-    if (written < size) this.put(new Uint8Array(size - written))
+    if (written < size) await this.put(new Uint8Array(size - written))
     this.entries.push({ name, local, crc, packed: size, unpacked: size, method: STORED, dos: this.stamp })
   }
 

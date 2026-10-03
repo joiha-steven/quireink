@@ -22,14 +22,11 @@ const SRC = join(ROOT, 'src')
 
 const FORBIDDEN = /from\s+['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:tls|node:child_process|cloudflare:[\w-]+|sharp)['"]|import\(\s*['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:tls|node:child_process|cloudflare:[\w-]+|sharp)['"]\s*\)|\bBun\.[A-Za-z]/
 
-/** Still crossing the seam, and where each is going. Shrinks to nothing; never grows. */
-const PENDING: Record<string, string> = {
-  'src/import/zip-write.ts': 'Bun.file -> the Archive port (G1.8)',
-  'src/server/backup-offsite.ts': 'Bun.S3Client, Bun.file -> the Archive port (G1.8)',
-  'src/server/backup.ts': 'tar via Bun.spawn -> the pure-JS archive writer (G1.8)',
-  'src/server/export-md.ts': 'Bun.file -> the Archive port (G1.8)',
-  'src/web/admin/backup.ts': 'Bun.file -> the Archive port (G1.8)',
-}
+/**
+ * Still crossing the seam, and where each is going. Empty since G1.8 (ADR 0067): the archive was
+ * the last, and it is plain JS now. A new entry here needs a reason the seam cannot take.
+ */
+const PENDING: Record<string, string> = {}
 
 const stripComments = (code: string): string =>
   code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1')

@@ -261,7 +261,7 @@ describe('the manual archive', () => {
   // The copy the owner takes away, as opposed to the snapshots the server keeps (those are
   // covered in server/backup.test.ts). Worth proving it is a real archive with the real
   // files in it, not an empty tarball.
-  it('builds a gzip archive holding both databases', async () => {
+  it('builds a gzip archive holding both databases, as rows', async () => {
     const res = await asOwner('/api/backup/export')
     expect(res.status).toBe(200)
     expect(res.headers.get('content-type')).toBe('application/gzip')
@@ -281,8 +281,9 @@ describe('the manual archive', () => {
     // And it really contains the databases: list the archive rather than trust its size.
     const listed = Bun.spawnSync(['tar', '-tzf', '-'], { stdin: bytes, stdout: 'pipe' })
     const names = new TextDecoder().decode(listed.stdout)
-    expect(names).toContain('quire.db')
-    expect(names).toContain('analytics.db')
+    expect(names).toContain('manifest.json')
+    expect(names).toContain('content/posts.jsonl')
+    expect(names).toContain('analytics/analytics_events.jsonl')
   })
 
   // It is built into a temp directory on purpose: leaving it in the snapshots directory

@@ -22,6 +22,7 @@ src/
     cache.ts            the in-process page cache (see below)
     edge-cache.ts       purgeEdge(), the Cloudflare purge behind it
     scheduled.ts warm.ts redirects.ts rate-limit.ts activity.ts backup.ts
+    archive.ts tar.ts   the backup archive as rows, and the tar it travels in (ADR 0067)
   content/              posts, pages, revisions, slugs, taxonomy, series, settings
   media/                media, files, blob, image variants (sharp)
   md/                   the Markdown engine: one parse, and from it the reader's HTML, the

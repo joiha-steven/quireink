@@ -19,13 +19,11 @@ import { getIntegrationKeys } from '@/store/integration-keys'
 import { getSettings } from '@/content/settings'
 import { isSnapshotName } from '@/server/backup'
 import { logActivity } from '@/server/activity'
+import { s3Client } from '@/runtime/impl/offsite'
+import type { OffsiteClient } from '@/runtime/ports'
 
-/** The three verbs this module needs — Bun's S3Client has them; a test fakes them. */
-export type OffsiteClient = {
-  write(key: string, data: Blob | ArrayBuffer | string): Promise<number>
-  list(opts?: { prefix?: string }): Promise<{ contents?: { key: string }[] } | null>
-  delete(key: string): Promise<void>
-}
+/** The three verbs this module needs (`src/runtime/ports.ts`); a test fakes them. */
+export type { OffsiteClient }
 
 export type OffsiteTarget = { client: OffsiteClient; prefix: string }
 
@@ -42,7 +40,7 @@ export function normalizePrefix(raw: string): string {
 export async function offsiteTarget(): Promise<OffsiteTarget | null> {
   const k = await getIntegrationKeys()
   if (!k.s3Bucket || !k.s3AccessKeyId || !k.s3SecretAccessKey) return null
-  const client = new Bun.S3Client({
+  const client = s3Client({
     accessKeyId: k.s3AccessKeyId,
     secretAccessKey: k.s3SecretAccessKey,
     bucket: k.s3Bucket,
@@ -62,14 +60,15 @@ export async function offsiteTarget(): Promise<OffsiteTarget | null> {
  * everything else it holds.
  */
 export async function replicateSnapshot(
-  localPath: string,
   name: string,
+  body: Blob,
   target?: OffsiteTarget | null,
 ): Promise<boolean> {
   const t = target !== undefined ? target : await offsiteTarget()
   if (!t) return false
   try {
-    await t.client.write(`${t.prefix}${name}`, Bun.file(localPath) as unknown as Blob)
+    // A Blob, which on Bun is the kept file itself read lazily: the archive is never in memory.
+    await t.client.write(`${t.prefix}${name}`, body)
 
     const { keep } = (await getSettings()).backups
     const listed = (await t.client.list({ prefix: t.prefix }))?.contents ?? []

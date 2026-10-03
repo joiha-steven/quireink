@@ -1,10 +1,11 @@
 // Snapshots, kept on this machine.
 //
-// One snapshot is a `tar.gz` holding both databases and the uploads tree — the same
-// archive the owner can download from Settings, written to a directory on the box instead
-// of streamed to a browser. The schedule and the retention count in Settings drive it, and
-// until now drove nothing: 2.0 dropped Google Drive (parity exception 1) and the fields
-// stayed behind pointing at a destination that no longer existed.
+// One snapshot is the archive `archive.ts` writes — both databases as rows and the uploads tree
+// (ADR 0067) — the same file the owner can download from Settings, kept in the runtime's
+// snapshot store (`@/runtime/impl/archive`; on Bun a directory beside the data) instead of
+// streamed to a browser. The schedule and the retention count in Settings drive it, and until
+// 2026-07-29 drove nothing: 2.0 dropped Google Drive (parity exception 1) and the fields stayed
+// behind pointing at a destination that no longer existed.
 //
 // A copy that lives beside the thing it is copying survives a bad delete, a bad restore
 // and a bad migration, and does not survive the disk — so every archive written here is
@@ -12,22 +13,14 @@
 // any S3-compatible store and prunes the remote copies to the same retention. The ops
 // script in `scripts/ops/quire-backup.sh` remains for fleets that would rather run their
 // own; `docs/backups.md` holds the map.
-//
-// The databases are copied through SQLite's own `VACUUM INTO` rather than read off disk: a
-// live database has a write-ahead log, and copying the file alone can capture a torn state
-// that only reveals itself on restore.
 
-import { mkdtemp, readdir, rm, stat, mkdir, rename } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
-import { existsSync } from 'node:fs'
-import { Database } from 'bun:sqlite'
-import { exec, analyticsQuery } from '@/store/query'
 import { getSettings } from '@/content/settings'
 import { replicateSnapshot } from '@/server/backup-offsite'
 import { logActivityError } from '@/server/activity'
-import { sealer } from '@/server/backup-crypt'
-import type { SiteSettings } from '@/types'
+import { archiveStream, encryptReady } from '@/server/archive'
+import { listKept, openKept, removeKept, writeKept } from '@/runtime/impl/archive'
+
+export { encryptReady }
 
 export type Snapshot = {
   name: string
@@ -35,24 +28,6 @@ export type Snapshot = {
   /** ISO 8601, from the file's own mtime. There is no state table; see `lastRunAt`. */
   createdAt: string
 }
-
-/** Where snapshots live. Beside the data by default, so one volume holds both. */
-export const snapshotsDir = (): string =>
-  resolve(process.env.BACKUP_DIR || join(process.env.DATA_DIR || './data', 'backups'))
-
-/** Where the blob store lives. Shared with the Markdown export, so the two agree by construction. */
-export const uploadsDir = (): string => resolve(process.env.STORAGE_LOCAL_DIR || './uploads')
-
-/**
- * Whether an archive written now would be sealed (ADR 0060).
- *
- * Three parts and not one boolean, the shape `ap/actor.ts` settled on: a switch with no
- * recipient behind it would be a green control over plaintext archives, which is worse than
- * an off switch because the owner stops worrying about it. The sanitiser refuses the flip too;
- * this is what everything downstream asks.
- */
-export const encryptReady = (s: SiteSettings): boolean =>
-  s.backups.encrypt && s.backups.pubKey !== '' && s.backups.passPub !== ''
 
 /**
  * `quire-2026-07-29T2040.tar.gz` — sortable, and unambiguous in a Downloads folder a year
@@ -89,178 +64,11 @@ export function snapshotName(now = new Date(), sealed = false): string {
 export const isSnapshotName = (name: string): boolean =>
   /^quire-\d{4}-\d{2}-\d{2}T\d{4}(\d{2})?\.tar\.gz(\.enc)?$/.test(name)
 
-/**
- * The rendered-HTML caches do not go in the archive. Both of them: the body's table and
- * the highlighter's (ADR 0062).
- *
- * MEASURED ON A REAL BLOG, 2026-09-13: `quire.db` was 538 MB, of which `render_cache` was
- * 530.3 MB. Everything a reader has ever written — 90 posts, their revisions, every setting —
- * came to about 8 MB. So 98.5% of every backup was a derived artifact, and the owner's
- * archives had grown 185 → 229 → 253 → 263 MB over four weeks of writing almost nothing.
- *
- * That is not merely wasteful. The archive is the thing somebody downloads on their worst
- * day, and 263 MB through a CDN with a request timeout is a download that can fail where a
- * 30 MB one cannot. A backup nobody can take away is not a backup — which is how this was
- * found: the owner tried, on the day the cache had grown past what the button could carry.
- *
- * The cache is a pure function of the Markdown beside it, keyed by a hash of that Markdown.
- * Restoring without it costs the first reader of each post one render, once.
- *
- * Emptied on the COPY, never on the live database: `VACUUM INTO` has already taken a
- * consistent snapshot by this point, and the running blog keeps its cache.
- */
-function dropRenderCache(snapshot: string): void {
-  const copy = new Database(snapshot)
-  try {
-    // BOTH cache tables, since ADR 0062 split the body out of `render_cache`, and both
-    // spelled OUT: a loop over table names would have to build its `delete` from a variable,
-    // which is the one thing this file already does once and says not to generalise from.
-    // An archive from before that split has only the first table, and one from before either
-    // has neither — hence the existence check per table rather than one for the pair.
-    const has = (table: string): boolean =>
-      copy.query("select 1 from sqlite_master where type='table' and name = ?").get(table) !== null
-    const hadRenderCache = has('render_cache')
-    const hadBodyCache = has('body_cache')
-    if (!hadRenderCache && !hadBodyCache) return
-    if (hadRenderCache) copy.exec('delete from render_cache')
-    if (hadBodyCache) copy.exec('delete from body_cache')
-    // Without this the file keeps the pages the rows used to sit in and the archive is no
-    // smaller. VACUUM is what actually gives the space back.
-    copy.exec('vacuum')
-  } finally {
-    copy.close()
-  }
-}
-
-/**
- * Build one archive at `dest`. Throws with tar's own stderr if it fails.
- *
- * Shared with the download route, so the file the owner takes by hand and the file the
- * schedule writes are the same artifact built by the same code. Two builders would drift,
- * and the one that drifted would be the one nobody exercised.
- */
-export async function buildArchive(dest: string): Promise<number> {
-  // A staging directory, so the consistent database copies and the uploads tree can be
-  // tarred as one tree with sensible names inside the archive.
-  const stage = await mkdtemp(join(tmpdir(), 'quire-backup-'))
-  try {
-    // VACUUM INTO takes a consistent snapshot of a live database, WAL included, and writes
-    // a single compact file. This is the reason not to copy quire.db directly.
-    //
-    // ⚠️ THE ONE PLACE OUTSIDE `analytics/aggregate.ts` THAT ASSEMBLES SQL FROM A VARIABLE,
-    // and it is deliberate rather than an oversight — noted here on 2026-08-22, when a sweep
-    // found the schema doc still calling that the codebase's only such site.
-    //
-    // `VACUUM INTO` takes a filename, and SQLite does not accept a bound parameter there:
-    // there is no parameterised form of this statement to reach for. What goes in is a path
-    // this process just made with `mkdtemp` under the system temp directory — never a
-    // request, never a setting, never anything a reader can touch — and the single quotes
-    // are doubled, which is SQLite's own escape for a string literal.
-    //
-    // Do not generalise from it. The rule in CLAUDE.md stands: a VALUE is bound, always.
-    const snapshot = join(stage, 'quire.db')
-    exec(`vacuum into '${snapshot.replace(/'/g, "''")}'`)
-    analyticsQuery.exec(`vacuum into '${join(stage, 'analytics.db').replace(/'/g, "''")}'`)
-    dropRenderCache(snapshot)
-
-    const uploads = uploadsDir()
-    // To STDOUT, then written here. NOT `-f <dest>`: GNU tar reads an `-f` argument
-    // containing a colon as `host:path` and tries to reach a remote machine, so an absolute
-    // Windows path fails with "Cannot connect to C" and the whole feature is untestable on
-    // the machine it is written on.
-    const args = ['-czf', '-', '-C', stage, 'quire.db', 'analytics.db']
-    // The uploads tree is added from its own parent, so it unpacks as `uploads/`
-    // regardless of where it lives on this machine.
-    if (existsSync(uploads)) args.push('-C', resolve(uploads, '..'), uploads.split(/[\\/]/).pop()!)
-
-    const proc = Bun.spawn(['tar', ...args], { stdout: 'pipe', stderr: 'pipe' })
-    // PUMPED, not buffered. This used to read the whole archive into memory and then write
-    // it, on the argument that a few hundred megabytes held briefly costs nothing off the
-    // request path — but `STORAGE_QUOTA_GB` is 5 by default, so on a blog of photographs the
-    // hourly backup tick spiked resident memory by the size of the store and the process was
-    // OOM-killed with nothing in the log but a restart.
-    //
-    // Handing `proc.stdout` straight to `Bun.write` is what deadlocks on Windows, and this
-    // is not that: the loop below reads every chunk as it arrives, so tar is never left
-    // blocked on a full pipe, and the writer applies backpressure the other way.
-    // SEALED HERE OR NOWHERE (ADR 0060). This is the one builder, shared by the download route
-    // and the schedule and read back off disk by the off-site copy, so an envelope applied in
-    // this loop reaches all three and cannot be forgotten by the fourth caller somebody adds.
-    // It is also the only place with the plaintext in hand a chunk at a time: anywhere later
-    // would mean a second pass over the owner's whole blob store.
-    const settings = await getSettings()
-    const seal = encryptReady(settings)
-      ? sealer([settings.backups.pubKey, settings.backups.passPub], settings.backups.passSalt)
-      : null
-
-    const writer = Bun.file(dest).writer()
-    const reader = proc.stdout.getReader()
-    try {
-      if (seal) await writer.write(seal.header())
-      for (;;) {
-        const { done, value } = await reader.read()
-        if (done) break
-        await writer.write(seal ? seal.push(value) : value)
-      }
-      // NOT optional and not merely the tail: `end()` writes the final frame with the flag
-      // that says it is final, which is what stops a truncated archive opening as a whole one.
-      if (seal) await writer.write(seal.end())
-    } finally {
-      reader.releaseLock()
-      await writer.end()
-    }
-    const code = await proc.exited
-    const verdict = tarVerdict(code, await new Response(proc.stderr).text())
-    if (verdict.error) throw new Error(verdict.error)
-    if (verdict.warning) console.warn(`[WARN] backup: ${verdict.warning}`)
-    return (await stat(dest)).size
-  } finally {
-    await rm(stage, { recursive: true, force: true })
-  }
-}
-
-/**
- * Whether tar's exit means the archive is whole.
- *
- * ⚠️ GNU TAR EXITS 1 FOR "file changed as we read it", and the archive it wrote is complete.
- * Found by the release matrix on 2026-10-03 (ADR 0065): in the image, a backup taken while the
- * maintenance tick was writing the variants of a picture just uploaded answered 500 —
- * `tar: uploads: file changed as we read it` — and the same request a second later answered 200.
- * A Mac never shows it, because its tar is BSD tar, which does not complain; every Linux server
- * and every container does. The variants are written to a temporary name and renamed
- * (`media/finalize.ts`), so what changed under tar is the directory listing, never the bytes of
- * a file it copied. Exit 1 with ONLY that warning on stderr is therefore success, said in the
- * log; exit 1 with anything else, or any other code, is still a failure.
- */
-export function tarVerdict(code: number, stderr: string): { error?: string; warning?: string } {
-  if (code === 0) return {}
-  const lines = stderr.split('\n').map((l) => l.trim()).filter(Boolean)
-  if (code === 1 && lines.length > 0 && lines.every((l) => /file changed as we read it$/.test(l))) {
-    return { warning: `a file changed while it was archived, which tar reports and the archive survives: ${lines.join('; ')}` }
-  }
-  return { error: `tar exited ${code}: ${lines.join('\n')}` }
-}
-
-/** Newest first. An unreadable or absent directory is an empty list, not an error. */
+/** Newest first. An unreadable or absent store is an empty list, not an error. */
 export async function listSnapshots(): Promise<Snapshot[]> {
-  const dir = snapshotsDir()
-  let names: string[]
-  try {
-    names = await readdir(dir)
-  } catch {
-    return []
-  }
-
-  const found: Snapshot[] = []
-  for (const name of names) {
-    if (!isSnapshotName(name)) continue
-    try {
-      const info = await stat(join(dir, name))
-      found.push({ name, size: info.size, createdAt: new Date(info.mtimeMs).toISOString() })
-    } catch {
-      // Vanished between the listing and the stat. Not worth an error.
-    }
-  }
+  const found = (await listKept())
+    .filter((f) => isSnapshotName(f.name))
+    .map((f) => ({ name: f.name, size: f.size, createdAt: new Date(f.mtimeMs).toISOString() }))
   // By NAME, which is the time it was taken. An mtime sort would reorder the list after a
   // file copy or a restore touched it.
   return found.sort((a, b) => b.name.localeCompare(a.name))
@@ -288,42 +96,30 @@ export function runBackup(): Promise<Snapshot> {
 }
 
 async function takeSnapshot(): Promise<Snapshot> {
-  const dir = snapshotsDir()
-  await mkdir(dir, { recursive: true })
-
-  const name = snapshotName(new Date(), encryptReady(await getSettings()))
-  const dest = join(dir, name)
-  // WRITTEN BESIDE ITS NAME, then renamed: a failure removes only its own `.part`, never a
-  // finished snapshot that happens to share the name. `.part` is not a snapshot name, so a
-  // half-written one is never listed, pruned into retention, or offered for download.
-  const part = `${dest}.part`
-  let size: number
-  try {
-    size = await buildArchive(part)
-    await rename(part, dest)
-  } catch (error) {
-    // A half-written archive is worse than none: it counts towards retention and it looks
-    // like a backup until the day someone opens it.
-    await rm(part, { force: true })
-    throw error
-  }
+  const settings = await getSettings()
+  const name = snapshotName(new Date(), encryptReady(settings))
+  // All or nothing (`ArchivePort.writeKept`): a failure leaves neither this name nor a half-written
+  // file behind. A half-written archive is worse than none: it counts towards retention and it
+  // looks like a backup until the day someone opens it.
+  const size = await writeKept(name, await archiveStream(settings))
 
   const { keep } = (await getSettings()).backups
   for (const old of (await listSnapshots()).slice(Math.max(1, keep))) {
-    await rm(join(dir, old.name), { force: true })
+    await removeKept(old.name)
   }
 
   // And off the machine (ADR 0035): every snapshot the schedule or the button writes is
   // also PUT into the configured bucket. Awaited, so the cron tick's report is truthful —
-  // but a bucket outage never fails the backup; the archive above is already on disk.
-  await replicateSnapshot(dest, name)
+  // but a bucket outage never fails the backup; the archive above is already kept.
+  const kept = await openKept(name)
+  if (kept) await replicateSnapshot(name, kept)
 
   return { name, size, createdAt: new Date().toISOString() }
 }
 
 export async function deleteSnapshot(name: string): Promise<boolean> {
   if (!isSnapshotName(name)) return false
-  await rm(join(snapshotsDir(), name), { force: true })
+  await removeKept(name)
   return true
 }
 

@@ -102,7 +102,7 @@ describe('the ZIP writer', () => {
 
       const c = collector()
       const zip = new ZipWriter(c.sink, AT)
-      await zip.addFile('uploads/photo.webp', path)
+      await zip.addFile('uploads/photo.webp', Bun.file(path))
       zip.finish()
 
       const out = unzip(c.bytes())

@@ -70,7 +70,7 @@ describe('the offsite path over a real wire', () => {
     const archive = `${DIR}/quire-2026-08-27T1200.tar.gz`
     await Bun.write(archive, 'archive-bytes')
 
-    expect(await replicateSnapshot(archive, 'quire-2026-08-27T1200.tar.gz', target())).toBe(true)
+    expect(await replicateSnapshot('quire-2026-08-27T1200.tar.gz', Bun.file(archive), target())).toBe(true)
     // The bytes arrived, not just the name.
     expect(new TextDecoder().decode(held.get('blog/quire-2026-08-27T1200.tar.gz'))).toBe('archive-bytes')
     // keep=2 pruned the oldest of OURS; the neighbour survives.

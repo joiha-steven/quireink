@@ -12,10 +12,12 @@ my writing somewhere else" and is [its own section below](#the-markdown-export-n
 | **Off-server, built in** | any S3-compatible bucket (R2, S3, MinIO) | "the machine is gone" | [`src/server/backup-offsite.ts`](../src/server/backup-offsite.ts) (ADR 0035) |
 | **Off-server, ops script** | R2, hourly + daily tiers | the same, for a fleet running its own shipping | [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) |
 
-All four take the same `VACUUM INTO` snapshot of both databases plus the uploads tree. They
-differ only in where the file ends up and who decides when — and, since 2.2.14, in whether it
-is [sealed](#encryption) on the way out, which the first three inherit from one switch and the
-ops script takes as a variable.
+The first three are one archive, written by one builder ([`src/server/archive.ts`](../src/server/archive.ts)):
+every row of both databases plus the uploads tree ([ADR 0067](decisions/0067-the-backup-is-rows-and-goes-only-into-an-empty-blog.md)).
+They differ only in where the file ends up and who decides when — and, since 2.2.14, in whether
+it is [sealed](#encryption) on the way out, which they inherit from one switch. The ops script
+still packs `VACUUM INTO` copies of the two database files, the format every archive had before
+ADR 0067; [`scripts/restore.ts`](#restoring) reads both.
 
 A sibling under the same env-var convention, [`scripts/ops/quire-uptime.sh`](../scripts/ops/quire-uptime.sh),
 watches a list of URLs from cron and announces DOWN/UP through the same webhook file the
@@ -33,7 +35,8 @@ overwrite every table in itself is a bigger risk than the one it removes.
 Both live in **Settings → Server & connections → Backups**, and both are owner-only.
 
 **Export** builds an archive into a temp directory and streams it to the browser, sweeping
-the directory when the stream ends or the reader cancels. It is deliberately not kept on the
+the directory when the stream ends or the reader cancels (it is held first so the download
+can declare its length, which is what gives the browser a progress bar). It is deliberately not kept on the
 server, so taking a copy never pushes a scheduled snapshot out of the retention window. ⚠ It
 did not stream until 2026-09-07: both the build and the send read the whole archive into
 memory, so an export held two copies of it and the hourly snapshot held one. With
@@ -53,11 +56,11 @@ the default reaches only installs that never chose.
 - **Due-ness is measured from the newest file on disk**, not from a recorded run time. There
   is no state table, so nothing can go stale, deleting every snapshot asks for a fresh one,
   and a machine restored from a copy does not believe it already has today's.
-- **A snapshot cannot be restored from the admin**, and that is the design. Restoring means
-  replacing the database files the running process holds open; doing it correctly means
-  stopping the service, which is the shell procedure below. An application that can
-  overwrite itself is the risk parity exception 1 removed, and it is not coming back through
-  this door.
+- **A snapshot cannot be restored over a running blog from the admin**, and that is the
+  design. Restoring means replacing the database files the running process holds open; doing
+  it correctly means stopping the service, which is the shell procedure below. An application
+  that can overwrite itself is the risk parity exception 1 removed, and it is not coming back
+  through this door.
 - Retention prunes **after** the new archive is written. Pruning first would use less peak
   disk and would delete a good backup to make room for one that then failed.
 - **These are on the same disk as the thing they copy.** They survive a bad edit, a bad
@@ -89,9 +92,30 @@ not know about each other; running both against one bucket is harmless but point
 
 ## What it copies
 
+The archive (`quire-<stamp>.tar.gz`, `.enc` when sealed) is a gzipped tar in the format
+`quire-rows/1`:
+
+    manifest.json            the format, the version that wrote it, when; per database the
+                             migration ledger and every table's columns, row count and the
+                             SHA-256 of its rows
+    content/schema.sql       the SQL that recreates quire.db's shape
+    content/<table>.jsonl    one JSON array per row, in the manifest's column order
+    analytics/…              the same for analytics.db
+    uploads/…                the blob store, file for file
+
+Every table is carried, found in the database itself rather than listed by hand, except the two
+render caches (below) and the full-text indexes, which the triggers rebuild as the rows go back
+in. The rows are read from a `VACUUM INTO` copy taken when the archive starts, **never from the
+live file**: a live SQLite database has a write-ahead log, and reading it while the blog writes
+can capture a state that never existed. Rows rather than database files because a Cloudflare
+Durable Object can neither `VACUUM` nor hand over a file, and because a row stream is written a
+page at a time — the archive's size is never bounded by memory.
+
+The ops script copies the same way in its own terms:
+
 | | How | Why that way |
 |---|---|---|
-| `quire.db`, `analytics.db` | `VACUUM INTO` a temporary file, then `tar -czf` | **Never a file copy.** A live SQLite database has a write-ahead log, and copying the file can capture a torn state that only reveals itself on restore |
+| `quire.db`, `analytics.db` | `VACUUM INTO` a temporary file, then `tar -czf` | **Never a file copy**, for the write-ahead-log reason above |
 | `uploads/` | `rclone sync` with `--backup-dir` | A deleted or overwritten file stays recoverable for 7 days instead of vanishing on the next run |
 
 **An upgrade takes one of its own, and it is not one of these four.** A boot with a pending
@@ -101,8 +125,9 @@ It empties both render caches in the live database first, then takes a bare `VAC
 no uploads, no archive, no encryption — so it is
 a floor under an upgrade rather than a backup, and it does not replace any of the four below.
 
-**Both render caches are emptied out of the copy, not backed up** (2026-09-13;
-`body_cache` joined `render_cache` there with ADR 0062). Each is a pure function of the
+**Neither render cache is backed up** (2026-09-13; `body_cache` joined `render_cache` there
+with ADR 0062; since ADR 0067 their rows are simply not written, and their empty tables come
+back with the schema). Each is a pure function of the
 Markdown beside it, checked against a hash of that Markdown, so a restore rebuilds them on the first
 read of each post. What it cost to carry was not small: measured on the
 author's blog, `quire.db` was 538 MB of which the cache was 530.3 MB, so **98.5% of every
@@ -165,7 +190,8 @@ bun scripts/backup-decrypt.ts quire-<tag>.tar.gz.enc --identity key.txt
 bun scripts/backup-decrypt.ts quire-<tag>.tar.gz.enc --passphrase
 ```
 
-Either writes `quire-<tag>.tar.gz` beside it, and from there the restore below is unchanged.
+Either writes `quire-<tag>.tar.gz` beside it. You rarely need to: `scripts/restore.ts` below
+takes the same `--identity` and `--passphrase` and decrypts on the way.
 The script ships inside the image and needs nothing running. If it is gone too, ADR 0060
 describes the format completely enough to rebuild a reader from it — which is why it is written
 out there rather than pointed at in code.
@@ -210,32 +236,60 @@ if they matter, or use the built-in off-site copy, which puts everything in the 
 
 ## Restoring
 
-The same procedure for all four, because all four produce the same archive. The service
-has to stop: copying a database under a running process is the torn-state problem the
-backup itself avoids, in the other direction. That is also why there is no restore button.
+The same procedure for every archive, whichever of the four wrote it and whichever format it is
+in. The service has to stop: replacing a database under a running process is the torn-state
+problem the backup itself avoids, in the other direction. That is also why there is no restore
+button on a blog that already has content.
 
 ```sh
-# If the name ends .enc, open it first (see Encryption above):
-#   bun scripts/backup-decrypt.ts quire-<tag>.tar.gz.enc --passphrase
+systemctl stop quire
+mv /var/lib/quire/data/quire.db /var/lib/quire/data/quire.db.before      # and analytics.db
+bun scripts/restore.ts quire-<tag>.tar.gz --data-dir /var/lib/quire/data --uploads-dir /var/lib/quire/uploads
+#   sealed: add --identity key.txt or --passphrase
+systemctl start quire
+```
+
+[`scripts/restore.ts`](../scripts/restore.ts) refuses a data directory that still holds
+`quire.db` or `analytics.db` — nothing is ever overwritten, and the files you moved aside are the
+way back if this was the wrong archive. It builds in a staging directory and moves the two files
+into place only once all of it has passed:
+
+- **A `quire-rows/1` archive** is rebuilt: each database from the archive's own `schema.sql` (the
+  shape it was written in), every row inserted with foreign keys off and the full-text triggers
+  on, then checked — every table dumped again must hash to the SHA-256 in the manifest,
+  `foreign_key_check` must find nothing and `integrity_check` must say ok. A row count proves
+  nothing was lost; the hash proves nothing was changed.
+- **An archive from before ADR 0067** holds the two database files. They are copied out and must
+  pass `integrity_check` before they are moved anywhere — the two `sqlite3` lines this section
+  used to ask you to type.
+
+Either way the uploads land in `--uploads-dir` (default: `uploads` beside the data directory),
+refusing any file already there. The next start migrates the databases forward as on any
+upgrade, taking its own copy first ([ADR 0063](decisions/0063-an-upgrade-copies-first-and-gives-the-space-back.md)).
+
+Without Bun on the machine, an old archive restores by hand exactly as it always did:
+
+```sh
 tar -xzf quire-<tag>.tar.gz -C /tmp/restore
 sqlite3 /tmp/restore/quire.db 'pragma integrity_check;'   # expect: ok
-sqlite3 /tmp/restore/quire.db 'select count(*) from posts;'
 systemctl stop quire && cp /tmp/restore/*.db /var/lib/quire/data/ && systemctl start quire
 ```
 
 > Archives written before 2026-08-01 are named `quire2-<tag>.tar.gz`. Same contents; only the
 > prefix changed when the script stopped being named after one installation.
 
-**Do this on a schedule, not only when something is on fire.** Run the two `sqlite3` lines
-above against a real archive and check the post count against what the site actually shows:
-an untested backup is a belief, not a backup.
+**Do this on a schedule, not only when something is on fire.** Restore a real archive into a
+scratch directory (`--data-dir /tmp/restore/data --uploads-dir /tmp/restore/uploads`) and check
+the post count against what the site actually shows: an untested backup is a belief, not a
+backup.
 
 ### The same questions, asked automatically
 
 `bun run tour` ends with [`scripts/restore-check.ts`](../scripts/restore-check.ts), which
-takes the export from a throwaway instance and asks what the lines above ask: both databases
-pass `integrity_check`, no table came back with fewer rows than it had before the snapshot,
-and every upload is byte-identical. It uploads one image first, because the seeded fixture
+takes the export from a throwaway instance and restores it with `scripts/restore.ts`'s own code:
+every table must hash back to its manifest digest, both rebuilt databases must pass
+`integrity_check`, no table may come back with fewer rows than it had before the snapshot, and
+every upload must be byte-identical. It uploads one image first, because the seeded fixture
 writes `media` ROWS and no files — without that, the uploads assertion passes over an empty
 directory forever, which reads as coverage and is not.
 

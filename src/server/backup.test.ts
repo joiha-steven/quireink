@@ -1,8 +1,7 @@
-// Snapshots on disk. Real archives are built here rather than mocked: the whole feature is
-// a `tar` call and a directory listing, and a test that stubbed either would be testing
-// nothing that can break.
+// Snapshots on disk. Real archives are built here rather than mocked, and read back with the
+// system's own `tar`: a test that stubbed the writer would be testing nothing that can break.
 import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { freshDatabase, dropDatabase } from '@/test/db'
@@ -10,12 +9,11 @@ import { getSettings, saveSettings } from '@/content/settings'
 import { DEFAULT_BACKUPS } from '@/content/settings-defaults'
 import { savePost } from '@/content/posts'
 import {
-  buildArchive, isSnapshotName, lastRunAt, listSnapshots, maybeRunBackup, runBackup,
+  isSnapshotName, lastRunAt, listSnapshots, maybeRunBackup, runBackup,
   snapshotName, deleteSnapshot,
-  tarVerdict,
 } from '@/server/backup'
+import { archiveStream } from '@/server/archive'
 import { db } from '@/test/sqlite'
-import { Database } from 'bun:sqlite'
 
 const DIR = './.tmp/test-backup'
 const SNAPSHOTS = `${DIR}/snapshots`
@@ -36,27 +34,6 @@ beforeEach(() => {
   rmSync(SNAPSHOTS, { recursive: true, force: true })
   mkdirSync(UPLOADS, { recursive: true })
   writeFileSync(join(UPLOADS, 'photo.jpg'), 'not really a jpeg')
-})
-
-describe('tarVerdict', () => {
-  // GNU tar's exit 1 for a file that changed under it, with the archive whole (the release matrix
-  // found it in the image on 2026-10-03); anything else stays a failure.
-  it('passes a clean exit', () => expect(tarVerdict(0, '')).toEqual({}))
-
-  it('passes GNU tar\'s "file changed as we read it", and says so', () => {
-    const v = tarVerdict(1, 'tar: uploads: file changed as we read it\n')
-    expect(v.error).toBeUndefined()
-    expect(v.warning).toContain('uploads: file changed as we read it')
-  })
-
-  it('fails exit 1 when anything else is on stderr too', () => {
-    expect(tarVerdict(1, 'tar: uploads: file changed as we read it\ntar: x: Cannot open: Permission denied\n').error).toContain('Permission denied')
-  })
-
-  it('fails exit 1 with nothing said, and every other code', () => {
-    expect(tarVerdict(1, '').error).toBeDefined()
-    expect(tarVerdict(2, 'tar: Error is not recoverable').error).toContain('tar exited 2')
-  })
 })
 
 describe('snapshotName / isSnapshotName', () => {
@@ -95,7 +72,7 @@ describe('runBackup', () => {
     expect(names.filter((n) => n.endsWith('.part'))).toEqual([])
   })
 
-  it('writes a real archive holding both databases and the uploads tree', async () => {
+  it('writes a real archive holding both databases as rows and the uploads tree', async () => {
     await savePost({ title: 'In the backup', slug: 'in-the-backup', status: 'published',
       date: '2020-01-01T00:00:00.000Z' })
 
@@ -108,8 +85,10 @@ describe('runBackup', () => {
     const proc = Bun.spawn(['tar', '-tzf', join(SNAPSHOTS, snapshot.name)], { stdout: 'pipe' })
     const listing = await new Response(proc.stdout).text()
     expect(await proc.exited).toBe(0)
-    expect(listing).toContain('quire.db')
-    expect(listing).toContain('analytics.db')
+    expect(listing).toContain('manifest.json')
+    expect(listing).toContain('content/schema.sql')
+    expect(listing).toContain('content/posts.jsonl')
+    expect(listing).toContain('analytics/analytics_events.jsonl')
     expect(listing).toContain('uploads/photo.jpg')
   })
 
@@ -226,7 +205,7 @@ describe('maybeRunBackup', () => {
 describe('the rendered-HTML cache', () => {
   it('is left out of the archive, and everything else survives', async () => {
     // A post, so the archive has content to keep, and cache rows to throw away. The real
-    // proportion is worse than anything worth writing here: measured on manhhung.me on
+    // proportion is worse than anything worth writing here: measured on a real blog on
     // 2026-09-13, `render_cache` was 530 MB of a 538 MB database — 98.5% of every backup was
     // a derived artifact, and the owner's archive had grown past what the download could
     // carry. The cache is a pure function of the Markdown beside it; restoring without it
@@ -237,26 +216,24 @@ describe('the rendered-HTML cache', () => {
     expect(before.c).toBeGreaterThan(0)
 
     const out = join(DIR, 'cache-check.tar.gz')
-    await buildArchive(out)
+    await Bun.write(out, await new Response(await archiveStream()).arrayBuffer())
 
     const unpacked = join(DIR, 'cache-check')
     mkdirSync(unpacked, { recursive: true })
     await Bun.$`tar -xzf ${out} -C ${unpacked}`.quiet()
 
-    const restored = new Database(join(unpacked, 'quire.db'), { readonly: true })
-    try {
-      // The cache is empty…
-      const cached = restored.query('select count(*) c from render_cache').get() as { c: number }
-      expect(cached.c).toBe(0)
-      // …and the writing is not. This half is the one that matters: a backup that dropped a
-      // table it should have kept would pass a test that only checked the cache was gone.
-      const posts = restored.query('select count(*) c from posts').get() as { c: number }
-      expect(posts.c).toBeGreaterThan(0)
-      expect(Object.values(restored.query('pragma integrity_check').get() as object)[0]).toBe('ok')
-    } finally {
-      restored.close()
+    // The cache's rows are not there, and its shape is: a restore builds the empty table.
+    expect(existsSync(join(unpacked, 'content', 'render_cache.jsonl'))).toBe(false)
+    expect(existsSync(join(unpacked, 'content', 'body_cache.jsonl'))).toBe(false)
+    expect(readFileSync(join(unpacked, 'content', 'schema.sql'), 'utf8')).toContain('CREATE TABLE render_cache')
+    // …and the writing is. This half is the one that matters: a backup that dropped a table
+    // it should have kept would pass a test that only checked the cache was gone.
+    expect(readFileSync(join(unpacked, 'content', 'posts.jsonl'), 'utf8')).toContain('"cached"')
+    const manifest = JSON.parse(readFileSync(join(unpacked, 'manifest.json'), 'utf8')) as {
+      databases: { content: { tables: { name: string }[] } }
     }
-    // And the live database keeps its cache: the copy is what was emptied, never this one.
+    expect(manifest.databases.content.tables.map((t) => t.name)).not.toContain('render_cache')
+    // And the live database keeps its cache: nothing here touches it.
     const after = db().query('select count(*) c from render_cache').get() as { c: number }
     expect(after.c).toBe(before.c)
   })
