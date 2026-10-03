@@ -21,7 +21,7 @@ const server = Bun.serve({
     if (req.method === 'POST' && q.has('uploads')) {
       const id = `id&${uploads.size + 1}`
       uploads.set(id, { key, parts: new Map() })
-      return new Response(`<InitiateMultipartUploadResult><UploadId>${id.replace('&', '&amp;')}</UploadId></InitiateMultipartUploadResult>`)
+      return new Response(`<InitiateMultipartUploadResult><UploadId>${id.replace(/&/g, '&amp;')}</UploadId></InitiateMultipartUploadResult>`)
     }
     const upload = uploads.get(q.get('uploadId') ?? '')
     if (upload && req.method === 'PUT') {

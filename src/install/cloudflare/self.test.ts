@@ -81,7 +81,7 @@ describe('leaving Cloudflare', () => {
 
 describe('the one-click update', () => {
   it('asks GitHub for the newest release when the daily check has no answer, and says when there is nothing newer', async () => {
-    const github = (async (url: string) => (String(url).includes('api.github.com') ? Response.json({ tag_name: 'v1.0.0' }) : new Response('', { status: 404 }))) as typeof fetch
+    const github = (async (url: string) => (new URL(String(url)).hostname === 'api.github.com' ? Response.json({ tag_name: 'v1.0.0' }) : new Response('', { status: 404 }))) as typeof fetch
     const res = await runUpdate(post('https://blog.test/api/cloudflare/update', {}), env, owner(), { apiBase, fetchImpl: github })
     expect(res.status).toBe(409)
     expect(((await res.json()) as { error: string }).error).toBe('already_newest')

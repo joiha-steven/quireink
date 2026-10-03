@@ -39,14 +39,16 @@ function normalize(body: string, base: string): string {
   for (const [from, to] of [[origin, '{origin}'], [encodeURIComponent(origin), '{origin}'], [host, '{host}'], [encodeURIComponent(host), '{host}']]) {
     out = out.split(from).join(to)
   }
+  // Cloudflare Web Analytics, which a proxied zone injects into the page on its way out: the
+  // zone's script, not the blog's. Removed until none is left, not in one pass, so the pattern
+  // cannot rebuild itself from the pieces either side of one it took out.
+  const BEACON = /<script[^>]*static\.cloudflareinsights\.com[^>]*><\/script>\n?/g
+  for (let before = ''; before !== out;) { before = out; out = out.replace(BEACON, '') }
   return out
     .replace(/nonce="[^"]*"/g, 'nonce="{nonce}"')
     .replace(/'nonce-[^']*'/g, "'nonce-{nonce}'")
     // The comment form's proof-of-work challenge: a fresh salt per response, on purpose.
     .replace(/data-stamp="[^"]*"/g, 'data-stamp="{stamp}"')
-    // Cloudflare Web Analytics, which a proxied zone injects into the page on its way out: the
-    // zone's script, not the blog's.
-    .replace(/<script[^>]*static\.cloudflareinsights\.com[^>]*><\/script>\n?/g, '')
     // PARITY_ASSET_HASHES=0 when the two run different builds (a live release against a newer
     // tree): the content hash in an asset's name differs by construction.
     .replace(process.env.PARITY_ASSET_HASHES === '0' ? /(\/(?:assets|fonts|static)\/[\w-]+)[.-][0-9a-z]{8,16}(\.\w+)/g : /$^/g, '$1.{hash}$2')
