@@ -2,7 +2,10 @@
 # The release matrix (ADR 0065): install this commit, and upgrade to it from the release before,
 # through each package, and smoke-test what comes up.
 #
-#   scripts/ops/matrix.sh source-fresh | source-upgrade | docker-fresh | docker-upgrade
+#   scripts/ops/matrix.sh source-fresh | source-upgrade | docker-fresh | docker-upgrade | server-http
+#
+# `server-http` runs server.sh for real, so it needs a disposable Linux machine with sudo: a CI
+# runner, never a workstation. It writes /opt/quireink and /var/lib/quireink and removes them.
 #
 # Run from the repository root, with the tags fetched (`git fetch --tags`). Each cell builds its
 # own world under a temporary directory and tears it down, so cells can run side by side.
@@ -18,7 +21,7 @@
 # today's seeder would test an upgrade nobody performs.
 set -euo pipefail
 
-CELL=${1:?usage: matrix.sh source-fresh|source-upgrade|docker-fresh|docker-upgrade}
+CELL=${1:?usage: matrix.sh source-fresh|source-upgrade|docker-fresh|docker-upgrade|server-http}
 REPO=$(pwd)
 [ -f "$REPO/install.sh" ] || { echo "run from the repository root" >&2; exit 2; }
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/quire-matrix-XXXXXX")
@@ -188,6 +191,30 @@ EOF
     docker build --quiet -t "quireink:matrix-$NEXT" "$WORK/next" >/dev/null
     run_image quire-matrix-new "quireink:matrix-$NEXT" 3504 "$WORK/blog"
     smoke http://127.0.0.1:3504 docker "$SESSION" "$WORK/blog"
+    ;;
+
+  server-http)
+    [ "$(uname -s)" = "Linux" ] && [ "${CI:-}" = "true" ] || { echo "server-http runs server.sh as root: CI runners only" >&2; exit 2; }
+    say "building the image of $NEXT"
+    docker build --quiet -t "quireink:matrix-$NEXT" "$WORK/next" >/dev/null
+    teardown() { sudo docker compose -f /opt/quireink/compose.yml down -v >/dev/null 2>&1 || true; sudo rm -rf /opt/quireink /var/lib/quireink; }
+    CONTAINERS+=("quireink-quire-1")
+    say "server.sh on a blank machine, no domain"
+    sudo env QUIREINK_IMAGE=quireink QUIREINK_IMAGE_TAG="matrix-$NEXT" bash "$WORK/next/server.sh" --version "$NEXT" --setup-code "$CODE" \
+      || { teardown; exit 1; }
+    smoke http://127.0.0.1 docker || { teardown; exit 1; }
+    say "server.sh again: an update, and .env untouched"
+    before=$(sudo sha256sum /opt/quireink/.env)
+    sudo env QUIREINK_IMAGE=quireink QUIREINK_IMAGE_TAG="matrix-$NEXT" bash /opt/quireink/server.sh --version "$NEXT" \
+      || { teardown; exit 1; }
+    [ "$(sudo sha256sum /opt/quireink/.env)" = "$before" ] || { echo ".env changed on an update" >&2; teardown; exit 1; }
+    smoke http://127.0.0.1 docker || { teardown; exit 1; }
+    say "server.sh refuses a machine that already serves something"
+    if sudo bash -c "mv /opt/quireink/compose.yml /opt/quireink/compose.yml.off && bash $WORK/next/server.sh --version $NEXT" >/dev/null 2>&1; then
+      echo "server.sh ran on a machine with port 80 taken" >&2; teardown; exit 1
+    fi
+    sudo mv /opt/quireink/compose.yml.off /opt/quireink/compose.yml
+    teardown
     ;;
 
   *) echo "unknown cell: $CELL" >&2; exit 2 ;;

@@ -13,26 +13,23 @@
 # reading the version in its own log rather than by anything going wrong. Upgrading is
 # `pull` then `up -d`, and the day it matters is months from now.
 #
-# The difference from `docker-compose.caddy.yml` is one line: that file says `build: .` and
-# this one names the published image. It exists because the two were not interchangeable and
-# the docs offered them as if they were. `pull quireink/quireink` was listed beside the Caddy
-# compose as an equal way in, and it is not: both compose files build from source, so the
-# reader who came for the image had no way to get the certificate with it. They got the app on
-# loopback and were left to find a proxy themselves — which is the step the Caddy file exists
-# to remove.
+# The same service as `docker-compose.caddy.yml`, for a machine with no checkout: fetched on its
+# own with the `Caddyfile`. It was the only compose file over the published image until
+# 2026-10-03, when the checkout's two stopped saying `build: .` (ADR 0065); it stays because
+# droplets and copied snippets fetch it by this name.
 #
 # TWO files rather than one, and deliberately: the `Caddyfile` beside this is the SAME file
 # the checkout uses. Inlining it here would make a second copy of a security-relevant
 # configuration — the CSP the application is tested against lives in it — and two copies of
 # that drift without anything going red.
 #
-# `latest` moves, and a pinned tag is the other half of the trap above: pin a release
-# (`quireink/quireink:2.2.4`) on a machine where an upgrade should be a decision rather than a
-# restart, and then `pull` cannot surprise you either.
+# `latest` moves, and a pinned tag is the other half of the trap above: `QUIREINK_TAG=2.2.4` in
+# `.env` on a machine where an upgrade should be a decision rather than a restart, and then
+# `pull` cannot surprise you either.
 
 services:
   quire:
-    image: quireink/quireink:latest
+    image: quireink/quireink:${QUIREINK_TAG:-latest}
     restart: unless-stopped
     env_file: .env
     environment:

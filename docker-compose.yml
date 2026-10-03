@@ -1,20 +1,23 @@
 # Quire Ink, self-hosted with Docker. One service. There is nothing to link it to.
 #
 #   cp .env.docker.example .env      # then set SITE_URL in it; the rest is optional
-#   docker compose up -d --build
+#   docker compose pull && docker compose up -d
 #   docker compose logs quire        # prints the link that claims the blog; open it in a browser
 #
 # No `exec` and no interactive terminal in that, which is the point: a NAS container UI has a
 # log panel and no TTY. `docker compose exec quire bun run user create --username you
 # --email you@example.com` still works for anyone who prefers the shell.
 #
-# Upgrading is `git pull && docker compose up -d --build`. The schema is applied at boot,
-# inside a transaction, so there is no migration command to remember. Take a backup first
-# anyway (docs/backups.md).
+# THE PUBLISHED IMAGE, since 2026-10-03 (ADR 0065): every install runs a release. This file used
+# to say `build: .` and be upgraded with `git pull`, which built whatever was last pushed to
+# `main`, released or not. Upgrading is `docker compose pull && docker compose up -d`; the schema
+# is applied at boot, after a copy of the database is taken (ADR 0063). `QUIREINK_TAG` in `.env`
+# pins a release line (`2.2`) or one release; unset is `latest`, which moves only on a release.
+# Building from this checkout is for development: add `-f docker-compose.build.yml`.
 
 services:
   quire:
-    build: .
+    image: quireink/quireink:${QUIREINK_TAG:-latest}
     restart: unless-stopped
 
     # Everything the app reads. The three required values live in `.env`; see

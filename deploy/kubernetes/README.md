@@ -37,11 +37,12 @@ one release of this in more than one namespace, each with its own volume.
 | An ingress controller | Or delete `ingress.yaml` and terminate TLS somewhere else. |
 | Nothing else | No database, no cache, no queue, no object store, no secret to generate. The app makes its own signing keys on first boot and keeps them in its database. |
 
-`quire-secrets` is read if it exists and skipped if it does not. It is where `CRON_SECRET`
-and `MCP_OAUTH_SECRET` belong on the installs that want them, and most do not:
+`quire-secrets` is read if it exists and skipped if it does not. It is where `SETUP_CODE`
+(twelve characters or more: `/setup` asks for it, so claiming the blog needs no log),
+`CRON_SECRET` and `MCP_OAUTH_SECRET` belong on the installs that want them:
 
 ```
-kubectl create secret generic quire-secrets -n blog --from-literal=CRON_SECRET=...
+kubectl create secret generic quire-secrets -n blog --from-literal=SETUP_CODE=... --from-literal=CRON_SECRET=...
 ```
 
 ## DigitalOcean

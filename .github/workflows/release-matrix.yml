@@ -6,7 +6,8 @@ name: Release matrix
 # image, a fresh install and an upgrade from the release before it — on data that release's own
 # seeder wrote, because that is what an owner has on disk — each followed by `scripts/smoke.ts`
 # (twelve tour flows, `/api/health` naming the right version and package, `restore-check`).
-# `publish.yml` waits for all four cells as it waits for CI; one red cell and no image leaves.
+# `server-http` also runs `server.sh` on the runner as a blank machine. `publish.yml` waits for every
+# cell as it waits for CI; one red cell and no image leaves.
 #
 # Run by hand on any commit to see the matrix without a tag: `scripts/ops/matrix.sh` then turns
 # that commit into a scratch release 9999.0.0 in a throwaway copy of the repository. Nothing is
@@ -33,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cell: [source-fresh, source-upgrade, docker-fresh, docker-upgrade]
+        cell: [source-fresh, source-upgrade, docker-fresh, docker-upgrade, server-http]
     steps:
       - uses: actions/checkout@v5
         with:

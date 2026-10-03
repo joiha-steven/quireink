@@ -1,0 +1,12 @@
+# Build the image from THIS checkout instead of pulling the published one. For development.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+#   docker compose -f docker-compose.caddy.yml -f docker-compose.build.yml up -d --build
+#
+# An override, not a third copy of the service: it changes where the image comes from and nothing
+# else, so the compose files a blog actually runs on stay the ones that are tested. A blog people
+# read runs a release (ADR 0065): `docker compose pull`, not a build of whatever `main` holds today.
+services:
+  quire:
+    image: quireink:local
+    build: .

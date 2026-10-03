@@ -131,12 +131,12 @@ at boot inside a transaction, so there is no migration command.
 ```bash
 docker pull quireink/quireink:latest                 # published image: pull, then recreate
 docker rm -f quire && docker run -d --name quire ...  # same flags as the install above
-git pull && docker compose up -d --build             # a checkout that builds its own image
+docker compose pull && docker compose up -d          # any of the three compose files
 sudo -u quire -H bash -lc 'cd /home/quire/app && bun run upgrade'   # native: release, build, restart, verify, roll back
 ```
 
-`docker-compose.yml` in this repository **builds** the image rather than pulling one, so
-`docker compose pull` does nothing there — it is `--build` that upgrades it. Native installs
+All three compose files run the published image (`QUIREINK_TAG` pins a line); building from the
+checkout is `-f docker-compose.build.yml`, for development only. Native installs
 use `bun run upgrade`: it moves to the newest release (never `main`, never backwards), rebuilds
 both artefacts, restarts, waits for `/api/health` to report the new `version`, and rolls back
 if it does not. A `git pull` alone would serve the previous release's admin against the new

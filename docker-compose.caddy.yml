@@ -1,7 +1,7 @@
 # Quire Ink with HTTPS, in one command.
 #
 #   cp .env.docker.example .env    # set SITE_URL in it. That is the only required value.
-#   docker compose up -d
+#   docker compose pull && docker compose up -d
 #   docker compose logs quire      # the link that claims the blog
 #
 # No `-f` in those, because `.env.docker.example` ships `COMPOSE_FILE` pointing here. That is
@@ -23,7 +23,7 @@
 
 services:
   quire:
-    build: .
+    image: quireink/quireink:${QUIREINK_TAG:-latest}
     restart: unless-stopped
     env_file: .env
     environment:

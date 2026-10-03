@@ -54,14 +54,14 @@ Point the domain at the machine first, then:
 
 ```bash
 cp .env.docker.example .env       # set SITE_URL, uncomment COMPOSE_FILE
-docker compose up -d
+docker compose pull && docker compose up -d
 docker compose logs quire         # the link that claims the blog
 ```
 
 No `-f` in those: uncommenting `COMPOSE_FILE` in `.env` is what selects this file, and it
 keeps selecting it for every later command. The flag would have to be repeated on all of
-them, and the one it gets forgotten on is the upgrade months later — which rebuilds the
-plain file instead, brings the blog back on loopback with no certificate, and says nothing.
+them, and the one it gets forgotten on is the upgrade months later — which starts the plain
+file instead, brings the blog back on loopback with no certificate, and says nothing.
 
 There is no domain to write twice. Caddy takes the certificate's name straight out of
 `SITE_URL`.
@@ -72,10 +72,9 @@ file instead when something else already terminates TLS — an existing nginx, a
 load balancer — because two of them fighting over ports 80 and 443 is a worse problem than
 the one this solves.
 
-**Or take HTTPS WITHOUT a checkout.** The compose above and the Caddy one both say `build: .`,
-so both want the source. [`docker-compose.image.yml`](../docker-compose.image.yml) is the
-Caddy arrangement over the published image. Two files, because the `Caddyfile` is the same one
-the checkout uses and a second copy of a tested CSP would drift:
+**Or take HTTPS WITHOUT a checkout.** [`docker-compose.image.yml`](../docker-compose.image.yml)
+is the same Caddy arrangement, fetched on its own. Two files, because the `Caddyfile` is the same
+one the checkout uses and a second copy of a tested CSP would drift:
 
 ```bash
 curl -O https://raw.githubusercontent.com/joiha-steven/quireink/main/docker-compose.image.yml
@@ -91,14 +90,14 @@ nothing about its age: on a box that had pulled once before, `latest` started a 
 releases behind the tag it named, printed a claim link, and looked entirely correct. It was
 found by reading the version in its own log. Upgrading is `pull` then `up -d`.
 
-**Or build it yourself** from this repository, which is what `docker-compose.yml` does and
-what you want if you have changed anything:
+**All three compose files run the published image**, `quireink/quireink:${QUIREINK_TAG:-latest}`
+([ADR 0065](decisions/0065-every-install-runs-a-release.md): every install runs a release). Until
+2026-10-03 the two in the checkout said `build: .` and were upgraded with `git pull`, which
+built whatever was last pushed to `main`, released or not. **Building it yourself** — because you
+changed something — is an override on top of either:
 
 ```bash
-git clone https://github.com/joiha-steven/quireink.git && cd quireink
-cp .env.docker.example .env          # set SITE_URL, and that is the whole of it
-docker compose up -d --build
-docker compose logs quire            # the claim link, same as above
+docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
 
 The image builds from source and runs `bun --smol src/index.ts`, which is what the server in section 4
@@ -120,8 +119,8 @@ Four things worth knowing before you change anything in `docker-compose.yml`:
   2026-08-21 the image starts as root, adopts `PUID`/`PGID` (1000:1000 by default), chowns
   the two directories only when the ownership is actually wrong, and drops to that user
   before the app starts. `docker run --user 1000:1000` skips all of it.
-- **Upgrades are `git pull && docker compose up -d --build`.** The schema is applied at boot
-  as usual. Your content is in the volumes and is not touched by a rebuild. Since ADR 0063 a
+- **Upgrades are `docker compose pull && docker compose up -d`.** The schema is applied at boot
+  as usual. Your content is in the volumes and is not touched by a new image. Since ADR 0063 a
   pending migration empties the two rebuildable render caches, then writes a copy of the
   database into `data/backups/` before it runs anything — named for the step it is about to
   apply — and **if that copy cannot be written the container exits instead of migrating**,

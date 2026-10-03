@@ -19,6 +19,14 @@
   for the image (or the NAS app's Update button), and syncing the fork for Cloudflare. In all
   eleven languages.
 
+- **`server.sh`: a blank Ubuntu or Debian server to a running blog in one command.** It installs
+  Docker if there is none, runs the image of the newest release with Caddy and a Let's Encrypt
+  certificate when you give it `--domain` (plain HTTP on the machine's address when you do not),
+  keeps the data in `/var/lib/quireink`, waits until the blog answers and says how to claim it
+  (`--setup-code`, so no log is needed). It is the one script here that uses `sudo`, and it refuses
+  any machine that already serves something. Run it again and it is an update that leaves `.env`
+  alone. The DigitalOcean user-data file is now a thin shell around it.
+
 ### Fixed
 
 - **A backup taken on Linux while a picture's smaller copies were being written failed with a 500**
@@ -30,6 +38,13 @@
 
 ### Changed
 
+- **Every compose file runs the published image.** `docker-compose.yml` and
+  `docker-compose.caddy.yml` said `build: .` and were upgraded with `git pull`, which built
+  whatever was last pushed to `main`. They now pull `quireink/quireink:${QUIREINK_TAG:-latest}`
+  like `docker-compose.image.yml`, and upgrading is `docker compose pull && docker compose up -d`.
+  **If you run one of them from a checkout, your next `up` should be preceded by a `pull`.**
+  Building from the checkout is `-f docker-compose.build.yml`. `.env.docker.example` gained
+  `SETUP_CODE` and `QUIREINK_TAG`.
 - **New password hashes use argon2id at 19 MiB, not Bun's default 64 MiB** ([ADR 0068](docs/decisions/0068-new-password-hashes-use-19-mib.md)):
   OWASP's floor for argon2id, and small enough for a 128 MB Cloudflare isolate. Existing passwords
   and recovery codes keep working untouched; a password changed from now on gets the new

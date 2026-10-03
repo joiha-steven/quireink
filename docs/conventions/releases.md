@@ -36,9 +36,9 @@ On any behavior change, update the matching doc in the SAME change:
   Pushing `v<version>` starts `release-matrix.yml`: the source checkout and the image, each
   installed fresh and upgraded from the release before on data that release's own seeder wrote,
   each smoke-tested (`scripts/smoke.ts`: twelve tour flows, `/api/health` naming the version and
-  the package, `restore-check`). `publish.yml` waits for those four cells as it waits for CI. A
+  the package, `restore-check`), plus `server.sh` run on a blank runner. `publish.yml` waits for every cell as it waits for CI. A
   change to anything an install touches — `install.sh`, `scripts/upgrade.ts`, the `Dockerfile`,
-  the entrypoint, a migration — is worth one local `scripts/ops/matrix.sh <cell>` before the tag,
+  the entrypoint, `server.sh`, a migration — is worth one local `scripts/ops/matrix.sh <cell>` before the tag,
   because the matrix is the only thing that installs it the way an owner does.
 - **Cutting a release** (only when asked): `bun run check:all` and `bun run build` both exit 0
   (there is no binary: [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then

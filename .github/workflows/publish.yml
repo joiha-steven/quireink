@@ -71,11 +71,11 @@ jobs:
   # not be wrong. `main` carries no branch protection, deliberately, so the wait lives here
   # on the publishing side rather than in a rule that fights the push-to-main workflow.
   #
-  # It reads the CHECK RUNS on the tagged SHA and waits for the four `ci.yml` jobs AND the four
+  # It reads the CHECK RUNS on the tagged SHA and waits for the four `ci.yml` jobs AND the five
   # cells of `release-matrix.yml` (ADR 0065: every tag is installed and upgraded through each
   # package before anything is published) to complete successfully, polling for up to forty-five
   # minutes (CI is under three; a matrix cell that builds the image takes about fifteen; the rest
-  # is for queued runners). Any conclusion but `success` on any of the eight fails this job, and
+  # is for queued runners). Any conclusion but `success` on any of the nine fails this job, and
   # with it the release, with the job named in the log. A commit nothing ran on at all fails the
   # same way: the absence of a verdict is not a verdict.
   gate:
@@ -99,11 +99,11 @@ jobs:
             if [ -n "$failed" ]; then
               echo "CI did not pass on ${SHA}: ${failed}"; exit 1
             fi
-            # Eight: the four CI jobs, and the four cells of release-matrix.yml (ADR 0065).
-            if [ "$done_ok" -ge 8 ]; then
+            # Nine: the four CI jobs, and the five cells of release-matrix.yml (ADR 0065).
+            if [ "$done_ok" -ge 9 ]; then
               echo "CI and the release matrix passed on ${SHA}"; exit 0
             fi
-            echo "waiting: ${done_ok}/8 jobs green on ${SHA} (attempt ${i}/180)"
+            echo "waiting: ${done_ok}/9 jobs green on ${SHA} (attempt ${i}/180)"
             sleep 15
           done
           echo "CI and the release matrix never finished on ${SHA} within forty-five minutes; not publishing"; exit 1
