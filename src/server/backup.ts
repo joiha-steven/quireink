@@ -22,7 +22,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { Database } from 'bun:sqlite'
-import { db, analyticsDb } from '@/store/db'
+import { exec, analyticsQuery } from '@/store/query'
 import { getSettings } from '@/content/settings'
 import { replicateSnapshot } from '@/server/backup-offsite'
 import { logActivityError } from '@/server/activity'
@@ -159,8 +159,8 @@ export async function buildArchive(dest: string): Promise<number> {
     //
     // Do not generalise from it. The rule in CLAUDE.md stands: a VALUE is bound, always.
     const snapshot = join(stage, 'quire.db')
-    db().exec(`vacuum into '${snapshot.replace(/'/g, "''")}'`)
-    analyticsDb().exec(`vacuum into '${join(stage, 'analytics.db').replace(/'/g, "''")}'`)
+    exec(`vacuum into '${snapshot.replace(/'/g, "''")}'`)
+    analyticsQuery.exec(`vacuum into '${join(stage, 'analytics.db').replace(/'/g, "''")}'`)
     dropRenderCache(snapshot)
 
     const uploads = uploadsDir()

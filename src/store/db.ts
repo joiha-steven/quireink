@@ -10,7 +10,7 @@
 // `analytics.db` or off the request path entirely.
 import { Database } from 'bun:sqlite'
 import { mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { compactIfMostlyFree, copyBeforeMigrating } from './upgrade'
 
 // Imported as text so both files compile into the standalone executable. A schema the
@@ -59,6 +59,8 @@ const PRAGMAS = [
 
 let content: Database | null = null
 let analytics: Database | null = null
+/** Where the content database lives, for exactly as long as `content` is open. See `dataDir`. */
+let directory: string | null = null
 
 /**
  * Which of the two databases a connection is. Each keeps its own ledger of migrations, and each
@@ -214,6 +216,7 @@ export function openDatabases(dir: string): { db: Database; analyticsDb: Databas
   const contentPath = join(dir, 'quire.db')
   const opened = open(contentPath, contentSchema, 'FULL', contentMigrations, 'content')
   content = opened.db
+  directory = dirname(contentPath)
   if (applyMigrations(content, contentMigrations, opened.fresh, LEDGER.content)
       && compactIfMostlyFree(content, contentPath)) {
     // The compaction closed it and replaced the file underneath. Opening it again runs a
@@ -242,10 +245,21 @@ export function analyticsDb(): Database {
   return analytics
 }
 
+/**
+ * The directory the two databases live in, for a file kept BESIDE them (the copy of an
+ * unreadable settings row). Asked of the store rather than of a connection, because a
+ * connection on Cloudflare has no file and so no directory to ask it for.
+ */
+export function dataDir(): string {
+  if (!directory) throw new Error('dataDir() before openDatabases(): call it once at boot')
+  return directory
+}
+
 export function closeDatabases(): void {
   content?.close()
   analytics?.close()
   content = analytics = null
+  directory = null
 }
 
 /**

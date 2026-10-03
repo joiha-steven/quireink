@@ -25,6 +25,12 @@ type Primitives = {
   /** A write. `changes` is the affected row count, which several call sites report. */
   run: (sql: string, ...params: SQLQueryBindings[]) => { changes: number }
   /**
+   * A script, with NO bound parameters: for the one statement SQLite gives no bound form,
+   * `VACUUM INTO` a filename (`server/backup.ts`, which says why its path may be quoted).
+   * Everything else goes through `run`.
+   */
+  exec: (script: string) => void
+  /**
    * Run `body` in one transaction. There is exactly one writer (single-threaded runtime,
    * synchronous driver), so this is about atomicity, not locking: a multi-statement write
    * either lands whole or not at all.
@@ -49,11 +55,12 @@ function bind(get: () => Db): Primitives {
       const result = get().query<unknown, SQLQueryBindings[]>(sql).run(...params)
       return { changes: result.changes }
     },
+    exec: (script: string) => { get().exec(script) },
     tx: <T>(body: () => T): T => get().transaction(body)(),
   }
 }
 
-export const { all, one, run, tx } = bind(db)
+export const { all, one, run, exec, tx } = bind(db)
 
 /**
  * The same primitives against `analytics.db`. It is a SEPARATE connection on purpose: a
