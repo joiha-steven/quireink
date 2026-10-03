@@ -50,12 +50,28 @@ function smoke(url: string): boolean {
   return r.status === 0
 }
 
+/**
+ * A workers.dev name made a moment ago answers from some of Cloudflare's edges and 404s from
+ * others for about half a minute (`install/cloudflare/move.ts` waits for the same reason). Seen
+ * by L10 itself on 2026-10-03: `/setup` answered 200 and the next request, with the code, 404'd
+ * with Cloudflare's own page. Ten answers in a row from the blog, or a minute, before the smoke.
+ */
+async function settled(url: string): Promise<void> {
+  let inRow = 0
+  for (let i = 0; i < 60 && inRow < 10; i++) {
+    const res = await fetch(`${url}/api/health`).catch(() => null)
+    inRow = res?.ok ? inRow + 1 : 0
+    if (inRow < 10) await Bun.sleep(1000)
+  }
+}
+
 let ok = false
 try {
   console.log(`L10: installing ${manifest.version} as ${scriptName}`)
   const first = await installOnCloudflare({ ...base, secrets: { SETUP_CODE: code }, onStep: step })
   if (!first.firstInstall) throw new Error('expected a first install')
   console.log(`L10: ${first.url}`)
+  await settled(first.url)
   if (!smoke(first.url)) throw new Error('smoke failed after the install')
   console.log('L10: upgrading in place (secrets kept)')
   const again = await installOnCloudflare({ ...base, onStep: step })
