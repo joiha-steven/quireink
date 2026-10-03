@@ -19,15 +19,20 @@ import { getConfirmedSubscribers } from '@/news/subscribers'
 import { getSmtpConfig, mailBlocked, openMailPool, sendMail } from '@/news/mail'
 import { getSettings } from '@/content/settings'
 import { emailBrand } from '@/news/email-brand'
-import { broadcastEmail, type EmailPost } from '@/news/newsletter-email'
-import { newOpenToken, statsByPost } from '@/news/newsletter-log'
+import { broadcastEmail, type EmailBrand, type EmailPost } from '@/news/newsletter-email'
+import { logSend, statsByPost } from '@/news/newsletter-log'
+import {
+  claimNext, HEARTBEAT_MS, hasOpenRun, INTERRUPTED, latestRun, leaseLapsed, openRun, recordResult, releaseLease, renewLease,
+  type BroadcastRun,
+} from '@/news/outbox'
+import { randomBytes } from 'node:crypto'
 import { expandBlob } from '@/media/blob'
 import { isPublicallyVisible } from '@/utils'
 import type { SiteLang } from '@/types'
 import { t, formatDate } from '@/i18n/i18n'
-import { all, run } from '@/store/query'
+import { all } from '@/store/query'
 import { logActivity } from '@/server/activity'
-import { liveOnly, nowMs, toIso } from '@/store/db'
+import { liveOnly, toIso } from '@/store/db'
 
 export class BroadcastError extends Error {}
 
@@ -83,28 +88,31 @@ export async function previewBroadcast(slugs: string[]): Promise<{ subject: stri
  * list a second time. The run is detached now and the request answers at once with what it
  * has started; the screen watches it through `broadcastRun`.
  *
- * One at a time, in this process. Two overlapping runs of the same posts is the duplicate
- * send this whole file is built to prevent.
+ * AND IT IS NOT A PROCESS EITHER. The detached loop kept its place in memory, so a restart —
+ * every deploy of a Durable Object, any eviction, a Bun upgrade — cut the list off where it
+ * stood. The place is kept in the database now (`news/outbox.ts`), and the minute tick picks a
+ * run back up wherever it stopped, with the same one connection and one message at a time.
+ *
+ * One at a time, for the whole blog and not only this process: `openRun` refuses a second run
+ * while one is open, and the lease lets exactly one runner deliver it. Two overlapping runs of
+ * the same posts is the duplicate send this whole file is built to prevent.
  */
-export type BroadcastRun = {
-  slugs: string[]
-  recipients: number
-  sent: number
-  failed: number
-  done: boolean
-  startedAt: number
-}
+export type { BroadcastRun }
 
-let current: BroadcastRun | null = null
+/** What a message is made of, fixed at the press, so the second half of a resumed list gets the same letter. */
+type Letter = { posts: EmailPost[]; brand: EmailBrand; lang: SiteLang }
 
-/** The run in progress, or the last one to finish. Null before the first send of a process. */
+/** This process's runner while it runs; null before the first send and between runs. */
+let runner: Promise<void> | null = null
+
+/** The run in progress, or the last one to finish. Null before this blog's first send. */
 export function broadcastRun(): BroadcastRun | null {
-  return current
+  return latestRun()
 }
 
-/** Test seam: a run left behind by one test must not refuse the next one's send. */
+/** Test seam: forget this process's runner, as a restart does. The database keeps what it holds. */
 export function resetBroadcastRun(): void {
-  current = null
+  runner = null
 }
 
 // Send the chosen posts as one email to every confirmed subscriber. Each send is logged
@@ -117,7 +125,7 @@ export async function broadcastPosts(
   slugs: string[],
   opts: { force?: boolean } = {},
 ): Promise<BroadcastRun> {
-  if (current && !current.done) throw new BroadcastError('already_running')
+  if (hasOpenRun()) throw new BroadcastError('already_running')
   const settings = await getSettings()
   const posts = await readSendablePosts(slugs, settings.language, settings.timezone)
   if (!opts.force) {
@@ -130,43 +138,83 @@ export async function broadcastPosts(
   const blocked = mailBlocked(cfg)
   if (blocked) throw new BroadcastError(blocked)
 
+  // The whole list is written down before the first message goes (`news/outbox.ts`).
+  const letter: Letter = { posts, brand: emailBrand(settings), lang: settings.language }
   const subs = await getConfirmedSubscribers()
-  const started: BroadcastRun = {
-    slugs, recipients: subs.length, sent: 0, failed: 0, done: false, startedAt: Date.now(),
-  }
-  current = started
-  void deliver(started, subs, posts, emailBrand(settings), t(settings.language))
+  const started = openRun({ slugs, letter: JSON.stringify(letter), subs, now: Date.now() })
+  if (!started) throw new BroadcastError('already_running')
+  void resumeBroadcast()
   return started
 }
 
-async function deliver(
-  state: BroadcastRun,
-  subs: { email: string; token: string }[],
-  posts: EmailPost[],
-  brand: ReturnType<typeof emailBrand>,
-  tx: ReturnType<typeof t>,
-): Promise<void> {
+/**
+ * Deliver whatever a send still owes, from wherever it stopped. Called by the press, and by both
+ * ticks of the clock (`server/tick.ts`) — the Durable Object's alarm and Bun's timer — which is
+ * how a list cut off by a restart carries on within a minute or two of the blog coming back.
+ *
+ * Returns at once with the runner, which goes on detached as the press's always did. A runner of
+ * this process that is still renewing its lease is left alone. One whose lease has lapsed is not
+ * trusted to be alive — on Cloudflare a module outlives the object it ran for, and a promise left
+ * by an evicted object can stay unresolved for ever — so a new one starts, which is safe because
+ * no address can be claimed twice.
+ */
+export function resumeBroadcast(): Promise<void> | null {
+  if (!hasOpenRun()) return null
+  if (runner && !leaseLapsed()) return runner
+  const mine: Promise<void> = deliver().finally(() => {
+    if (runner === mine) runner = null
+  })
+  runner = mine
+  return mine
+}
+
+async function deliver(): Promise<void> {
+  const owner = randomBytes(9).toString('base64url')
+  const beat = setInterval(() => {
+    try {
+      renewLease(owner)
+    } catch (error) {
+      console.error(`[ERROR] broadcast.heartbeat: ${(error as Error).message}`)
+    }
+  }, HEARTBEAT_MS)
+  ;(beat as { unref?: () => void }).unref?.()
   // One pooled connection for the whole run rather than one per address, and closed with it.
-  const pool = await openMailPool()
+  // Opened at the first message, so a runner that finds the lease taken never dials the relay.
+  let pool: { close: () => void } | null | undefined
+  // The letter, parsed once per run rather than once per address.
+  let letterOf = 0
+  let render: (token: string, openToken: string) => { subject: string; html: string } = () => ({ subject: '', html: '' })
   try {
-    for (const s of subs) {
-      const openToken = newOpenToken()
-      const { subject, html } = broadcastEmail(tx, brand, posts, s.token, openToken)
-      const res = await sendMail({ to: s.email, subject, html, kind: 'broadcast', postSlugs: state.slugs, openToken })
-      if (res.sent) state.sent++
-      else state.failed++
+    for (;;) {
+      const step = claimNext(owner)
+      if (step.kind === 'idle' || step.kind === 'busy') return
+      // A dead runner's message in doubt, written down once by the runner that took over.
+      for (const gone of step.interrupted) {
+        await logSend({ email: gone.email, kind: 'broadcast', ok: false, postSlugs: gone.slugs, error: INTERRUPTED })
+      }
+      if (step.kind === 'finished') {
+        void logActivity('newsletter.send', `${step.run.slugs.join(',')} — ${step.run.sent}/${step.run.recipients}`)
+        return
+      }
+      if (letterOf !== step.runId) {
+        const l = JSON.parse(step.letter) as Letter
+        const words = t(l.lang)
+        letterOf = step.runId
+        render = (token, openToken) => broadcastEmail(words, l.brand, l.posts, token, openToken)
+      }
+      if (pool === undefined) pool = await openMailPool()
+      const { subject, html } = render(step.token, step.openToken)
+      const res = await sendMail({ to: step.email, subject, html, kind: 'broadcast', postSlugs: step.slugs, openToken: step.openToken })
+      // False when another runner holds the lease now: it carries on, and this one must not.
+      if (!recordResult(owner, step.id, res.sent)) return
     }
   } catch (error) {
     console.error(`[ERROR] broadcast.deliver: ${(error as Error).message}`)
   } finally {
+    clearInterval(beat)
     pool?.close()
-    // Stamp even when nobody was reachable: it records that these posts have been through
-    // the send flow, and keeps the column meaningful for anything still reading it.
-    run(
-      `update posts set broadcast_at = ? where slug in (select value from json_each(?))`,
-      nowMs(), keyList(state.slugs),
-    )
-    state.done = true
-    void logActivity('newsletter.send', `${state.slugs.join(',')} — ${state.sent}/${state.recipients}`)
+    try {
+      releaseLease(owner)
+    } catch { /* the database closed under it; the lease lapses by itself */ }
   }
 }

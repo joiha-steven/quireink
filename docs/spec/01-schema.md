@@ -138,7 +138,7 @@ Unchanged tables (straight translation, only the type mapping above applies):
 `schema_migrations`. The rest are described where they are used: `users`, `sessions`,
 `recovery_codes` in [06-auth.md](06-auth.md), `post_terms` and the `*_fts` tables in
 [01-schema-port.md](01-schema-port.md), and the `ap_*` tables, `assistant_chats`,
-`server_secrets` and `update_check` in the comments of `schema.sql` and `migrations.sql`.
+`server_secrets`, `update_check` and the two `broadcast_*` tables of a newsletter in progress in the comments of `schema.sql` and `migrations.sql`.
 
 `comments` is unchanged apart from `AUTOINCREMENT` (above) and `smallint` becoming
 `INTEGER`.

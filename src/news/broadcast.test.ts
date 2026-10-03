@@ -30,6 +30,8 @@ beforeEach(() => {
   db().run(`delete from subscribers`)
   db().run(`delete from newsletter_sends`)
   db().run(`delete from posts`)
+  db().run(`delete from broadcast_runs`)
+  db().run(`delete from broadcast_outbox`)
   resetBroadcastRun()
 })
 
@@ -94,5 +96,26 @@ describe('broadcastPosts', () => {
     await settled()
     const row = db().query(`select broadcast_at from posts where slug = ?`).get(post.slug) as { broadcast_at: number | null }
     expect(row.broadcast_at).toBeGreaterThan(0)
+  })
+
+  it('writes the whole list down before the first message, and clears it once the run is over', async () => {
+    const post = await savePost({ title: 'A letter', content: 'x '.repeat(200), status: 'published', date: PAST })
+    await aSubscriber('one@example.com')
+    await aSubscriber('two@example.com')
+    await broadcastPosts([post.slug])
+    // Straight after the press answered: both addresses are on file, whatever the runner has reached.
+    const owed = db().query(`select email from broadcast_outbox order by id`).all() as { email: string }[]
+    expect(owed.map((r) => r.email)).toEqual(['one@example.com', 'two@example.com'])
+    await settled()
+    expect((db().query(`select count(*) as n from broadcast_outbox`).get() as { n: number }).n).toBe(0)
+  })
+
+  it('refuses a second run after a restart too: the open one is in the database, not in memory', async () => {
+    const post = await savePost({ title: 'A letter', content: 'x '.repeat(200), status: 'published', date: PAST })
+    await aSubscriber('one@example.com')
+    db().run(`insert into broadcast_runs (slugs, letter, recipients, started_at, lease_owner, lease_until) values (?, '{}', 1, ?, 'alive', ?)`,
+      [JSON.stringify([post.slug]), Date.now(), Date.now() + 60_000])
+    resetBroadcastRun()
+    await expect(broadcastPosts([post.slug], { force: true })).rejects.toThrow('already_running')
   })
 })

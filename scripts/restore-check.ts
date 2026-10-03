@@ -77,6 +77,10 @@ const TRANSIENT: Record<string, string> = {
   // reason. It went red the first run after the split, which is the list doing its job: a
   // table that empties itself into the archive has to be argued for out loud, once.
   body_cache: 'left out of the archive on purpose',
+  // A newsletter in progress (`news/outbox.ts`), left out so a restored copy cannot resume the
+  // send somewhere else and mail the rest of the list a second time.
+  broadcast_runs: 'left out of the archive on purpose',
+  broadcast_outbox: 'left out of the archive on purpose',
   // These drain, expire or are rewritten in the ordinary course of a minute, so "fewer rows
   // than before" is their normal state and says nothing about the archive.
   ap_queue: 'a delivery queue, drains as it is delivered',

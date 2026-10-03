@@ -454,3 +454,31 @@ alter table posts add column excerpt_auto integer not null default -1;
 -- Every stored count is recounted once: -1 marks it, `settleReadingMinutes` (content/settle.ts)
 -- recounts each body at boot. New saves write the count directly.
 update posts set reading_minutes = -1;
+
+-- migration: 022-broadcast-outbox
+-- A newsletter send moves out of memory into the database (`news/outbox.ts`): a run, and one row
+-- per address it owes. Held only in memory, a send cut off by a restart either stopped where it
+-- was, with nothing on the screen to say so, or was pressed again and mailed the first half twice.
+-- The tables are copied verbatim from `schema.sql`; nothing existing has rows to carry over.
+create table if not exists broadcast_runs (
+  id          integer primary key autoincrement,
+  slugs       text not null,
+  letter      text not null,
+  recipients  integer not null,
+  sent        integer not null default 0,
+  failed      integer not null default 0,
+  started_at  integer not null,
+  finished_at integer,
+  lease_owner text,
+  lease_until integer not null default 0
+);
+create table if not exists broadcast_outbox (
+  id         integer primary key autoincrement,
+  run_id     integer not null,
+  email      text not null,
+  token      text not null,
+  state      text not null default 'owed' check (state in ('owed','sending','sent','failed')),
+  open_token text,
+  claimed_at integer
+);
+create index if not exists broadcast_outbox_due_idx on broadcast_outbox (run_id, state);

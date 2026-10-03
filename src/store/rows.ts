@@ -17,8 +17,14 @@
 import { createHash } from 'node:crypto'
 import type { Connection, SqlValue } from '@/runtime/ports'
 
-/** Rebuilt on demand from the Markdown beside them (ADR 0062), so their rows are not carried. */
-export const SKIPPED_TABLES: readonly string[] = ['render_cache', 'body_cache']
+/**
+ * Not carried, each for its own reason. The two caches are rebuilt on demand from the Markdown
+ * beside them (ADR 0062). The two broadcast tables are a send in progress (`news/outbox.ts`): an
+ * archive taken mid-send and loaded somewhere else would carry on mailing the rest of the list
+ * from there, while the blog it came from finished the same list — a second copy in every inbox
+ * from the very feature built so there never is one. A newsletter cannot be unsent.
+ */
+export const SKIPPED_TABLES: readonly string[] = ['render_cache', 'body_cache', 'broadcast_runs', 'broadcast_outbox']
 
 /**
  * Rows per read. Measured on 200,000 analytics events (2026-10-03), the whole archive built:

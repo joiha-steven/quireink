@@ -72,6 +72,14 @@
 
 ### Fixed
 
+- **A newsletter cut off half-way carries on, and nobody gets it twice.** The send kept its place
+  in memory, so a restart in the middle of one — every deploy on Cloudflare, an eviction, a server
+  upgrade — stopped it silently, and the resend box would have mailed the first half again. The
+  list is now written down when you press send and worked through from the database: within a
+  minute or two of the blog coming back it picks up where it stopped, still one message at a time.
+  The one message that was with the mail server at that instant is never sent again; if the send
+  log cannot show it arrived, it is marked failed as `interrupted` in People. A second press while
+  a send is still going is refused, restart or not.
 - **A backup from somewhere else is held to what a backup can be.** `scripts/restore.ts` ran the
   archive's `schema.sql` as it found it; it now refuses any statement that is not a `CREATE` of a
   table, index, trigger, view or full-text index, so an archive cannot attach a file at a path of

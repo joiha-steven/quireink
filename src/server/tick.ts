@@ -23,6 +23,7 @@ import { clearCache } from '@/server/cache'
 import { sweepLinkCards } from '@/server/link-fetch'
 import { apTick } from '@/ap/tick'
 import { sweepParts } from '@/server/restore-parts'
+import { resumeBroadcast } from '@/news/broadcast'
 
 export type FullTick = {
   purged: boolean
@@ -83,7 +84,24 @@ export async function publishTick(): Promise<number> {
   } catch (error) {
     console.error(`[ERROR] tick.activitypub: ${(error as Error).message}`)
   }
+  resumeNewsletter()
   return published
+}
+
+/**
+ * A newsletter cut off by a restart carries on from where it stopped (`news/broadcast.ts`). One
+ * lookup when nothing is going out. On BOTH ticks, because the Durable Object's alarm runs the
+ * full one instead of the minute one on the hour. Not awaited: the runner outlives the tick, as it
+ * outlives the press that started it, and a scheduled post must not wait behind a mailing list.
+ */
+function resumeNewsletter(): void {
+  try {
+    void resumeBroadcast()?.catch((error: unknown) => {
+      console.error(`[ERROR] tick.newsletter: ${(error as Error).message}`)
+    })
+  } catch (error) {
+    console.error(`[ERROR] tick.newsletter: ${(error as Error).message}`)
+  }
 }
 
 /**
@@ -181,6 +199,8 @@ export async function fullTick(opts: { purge?: boolean } = {}): Promise<FullTick
   } catch (error) {
     console.error(`[ERROR] tick parts sweep: ${(error as Error).message}`)
   }
+
+  resumeNewsletter()
 
   // Last, and isolated like the rest: a snapshot is the slowest thing in the tick (it reads
   // both databases and the whole uploads tree), and nothing above it should wait on that or

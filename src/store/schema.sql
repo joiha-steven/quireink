@@ -413,6 +413,35 @@ create table if not exists newsletter_sends (
 create index if not exists newsletter_sends_email_idx on newsletter_sends (email);
 create index if not exists newsletter_sends_post_idx  on newsletter_sends (post_slug) where post_slug is not null;
 
+-- A newsletter on its way out (`news/outbox.ts`): the run, and one row per address it owes. In the
+-- database and not in memory, because a Durable Object restarts after every deploy and may be
+-- evicted at any moment, and a process restarts too: a send held in memory stopped there, and the
+-- only way on was to send the whole list again. A row goes `owed` → `sending` once and never back,
+-- which is what makes a second copy impossible; `lease_*` says which runner is delivering it now.
+-- Left out of a backup (`store/rows.ts`): a send restored onto another machine would resume there.
+create table if not exists broadcast_runs (
+  id          integer primary key autoincrement,
+  slugs       text not null,                 -- JSON array of the posts it carries, the lead first
+  letter      text not null,                 -- JSON: posts, letterhead and language as pressed
+  recipients  integer not null,
+  sent        integer not null default 0,
+  failed      integer not null default 0,
+  started_at  integer not null,
+  finished_at integer,                       -- NULL while it is going out
+  lease_owner text,
+  lease_until integer not null default 0
+);
+create table if not exists broadcast_outbox (
+  id         integer primary key autoincrement,
+  run_id     integer not null,
+  email      text not null,
+  token      text not null,                  -- the unsubscribe token as it was at the press
+  state      text not null default 'owed' check (state in ('owed','sending','sent','failed')),
+  open_token text,
+  claimed_at integer
+);
+create index if not exists broadcast_outbox_due_idx on broadcast_outbox (run_id, state);
+
 -- ----- activity_log -----------------------------------------------------------
 create table if not exists activity_log (
   id     integer primary key autoincrement,

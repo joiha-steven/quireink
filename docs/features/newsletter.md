@@ -79,6 +79,16 @@
   wrongly report them as sent. `force: true` (the admin's resend checkbox) overrides it. The route
   lives at `/api/broadcast`, NOT under `/api/newsletter/*` — that prefix is the public
   confirm/unsubscribe/pixel family and a send endpoint must stay owner-gated.
+- **A send survives a restart** (`src/news/outbox.ts`, tables `broadcast_runs` and
+  `broadcast_outbox`). The press writes the whole list down before the first message, and each
+  address is claimed once, in a transaction, before its message goes to the relay. The minute tick
+  on both runtimes picks an open run back up after a deploy, an eviction or a crash, still one
+  connection and one message at a time; a lease keeps it to one runner. The one message that was
+  with the relay at the moment of the restart is read from the send log — delivered if its open
+  token is there — and otherwise logged as failed `interrupted` and NOT sent again: at most one
+  address per restart may miss the letter, and none gets it twice. A second press while a run is
+  open is refused (`already_running`), restart or not. The tables are left out of backups, so a
+  restored copy cannot resume the list from another machine.
 - **Comment-reply notifications** (`src/comments/comment-notify.ts` `notifyReply`, awaited from the
   comment POST route on a reply; it never throws). Emails the parent commenter (their `author_email`) a
   link to the thread. Best-effort + transactional: skips a self-reply (same email), a deleted
