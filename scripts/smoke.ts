@@ -8,8 +8,9 @@
 //   1. `/api/health` answers `ok`, with the version and the package expected of it;
 //   2. a blog nobody has claimed yet: `/setup` answers, and when `SETUP_CODE` is set it takes that
 //      code and refuses another — the claim itself is left alone, because it is a one-way door;
-//   3. a blog with an owner (`QUIRE_SESSION`): the twelve smoke flows of the tour, then
-//      `restore-check` on a backup taken from it.
+//   3. a blog with an owner (`QUIRE_SESSION`): the twelve smoke flows of the tour, `restore-check`
+//      on a backup taken from it, then MCP over the wire (`mcp-smoke.ts`), last because it switches
+//      MCP on for its run and the backup should be of the blog as it was found.
 //
 // Env: EXPECT_VERSION, EXPECT_PACKAGE, SETUP_CODE, QUIRE_SESSION, and DATA_DIR / STORAGE_LOCAL_DIR
 // as the instance was started with (restore-check compares against its files).
@@ -69,6 +70,7 @@ if (h && session) {
     spawnSync(process.execPath, args, { stdio: 'inherit', env: { ...process.env, ...env } }).status === 0
   ;(run(['scripts/tour.ts', BASE], { SMOKE: '1' }) ? ok : bad)('the twelve smoke flows')
   ;(run(['scripts/restore-check.ts', BASE]) ? ok : bad)('restore-check on a backup taken from it')
+  ;(run(['scripts/mcp-smoke.ts', BASE]) ? ok : bad)('MCP over the wire with a minted token')
 }
 
 if (failures.length) {

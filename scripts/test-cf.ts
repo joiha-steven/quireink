@@ -41,9 +41,9 @@ if (!cases) {
 let failed = 0
 for (let i = 0; i < cases.length; i++) {
   const result = (await (await fetch(`${base}/run?case=${i}`)).json()) as { name: string; ok: boolean; error?: string }
-  if (result.ok) console.log(`  ✓ db: ${result.name}`)
-  else { failed++; console.log(`  ✗ db: ${result.name} — ${result.error}`) }
+  if (result.ok) console.log(`  ✓ ${result.name}`)
+  else { failed++; console.log(`  ✗ ${result.name} — ${result.error}`) }
 }
 stop()
-console.log(failed ? `✗ test:cf: ${failed} of ${cases.length} failed in workerd` : `✓ test:cf: ${cases.length} contract case(s) pass in workerd`)
+console.log(failed ? `✗ test:cf: ${failed} of ${cases.length} failed in workerd` : `✓ test:cf: ${cases.length} case(s) pass in workerd`)
 process.exit(failed ? 1 : 0)
