@@ -11,6 +11,10 @@
   workflow already written: one *Commit changes* and Actions has it. The card also links the copy's
   Actions page from then on, and carries the file to copy by hand if the link is refused. A copy on
   GitLab updates by hand with git, as the guide shows. In all eleven languages.
+  The workflow also keeps the three lines Cloudflare's import rewrites (the package name, the
+  Worker's name and the bucket line with its `preview_bucket_name`) exactly as the copy has them:
+  it used to put the release's spelling back, so every update pushed a commit of its own, and a
+  copy already on the newest release was "updated" anyway.
 - **The setup screens look like one product again.** On a fresh install the setup-code screen's
   Continue was the browser's own button, small and bright blue on Safari, glued to the field
   above it: it was the one submit button on those screens written without its class. The

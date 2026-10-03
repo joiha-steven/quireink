@@ -47,14 +47,28 @@ jobs:
             echo "::error::this blog runs ${current}; ${tag#v} is older, and going back is a restore from a backup, not an update"; exit 1
           fi
           echo "installing ${tag}"
-          # The names the button chose: the Worker's (the first "name" in the file) and the bucket's.
-          name=$(grep -m1 -oE '"name": *"[^"]*"' wrangler.jsonc | sed -E 's/.*"([^"]*)"$/\1/')
-          bucket=$(grep -m1 -oE '"bucket_name": *"[^"]*"' wrangler.jsonc | sed -E 's/.*"([^"]*)"$/\1/')
+          # The three lines Cloudflare's import rewrites, kept exactly as this copy has them: the
+          # package name and the Worker name (both the repository's name) and the bucket line, which
+          # also gains a preview_bucket_name. Measured 2026-10-04 against the v2.2.17 tag: those three
+          # and nothing else. Kept whole rather than re-spelled, so an update into an unchanged release
+          # changes nothing and pushes nothing.
+          export KEEP_PKG="$(grep -m1 -E '^  "name": ' package.json)"
+          export KEEP_NAME="$(grep -m1 -E '^  "name": ' wrangler.jsonc)"
+          export KEEP_R2="$(grep -m1 -E '^  "r2_buckets": ' wrangler.jsonc)"
           git fetch --depth 1 https://github.com/joiha-steven/quireink.git "refs/tags/${tag}"
           git rm -rq -- . ':(exclude).github/workflows'
           git checkout FETCH_HEAD -- . ':(exclude).github/workflows'
-          sed -i -E "0,/\"name\": *\"[^\"]*\"/s//\"name\": \"${name}\"/" wrangler.jsonc
-          sed -i -E "s/\"bucket_name\": *\"[^\"]*\"/\"bucket_name\": \"${bucket}\"/" wrangler.jsonc
+          python3 - <<'PY'
+          import os, re
+          def keep(path, pattern, line):
+              if not line: return
+              text = open(path, encoding='utf-8').read()
+              text = re.sub(pattern, lambda m: line, text, count=1, flags=re.M)
+              open(path, 'w', encoding='utf-8').write(text)
+          keep('package.json', r'^  "name": .*$', os.environ['KEEP_PKG'])
+          keep('wrangler.jsonc', r'^  "name": .*$', os.environ['KEEP_NAME'])
+          keep('wrangler.jsonc', r'^  "r2_buckets": .*$', os.environ['KEEP_R2'])
+          PY
           git add -A
           if git diff --cached --quiet; then echo "already on ${tag}"; exit 0; fi
           git -c user.name="Quire Ink update" -c user.email="actions@users.noreply.github.com" commit -qm "Quire Ink ${tag}"
