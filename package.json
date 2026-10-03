@@ -41,9 +41,11 @@
     "check:motion": "bun scripts/checks/motion-drift.ts"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261003.1",
     "@happy-dom/global-registrator": "^20.14.0",
     "@types/bun": "latest",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "4"
   },
   "overrides": {
     "fast-uri": "^3.1.8",
@@ -56,6 +58,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "@noble/hashes": "2",
     "hono": "^4.13.7",
     "prosemirror-commands": "^1.7.2",
     "prosemirror-dropcursor": "^1.8.3",

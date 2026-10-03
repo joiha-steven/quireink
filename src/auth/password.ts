@@ -69,6 +69,17 @@ export function hashPassword(password: string): Promise<string> {
 }
 
 /**
+ * Whether a stored hash was made with other parameters than today's (ADR 0069): a sign-in that
+ * proves the password then stores it again at `HASH_PARAMS`. Anything unparseable is left alone —
+ * it will fail its own verification, which is the honest outcome for it.
+ */
+export function needsRehash(hash: string): boolean {
+  const found = /^\$argon2id\$v=19\$m=(\d+),t=(\d+),p=(\d+)\$/.exec(hash)
+  if (!found) return false
+  return Number(found[1]) !== HASH_PARAMS.memoryCost || Number(found[2]) !== HASH_PARAMS.timeCost || found[3] !== '1'
+}
+
+/**
  * A hash of a value nobody knows, made the first time it is needed and kept.
  *
  * Its only purpose is to be verified against when the username does not exist, so that

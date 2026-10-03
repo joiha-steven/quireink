@@ -48,7 +48,8 @@
 - **New password hashes use argon2id at 19 MiB, not Bun's default 64 MiB** ([ADR 0068](docs/decisions/0068-new-password-hashes-use-19-mib.md)):
   OWASP's floor for argon2id, and small enough for a 128 MB Cloudflare isolate. Existing passwords
   and recovery codes keep working untouched; a password changed from now on gets the new
-  parameters.
+  parameters. **Signing in stores an old password again at the new parameters**
+  ([ADR 0069](docs/decisions/0069-a-sign-in-brings-an-old-hash-up-to-date.md)), once, with nothing to do on your side.
 - **`install.sh` installs a release, not `main`** ([ADR 0065](docs/decisions/0065-every-install-runs-a-release.md)).
   Until now it cloned `main` and updated with `git pull`, so an install from source ran whatever was
   pushed last while the image only ever moved on a tag. It now finds the newest release with

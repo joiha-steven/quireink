@@ -161,6 +161,14 @@ export function renameUser(id: number, username: string): void {
   run(`update users set username = ?, updated_at = ? where id = ?`, next, nowMs(), id)
 }
 
+/**
+ * The same password, stored again at today's parameters (ADR 0069). Not `setPassword`: nothing about
+ * the account changed, so `updated_at` stays what it was.
+ */
+export async function rehashPassword(id: number, password: string): Promise<void> {
+  run(`update users set password_hash = ? where id = ?`, await hashPassword(password), id)
+}
+
 export async function setPassword(id: number, password: string): Promise<void> {
   run(`update users set password_hash = ?, updated_at = ? where id = ?`, await hashPassword(password), nowMs(), id)
 }

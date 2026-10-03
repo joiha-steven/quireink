@@ -10,11 +10,11 @@
 
 import { clearLimit, overLimit, recordHit } from '@/server/rate-limit'
 import { logAuthEvent } from '@/server/activity'
-import { verifyPassword } from './password'
+import { needsRehash, verifyPassword } from './password'
 import { verifyCode } from './totp'
 import { redeemCode } from './recovery'
 import { createSession } from './sessions'
-import { passwordHashFor, setTotpLastStep, totpStateFor } from './users'
+import { passwordHashFor, rehashPassword, setTotpLastStep, totpStateFor } from './users'
 
 /** How long a half-finished sign-in survives. Long enough to read a code off a phone. */
 const PENDING_MS = 5 * 60 * 1000
@@ -103,6 +103,13 @@ export async function submitPassword(input: {
   }
   // The password was right. Whatever came before it was this person mistyping.
   clearLimit(pairKey)
+  // And it is the one moment the password is in hand: an old hash moves to today's parameters
+  // (ADR 0069), so a blog moved to Cloudflare never has to verify a 64 MiB hash in 128 MB.
+  if (needsRehash(account.hash)) {
+    await rehashPassword(account.id, input.password).catch((error: unknown) => {
+      console.error(`[ERROR] auth.login: could not store the password at the new parameters: ${(error as Error).message}`)
+    })
+  }
 
   const ticket = Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString('base64url')
   pending.set(ticket, { userId: account.id, createdAt: now, attempts: 0 })

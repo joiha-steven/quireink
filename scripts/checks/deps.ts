@@ -64,6 +64,10 @@ const ALLOWED: Record<string, string> = {
   'prosemirror-dropcursor': 'B. Where a dragged picture would land',
   'prosemirror-gapcursor': 'B. A caret between two blocks that cannot hold one',
 
+  // The Cloudflare runtime (ADR 0066), and only there: src/runtime/cf/password.ts.
+  '@noble/hashes':
+    'B. argon2id in plain JS for Cloudflare (ADR 0069): the WASM builds reserve 65 MB of memory up front (argon2id 1.0.1 declares 1,040 pages) in a 128 MB isolate; this one allocates what `m` asks for and gives it back. Audited, no dependencies',
+
   // ---- C: going, and the order is the owner's --------------------------------------------
   hono: 'C. A thin HTTP router, but 50 call sites. Last, and only when the rest is done',
   // ---- and what is no longer here ------------------------------------------------------
@@ -77,6 +81,8 @@ const ALLOWED: Record<string, string> = {
   typescript: 'T. The compiler',
   '@types/bun': 'T. Types for the runtime',
   '@happy-dom/global-registrator': 'T. A DOM for the editor suites, registered per test file',
+  wrangler: 'T. Runs the Cloudflare build in workerd on this machine, and deploys it (ADR 0066)',
+  '@cloudflare/workers-types': 'T. Types for the Cloudflare side of the runtime seam',
 }
 
 const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as {

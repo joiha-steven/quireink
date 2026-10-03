@@ -2,7 +2,7 @@
 // what a person sees rather than UTF-16 units, and that a missing account costs the same
 // time as a wrong password.
 import { describe, it, expect } from 'bun:test'
-import { checkPassword, hashPassword, MIN_LENGTH, verifyPassword } from './password'
+import { checkPassword, hashPassword, MIN_LENGTH, needsRehash, verifyPassword } from './password'
 
 describe('checkPassword', () => {
   it('accepts a long passphrase with no special characters', () => {
@@ -56,6 +56,15 @@ describe('hashPassword', () => {
     expect(old).toContain('m=65536')
     expect(await verifyPassword(old, 'the password from before')).toBe(true)
     expect(await verifyPassword(old, 'not the password')).toBe(false)
+  })
+})
+
+describe('needsRehash', () => {
+  it('asks for today\'s parameters and only those', async () => {
+    expect(needsRehash(await hashPassword('a long enough passphrase'))).toBe(false)
+    expect(needsRehash('$argon2id$v=19$m=65536,t=2,p=1$c2FsdHNhbHQ$aGFzaGhhc2g')).toBe(true)
+    expect(needsRehash('$argon2id$v=19$m=19456,t=3,p=1$c2FsdHNhbHQ$aGFzaGhhc2g')).toBe(true)
+    expect(needsRehash('not a hash')).toBe(false)
   })
 })
 
