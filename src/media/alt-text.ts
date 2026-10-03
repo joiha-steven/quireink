@@ -15,6 +15,7 @@ import { logActivity } from '@/server/activity'
 import { ask, buildParts, parseText } from '@/server/ai-provider'
 import { liveOnly } from '@/store/db'
 import { mediaKey } from '@/media/media'
+import { bytesOf, sizeOf, type UploadBody } from '@/media/blob'
 
 // Compatibility exports: the provider plumbing moved to `server/ai-provider.ts` on
 // 2026-08-23; these keep every existing caller and test honest about where it lives.
@@ -54,19 +55,23 @@ const DESCRIBABLE = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif
 const MAX_BYTES = 8 * 1024 * 1024 // providers cap around here, and a poster is smaller anyway
 
 /**
- * Fire-and-forget entry, called by the upload paths with the bytes they already hold.
- * Everything that can decline, declines silently BEFORE any network is touched.
+ * Fire-and-forget entry, called by the upload paths with what they already hold: the bytes, or
+ * the request's `File`, which is read only once everything that can decline has declined — on a
+ * blog with the describer off, never. Everything that can decline, declines silently BEFORE any
+ * network is touched.
  */
-export async function describeUpload(path: string, body: ArrayBuffer, mime: string): Promise<void> {
+export async function describeUpload(path: string, body: UploadBody | Uint8Array, mime: string): Promise<void> {
   try {
-    if (!DESCRIBABLE.has(mime) || body.byteLength > MAX_BYTES) return
+    if (!DESCRIBABLE.has(mime) || sizeOf(body) > MAX_BYTES) return
     const keys = await getIntegrationKeys()
     if (!keys.aiProvider || !keys.aiApiKey) return
     const { language, ai } = await getSettings()
     if (!ai.altText) return // the owner's per-job switch (Settings → AI)
 
+    // A view in every case: `Buffer.from(aUint8Array)` would copy it.
+    const bytes = body instanceof Uint8Array ? Buffer.from(body.buffer, body.byteOffset, body.byteLength) : Buffer.from(await bytesOf(body))
     const alt = await ask([
-      { imageMime: mime, imageB64: Buffer.from(body).toString('base64') },
+      { imageMime: mime, imageB64: bytes.toString('base64') },
       { text: prompt(language) },
     ])
     if (!alt) return

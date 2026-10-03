@@ -7,19 +7,18 @@
 import type { MediaItem } from '@/types'
 import { describeUpload } from '@/media/alt-text'
 import {
-  uploadFile, readBlob, deleteByPathname, collapseBlob, expandBlob,
+  uploadFile, deleteByPathname, expandBlob, bytesOf, type UploadBody,
 } from '@/media/blob'
-import { mimeOf } from '@/media/mime'
 import { slugify } from '@/utils'
 import {
-  imageSize, safeSize, makeThumb, capOriginal, RASTER, PASSTHROUGH, SIZES,
+  safeSize, makeThumb, capOriginal, RASTER, PASSTHROUGH, SIZES,
 } from '@/media/image'
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, toIso } from '@/store/db'
 
 // A row as stored (store-relative paths). `variants` is a 0/1 column: SQLite has no
 // boolean, and the schema constrains it.
-type MediaRow = {
+export type MediaRow = {
   path: string
   filename: string
   size: number
@@ -33,7 +32,7 @@ type MediaRow = {
 }
 
 // Row -> client item (absolute URLs).
-function rowToItem(row: MediaRow): MediaItem {
+export function rowToItem(row: MediaRow): MediaItem {
   return {
     url: expandBlob(row.path),
     filename: row.filename,
@@ -52,7 +51,7 @@ function rowToItem(row: MediaRow): MediaItem {
 // codebase does not assemble SQL.
 const keyList = (keys: string[]) => JSON.stringify(keys)
 
-function insertRows(rows: MediaRow[]): void {
+export function insertRows(rows: MediaRow[]): void {
   tx(() => {
     for (const r of rows) {
       run(
@@ -182,11 +181,13 @@ const PASS_EXT: Record<string, string> = { 'image/svg+xml': 'svg', 'image/gif': 
 // caller's batch). Dimensions + thumb are BEST-EFFORT — a valid original must never
 // fail the upload because thumb/metadata hiccuped (it still renders; cron re-thumbs).
 async function processFile(
-  filename: string, body: ArrayBuffer, contentType: string, taken: Set<string>,
+  filename: string, from: UploadBody, contentType: string, taken: Set<string>, keep?: Map<string, Buffer>,
 ): Promise<MediaRow> {
   const dot = filename.lastIndexOf('.')
   const base = slugify(dot >= 0 ? filename.slice(0, dot) : filename) || 'file'
   const uploaded_at = nowMs()
+  // Read HERE, one file at a time (`bytesOf` says why): the batch never holds two copies at once.
+  const body = await bytesOf(from)
 
   if (RASTER.test(contentType)) {
     const original = await capOriginal(body, contentType) // never store a >2048px original
@@ -200,6 +201,10 @@ async function processFile(
     } catch (error) {
       console.error(`[ERROR] media.processFile thumb(${path}): ${(error as Error).message}`)
     }
+    // The exact bytes just written, for its variants (`finalizeVariants`) — but only a CAPPED
+    // original, which is a new, smaller picture. One under the cap is the upload's own bytes, and
+    // keeping those for every file would hold a batch whole again; it is read back when its turn comes.
+    if (original.buffer !== body) keep?.set(path, original)
     return { path, filename: path.replace(/^media\//, ''), size: original.byteLength, uploaded_at, width: width ?? null, height: height ?? null, thumb, variants: 0 }
   }
 
@@ -215,14 +220,16 @@ async function processFile(
 
 // Upload one or more files: write the binaries to the store, then insert all rows in a
 // single transaction. Unsupported types throw before any DB write (route -> 415).
+// `keep`, when given, receives each raster original by path (`media-register.ts` says why).
 export async function addMediaBatch(
-  files: { filename: string; body: ArrayBuffer; contentType: string }[],
+  files: { filename: string; body: UploadBody; contentType: string }[],
+  keep?: Map<string, Buffer>,
 ): Promise<MediaItem[]> {
   const taken = await takenPathnames()
   const rows: MediaRow[] = []
   try {
     for (const f of files) {
-      rows.push(await processFile(f.filename, f.body, f.contentType, taken))
+      rows.push(await processFile(f.filename, f.body, f.contentType, taken, keep))
     }
   } catch (error) {
     // All or nothing: a later file refused used to leave the earlier ones' blobs on disk with no
@@ -233,9 +240,10 @@ export async function addMediaBatch(
     throw error
   }
   insertRows(rows)
-  // Background, per file, with the bytes this function already holds — no re-read, no
-  // waiting: the upload response is long gone by the time a provider answers, and the
-  // describer declines silently unless the owner pasted a key (media/alt-text.ts).
+  // Background, per file, with what the caller handed in — the request's own `File` reads its
+  // bytes only once the describer has decided to run — and no waiting: the upload response is
+  // long gone by the time a provider answers, and the describer declines silently unless the
+  // owner pasted a key (media/alt-text.ts).
   for (let i = 0; i < rows.length; i++) {
     void describeUpload(rows[i]!.path, files[i]!.body, files[i]!.contentType)
   }
@@ -250,53 +258,6 @@ export async function addMedia(
 ): Promise<MediaItem> {
   const [item] = await addMediaBatch([{ filename, body, contentType }])
   return item!
-}
-
-// Register images already written to the store, addressed by URL: fetch each back only
-// to read dims + make the thumb, then insert the row. Variants stay deferred.
-export async function registerMediaBatch(items: { url: string; filename: string }[]): Promise<MediaItem[]> {
-  const rows: MediaRow[] = []
-  const bytes = new Map<string, { buf: Buffer; contentType: string }>()
-  for (const it of items) {
-    const path = collapseBlob(it.url)
-    if (!/^media\//.test(path)) continue
-    const buf = await readBlob(path) // direct store read — see readOriginal
-    const contentType = mimeOf(path)
-    bytes.set(path, { buf, contentType })
-    const stem = path.replace(/\.[^.]+$/, '')
-    const isRaster = RASTER.test(contentType) || /\.(jpe?g|png)$/i.test(path)
-    let width: number | null = null
-    let height: number | null = null
-    let thumb = path // passthrough (svg/gif/webp): the original is its own thumb
-    if (isRaster) {
-      const sz = await imageSize(buf)
-      width = sz.width || null
-      height = sz.height || null
-      thumb = `${stem}-thumb.webp`
-      await uploadFile(thumb, await makeThumb(buf), 'image/webp')
-    } else {
-      const sz = await safeSize(buf)
-      width = sz.width ?? null
-      height = sz.height ?? null
-    }
-    rows.push({
-      path,
-      filename: it.filename || path.replace(/^media\//, ''),
-      size: buf.byteLength,
-      uploaded_at: nowMs(),
-      width,
-      height,
-      thumb,
-      variants: 0,
-    })
-  }
-  if (rows.length === 0) return []
-  insertRows(rows)
-  for (const r of rows) {
-    const b = bytes.get(r.path)
-    if (b) void describeUpload(r.path, b.buf.buffer.slice(b.buf.byteOffset, b.buf.byteOffset + b.buf.byteLength) as ArrayBuffer, b.contentType)
-  }
-  return rows.map(rowToItem)
 }
 
 // Extract the store-relative `media/...` pathname from any URL form (host-independent,

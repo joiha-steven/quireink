@@ -72,6 +72,12 @@
 
 ### Fixed
 
+- **Uploading pictures on Cloudflare takes far less memory.** Every request to the Images binding
+  copied the picture twice first, and an upload makes nine — a 25 MB picture came to 450 MB of
+  copies in a blog that has 128 MB; it is now handed over as it is, with the same results byte for
+  byte. A batch of photos or attachments is read one file at a time instead of all at once beside
+  the upload itself, a picture's type is checked from its first kilobyte, and a photo scaled down
+  on upload gets its smaller sizes from the copy already in hand rather than a second download.
 - **A newsletter cut off half-way carries on, and nobody gets it twice.** The send kept its place
   in memory, so a restart in the middle of one — every deploy on Cloudflare, an eviction, a server
   upgrade — stopped it silently, and the resend box would have mailed the first half again. The

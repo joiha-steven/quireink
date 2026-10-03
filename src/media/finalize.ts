@@ -40,9 +40,17 @@ const inFlight = new Set<string>()
 // `budgetMs` of `Infinity` is for the callers with nobody waiting on them: the upload route
 // hands this off with `void` AFTER answering, so there is no request left to time out and
 // stopping early would only leave the reader the picture they just uploaded unoptimised.
+//
+// `inHand` is the bytes the caller already holds, by path: the upload route passes the originals
+// it has just written. Without it, every upload read its own original straight back from the store
+// it had been written to a moment before — on Cloudflare a second R2 GET and a second full copy of
+// the picture in a 128 MB isolate, to make variants from bytes identical to the ones it had dropped.
+// Each entry is let go as soon as its variants are made, so a batch never holds more of them than
+// it did while the request was open. Anything not in the map is read from the store as before.
 export async function finalizeVariants(
   pathnames: string[],
   budgetMs: number = Infinity,
+  inHand?: Map<string, Buffer>,
 ): Promise<number> {
   const targets = [...new Set(pathnames)].filter((p) => /\.(jpe?g|png)$/i.test(p))
   if (targets.length === 0) return 0
@@ -54,17 +62,20 @@ export async function finalizeVariants(
     if (Date.now() >= deadline) break
     if (inFlight.has(path)) continue
     inFlight.add(path)
+    const held = inHand?.get(path)
+    inHand?.delete(path)
     try {
-      if (await finalizeOne(path)) finalized++
+      if (await finalizeOne(path, held)) finalized++
     } finally {
       inFlight.delete(path)
     }
   }
+  inHand?.clear()
   return finalized
 }
 
 /** One original: its display variants, unless another run already made them. */
-async function finalizeOne(path: string): Promise<boolean> {
+async function finalizeOne(path: string, held?: Buffer): Promise<boolean> {
   const row = one<{ variants: number }>(`select variants from media where path = ?`, path)
   // `< VARIANT_VERSION`, not truthiness. When 512 was added, every already-finalised
   // image was version 1 and truthiness said "done" — which would have left them naming a
@@ -74,7 +85,7 @@ async function finalizeOne(path: string): Promise<boolean> {
   // Read the original from the store DIRECTLY. `fetch`ing the blob URL breaks on the local
   // driver: blobUrl/expandBlob is a store-relative `/uploads/...` path (no origin) and
   // server-side fetch throws "Failed to parse URL". null = not on the store; a sweep retries.
-  const original = await readBlob(path).catch(() => null)
+  const original = held ?? await readBlob(path).catch(() => null)
   if (!original) return false
   const stem = path.replace(/\.[^.]+$/, '')
   const files = await makeDisplay(original)

@@ -20,6 +20,7 @@ import { identityFromSecret, newIdentity, opener, passphraseRecipient, sealer, u
 import { dropHeld, heldIds, heldParts, holdPart, openKept, readHeld, removeKept, writeKept } from '@/runtime/cf/archive'
 import { PART as OFFSITE_PART, s3Client } from '@/runtime/cf/offsite'
 import { outboxResumes } from './newsletter'
+import { imagesFromTheBuffer, uploadPictureWork } from './images'
 
 type Case = { name: string; body: () => void | Promise<void> }
 
@@ -39,6 +40,7 @@ function collect(): Case[] {
   cases.push({ name: 'smtp: STARTTLS lets go of the plain streams and reaches the TLS handshake', body: smtpReachesHandshake })
   cases.push({ name: 'archive: a kept archive past the old 64 MB ceiling is handed out as its size and a stream (G4)', body: keptAsStream })
   cases.push({ name: 'archive: the parts of an incoming archive are held in R2 under private/, read back in order, and dropped', body: incomingParts })
+  cases.push({ name: 'image: the binding reads the picture in hand, not two copies of it, and answers as it did to the copies', body: imagesFromTheBuffer })
   cases.push({ name: 'newsletter: a send cut off by a restart is settled from the log and resumed, nobody mailed twice', body: () => outboxResumes(smtpPort) })
   cases.push({ name: 'offsite: a 40 MB kept archive leaves for S3 as a multipart upload, 16 MiB at a time', body: offsiteMultipart })
   return cases
@@ -332,6 +334,11 @@ export default {
         h.codeToHtml('x = 1', { lang, theme: 'vitesse-light' })
       }
       return Response.json({ loaded: langs.length })
+    }
+    // A third: what an upload asks of the Images binding for one picture (`uploadPictureWork`).
+    if (url.pathname === '/load/image' && request.method === 'POST') {
+      bind(env, {} as DurableObjectState)
+      return Response.json(await uploadPictureWork(Buffer.from(await request.arrayBuffer())))
     }
     const index = url.searchParams.get('case') ?? ''
     return env.PROBE.get(env.PROBE.idFromName(`case-${index}-${Date.now()}`)).fetch(request)

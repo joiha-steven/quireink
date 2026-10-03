@@ -16,6 +16,12 @@ const ascii = (bytes: Uint8Array, start: number, text: string): boolean => {
   return true
 }
 
+/**
+ * How much of a file the sniffer ever reads: the SVG test's window, and far past every magic
+ * number. The upload route reads only this much of each file to decide, not the whole of it.
+ */
+export const SNIFF_BYTES = 1024
+
 /** The sniffed MIME type, or null when the bytes match no family the library accepts. */
 export function sniffImage(buffer: ArrayBuffer): string | null {
   const b = new Uint8Array(buffer)
@@ -36,7 +42,7 @@ export function sniffImage(buffer: ArrayBuffer): string | null {
  */
 function sniffSvg(b: Uint8Array): boolean {
   const head = new TextDecoder('utf-8', { fatal: false, ignoreBOM: false })
-    .decode(b.subarray(0, 1024))
+    .decode(b.subarray(0, SNIFF_BYTES))
     .replace(/^﻿/, '')
   let rest = head.trimStart()
   // Skip prolog, comments and doctype — none of them may contain '<' tricks that matter

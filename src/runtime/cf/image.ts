@@ -15,7 +15,28 @@ function images(): ImagesBinding {
   return binding
 }
 
-const input = (buf: Buffer) => new Blob([new Uint8Array(buf)]).stream()
+/**
+ * The picture as a stream for the binding, made of the bytes already in hand and NOT a copy of them.
+ *
+ * ⚠️ IT WAS `new Blob([new Uint8Array(buf)]).stream()`, WHICH COPIED THE PICTURE TWICE ON EVERY CALL:
+ * `new Uint8Array(typedArray)` allocates and copies (it is the constructor that takes a VIEW only
+ * when given a buffer, an offset and a length), and `new Blob` copies whatever it is handed into a
+ * store of its own. An upload asks this up to nine times — its size, the cap, the thumbnail, six
+ * display variants — so a 25 MB original moved 450 MB of copies through a 128 MB isolate (counted
+ * 2026-10-03 by wrapping both constructors). Here the one chunk is a view of `buf`: the binding
+ * reads it and the stream ends, and nothing is copied on this side. `test:cf` passes one buffer
+ * through every operation in turn, which a transferred (detached) chunk would fail, and holds the
+ * outputs to the old path's, byte for byte.
+ */
+const input = (buf: Buffer): ReadableStream<Uint8Array> => {
+  const view = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength)
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(view)
+      controller.close()
+    },
+  })
+}
 
 async function draw(buf: Buffer, width: number, format: Format, quality?: number): Promise<Buffer> {
   const out = await images().input(input(buf)).transform({ width, fit: 'scale-down' }).output({ format, quality })

@@ -11,8 +11,9 @@
 
 import type { Context } from 'hono'
 import {
-  getMedia, addMediaBatch, registerMediaBatch, deleteMediaBatch, deleteMedia, debugDelete,
+  getMedia, addMediaBatch, deleteMediaBatch, deleteMedia, debugDelete,
 } from '@/media/media'
+import { registerMediaBatch } from '@/media/media-register'
 import { findUnusedMedia } from '@/media/media-usage'
 import {
   getFiles, addFilesBatch, registerFilesBatch, deleteFilesBatch, deleteFile,
@@ -25,7 +26,7 @@ import { getIntegrationKeys } from '@/store/integration-keys'
 import { seesImages } from '@/server/ai-provider'
 import { all } from '@/store/query'
 import { checkUpload } from '@/media/limits'
-import { sniffImage } from '@/media/sniff'
+import { SNIFF_BYTES, sniffImage } from '@/media/sniff'
 import { finalizeVariants } from '@/media/finalize'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
@@ -52,16 +53,25 @@ const body = async <T>(c: Context): Promise<Partial<T>> =>
  *
  * Same rule as the post save: the original renders meanwhile, and the cron sweep finalises
  * anything dropped here, so a failure costs a slower first paint rather than an upload.
+ * `originals` is the bytes this request already wrote, so the variants are not made from a
+ * second read of the same picture (`finalizeVariants`).
  */
-function encodeVariants(urls: string[]): void {
+function encodeVariants(urls: string[], originals?: Map<string, Buffer>): void {
   const rasters = urls.map(collapseBlob).filter((p) => RASTER_RE.test(p))
   if (rasters.length === 0) return
-  void finalizeVariants(rasters)
+  void finalizeVariants(rasters, Infinity, originals)
     .then((n) => { if (n > 0) clearCache() })
     .catch((error: unknown) => {
       console.error(`[ERROR] finalizeVariants: ${(error as Error).message}`)
     })
 }
+
+/**
+ * The first `n` bytes of a file, without reading the rest. `Blob.slice` is standard on both
+ * runtimes; Bun's type declarations leave it out of the global `Blob`, hence the narrow cast.
+ */
+const headOf = (file: File, n: number): Promise<ArrayBuffer> =>
+  (file as unknown as { slice: (start: number, end: number) => Blob }).slice(0, n).arrayBuffer()
 
 /** Files from a multipart body, under the field name the admin client uses. */
 async function formFiles(c: Context): Promise<File[]> {
@@ -99,24 +109,29 @@ export function uploadRoutes() {
     const oversize = await refuseOversize(c, files)
     if (oversize) return oversize
 
-    const inputs: { filename: string; body: ArrayBuffer; contentType: string }[] = []
+    const inputs: { filename: string; body: File; contentType: string }[] = []
     for (const file of files) {
       const contentType = file.type || ''
       // The WHOLE batch is refused on one bad type, matching the frozen tree. A partial
       // upload would leave the owner reconciling which of twenty images landed.
       if (!IMAGE_TYPES.includes(contentType)) return fail(c, 'unsupported_type', 415)
-      const body = await file.arrayBuffer()
       // Extension, declared type and BYTES must agree (`media/sniff.ts` says why the
       // browser's word alone was never enough). The serving route derives its
       // content-type from the stored extension, so the extension is part of the contract.
-      if (sniffImage(body) !== contentType || mimeOf(file.name) !== contentType) {
+      // Only the first `SNIFF_BYTES` are read, which is all the sniffer ever looks at: this loop
+      // read every file whole and kept them all, a second copy of the batch beside the form.
+      const head = await headOf(file, SNIFF_BYTES)
+      if (sniffImage(head) !== contentType || mimeOf(file.name) !== contentType) {
         return fail(c, 'unsupported_type', 415)
       }
-      inputs.push({ filename: file.name, body, contentType })
+      inputs.push({ filename: file.name, body: file, contentType })
     }
 
-    const uploaded = await addMediaBatch(inputs)
-    encodeVariants(uploaded.map((m) => m.url))
+    // The batch reads each file as it reaches it (`UploadBody`, media/blob.ts), and hands the
+    // capped originals it wrote straight to the variants rather than back through the store.
+    const originals = new Map<string, Buffer>()
+    const uploaded = await addMediaBatch(inputs, originals)
+    encodeVariants(uploaded.map((m) => m.url), originals)
     void logActivity('media.upload', `${uploaded.length} image(s)`)
     return json(uploaded, 201)
   })
@@ -130,8 +145,9 @@ export function uploadRoutes() {
     )
     if (items.length === 0) return fail(c, 'No items provided', 400)
 
-    const uploaded = await registerMediaBatch(items)
-    encodeVariants(uploaded.map((m) => m.url))
+    const originals = new Map<string, Buffer>()
+    const uploaded = await registerMediaBatch(items, originals)
+    encodeVariants(uploaded.map((m) => m.url), originals)
     void logActivity('media.upload', `${uploaded.length} image(s)`)
     return json(uploaded, 201)
   })
@@ -218,13 +234,15 @@ export function uploadRoutes() {
     if (files.length === 0) return fail(c, 'No files provided', 400)
     const oversize = await refuseOversize(c, files)
     if (oversize) return oversize
-    const uploaded = await addFilesBatch(await Promise.all(files.map(async (f) => ({
+    // The `File`s themselves, read one at a time inside the batch. This was a `Promise.all` of
+    // `arrayBuffer()`, every file copied out of the form at once before the first was written.
+    const uploaded = await addFilesBatch(files.map((f) => ({
       filename: f.name,
-      body: await f.arrayBuffer(),
+      body: f,
       // Attachments are deliberately unrestricted by type; the media library is the
       // surface with an allow-list, because those get rendered into pages.
       contentType: f.type || 'application/octet-stream',
-    }))))
+    })))
     void logActivity('file.add', `${uploaded.length} file(s)`)
     return json(uploaded, 201)
   })

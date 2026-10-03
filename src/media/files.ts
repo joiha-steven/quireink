@@ -9,7 +9,7 @@
 
 import type { FileItem } from '@/types'
 import {
-  uploadFile, expandBlob, collapseBlob, deleteByPathname, listBlobs,
+  uploadFile, expandBlob, collapseBlob, deleteByPathname, listBlobs, bytesOf, type UploadBody,
 } from '@/media/blob'
 import { slugify } from '@/utils'
 import { all, run, tx } from '@/store/query'
@@ -127,11 +127,13 @@ function freeFilePath(base: string, ext: string, taken: Set<string>): string {
 
 // Upload files to the store, then insert all rows at once. Any content type accepted.
 export async function addFilesBatch(
-  files: { filename: string; body: ArrayBuffer; contentType: string }[],
+  files: { filename: string; body: UploadBody; contentType: string }[],
 ): Promise<FileItem[]> {
   const taken = await takenFilePaths()
   const rows: FileRow[] = []
   for (const f of files) {
+    // One at a time, each let go before the next is read (`UploadBody`, media/blob.ts).
+    const body = await bytesOf(f.body)
     const dot = f.filename.lastIndexOf('.')
     const rawExt = dot >= 0 ? f.filename.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, '') : ''
     const base = slugify(dot >= 0 ? f.filename.slice(0, dot) : f.filename) || 'file'
@@ -142,7 +144,7 @@ export async function addFilesBatch(
     for (let attempt = 0; ; attempt++) {
       path = freeFilePath(base, rawExt, taken)
       try {
-        await uploadFile(path, f.body, f.contentType || 'application/octet-stream', { exclusive: true })
+        await uploadFile(path, body, f.contentType || 'application/octet-stream', { exclusive: true })
         break
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code === 'EEXIST' && attempt < 50) continue
@@ -152,7 +154,7 @@ export async function addFilesBatch(
     rows.push({
       url: path,
       filename: f.filename,
-      size: f.body.byteLength,
+      size: body.byteLength,
       content_type: f.contentType || 'application/octet-stream',
       uploaded_at: nowMs(),
     })

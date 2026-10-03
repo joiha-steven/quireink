@@ -12,5 +12,7 @@
   "durable_objects": { "bindings": [{ "name": "PROBE", "class_name": "Probe" }] },
   // The archive store's cases (kept archives, the parts of an incoming one) need a bucket; local only.
   "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "quireink-contracts" }],
+  // The image case holds `cf/image.ts` to the binding itself; `wrangler dev --local` serves it offline.
+  "images": { "binding": "IMAGES" },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Probe"] }]
 }

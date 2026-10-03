@@ -346,7 +346,7 @@ export type Capabilities = {
   /**
    * What an upload and an import may weigh by default. `machine`: 64 MB and 100 MB, matching the
    * recommended proxy. `isolate`: 25 MB and 30 MB, because the request body is held whole, plus a
-   * copy, in a 128 MB isolate.
+   * copy of the file being worked on, in a 128 MB isolate (a batch is read one file at a time).
    */
   bodyLimits: 'machine' | 'isolate'
 }

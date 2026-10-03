@@ -121,6 +121,24 @@ function announceWrite(change: BlobChange): void {
 
 // --- IO helpers (server-only; local driver lazy-loaded to keep node:fs off the client) ---
 
+/**
+ * An upload's bytes, or the request's `File` that will give them when asked.
+ *
+ * ⚠️ A BATCH IS READ ONE FILE AT A TIME, AND THIS IS HOW. The routes read every file with
+ * `arrayBuffer()` before handing the batch over — the files route in a `Promise.all` — so twenty
+ * phone photos sat in memory twice at once: in the parsed form, and again as twenty buffers. On
+ * Cloudflare that is a 25 MB body and a 25 MB copy of it in a 128 MB isolate, with the picture work
+ * still to come. Handed the `File` instead, the batch reads each one only when its turn comes, and
+ * lets it go before the next.
+ */
+export type UploadBody = ArrayBuffer | Blob
+
+export const bytesOf = (body: UploadBody): Promise<ArrayBuffer> =>
+  body instanceof Blob ? body.arrayBuffer() : Promise.resolve(body)
+
+/** Bytes without reading them: a `File` knows its size. */
+export const sizeOf = (body: UploadBody | Uint8Array): number => (body instanceof Blob ? body.size : body.byteLength)
+
 // List every stored binary (pathname + size). Used for site stats and backups.
 export async function listBlobs(under = ''): Promise<{ pathname: string; size: number }[]> {
   return (await import('@/runtime/impl/blob')).list(under)
