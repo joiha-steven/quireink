@@ -107,14 +107,21 @@ RUN find node_modules -type f \( \
 # variants sharp produced from it.
 RUN rm -rf node_modules/@img/sharp-libvips-linuxmusl-* node_modules/@img/sharp-linuxmusl-*
 
-# --- build: the dev tree, only to produce the bundles --------------------------------------
+# --- build: the production tree again, only to produce the bundles -------------------------
 FROM oven/bun:1-slim AS build
 WORKDIR /app
 
 # Dependencies first, so an edit to `src/` does not re-resolve the whole tree.
+#
+# --production HERE TOO, because neither build reads a devDependency: both are Bun's bundler over
+# this repository's own TypeScript, and their output on the production set was compared with the
+# full install's and is byte-identical. The full set is the workshop — TypeScript, the tests' DOM,
+# and since the Cloudflare runtime arrived wrangler with its own workerd. Measured in this base
+# image on linux/arm64: 357 MB with 133 MB of workerd, against 113 MB, so every build of this
+# image, each architecture of a release among them, was downloading 244 MB it never opened.
 COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
-    bun install --frozen-lockfile
+    bun install --frozen-lockfile --production
 
 COPY tsconfig.json ./
 COPY src ./src
