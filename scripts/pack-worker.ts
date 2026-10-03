@@ -42,7 +42,10 @@ const manifest = {
 writeFileSync(join(DIST, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
 
 const tar = `quireink-cf-${APP_VERSION}.tar`
-const made = Bun.spawnSync(['tar', '-cf', tar, 'manifest.json', 'worker', 'public'], { cwd: DIST })
+// COPYFILE_DISABLE: a Mac's tar otherwise writes an AppleDouble `._name` beside every file — 385 of
+// them in a package of 385 files, measured 2026-10-03. The installer reads only what the manifest
+// lists, so they were never uploaded, but a package built for a trial move was twice the entries.
+const made = Bun.spawnSync(['tar', '-cf', tar, 'manifest.json', 'worker', 'public'], { cwd: DIST, env: { ...process.env, COPYFILE_DISABLE: '1' } })
 if (made.exitCode !== 0) {
   console.error(made.stderr.toString())
   process.exit(1)

@@ -26,7 +26,7 @@ export type Bucket = {
 /** A POST to one of the object's own routes, carrying this request's cookie and origin headers. */
 export type AskObject = (path: string, body: string) => Promise<Response>
 
-export type SelfOptions = { apiBase?: string; fetchImpl?: typeof fetch }
+export type SelfOptions = { apiBase?: string; fetchImpl?: typeof fetch; /** Between tries at a bucket that refilled. */ retryMs?: number }
 
 /** Bodies here are a few short fields; anything past this is not one of ours. */
 const MAX_BODY = 16 * 1024
@@ -111,15 +111,34 @@ export async function runUninstall(request: Request, env: SelfEnv, bucket: Bucke
     return say(`token_cannot: ${(error as Error).message}`, 403)
   }
   try {
-    for (;;) {
-      const page = await bucket.list({ limit: 1000 })
-      if (page.objects.length === 0) break
-      await bucket.delete(page.objects.map((x) => x.key))
-    }
-    await api.call('bucket', `/accounts/:account/r2/buckets/${env.QUIREINK_BUCKET}`, { method: 'DELETE' })
+    await emptyAndDelete(api, bucket, env.QUIREINK_BUCKET, o.retryMs ?? 2000)
     await api.call('worker', `/accounts/:account/workers/scripts/${env.QUIREINK_SCRIPT}?force=true`, { method: 'DELETE' })
     return Response.json({ success: true, data: { deleted: env.QUIREINK_SCRIPT } })
   } catch (error) {
     return say((error as Error).message, 502)
   }
 }
+
+/**
+ * Empty the bucket, then delete it; and when Cloudflare answers "not empty" (10008), empty it again
+ * and try again, a few times. The object stops its own snapshots before the owner's confirmation is
+ * answered (`stopBackups`), so this is for whatever that cannot see — an object restarted in between
+ * and running its clock, an upload finishing — not the ordinary path.
+ */
+async function emptyAndDelete(api: CloudflareApi, bucket: Bucket, name: string, retryMs: number): Promise<void> {
+  for (let attempt = 1; ; attempt++) {
+    for (;;) {
+      const page = await bucket.list({ limit: 1000 })
+      if (page.objects.length === 0) break
+      await bucket.delete(page.objects.map((x) => x.key))
+    }
+    try {
+      await api.call('bucket', `/accounts/:account/r2/buckets/${name}`, { method: 'DELETE' })
+      return
+    } catch (error) {
+      if (attempt >= 5 || !/not empty|10008/i.test((error as Error).message)) throw error
+      await new Promise((r) => setTimeout(r, retryMs))
+    }
+  }
+}
+

@@ -23,6 +23,7 @@ import { clientIp, rateLimited } from '@/server/rate-limit'
 import { APP_VERSION } from '@/version'
 import { databaseBytes } from '@/runtime/impl/runtime-info'
 import { listKept } from '@/runtime/impl/archive'
+import { stopBackups } from '@/server/backup'
 
 /** How this blog takes a newer release (`QUIREINK_UPDATES`): set by whatever deployed it. */
 export type UpdatePath = 'api' | 'git' | 'cli'
@@ -106,6 +107,8 @@ export function cloudflareUpdateRoutes() {
     // copied out of the browser, and refusing them proved only that the owner pasted it.
     const typed = typeof input.confirm === 'string' ? input.confirm.trim().toLowerCase().replace(/^[a-z]+:\/\//, '').replace(/\/+$/, '') : ''
     if (typed !== host) return fail(c, 'confirm_mismatch', 400)
+    // Nothing of this blog may still be writing to the bucket the Worker is about to empty.
+    await stopBackups()
     return json({ host })
   }, QUIET)
 

@@ -72,6 +72,9 @@
 
 ### Fixed
 
+- **Pack the Cloudflare package on a Mac without AppleDouble files.** `scripts/pack-worker.ts` run on
+  macOS put a `._name` beside each of its 385 files; release packages are built on Linux and were
+  never affected.
 - **The colour fields in Settings show where the keyboard is.** A colour swatch and its hex had
   no focus ring at all — the rules for it were never written — so tabbing through the palette
   showed nothing on the field being typed in. They now ring like every other field.

@@ -87,12 +87,29 @@ export async function lastRunAt(): Promise<string | null> {
  */
 /** The run in progress, which every other caller joins rather than racing. */
 let running: Promise<Snapshot> | null = null
+/** Set once the owner has confirmed deleting this blog from Cloudflare (`stopBackups`). */
+let stopped = false
 
 export function runBackup(): Promise<Snapshot> {
+  if (stopped) return Promise.reject(new Error('backups are stopped: this blog is being deleted'))
   // ONE AT A TIME. The button, the clock, an external cron and MCP `run_backup` each started
   // their own, and two at once opened and truncated the same file.
   running ??= takeSnapshot().finally(() => { running = null })
   return running
+}
+
+/**
+ * No more snapshots in this process, and the one being written, if any, finished first.
+ *
+ * For leaving Cloudflare (`web/admin/cloudflare-update.ts`): the Worker empties the bucket and
+ * then deletes it, and a snapshot the clock started meanwhile landed in the emptied bucket and
+ * made Cloudflare refuse the delete as "not empty" — measured 2026-10-03 against a real account,
+ * on a blog whose first alarm after an update fell in that minute. Waiting here, before the owner's
+ * confirmation is answered, means nothing of this blog is still writing when the emptying starts.
+ */
+export async function stopBackups(): Promise<void> {
+  stopped = true
+  await running?.catch(() => undefined)
 }
 
 async function takeSnapshot(): Promise<Snapshot> {
@@ -132,7 +149,7 @@ export async function deleteSnapshot(name: string): Promise<boolean> {
  */
 export async function maybeRunBackup(): Promise<{ ran: boolean; name?: string; error?: string }> {
   const { backups } = await getSettings()
-  if (!backups.enabled) return { ran: false }
+  if (!backups.enabled || stopped) return { ran: false }
 
   const last = await lastRunAt()
   if (last && Date.now() - Date.parse(last) < backups.intervalDays * 86_400_000) {

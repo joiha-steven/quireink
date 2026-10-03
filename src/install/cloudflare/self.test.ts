@@ -7,6 +7,8 @@ import { estimateMonthly } from '@/web/admin/cloudflare-update'
 
 let tokenOk = true
 let scriptExists = true
+/** Bucket DELETEs Cloudflare will refuse as not empty before it accepts one. */
+let bucketRefusals = 0
 const calls: { method: string; path: string }[] = []
 const api = Bun.serve({
   port: 0,
@@ -20,6 +22,10 @@ const api = Bun.serve({
     if (p.endsWith('/subscriptions')) return ok([{ rate_plan: { id: 'workers_paid' } }])
     if (p.endsWith('/settings')) return scriptExists ? ok({}) : no(404, 'not found')
     if (p.endsWith('/workers/subdomain')) return ok({ subdomain: 'acct' })
+    if (p.includes('/r2/buckets/') && req.method === 'DELETE' && bucketRefusals > 0) {
+      bucketRefusals -= 1
+      return no(409, 'The bucket you tried to delete (quireink-x) is not empty (10008)')
+    }
     if (p.includes('/r2/buckets/')) return ok({})
     if (req.method === 'DELETE') return ok({})
     return no(404, `unexpected ${req.method} ${p}`)
@@ -42,7 +48,7 @@ const env = { QUIREINK_SCRIPT: 'quireink-x', QUIREINK_BUCKET: 'quireink-x' }
 const owner = (body = '{"data":{"current":"1.0.0","latest":null}}') => async () => new Response(body, { status: 200 })
 const post = (url: string, body: unknown) => new Request(url, { method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body) })
 
-beforeEach(() => { tokenOk = true; scriptExists = true; calls.length = 0; resetMove() })
+beforeEach(() => { tokenOk = true; scriptExists = true; bucketRefusals = 0; calls.length = 0; resetMove() })
 
 describe('leaving Cloudflare', () => {
   it('deletes nothing when the token cannot reach the Worker and the bucket', async () => {
@@ -52,6 +58,24 @@ describe('leaving Cloudflare', () => {
     expect(res.status).toBe(403)
     expect(((await res.json()) as { error: string }).error).toStartWith('token_cannot')
     expect(b.deleted).toEqual([])
+  })
+
+  it('empties the bucket again when something landed in it after the first emptying', async () => {
+    // Measured on a real account: the blog's first snapshot after an update landed in the emptied
+    // bucket, and Cloudflare refused the delete as not empty.
+    const b = bucket()
+    let refilled = false
+    const list = b.list
+    b.list = async (o) => {
+      const page = await list(o)
+      if (page.objects.length === 0 && !refilled) { refilled = true; await b.delete([]); return { objects: [{ key: 'private/backups/late.tar.gz' }] } }
+      return page
+    }
+    bucketRefusals = 1
+    const res = await runUninstall(post('https://blog.test/x', { current: 'pw', confirm: 'blog.test', token: 't', accountId: 'a' }), env, b, owner('{}'), { apiBase, retryMs: 1 })
+    expect(res.status).toBe(200)
+    expect(b.deleted).toContain('private/backups/late.tar.gz')
+    expect(calls.filter((c) => c.method === 'DELETE' && c.path.includes('/r2/buckets/'))).toHaveLength(2)
   })
 
   it('returns the object\'s refusal as it came, and deletes nothing', async () => {
