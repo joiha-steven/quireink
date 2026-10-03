@@ -60,3 +60,23 @@ export const VECTORS: Record<'es256' | 'eddsa' | 'rs256', Vector> = {
     signCount: 3,
   },
 }
+
+/**
+ * ONE PASSKEY FROM AN IMPLEMENTATION THAT IS NOT OURS: Chrome 152's virtual authenticator (CTAP 2.1,
+ * internal, ES256), registered and then used on `http://localhost:3399` through the security card
+ * and `navigator.credentials.get()`, captured once on 2026-10-04 by a throwaway tour flow. The
+ * vectors above prove the verifier agrees with the encoder in `src/test/webauthn.ts`; this one
+ * proves both agree with a browser.
+ */
+export const CHROME = {
+  rpId: 'localhost',
+  registerChallenge: 'pZRG1p4qJRw2iHSeEiKsizx_D9Uqe_Y0jibSDEe55Pg',
+  signInChallenge: 'BM21HPe-zJREiloiieljXUqvIaVlX1o-_aGAhJ3w-Y8',
+  credentialId: '0Qs_OIuKuokv43zGgWVCp2kxVDO2bHOeb0HcbZH7RDM',
+  attClientData: 'eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoicFpSRzFwNHFKUncyaUhTZUVpS3NpenhfRDlVcWVfWTBqaWJTREVlNTVQZyIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzM5OSIsImNyb3NzT3JpZ2luIjpmYWxzZX0',
+  attestationObject: 'o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVikSZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2NFAAAAAQECAwQFBgcIAQIDBAUGBwgAINELPziLirqJL-N8xoFlQqdpMVQztmxznm9B3G2R-0QzpQECAyYgASFYIOpnRp1s5KfzJ1qkUSNldLSnOP7Lv3Kah_nKd5pLtTpXIlgg99b4t9lZ8ZZSf1yIHdtY6RtiyrxYMIGf0VKzoO02ej4',
+  getClientData: 'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiQk0yMUhQZS16SlJFaWxvaWllbGpYVXF2SWFWbFgxby1fYUdBaEozdy1ZOCIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzM5OSIsImNyb3NzT3JpZ2luIjpmYWxzZX0',
+  authenticatorData: 'SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAg',
+  signature: 'MEUCIQC-aZPG9NwN3rcvgOwCCXIsF_mHbS2-TxdPmYWLYwlkJgIgPSPjMQgzlrqiLpoPnipjX4RGPAXB1Z-D959H9sdpLVo',
+  userHandle: '77yRjuV4135pHMXlb5XsrQ',
+}

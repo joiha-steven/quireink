@@ -8,7 +8,7 @@ import { describe, expect, it } from 'bun:test'
 import { decodeCbor } from './cbor'
 import { derToRaw, importCoseKey } from './cose'
 import { FLAG_UP, originMatches, parseAuthData, verifyAssertion, verifyRegistration } from './webauthn'
-import { REGISTER_CHALLENGE, RP_ID, SIGN_IN_CHALLENGE, VECTORS } from '@/test/passkey-vectors'
+import { CHROME, REGISTER_CHALLENGE, RP_ID, SIGN_IN_CHALLENGE, VECTORS } from '@/test/passkey-vectors'
 import { assert, attest, b64url, encodeCbor, fromB64url, rawToDer, softKey } from '@/test/webauthn'
 
 const register = (v: (typeof VECTORS)['es256'], over: Partial<{ challenge: string; rpId: string }> = {}) =>
@@ -53,6 +53,33 @@ describe('the frozen vectors', () => {
   it('the challenge and the RP ID are each part of what was signed for', async () => {
     expect(await register(VECTORS.es256, { challenge: SIGN_IN_CHALLENGE })).toEqual({ ok: false, reason: 'challenge' })
     expect(await register(VECTORS.es256, { rpId: 'other.example' })).toEqual({ ok: false, reason: 'origin' })
+  })
+})
+
+describe('a passkey Chrome made', () => {
+  it('registers, and the key it carries verifies the sign-in Chrome signed with it', async () => {
+    const reg = await verifyRegistration({
+      clientDataJSON: fromB64url(CHROME.attClientData), attestationObject: fromB64url(CHROME.attestationObject),
+      challenge: CHROME.registerChallenge, rpId: CHROME.rpId,
+    })
+    if (!reg.ok) throw new Error(reg.reason)
+    expect(reg.credential.id).toBe(CHROME.credentialId)
+    const use = await verifyAssertion({
+      clientDataJSON: fromB64url(CHROME.getClientData), authenticatorData: fromB64url(CHROME.authenticatorData),
+      signature: fromB64url(CHROME.signature), challenge: CHROME.signInChallenge, rpId: CHROME.rpId,
+      publicKey: reg.credential.publicKey, storedCount: reg.credential.signCount,
+    })
+    expect(use.ok).toBe(true)
+    // The user handle it sent back is the 16-byte one the server filed it under.
+    expect(fromB64url(CHROME.userHandle)).toHaveLength(16)
+  })
+
+  it('and not on another RP ID, which is the domain move in one line', async () => {
+    const reg = await verifyRegistration({
+      clientDataJSON: fromB64url(CHROME.attClientData), attestationObject: fromB64url(CHROME.attestationObject),
+      challenge: CHROME.registerChallenge, rpId: 'blog.example',
+    })
+    expect(reg).toEqual({ ok: false, reason: 'origin' })
   })
 })
 

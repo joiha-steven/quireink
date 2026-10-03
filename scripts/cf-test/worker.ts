@@ -46,7 +46,7 @@ function collect(): Case[] {
   cases.push({ name: 'image: the binding reads the picture in hand, not two copies of it, and answers as it did to the copies', body: imagesFromTheBuffer })
   cases.push({ name: 'newsletter: a send cut off by a restart is settled from the log and resumed, nobody mailed twice', body: () => outboxResumes(smtpPort) })
   cases.push({ name: 'offsite: a 40 MB kept archive leaves for S3 as a multipart upload, 16 MiB at a time', body: offsiteMultipart })
-  cases.push({ name: 'passkey: the frozen ES256, EdDSA and RS256 vectors verify, and a key stored in the object verifies its own signature (ADR 0071)', body: passkeysVerifyHere })
+  cases.push({ name: 'passkey: the frozen ES256, EdDSA, RS256 and Chrome vectors verify, and a key stored in the object verifies its own signature (ADR 0071)', body: passkeysVerifyHere })
   return cases
 }
 

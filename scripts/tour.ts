@@ -23,6 +23,7 @@ import { mkdirSync, openSync, readFileSync, rmSync, mkdtempSync } from 'node:fs'
 import { chromePath } from './chrome-path'
 import { sweepAbandonedProfiles } from './chrome-scratch'
 import { registerFlows } from './tour-flows'
+import { passkeyHost } from './tour-webauthn'
 import { SMOKE_FLOWS } from './smoke-flows'
 
 const CHROME = chromePath()
@@ -249,7 +250,6 @@ if (process.env.QUIRE_SESSION) {
   })
 }
 
-/** Evaluate in the page and hand back whatever it returned, as a string. */
 /**
  * How long one flow's script may run before the tour gives up on it.
  *
@@ -293,7 +293,7 @@ async function evaluate(expression: string): Promise<string> {
  * output is worse than one that reports a slow step: the flow after this one still runs.
  */
 async function goto(path: string, settleMs = 700): Promise<void> {
-  await Promise.race([send('Page.navigate', { url: `${BASE}${path}` }), Bun.sleep(FLOW_MS)])
+  await Promise.race([send('Page.navigate', { url: /^https?:/.test(path) ? path : `${BASE}${path}` }), Bun.sleep(FLOW_MS)])
   await Bun.sleep(settleMs)
 }
 
@@ -337,14 +337,15 @@ const atWidth = async (width: number, path: string, expr: string, settleMs?: num
   }
 }
 
-/** What a flow file is handed. The verbs, and nothing about the protocol. */
+/** What a flow file is handed: the verbs, nothing about the protocol. `PasskeyTour` adds the same server on `localhost` (a whole URL `expect` opens as is) with a virtual authenticator (ADR 0071). */
 export type Tour = {
   flow: (name: string, run: () => Promise<string>) => void
   expect: (path: string, expr: string, settleMs?: number) => Promise<string>
   atWidth: (width: number, path: string, expr: string, settleMs?: number) => Promise<string>
 }
+export type PasskeyTour = Tour & { passkeyHost: (signedIn?: boolean, opts?: { noAutofill?: boolean }) => Promise<{ host: string } | { skip: string }> }
 
-registerFlows({ flow, expect, atWidth })
+registerFlows({ flow, expect, atWidth, passkeyHost: passkeyHost(send, BASE) })
 
 // ---------------------------------------------------------------------------------------------
 // Run them, in order, and report.

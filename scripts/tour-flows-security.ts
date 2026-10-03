@@ -7,9 +7,10 @@
 // It came out of `tour-flows-css.ts` on 2026-09-15, when that file crossed 400 lines. It never
 // belonged beside the Custom CSS box; it was only ever there because both were written the same
 // afternoon.
-import type { Tour } from './tour'
+import type { PasskeyTour } from './tour'
+import { registerPasskeyFlows } from './tour-flows-passkey'
 
-export function registerAccountFlows({ flow, expect }: Tour): void {
+export function registerAccountFlows({ flow, expect, passkeyHost }: Pick<PasskeyTour, 'flow' | 'expect' | 'passkeyHost'>): void {
   flow('admin: the account can be defended from the admin', () =>
     expect('/admin/settings?tab=account', `
     (async () => {
@@ -88,4 +89,5 @@ export function registerAccountFlows({ flow, expect }: Tour): void {
       cur.dispatchEvent(new Event('input', { bubbles: true }))
       return 'ok (' + rows.length + ' device(s))'
     })()`, 1800))
+  registerPasskeyFlows({ flow, expect, passkeyHost })
 }

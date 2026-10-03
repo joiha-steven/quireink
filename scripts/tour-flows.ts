@@ -11,7 +11,7 @@
 // A flow that WRITES cleans up after itself — drafts, uploads, a settings round-trip — because a
 // tour that leaves rows behind changes what the next run is testing.
 
-import type { Tour } from './tour'
+import type { PasskeyTour } from './tour'
 import { registerAdminFlows } from './tour-flows-admin'
 import { registerAiFlows } from './tour-flows-ai'
 import { registerMediaFlows } from './tour-flows-media'
@@ -32,7 +32,7 @@ import { registerSweepFlows } from './tour-flows-sweep'
 import { registerWriterFlows } from './tour-flows-writer'
 import { registerReaderFlows } from './tour-flows-reader'
 
-export function registerFlows({ flow, expect, atWidth }: Tour): void {
+export function registerFlows({ flow, expect, atWidth, passkeyHost }: PasskeyTour): void {
   // ---------------------------------------------------------------------------------------------
   // PUBLIC — what a reader meets.
 
@@ -341,7 +341,7 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
   registerGuardFlows({ flow, expect })
   registerPageFlows({ flow, expect })
   registerCssFlows({ flow, expect, atWidth })
-  registerAccountFlows({ flow, expect, atWidth })
+  registerAccountFlows({ flow, expect, passkeyHost })
   registerSecurityFlows({ flow, expect, atWidth })
   // What the eight-agent sweep of 2026-09-30 found.
   registerSweepFlows({ flow, expect, atWidth })
