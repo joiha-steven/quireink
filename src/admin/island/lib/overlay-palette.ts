@@ -14,7 +14,7 @@ import { indexIn, lanes } from '@/accent'
 import { el } from '@/admin/components/node-dom'
 import { say } from './media-bridge'
 import { composing } from '@/admin/components/composing'
-import { FOUND_NAME, FOUND_ROW, FOUND_WHERE } from '@/admin-shared/kit'
+import { FOUND_NAME, FOUND_ROW, FOUND_WHERE } from '@/admin-shared/found'
 
 /**
  * Asked for by name, so nothing has to hold a setter.

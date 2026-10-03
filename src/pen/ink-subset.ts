@@ -18,8 +18,9 @@
 //      anything if it stayed. This is the half that earns its keep: every highlight matches the
 //      bare `mark` rule carrying the default yellow stroke, and on any variant with a die of its
 //      own that stroke is outranked by the die's, so before this pass a one-highlight article
-//      carried two strokes it could never show. Measured on the showcase: about a third of
-//      the inlined bytes.
+//      carried two strokes it could never show. Measured on the showcase: a one-highlight
+//      article's inline CSS went from 14.2 KB to 4.4 KB with this pass, the fifteen-mark one
+//      from 81.5 KB to 57.5 KB.
 //
 // What is left is the full sheet's own rules, in the sheet's order, with the sheet's
 // declarations byte for byte — so an element ends up with exactly the values it had before,

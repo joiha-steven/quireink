@@ -17,10 +17,10 @@
 import { escapeAttr, escapeHtml } from '@/utils'
 import { ICONS, GLYPHS, type GlyphName, type IconName } from '@/icons'
 import {
-  CONTROL_SM, GLYPH, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOOL, SHEET_TOOL_DANGER, SHEET_TOP,
+  CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOOL, SHEET_TOOL_DANGER, SHEET_TOP,
   TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, buttonClass, type LampState,
 } from '@/admin-shared/kit'
-import { META } from '@/admin-shared/scale'
+import { GLYPH, META } from '@/admin-shared/scale'
 import {
   SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE, TAB_TRACK, TAB_TRACK_DENSE, edgeAt, keyFaces, tabItemClass, type TabRole, type TabSize,
 } from '@/admin-shared/tabs'

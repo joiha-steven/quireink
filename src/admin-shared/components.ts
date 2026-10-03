@@ -11,5 +11,6 @@ import '@/admin-shared/controls'
 import '@/admin-shared/tabs'
 import '@/admin-shared/scale'
 import '@/admin-shared/rail'
+import '@/admin-shared/found'
 
 export { registeredComponents } from '@/admin-shared/component'

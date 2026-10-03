@@ -14,7 +14,7 @@ import {
   PALETTE_CHORD, SIDEBAR_GROUP, SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL,
   printChord, type RailRow,
 } from '@/admin-shared/rail'
-import { GLYPH } from '@/admin-shared/kit'
+import { GLYPH } from '@/admin-shared/scale'
 
 /**
  * A glyph from the shared set.

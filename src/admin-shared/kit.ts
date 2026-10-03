@@ -13,12 +13,12 @@
 // style rule, it is the whole reason the directory exists — the moment one of these files
 // imports from `src/admin`, the server can no longer read it.
 
-import { TAP, TAP_TOUCH } from '@/admin-shared/scale'
+import { TAP } from '@/admin-shared/scale'
 // ⚠️ THE LONG STRINGS BELOW ARE DEFINITIONS, NOT WHAT THE PAGE CARRIES. Each primitive the
 // admin repeats by the dozen is registered as a component (`component.ts` says why), so the
 // markup wears `kit-btn kit-btn-md kit-btn-primary` and the stylesheet gives those names the
 // rules of the utilities listed here. Change a list and the name follows it at the next build.
-import { component, utilitiesOf } from '@/admin-shared/component'
+import { component } from '@/admin-shared/component'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'armed'
 
@@ -237,40 +237,8 @@ export const SHEET_TOOL_ON_CANVAS = SHEET_TOOL.replace('text-neutral-500', 'text
  * month. The ink is the product's own red ballpoint (`--pen-red`, PEN_AUX_LIGHT in
  * `pen/pigments.ts`), which is what you strike a line through something with on paper.
  */
-/**
- * THE SQUARE KEY ON A LIST ROW: rename, remove, move up, move down.
- *
- * ⚠️ ONE DEFINITION, because there were five. A row's remove key was 40px and `rounded-md` in
- * the taxonomy drawer, 36px and `rounded-lg` on the settings Home tab, 36px and `rounded-md`
- * one ink lighter in the subscriber list, 40px with a border in the rail, and on the redirects
- * card it had no box at all — a bare 16px glyph, which is a 16px hit target on a phone. All
- * five are the same gesture on the same kind of row.
- *
- * 36 and `rounded-md`, because that is the admin's control step (`docs/admin-design.md`: sheet
- * 10 / panel 8 / control 6) and 36 is what every other control on a settings row measures.
- * `TAP_TOUCH` is not decoration: a 36px key is under the 44px a fingertip needs, and the
- * pseudo-element that fixes that takes no space and moves nothing.
- *
- * The `disabled:` pair is for the two that can be at the end of their list — move up on the
- * first row, move down on the last. A key that cannot act has to look unavailable rather than
- * absent, or the row's controls move as you use them.
- */
-export const ICON_KEY = `${TAP_TOUCH} ${component('kit-key', 'grid h-9 w-9 shrink-0 place-items-center rounded-md'
-  + ' text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900'
-  + ' disabled:opacity-30 disabled:hover:bg-transparent'
-  + ' dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white')}`
-
-/**
- * The same square key, in red, for the one on a row that DESTROYS something. Built by replacing
- * the neutral's inks, so a change to the key's box cannot reach one of the pair and miss the other.
- * `tap-touch` rides beside both names rather than inside them: it is `admin.css`'s own class,
- * and one a reader of the markup should still be able to see.
- */
-export const ICON_KEY_DANGER = `${TAP_TOUCH} ${component('kit-key-danger', utilitiesOf('kit-key')
-  .replace('text-neutral-500', 'text-[var(--ink-danger)]')
-  .replace(' hover:text-neutral-900', '')
-  .replace(' dark:text-neutral-400', '')
-  .replace(' dark:hover:text-white', ''))}`
+// THE SQUARE KEY ON A LIST ROW (`ICON_KEY`) lives in `controls.ts` since 2026-10-03: it is a
+// control, and this file reached its 400-line ceiling the day its strings became components.
 
 // `--ink-danger`, not the pen's red, which read 3.3:1 in dark (FIXLIST 7.7); it has its own dark.
 export const SHEET_TOOL_DANGER = SHEET_TOOL
@@ -286,30 +254,6 @@ export const SHEET_TOOL_DANGER = SHEET_TOOL
  */
 export const SHEET_TOP =
   'flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-neutral-100 px-4 py-2.5 dark:border-neutral-800'
-
-/**
- * An icon drawn at the admin's glyph size, which `--admin-glyph` sets per surface. A component
- * because `icon()` (`web/admin/kit.ts`) draws fifty of them on an ordinary screen.
- */
-export const GLYPH = component('kit-glyph', 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0')
-
-// ═══ THE TWO LISTS EVERY PAGE CARRIES HIDDEN ════════════════════════════════════════════════
-//
-// The command palette (`web/admin/overlays.ts`, on every admin page) and the settings finder
-// (`screens/settings-shell.ts`) are drawn whole and narrowed with `hidden`, because the server
-// holds the dictionary and the islands do not. That is about 130 rows on every page and 113
-// more on Settings, so a row's class list is paid that many times over for a list most visits
-// never open. Measured 2026-10-03 on the settings screen: about 50 KB of the page was these
-// rows' classes. Components, and shared, because the palette's island draws post hits in the same
-// row (`island/lib/overlay-palette.ts`) and the two faces must not drift.
-
-/** One option in a found list: the name at the left, where it lives at the right. */
-export const FOUND_ROW = component('kit-found-row', 'flex cursor-pointer items-baseline justify-between gap-4 px-4 py-2 text-sm')
-/** The settings finder's row, which is a button inside its option and so carries its own hover. */
-export const FOUND_KEY = component('kit-found-key',
-  'flex w-full items-baseline justify-between gap-4 px-4 py-2.5 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/60')
-export const FOUND_NAME = component('kit-found-name', 'min-w-0 truncate text-neutral-900 dark:text-white')
-export const FOUND_WHERE = component('kit-found-where', 'shrink-0 text-xs text-neutral-500 dark:text-neutral-400')
 
 // ═══ THE HELP SCREEN'S FIVE ═══════════════════════════════════════════════════════════════
 //

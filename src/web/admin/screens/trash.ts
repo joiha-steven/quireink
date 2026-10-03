@@ -19,9 +19,8 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml, formatDateTimeShort } from '@/utils'
 import { META, NOTE_TEXT } from '@/admin-shared/scale'
-import {
-  CONTROL_SM, ICON_KEY, ICON_KEY_DANGER, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER,
-} from '@/admin-shared/kit'
+import { CONTROL_SM, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
+import { ICON_KEY, ICON_KEY_DANGER } from '@/admin-shared/controls'
 import { emptyState, icon, pageHeader, pager, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
 import { trashView } from '@/web/admin/views'
 

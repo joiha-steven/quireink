@@ -304,10 +304,7 @@ export const RAIL_WIDTH = { shut: '4.5rem', open: '13rem', arranging: '16rem' } 
  * set at the same size as a table cell and a hint — measured 2026-09-07: four destinations
  * and a group, every row 40px of 14px grey, nothing on the column but text at one size.
  */
-//
-// ⚠️ EVERY STRING IN THIS SECTION IS A COMPONENT since 2026-10-03 (`component.ts`): the rail is on
-// every admin page, and its rows were 570 to 660 characters of class each, twenty-odd rows deep.
-// The lists are the definitions; the page carries `kit-rail-*`.
+// ⚠️ COMPONENTS since 2026-10-03 (`component.ts`): on every page, rows of 570–660 characters each.
 export const SIDEBAR_NAV_QUIET = component('kit-rail-row',
   'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-[0.9375rem] font-medium text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]')
 
@@ -357,14 +354,9 @@ export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 // it at 4.5 with 4.5 of paper each side. It was `-left-3`, which put it at 0 — hard against
 // the window's own edge, where it read as a sliver bleeding off the glass rather than as a
 // mark on the rail.
-//
-// ⚠️ NO `before:content-['']`, and the bar is drawn all the same. That utility sat at the end of
-// this list until 2026-10-03 and never matched anything: the rule captured for it is spelled
-// `.before\:content-\[\\\'\\\'\]`, with the source file's own backslashes inside the class name,
-// so it selects a class nobody writes. The pseudo-element exists anyway because every `before:`
-// utility here sets `content: var(--u-content)`, whose registered initial value is the empty
-// string. The build refuses a component naming a utility no rule selects, which is how it came to
-// light; leaving it out changes no pixel, because it never painted one.
+// ⚠️ NO `before:content-['']`: until 2026-10-03 it ended this list and matched nothing — its rule is
+// `.before\:content-\[\\\'\\\'\]`, source backslashes and all — and every `before:` utility already
+// sets `content: var(--u-content)` (initial ""). The build refuses a name over a dead utility.
 export const SIDEBAR_NAV_ACTIVE = component('kit-rail-here',
   'bg-[var(--pen)] font-medium text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)] before:absolute before:-left-[7.5px] before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-full before:bg-[var(--pen-edge)]')
 

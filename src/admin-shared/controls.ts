@@ -13,6 +13,42 @@ import { CONTROL_CHROME } from '@/admin-shared/kit'
 // for, and the page carries the names (`component.ts`). A face swapped by an island is a pair
 // of NAMES now, which the island reads from this file exactly as it read the lists.
 import { component, utilitiesOf } from '@/admin-shared/component'
+import { TAP_TOUCH } from '@/admin-shared/scale'
+
+/**
+ * THE SQUARE KEY ON A LIST ROW: rename, remove, move up, move down. Moved here from `kit.ts`
+ * on 2026-10-03, when that file's strings became components and it reached its line ceiling.
+ *
+ * ⚠️ ONE DEFINITION, because there were five. A row's remove key was 40px and `rounded-md` in
+ * the taxonomy drawer, 36px and `rounded-lg` on the settings Home tab, 36px and `rounded-md`
+ * one ink lighter in the subscriber list, 40px with a border in the rail, and on the redirects
+ * card it had no box at all — a bare 16px glyph, which is a 16px hit target on a phone. All
+ * five are the same gesture on the same kind of row.
+ *
+ * 36 and `rounded-md`, because that is the admin's control step (`docs/admin-design.md`: sheet
+ * 10 / panel 8 / control 6) and 36 is what every other control on a settings row measures.
+ * `TAP_TOUCH` is not decoration: a 36px key is under the 44px a fingertip needs, and the
+ * pseudo-element that fixes that takes no space and moves nothing. It rides beside the name
+ * rather than inside it, because it is `admin.css`'s own class.
+ *
+ * The `disabled:` pair is for the two that can be at the end of their list — move up on the
+ * first row, move down on the last. A key that cannot act has to look unavailable rather than
+ * absent, or the row's controls move as you use them.
+ */
+export const ICON_KEY = `${TAP_TOUCH} ${component('kit-key', 'grid h-9 w-9 shrink-0 place-items-center rounded-md'
+  + ' text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900'
+  + ' disabled:opacity-30 disabled:hover:bg-transparent'
+  + ' dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white')}`
+
+/**
+ * The same square key, in red, for the one on a row that DESTROYS something. Built by replacing
+ * the neutral's inks, so a change to the key's box cannot reach one of the pair and miss the other.
+ */
+export const ICON_KEY_DANGER = `${TAP_TOUCH} ${component('kit-key-danger', utilitiesOf('kit-key')
+  .replace('text-neutral-500', 'text-[var(--ink-danger)]')
+  .replace(' hover:text-neutral-900', '')
+  .replace(' dark:text-neutral-400', '')
+  .replace(' dark:hover:text-white', ''))}`
 
 /**
  * The same chrome worn by a box that CONTAINS controls instead of being one.

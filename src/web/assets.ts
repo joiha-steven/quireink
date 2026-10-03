@@ -110,8 +110,8 @@ BY_PATH.set(PEN_LINES_SHEET, PEN_LINES_CSS_SERVED)
  *     The numbers are in `docs/performance.md`.
  *
  * The cost is real and accepted: inline rules are not cached ACROSS pages, so a reader who
- * goes on to a second marked article pays that article's dies again — measured at 1.5 to 4 KB
- * compressed, against 34.8 KB once. It takes a dozen marked articles in one visit before the
+ * goes on to a second marked article pays that article's dies again — measured at 1.2 KB
+ * compressed for one highlight and 7.3 KB for fifteen, against 19.6 to 34.8 KB once. It takes a dozen marked articles in one visit before the
  * whole sheets come out ahead, and the HTML carrying the rules is cached at the edge and in
  * this process exactly as it was.
  *

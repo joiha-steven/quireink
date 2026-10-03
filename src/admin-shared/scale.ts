@@ -135,6 +135,12 @@ export const NOTE = `${NOTE_TEXT} mt-1.5`
 export const META = 'text-xs text-neutral-500 dark:text-neutral-400'
 
 /**
+ * An icon at the admin's glyph size, which `--admin-glyph` sets per surface (the rail sets 18px
+ * on itself). A component because `icon()` (`web/admin/kit.ts`) draws fifty on an ordinary screen.
+ */
+export const GLYPH = component('kit-glyph', 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0')
+
+/**
  * THE EYEBROW: a name over a stretch of other things, at the same size as `META` and in a
  * different voice — 500 rather than 400, uppercase, and opened up 0.04em so the caps do not
  * set solid.

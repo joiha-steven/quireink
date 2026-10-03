@@ -10,7 +10,8 @@
 // saveable.
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { CONTROL_SM, FOUND_KEY, FOUND_WHERE, SHEET, SHEET_TOOL, SHEET_TOP, buttonClass } from '@/admin-shared/kit'
+import { CONTROL_SM, SHEET, SHEET_TOOL, SHEET_TOP, buttonClass } from '@/admin-shared/kit'
+import { FOUND_KEY, FOUND_WHERE } from '@/admin-shared/found'
 import { NOTE_TEXT } from '@/admin-shared/scale'
 import { TAB_IDS, type Tab } from '@/admin-shared/settings-tabs'
 import { SETTINGS_INDEX, fold } from '@/admin-shared/settings-index'

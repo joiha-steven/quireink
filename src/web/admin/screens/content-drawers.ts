@@ -17,7 +17,8 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { Post } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { seriesEntries } from '@/content/series-order'
-import { ICON_KEY, OVERLAY_LIFT, buttonClass } from '@/admin-shared/kit'
+import { OVERLAY_LIFT, buttonClass } from '@/admin-shared/kit'
+import { ICON_KEY } from '@/admin-shared/controls'
 import { icon } from '@/web/admin/kit'
 
 /** A 40px hit target for a 16px mark, which is the floor a finger needs. */
