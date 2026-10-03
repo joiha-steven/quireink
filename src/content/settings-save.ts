@@ -3,8 +3,7 @@
 // Split from `settings.ts` when that file reached its ceiling. The seam is by direction: that
 // file READS the row and answers with it, this one is the only thing that writes it.
 
-import { writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { keepAside } from '@/runtime/impl/snapshot'
 import type { SiteSettings, SiteLook } from '@/types'
 import { DEFAULT_SETTINGS, getSettings } from '@/content/settings'
 import { collapseBlob, deleteByPathname } from '@/media/blob'
@@ -62,8 +61,7 @@ function rescueUnreadable(): void {
   }
   try {
     const at = new Date().toISOString().replace(/[:.]/g, '-')
-    const file = join(dataDir(), `settings-unreadable-${at}.json`)
-    writeFileSync(file, row.data)
+    const file = keepAside(dataDir(), `settings-unreadable-${at}.json`, row.data)
     console.error(`[ERROR] settings.saveSettings: the stored settings would not parse; kept a copy at ${file}`)
   } catch (error) {
     console.error(`[ERROR] settings.saveSettings: could not keep a copy of the unreadable settings: ${(error as Error).message}`)

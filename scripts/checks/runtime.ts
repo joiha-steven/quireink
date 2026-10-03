@@ -24,7 +24,6 @@ const FORBIDDEN = /from\s+['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:t
 
 /** Still crossing the seam, and where each is going. Shrinks to nothing; never grows. */
 const PENDING: Record<string, string> = {
-  'src/content/settings-save.ts': 'node:fs -> the Blob or Assets port (G1.7)',
   'src/import/zip-write.ts': 'Bun.file -> the Archive port (G1.8)',
   'src/server/backup-offsite.ts': 'Bun.S3Client, Bun.file -> the Archive port (G1.8)',
   'src/server/backup.ts': 'tar via Bun.spawn -> the pure-JS archive writer (G1.8)',

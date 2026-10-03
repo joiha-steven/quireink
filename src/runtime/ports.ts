@@ -193,4 +193,9 @@ export type SnapshotPort = {
   compactIfMostlyFree: (
     conn: Connection, path: string, thresholds?: { minShare?: number; minBytes?: number },
   ) => boolean
+  /**
+   * Keep `text` aside, beside the data and out of every public path, for a person to recover by
+   * hand (the settings that would not parse). Returns where it went, for the log.
+   */
+  keepAside: (dataDir: string, name: string, text: string) => string
 }

@@ -5,7 +5,7 @@
 // A Durable Object refuses every statement here (measured 2026-10-03), and has no file to copy:
 // recovering from a bad upgrade there is Cloudflare's point-in-time restore.
 import { Database } from 'bun:sqlite'
-import { mkdirSync, readdirSync, renameSync, rmSync, statSync } from 'node:fs'
+import { mkdirSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import type { Connection, SnapshotPort } from '@/runtime/ports'
 
@@ -144,4 +144,11 @@ function intact(path: string): boolean {
   } finally {
     copy.close()
   }
+}
+
+/** Bun: a file in the data directory, beside the databases. */
+export const keepAside: SnapshotPort['keepAside'] = (dataDir, name, text) => {
+  const file = join(dataDir, name)
+  writeFileSync(file, text)
+  return file
 }
