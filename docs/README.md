@@ -67,6 +67,7 @@ copies of a rule means one is wrong within a month
 | [pen.md](pen.md) | The pen on a page that is not this blog: `/pen.css`, the `.pen` class, the three elements |
 | [agent-cookbook.md](agent-cookbook.md) | Prompts that do real jobs with a connected agent, and where the lines are |
 | [backups.md](backups.md) | What is copied off the server, how often, and how to restore it |
+| [backup-load-api.md](backup-load-api.md) | Loading a backup of any size into an empty blog over HTTP, in parts: for a program moving a blog |
 | [update-check.md](update-check.md) | What the daily update check sends, and how to turn it off |
 | [self-host.md](self-host.md) | Running it on your own server |
 | [account.md](account.md) | Claiming the blog, and getting back in after a lost password or phone |

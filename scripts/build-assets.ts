@@ -22,6 +22,9 @@ const result = await Bun.build({
     `${ROOT}src/assets/js/core.ts`,
     `${ROOT}src/assets/js/post.ts`,
     `${ROOT}src/assets/js/login.ts`,
+    // The first setup screen's backup form, sending a large file in parts (G4). Its own bundle so
+    // the sign-in page, which every owner opens, never carries it.
+    `${ROOT}src/assets/js/setup-restore.ts`,
     // The two switch-gated islands, each its own bundle so a site with the switch off never
     // fetches it (the measurement is in book-mode.ts).
     `${ROOT}src/assets/js/book-mode.ts`,
@@ -221,6 +224,9 @@ const BUDGET: Record<string, number> = {
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.
   'login.js': 1_500,
+  // /setup/restore only, on a blog nobody has claimed: the parts, a retry, the resume, the load.
+  // 2,420 measured at first landing (2026-10-03).
+  'setup-restore.js': 2_600,
   // Fetched ONCE per reader per deploy, and never on the page's critical path — so its
   // budget is about keeping it a small, readable thing rather than about page weight. Two
   // strategies, a count-bounded trim, and the list of paths it refuses to touch.

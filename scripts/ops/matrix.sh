@@ -9,7 +9,8 @@
 #
 # `cloudflare-dev` is the Cloudflare package under `wrangler dev`: a Bun blog moved into the real
 # worker through `/setup/restore`, crawled against Bun page by page, toured in full (286 flows on
-# 2026-10-03) and smoked like the rest (`scripts/ops/cloudflare-dev.ts`). It builds this tree; installing it on Cloudflare for real is L10, from the release manager's machine.
+# 2026-10-03), smoked like the rest, backed up there, and moved back into a fresh Bun blog in parts
+# that must hold every row and upload it started with (`scripts/ops/cloudflare-dev.ts`). It builds this tree; installing it on Cloudflare for real is L10, from the release manager's machine.
 #
 # Run from the repository root, with the tags fetched (`git fetch --tags`). Each cell builds its
 # own world under a temporary directory and tears it down, so cells can run side by side.

@@ -16,6 +16,33 @@ const encodeKey = (key: string): string => key.split('/').map(encodeURIComponent
 const xmlText = (s: string): string =>
   s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&')
 
+/**
+ * Past this an archive goes up as an S3 multipart upload, one part of this size in memory at a time;
+ * at or under it, one PUT. 16 MiB: above S3's 5 MiB floor for a part, a sliver of the 128 MB, and
+ * few enough requests that a 5 GB archive is 320 parts (S3 allows 10,000).
+ */
+export const PART = 16 * 1024 * 1024
+
+/** Exactly `size` bytes from `reader`, carrying over what a chunk had past them, or fewer at the end. */
+async function take(reader: ReadableStreamDefaultReader<Uint8Array>, carry: { rest: Uint8Array | null }, size: number): Promise<Uint8Array> {
+  const out = new Uint8Array(size)
+  let at = 0
+  while (at < size) {
+    let chunk = carry.rest
+    carry.rest = null
+    if (!chunk) {
+      const next = await reader.read()
+      if (next.done) break
+      chunk = next.value
+    }
+    const n = Math.min(chunk.length, size - at)
+    out.set(chunk.subarray(0, n), at)
+    at += n
+    if (n < chunk.length) carry.rest = chunk.subarray(n)
+  }
+  return at === size ? out : out.subarray(0, at)
+}
+
 /** The response, or an error naming the step, the status and S3's own code — never the body whole. */
 async function ok(res: Response, what: string): Promise<Response> {
   if (res.ok) return res
@@ -38,10 +65,52 @@ export const s3Client: OffsitePort['s3Client'] = (config): OffsiteClient => {
   const endpoint = config.endpoint || `https://s3.${region === 'auto' ? 'us-east-1' : region}.amazonaws.com`
   const base = `${endpoint.replace(/\/+$/, '')}/${encodeURIComponent(config.bucket)}`
 
+  /**
+   * CreateMultipartUpload, UploadPart for each `PART` of the stream, CompleteMultipartUpload; on any
+   * failure AbortMultipartUpload, so the bucket keeps no half an archive (and no parts it bills
+   * for). Each part is held whole while it is sent because SigV4 signs its hash and a retry has to
+   * send it again — 16 MiB at a time, never the archive.
+   */
+  async function multipart(url: string, key: string, data: { size: number; stream: () => ReadableStream<Uint8Array> }): Promise<number> {
+    const created = await (await ok(await aws.fetch(`${url}?uploads`, { method: 'POST' }), `start ${key}`)).text()
+    const uploadId = xmlText(/<UploadId>([^<]*)<\/UploadId>/.exec(created)?.[1] ?? '')
+    if (!uploadId) throw new Error(`start ${key}: no UploadId in the answer`)
+    const reader = data.stream().getReader()
+    const carry = { rest: null as Uint8Array | null }
+    const etags: string[] = []
+    let size = 0
+    try {
+      for (;;) {
+        const part = await take(reader, carry, PART)
+        if (part.length === 0 && etags.length > 0) break
+        const q = new URLSearchParams({ partNumber: String(etags.length + 1), uploadId })
+        const res = await ok(await aws.fetch(`${url}?${q}`, { method: 'PUT', body: part }), `put ${key} part ${etags.length + 1}`)
+        const etag = res.headers.get('etag')
+        if (!etag) throw new Error(`put ${key} part ${etags.length + 1}: no ETag in the answer`)
+        etags.push(etag)
+        size += part.length
+        if (part.length < PART) break
+      }
+      const xml = `<CompleteMultipartUpload>${etags.map((e, i) =>
+        `<Part><PartNumber>${i + 1}</PartNumber><ETag>${e.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</ETag></Part>`).join('')}</CompleteMultipartUpload>`
+      const done = await ok(await aws.fetch(`${url}?${new URLSearchParams({ uploadId })}`, { method: 'POST', body: xml }), `finish ${key}`)
+      // S3 can answer 200 to the completion and put the failure in the body.
+      const answer = await done.text()
+      if (/<Error>/.test(answer)) throw new Error(`finish ${key}: ${/<Code>([^<]*)<\/Code>/.exec(answer)?.[1] ?? 'refused'}`)
+      return size
+    } catch (error) {
+      await reader.cancel().catch(() => undefined)
+      await aws.fetch(`${url}?${new URLSearchParams({ uploadId })}`, { method: 'DELETE' }).catch(() => undefined)
+      throw error
+    }
+  }
+
   return {
     async write(key, data) {
-      const body = typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(await data.arrayBuffer())
-      await ok(await aws.fetch(`${base}/${encodeKey(key)}`, { method: 'PUT', body }), `put ${key}`)
+      const url = `${base}/${encodeKey(key)}`
+      if (typeof data !== 'string' && data.size > PART) return multipart(url, key, data)
+      const body = typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(await new Response(data.stream()).arrayBuffer())
+      await ok(await aws.fetch(url, { method: 'PUT', body }), `put ${key}`)
       return body.byteLength
     },
     async list(opts) {

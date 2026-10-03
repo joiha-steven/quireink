@@ -53,6 +53,10 @@ export function capPublicBodies(app: { use: (path: string, h: MiddlewareHandler)
   for (const path of SMALL) app.use(path, small)
   // A page of a reader's marks is allowed 128 KB once stored; the route reads up to twice that
   // before its own check, so the cap sits there rather than below it.
+  // The parts of a backup (`setup-restore-parts.ts`): beginning one and loading it carry a size or a
+  // key, kilobytes. The part itself is bounded by its own route, which streams it to the store.
+  app.use('/setup/restore/parts', small)
+  app.use('/setup/restore/parts/:id/load', small)
   const pen = capped(PEN_BODY_BYTES * 2)
   app.use('/api/pen', pen)
   app.use('/api/pen/*', pen)

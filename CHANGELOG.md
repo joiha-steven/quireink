@@ -63,9 +63,19 @@
   setup link or `SETUP_CODE` as claiming, refuses a blog that has an owner or any content, and
   refuses an archive from another version with the version to upgrade the old blog to first. This
   is how a blog moves between machines, or to Quire Ink on Cloudflare. In all eleven languages.
+- **…and a backup of any size.** Past 48 MB the setup screen sends the archive in parts of 16 MB
+  instead of one request — Cloudflare refuses a request over 100 MB, and a proxy in front of a
+  server often far less — shows how far it has got, tries a dropped part again, and carries on where
+  it stopped when the same file is chosen again. A wrong passphrase keeps what was sent. The same
+  door is an HTTP API for a program moving a blog with its `SETUP_CODE`, written out in
+  `docs/backup-load-api.md`. Parts nobody loads are removed after a day.
 
 ### Fixed
 
+- **On Cloudflare, a kept backup past 64 MB could not be downloaded or copied off-site.** The
+  archive was read whole into the Worker to be sent; it now streams from the bucket, and the
+  off-site copy goes up as a multipart upload 16 MB at a time. A download from Cloudflare also says
+  how big it is again, so the browser shows its progress.
 - **A favicon, app icon or author portrait could not be uploaded, and a removed one could not be
   deleted** ([#69](https://github.com/joiha-steven/quireink/issues/69)). Picking a file in Settings
   sent nothing at all, with no message. Remove cleared the setting but kept the file, and Library →

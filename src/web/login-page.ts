@@ -53,7 +53,7 @@ const fill = (template: string, values: Record<string, string | number>): string
  * first-run screens have to look like the sign-in screens because they ARE the sign-in
  * screens' neighbours — a wizard in a second visual language would read as a different site.
  */
-export function loginShell(settings: SiteSettings, title: string, body: string): string {
+export function loginShell(settings: SiteSettings, title: string, body: string, scripts = scriptTag('login')): string {
   const s = adminT(settings.language)
   const back = `<a class="login-back" href="/">${escapeHtml(fill(s.authBackTo, { site: settings.title }))}</a>`
   return renderDocument(
@@ -66,7 +66,7 @@ export function loginShell(settings: SiteSettings, title: string, body: string):
     // house, and LOGIN_CSS supplies everything else.
     `${pageStyles(settings)}\n${LOGIN_CSS}`,
     `<div class="login-wrap">${quireLockup()}<main class="login-card">${body}</main>${back}</div>`,
-    { scripts: scriptTag('login') },
+    { scripts },
   )
 }
 

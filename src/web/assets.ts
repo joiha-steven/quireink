@@ -12,6 +12,7 @@ import bookModeJs from '@/assets/dist/book-mode.js' with { type: 'text' }
 import commentThreadJs from '@/assets/dist/comment-thread.js' with { type: 'text' }
 import readerPenJs from '@/assets/dist/reader-pen.js' with { type: 'text' }
 import loginJs from '@/assets/dist/login.js' with { type: 'text' }
+import setupRestoreJs from '@/assets/dist/setup-restore.js' with { type: 'text' }
 import swJs from '@/assets/dist/sw.js' with { type: 'text' }
 import { PUBLIC_CSS } from '@/web/public.css'
 import { LOOK_CODE_CSS } from '@/web/look-code.css'
@@ -25,7 +26,7 @@ import { minifyCss } from '@/web/css-min'
 /** Bundles by logical name. Adding one is an import and a line. */
 const BUNDLES: Record<string, string> = {
   core: coreJs, post: postJs, login: loginJs, 'book-mode': bookModeJs, 'comment-thread': commentThreadJs,
-  'reader-pen': readerPenJs,
+  'reader-pen': readerPenJs, 'setup-restore': setupRestoreJs,
 }
 
 /** Short content hash, the same on both runtimes (`content-hash.ts`). */

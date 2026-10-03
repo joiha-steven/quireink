@@ -44,17 +44,53 @@ const relayOn = (port: number, starttls: boolean) => net.createServer((socket) =
 }).listen(port, '127.0.0.1')
 const relays = [relayOn(SMTP_PORT, false), relayOn(SMTP_PORT + 1, true)]
 
+// A bucket for the off-site case: S3's multipart verbs and nothing else, path-style. It keeps only
+// sizes, so a 40 MB upload costs this process nothing, and answers what it saw at `/__seen/<key>`.
+const S3_PORT = Number(process.env.CF_TEST_S3_PORT || PORT + 3)
+const s3Uploads = new Map<string, { key: string; sizes: Map<number, number> }>()
+const s3Seen = new Map<string, { size: number; parts: number; largest: number }>()
+const s3 = Bun.serve({
+  port: S3_PORT, hostname: '127.0.0.1',
+  async fetch(req) {
+    const url = new URL(req.url)
+    const q = url.searchParams
+    if (url.pathname.startsWith('/__seen/')) return Response.json(s3Seen.get(decodeURIComponent(url.pathname.slice(8))) ?? null)
+    const key = decodeURIComponent(url.pathname.replace(/^\/[^/]+\//, ''))
+    const size = (await req.arrayBuffer()).byteLength
+    if (!(req.headers.get('authorization') ?? '').startsWith('AWS4-HMAC-SHA256 ')) return new Response('unsigned', { status: 403 })
+    if (req.method === 'POST' && q.has('uploads')) {
+      const id = crypto.randomUUID()
+      s3Uploads.set(id, { key, sizes: new Map() })
+      return new Response(`<InitiateMultipartUploadResult><UploadId>${id}</UploadId></InitiateMultipartUploadResult>`)
+    }
+    const upload = s3Uploads.get(q.get('uploadId') ?? '')
+    if (upload && req.method === 'PUT') {
+      upload.sizes.set(Number(q.get('partNumber')), size)
+      return new Response('', { headers: { etag: `"${q.get('partNumber')}"` } })
+    }
+    if (upload && req.method === 'POST') {
+      const sizes = [...upload.sizes.values()]
+      s3Seen.set(upload.key, { size: sizes.reduce((a, b) => a + b, 0), parts: sizes.length, largest: Math.max(...sizes) })
+      s3Uploads.delete(q.get('uploadId')!)
+      return new Response('<CompleteMultipartUploadResult/>')
+    }
+    if (req.method === 'PUT') { s3Seen.set(key, { size, parts: 1, largest: size }); return new Response('') }
+    return new Response('unhandled', { status: 400 })
+  },
+})
+
 const built = spawnSync(process.execPath, ['scripts/build-worker.ts', '--entry', 'scripts/cf-test/worker.ts', '--out', 'dist/cf-test'], { cwd: ROOT, stdio: 'inherit' })
 if (built.status !== 0) process.exit(1)
 
 rmSync(STATE, { recursive: true, force: true })
-const dev = spawn(join(ROOT, 'node_modules', '.bin', 'wrangler'), ['dev', '--local', '--port', String(PORT), '--persist-to', STATE, '--var', `CF_TEST_SMTP_PORT:${SMTP_PORT}`, '--config', 'scripts/cf-test/wrangler.jsonc'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] })
+const dev = spawn(join(ROOT, 'node_modules', '.bin', 'wrangler'), ['dev', '--local', '--port', String(PORT), '--persist-to', STATE, '--var', `CF_TEST_SMTP_PORT:${SMTP_PORT}`, '--var', `CF_TEST_S3_PORT:${S3_PORT}`, '--config', 'scripts/cf-test/wrangler.jsonc'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] })
 let log = ''
 dev.stdout.on('data', (d) => { log += d })
 dev.stderr.on('data', (d) => { log += d })
 const stop = () => {
   try { dev.kill('SIGTERM') } catch { /* gone */ }
   for (const r of relays) r.close()
+  s3.stop(true)
 }
 process.on('exit', stop)
 

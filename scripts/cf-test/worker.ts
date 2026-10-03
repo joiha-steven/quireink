@@ -17,6 +17,8 @@ import { put as blobPut, read as blobRead, statSize as blobStatSize } from '@/ru
 import { gunzipStage, gzipStage } from '@/server/gzip'
 import { clientCountry, clientIp } from '@/server/rate-limit'
 import { identityFromSecret, newIdentity, opener, passphraseRecipient, sealer, unseal } from '@/server/backup-crypt'
+import { dropHeld, heldIds, heldParts, holdPart, openKept, readHeld, removeKept, writeKept } from '@/runtime/cf/archive'
+import { PART as OFFSITE_PART, s3Client } from '@/runtime/cf/offsite'
 
 type Case = { name: string; body: () => void | Promise<void> }
 
@@ -34,6 +36,9 @@ function collect(): Case[] {
   cases.push({ name: 'archive: an X25519 seal (ADR 0060) opens with its identity and not with another', body: sealRoundTrip })
   cases.push({ name: 'archive: a passphrase recipient derives (scrypt, N=65536 r=8: 64 MB)', body: () => { passphraseRecipient('correct horse battery staple') } })
   cases.push({ name: 'smtp: STARTTLS lets go of the plain streams and reaches the TLS handshake', body: smtpReachesHandshake })
+  cases.push({ name: 'archive: a kept archive past the old 64 MB ceiling is handed out as its size and a stream (G4)', body: keptAsStream })
+  cases.push({ name: 'archive: the parts of an incoming archive are held in R2 under private/, read back in order, and dropped', body: incomingParts })
+  cases.push({ name: 'offsite: a 40 MB kept archive leaves for S3 as a multipart upload, 16 MiB at a time', body: offsiteMultipart })
   return cases
 }
 
@@ -183,6 +188,106 @@ function sealRoundTrip(): void {
   throw new Error('a stranger\'s identity opened the archive')
 }
 
+/** `size` bytes of `i % 251`, made as they are read: a stream no test holds whole. */
+function counting(size: number): ReadableStream<Uint8Array> {
+  const block = new Uint8Array(1024 * 1024).map((_, i) => i % 251)
+  let at = 0
+  return new ReadableStream<Uint8Array>({
+    pull(controller) {
+      if (at >= size) { controller.close(); return }
+      const n = Math.min(block.length, size - at)
+      // Every block starts where the last one left off in the cycle of 251.
+      const offset = at % 251
+      controller.enqueue(n === block.length && offset === 0 ? block.slice() : new Uint8Array(n).map((_, i) => (at + i) % 251))
+      at += n
+    },
+  })
+}
+
+/** Read `stream` through, checking every byte is the `counting` pattern; the count. */
+async function verified(stream: ReadableStream<Uint8Array>): Promise<number> {
+  let at = 0
+  const reader = stream.getReader()
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) return at
+    for (let i = 0; i < value.length; i += 4093) if (value[i] !== (at + i) % 251) throw new Error(`byte ${at + i} is ${value[i]}`)
+    at += value.length
+  }
+}
+
+/**
+ * G4: `openKept` answered `object.blob()` — the archive in the isolate — and refused past 64 MB.
+ * Now a head and a lazy get: 72 MB written, handed out by size, streamed back byte-checked.
+ */
+async function keptAsStream(): Promise<void> {
+  const size = 72 * 1024 * 1024
+  const name = 'quire-2026-10-03T120000.tar.gz'
+  if (await writeKept(name, counting(size)) !== size) throw new Error('writeKept miscounted')
+  const kept = await openKept(name)
+  if (!kept || kept.size !== size) throw new Error(`openKept said ${kept?.size}`)
+  // Twice, because a caller that retries opens it again.
+  for (let i = 0; i < 2; i++) if (await verified(kept.stream()) !== size) throw new Error('the stream ended short')
+  await removeKept(name)
+  if (await openKept(name)) throw new Error('removed, and still there')
+}
+
+/** G4: `/setup/restore/parts` stores here. One object per part, all or nothing each. */
+async function incomingParts(): Promise<void> {
+  const id = 'lkf0xs-1000-0123456789abcdef0123456789abcdef'
+  const sizes = [300_000, 300_000, 123_457]
+  const total = sizes.reduce((a, b) => a + b, 0)
+  const whole = await new Response(counting(total)).arrayBuffer()
+  const starts = [0, sizes[0]!, sizes[0]! + sizes[1]!]
+  // Part 2 first and part 1 sent twice, the way a resumed upload can: a part replaces itself.
+  for (const part of [2, 1, 3, 1]) {
+    const bytes = new Uint8Array(whole, starts[part - 1], sizes[part - 1])
+    await holdPart(id, part, new Blob([bytes]).stream(), bytes.length)
+  }
+  const held = await heldParts(id)
+  if (held.map((h) => `${h.part}:${h.size}`).join(',') !== '1:300000,2:300000,3:123457') throw new Error(`held ${JSON.stringify(held)}`)
+  // A part shorter than it said is not kept.
+  try {
+    await holdPart(id, 4, new Blob([new Uint8Array(10)]).stream(), 20)
+    throw new Error('a short part was kept')
+  } catch (error) {
+    if (!String((error as Error).message).startsWith('incoming:')) throw error
+  }
+  if ((await heldParts(id)).length !== 3) throw new Error('the short part left something behind')
+  const back = new Uint8Array(await new Response(readHeld(id, 3)).arrayBuffer())
+  const want = new Uint8Array(whole)
+  if (back.length !== total || back.some((b, i) => b !== want[i])) throw new Error('the parts did not read back as the archive')
+  try {
+    await blobRead(`private/incoming/${id}/00001`)
+    throw new Error('a part was readable through the blob port')
+  } catch (error) {
+    if (!String((error as Error).message).startsWith('Invalid blob path')) throw error
+  }
+  if (!(await heldIds()).includes(id)) throw new Error('heldIds missed it')
+  await dropHeld(id)
+  if ((await heldParts(id)).length !== 0 || (await heldIds()).includes(id)) throw new Error('dropped, and still held')
+}
+
+/** G4: the off-site copy of a big archive, from the stream `openKept` gives, never the archive in memory. */
+async function offsiteMultipart(): Promise<void> {
+  if (!s3Port) throw new Error('no fake bucket port (CF_TEST_S3_PORT)')
+  const size = 40 * 1024 * 1024
+  const name = 'quire-2026-10-03T130000.tar.gz'
+  await writeKept(name, counting(size))
+  const kept = await openKept(name)
+  if (!kept) throw new Error('no kept archive')
+  const client = s3Client({ accessKeyId: 'AKID', secretAccessKey: 'secret', bucket: 'b', region: 'auto', endpoint: `http://127.0.0.1:${s3Port}` })
+  if (await client.write(`blog/${name}`, kept) !== size) throw new Error('write miscounted')
+  const seen = (await (await fetch(`http://127.0.0.1:${s3Port}/__seen/${encodeURIComponent(`blog/${name}`)}`)).json()) as { size: number; parts: number; largest: number } | null
+  if (!seen || seen.size !== size || seen.parts !== Math.ceil(size / OFFSITE_PART) || seen.largest > OFFSITE_PART) {
+    throw new Error(`the bucket saw ${JSON.stringify(seen)}`)
+  }
+  await removeKept(name)
+}
+
+/** The fake bucket `scripts/test-cf.ts` serves on loopback. */
+let s3Port = 0
+
 export class Probe extends DurableObject<CfEnv> {
   constructor(ctx: DurableObjectState, env: CfEnv) {
     super(ctx, env)
@@ -191,6 +296,7 @@ export class Probe extends DurableObject<CfEnv> {
 
   override async fetch(request: Request): Promise<Response> {
     smtpPort = Number((this.env as unknown as { CF_TEST_SMTP_PORT?: string }).CF_TEST_SMTP_PORT ?? 0)
+    s3Port = Number((this.env as unknown as { CF_TEST_S3_PORT?: string }).CF_TEST_S3_PORT ?? 0)
     const index = Number(new URL(request.url).searchParams.get('case'))
     const c = collect()[index]
     if (!c) return Response.json({ error: `no case ${index}` }, { status: 404 })

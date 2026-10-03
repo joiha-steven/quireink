@@ -10,5 +10,7 @@
   "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": false }],
   "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "quireink-contracts" }],
   "durable_objects": { "bindings": [{ "name": "PROBE", "class_name": "Probe" }] },
+  // The archive store's cases (kept archives, the parts of an incoming one) need a bucket; local only.
+  "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "quireink-contracts" }],
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Probe"] }]
 }

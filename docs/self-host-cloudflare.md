@@ -75,6 +75,16 @@ bun run deploy
 it there if your account already has one), the Images binding and the static assets. Open the
 `workers.dev` address it prints, add `/setup`, and type the code.
 
+## Moving a blog here
+
+Install as above, open `/setup`, choose **Start from a backup** and give it an archive from the old
+blog, written by the same version, with the `SETUP_CODE`. An archive of any size goes in: past 48 MB
+the page sends it in parts of 16 MB, under the 100 MB Cloudflare allows one request, and the blog
+loads them from the bucket as one stream. A program can do the same through the HTTP API in
+[backup-load-api.md](backup-load-api.md). Backups taken here stream out of the bucket
+to a download or to an off-site copy (a multipart upload), so their size is not bounded by the
+Worker's 128 MB either.
+
 ## Upgrading
 
 The database migrates when the blog next starts, after Cloudflare has bookmarked the moment before

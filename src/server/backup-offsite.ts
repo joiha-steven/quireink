@@ -20,7 +20,7 @@ import { getSettings } from '@/content/settings'
 import { isSnapshotName } from '@/server/backup'
 import { logActivity } from '@/server/activity'
 import { s3Client } from '@/runtime/impl/offsite'
-import type { OffsiteClient } from '@/runtime/ports'
+import type { KeptBody, OffsiteClient } from '@/runtime/ports'
 
 /** The three verbs this module needs (`src/runtime/ports.ts`); a test fakes them. */
 export type { OffsiteClient }
@@ -61,13 +61,14 @@ export async function offsiteTarget(): Promise<OffsiteTarget | null> {
  */
 export async function replicateSnapshot(
   name: string,
-  body: Blob,
+  body: KeptBody,
   target?: OffsiteTarget | null,
 ): Promise<boolean> {
   const t = target !== undefined ? target : await offsiteTarget()
   if (!t) return false
   try {
-    // A Blob, which on Bun is the kept file itself read lazily: the archive is never in memory.
+    // The kept archive as the store hands it out (`ArchivePort.openKept`): on Bun the file itself,
+    // on Cloudflare a stream from R2 sent as a multipart upload. Never the archive in memory.
     await t.client.write(`${t.prefix}${name}`, body)
 
     const { keep } = (await getSettings()).backups

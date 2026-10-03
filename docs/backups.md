@@ -75,7 +75,9 @@ the default reaches only installs that never chose.
 R2/MinIO) the endpoint — every archive the schedule or the "take one now" button writes is
 also PUT into the bucket, and the remote copies are pruned to the same `keep` as the local
 directory. Env fallbacks exist for a fleet: `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`,
-`S3_PREFIX`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (the stored value wins).
+`S3_PREFIX`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (the stored value wins). The upload
+streams the archive: from disk on Bun, and on Cloudflare as a multipart upload, 16 MB in the
+Worker at a time (until G4 it read the archive whole, and refused one past 64 MB).
 
 What Google Drive got wrong is deliberately not repeated: no OAuth, no state table, **no
 in-app restore** — the bucket is written and pruned, never read back into the application;
@@ -300,10 +302,14 @@ install, and the backup loaded into it.
 A sealed archive asks for its key (the line in the key file) or its passphrase there, used once,
 in memory, and never stored. The archive streams straight from the upload into the tables — it is
 never held whole — and a load that fails part-way empties everything it put in, so the blog is
-left as empty as it was found and the right archive can go in after. The upload is bounded by the
-server's request ceiling (the larger of `MAX_UPLOAD_MB` and 100 MB); a larger archive restores
-with `scripts/restore.ts` instead, and so does an archive from before ADR 0067, which has no rows
-to load.
+left as empty as it was found and the right archive can go in after. An archive from before
+ADR 0067 has no rows to load, and restores with `scripts/restore.ts` instead.
+
+**Any size.** Past 48 MB the page sends the file in parts of 16 MB (Cloudflare refuses a request
+over 100 MB), shows its progress, retries a dropped part and, with the same file chosen again in
+the same tab, sends only what is missing; then the blog loads the parts as one stream through the
+same loader. A wrong key keeps them; a load, or a day, removes them. A program does the same
+through the HTTP API in [backup-load-api.md](backup-load-api.md), guarded exactly like the form.
 
 ### The same questions, asked automatically
 
@@ -317,7 +323,9 @@ directory forever, which reads as coverage and is not. Then
 [`scripts/setup-restore-check.ts`](../scripts/setup-restore-check.ts) boots a second, empty
 instance and loads the same archive through **Start from a backup**, with the setup code, the way
 the form posts it: the sign-in must follow, a second load must be refused, and every row and
-upload must have arrived.
+upload must have arrived. [`scripts/ops/cloudflare-dev.ts`](../scripts/ops/cloudflare-dev.ts) asks them of the Cloudflare
+build: Bun → worker → snapshot, off-site copy and download (byte-identical) → a fresh Bun blog, in
+parts, holding every row and upload of the original. `BIG=1` does it past 100 MB.
 
 It is not a substitute for restoring a REAL archive onto a real machine. It is the part that
 can run on every change, so that the part that cannot is the only one left to remember.

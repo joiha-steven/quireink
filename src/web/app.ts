@@ -71,6 +71,7 @@ import {
 import { handleEnrol, handleEnrolDone, handleEnrolSkip } from '@/web/enrol-routes'
 import { handleSetupClaim, handleSetupPage, setupWizardRoutes } from '@/web/setup-routes'
 import { handleRestore, handleRestorePage } from '@/web/setup-restore'
+import { handlePartPut, handlePartsBegin, handlePartsDrop, handlePartsLoad, handlePartsStatus } from '@/web/setup-restore-parts'
 
 /**
  * The admin shell, for the owner, or a redirect to sign in.
@@ -240,6 +241,13 @@ export function createApp(): Hono {
   // the claim, and as dead once there is an owner.
   app.get('/setup/restore', handleRestorePage)
   app.post('/setup/restore', handleRestore)
+  // The same door for an archive larger than one request may carry, in parts (G4). JSON, for the
+  // page's script and for a program moving a blog; as guarded as the form, on every request.
+  app.post('/setup/restore/parts', handlePartsBegin)
+  app.get('/setup/restore/parts/:id', handlePartsStatus)
+  app.put('/setup/restore/parts/:id/:part', handlePartPut)
+  app.post('/setup/restore/parts/:id/load', handlePartsLoad)
+  app.delete('/setup/restore/parts/:id', handlePartsDrop)
   app.post('/api/auth/logout', handleLogout)
 
   // ----- the admin API --------------------------------------------------------

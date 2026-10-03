@@ -1770,6 +1770,11 @@ export type AdminStrings = {
   setupRestoreBad: string
   setupRestoreFailed: string
   setupRestoreBusy: string
+  // The page sends an archive past a size in parts (G4): `{percent}` is 0–100 as it goes up.
+  setupRestoreSending: string
+  setupRestoreLoading: string
+  setupRestoreRetrying: string
+  setupRestoreStopped: string
   // ----- first run, after the account: the two questions worth asking ------------
   // Deliberately only two screens. Palettes, fonts, book mode and the feature switches are
   // NOT here: nobody can judge them before the site has a single post, and a choice made

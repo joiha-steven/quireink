@@ -22,6 +22,7 @@ import { purgeEdge } from '@/server/edge-cache'
 import { clearCache } from '@/server/cache'
 import { sweepLinkCards } from '@/server/link-fetch'
 import { apTick } from '@/ap/tick'
+import { sweepParts } from '@/server/restore-parts'
 
 export type FullTick = {
   purged: boolean
@@ -171,6 +172,15 @@ export async function fullTick(opts: { purge?: boolean } = {}): Promise<FullTick
   // is the only thing that ever removes a row from it. Bounded per tick, and it swallows
   // its own failures.
   const renderRows = pruneRendered()
+
+  // A backup sent in parts and never loaded (G4): somebody closed the tab, or claimed the blog the
+  // other way. One listing when there is nothing to sweep; a day after it began, it goes. Not in
+  // the report, which is the owner's: these were never the owner's files.
+  try {
+    await sweepParts()
+  } catch (error) {
+    console.error(`[ERROR] tick parts sweep: ${(error as Error).message}`)
+  }
 
   // Last, and isolated like the rest: a snapshot is the slowest thing in the tick (it reads
   // both databases and the whole uploads tree), and nothing above it should wait on that or

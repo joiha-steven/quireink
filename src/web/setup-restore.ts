@@ -10,8 +10,9 @@
 // anywhere after (`web/multipart.ts`).
 //
 // NOT under `/api/setup/`, whose bodies are capped at 64 KB before any handler runs: an archive
-// is megabytes. The process ceiling still applies (`web/body-cap.ts`), and a backup larger than
-// it restores on the command line instead.
+// is megabytes. The process ceiling still applies (`web/body-cap.ts`), and so does Cloudflare's
+// 100 MB per request: past `CHUNK_ABOVE_BYTES` the page's script sends the file in parts instead
+// (`setup-restore-parts.ts`), and this form is what runs with the script off.
 import type { Context } from 'hono'
 import { getSettings } from '@/content/settings'
 import { adminT } from '@/i18n/admin-i18n'
@@ -24,6 +25,8 @@ import { claimedScreen, errorBox, fillTemplate, loginShell } from '@/web/login-p
 import { boundaryOf, fieldText, multipart, type Part } from '@/web/multipart'
 import { TRIES, TRIES_WINDOW, tries } from '@/web/setup-routes'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { scriptTag } from '@/web/assets'
+import { CHUNK_ABOVE_BYTES, PART_BYTES } from '@/server/restore-parts'
 import type { SiteSettings } from '@/types'
 import { APP_VERSION } from '@/version'
 
@@ -56,7 +59,9 @@ ${askCode ? '' : `<p class="login-hint">${escapeHtml(s.setupRestoreTokenHint)}</
 <h1>${escapeHtml(s.setupRestoreTitle)}</h1>
 <p class="login-lede">${escapeHtml(s.setupRestoreLede)}</p>
 ${errorBox(opts.error)}
-<form method="post" action="/setup/restore" enctype="multipart/form-data" class="login-form" data-setup-restore>
+<form method="post" action="/setup/restore" enctype="multipart/form-data" class="login-form" data-setup-restore
+ data-chunk-above="${CHUNK_ABOVE_BYTES}" data-part-bytes="${PART_BYTES}" data-sending="${escapeAttr(s.setupRestoreSending)}"
+ data-loading="${escapeAttr(s.setupRestoreLoading)}" data-retrying="${escapeAttr(s.setupRestoreRetrying)}" data-stopped="${escapeAttr(s.setupRestoreStopped)}">
 ${tokenField}
 <p class="login-hint">${escapeHtml(s.setupRestoreSealed)}</p>
 <label for="identity">${escapeHtml(s.setupRestoreIdentity)}</label>
@@ -67,7 +72,8 @@ ${tokenField}
 <input id="archive" name="archive" type="file" required accept=".gz,.enc,application/gzip,application/octet-stream">
 <p class="login-hint">${escapeHtml(fillTemplate(s.setupRestoreFileHint, { version: APP_VERSION }))}</p>
 <button type="submit" class="login-submit">${escapeHtml(s.setupRestoreGo)}</button>
-</form>`)
+<p class="login-hint" data-restore-status aria-live="polite" hidden></p>
+</form>`, scriptTag('login') + scriptTag('setup-restore'))
 }
 
 /** `GET /setup/restore`. */
@@ -78,7 +84,7 @@ export async function handleRestorePage(c: Context): Promise<Response> {
 }
 
 /** What went wrong, in the reader's language, and the status that goes with it. */
-function verdict(error: unknown, s: ReturnType<typeof adminT>): { status: number; message: string } {
+export function verdict(error: unknown, s: ReturnType<typeof adminT>): { status: number; message: string } {
   if (error instanceof LoadRefusal) {
     if (error.code === 'version') return { status: 422, message: fillTemplate(s.setupRestoreVersion, { theirs: error.detail, ours: APP_VERSION }) }
     if (error.code === 'old-format') return { status: 422, message: s.setupRestoreOldFormat }

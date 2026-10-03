@@ -123,13 +123,15 @@ export function backupRoutes() {
     // to read any file this process can reach.
     if (!isSnapshotName(name)) return fail(c, 'Unknown snapshot', 400)
 
-    const file = await openKept(name)
-    if (!file) return fail(c, 'Unknown snapshot', 404)
-    return new Response(file, {
+    // STREAMED from the store, never read into memory first: on Cloudflare that was the whole
+    // archive in a 128 MB isolate, and a kept archive past 64 MB was refused (G4).
+    const kept = await openKept(name)
+    if (!kept) return fail(c, 'Unknown snapshot', 404)
+    return new Response(kept.stream(), {
       headers: {
         'content-type': name.endsWith('.enc') ? 'application/octet-stream' : 'application/gzip',
         'content-disposition': `attachment; filename="${name}"`,
-        'content-length': String(file.size),
+        'content-length': String(kept.size),
       },
     })
   })

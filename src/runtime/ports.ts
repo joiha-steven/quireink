@@ -229,6 +229,18 @@ export type SnapshotPort = {
 export type KeptArchive = { name: string; size: number; mtimeMs: number }
 
 /**
+ * A kept archive handed out: its size now, its bytes only when `stream()` is called, and as a
+ * stream. Bun answers the file itself (a `BunFile` is exactly this shape, and `Bun.S3Client` sends
+ * one natively). It was a `Blob` until G4, and a Blob in a Worker is bytes in memory: an archive
+ * past 64 MB was refused rather than read whole into 128 MB. Each `stream()` is a fresh read from
+ * the start, so a caller that has to try again can.
+ */
+export type KeptBody = { readonly size: number; stream: () => ReadableStream<Uint8Array> }
+
+/** One part of an archive arriving in pieces (`server/restore-parts.ts`), as the store holds it. */
+export type HeldPart = { part: number; size: number }
+
+/**
  * `archive.ts`: where finished backup archives live (ADR 0067). Bun: `BACKUP_DIR`, a directory
  * beside the data. Names reach here already checked by `isSnapshotName`; the implementation
  * refuses anything with a path in it all the same.
@@ -241,8 +253,8 @@ export type ArchivePort = {
    * no half-written one either. Returns the size.
    */
   writeKept: (name: string, body: ReadableStream<Uint8Array>) => Promise<number>
-  /** The archive's bytes, read lazily, or null when there is none by that name. */
-  openKept: (name: string) => Promise<Blob | null>
+  /** The archive, its bytes read only as they are streamed, or null when there is none by that name. */
+  openKept: (name: string) => Promise<KeptBody | null>
   removeKept: (name: string) => Promise<void>
   /**
    * Hold `body` somewhere until it has been sent once, for a download that has to declare its
@@ -250,11 +262,34 @@ export type ArchivePort = {
    * removes what it held when it ends or is cancelled.
    */
   stage: (name: string, body: ReadableStream<Uint8Array>) => Promise<{ size: number; body: ReadableStream<Uint8Array> }>
+
+  // THE INCOMING HALF: an archive larger than one request may carry, arriving in numbered parts
+  // for `/setup/restore/parts` (`server/restore-parts.ts`, which owns the ids and the rules). Bun:
+  // files under `<DATA_DIR>/incoming/`; Cloudflare: objects under `private/incoming/` in the bucket,
+  // which the blob port refuses to serve. An `id` reaches here already checked by its owner.
+
+  /**
+   * Keep `body`, exactly `size` bytes, as part `part` of `id`, replacing a part of that number. All
+   * or nothing: a body that ends short or runs long leaves no part behind, and throws.
+   */
+  holdPart: (id: string, part: number, body: ReadableStream<Uint8Array>, size: number) => Promise<void>
+  /** The parts of `id` held so far, in part order; none is an empty list. */
+  heldParts: (id: string) => Promise<HeldPart[]>
+  /** Parts 1..`count` of `id` read one after another as one stream, never more than a chunk in memory. */
+  readHeld: (id: string, count: number) => ReadableStream<Uint8Array>
+  /** Forget `id` and every part of it. Harmless for an id that holds nothing. */
+  dropHeld: (id: string) => Promise<void>
+  /** Every id with a part held, for the sweep of uploads abandoned half-way. */
+  heldIds: () => Promise<string[]>
 }
 
-/** The three verbs the off-site copy needs from a bucket (ADR 0035). */
+/**
+ * The three verbs the off-site copy needs from a bucket (ADR 0035). `write` takes a kept archive
+ * as `KeptBody` (a `Blob` is one), and must not read it whole when it is large: on Cloudflare that
+ * is the 128 MB the isolate has.
+ */
 export type OffsiteClient = {
-  write(key: string, data: Blob | string): Promise<number>
+  write(key: string, data: KeptBody | string): Promise<number>
   list(opts?: { prefix?: string }): Promise<{ contents?: { key: string }[] } | null>
   delete(key: string): Promise<void>
 }
