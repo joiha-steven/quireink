@@ -36,7 +36,8 @@ On any behavior change, update the matching doc in the SAME change:
   Pushing `v<version>` starts `release-matrix.yml`: the source checkout and the image, each
   installed fresh and upgraded from the release before on data that release's own seeder wrote,
   each smoke-tested (`scripts/smoke.ts`: twelve tour flows, `/api/health` naming the version and
-  the package, `restore-check`, MCP over the wire), plus `server.sh` run on a blank runner, plus the Cloudflare
+  the package, `restore-check`, MCP over the wire; the image cells also restore every snapshot in
+  the volume, the old release's included, with the image's OWN `scripts/restore.ts`), plus `server.sh` run on a blank runner, plus the Cloudflare
   build under `wrangler dev` with a Bun blog moved into it through `/setup/restore` (`cloudflare-dev`: every
   page compared with Bun's, the full tour, and a `restore-check` against the Bun blog's files: Bun → Cloudflare → Bun). `publish.yml` waits for every cell as it waits for CI. A
   change to anything an install touches — `install.sh`, `scripts/upgrade.ts`, the `Dockerfile`,
