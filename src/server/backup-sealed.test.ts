@@ -57,6 +57,30 @@ function open(archive: Buffer, identity: ReturnType<typeof identityOf>): Buffer 
   return Buffer.concat(out)
 }
 
+/**
+ * What a command printed, through `Bun.spawn` — NOT `Bun.$`, which is what this file used and
+ * what made the credential test hang until its 20 s timeout: on 2026-09-30 as the one failure in
+ * 4,415 tests, and in three `check:all` runs in a row on 2026-10-03.
+ *
+ * ⚠️ `Bun.$\`…\`.quiet()` LOSES THE END OF A LARGE OUTPUT (Bun 1.3.14, macOS). The child has
+ * exited and been reaped, timers still fire, and the shell promise never settles. Measured
+ * 2026-10-03 with `cat` or `tar -xzOf` in a loop, three processes at once on a busy machine: at
+ * 430 KB — the size of the `quire.db` the old archive carried and this test pulled out through
+ * `$` — every process hung within its first three calls; at 200 KB and 1 MB within a few hundred;
+ * at 4, 16 and 64 KB none in 800, and at the 6 KB this test now reads none in 4,500. The same
+ * 430 KB through `Bun.spawn` and a `Response`: 3,000 of 3,000 calls, 6 ms each. So the 5 s and
+ * then 20 s ceilings were treating a hang as slowness. The rows archive put this test under the
+ * line by accident; the line is Bun's, undocumented, and moves with whatever the test reads.
+ */
+async function stdoutOf(...cmd: string[]): Promise<Buffer> {
+  const proc = Bun.spawn(cmd, { stdout: 'pipe', stderr: 'pipe' })
+  const [out, err, code] = await Promise.all([
+    new Response(proc.stdout).arrayBuffer(), new Response(proc.stderr).text(), proc.exited,
+  ])
+  if (code !== 0) throw new Error(`${cmd.join(' ')} exited ${code}: ${err}`)
+  return Buffer.from(out)
+}
+
 const PASS = 'a passphrase somebody would actually type'
 const A_KEY = newIdentity().publicKey
 
@@ -99,7 +123,7 @@ describe('an archive the owner asked to be sealed', () => {
     expect(plain.subarray(0, 2)).toEqual(Buffer.from([0x1f, 0x8b]))
     const back = `${DIR}/back.tar.gz`
     await Bun.write(back, plain)
-    const listed = await Bun.$`tar -tzf ${back}`.quiet().text()
+    const listed = (await stdoutOf('tar', '-tzf', back)).toString()
     expect(listed).toContain('content/settings.jsonl')
     expect(listed).toContain('uploads/photo.jpg')
   })
@@ -123,8 +147,7 @@ describe('an archive the owner asked to be sealed', () => {
     const plainPath = `${DIR}/plain.tar.gz`
     await buildArchive(plainPath)
     const gz = Buffer.from(await Bun.file(plainPath).arrayBuffer())
-    expect(await Bun.$`tar -xzOf ${plainPath} content/settings.jsonl`.quiet().arrayBuffer()
-      .then((b) => Buffer.from(b).includes(secret))).toBe(true)
+    expect((await stdoutOf('tar', '-xzOf', plainPath, 'content/settings.jsonl')).includes(secret)).toBe(true)
     expect(gz.subarray(0, 2)).toEqual(Buffer.from([0x1f, 0x8b]))
 
     await turnOn()
@@ -132,10 +155,12 @@ describe('an archive the owner asked to be sealed', () => {
     await buildArchive(sealedPath)
     const sealed = Buffer.from(await Bun.file(sealedPath).arrayBuffer())
     expect(sealed.includes(secret)).toBe(false)
-    // TWO WHOLE ARCHIVES and a seal, which is the test and cannot be made smaller. 433 ms for the
-    // file alone; inside `check:all` on a busy machine it ran past the 5 s default twice on
-    // 2026-09-23 and failed a green tree. The ceiling moves, the assertions do not.
-  }, 20_000)
+    // TWO WHOLE ARCHIVES and a seal, under the default 5 s again. It ran past 5 s on 2026-09-23
+    // and the ceiling went to 20 s, which it then hit on 2026-09-30 and three times on 2026-10-03:
+    // not slowness but the `Bun.$` hang above (`stdoutOf`). Timed inside the whole `bun test`
+    // with 12–16 busy loops and a second suite running beside it (load average 30–180): about
+    // 100–190 ms each time — the archives 6–84 ms apiece, `turnOn` 72–97 ms of scrypt, `tar` 4–24 ms.
+  })
 })
 
 describe('the switch cannot be on over plaintext', () => {
