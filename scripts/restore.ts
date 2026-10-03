@@ -56,9 +56,13 @@ if (import.meta.main) {
 
   bun scripts/restore.ts <archive> --data-dir <dir> [--uploads-dir <dir>] [--identity <file> | --passphrase]
 
-The data directory must not already hold quire.db or analytics.db. The uploads directory defaults
-to "uploads" beside the data directory. docs/backups.md has the whole procedure.`)
-    process.exit(archive ? 0 : 1)
+The data directory must not already hold quire.db or analytics.db (nor their -wal and -shm files).
+The uploads directory defaults to "uploads" beside the data directory; a file already there with the
+same bytes is left alone, one with different bytes stops the restore. docs/backups.md has the whole
+procedure.`)
+    // Asked for, the help is an answer and exits 0; printed because no archive was named, it is
+    // a mistake and exits 1. `--help` alone used to exit 1, which read as a broken install.
+    process.exit(argv.includes('--help') ? 0 : 1)
   }
   const dataDir = flag('--data-dir') ?? die('name the data directory: --data-dir <dir>')
   const uploadsDir = flag('--uploads-dir') ?? join(dataDir, '..', 'uploads')

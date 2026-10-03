@@ -17,9 +17,9 @@
 //
 // Built in a staging directory beside the data and renamed into place only once all of it has
 // passed, so a restore that fails halfway leaves the data directory as it found it.
-import { createWriteStream, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs'
+import { chownSync, closeSync, createWriteStream, existsSync, mkdirSync, openSync, readSync, renameSync, rmSync, statSync } from 'node:fs'
 import { once } from 'node:events'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { Database } from 'bun:sqlite'
 import { open } from '@/runtime/impl/db'
 import type { Connection } from '@/runtime/ports'
@@ -54,6 +54,34 @@ async function writeNew(path: string, body: AsyncIterable<Uint8Array>): Promise<
   }
 }
 
+/**
+ * Is the file at `path` exactly these bytes? Read as the archive streams them, a chunk at a time,
+ * so an upload is never held whole.
+ */
+async function sameBytes(path: string, size: number, body: AsyncIterable<Uint8Array>): Promise<boolean> {
+  if (statSync(path).size !== size) return false
+  const fd = openSync(path, 'r')
+  try {
+    let at = 0
+    for await (const chunk of body) {
+      const disk = Buffer.alloc(chunk.length)
+      if (readSync(fd, disk, 0, chunk.length, at) !== chunk.length || !disk.equals(chunk)) return false
+      at += chunk.length
+    }
+    return at === size
+  } finally {
+    closeSync(fd)
+  }
+}
+
+/** The owner of the nearest directory at or above `path` that exists before anything is written. */
+function ownerAbove(path: string): { uid: number; gid: number } {
+  let dir = resolve(path)
+  while (!existsSync(dir) && dirname(dir) !== dir) dir = dirname(dir)
+  const { uid, gid } = statSync(dir)
+  return { uid, gid }
+}
+
 /** `integrity_check` on a raw read-only open: `db.ts`'s `open` would switch the file to WAL first. */
 function integrity(path: string): string {
   const raw = new Database(path, { readonly: true })
@@ -67,20 +95,60 @@ function integrity(path: string): string {
 
 export async function restoreArchive(opts: RestoreOptions): Promise<RestoreReport> {
   const say = opts.say ?? (() => {})
+  // The `-wal` and `-shm` beside each name too, and not for tidiness. A blog that was killed
+  // rather than stopped leaves its write-ahead log behind, and moving `quire.db` aside without it
+  // puts the restored file next to the OLD blog's log. SQLite does not check that a log belongs
+  // to the file beside it: measured with bun:sqlite, a restored 50-row table opened beside a
+  // stale 200-row log came up with the 200 old rows and `integrity_check` said ok. The restore
+  // would report success and the blog would serve what it was restored away from.
   for (const file of Object.values(FILES)) {
-    if (existsSync(join(opts.dataDir, file))) {
-      throw new Error(`${join(opts.dataDir, file)} already exists. A restore builds into an empty data directory; move the old files aside first.`)
+    for (const name of [file, `${file}-wal`, `${file}-shm`]) {
+      if (existsSync(join(opts.dataDir, name))) {
+        throw new Error(`${join(opts.dataDir, name)} already exists. A restore builds into an empty data directory; move the old files aside first (${file}, ${file}-wal and ${file}-shm).`)
+      }
     }
   }
+  // WHO THE FILES BELONG TO, read before anything is created. Run as root — `docker exec`, or a
+  // root shell on a systemd box — every file this writes would be root's, the blog's own user
+  // could not write its database, and the next start would fail with nothing restored. Whoever
+  // owns the data directory is who the blog runs as, so that is who gets them.
+  const asRoot = process.getuid?.() === 0
+  const dataOwner = ownerAbove(opts.dataDir)
+  const uploadsOwner = ownerAbove(opts.uploadsDir)
   const stage = join(opts.dataDir, `.restore-${process.pid}`)
   rmSync(stage, { recursive: true, force: true })
   mkdirSync(stage, { recursive: true })
   const written: string[] = []
-  const upload = async (pathname: string, _size: number, body: AsyncIterable<Uint8Array>): Promise<void> => {
+  // AN UPLOAD ALREADY THERE WITH THE SAME BYTES IS LEFT AS IT IS. Restoring a blog onto the
+  // machine it came from — the bad edit, the bad import — finds every picture of the archive
+  // already on disk, and refusing the first of them made the documented procedure fail on any
+  // blog that had ever had an upload. Different bytes at the same path still stop the restore:
+  // nothing is overwritten, ever.
+  const upload = async (pathname: string, size: number, body: AsyncIterable<Uint8Array>): Promise<void> => {
     const dest = join(opts.uploadsDir, pathname)
-    if (existsSync(dest)) throw new Error(`${dest} already exists; the uploads directory must not already hold this archive's files`)
+    if (existsSync(dest)) {
+      if (await sameBytes(dest, size, body)) return
+      throw new Error(`${dest} already exists with different contents; move the uploads directory aside, or restore into an empty one`)
+    }
     await writeNew(dest, body)
     written.push(dest)
+  }
+  const adopt = (): void => {
+    if (!asRoot) return
+    if (dataOwner.uid !== 0) {
+      chownSync(opts.dataDir, dataOwner.uid, dataOwner.gid)
+      for (const file of Object.values(FILES)) chownSync(join(opts.dataDir, file), dataOwner.uid, dataOwner.gid)
+    }
+    if (uploadsOwner.uid === 0) return
+    // Each file, and every directory between it and the uploads root, which `writeNew` made.
+    const root = resolve(opts.uploadsDir)
+    const below = (dir: string): boolean => { const r = relative(root, dir); return r !== '' && !r.startsWith('..') }
+    const dirs = new Set<string>(existsSync(root) ? [root] : [])
+    for (const path of written) {
+      for (let dir = dirname(resolve(path)); below(dir); dir = dirname(dir)) dirs.add(dir)
+      chownSync(path, uploadsOwner.uid, uploadsOwner.gid)
+    }
+    for (const dir of dirs) chownSync(dir, uploadsOwner.uid, uploadsOwner.gid)
   }
   try {
     const { sealed, items } = await openArchive(Bun.file(opts.archive).stream(), opts.keys)
@@ -90,6 +158,7 @@ export async function restoreArchive(opts: RestoreOptions): Promise<RestoreRepor
       ? { format: 'rows', sealed, version: kind.manifest.version, ...await rows(items, kind.manifest, stage, upload, say) }
       : { format: 'files', sealed, version: null, ...await files(items, kind.first, stage, upload, say) }
     for (const file of Object.values(FILES)) renameSync(join(stage, file), join(opts.dataDir, file))
+    adopt()
     say(`✓ ${Object.values(FILES).join(' and ')} are in ${opts.dataDir}; ${report.uploads} upload(s) in ${opts.uploadsDir}`)
     return report
   } catch (error) {

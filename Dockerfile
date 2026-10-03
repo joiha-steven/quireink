@@ -19,9 +19,9 @@
 #
 # 2. Debian slim, not Alpine. sharp ships prebuilt binaries for glibc and musl separately,
 #    and the musl ones are the less travelled path for no gain that survives a rebuild.
-#    `tar` matters too: `src/server/backup.ts` spawns it for real, so an image without it
-#    has a backup button that fails at the moment you need it. It is part of Debian's
-#    essential set, which is why nothing here installs it.
+#    (`tar` used to be the other reason: the backup spawned it. Since ADR 0067 the archive is
+#    written and read in JavaScript, `src/server/tar.ts`, so the app no longer needs it; it is
+#    in Debian's essential set anyway, for an owner opening an old archive by hand.)
 #
 # 3. The data directories are created and chowned IN THE IMAGE. Docker seeds a fresh named
 #    volume from the image's own directory, ownership included, so `docker compose up` gives
@@ -176,10 +176,14 @@ COPY --from=build /app/locales ./locales
 # every person pulls. Nothing in `src/` reads any of it and the entrypoint never seeds.
 #
 # What stays is what the docs tell an operator to run: the backup and uptime scripts
-# (`docs/self-host.md`), the owner-account CLI (`bun run user`), the pen sheet, and — since
-# 2.2.14 — `backup-decrypt.ts`, which is the one that has to be here on the worst day. ADR 0035
-# keeps the restore a shell act on a STOPPED service, so a tool for opening a sealed archive
-# that only existed in a git checkout would be a tool nobody has when they need it.
+# (`docs/self-host.md`), the owner-account CLI (`bun run user`), the pen sheet, `backup-decrypt.ts`
+# (2.2.14), and `restore.ts` with the `restore-lib.ts` it imports, which are the ones that have to
+# be here on the worst day. ADR 0035 keeps the restore a shell act on a STOPPED service, so a tool
+# that only existed in a git checkout is a tool nobody has when they need it — and that is what
+# the restore was until it was looked for in this image: `bun scripts/restore.ts` answered
+# `Module not found` inside the container, while every doc called restoring one command. The
+# matrix restored the image's archive with the CHECKOUT's script, so nothing went red.
+# `src/install/image-scripts.test.ts` now holds every script copied here to the files it imports.
 # The BUILD stage still gets the whole directory, because that is where `build:assets` and
 # `build:admin` live.
 #
@@ -188,7 +192,8 @@ COPY --from=build /app/locales ./locales
 # and `tour.ts`, none of which is in the image. Shipping a script that cannot run is how an
 # operator ends up reporting a bug against a tool nobody meant them to have.
 COPY --from=build /app/scripts/ops/quire-backup.sh /app/scripts/ops/quire-uptime.sh ./scripts/ops/
-COPY --from=build /app/scripts/user.ts /app/scripts/pen-sheet.ts /app/scripts/backup-decrypt.ts ./scripts/
+COPY --from=build /app/scripts/user.ts /app/scripts/pen-sheet.ts /app/scripts/backup-decrypt.ts \
+     /app/scripts/restore.ts /app/scripts/restore-lib.ts ./scripts/
 COPY package.json bun.lock tsconfig.json ./
 
 # See note 3 above. Both paths are ENV defaults, so overriding them in compose without

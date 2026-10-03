@@ -134,6 +134,39 @@ describe('a rows archive', () => {
     expect(existsSync(join(DIR, 'r6', 'u', 'icon.png'))).toBe(false)
   }, 20_000)
 
+  it('refuses a data directory where the old database left its write-ahead log behind', async () => {
+    // The killed-not-stopped blog: `quire.db` moved aside, its `-wal` still there. Restored
+    // beside it, SQLite would replay the OLD blog's log into the new file.
+    const archive = join(DIR, 'plain-wal.tar.gz')
+    await archiveTo(archive)
+    mkdirSync(join(DIR, 'r9', 'data'), { recursive: true })
+    writeFileSync(join(DIR, 'r9', 'data', 'quire.db-wal'), 'the old blog')
+    await expect(restoreArchive({ archive, dataDir: join(DIR, 'r9', 'data'), uploadsDir: join(DIR, 'r9', 'u') }))
+      .rejects.toThrow('quire.db-wal already exists')
+    expect(existsSync(join(DIR, 'r9', 'data', 'quire.db'))).toBe(false)
+  }, 20_000)
+
+  it('restores onto the uploads it came from, and stops at an upload that differs', async () => {
+    // The restore an owner actually does after a bad edit: the databases moved aside, the
+    // pictures still in place. Every one of them is already on disk, byte for byte.
+    const archive = join(DIR, 'plain-same.tar.gz')
+    await archiveTo(archive)
+    const out = join(DIR, 'r10')
+    mkdirSync(out, { recursive: true })
+    await Bun.$`cp -R ${UPLOADS} ${join(out, 'uploads')}`.quiet()
+    const report = await restoreArchive({ archive, dataDir: join(out, 'data'), uploadsDir: join(out, 'uploads') })
+    expect(report.uploads).toBe(2)
+    expect(existsSync(join(out, 'data', 'quire.db'))).toBe(true)
+
+    const other = join(DIR, 'r11')
+    mkdirSync(join(other, 'uploads'), { recursive: true })
+    writeFileSync(join(other, 'uploads', 'icon.png'), 'not the same picture')
+    await expect(restoreArchive({ archive, dataDir: join(other, 'data'), uploadsDir: join(other, 'uploads') }))
+      .rejects.toThrow('different contents')
+    expect(readFileSync(join(other, 'uploads', 'icon.png'), 'utf8')).toBe('not the same picture')
+    expect(existsSync(join(other, 'data', 'quire.db'))).toBe(false)
+  }, 20_000)
+
   it('refuses rows that do not hash to what the manifest says', async () => {
     const enc = new TextEncoder()
     const manifest = enc.encode(JSON.stringify({

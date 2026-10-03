@@ -115,6 +115,25 @@ run_image() { # name image port data-root [extra docker args...]
   CONTAINERS+=("$name")
 }
 
+# A snapshot taken by the blog itself, through the owner's own button, into <DATA_DIR>/backups.
+snapshot() { # port session
+  curl -fsS -X POST -H "cookie: __Host-quire_session=$2" -H "origin: http://127.0.0.1:$1" \
+    -H 'content-type: application/json' -d '{}' "http://127.0.0.1:$1/api/backup/run" >/dev/null
+}
+
+# EVERY snapshot in the volume, restored INSIDE the container by the image's own scripts/restore.ts.
+# `smoke` restores a backup too, but with the checkout's script: that is how 2.2.16's image could
+# leave restore.ts out entirely and every cell stay green. An upgrade cell's volume holds the old
+# release's archive beside the new one, so the new restore reads the format the old one wrote.
+restore_in_image() { # container
+  docker exec "$1" sh -c 'set -e; n=0
+    for a in /var/lib/quire/data/backups/quire-*.tar.gz; do
+      n=$((n + 1)); rm -rf /tmp/restored
+      bun scripts/restore.ts "$a" --data-dir /tmp/restored/data --uploads-dir /tmp/restored/uploads
+    done
+    [ "$n" -gt 0 ] || { echo "no snapshot to restore" >&2; exit 1; }'
+}
+
 # --- the cells -----------------------------------------------------------------------------
 
 case "$CELL" in
@@ -173,6 +192,9 @@ EOF
     SESSION=$(seed "$WORK/next" "$WORK/full")
     run_image quire-matrix-full "quireink:matrix-$NEXT" 3503 "$WORK/full"
     smoke http://127.0.0.1:3503 docker "$SESSION" "$WORK/full"
+    say "a snapshot it took, restored inside the image"
+    snapshot 3503 "$SESSION"
+    restore_in_image quire-matrix-full
     ;;
 
   docker-upgrade)
@@ -190,11 +212,15 @@ EOF
       sleep 1
     done
     [ "$OLD" = "$PREV" ] || { echo "the $PREV image never came up (or came up as ${OLD:-nothing})" >&2; exit 1; }
+    snapshot 3504 "$SESSION"
     docker rm -f quire-matrix-old >/dev/null
     say "the $NEXT image on the same volume"
     docker build --quiet -t "quireink:matrix-$NEXT" "$WORK/next" >/dev/null
     run_image quire-matrix-new "quireink:matrix-$NEXT" 3504 "$WORK/blog"
     smoke http://127.0.0.1:3504 docker "$SESSION" "$WORK/blog"
+    say "the $PREV snapshot and a $NEXT one, restored inside the $NEXT image"
+    snapshot 3504 "$SESSION"
+    restore_in_image quire-matrix-new
     ;;
 
   cloudflare-dev)
