@@ -62,19 +62,15 @@ export const ICON_KEY_DANGER = `${TAP_TOUCH} ${component('kit-key-danger', utili
  * `CONTROL_CHROME` is exactly the drift `check:admin-kit` exists to catch, and the only
  * difference that belongs between them is which element the focus ring answers to.
  *
- * ⚠️ THAT RING HAS NEVER BEEN DRAWN. Found 2026-10-03, when the build began giving this list a
- * name and refused five of its utilities: `focus-within:border-neutral-500`, `focus-within:ring-2`,
- * `focus-within:ring-neutral-200` and their two dark twins have no rule in `utilities.css`, and
- * never had — `check:admin-css` reads class lists written in the source, and this one is made by
- * `replaceAll` at run time, so it could not see them. The pair has shown no focus at all since it
- * was written, which on the hex field (`outline-none`) means a keyboard user cannot see where
- * they are. They are left OUT of the name rather than carried as dead weight, and the ring is
- * not added here: drawing it is a visible change, and this change is the one that must not make
- * any. The whole fix is the five rules in `utilities.css` and the filter below going back to
- * `.replaceAll('focus:', 'focus-within:')`.
+ * ⚠️ THAT RING WAS NEVER DRAWN UNTIL 2026-10-03. The build, giving this list a name, refused five of
+ * its utilities: `focus-within:border-neutral-500`, `focus-within:ring-2`,
+ * `focus-within:ring-neutral-200` and their two dark twins had no rule in `utilities.css`, and never
+ * had — `check:admin-css` reads class lists written in the source, and this one is made by
+ * `replaceAll` at run time, so it could not see them. The pair showed no focus at all, which on the
+ * hex field (`outline-none`) meant a keyboard user could not see where they were. The five rules
+ * are there now, and the build's refusal is what keeps a sixth from going missing the same way.
  */
-export const CONTROL_GROUP = component('kit-field-group', utilitiesOf(CONTROL_CHROME).split(' ')
-  .filter((u) => !u.includes('focus:')).join(' '))
+export const CONTROL_GROUP = component('kit-field-group', utilitiesOf(CONTROL_CHROME).replaceAll('focus:', 'focus-within:'))
 
 /**
  * The same chrome for a NUMBER.

@@ -2408,6 +2408,16 @@
   .focus-within\:border-neutral-400:focus-within {
     border-color: var(--color-neutral-400);
   }
+  .focus-within\:border-neutral-500:focus-within {
+    border-color: var(--color-neutral-500);
+  }
+  .focus-within\:ring-2:focus-within {
+    --u-ring-shadow: var(--u-ring-inset,) 0 0 0 calc(2px + var(--u-ring-offset-width)) var(--u-ring-color, currentcolor);
+    box-shadow: var(--u-inset-shadow), var(--u-inset-ring-shadow), var(--u-ring-offset-shadow), var(--u-ring-shadow), var(--u-shadow);
+  }
+  .focus-within\:ring-neutral-200:focus-within {
+    --u-ring-color: var(--color-neutral-200);
+  }
   @media (hover: hover) {
     .hover\:border-neutral-200:hover {
       border-color: var(--color-neutral-200);
@@ -3339,6 +3349,12 @@
     color: var(--color-neutral-100);
   }
   .dark\:focus\:ring-neutral-800:where(.dark, .dark *):focus {
+    --u-ring-color: var(--color-neutral-800);
+  }
+  .dark\:focus-within\:border-neutral-500:where(.dark, .dark *):focus-within {
+    border-color: var(--color-neutral-500);
+  }
+  .dark\:focus-within\:ring-neutral-800:where(.dark, .dark *):focus-within {
     --u-ring-color: var(--color-neutral-800);
   }
   .dark\:focus-visible\:ring-neutral-700:where(.dark, .dark *):focus-visible {

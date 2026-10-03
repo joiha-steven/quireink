@@ -72,6 +72,9 @@
 
 ### Fixed
 
+- **The colour fields in Settings show where the keyboard is.** A colour swatch and its hex had
+  no focus ring at all — the rules for it were never written — so tabbing through the palette
+  showed nothing on the field being typed in. They now ring like every other field.
 - **Opening a year of analytics no longer freezes the blog.** On a blog with a million recorded
   views, the 365-day Analytics screen took about ten seconds, and every reader asking for a page in
   the meantime waited for it — up to twelve seconds for the front page. The long windows are now
