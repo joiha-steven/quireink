@@ -126,6 +126,8 @@ export type ImagePort = {
   renderLogo: (src: Buffer, cssWidth: number) => Promise<{ webp: Buffer; width: number; height: number; png: Buffer | null }>
   /** An SVG drawn to PNG at `density` dpi (the OG card). */
   rasterizeSvg: (svg: string, density: number) => Promise<Uint8Array>
+}
+
 /**
  * A value SQLite binds. A boolean goes in as 1 or 0 and a bigint as an integer, and both come back
  * as a `number`; a `Uint8Array` is a blob and comes back as one.
