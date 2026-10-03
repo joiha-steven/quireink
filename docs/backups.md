@@ -305,30 +305,23 @@ never held whole — and a load that fails part-way empties everything it put in
 left as empty as it was found and the right archive can go in after. An archive from before
 ADR 0067 has no rows to load, and restores with `scripts/restore.ts` instead.
 
-**Any size.** Past 48 MB the page sends the file in parts of 16 MB (Cloudflare refuses a request
-over 100 MB), shows its progress, retries a dropped part and, with the same file chosen again in
-the same tab, sends only what is missing; then the blog loads the parts as one stream through the
-same loader. A wrong key keeps them; a load, or a day, removes them. A program does the same
-through the HTTP API in [backup-load-api.md](backup-load-api.md), guarded exactly like the form.
+**Any size.** Past 48 MB the page sends 16 MB parts (Cloudflare refuses a request over 100 MB),
+resumable and retried, which the blog loads as one stream; a program does the same through
+[backup-load-api.md](backup-load-api.md), guarded exactly like the form.
 
 ### The same questions, asked automatically
 
-`bun run tour` ends with [`scripts/restore-check.ts`](../scripts/restore-check.ts), which
-takes the export from a throwaway instance and restores it with `scripts/restore.ts`'s own code:
-every table must hash back to its manifest digest, both rebuilt databases must pass
-`integrity_check`, no table may come back with fewer rows than it had before the snapshot, and
-every upload must be byte-identical. It uploads one image first, because the seeded fixture
-writes `media` ROWS and no files — without that, the uploads assertion passes over an empty
-directory forever, which reads as coverage and is not. Then
-[`scripts/setup-restore-check.ts`](../scripts/setup-restore-check.ts) boots a second, empty
-instance and loads the same archive through **Start from a backup**, with the setup code, the way
-the form posts it: the sign-in must follow, a second load must be refused, and every row and
-upload must have arrived. [`scripts/ops/cloudflare-dev.ts`](../scripts/ops/cloudflare-dev.ts) asks them of the Cloudflare
-build: Bun → worker → snapshot, off-site copy and download (byte-identical) → a fresh Bun blog, in
-parts, holding every row and upload of the original. `BIG=1` does it past 100 MB.
+`bun run tour` ends with [`scripts/restore-check.ts`](../scripts/restore-check.ts): the export of a
+throwaway instance, restored with `scripts/restore.ts`'s own code — every table hashing back to its
+manifest digest, both databases passing `integrity_check`, no table with fewer rows, every upload
+byte-identical (it uploads one image first, so that last check is never over an empty directory).
+[`scripts/setup-restore-check.ts`](../scripts/setup-restore-check.ts) then loads the same archive
+into a second, empty instance through **Start from a backup**, and
+[`scripts/ops/cloudflare-dev.ts`](../scripts/ops/cloudflare-dev.ts) asks it all of the Cloudflare
+build: Bun → worker → snapshot, off-site copy and download, byte-identical → a fresh Bun blog in
+parts (`BIG=1`: past 100 MB).
 
-It is not a substitute for restoring a REAL archive onto a real machine. It is the part that
-can run on every change, so that the part that cannot is the only one left to remember.
+It is not a substitute for restoring a real archive onto a real machine, only the part that can run on every change.
 
 ## Instance configuration
 
@@ -403,6 +396,4 @@ be read back.
 **The ZIP is written by us** — [`src/import/zip-write.ts`](../src/import/zip-write.ts), no
 dependency, checked by the reader this repository already had for Substack and Medium. Text is
 deflated; an upload is stored, because a webp is already compressed and a stored entry's size is
-known before its header is written, which is what lets a large file stream. Zip64 is written only
-when a field overflows; the entry-count branch is tested and the four-gigabyte one is not, which
-[the test says out loud](../src/import/zip-write.test.ts).
+known before its header is written, which is what lets a large file stream. Zip64 is written only when a field overflows ([tested for the entry count](../src/import/zip-write.test.ts)).
