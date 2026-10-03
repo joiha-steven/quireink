@@ -18,6 +18,11 @@ const MB = 1024 * 1024
 
 /** WXR is text. Anything larger than this is not an export, it is a mistake or an attack. */
 export const MAX_IMPORT_BYTES = 100 * MB
+/**
+ * What one import may weigh on THIS runtime: 100 MB on Bun; 30 MB on Cloudflare, where the form body
+ * and a text copy of the export sit in a 128 MB isolate together (`docs/runtimes.md`, uploadLimits).
+ */
+export const maxImportBytes = (): number => (process.env.QUIREINK_PACKAGE === 'cloudflare' ? 30 * MB : MAX_IMPORT_BYTES)
 
 /**
  * The most a request may carry at all: the larger of an upload and an import, plus framing.

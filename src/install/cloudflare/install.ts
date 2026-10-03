@@ -165,6 +165,8 @@ export async function installOnCloudflare(o: InstallOptions): Promise<InstallRes
     keep_bindings: o.update ? ['secret_text', 'plain_text'] : ['secret_text'],
     assets: { jwt: completion },
     observability: { enabled: true },
+    // The same five minutes of CPU as wrangler.jsonc gives: the hourly backup of a big blog needs it.
+    limits: { cpu_ms: 300_000 },
     ...(existing ? {} : { migrations: { new_tag: 'v1', new_sqlite_classes: o.manifest.durableObjects.map((d) => d.className) } }),
   }
   const form = new FormData()

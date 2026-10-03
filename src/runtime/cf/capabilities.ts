@@ -10,4 +10,5 @@ export const CAPABILITIES: Capabilities = {
   clock: 'alarm',
   store: 'r2',
   clientAddress: 'edge',
+  bodyLimits: 'isolate',
 }

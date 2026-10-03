@@ -66,6 +66,14 @@ type Row = {
 
 const env = (k: string) => process.env[k] ?? ''
 
+/**
+ * The CDN purge token from the environment — except on Cloudflare, where CLOUDFLARE_API_TOKEN is the
+ * Worker's own update token (Workers Scripts · Edit, `install/cloudflare/self.ts`). Used as a purge
+ * token there it would fail every purge, and it is not the owner's to repurpose; the Connections card
+ * stores a zone token of its own.
+ */
+const purgeTokenFromEnv = (): string => (process.env.QUIREINK_PACKAGE === 'cloudflare' ? '' : env('CLOUDFLARE_API_TOKEN'))
+
 function readRow(): Row | null {
   return one<Row>(
     `select turnstile_site_key, turnstile_secret_key, cloudflare_api_token, cloudflare_zone_id,
@@ -88,7 +96,7 @@ export async function getIntegrationKeys(): Promise<IntegrationKeys> {
   return {
     turnstileSiteKey: row?.turnstile_site_key || env('TURNSTILE_SITE_KEY'),
     turnstileSecretKey: row?.turnstile_secret_key || env('TURNSTILE_SECRET_KEY'),
-    cloudflareApiToken: row?.cloudflare_api_token || env('CLOUDFLARE_API_TOKEN'),
+    cloudflareApiToken: row?.cloudflare_api_token || purgeTokenFromEnv(),
     cloudflareZoneId: row?.cloudflare_zone_id || env('CLOUDFLARE_ZONE_ID'),
     purgeWebhookUrl: row?.purge_webhook_url || env('PURGE_WEBHOOK_URL'),
     s3Endpoint: row?.s3_endpoint || env('S3_ENDPOINT'),
@@ -139,7 +147,7 @@ export function cloudflareInFront(): boolean {
     } catch (error) {
       console.error(`[ERROR] integration-keys.cloudflareInFront: ${(error as Error).message}`)
     }
-    inFront = !!((row?.cloudflare_api_token || env('CLOUDFLARE_API_TOKEN'))
+    inFront = !!((row?.cloudflare_api_token || purgeTokenFromEnv())
       && (row?.cloudflare_zone_id || env('CLOUDFLARE_ZONE_ID')))
   }
   return inFront

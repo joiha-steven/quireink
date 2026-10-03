@@ -24,7 +24,7 @@ import { fail, json } from '@/web/api'
 import { readEnv } from '@/env'
 import { storageWritable } from '@/runtime/impl/blob'
 import { APP_VERSION } from '@/version'
-import { MAX_IMPORT_BYTES } from '@/web/body-cap'
+import { maxImportBytes } from '@/web/body-cap'
 import { ownerRouter } from '@/web/guard'
 
 
@@ -62,7 +62,7 @@ export function opsRoutes() {
     const form = await c.req.formData().catch(() => null)
     const file = form?.get('file')
     if (!(file instanceof File)) return fail(c, 'no_file', 400)
-    if (file.size > MAX_IMPORT_BYTES) return fail(c, 'file_too_large', 413)
+    if (file.size > maxImportBytes()) return fail(c, 'file_too_large', 413)
 
     const xml = await file.text()
     // A cheap shape check before parsing 100 MB. The message is specific because "import
@@ -166,7 +166,7 @@ export function opsRoutes() {
     const form = await c.req.formData().catch(() => null)
     const file = form?.get('file')
     if (!(file instanceof File)) return fail(c, 'no_file', 400)
-    if (file.size > MAX_IMPORT_BYTES) return fail(c, 'file_too_large', 413)
+    if (file.size > maxImportBytes()) return fail(c, 'file_too_large', 413)
     let doc: unknown
     try {
       doc = JSON.parse(await file.text())
@@ -183,7 +183,7 @@ export function opsRoutes() {
     const form = await c.req.formData().catch(() => null)
     const file = form?.get('file')
     if (!(file instanceof File)) return fail(c, 'no_file', 400)
-    if (file.size > MAX_IMPORT_BYTES) return fail(c, 'file_too_large', 413)
+    if (file.size > maxImportBytes()) return fail(c, 'file_too_large', 413)
 
     // Substack and Medium both hand people a ZIP; nobody remembers which is which, so
     // the server tells them apart by structure (posts.csv vs h-entry markup), not by

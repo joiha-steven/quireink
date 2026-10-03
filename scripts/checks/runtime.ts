@@ -20,7 +20,22 @@ import { join, relative } from 'node:path'
 const ROOT = join(import.meta.dir, '..', '..')
 const SRC = join(ROOT, 'src')
 
-const FORBIDDEN = /from\s+['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:tls|node:child_process|cloudflare:[\w-]+|sharp)['"]|import\(\s*['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:tls|node:child_process|cloudflare:[\w-]+|sharp)['"]\s*\)|\bBun\.[A-Za-z]/
+// The modules only one runtime has, spelled every way an import can name them: `node:fs` and `fs`,
+// a side-effect `import 'x'`, `require('x')`, a dynamic `import('x')` — and a shared file reaching
+// into one runtime's folder directly (`@/runtime/bun/password`), which builds and then fails on the
+// other runtime at the first call. Found missing by the runtime review of 2026-10-03.
+const MOD = String.raw`(?:bun:[\w-]+|(?:node:)?fs(?:\/promises)?|(?:node:)?net|(?:node:)?tls|(?:node:)?child_process|cloudflare:[\w-]+|sharp|@\/runtime\/(?:bun|cf)\/[\w/-]+)`
+const FORBIDDEN = new RegExp(
+  [
+    String.raw`from\s+['"]${MOD}['"]`,
+    String.raw`\bimport\s+['"]${MOD}['"]`,
+    String.raw`import\(\s*['"]${MOD}['"]\s*\)`,
+    String.raw`\brequire\(\s*['"]${MOD}['"]\s*\)`,
+    String.raw`\bBun\.[A-Za-z]`,
+    String.raw`globalThis\[\s*['"]Bun['"]\s*\]`,
+    String.raw`\bimport\.meta\.dir\b`,
+  ].join('|'),
+)
 
 /**
  * Still crossing the seam, and where each is going. Empty since G1.8 (ADR 0067): the archive was
@@ -38,7 +53,7 @@ function walk(dir: string, out: string[] = []): string[] {
     if (statSync(path).isDirectory()) {
       if (['src/runtime/bun', 'src/runtime/cf', 'src/test', 'src/assets', 'src/admin'].includes(rel)) continue
       walk(path, out)
-    } else if (rel.endsWith('.ts') && !rel.endsWith('.test.ts') && !rel.endsWith('.d.ts') && rel !== 'src/worker.ts') {
+    } else if (/\.(?:ts|tsx|js|mjs)$/.test(rel) && !/\.test\.(?:ts|tsx|js|mjs)$/.test(rel) && !rel.endsWith('.d.ts') && rel !== 'src/worker.ts') {
       // `src/worker.ts` is the Cloudflare entry, as `src/runtime/bun/main.ts` is Bun's.
       out.push(rel)
     }

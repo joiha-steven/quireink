@@ -124,7 +124,10 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
     // 64 MB matches the `client_max_body_size` in the recommended vhost, so the software
     // and the proxy in `docs/self-host.md` refuse the same upload rather than one of them
     // being the only thing that does.
-    maxUploadBytes: readSize(source, 'MAX_UPLOAD_MB', MB, 64 * MB),
+    // 25 MB on Cloudflare: a request body is held whole by `formData()` plus one copy of the file,
+    // in an isolate of 128 MB with 60 or so already in use (runtime review, 2026-10-03). Raise it
+    // and an upload past it resets the Durable Object, failing every request in flight.
+    maxUploadBytes: readSize(source, 'MAX_UPLOAD_MB', MB, source.QUIREINK_PACKAGE === 'cloudflare' ? 25 * MB : 64 * MB),
     storeQuotaBytes: readSize(source, 'STORAGE_QUOTA_GB', GB, 5 * GB),
     // 8 MB, chosen for the SMALLEST box this is meant to run on rather than the largest.
     // Measured 2026-09-21, 1,000 posts in a `--memory=128m --cpus=0.25` container: 8 MB of

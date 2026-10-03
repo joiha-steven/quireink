@@ -16,6 +16,7 @@ import { settleExcerptKinds, settleReadingMinutes } from '@/content/settle'
 import { noUsersYet } from '@/auth/users'
 import { setupBanner } from '@/web/setup-routes'
 import { flushAnalytics } from '@/analytics/buffer'
+import { enableBackgroundCache } from '@/server/warm'
 import { fullTick, publishTick } from '@/server/tick'
 import { APP_VERSION } from '@/version'
 import { runUninstall, runUpdate, type AskObject } from '@/install/cloudflare/self'
@@ -48,6 +49,9 @@ export class Blog extends DurableObject<CfEnv> {
       const settings = await getSettings()
       settleExcerptKinds(settings.excerptLength)
       settleReadingMinutes()
+      // A save purges the CDN and re-warms the pages it changed, as on Bun (`runtime/bun/main.ts`):
+      // without this hook only a scheduled publish or the Clear key ever purged (review, 2026-10-03).
+      enableBackgroundCache()
       console.log(`quire ${APP_VERSION} on Cloudflare`)
       if (noUsersYet()) console.log(setupBanner(siteUrlIsUnset(settings) ? 'this blog\'s address' : resolveSiteUrl(settings)))
       if ((await this.ctx.storage.getAlarm()) === null) await this.ctx.storage.setAlarm(Date.now() + MINUTE)
@@ -63,8 +67,12 @@ export class Blog extends DurableObject<CfEnv> {
   override async alarm(): Promise<void> {
     await this.boot()
     try {
+      // In storage, not only in memory: an object restarts after every deploy and every eviction,
+      // and a timestamp starting at 0 made each restart's first alarm a full hourly sweep.
+      if (this.lastFullTick === 0) this.lastFullTick = (await this.ctx.storage.get<number>('lastFullTick')) ?? 0
       if (Date.now() - this.lastFullTick >= HOUR) {
         this.lastFullTick = Date.now()
+        await this.ctx.storage.put('lastFullTick', this.lastFullTick)
         await fullTick()
       } else {
         await publishTick()

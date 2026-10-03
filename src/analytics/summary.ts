@@ -67,9 +67,14 @@ function returningVisitors(since: number): number {
  * same numbers with one round of work instead of 2N.
  */
 function topPages(since: number, limit: number): TopPage[] {
+  // ⚠️ `group by +path`, not `group by path`: the bare column makes SQLite walk
+  // analytics_events_path_idx — every event ever recorded, then a table lookup each — instead of
+  // the created_at range. Measured 2026-10-03 on 1,000,000 events: 1.04 s for 30 days, against
+  // 0.068 s through analytics_events_created_path_idx (ANALYZE does not change the choice). The
+  // same query shape fed the public front page's popular row: 0.93 s → 0.022 s.
   const pages = all<{ path: string; views: number; visitors: number }>(
     `select path, count(*) as views, count(distinct visitor) as visitors from analytics_events
-      where created_at >= $since group by path order by views desc, path limit $limit`,
+      where created_at >= $since group by +path order by views desc, path limit $limit`,
     { since, limit },
   )
   if (pages.length === 0) return []
@@ -350,7 +355,8 @@ export async function getViewTotalsSince(days: number): Promise<Record<string, n
     const out: Record<string, number> = {}
     const since = nowMs() - days * 24 * 60 * 60 * 1000
     for (const r of all<{ path: string; c: number }>(
-      `select path, count(*) as c from analytics_events where created_at >= ? group by path`,
+      // `+path`: see `topPages` — the range index, not a walk of every event ever recorded.
+      `select path, count(*) as c from analytics_events where created_at >= ? group by +path`,
       since,
     )) {
       out[r.path] = r.c

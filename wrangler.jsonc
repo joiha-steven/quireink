@@ -31,5 +31,9 @@
   // Variables and Secrets), and without this every later deploy — each push to the owner's copy —
   // would delete them. A deploy never touches secrets either way.
   "keep_vars": true,
+  // Five minutes of CPU, not the default thirty seconds: the hourly backup gzips the uploads too, and
+  // node:zlib ran 66 MiB/s in workerd (2026-10-03) — a blog with a gigabyte or two of pictures would
+  // be cut off mid-archive every hour. Workers Paid allows up to 300,000 ms.
+  "limits": { "cpu_ms": 300000 },
   "observability": { "enabled": true }
 }

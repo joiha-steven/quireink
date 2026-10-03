@@ -243,8 +243,9 @@ export function leftQuickly(since: number, path: string | null): { share: number
  */
 export function allPieces(since: number): PieceStat[] {
   return all<PieceStat>(
+    // `+path`: see `topPages` in summary.ts — the range index, not a walk of every event.
     `select path, count(*) as views, count(distinct visitor) as visitors from analytics_events
-      where created_at >= $since group by path`,
+      where created_at >= $since group by +path`,
     { since },
   )
 }

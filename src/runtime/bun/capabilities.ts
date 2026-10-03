@@ -10,4 +10,5 @@ export const CAPABILITIES: Capabilities = {
   clock: 'timer',
   store: 'disk',
   clientAddress: 'peer',
+  bodyLimits: 'machine',
 }

@@ -24,6 +24,7 @@ or a row has no key. A difference that is not in this table is a bug.
 | `clock` | `timer` in the process (ADR 0031) | `alarm` on the Durable Object | Scheduled posts go out within a minute either way |
 | `store` | `disk`: `STORAGE_LOCAL_DIR` | `r2`: the bucket bound as `BLOBS` | The same pathnames, so a backup moves between them unchanged |
 | `clientAddress` | `peer`: the socket, and `CF-Connecting-IP` only once Cloudflare is configured in front | `edge`: `CF-Connecting-IP` and `CF-IPCountry`, which the platform writes on every request | Rate limits and the analytics country count readers one by one on both. A Worker has no socket, so before this key every reader on Cloudflare shared one limit |
+| `bodyLimits` | `machine`: uploads up to `MAX_UPLOAD_MB` (64 MB by default), imports up to 100 MB | `isolate`: 25 MB and 30 MB by default | A request body is held whole, plus a copy, in a Worker's 128 MB, so the defaults are smaller there; `MAX_UPLOAD_MB` still sets the upload limit on either |
 
 ## What only Bun has, and why
 

@@ -308,4 +308,10 @@ export type Capabilities = {
    * way — a Worker has no socket to ask, so without this every reader shared one rate-limit bucket.
    */
   clientAddress: 'peer' | 'edge'
+  /**
+   * What an upload and an import may weigh by default. `machine`: 64 MB and 100 MB, matching the
+   * recommended proxy. `isolate`: 25 MB and 30 MB, because the request body is held whole, plus a
+   * copy, in a 128 MB isolate.
+   */
+  bodyLimits: 'machine' | 'isolate'
 }
