@@ -19,6 +19,7 @@ import { registerSettings2Flows } from './tour-flows-settings2'
 import { registerEvenFlows } from './tour-flows-even'
 import { registerWiredFlows } from './tour-flows-wired'
 import { registerBackupFlows } from './tour-flows-backup'
+import { registerCloudFlows } from './tour-flows-cloud'
 import { registerNewsFlows } from './tour-flows-news'
 import { registerStatsFlows } from './tour-flows-stats'
 import { registerShellFlows } from './tour-flows-shell'
@@ -333,6 +334,7 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
   registerWiredFlows({ flow, expect })
   registerEvenFlows({ flow, atWidth })
   registerBackupFlows({ flow, expect, atWidth })
+  registerCloudFlows({ flow, expect })
   registerNewsFlows({ flow, expect, atWidth })
   registerStatsFlows({ flow, expect, atWidth })
   registerShellFlows({ flow, expect, atWidth })

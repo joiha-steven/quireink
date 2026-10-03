@@ -4,6 +4,14 @@
 
 ### Added
 
+- **Run on Cloudflare: move a blog off its server from the admin** (Settings → Server). A Quire Ink on
+  a server, in Docker or on a NAS copies itself — posts, pictures, accounts, settings — into a Worker
+  in the owner's own Cloudflare account: it checks the token and the plan (Workers Paid), fetches this
+  version's Cloudflare package from its GitHub Release and checks it, creates the Worker, its storage
+  and its address, and loads a backup into it, step by step on screen. The old blog keeps serving
+  until the domain is pointed at the Worker, which the card can do when the token may edit the
+  domain. The password is asked again first.
+
 - **`/api/health` names the version and the package it runs** (`version`, `package`), so an install
   test, a monitor or a person can tell which release answered and whether it came from the source,
   the image or Cloudflare ([ADR 0065](docs/decisions/0065-every-install-runs-a-release.md)).

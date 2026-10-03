@@ -54,6 +54,7 @@ import { assistantRoutes } from '@/web/admin/assistant'
 import { mcpAdminRoutes, mcpOAuthRoutes } from '@/web/admin/mcp'
 import { viewRoutes } from '@/web/admin/views'
 import { backupRoutes } from '@/web/admin/backup'
+import { cloudflareMoveRoutes } from '@/web/admin/cloudflare-move'
 import { handleMcp } from '@/web/admin/mcp-transport'
 import { adminShell, handleAdminAsset } from '@/web/admin/spa'
 import { currentOwner, renewCookie } from '@/web/guard'
@@ -272,6 +273,7 @@ export function createApp(): Hono {
   app.route('/', mcpOAuthRoutes())
   app.route('/', viewRoutes().routes)
   app.route('/', backupRoutes().routes)
+  app.route('/', cloudflareMoveRoutes().routes)
 
   // The MCP endpoint. NOT on an owner-gated router: it authenticates with a bearer token
   // the owner minted, not with the session cookie, and it must answer 401 with the

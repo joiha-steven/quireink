@@ -151,9 +151,11 @@ function sealStage(recipients: string[], salt: string): TransformStream<Uint8Arr
  * nowhere (ADR 0060): this is the one builder, so an envelope applied here reaches every caller,
  * and it is the only place with the plaintext in hand a chunk at a time.
  */
-export async function archiveStream(settings?: SiteSettings): Promise<ReadableStream<Uint8Array>> {
+export async function archiveStream(settings?: SiteSettings, opts: { seal?: boolean } = {}): Promise<ReadableStream<Uint8Array>> {
   const s = settings ?? await getSettings()
   const gzip = gzipStage()
   const gz = streamOf(tarChunks(entries())).pipeThrough(gzip)
-  return encryptReady(s) ? gz.pipeThrough(sealStage([s.backups.pubKey, s.backups.passPub], s.backups.passSalt)) : gz
+  // `seal: false` only for "Move to Cloudflare" (`install/cloudflare/move.ts`): that archive goes
+  // over TLS straight into the owner's own new Worker, which has no identity to open a sealed one.
+  return opts.seal !== false && encryptReady(s) ? gz.pipeThrough(sealStage([s.backups.pubKey, s.backups.passPub], s.backups.passSalt)) : gz
 }

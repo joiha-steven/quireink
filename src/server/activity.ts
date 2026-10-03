@@ -45,6 +45,8 @@ export type ActivityAction =
   // copy the owner takes away; `run` and `delete` are the snapshots kept on the server, by
   // hand or by the cron tick.
   | 'backup.export' | 'backup.run' | 'backup.delete' | 'backup.offsite' | 'backup.keys'
+  // The blog copied into a new Worker in the owner's Cloudflare account (G5.3, `install/cloudflare/move.ts`).
+  | 'cloudflare.move'
   | 'export.markdown'
   // Reader comments (create is public; restore/purge from the admin Trash).
   | 'comment.create' | 'comment.delete' | 'comment.restore' | 'comment.purge'

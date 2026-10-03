@@ -723,6 +723,39 @@ export type AdminStrings = {
   iconsUnused: string
   /** Said when a delete asked only for icons Settings still uses. */
   iconInUse: string
+  // Run on Cloudflare (G5.3): `web/admin/screens/settings-server-cloud.ts`.
+  cardCloud: string
+  cfMoveIntro: string
+  cfAccountLabel: string
+  cfAccountNote: string
+  cfTokenLabel: string
+  cfTokenNote: string
+  cfCheck: string
+  cfCheckPaid: string
+  cfCheckFree: string
+  cfCheckUnknown: string
+  cfCheckExists: string
+  cfConfirmPaid: string
+  cfSelfUpdate: string
+  cfSelfUpdateNote: string
+  cfCurrentLabel: string
+  cfCurrentNote: string
+  cfMove: string
+  cfStepCheck: string
+  cfStepPackage: string
+  cfStepInstall: string
+  cfStepArchive: string
+  cfStepUpload: string
+  cfStepVerify: string
+  cfDone: string
+  cfDomainNote: string
+  cfAttach: string
+  cfAttached: string
+  cfSiteUrlNeeded: string
+  cfWrongPassword: string
+  cfRunning: string
+  cfFailed: string
+  cfTooMany: string
   copiedUrl: string
   loadMediaFailed: string
   // uploader

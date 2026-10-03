@@ -31,6 +31,7 @@ import { apiCard } from '@/web/admin/screens/settings-server-api'
 import { activityPubCard } from '@/web/admin/screens/settings-server-ap'
 import { backupsCard, installCard, type UpdateStatus } from '@/web/admin/screens/settings-server-ops'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
+import { cloudCard } from '@/web/admin/screens/settings-server-cloud'
 
 /** What this tab needs that is not a setting. */
 export type ServerTabView = {
@@ -80,6 +81,8 @@ export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView)
     + activityPubCard(t, s, { origin: view.origin, followers: view.followers })
     + `</div><div class="${COL}">`
     + installCard(t, s, view.update)
+    // Moving off this server altogether (G5.3), beside the card about running it. Empty on Cloudflare.
+    + cloudCard(t)
     + aiCard(t, s, view.integrations)
     + mcpCard(t, s, endpoint)
     // Under MCP: the two machine doors read as a pair, and this is the smaller one.

@@ -48,7 +48,7 @@ export const KIND_OF: Record<string, LogKind> = {
   ap: 'people',
   settings: 'settings', redirect: 'settings',
   // `export` is the Markdown bundle, beside the backup it sits next to in the admin.
-  cache: 'system', backup: 'system', mcp: 'system', export: 'system',
+  cache: 'system', backup: 'system', mcp: 'system', export: 'system', cloudflare: 'system',
   security: 'security', auth: 'security',
   error: 'error',
 }

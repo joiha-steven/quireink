@@ -47,10 +47,24 @@ Check out the newer release and run `bun run deploy` again. The database migrate
 next starts, after Cloudflare has bookmarked the moment before (a bookmark restores the whole blog
 to that point, for 30 days, from the dashboard or the API).
 
+## Moving a blog you already run
+
+A Quire Ink on a server, in Docker or on a NAS moves from its own admin: **Settings → Server → Run on
+Cloudflare**. Paste your account ID and an API token (the card lists the permissions), type your
+password again, and press *Move to Cloudflare*. It checks the token and the plan, fetches this
+version's Cloudflare package from its GitHub Release, creates the Worker, its storage and its
+`workers.dev` address in your account, and loads a backup of the blog into it — posts, pictures,
+accounts, settings. Measured on 2026-10-03: a blog with a 3.7 MB backup moved in 45 seconds.
+
+The blog you moved from keeps serving until you point your domain at the Worker: the card does it
+when the token may edit your domain, or you delete the domain's DNS record and add it as a Custom
+Domain of the Worker in the dashboard. Then stop the old server. Your password is asked again
+because the move copies every account, and because it re-hashes the password at today's strength,
+which a Worker can verify within its memory.
+
 ## Coming before this leaves beta
 
 - The **Deploy to Cloudflare** button, so none of the above needs a terminal.
-- **Move to Cloudflare** from a running Quire Ink on a VPS, Docker or a NAS, with its posts.
 - A **one-click upgrade** in the admin.
 - A run on Cloudflare itself before every release, not only under `wrangler dev`. (Every release
   already moves a Bun blog onto this build through `/setup/restore`, compares every page with Bun's,
