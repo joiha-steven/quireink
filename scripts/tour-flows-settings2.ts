@@ -312,8 +312,9 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
         // A theme or font tile is a picture of a choice, not a control on a row.
         if (e.tagName === 'BUTTON' && e.getBoundingClientRect().height > 36) return true
         // A field stretched to a row it does not set (h-full beside a colour well).
+        // The colour pair's hex wears kit-hex since 2026-10-03, its h-full inside the name.
         if (getComputedStyle(e).height !== getComputedStyle(e).minHeight
-            && (e.className || '').includes('h-full')) return true
+            && ['h-full', 'kit-hex'].some((c) => (e.className || '').includes(c))) return true
         return false
       }
       const panels = [...document.querySelectorAll('[data-settings-panel]')]

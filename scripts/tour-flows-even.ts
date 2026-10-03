@@ -160,7 +160,9 @@ const MEASURE = `
       const edges = new Set()
       for (const el of card.querySelectorAll('.setting-row')) {
         if (!seen(el) || el.closest('[data-card]') !== card.closest('[data-card]')) continue
-        const label = el.querySelector('label, .block, span')
+        // .kit-label is SETTING_LABEL since it became a component (2026-10-03): the .block it
+        // used to carry is inside the name now, and without it the first span of the CONTROL won.
+        const label = el.querySelector('label, .block, .kit-label, span')
         if (label && seen(label)) edges.add(round(box(label).left))
       }
       if (edges.size > 1) found.push('labels ' + name(card) + ' left ' + [...edges].join('/'))

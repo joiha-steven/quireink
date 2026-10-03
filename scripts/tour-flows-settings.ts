@@ -40,8 +40,9 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
         // not enough: \`FontUpload\` prints the CURRENT family in \`font-medium
         // text-neutral-800\` and that is a value readout, not a label — the guard called it an
         // unfindable setting and it never was one.
-        const sel = '[class*="block"][class*="text-sm"][class*="font-medium"][class*="text-neutral-800"]'
-        for (const el of document.querySelectorAll('main ' + sel)) {
+        // ...or .kit-label, SETTING_LABEL's component name since 2026-10-03.
+        const sel = '[class*="block"][class*="text-sm"][class*="font-medium"][class*="text-neutral-800"], .kit-label'
+        for (const el of document.querySelectorAll('main :is(' + sel + ')')) {
           const text = el.textContent.trim()
           if (!text || text.length <= 2 || text.length >= 60 || el.children.length) continue
           // A button wears the label style too — "Choose image", "Add item", a font tile.
