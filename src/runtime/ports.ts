@@ -199,3 +199,12 @@ export type SnapshotPort = {
    */
   keepAside: (dataDir: string, name: string, text: string) => string
 }
+
+/**
+ * `satori.ts`: HTML and CSS to SVG, for the social card. Bun loads satori as it ships; Cloudflare loads
+ * its standalone build and hands it `yoga.wasm` imported statically, because the default build carries
+ * the layout engine as WASM bytes, which a Worker may not compile at run time.
+ */
+export type SatoriPort = {
+  loadSatori: () => Promise<typeof import('satori').default>
+}

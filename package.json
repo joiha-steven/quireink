@@ -63,6 +63,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@noble/hashes": "2",
+    "@resvg/resvg-wasm": "^2.6.2",
     "hono": "^4.13.7",
     "prosemirror-commands": "^1.7.2",
     "prosemirror-dropcursor": "^1.8.3",

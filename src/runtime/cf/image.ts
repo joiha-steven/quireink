@@ -1,7 +1,9 @@
 // Cloudflare: pictures through the Images binding (`IMAGES`, measured 2026-10-03: AVIF and WebP from
 // R2, 30–380 ms). `fit: 'scale-down'` is sharp's `withoutEnlargement`. The same qualities as
 // `bun/image.ts`, so a picture costs about the same bytes on either runtime. The OG card's SVG→PNG
-// is not the Images binding's job and arrives with a WASM renderer (G3.2); until then it says so.
+// is not the Images binding's job: resvg, compiled to WASM and imported statically, draws it.
+import { Resvg, initWasm } from '@resvg/resvg-wasm'
+import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
 import type { ImagePort } from '@/runtime/ports'
 import { bound } from './bindings'
 
@@ -62,6 +64,11 @@ export const renderLogo: ImagePort['renderLogo'] = async (src, cssWidth) => {
   return { webp, width, height, png }
 }
 
-export const rasterizeSvg: ImagePort['rasterizeSvg'] = async () => {
-  throw new Error('the OG card is not drawn on Cloudflare yet (G3.2: a WASM SVG renderer)')
+let resvgReady: Promise<void> | null = null
+
+/** `density` in dpi, as sharp takes it: 144 draws the 1200×630 card at twice its size, like Bun does. */
+export const rasterizeSvg: ImagePort['rasterizeSvg'] = async (svg, density) => {
+  await (resvgReady ??= initWasm(resvgWasm))
+  const rendered = new Resvg(svg, { fitTo: { mode: 'zoom', value: density / 72 }, font: { loadSystemFonts: false } }).render()
+  return rendered.asPng()
 }

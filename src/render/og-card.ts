@@ -22,6 +22,7 @@
 
 import type { SatoriOptions } from 'satori'
 import { rasterizeSvg } from '@/runtime/impl/image'
+import { loadSatori } from '@/runtime/impl/satori'
 import { DEFAULT_THEME } from '@/content/themes'
 import { PEN_LIGHT, penStrokeFlat } from '@/pen/pigments'
 import { readAsset } from '@/runtime/impl/assets'
@@ -218,7 +219,7 @@ export async function renderOgCard(card: OgCard): Promise<Uint8Array> {
   // other reason: this module is reachable from the route table, so a static import put
   // the whole SVG-layout engine into the resident set of every process, including the
   // ones nobody has ever asked for a social card.
-  const { default: satori } = await import('satori')
+  const satori = await loadSatori()
   const svg = await satori(tree(card, family) as never, { ...OG_SIZE, fonts: all })
 
   // The PNG is the runtime's (`@/runtime/impl/image`): sharp on Bun, loaded on first use.

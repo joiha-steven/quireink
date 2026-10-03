@@ -68,6 +68,9 @@ const ALLOWED: Record<string, string> = {
   '@noble/hashes':
     'B. argon2id in plain JS for Cloudflare (ADR 0069): the WASM builds reserve 65 MB of memory up front (argon2id 1.0.1 declares 1,040 pages) in a 128 MB isolate; this one allocates what `m` asks for and gives it back. Audited, no dependencies',
 
+  '@resvg/resvg-wasm':
+    'B. SVG to PNG for the social card on Cloudflare, where sharp cannot run: the renderer satori\'s own authors pair it with, as a WASM module workerd compiles at deploy time',
+
   // ---- C: going, and the order is the owner's --------------------------------------------
   hono: 'C. A thin HTTP router, but 50 call sites. Last, and only when the rest is done',
   // ---- and what is no longer here ------------------------------------------------------
