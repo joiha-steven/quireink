@@ -9,4 +9,5 @@ export const CAPABILITIES: Capabilities = {
   preMigrationCopy: 'file',
   clock: 'timer',
   store: 'disk',
+  clientAddress: 'peer',
 }

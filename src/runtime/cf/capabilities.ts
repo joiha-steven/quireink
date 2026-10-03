@@ -9,4 +9,5 @@ export const CAPABILITIES: Capabilities = {
   preMigrationCopy: 'bookmark',
   clock: 'alarm',
   store: 'r2',
+  clientAddress: 'edge',
 }

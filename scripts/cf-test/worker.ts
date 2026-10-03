@@ -13,6 +13,7 @@ import { signRequest, verifySignature } from '@/ap/signature'
 import { SmtpSession } from '@/news/smtp'
 import { read as blobRead, statSize as blobStatSize } from '@/runtime/cf/blob'
 import { gunzipStage, gzipStage } from '@/server/gzip'
+import { clientCountry, clientIp } from '@/server/rate-limit'
 import { identityFromSecret, newIdentity, opener, passphraseRecipient, sealer, unseal } from '@/server/backup-crypt'
 
 type Case = { name: string; body: () => void | Promise<void> }
@@ -24,6 +25,7 @@ function collect(): Case[] {
   cases.push({ name: 'ap: an RSA-2048 key is made, signs a delivery, and the signature verifies', body: apRoundTrip })
   cases.push({ name: 'smtp: one connection authenticates and hands over two messages, then quits', body: smtpTwoMessages })
   cases.push({ name: 'blob: `private/` is refused before the bucket is asked, so /uploads cannot serve a backup', body: blobPrivateRefused })
+  cases.push({ name: 'ip: with no socket to ask, the reader is the edge\'s CF-Connecting-IP and CF-IPCountry', body: edgeAddress })
   cases.push({ name: 'archive: the node:zlib gzip stage round-trips a stream', body: gzipRoundTrip })
   cases.push({ name: 'archive: an X25519 seal (ADR 0060) opens with its identity and not with another', body: sealRoundTrip })
   cases.push({ name: 'archive: a passphrase recipient derives (scrypt, N=65536 r=8: 64 MB)', body: () => { passphraseRecipient('correct horse battery staple') } })
@@ -97,6 +99,16 @@ async function blobPrivateRefused(): Promise<void> {
     }
     throw new Error('a private key was read through the blob port')
   }
+}
+
+/** `Capabilities.clientAddress = 'edge'`: two readers are two buckets, not one called `unknown`. */
+function edgeAddress(): void {
+  const ctx = (h: Record<string, string>) => ({ env: {}, req: { header: (n: string) => h[n.toLowerCase()], raw: new Request('https://blog.test/') } }) as never
+  const a = clientIp(ctx({ 'cf-connecting-ip': '203.0.113.7', 'cf-ipcountry': 'vn' }))
+  const b = clientIp(ctx({ 'cf-connecting-ip': '198.51.100.9' }))
+  if (a !== '203.0.113.7' || b !== '198.51.100.9') throw new Error(`readers came out as ${a} and ${b}`)
+  const country = clientCountry(ctx({ 'cf-connecting-ip': '203.0.113.7', 'cf-ipcountry': 'vn' }))
+  if (country !== 'VN') throw new Error(`country came out as ${JSON.stringify(country)}`)
 }
 
 /** ADR 0067's archive gzips through `node:zlib`, which workerd provides behind `nodejs_compat`. */

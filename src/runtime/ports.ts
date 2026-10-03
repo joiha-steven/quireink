@@ -296,4 +296,11 @@ export type Capabilities = {
   clock: 'timer' | 'alarm'
   /** Where uploads and backups live. */
   store: 'disk' | 'r2'
+  /**
+   * Who says where a request came from. `peer`: the socket, and `CF-Connecting-IP` only once the
+   * owner has said Cloudflare is in front (`cloudflareInFront`). `edge`: the platform stamps
+   * `CF-Connecting-IP` and `CF-IPCountry` on every request and no request reaches the code another
+   * way — a Worker has no socket to ask, so without this every reader shared one rate-limit bucket.
+   */
+  clientAddress: 'peer' | 'edge'
 }

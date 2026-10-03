@@ -23,6 +23,7 @@ or a row has no key. A difference that is not in this table is a bug.
 | `preMigrationCopy` | `file`: `VACUUM INTO` a copy in `data/backups/` (ADR 0063) | `bookmark`: a point in the Durable Object's history, restorable for 30 days | Both are taken before a migration runs; restoring a bookmark is a Cloudflare dashboard or API action |
 | `clock` | `timer` in the process (ADR 0031) | `alarm` on the Durable Object | Scheduled posts go out within a minute either way |
 | `store` | `disk`: `STORAGE_LOCAL_DIR` | `r2`: the bucket bound as `BLOBS` | The same pathnames, so a backup moves between them unchanged |
+| `clientAddress` | `peer`: the socket, and `CF-Connecting-IP` only once Cloudflare is configured in front | `edge`: `CF-Connecting-IP` and `CF-IPCountry`, which the platform writes on every request | Rate limits and the analytics country count readers one by one on both. A Worker has no socket, so before this key every reader on Cloudflare shared one limit |
 
 ## What only Bun has, and why
 

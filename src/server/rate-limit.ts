@@ -12,6 +12,7 @@
 
 import type { Context } from 'hono'
 import { cloudflareInFront } from '@/store/integration-keys'
+import { CAPABILITIES } from '@/runtime/impl/capabilities'
 
 /** One key's hits, and the window they were charged under. */
 type Bucket = { windowMs: number; times: number[] }
@@ -171,6 +172,12 @@ const trustProxyAlways = (): boolean => (process.env.TRUST_PROXY ?? '').trim() =
  * behind it — and is now genuinely unreachable in a running process.
  */
 export function clientIp(c: Context): string {
+  // On Cloudflare the platform stamps the header on every request and there is no socket to ask
+  // (`Capabilities.clientAddress`); nothing reaches a Worker without passing the edge that wrote it.
+  if (CAPABILITIES.clientAddress === 'edge') {
+    const edge = c.req.header('cf-connecting-ip')?.trim()
+    if (edge) return edge
+  }
   const peer = peerAddress(c)
   if (peer && !isLocalHop(peer) && !trustProxyAlways()) return peer
 
@@ -222,9 +229,11 @@ const lastForwarded = (header: string | undefined): string => {
  * business reaching a database column nothing else validates.
  */
 export function clientCountry(c: Context): string {
-  if (!cloudflareInFront()) return ''
-  const peer = peerAddress(c)
-  if (peer && !isLocalHop(peer) && !trustProxyAlways()) return ''
+  if (CAPABILITIES.clientAddress !== 'edge') {
+    if (!cloudflareInFront()) return ''
+    const peer = peerAddress(c)
+    if (peer && !isLocalHop(peer) && !trustProxyAlways()) return ''
+  }
   const raw = (c.req.header('cf-ipcountry') ?? '').trim().toUpperCase()
   return /^[A-Z0-9]{2}$/.test(raw) ? raw : ''
 }
