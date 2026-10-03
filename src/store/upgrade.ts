@@ -10,6 +10,7 @@
 import { Database } from 'bun:sqlite'
 import { mkdirSync, readdirSync, renameSync, rmSync, statSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
+import type { Connection } from '@/runtime/ports'
 
 /** This upgrade's copy and the one before it. See ADR 0063 for why two and not more. */
 const KEEP = 2
@@ -31,8 +32,8 @@ const MIN_FREE_BYTES = 64 * 1024 * 1024
  */
 const quoted = (path: string): string => `'${path.replace(/'/g, "''")}'`
 
-const pragma = (db: Database, name: 'page_size' | 'page_count' | 'freelist_count'): number =>
-  Number((db.query(`pragma ${name}`).get() as Record<string, number> | null)?.[name] ?? 0)
+const pragma = (conn: Connection, name: 'page_size' | 'page_count' | 'freelist_count'): number =>
+  Number(conn.one<Record<string, number>>(`pragma ${name}`)?.[name] ?? 0)
 
 /**
  * Write a copy of `path` before a migration is allowed to touch it, named for the step about
@@ -44,14 +45,14 @@ const pragma = (db: Database, name: 'page_size' | 'page_count' | 'freelist_count
  * has a write-ahead log, and copying the file can capture a torn state that only shows itself
  * on the day somebody restores it.
  */
-export function copyBeforeMigrating(db: Database, path: string, step: string): string {
+export function copyBeforeMigrating(conn: Connection, path: string, step: string): string {
   const dir = join(dirname(path), 'backups')
   const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)
   const dest = join(dir, `pre-${step}-${stamp}-${basename(path)}`)
   try {
     mkdirSync(dir, { recursive: true })
-    emptyCaches(db)
-    db.exec(`vacuum into ${quoted(dest)}`)
+    emptyCaches(conn)
+    conn.exec(`vacuum into ${quoted(dest)}`)
   } catch (error) {
     throw new Error(
       `could not write the pre-upgrade copy at ${dest} (${(error as Error).message}). `
@@ -76,11 +77,11 @@ export function copyBeforeMigrating(db: Database, path: string, step: string): s
  * are rebuilt on demand, and step 019 empties `render_cache` anyway. Both spelled out, each
  * behind its own existence check, since a database from before 019 has only the first.
  */
-function emptyCaches(db: Database): void {
+function emptyCaches(conn: Connection): void {
   const has = (table: string): boolean =>
-    db.query("select 1 from sqlite_master where type='table' and name = ?").get(table) !== null
-  if (has('render_cache')) db.exec('delete from render_cache')
-  if (has('body_cache')) db.exec('delete from body_cache')
+    conn.one("select 1 from sqlite_master where type='table' and name = ?", table) !== null
+  if (has('render_cache')) conn.exec('delete from render_cache')
+  if (has('body_cache')) conn.exec('delete from body_cache')
 }
 
 /**
@@ -104,7 +105,7 @@ function keepNewest(dir: string, dbFile: string): void {
 
 /**
  * Give the disk back when a migration has left the file mostly holes. Returns whether it
- * did, in which case THE DATABASE IS CLOSED and the caller has to open it again.
+ * did, in which case THE CONNECTION IS CLOSED and the caller has to open it again.
  *
  * ⚠️ `VACUUM INTO` and a rename, never a `VACUUM` in place. "There is deliberately no VACUUM"
  * has been in `render-cache.ts` since the sweep was written, because one has cost this project
@@ -114,15 +115,15 @@ function keepNewest(dir: string, dbFile: string): void {
  * beside a file it no longer describes.
  */
 export function compactIfMostlyFree(
-  db: Database, path: string,
+  conn: Connection, path: string,
   // Test seam. A fixture that had to be 64 MB before it could exercise this would be a
   // fixture nobody runs, and the thresholds are the one part of this that is a judgement
   // rather than a mechanism.
   { minShare = MIN_FREE_SHARE, minBytes = MIN_FREE_BYTES } = {},
 ): boolean {
-  const size = pragma(db, 'page_size')
-  const pages = pragma(db, 'page_count')
-  const free = pragma(db, 'freelist_count')
+  const size = pragma(conn, 'page_size')
+  const pages = pragma(conn, 'page_count')
+  const free = pragma(conn, 'freelist_count')
   if (!size || !pages) return false
   if (free / pages < minShare || free * size < minBytes) return false
 
@@ -130,12 +131,12 @@ export function compactIfMostlyFree(
   let closed = false
   try {
     rmSync(tmp, { force: true })
-    db.exec(`vacuum into ${quoted(tmp)}`)
+    conn.exec(`vacuum into ${quoted(tmp)}`)
     if (!intact(tmp)) {
       rmSync(tmp, { force: true })
       return false
     }
-    db.close()
+    conn.close()
     closed = true
     renameSync(tmp, path)
     return true
@@ -150,7 +151,12 @@ export function compactIfMostlyFree(
   }
 }
 
-/** Does the file that is about to replace a live database read as a database at all? */
+/**
+ * Does the file that is about to replace a live database read as a database at all?
+ *
+ * Opened RAW and read-only, not through `runtime/bun/db.ts`'s `open`: that one sets
+ * `journal_mode = WAL`, which rewrites the header of the very file being vouched for.
+ */
 function intact(path: string): boolean {
   const copy = new Database(path, { readonly: true })
   try {

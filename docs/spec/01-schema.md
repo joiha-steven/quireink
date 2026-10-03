@@ -62,7 +62,11 @@ boundaries are computed in TypeScript and inserted into a temp table (see "The s
 functions" in [01-schema-port.md](01-schema-port.md)). It is recorded here so nobody tries the shorter path and discovers this
 halfway through the analytics port.
 
-### PRAGMAs (set on every connection)
+### PRAGMAs (set on every connection, on Bun)
+
+Set by [`src/runtime/bun/db.ts`](../../src/runtime/bun/db.ts) as it opens each file. A Cloudflare
+Durable Object refuses every one of them but `foreign_keys` (ADR 0066), which is why they sit on
+the Bun side of the runtime seam and not in the store.
 
 ```
 journal_mode = WAL          readers never block the writer
@@ -103,11 +107,19 @@ removed because a Cloudflare Durable Object refuses it (ADR 0066).
 
 ### Connection strategy
 
-One `Database` handle per file, opened at boot. `bun:sqlite` is **synchronous** and the
-runtime is single-threaded, so there is exactly one writer by construction: a statement
-cannot interleave with another request, and no `SQLITE_BUSY` queue, connection pool or
-mutex is needed. This is a genuine simplification over the Go design, which had to build
-all three.
+One connection per database, opened at boot by `openDatabases` and held by the store. A
+connection is the `Connection` contract in [`src/runtime/ports.ts`](../../src/runtime/ports.ts)
+(ADR 0066): `all`, `one` and `run` for one statement with bound values, `exec` for a script
+without any, `transaction` (nesting), `close`. On Bun it is one `bun:sqlite` handle per file
+([`src/runtime/bun/db.ts`](../../src/runtime/bun/db.ts)); nothing outside `src/store/` holds
+one, and `check:sql` fails a shipped file that tries. Data-layer modules go through
+`src/store/query.ts`. The contract is pinned by `src/runtime/db.contract.ts`, run against each
+runtime's implementation.
+
+The driver is **synchronous** on both runtimes and each is single-threaded, so there is exactly
+one writer by construction: a statement cannot interleave with another request, and no
+`SQLITE_BUSY` queue, connection pool or mutex is needed. This is a genuine simplification over
+the Go design, which had to build all three.
 
 The consequence to respect: a slow query blocks every request. Every statement on the
 request path must be indexed, and anything unbounded (the analytics dashboard, a backup

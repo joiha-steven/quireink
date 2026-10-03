@@ -3,6 +3,7 @@
 import { expect, test, afterAll } from 'bun:test'
 import { rmSync } from 'node:fs'
 import { Database } from 'bun:sqlite'
+import { wrap } from '@/runtime/bun/db'
 import { openSqlite } from '@/test/sqlite'
 import { openDatabases, closeDatabases, liveOnly, isEmpty } from './db'
 
@@ -47,13 +48,13 @@ test('a table that is not ours does not make a new database look old', () => {
   const d = new Database(':memory:')
   d.run('create table _cf_KV (key text primary key, value blob)')
   d.run('create table __miniflare_do_name (name text)')
-  expect(isEmpty(d, 'content')).toBe(true)
-  expect(isEmpty(d, 'analytics')).toBe(true)
+  expect(isEmpty(wrap(d), 'content')).toBe(true)
+  expect(isEmpty(wrap(d), 'analytics')).toBe(true)
   d.run('create table posts (id integer)')
-  expect(isEmpty(d, 'content')).toBe(false)
-  expect(isEmpty(d, 'analytics')).toBe(true) // the content tables are not analytics' own
+  expect(isEmpty(wrap(d), 'content')).toBe(false)
+  expect(isEmpty(wrap(d), 'analytics')).toBe(true) // the content tables are not analytics' own
   d.run('create table analytics_events (id integer)')
-  expect(isEmpty(d, 'analytics')).toBe(false)
+  expect(isEmpty(wrap(d), 'analytics')).toBe(false)
   d.close()
 })
 

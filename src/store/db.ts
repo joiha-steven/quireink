@@ -1,16 +1,21 @@
-// The two SQLite connections, their PRAGMAs, and schema application at boot.
+// The two SQLite connections, and schema application at boot.
 //
-// `bun:sqlite` is SYNCHRONOUS and the runtime is single-threaded, so there is exactly one
-// writer by construction: a statement cannot interleave with another request. No pool, no
-// mutex, no SQLITE_BUSY retry loop. That is the largest simplification 2.0 gets over the
-// Go design, which had to build all three.
+// Both drivers are SYNCHRONOUS (`bun:sqlite`, and a Durable Object's SQL on Cloudflare) and
+// each runtime is single-threaded, so there is exactly one writer by construction: a
+// statement cannot interleave with another request. No pool, no mutex, no SQLITE_BUSY retry
+// loop. That is the largest simplification 2.0 gets over the Go design, which had to build
+// all three.
 //
 // The cost to respect: a slow query blocks every request. Keep the request path indexed,
 // and run anything unbounded (the analytics dashboard, a backup export) against
 // `analytics.db` or off the request path entirely.
-import { Database } from 'bun:sqlite'
-import { mkdirSync } from 'node:fs'
+//
+// The connection itself is a `Connection` from the runtime seam (`src/runtime/ports.ts`, ADR
+// 0066): opening a file, its PRAGMAs and the driver live in `src/runtime/bun/db.ts`. What is
+// here is the same on every runtime — which schema, which ledger, what "new" means.
 import { dirname, join } from 'node:path'
+import { open as connect } from '@/runtime/impl/db'
+import type { Connection } from '@/runtime/ports'
 import { compactIfMostlyFree, copyBeforeMigrating } from './upgrade'
 
 // Imported as text so both files compile into the standalone executable. A schema the
@@ -20,45 +25,8 @@ import analyticsSchema from './schema-analytics.sql' with { type: 'text' }
 import contentMigrations from './migrations.sql' with { type: 'text' }
 import analyticsMigrations from './migrations-analytics.sql' with { type: 'text' }
 
-export type Db = Database
-
-// Set on EVERY connection. WAL lets readers never block the writer; NORMAL is safe under
-// WAL; foreign_keys is OFF by default in SQLite and has to be asked for.
-//
-// ⚠️ `cache_size` WAS -64000, AND 64 MB WAS THE ONE NUMBER HERE NOBODY HAD MEASURED. It is a
-// ceiling per CONNECTION and there are two of them, so it promised 128 MB to a process this
-// project also ships in a 128 MB container. Measured 2026-09-23 against a 314 MB database,
-// 20,000 point lookups, three runs each, in `--memory=128m --cpus=0.5` with the file on
-// native container storage:
-//
-//   -64000   +57.0 / +56.8 / +56.9 MB resident   181 / 189 / 188 ms
-//   -16000   +43.1 / +43.0 / +43.3 MB            142 / 146 / 132 ms
-//    -8000   +26.4 / +34.5 / +33.8 MB            142 /  81 / 104 ms
-//    -2000   +27.4 / +27.5 / +27.5 MB            141 / 126 / 108 ms
-//
-// 64 MB WAS THE SLOWEST OF THE FOUR, in every run and by about 30%. That is not a paradox:
-// inside a cgroup, SQLite's private cache and the kernel's page cache come out of the SAME
-// 128 MB, so a big private cache buys a second copy of pages it has just pushed the kernel
-// into dropping. On an unconstrained machine the four are indistinguishable (121 / 127 / 120 /
-// 121 ms), so nothing is given up on a large box either.
-//
-// 16 MB rather than the 2 MB that measured just as well: WHAT WAS MEASURED IS POINT LOOKUPS
-// BY PRIMARY KEY, and the request path also runs FTS search and taxonomy joins. Those are the shapes a page cache actually helps and none of
-// them is in the number above, so the headroom stays until something measures them.
-//
-// It changes NOTHING for a blog whose database fits under the ceiling, which is every blog
-// this project runs: after the 0062 migration the two largest are 11.2 MB and 4.6 MB, so the
-// cache holds the whole file at either setting.
-const PRAGMAS = [
-  'journal_mode = WAL',
-  'busy_timeout = 5000',
-  'foreign_keys = ON',
-  'cache_size = -16000', // 16 MB page cache per connection, measured above
-  'temp_store = MEMORY',
-] as const
-
-let content: Database | null = null
-let analytics: Database | null = null
+let content: Connection | null = null
+let analytics: Connection | null = null
 /** Where the content database lives, for exactly as long as `content` is open. See `dataDir`. */
 let directory: string | null = null
 
@@ -75,12 +43,8 @@ export const LEDGER: Record<Kind, string> = { content: 'schema_migrations', anal
 
 function open(
   path: string, schema: string, synchronous: 'FULL' | 'NORMAL', migrations: string, kind: Kind,
-): { db: Database; fresh: boolean } {
-  const db = new Database(path, { create: true, strict: true })
-  for (const p of PRAGMAS) db.run(`pragma ${p};`)
-  // Content is worth an fsync per commit; analytics is not. Losing a day of pageviews is
-  // an annoyance, losing a day of posts is a disaster.
-  db.run(`pragma synchronous = ${synchronous};`)
+): { db: Connection; fresh: boolean } {
+  const db = connect(path, synchronous)
   if (kind === 'analytics') renameAnalyticsLedger(db)
   // Whether this file already held tables decides what migrations mean for it, and the
   // only moment that is knowable is BEFORE the schema is applied.
@@ -93,7 +57,7 @@ function open(
     const step = firstPending(db, migrations, LEDGER[kind])
     if (step) copyBeforeMigrating(db, path, step)
   }
-  db.transaction(() => db.run(schema))()
+  db.transaction(() => db.exec(schema))
   return { db, fresh }
 }
 
@@ -105,12 +69,10 @@ function open(
  * the copy on the oldest database anybody could be holding, which is the one most worth
  * copying.
  */
-function firstPending(db: Database, source: string, ledger: string): string | null {
+function firstPending(db: Connection, source: string, ledger: string): string | null {
   let applied: Set<string>
   try {
-    applied = new Set(
-      db.query<{ name: string }, []>(`select name from ${ledger}`).all().map((r) => r.name),
-    )
+    applied = new Set(db.all<{ name: string }>(`select name from ${ledger}`).map((r) => r.name))
   } catch {
     applied = new Set()
   }
@@ -127,13 +89,13 @@ function firstPending(db: Database, source: string, ledger: string): string | nu
  * died on it. And the other database's tables do not count either, for when both share a file.
  * `_` is a LIKE wildcard, hence the escapes.
  */
-export function isEmpty(db: Database, kind: Kind = 'content'): boolean {
+export function isEmpty(db: Connection, kind: Kind = 'content'): boolean {
   const ours = kind === 'analytics' ? `name like 'analytics\\_%' escape '\\'` : `name not like 'analytics\\_%' escape '\\'`
-  const row = db.query<{ n: number }, []>(
+  const row = db.one<{ n: number }>(
     `select count(*) as n from sqlite_master where type = 'table'
        and name not like 'sqlite\\_%' escape '\\' and name not like '\\_cf\\_%' escape '\\'
        and name not like '\\_\\_miniflare%' escape '\\' and ${ours}`,
-  ).get()
+  )
   return (row?.n ?? 0) === 0
 }
 
@@ -142,12 +104,12 @@ export function isEmpty(db: Database, kind: Kind = 'content'): boolean {
  * while each had its own file; impossible once both share one, as on Cloudflare. Renamed once, in
  * place, on an `analytics.db` that still has the old name — every row it holds kept.
  */
-function renameAnalyticsLedger(db: Database): void {
-  const has = (name: string) => db.query<{ n: number }, [string]>(
-    `select count(*) as n from sqlite_master where type = 'table' and name = ?`,
-  ).get(name)!.n > 0
+function renameAnalyticsLedger(db: Connection): void {
+  const has = (name: string) => db.one<{ n: number }>(
+    `select count(*) as n from sqlite_master where type = 'table' and name = ?`, name,
+  )!.n > 0
   if (has('schema_migrations') && !has(LEDGER.analytics)) {
-    db.run(`alter table schema_migrations rename to ${LEDGER.analytics}`)
+    db.exec(`alter table schema_migrations rename to ${LEDGER.analytics}`)
   }
 }
 
@@ -182,20 +144,16 @@ export function parseMigrations(source: string): Migration[] {
  * Returns whether anything RAN, which is not the same as whether anything was recorded: a
  * fresh database records every step and runs none, and has nothing to compact afterwards.
  */
-function applyMigrations(db: Database, source: string, fresh: boolean, ledger: string): boolean {
-  const applied = new Set(
-    db.query<{ name: string }, []>(`select name from ${ledger}`).all().map((r) => r.name),
-  )
-  const record = db.query<never, [string, number]>(
-    `insert or ignore into ${ledger} (name, applied_at) values (?, ?)`,
-  )
+function applyMigrations(db: Connection, source: string, fresh: boolean, ledger: string): boolean {
+  const applied = new Set(db.all<{ name: string }>(`select name from ${ledger}`).map((r) => r.name))
+  const record = `insert or ignore into ${ledger} (name, applied_at) values (?, ?)`
   let ran = false
   for (const step of parseMigrations(source)) {
     if (applied.has(step.name)) continue
     db.transaction(() => {
-      if (!fresh) db.run(step.sql)
-      record.run(step.name, Date.now())
-    })()
+      if (!fresh) db.exec(step.sql)
+      db.run(record, step.name, Date.now())
+    })
     ran = ran || !fresh
   }
   return ran
@@ -206,13 +164,13 @@ function applyMigrations(db: Database, source: string, fresh: boolean, ledger: s
  * every statement in the schema files is `if not exists`, so a second call against an
  * existing database is a no-op rather than an error.
  */
-export function openDatabases(dir: string): { db: Database; analyticsDb: Database } {
+export function openDatabases(dir: string): { db: Connection; analyticsDb: Connection } {
   // Close any prior pair first. Without this a second call leaks the first pair's file
   // handles, which on Windows makes the files undeletable and on Linux leaks descriptors
   // silently until something runs out. Found by the boot test, which calls this twice on
   // purpose to prove the schema is idempotent.
   closeDatabases()
-  mkdirSync(dir, { recursive: true })
+  // The directory itself is made by the runtime's `open`, which knows whether there is one.
   const contentPath = join(dir, 'quire.db')
   const opened = open(contentPath, contentSchema, 'FULL', contentMigrations, 'content')
   content = opened.db
@@ -235,12 +193,12 @@ export function openDatabases(dir: string): { db: Database; analyticsDb: Databas
   return { db: content, analyticsDb: analytics }
 }
 
-export function db(): Database {
+export function db(): Connection {
   if (!content) throw new Error('db() before openDatabases(): call it once at boot')
   return content
 }
 
-export function analyticsDb(): Database {
+export function analyticsDb(): Connection {
   if (!analytics) throw new Error('analyticsDb() before openDatabases(): call it once at boot')
   return analytics
 }

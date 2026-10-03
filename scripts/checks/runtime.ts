@@ -29,8 +29,6 @@ const PENDING: Record<string, string> = {
   'src/server/backup-offsite.ts': 'Bun.S3Client, Bun.file -> the Archive port (G1.8)',
   'src/server/backup.ts': 'tar via Bun.spawn -> the pure-JS archive writer (G1.8)',
   'src/server/export-md.ts': 'Bun.file -> the Archive port (G1.8)',
-  'src/store/db.ts': 'bun:sqlite -> @/runtime/impl/db (G1.7)',
-  'src/store/query.ts': 'bun:sqlite types -> @/runtime/impl/db (G1.7)',
   'src/store/upgrade.ts': 'bun:sqlite, VACUUM INTO -> @/runtime/impl/snapshot (G1.7)',
   'src/web/admin/backup.ts': 'Bun.file -> the Archive port (G1.8)',
 }

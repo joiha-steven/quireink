@@ -142,7 +142,7 @@ paragraph still said "the one place": `server/backup.ts` builds `vacuum into '<p
 SQLite accepts no bound parameter for that filename, so there is no parameterised form to
 reach for; the path is one this process just made with `mkdtemp`, never a request or a
 setting, and its quotes are doubled. `store/upgrade.ts` (ADR 0063) became a second on
-2026-09-22, the same way, with a path derived from the data directory. `store/db.ts` interpolates two `pragma` statements as
+2026-09-22, the same way, with a path derived from the data directory. `runtime/bun/db.ts` interpolates two `pragma` statements as
 well, and those are inside the rule already — a module constant and a closed `'FULL' |
 'NORMAL'` union, both fixed identifiers rather than values.
 

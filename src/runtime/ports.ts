@@ -126,4 +126,50 @@ export type ImagePort = {
   renderLogo: (src: Buffer, cssWidth: number) => Promise<{ webp: Buffer; width: number; height: number; png: Buffer | null }>
   /** An SVG drawn to PNG at `density` dpi (the OG card). */
   rasterizeSvg: (svg: string, density: number) => Promise<Uint8Array>
+/**
+ * A value SQLite binds. A boolean goes in as 1 or 0 and a bigint as an integer, and both come back
+ * as a `number`; a `Uint8Array` is a blob and comes back as one.
+ */
+export type SqlValue = string | number | bigint | boolean | null | Uint8Array
+
+/**
+ * Named parameters: `$name` in the SQL, BARE keys here (`{ name: … }`, not `{ $name: … }`). The wide
+ * inserts use them, where counting seventeen question marks is how a column ends up in the wrong
+ * place. Cloudflare binds positionally only, so its side rewrites `$name` to `?` in order.
+ */
+export type SqlNamed = Record<string, SqlValue>
+
+/** Positional values for `?`, or ONE object of named ones. Never both. */
+export type SqlParams = SqlValue[] | [SqlNamed]
+
+/** What a write did: rows affected, and the rowid of the last row inserted on this connection. */
+export type Changes = { changes: number; lastInsertRowid: number }
+
+/**
+ * `db.ts`: one open SQLite database. SYNCHRONOUS on both runtimes (`bun:sqlite`, and a Durable
+ * Object's `ctx.storage.sql`), which is what lets the store have exactly one writer and no pool.
+ *
+ * `all`, `one` and `run` take ONE statement with bound values; nothing here interpolates. `exec`
+ * takes a script of several statements and no values: the schema, a migration step, and the few
+ * statements SQLite gives no bound form (`VACUUM INTO` a filename). `transaction` nests — an inner
+ * one that throws rolls back only its own part, and the outer one goes on if it catches.
+ * `body` must be synchronous: an async body would commit at its first `await`.
+ */
+export type Connection = {
+  all: <T>(sql: string, ...params: SqlParams) => T[]
+  /** The first row, or null when there is none. */
+  one: <T>(sql: string, ...params: SqlParams) => T | null
+  run: (sql: string, ...params: SqlParams) => Changes
+  exec: (script: string) => void
+  transaction: <T>(body: () => T) => T
+  close: () => void
+}
+
+/**
+ * `db.ts`: open (creating it if missing) the database at `path`. `synchronous` is how hard a commit
+ * waits for the disk: content is worth an fsync per commit, analytics is not. A runtime with no
+ * such setting (a Durable Object) ignores it.
+ */
+export type DbPort = {
+  open: (path: string, synchronous: 'FULL' | 'NORMAL') => Connection
 }

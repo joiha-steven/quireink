@@ -3,6 +3,7 @@ import { expect, test, afterEach } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { wrap } from '@/runtime/bun/db'
 import { openDatabases, closeDatabases } from './db'
 import { compactIfMostlyFree, copyBeforeMigrating } from './upgrade'
 
@@ -76,7 +77,7 @@ test('two copies are kept, and the older ones go', () => {
   const backups = aDatabaseOneReleaseBehind()
   const db = new Database(join(DIR, 'quire.db'))
   for (const step of ['001-one', '002-two', '003-three']) {
-    copyBeforeMigrating(db, join(DIR, 'quire.db'), step)
+    copyBeforeMigrating(wrap(db), join(DIR, 'quire.db'), step)
     // mtime is the ordering, and three copies inside one millisecond would tie.
     Bun.sleepSync(5)
   }
@@ -122,7 +123,7 @@ test('a file left mostly empty is compacted, and keeps every row', () => {
   db.run(`pragma wal_checkpoint(TRUNCATE)`)
   const before = statSync(path).size
 
-  expect(compactIfMostlyFree(db, path, { minShare: 0.25, minBytes: 1 })).toBe(true)
+  expect(compactIfMostlyFree(wrap(db), path, { minShare: 0.25, minBytes: 1 })).toBe(true)
   expect(statSync(path).size).toBeLessThan(before / 2)
   // No temporary left behind, and the rows that were alive still are.
   expect(existsSync(`${path}.compacting`)).toBe(false)
@@ -140,7 +141,7 @@ test('a file that is merely in use is left alone', () => {
   db.run(`create table t (id integer primary key)`)
   db.run(`insert into t (id) values (1)`)
   // The real thresholds: a small blog with a few free pages must not be rewritten at boot.
-  expect(compactIfMostlyFree(db, path)).toBe(false)
+  expect(compactIfMostlyFree(wrap(db), path)).toBe(false)
   expect(db.query(`select count(*) as n from t`).get()).toEqual({ n: 1 })
   db.close()
 })
