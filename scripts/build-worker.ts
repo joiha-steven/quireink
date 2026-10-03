@@ -19,8 +19,15 @@ import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node
 import { basename, join, resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '..')
-const OUT = join(ROOT, 'dist', 'worker')
-const PUBLIC = join(ROOT, 'dist', 'public')
+// `--entry <file> --out <dir>` builds another worker the same way: `scripts/test-cf.ts` uses it for
+// the worker that runs the port contracts inside workerd.
+const arg = (name: string): string | undefined => {
+  const i = process.argv.indexOf(name)
+  return i > 0 ? process.argv[i + 1] : undefined
+}
+const ENTRY = resolve(ROOT, arg('--entry') ?? 'src/worker.ts')
+const OUT = resolve(ROOT, arg('--out') ?? 'dist/worker')
+const PUBLIC = join(OUT, '..', `${basename(OUT) === 'worker' ? 'public' : `${basename(OUT)}-public`}`)
 const ADMIN = join(ROOT, 'src', 'admin', 'dist')
 
 rmSync(OUT, { recursive: true, force: true })
@@ -101,7 +108,7 @@ const plugin: BunPlugin = {
 }
 
 const result = await Bun.build({
-  entrypoints: [join(ROOT, 'src', 'worker.ts')],
+  entrypoints: [ENTRY],
   outdir: OUT,
   naming: 'worker.js',
   target: 'browser',

@@ -1,0 +1,13 @@
+// The contract worker for `bun run test:cf` (scripts/test-cf.ts). Local only; never deployed.
+{
+  "name": "quireink-contracts",
+  "main": "../../dist/cf-test/worker.js",
+  "compatibility_date": "2026-09-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "no_bundle": true,
+  "base_dir": "../../dist/cf-test",
+  "find_additional_modules": true,
+  "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": false }],
+  "durable_objects": { "bindings": [{ "name": "PROBE", "class_name": "Probe" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Probe"] }]
+}

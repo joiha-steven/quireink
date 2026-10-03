@@ -103,6 +103,21 @@ jobs:
       # tour.sh builds the assets and the admin itself, seeds, serves, drives, restores.
       - run: bun run tour
 
+  # THE CLOUDFLARE RUNTIME (ADR 0066): the port contracts run inside workerd, the runtime a
+  # Cloudflare install actually runs, against the src/runtime/cf/ side of the seam. The Bun side runs
+  # the same suites in `check`. Separate job for the same reason `tour` is: a red Cloudflare side on
+  # a green Bun side is a real state, and the log should say which.
+  cf:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run test:cf
+
   # THE IMAGE, built and actually started. Nothing else in this repository looks at the
   # Docker path: measured 2026-08-21, `Dockerfile` appeared in no test, no tour flow and no
   # workflow, so it could have stopped building weeks earlier and every check here would

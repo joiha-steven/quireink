@@ -13,7 +13,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "locales", "src/runtime/cf/worker-configuration.d.ts"],
+  "include": ["src", "locales", "scripts/cf-test", "src/runtime/cf/worker-configuration.d.ts"],
   "exclude": [
     "src/**/*.test.ts", "src/test", "src/runtime/bun", "src/index.ts",
     "src/assets/js", "src/assets/dist", "src/admin", "src/admin/dist"

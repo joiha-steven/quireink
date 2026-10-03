@@ -78,5 +78,5 @@
   // config for the same reason: DOM types. `src/admin/dist` is bundler output.
   // `src/runtime/cf` and `src/worker.ts` are the Cloudflare side of the runtime seam and are checked
   // by `tsconfig.worker.json`, with the Workers types; Bun's types cannot describe them.
-  "exclude": ["src/assets/js", "src/assets/dist", "src/admin", "src/admin/dist", "src/runtime/cf", "src/worker.ts"]
+  "exclude": ["src/assets/js", "src/assets/dist", "src/admin", "src/admin/dist", "src/runtime/cf", "src/worker.ts", "scripts/cf-test"]
 }
