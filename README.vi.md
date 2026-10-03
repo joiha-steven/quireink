@@ -42,7 +42,7 @@ Màu, chữ, bố cục trang chủ và menu đều là cài đặt trong trang 
 - **Thống kê không dùng cookie**, theo từng bài và cả site, và bản tin gửi bằng máy chủ mail của bạn.
 - **Dọn vào và dọn ra**: nhận WordPress, Ghost, Substack hay Medium; xuất ra một ZIP Markdown.
 - **Một AI agent trông được nó.** Máy chủ MCP có sẵn cho trợ lý viết nháp, đăng bài, đọc số liệu và dọn dẹp, theo đúng luật mà trang quản trị theo.
-- **Nhanh trên máy nhỏ.** Một tiến trình Bun, hai file SQLite, không máy chủ cơ sở dữ liệu, không tài khoản đám mây nào trên đường đi.
+- **Nhanh trên máy nhỏ.** Một tiến trình Bun, hai file SQLite, không máy chủ cơ sở dữ liệu, không cần tài khoản đám mây nào.
 - **Mười một thứ tiếng**, trong trang quản trị và trên site.
 
 Từng phần, chi tiết và so với các lựa chọn khác: [**Quire Ink, bản đầy đủ**](./docs/overview.vi.md).
@@ -90,7 +90,7 @@ Rồi một câu hỏi — **bạn đang có gì?**
 | **Đã có Docker** và tên miền | [`docker-compose.image.yml`](./docker-compose.image.yml) + [`Caddyfile`](./Caddyfile) ([cách làm](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
 | **Một máy chủ bạn tự lo**, có Bun 1.3+ | [`install.sh`](./install.sh), rồi systemd và nginx ([tự host](./docs/self-host.md)) | `bun run upgrade` |
 | **Kubernetes**, hoặc **một droplet DigitalOcean** | [Manifest](./deploy/kubernetes/README.md) · [một file dán vào](./deploy/digitalocean/README.md) | Đổi tag · như dòng VPS |
-| **Một tài khoản Cloudflare** gói Workers Paid (5 USD/tháng, không phải gói Free), không cần máy chủ nào — bản beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release) ([từng bước, và vì sao không dùng gói Free](./docs/self-host-cloudflare.md)) | Trong bản sao trên GitHub: Actions → Update Quire Ink; Cloudflare tự triển khai ([cách làm](./docs/self-host-cloudflare.md#upgrading)) |
+| **Một tài khoản Cloudflare** gói Workers Paid (5 USD/tháng, không phải gói Free), không cần máy chủ nào — bản beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release) ([từng bước, và vì sao không dùng gói Free](./docs/self-host-cloudflare.md)). Đang chạy Quire Ink rồi: **Settings → Server → Run on Cloudflare** chuyển nó sang ([cách làm](./docs/self-host-cloudflare.md#moving-a-blog-you-already-run)) | Trong bản sao trên GitHub: Actions → Update Quire Ink; Cloudflare tự triển khai ([cách làm](./docs/self-host-cloudflare.md#upgrading)). Bản đã chuyển: một phím trong Settings |
 
 Trên một VPS mới, khi DNS của tên miền đã trỏ về máy:
 
@@ -101,7 +101,7 @@ curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/server.s
 
 Lệnh này cài Docker, chạy image của bản phát hành mới nhất kèm chứng chỉ Let's Encrypt, và dừng lại nếu máy đã đang phục vụ thứ gì khác. Sau đó mở `https://blog.example.com/setup`, gõ mã, qua vài bước ngắn — tài khoản, ứng dụng xác thực, giao diện — là vào thẳng trình soạn.
 
-**Cách nào cũng cài một bản phát hành**, không bao giờ là code chưa phát hành ([ADR 0065](./docs/decisions/0065-every-install-runs-a-release.md)), và bản phát hành nào cũng được cài thử và nâng cấp thử qua từng cách trước khi đưa ra. Image có cho `amd64` và `arm64`. **Dựng lần đầu là phần kỹ thuật:** giao máy chủ cho một AI agent, skill [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) dẫn nó đi từng bước, có cả bước kiểm tra.
+**Cách nào cũng cài một bản phát hành**, không bao giờ là code chưa phát hành ([ADR 0065](./docs/decisions/0065-every-install-runs-a-release.md)), và bản phát hành nào cũng được cài thử trước khi đưa ra: bản nguồn, image và máy chủ trắng được cài mới và nâng cấp từ bản trước, còn gói Cloudflare chạy dưới `wrangler dev` với một bản sao lưu chuyển Bun → Cloudflare → Bun, rồi trên một tài khoản thật. Image có cho `amd64` và `arm64`. **Dựng lần đầu là phần kỹ thuật:** giao máy chủ cho một AI agent, skill [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) dẫn nó đi từng bước, có cả bước kiểm tra.
 
 ## Để AI viết hộ
 

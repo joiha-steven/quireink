@@ -61,12 +61,14 @@ for (const [name, where] of used) {
 // ---- I2 -------------------------------------------------------------------------------------
 
 /** Each place: the file that IS it, and the test that installs it. */
-const PLACES: { file: string; test: string }[] = [
+const PLACES: { file: string; test: string; link?: string }[] = [
   { file: 'server.sh', test: 'server-http' },
   { file: 'install.sh', test: 'source-fresh' },
   { file: 'docker-compose.image.yml', test: 'docker-fresh' },
   { file: 'deploy/kubernetes/README.md', test: 'docker-fresh' },
   { file: 'deploy/digitalocean/README.md', test: 'server-http' },
+  // The README links the Deploy button rather than the file: the button is how a reader uses it.
+  { file: 'wrangler.jsonc', test: 'cloudflare-dev', link: 'deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release' },
 ]
 const readme = read('README.md')
 const readmeVi = read('README.vi.md')
@@ -74,7 +76,7 @@ const matrix = read('scripts/ops/matrix.sh')
 for (const p of PLACES) {
   if (!existsSync(join(ROOT, p.file))) faults.push(`I2: ${p.file} is a place to install and does not exist`)
   for (const [name, text] of [['README.md', readme], ['README.vi.md', readmeVi]] as const) {
-    if (!text.includes(`(./${p.file})`)) faults.push(`I2: ${name}'s install table does not link ${p.file}`)
+    if (!text.includes(p.link ?? `(./${p.file})`)) faults.push(`I2: ${name}'s install table does not link ${p.link ?? p.file}`)
   }
   if (!new RegExp(`^\\s*${p.test}\\)`, 'm').test(matrix)) faults.push(`I2: ${p.file} is installed by the "${p.test}" cell, which scripts/ops/matrix.sh does not have`)
 }

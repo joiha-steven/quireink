@@ -532,7 +532,7 @@ const zh = {
   cfErrNotApi: '这个博客不是通过 API 安装的,所以不能在这里改动自己。',
   cfErrTokenCannot: '这个令牌够不到这个 Worker 和它的存储桶,所以什么都没删。',
   cfLeaveFailed: '删除已停止:',
-  cfLeaveCli: '从命令行部署的博客:先下载备份,再在你部署用的代码目录里运行 npx wrangler delete,并在 Cloudflare 控制台清空并删除它的 R2 存储桶。',
+  cfLeaveCli: '从命令行部署的博客:先下载备份,再在你部署用的代码目录里运行 bunx wrangler delete,并在 Cloudflare 控制台清空并删除它的 R2 存储桶。',
   copiedUrl: '已复制 URL',
   loadMediaFailed: '加载媒体库失败',
   dropzone: '将图片拖到此处或点击选择',

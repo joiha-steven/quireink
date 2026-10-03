@@ -45,16 +45,16 @@
   Replaces the four commands in `docs/self-host.md` §9.
 - **Settings → Server shows how to upgrade, for this install only.** Under the news that a newer
   release exists: `bun run upgrade` for a checkout, `docker compose pull && docker compose up -d`
-  for the image (or the NAS app's Update button), and syncing the fork for Cloudflare. In all
-  eleven languages.
+  for the image (or the NAS app's Update button), and for Cloudflare the way that blog was installed
+  (its Update workflow, one key on the Cloudflare card, or `bun run deploy`). In all eleven languages.
 
 - **`server.sh`: a blank Ubuntu or Debian server to a running blog in one command.** It installs
   Docker if there is none, runs the image of the newest release with Caddy and a Let's Encrypt
   certificate when you give it `--domain` (plain HTTP on the machine's address when you do not),
   keeps the data in `/var/lib/quireink`, waits until the blog answers and says how to claim it
-  (`--setup-code`, so no log is needed). It is the one script here that uses `sudo`, and it refuses
-  any machine that already serves something. Run it again and it is an update that leaves `.env`
-  alone. The DigitalOcean user-data file is now a thin shell around it.
+  (`--setup-code`, so no log is needed). It runs as root, and it refuses any machine that already
+  serves something. Run it again and it is an update, whose one change to `.env` is a `--domain`
+  given for the first time. The DigitalOcean user-data file is now a thin shell around it.
 
 - **Start a new blog from a backup.** A fresh install that nobody has claimed yet offers **Start
   from a backup** on its setup screen: give it an archive written by the same version (and its key
@@ -105,6 +105,9 @@
 
 ### Changed
 
+- **An import ZIP is read a slice at a time.** The importer read the uploaded archive whole; it now
+  reads the end of the file, the directory, and then only the entries it keeps, so a large export
+  costs memory for one entry rather than the whole file. On Cloudflare the import limit is 30 MB.
 - **Move to Cloudflare carries a blog of any size.** It used to refuse a blog past 95 MB, because the
   backup went in one request; it now writes the backup to disk and sends it in 16 MB parts, resending
   a part when the connection drops, and the card shows how much has gone.
@@ -113,7 +116,7 @@
   database's `schema.sql`, one `.jsonl` file per table and the uploads as before. The manifest
   records every table's row count and a SHA-256 of its rows, so a restore can prove nothing was
   lost or changed. It is written as it streams, so its size is never bounded by memory, and it is
-  the same archive Quire Ink on Cloudflare will write.
+  the same archive Quire Ink on Cloudflare writes.
 - **Restoring is one command:** `bun scripts/restore.ts <archive> --data-dir <dir>` (add
   `--identity` or `--passphrase` for a sealed one), with the service stopped. It reads both the
   new archives and every older one, refuses a data directory that still holds a database, rebuilds

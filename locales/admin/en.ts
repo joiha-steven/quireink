@@ -532,7 +532,7 @@ const en = {
   cfErrNotApi: 'This blog was not installed through the API, so it cannot change itself from here.',
   cfErrTokenCannot: 'That token cannot reach this Worker and its bucket, so nothing was deleted.',
   cfLeaveFailed: 'Deleting stopped:',
-  cfLeaveCli: 'Deployed from the command line: download a backup, then run npx wrangler delete in the checkout you deployed from, and empty and delete its R2 bucket in the Cloudflare dashboard.',
+  cfLeaveCli: 'Deployed from the command line: download a backup, then run bunx wrangler delete in the checkout you deployed from, and empty and delete its R2 bucket in the Cloudflare dashboard.',
   copiedUrl: 'URL copied',
   loadMediaFailed: 'Failed to load media',
   dropzone: 'Drag images here or click to choose',

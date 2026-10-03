@@ -10,11 +10,11 @@
 # serves plain HTTP on the machine's own address, which is the most a server with no name can
 # honestly do; run it again with --domain once DNS points here.
 #
-# THE ONE SCRIPT IN THIS PROJECT THAT USES sudo, and the reason it is allowed to: it refuses to run
+# THE ONE SCRIPT IN THIS PROJECT THAT RUNS AS ROOT, and the reason it is allowed to: it refuses to run
 # anywhere but a BLANK machine. Something already listening on 80 or 443, nginx, Apache or Caddy
 # running or enabled as a service, or any Docker container that is not ours, and it stops before changing
 # anything and says what it found. `install.sh` keeps its own rule — no sudo, never root — for
-# people who want to run things themselves.
+# people who want to run things themselves (`bun run upgrade` asks `sudo -n` for one restart, no more).
 #
 # Run it again on the same machine and it is an update: it reads the newest release, moves the
 # image to it, keeps .env (the address, the setup code, anything added since) untouched.

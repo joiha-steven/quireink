@@ -532,7 +532,7 @@ const es = {
   cfErrNotApi: 'Este blog no se instaló mediante la API, así que no puede cambiarse a sí mismo desde aquí.',
   cfErrTokenCannot: 'Ese token no llega a este Worker y su bucket, así que no se borró nada.',
   cfLeaveFailed: 'El borrado se detuvo:',
-  cfLeaveCli: 'Desplegado desde la línea de comandos: descarga una copia, ejecuta npx wrangler delete en la copia del código desde la que desplegaste y vacía y borra su bucket R2 en el panel de Cloudflare.',
+  cfLeaveCli: 'Desplegado desde la línea de comandos: descarga una copia, ejecuta bunx wrangler delete en la copia del código desde la que desplegaste y vacía y borra su bucket R2 en el panel de Cloudflare.',
   copiedUrl: 'URL copiada',
   loadMediaFailed: 'No se pudieron cargar las imágenes',
   dropzone: 'Arrastra imágenes aquí o haz clic para elegir',

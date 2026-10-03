@@ -532,7 +532,7 @@ const ja = {
   cfErrNotApi: 'このブログは API でインストールされていないため、ここから自分自身を変更できません。',
   cfErrTokenCannot: 'そのトークンではこの Worker とバケットに届かないため、何も削除していません。',
   cfLeaveFailed: '削除が止まりました:',
-  cfLeaveCli: 'コマンドラインからデプロイしたブログ:バックアップをダウンロードし、デプロイしたチェックアウトで npx wrangler delete を実行し、Cloudflare ダッシュボードで R2 バケットを空にして削除してください。',
+  cfLeaveCli: 'コマンドラインからデプロイしたブログ:バックアップをダウンロードし、デプロイしたチェックアウトで bunx wrangler delete を実行し、Cloudflare ダッシュボードで R2 バケットを空にして削除してください。',
   copiedUrl: 'URLをコピーしました',
   loadMediaFailed: 'メディアの読み込みに失敗しました',
   dropzone: '画像をここにドラッグするか、クリックして選択',

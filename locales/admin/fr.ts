@@ -532,7 +532,7 @@ const fr = {
   cfErrNotApi: 'Ce blog n’a pas été installé par l’API ; il ne peut donc pas se modifier lui-même d’ici.',
   cfErrTokenCannot: 'Ce jeton n’atteint pas ce Worker et son bucket ; rien n’a donc été supprimé.',
   cfLeaveFailed: 'La suppression s’est arrêtée :',
-  cfLeaveCli: 'Déployé en ligne de commande : téléchargez une sauvegarde, lancez npx wrangler delete dans le dépôt depuis lequel vous avez déployé, puis videz et supprimez son bucket R2 dans le tableau de bord Cloudflare.',
+  cfLeaveCli: 'Déployé en ligne de commande : téléchargez une sauvegarde, lancez bunx wrangler delete dans le dépôt depuis lequel vous avez déployé, puis videz et supprimez son bucket R2 dans le tableau de bord Cloudflare.',
   copiedUrl: 'URL copiée',
   loadMediaFailed: 'Impossible de charger les images',
   dropzone: 'Glissez des images ici ou cliquez pour choisir',

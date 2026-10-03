@@ -44,9 +44,8 @@ memory, so an export held two copies of it and the hourly snapshot held one. Wit
 OOM-killed process, and the only trace was a restart in the log.
 
 **Snapshots** are written to `BACKUP_DIR` (default `<DATA_DIR>/backups`) by the cron tick,
-every `intervalDays`, keeping the newest `keep`. Those two fields have been in Settings
-since the port and drove nothing until 2026-07-29; they pointed at the Google Drive
-destination that had already been removed.
+every `intervalDays`, keeping the newest `keep`; on Cloudflare, by the Durable Object's alarm to
+`private/backups/` in the bucket, a prefix `/uploads` never serves.
 
 **On by default since 2026-08-29** (every 4 days, keep 4). It shipped off, which meant the
 install that never opens Settings — precisely the one this product is for — ran with no

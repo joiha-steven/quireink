@@ -102,7 +102,10 @@ export function cloudflareUpdateRoutes() {
     const stored = passwordHashFor(user.username)
     if (!stored || typeof input.current !== 'string' || !(await verifyPassword(stored.hash, input.current))) return fail(c, 'wrong_password', 403)
     const host = new URL(resolveSiteUrl(await getSettings())).hostname
-    if (typeof input.confirm !== 'string' || input.confirm.trim().toLowerCase() !== host) return fail(c, 'confirm_mismatch', 400)
+    // The host name, however it was typed: `https://` and a trailing slash are how an address is
+    // copied out of the browser, and refusing them proved only that the owner pasted it.
+    const typed = typeof input.confirm === 'string' ? input.confirm.trim().toLowerCase().replace(/^[a-z]+:\/\//, '').replace(/\/+$/, '') : ''
+    if (typed !== host) return fail(c, 'confirm_mismatch', 400)
     return json({ host })
   }, QUIET)
 

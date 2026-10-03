@@ -532,7 +532,7 @@ const ko = {
   cfErrNotApi: '이 블로그는 API로 설치되지 않아 여기서 스스로를 바꿀 수 없습니다.',
   cfErrTokenCannot: '그 토큰으로는 이 Worker와 버킷에 닿지 않아 아무것도 삭제하지 않았습니다.',
   cfLeaveFailed: '삭제가 멈췄습니다:',
-  cfLeaveCli: '명령줄로 배포한 블로그: 백업을 내려받은 뒤 배포한 체크아웃에서 npx wrangler delete를 실행하고, Cloudflare 대시보드에서 R2 버킷을 비운 다음 삭제하세요.',
+  cfLeaveCli: '명령줄로 배포한 블로그: 백업을 내려받은 뒤 배포한 체크아웃에서 bunx wrangler delete를 실행하고, Cloudflare 대시보드에서 R2 버킷을 비운 다음 삭제하세요.',
   copiedUrl: 'URL이 복사되었습니다',
   loadMediaFailed: '미디어를 불러오지 못했습니다',
   dropzone: '여기에 이미지를 끌어다 놓거나 클릭하여 선택하세요',

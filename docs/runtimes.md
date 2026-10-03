@@ -22,14 +22,15 @@ or a row has no key. A difference that is not in this table is a bug.
 | `passwordHash` | Bun's own argon2id | argon2id in plain JS (`@noble/hashes`, ADR 0069) | The same hash strings: a password set on one verifies on the other |
 | `preMigrationCopy` | `file`: `VACUUM INTO` a copy in `data/backups/` (ADR 0063) | `bookmark`: a point in the Durable Object's history, restorable for 30 days | Both are taken before a migration runs; restoring a bookmark is a Cloudflare dashboard or API action |
 | `clock` | `timer` in the process (ADR 0031) | `alarm` on the Durable Object | Scheduled posts go out within a minute either way |
-| `store` | `disk`: `STORAGE_LOCAL_DIR` | `r2`: the bucket bound as `BLOBS` | The same pathnames, so a backup moves between them unchanged |
+| `store` | `disk`: `STORAGE_LOCAL_DIR` | `r2`: the bucket bound as `BLOBS` | The same pathnames, so a backup moves between them unchanged. Kept backups beside them: `BACKUP_DIR` on Bun, `private/backups/` in the bucket on Cloudflare, which `/uploads` refuses to serve |
 | `clientAddress` | `peer`: the socket, and `CF-Connecting-IP` only once Cloudflare is configured in front | `edge`: `CF-Connecting-IP` and `CF-IPCountry`, which the platform writes on every request | Rate limits and the analytics country count readers one by one on both. A Worker has no socket, so before this key every reader on Cloudflare shared one limit |
 | `bodyLimits` | `machine`: uploads up to `MAX_UPLOAD_MB` (64 MB by default), imports up to 100 MB | `isolate`: 25 MB and 30 MB by default | A request body is held whole, plus a copy, in a Worker's 128 MB, so the defaults are smaller there; `MAX_UPLOAD_MB` still sets the upload limit on either |
 
 ## What only Bun has, and why
 
 - **`bun run upgrade`, `install.sh`, `server.sh`** — installing onto a machine. A Cloudflare install
-  upgrades by syncing its fork (Workers Builds deploys it) or from the admin.
+  upgrades the way it was installed: the *Update Quire Ink* workflow in its GitHub copy (the Deploy
+  button), one key in Settings (*Move to Cloudflare*), or `bun run deploy` again.
 - **The PRAGMAs** (`journal_mode`, `cache_size`, …) — a Durable Object manages its own SQLite and
   refuses them.
 

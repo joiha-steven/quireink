@@ -532,7 +532,7 @@ const it = {
   cfErrNotApi: 'Questo blog non è stato installato tramite l’API, quindi da qui non può modificarsi da solo.',
   cfErrTokenCannot: 'Quel token non raggiunge questo Worker e il suo bucket, quindi non è stato eliminato nulla.',
   cfLeaveFailed: 'L’eliminazione si è fermata:',
-  cfLeaveCli: 'Pubblicato da riga di comando: scarica un backup, poi esegui npx wrangler delete nella copia del codice da cui hai pubblicato, e svuota ed elimina il suo bucket R2 nella dashboard di Cloudflare.',
+  cfLeaveCli: 'Pubblicato da riga di comando: scarica un backup, poi esegui bunx wrangler delete nella copia del codice da cui hai pubblicato, e svuota ed elimina il suo bucket R2 nella dashboard di Cloudflare.',
   copiedUrl: 'URL copiato',
   loadMediaFailed: 'Impossibile caricare le immagini',
   dropzone: 'Trascina qui le immagini o clicca per scegliere',

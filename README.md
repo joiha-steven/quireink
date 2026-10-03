@@ -9,7 +9,7 @@
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
-One process. Two SQLite files. No cloud account anywhere in the path. Your name on it, not ours.
+One process. Two SQLite files. No cloud account needed, and Cloudflare if you want one. Your name on it, not ours.
 
 <br/>
 
@@ -43,7 +43,7 @@ Colour, type, the shape of the front page and the menu are all settings in the a
 - **Analytics without cookies**, per post and per site, and a newsletter on your own mail server.
 - **Moving in and out**: WordPress, Ghost, Substack or Medium in; a ZIP of Markdown out.
 - **An AI agent can run it.** A built-in MCP server lets an assistant draft, publish, read your numbers and tidy up, through the same rules the admin follows.
-- **Fast on a small box.** One Bun process, two SQLite files, no database server, no cloud account in the path.
+- **Fast on a small box.** One Bun process, two SQLite files, no database server, no cloud account needed.
 - **Eleven languages**, in the admin and on the site.
 
 Every part, in detail and against the alternatives: [**Quire Ink, in full**](./docs/overview.md).
@@ -91,7 +91,7 @@ Then one question — **what do you have?**
 | **Docker already**, and a domain | [`docker-compose.image.yml`](./docker-compose.image.yml) + the [`Caddyfile`](./Caddyfile) ([how](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
 | **A server you look after yourself**, with Bun 1.3+ | [`install.sh`](./install.sh), then systemd and nginx ([self-hosting](./docs/self-host.md)) | `bun run upgrade` |
 | **Kubernetes**, or **a DigitalOcean droplet** | [The manifests](./deploy/kubernetes/README.md) · [one pasted file](./deploy/digitalocean/README.md) | Change the tag · as the VPS row |
-| **A Cloudflare account** on Workers Paid ($5/month, not the Free plan), and no server at all — beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release) ([step by step, and why not Free](./docs/self-host-cloudflare.md)) | In your copy on GitHub: Actions → Update Quire Ink; Cloudflare deploys it ([how](./docs/self-host-cloudflare.md#upgrading)) |
+| **A Cloudflare account** on Workers Paid ($5/month, not the Free plan), and no server at all — beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release) ([step by step, and why not Free](./docs/self-host-cloudflare.md)). Already running Quire Ink: **Settings → Server → Run on Cloudflare** moves it ([how](./docs/self-host-cloudflare.md#moving-a-blog-you-already-run)) | In your copy on GitHub: Actions → Update Quire Ink; Cloudflare deploys it ([how](./docs/self-host-cloudflare.md#upgrading)). Moved: one key in Settings |
 
 On a fresh VPS, with the domain's DNS already pointing at it:
 
@@ -102,7 +102,7 @@ curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/server.s
 
 It installs Docker, runs the image of the newest release with a Let's Encrypt certificate, and stops on any machine that already serves something. Then open `https://blog.example.com/setup`, type the code, and a short setup — account, authenticator, the look — ends in the editor.
 
-**Every way in installs a release**, never unreleased work ([ADR 0065](./docs/decisions/0065-every-install-runs-a-release.md)), and every release is installed and upgraded through each of them before it is published. Images exist for `amd64` and `arm64`. **Setting it up once is the technical part:** hand the server to an AI agent and the [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) skill walks it through, checks included.
+**Every way in installs a release**, never unreleased work ([ADR 0065](./docs/decisions/0065-every-install-runs-a-release.md)), and every release is installed through them before it is published: from source, the image and a blank server in a fresh install and an upgrade from the release before, and the Cloudflare package under `wrangler dev` with a backup moved Bun → Cloudflare → Bun, then on a real account. Images exist for `amd64` and `arm64`. **Setting it up once is the technical part:** hand the server to an AI agent and the [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) skill walks it through, checks included.
 
 ## Let an AI agent write for you
 
@@ -131,7 +131,7 @@ bun run dev                         # http://localhost:3000
 # the log prints a /setup link to claim it; or: bun run user create --username me --email me@example.com
 ```
 
-Nothing is finished until `bun run check:all` passes: a typecheck, seventeen static guards and the tests, all offline, with no credentials and no services. `bun run tour` then drives every screen in a real browser and opens the backup it built. Start at [`CONTRIBUTING.md`](./CONTRIBUTING.md), which points to the house rules in [`CLAUDE.md`](./CLAUDE.md).
+Nothing is finished until `bun run check:all` passes: two typechecks, seventeen static guards and the tests, all offline, with no credentials and no services. `bun run tour` then drives every screen in a real browser and opens the backup it built. Start at [`CONTRIBUTING.md`](./CONTRIBUTING.md), which points to the house rules in [`CLAUDE.md`](./CLAUDE.md).
 
 <details>
 <summary><b>Where things live</b></summary>

@@ -532,7 +532,7 @@ const de = {
   cfErrNotApi: 'Dieses Blog wurde nicht über die API installiert und kann sich daher von hier aus nicht selbst ändern.',
   cfErrTokenCannot: 'Dieses Token erreicht diesen Worker und seinen Bucket nicht, darum wurde nichts gelöscht.',
   cfLeaveFailed: 'Das Löschen wurde angehalten:',
-  cfLeaveCli: 'Über die Kommandozeile veröffentlicht: Sicherung herunterladen, dann im Checkout, aus dem Sie veröffentlicht haben, npx wrangler delete ausführen und den R2-Bucket im Cloudflare-Dashboard leeren und löschen.',
+  cfLeaveCli: 'Über die Kommandozeile veröffentlicht: Sicherung herunterladen, dann im Checkout, aus dem Sie veröffentlicht haben, bunx wrangler delete ausführen und den R2-Bucket im Cloudflare-Dashboard leeren und löschen.',
   copiedUrl: 'URL kopiert',
   loadMediaFailed: 'Medien konnten nicht geladen werden',
   dropzone: 'Bilder hierher ziehen oder zum Auswählen klicken',

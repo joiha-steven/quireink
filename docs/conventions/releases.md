@@ -6,7 +6,7 @@ On any behavior change, update the matching doc in the SAME change:
   change. **README.md** = setup + features. Direction, dated snapshots and the worklog are
   **not in this repository** ([ADR 0017](../decisions/0017-move-state-and-instance-config-private.md)).
 - **README is the canonical install/usage doc, and it has to stay current.** Its **Install** section
-  (the five places a blog can live, the one-command path and the hand-to-an-agent path) + the **MCP "let an agent write & publish"** section
+  (every place a blog can live, as the install table lists them, the one-command path and the hand-to-an-agent path) + the **MCP "let an agent write & publish"** section
   + the **env-var table** must be updated in the SAME change whenever setup/deploy/env/auth/MCP/backup
   behavior changes (new/renamed env var, a new owner setup step, a changed redirect URI, etc.).
   Never let the README drift from how the app is actually installed and run.

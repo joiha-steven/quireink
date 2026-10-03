@@ -532,7 +532,7 @@ const vi = {
   cfErrNotApi: 'Blog này không được cài qua API, nên không tự thay đổi được từ đây.',
   cfErrTokenCannot: 'Token đó không chạm được tới Worker và bucket này, nên chưa có gì bị xoá.',
   cfLeaveFailed: 'Việc xoá dừng lại:',
-  cfLeaveCli: 'Triển khai bằng dòng lệnh: tải bản sao lưu, rồi chạy npx wrangler delete trong thư mục mã bạn đã triển khai, và làm trống rồi xoá bucket R2 của nó trong bảng điều khiển Cloudflare.',
+  cfLeaveCli: 'Triển khai bằng dòng lệnh: tải bản sao lưu, rồi chạy bunx wrangler delete trong thư mục mã bạn đã triển khai, và làm trống rồi xoá bucket R2 của nó trong bảng điều khiển Cloudflare.',
   copiedUrl: 'Đã sao chép URL',
   loadMediaFailed: 'Không tải được thư viện',
   dropzone: 'Kéo thả ảnh vào đây hoặc bấm để chọn',

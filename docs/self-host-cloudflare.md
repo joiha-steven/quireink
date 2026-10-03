@@ -14,15 +14,17 @@ feels on a bad day rather than on a good one:
    counter), so at about 50,000 views the blog answers with errors until 00:00 UTC — on exactly the
    day a post is shared widely. Paid has no daily cap; past what is included it bills, and keeps
    serving.
-2. **It cannot send mail**: the newsletter, comment notices and sign-in recovery would all need an
-   outside mail service. Paid includes 3,000 messages a month.
+2. **It allows 10 ms of CPU a request.** Checking a password, making picture sizes, writing a backup
+   or loading one each take longer; Paid allows up to five minutes, and every way of installing asks for that.
 3. **It refuses writes past 100,000 rows a day**, autosave included.
 4. **It cuts long jobs at 50 outgoing requests**: fediverse delivery, link cards, importing pictures.
 5. **It saves no step**: R2, where pictures live, asks for a card on file on either plan.
 
 What a typical blog costs on Paid, from the included amounts (10 million requests, 1 million
-Durable Object requests, 50 million rows written, 5 GB of SQLite, 3,000 emails, 10 GB of R2, 5,000
-image transformations a month): **$5.00** for 100,000 views a month; about **$5.50** for a million.
+Durable Object requests, 50 million rows written, 5 GB of SQLite, 10 GB of R2, 5,000 image
+transformations a month): **$5.00** for 100,000 views a month; about **$5.15** for a million, which is
+what Settings → Server → Cloudflare estimates from the blog's own numbers. Mail is not among them:
+the newsletter and notices go through the SMTP server you set in Settings, on either runtime.
 
 ## With the Deploy to Cloudflare button (the easy way)
 
@@ -114,7 +116,7 @@ The release's `wrangler.jsonc` carries the default names. If the button wrote a 
 line in that diff is the release's and stays: a bucket name left at the default would point the blog
 at another bucket, without its uploads and backups.
 
-**Moved from a server, or installed by the installer:** Settings → Server → Cloudflare shows the
+**Moved from a server:** Settings → Server → Cloudflare shows the
 newest release and a key to update to it. The Worker uploads the new version, keeps your variables
 and secrets, waits for the blog to answer as the new version — and puts the version before back if
 it does not. It uses the token kept in the Worker when you allowed self-updates during the move, or
@@ -144,14 +146,20 @@ which a Worker can verify within its memory.
 
 Settings → Server → Cloudflare → *Leaving Cloudflare*. Download a backup first: it is the only way
 back, and it loads into a new Quire Ink on a server, in Docker or on a NAS through *Start from a
-backup* on its first screen. Then type your password and the blog's address, and the Worker deletes
-the blog's pictures, files and backups, its bucket, and itself with its Durable Object and database.
-There is no Trash behind it. A blog made with the Deploy button is deleted in the dashboard instead
-(the card says how), together with its copy on GitHub.
+backup* on its first screen.
+
+- **Moved from a server:** type your password, the blog's address, and an API token if none was kept
+  during the move. The Worker checks the token can
+  reach both itself and its bucket, then deletes the pictures, files and backups, the bucket, and
+  itself with its Durable Object and database. There is no Trash behind it.
+- **Made with the Deploy button:** delete the Worker in the dashboard (Settings → Delete), empty and
+  delete its R2 bucket, and delete your copy on GitHub. The card says the same.
+- **Deployed with `bun run deploy`:** from the same checkout, `bunx wrangler delete`, then empty and
+  delete the bucket in the dashboard.
 
 ## Coming before this leaves beta
 
-- A run on Cloudflare itself before every release, not only under `wrangler dev`. (Every release
-  already moves a Bun blog onto this build through `/setup/restore`, compares every page with Bun's,
-  runs the whole tour of the product — 286 flows — and checks that a backup taken there restores to
-  what Bun had.)
+- A run on Cloudflare itself in CI before every release. Today it is a step the release manager runs
+  by hand (L10: install, upgrade and remove on a real account); CI runs everything else under
+  `wrangler dev` — a Bun blog moved onto this build, every page compared with Bun's, the whole tour
+  of the product, and a backup taken there restored to what Bun had.

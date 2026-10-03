@@ -533,7 +533,7 @@ const pt = {
   cfErrNotApi: 'Este blog não foi instalado pela API, então não consegue se alterar daqui.',
   cfErrTokenCannot: 'Esse token não alcança este Worker e o bucket dele, então nada foi apagado.',
   cfLeaveFailed: 'A exclusão parou:',
-  cfLeaveCli: 'Publicado pela linha de comando: baixe um backup, rode npx wrangler delete na cópia do código de onde publicou, e esvazie e apague o bucket R2 dele no painel da Cloudflare.',
+  cfLeaveCli: 'Publicado pela linha de comando: baixe um backup, rode bunx wrangler delete na cópia do código de onde publicou, e esvazie e apague o bucket R2 dele no painel da Cloudflare.',
   copiedUrl: 'URL copiada',
   loadMediaFailed: 'Não foi possível carregar as imagens',
   dropzone: 'Arraste imagens para cá ou clique para escolher',
