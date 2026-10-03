@@ -2,7 +2,10 @@
 //
 // The bundle is code-split, so unlike the three public files there is no fixed list to
 // import as text — the chunk names carry a hash the bundler chose. The runtime hands over the
-// whole directory, read once and held in memory (`@/runtime/impl/assets`).
+// whole directory (`@/runtime/impl/assets`): every name and what the shell needs to know about it,
+// synchronously, and the bytes when a request asks. This file decides every name the shell links;
+// `asset-route.ts` answers requests for them — on Bun every one, on Cloudflare only what Static
+// Assets has no file for, because the build writes the rest there under these names.
 //
 // The gate is the important part. The shell is served only to the owner, and everything
 // under it is a router-group route (Invariant 4). A signed-out request is REDIRECTED to
@@ -10,7 +13,7 @@
 
 import { contentHash } from '@/web/content-hash'
 import { adminDist } from '@/runtime/impl/assets'
-import type { Context } from 'hono'
+import type { AdminFile } from '@/runtime/ports'
 import type { SiteSettings } from '@/types'
 import { getIntegrationStatus } from '@/store/integration-keys'
 import { railBootScript, railData, railHtml, railHtmlAttrs } from '@/web/admin/rail'
@@ -23,7 +26,7 @@ import { allFontFaceCss } from '@/render/font-faces'
 import { fontPresetCss, themesToCss } from '@/content/themes'
 import { typographyToCss, fontToCss, tableToCss } from '@/content/settings'
 
-type Asset = { body: Uint8Array; type: string }
+type Asset = AdminFile
 
 const TYPES: Record<string, string> = {
   '.js': 'text/javascript; charset=utf-8',
@@ -31,6 +34,8 @@ const TYPES: Record<string, string> = {
 
 /** Every built file, by name (the runtime's `adminDist`), plus the boot script made below. */
 const ASSETS = new Map<string, Asset>(adminDist())
+/** The same map, for the route that serves the files (`asset-route.ts`). */
+export const ADMIN_FILES: ReadonlyMap<string, Asset> = ASSETS
 
 /**
  * The stylesheet, served under a name that carries a fingerprint.
@@ -48,9 +53,8 @@ const ASSETS = new Map<string, Asset>(adminDist())
  * identified BY ITS URL.
  */
 function fingerprint(name: string): string {
-  const asset = ASSETS.get(name)
   // 'dev' when unbuilt: the shell says so in words rather than linking a name that resolves to nothing.
-  return asset ? contentHash(asset.body) : 'dev'
+  return ASSETS.get(name)?.hash ?? 'dev'
 }
 
 /**
@@ -93,21 +97,6 @@ const STYLES = `/admin/assets/${STYLES_NAME}`
 export const INK_NAME = `admin-ink.${fingerprint('admin-ink.css')}.css`
 const INK = `/admin/assets/${INK_NAME}`
 /**
- * An OLD shell's sheet: chrome AND pen, joined. A tab open across the release that split the pen
- * out links one sheet and no pen, and may be on the editor — the chrome alone would leave every
- * stroke bare until a reload (`tour-flows-pen.ts`).
- */
-const STALE_SHEET: Asset | null = (() => {
-  const chrome = ASSETS.get('admin.css')
-  const ink = ASSETS.get('admin-ink.css')
-  if (!chrome || !ink) return chrome ?? null
-  const body = new Uint8Array(chrome.body.length + ink.body.length)
-  body.set(chrome.body, 0)
-  body.set(ink.body, chrome.body.length)
-  return { body, type: chrome.type }
-})()
-
-/**
  * THE BOOT SCRIPT, AS A FILE, and the reason is a Content Security Policy.
  *
  * It was inline in the head — the one shape of script `docs/performance.md` allows there — and
@@ -131,9 +120,10 @@ const STALE_SHEET: Asset | null = (() => {
  * shares with the rail (`admin-shared/rail.ts`), and because it must be ONE file that never
  * imports anything — an import would be a second request before the first paint.
  */
-const BOOT_BODY = railBootScript()
-const BOOT_NAME = `boot.${contentHash(BOOT_BODY)}.js`
-ASSETS.set(BOOT_NAME, { body: new TextEncoder().encode(BOOT_BODY), type: TYPES['.js'] ?? 'text/javascript' })
+const BOOT_BODY = new TextEncoder().encode(railBootScript())
+const BOOT_HASH = contentHash(BOOT_BODY)
+const BOOT_NAME = `boot.${BOOT_HASH}.js`
+ASSETS.set(BOOT_NAME, { type: TYPES['.js'] ?? 'text/javascript', hash: BOOT_HASH, imports: [], body: async () => BOOT_BODY })
 const BOOT = `/admin/assets/${BOOT_NAME}`
 
 /**
@@ -155,12 +145,10 @@ function bootChunks(entry: string): string[] {
   while (queue.length > 0) {
     const asset = ASSETS.get(queue.shift() ?? '')
     if (!asset) continue
-    const text = new TextDecoder().decode(asset.body)
-    // `from"./x.js"` and the bare side-effect form `import"./x.js"`. A dynamic import has a
-    // parenthesis between the keyword and the string, so it cannot match.
-    for (const match of text.matchAll(/(?:from|import)\s*"\.\/([^"]+\.js)"/g)) {
-      const dep = match[1] ?? ''
-      if (!dep || seen.has(dep)) continue
+    // Each file's static imports, read out of its text once (`runtime/admin-dist.ts`): on
+    // Cloudflare at build time, so drawing the shell there reads no bundle at all.
+    for (const dep of asset.imports) {
+      if (seen.has(dep)) continue
       seen.add(dep)
       found.push(dep)
       queue.push(dep)
@@ -332,47 +320,4 @@ ${railData(settings, aiConfigured)}
 </body>
 </html>
 `
-}
-
-/** One built file, or null. */
-export function adminAsset(name: string): Asset | null {
-  return ASSETS.get(name) ?? null
-}
-
-/**
- * A sheet name from a PREVIOUS release: `admin.<fingerprint>.css`, but not this shell's.
- *
- * A tab left open across a release still holds the old shell, and what it asks for on the
- * next screen is that shell's stylesheet. Until 2026-09-19 the answer was 404 and the admin
- * drew with no stylesheet at all — the two wordmark shapes side by side among the rest of it,
- * because the rule that picks between them (`#admin-rail .rail-mark`) was in the sheet that
- * never arrived. The current sheet under the old name is the smaller wrong by far: styles one
- * release ahead of the markup are a nudge out of place, a 404 is a bare page.
- */
-export const staleSheet = (name: string): boolean =>
-  (name !== STYLES_NAME && /^admin\.[a-z0-9]+\.css$/.test(name))
-  || (name !== INK_NAME && /^admin-ink\.[a-z0-9]+\.css$/.test(name))
-
-export function handleAdminAsset(c: Context): Response {
-  const name = c.req.path.replace('/admin/assets/', '')
-  // ONE virtual name, the sheet's. The entry had one too and that was the bug: a module is
-  // identified by the URL it was fetched from, so an entry reachable under two names is two
-  // modules, and a chunk that imports the entry back gets a second copy of everything in it.
-  // The bare `admin.css` still serves — a bookmark, or a shell an old tab is still holding —
-  // and still revalidates, because only the fingerprinted URL promises the bytes cannot change.
-  const stale = staleSheet(name)
-  const ink = name === INK_NAME || (stale && name.startsWith('admin-ink.'))
-  const stored = name === STYLES_NAME ? 'admin.css' : ink ? 'admin-ink.css' : name
-  const asset = stale && !ink ? STALE_SHEET : adminAsset(stored)
-  if (!asset) return new Response('Not found', { status: 404 })
-  // Every name the shell emits carries a hash: the bundler's on the entry and the chunks,
-  // ours on the sheet. Anything else is a bare name and must revalidate — and so must a
-  // fingerprint from an earlier release, whose bytes have just changed under it.
-  const immutable = !stale && (stored !== name || /[-.][a-z0-9]{8,}\./.test(name))
-  return new Response(asset.body, {
-    headers: {
-      'content-type': asset.type,
-      'cache-control': immutable ? 'public, max-age=31536000, immutable' : 'no-cache',
-    },
-  })
 }

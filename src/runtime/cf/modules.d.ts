@@ -1,8 +1,11 @@
 // Modules that exist only in the Cloudflare build (`scripts/build-worker.ts`).
 
-/** The admin's built bundle, compiled into the Worker so its chunk names are known synchronously. */
+/**
+ * The admin's built bundle as facts (`runtime/admin-dist.ts`), so its chunk names are known
+ * synchronously; `path` is where the bytes sit in Static Assets.
+ */
 declare module 'quire:admin-dist' {
-  const files: { name: string; type: string; body: Uint8Array }[]
+  const files: { name: string; type: string; hash: string; imports: string[]; path: string }[]
   export default files
 }
 

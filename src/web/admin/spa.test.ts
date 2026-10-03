@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { INK_NAME, STYLES_NAME, staleSheet } from '@/web/admin/spa'
+import { INK_NAME, STYLES_NAME } from '@/web/admin/spa'
+import { staleSheet } from '@/web/admin/asset-route'
 
 // The admin drew with NO STYLESHEET when a tab outlived the release its shell came from: the
 // shell asked for `admin.<old fingerprint>.css`, the route had only this build's name and the

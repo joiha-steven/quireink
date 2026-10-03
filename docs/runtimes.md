@@ -25,6 +25,32 @@ or a row has no key. A difference that is not in this table is a bug.
 | `store` | `disk`: `STORAGE_LOCAL_DIR` | `r2`: the bucket bound as `BLOBS` | The same pathnames, so a backup moves between them unchanged. Kept backups beside them: `BACKUP_DIR` on Bun, `private/backups/` in the bucket on Cloudflare, which `/uploads` refuses to serve |
 | `clientAddress` | `peer`: the socket, and `CF-Connecting-IP` only once Cloudflare is configured in front | `edge`: `CF-Connecting-IP` and `CF-IPCountry`, which the platform writes on every request | Rate limits and the analytics country count readers one by one on both. A Worker has no socket, so before this key every reader on Cloudflare shared one limit |
 | `bodyLimits` | `machine`: uploads up to `MAX_UPLOAD_MB` (64 MB by default), imports up to 100 MB | `isolate`: 25 MB and 30 MB by default | A request body is held whole in a Worker's 128 MB, plus a copy of the one file being worked on (a batch is read a file at a time, and a picture goes to the Images binding without another copy), so the defaults are smaller there; `MAX_UPLOAD_MB` still sets the upload limit on either |
+| `staticFiles` | `origin`: the app's routes answer the islands, sheets, admin chunks and reading fonts | `edge`: Static Assets answers them before the Worker runs, from the files and `_headers` the build writes | Nothing a reader can see: the same URLs, bytes, content types, `cache-control` and security headers, held by the parity crawl. An operator's `CSP` and the owner's redirects do not reach these files there; neither means anything for a font or a script |
+
+## How the Cloudflare build is laid out
+
+`bun run build:worker` ([`scripts/build-worker.ts`](../scripts/build-worker.ts)) writes the Worker
+and, beside it, the Static Assets. The rule it follows: **code that every isolate parses goes in the
+Worker; bytes that only some requests need go in Static Assets.** Measured 2026-10-03, before and
+after it was applied:
+
+| | before | after |
+|:--|--:|--:|
+| `worker.js` raw / gzip | 16.18 / 3.50 MB | 4.61 / 1.30 MB |
+| upload as wrangler counts it (with the WASM) | 18.3 / 4.46 MiB | 7.27 / 2.35 MiB |
+| isolate startup CPU (`wrangler check startup`, median of 7 or more) | 117 ms | 45 ms |
+| V8 compile of `worker.js` alone | 75 ms | 44 ms |
+
+- **Shiki's grammars** are JSON under `/static/shiki/`, each written once, fetched through the
+  binding the first time a fence names that language in that isolate (`cf/shiki-engine.ts`). Bun
+  imports the same grammars as modules; the HTML is the same string (`bun run test:cf` compares).
+- **The admin's files** sit at the URLs the shell links; the Worker carries only their names,
+  hashes and imports (`runtime/admin-dist.ts`), not 2 MB of base64 decoded at every start.
+- **The public sheets** are minified at build time (`web/served-css.ts`), not at module load.
+- **Every file whose URL carries its version** — and the reading fonts, which Bun has always sent
+  as `immutable` without a hash in their name — is answered by Static Assets before the Worker runs,
+  so a font or a chunk never starts an isolate or wakes the Durable Object. `/favicon.ico` is the
+  exception on purpose: its route serves the owner's own icon.
 
 ## What only Bun has, and why
 

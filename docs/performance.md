@@ -172,7 +172,8 @@ cost this trade accepts, and it is paid once.
 which 34,438 were comment text** — 52% of it — and 20,903 bytes compressed. These sheets are
 commented the way the rest of the codebase is, and that is worth keeping; it was worth
 keeping in the `.ts` file rather than on the wire. `web/css-min.ts` strips comments and
-collapses whitespace once at module init, and `PUBLIC_SHEET` hashes the MINIFIED bytes:
+collapses whitespace once — at module init on Bun, at BUILD time on Cloudflare, where an isolate
+starts far more often than a process does (`web/served-css.ts`) — and `PUBLIC_SHEET` hashes the MINIFIED bytes:
 **30,811 raw / 6,519 compressed**, a saving of 14.4 KB on every cold visit, which is more
 than the whole JavaScript budget for a page.
 

@@ -101,6 +101,19 @@ export type SocketPort = {
 }
 
 /**
+ * One built file of the admin: what the shell needs to know about it, known synchronously, and its
+ * bytes, read only when a request needs them (`runtime/admin-dist.ts` works out the facts).
+ */
+export type AdminFile = {
+  type: string
+  /** `contentHash` of the bytes: the sheets' fingerprints. */
+  hash: string
+  /** The `./x.js` chunks it imports statically, for the shell's modulepreload links. */
+  imports: readonly string[]
+  body: () => Promise<Uint8Array>
+}
+
+/**
  * `assets.ts`: files that ship with the code — fonts, icons, the admin's built bundle. A file is
  * named by what `import x from '…' with { type: 'file' }` gives (`ref`): on Bun a path on disk, on
  * Cloudflare a path in the Static Assets the Worker was deployed with.
@@ -110,8 +123,12 @@ export type AssetsPort = {
   readAsset: (ref: string) => Promise<ArrayBuffer>
   /** A body to stream the file in a Response. */
   assetBody: (ref: string) => Promise<Blob | ReadableStream<Uint8Array> | ArrayBuffer>
-  /** The admin's built files by name, loaded once and synchronously (the shell needs their names). */
-  adminDist: () => ReadonlyMap<string, { body: Uint8Array; type: string }>
+  /**
+   * The admin's built files by name, the names and facts loaded once and synchronously (the shell
+   * needs them before any request). Bun holds the bytes in memory; Cloudflare reads them from Static
+   * Assets, where they are also served directly under the names the shell links.
+   */
+  adminDist: () => ReadonlyMap<string, AdminFile>
 }
 
 /**
@@ -355,4 +372,11 @@ export type Capabilities = {
    * copy of the file being worked on, in a 128 MB isolate (a batch is read one file at a time).
    */
   bodyLimits: 'machine' | 'isolate'
+  /**
+   * Who answers the files the BUILD made — the islands, the sheets, the admin's chunks, the reading
+   * fonts. `origin`: the app's own routes, through its middleware. `edge`: Static Assets, before the
+   * Worker runs, with the same cache and security headers from the `_headers` the build writes; the
+   * routes still answer what the edge has no file for (a chosen ink's sheet, a stale hash).
+   */
+  staticFiles: 'origin' | 'edge'
 }

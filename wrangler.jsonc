@@ -21,6 +21,14 @@
   "base_dir": "dist/worker",
   "find_additional_modules": true,
   "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": false }],
+  // What `bun run build:worker` writes beside the worker: the islands, the sheets, the admin's chunks
+  // and the reading fonts AT THEIR OWN URLS, Shiki's grammars and the files the Worker reads under
+  // `/static/`, and a `_headers` giving the versioned files a year of `immutable` and the security
+  // headers. A path with a file is answered here BEFORE the Worker runs (`run_worker_first` stays at
+  // its default, false), so a font or a chunk never starts an isolate or wakes the blog's Durable
+  // Object; any other path — and every POST — falls through to the Worker (`not_found_handling`
+  // stays "none"). Nothing here may sit at a path the Worker must answer, `/favicon.ico` above all:
+  // that route serves the owner's own icon (`scripts/build-worker.ts`, item 7).
   "assets": { "directory": "dist/public", "binding": "ASSETS" },
   "durable_objects": { "bindings": [{ "name": "BLOG", "class_name": "Blog" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Blog"] }],

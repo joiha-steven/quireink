@@ -11,4 +11,5 @@ export const CAPABILITIES: Capabilities = {
   store: 'r2',
   clientAddress: 'edge',
   bodyLimits: 'isolate',
+  staticFiles: 'edge',
 }

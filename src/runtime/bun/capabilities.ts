@@ -11,4 +11,5 @@ export const CAPABILITIES: Capabilities = {
   store: 'disk',
   clientAddress: 'peer',
   bodyLimits: 'machine',
+  staticFiles: 'origin',
 }

@@ -8,6 +8,13 @@
 // on status, content type and body, with only what has to differ taken out first: each one's own
 // origin, and the per-response nonce. Anything else that differs is a runtime leaking into a page.
 //
+// Then every file those pages link — the islands, the sheets, the fonts, and with PARITY_SESSION
+// (an owner's session cookie value) the admin's chunks — is fetched from both and compared on status,
+// content type, cache-control, the security headers and the bytes. On Cloudflare most of them are
+// answered by Static Assets before the Worker runs (`scripts/build-worker.ts`, 2026-10-03), and this
+// is what holds that copy to what the Bun routes send. Skipped with PARITY_ASSET_HASHES=0, where the
+// two builds name different files by construction.
+//
 // Env: PARITY_MAX (pages, default all), PARITY_SHOW (how many differing pages to print in full),
 // PARITY_SITE_URL when both serve the same SITE_URL (a staging copy of a live blog), and
 // PARITY_ASSET_HASHES=0 when they run different builds.
@@ -80,8 +87,11 @@ function firstDifference(a: string, b: string): string {
 
 let same = 0
 const differing: { path: string; why: string }[] = []
+const linked = new Set<string>()
+const LINKED = /(?:href|src)="(\/(?:assets|fonts|admin\/assets)\/[^"?#]+|\/app-icon\.png)"/g
 for (const path of paths) {
   const [a, b] = await Promise.all([get(A, path), get(B, path)])
+  for (const m of a.body.matchAll(LINKED)) linked.add(m[1]!)
   if (a.status !== b.status) differing.push({ path, why: `status ${a.status} on Bun, ${b.status} on Cloudflare` })
   else if (a.type !== b.type) differing.push({ path, why: `content type ${a.type} on Bun, ${b.type} on Cloudflare` })
   else if (a.body !== b.body) differing.push({ path, why: firstDifference(a.body, b.body) })
@@ -91,4 +101,32 @@ for (const path of paths) {
 console.log(`parity: ${same} of ${paths.length} pages identical between ${A} and ${B}`)
 for (const d of differing.slice(0, SHOW)) console.log(`  ✗ ${d.path} — ${d.why}`)
 if (differing.length > SHOW) console.log(`  … and ${differing.length - SHOW} more: ${differing.slice(SHOW).map((d) => d.path).join(' ')}`)
-process.exit(differing.length ? 1 : 0)
+
+// ----- the files the pages link ------------------------------------------------------------------
+
+/** What a file is served WITH, beside its bytes: the headers a browser or a cache acts on. */
+const HEADERS = ['content-type', 'cache-control', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy']
+async function file(base: string, path: string): Promise<string> {
+  const res = await fetch(`${base}${path}`, { redirect: 'manual' })
+  const bytes = new Uint8Array(await res.arrayBuffer())
+  const digest = new Bun.CryptoHasher('sha256').update(bytes).digest('hex').slice(0, 16)
+  return [`status ${res.status}`, ...HEADERS.map((h) => `${h}: ${res.headers.get(h) ?? '-'}`), `${bytes.length} bytes ${digest}`].join('\n')
+}
+
+let filesDiffer = 0
+if (process.env.PARITY_ASSET_HASHES !== '0') {
+  // The admin's files are linked only from an owner's page; its HTML is not compared, only read.
+  if (process.env.PARITY_SESSION) {
+    const admin = await (await fetch(`${A}/admin`, { headers: { cookie: `__Host-quire_session=${process.env.PARITY_SESSION}` } })).text()
+    for (const m of admin.matchAll(LINKED)) linked.add(m[1]!)
+  }
+  let filesSame = 0
+  for (const path of linked) {
+    const [a, b] = await Promise.all([file(A, path), file(B, path)])
+    if (a === b) { filesSame++; continue }
+    filesDiffer++
+    if (filesDiffer <= SHOW) console.log(`  ✗ ${path} — ${firstDifference(a, b)}`)
+  }
+  console.log(`parity: ${filesSame} of ${linked.size} linked files identical, headers and bytes`)
+}
+process.exit(differing.length || filesDiffer ? 1 : 0)

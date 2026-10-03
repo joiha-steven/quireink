@@ -122,6 +122,15 @@
 - **An import ZIP is read a slice at a time.** The importer read the uploaded archive whole; it now
   reads the end of the file, the directory, and then only the entries it keeps, so a large export
   costs memory for one entry rather than the whole file. On Cloudflare the import limit is 30 MB.
+- **A blog on Cloudflare starts in less than half the time, and its fonts and scripts never wake
+  it.** The Worker is under a third of the size it was (16.2 MB to 4.6 MB; 3.5 MB to 1.3 MB
+  compressed), and a new copy of it starts on 45 ms of CPU instead of 117 ms. Syntax highlighting
+  loads a language's grammar the first time a post uses it instead of carrying all of them, with
+  the same colours to the byte; the admin's files, the public scripts and stylesheets and the
+  reading fonts are served by Cloudflare directly, before the blog's code runs, with the same
+  addresses and the same caching as before. Nothing changes for a blog on a server.
+  A blog that updates itself from Settings gets the new caching from the update after this one:
+  the update is carried out by the version already running.
 - **Move to Cloudflare carries a blog of any size.** It used to refuse a blog past 95 MB, because the
   backup went in one request; it now writes the backup to disk and sends it in 16 MB parts, resending
   a part when the connection drops, and the card shows how much has gone.

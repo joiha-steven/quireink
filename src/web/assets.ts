@@ -14,14 +14,11 @@ import readerPenJs from '@/assets/dist/reader-pen.js' with { type: 'text' }
 import loginJs from '@/assets/dist/login.js' with { type: 'text' }
 import setupRestoreJs from '@/assets/dist/setup-restore.js' with { type: 'text' }
 import swJs from '@/assets/dist/sw.js' with { type: 'text' }
-import { PUBLIC_CSS } from '@/web/public.css'
-import { LOOK_CODE_CSS } from '@/web/look-code.css'
-import { LOOK_PAPER_CSS } from '@/web/look-paper.css'
-import { LOOK_NOTES_CSS } from '@/web/look-notes.css'
-import { INK_HIGHLIGHT_CSS, INK_LINES_CSS, inkHighlightCss, inkLinesCss } from '@/pen/ink.css'
+import { inkHighlightCss, inkLinesCss } from '@/pen/ink.css'
 import { inkSignature, resolveInks } from '@/pen/palette'
 import type { InkSettings, SiteLook } from '@/types'
 import { minifyCss } from '@/web/css-min'
+import { SERVED_CSS } from '@/web/served-css'
 
 /** Bundles by logical name. Adding one is an import and a line. */
 const BUNDLES: Record<string, string> = {
@@ -53,13 +50,11 @@ for (const [name, source] of Object.entries(BUNDLES)) {
  * inline. The cascade is unchanged because the link is emitted before that inline block,
  * which is where the sheet sat in the assembled string.
  *
- * Minified once, here, on the way to being hashed. The sheets are commented the way the
- * rest of this codebase is, and those comments were going out on the wire: measured
- * 2026-07-30, 34,438 of the 65,645 bytes served were comment text, and a first visit paid
- * for all of it. Stripping them is worth about 14 KB compressed per cold visit, which is
+ * Minified once on the way to being hashed (`served-css.ts`, which says why that file is its
+ * own module). Stripping the comments is worth about 14 KB compressed per cold visit, which is
  * more than the entire JavaScript budget for a page. The prose stays in the .ts file.
  */
-const PUBLIC_CSS_SERVED = minifyCss(PUBLIC_CSS)
+const PUBLIC_CSS_SERVED = SERVED_CSS.site
 
 export const PUBLIC_SHEET = `/assets/site.${hashOf(PUBLIC_CSS_SERVED)}.css`
 BY_PATH.set(PUBLIC_SHEET, PUBLIC_CSS_SERVED)
@@ -81,8 +76,8 @@ BY_PATH.set(PUBLIC_SHEET, PUBLIC_CSS_SERVED)
  * highlighter detection matches too, so both sheets arrive and the cascade reads exactly
  * as it did when the ink was one string. ADR 0027 records the trade.
  */
-const PEN_MARKS_CSS_SERVED = minifyCss(INK_HIGHLIGHT_CSS)
-const PEN_LINES_CSS_SERVED = minifyCss(INK_LINES_CSS)
+const PEN_MARKS_CSS_SERVED = SERVED_CSS['pen-marks']
+const PEN_LINES_CSS_SERVED = SERVED_CSS['pen-lines']
 
 export const PEN_MARKS_SHEET = `/assets/pen-marks.${hashOf(PEN_MARKS_CSS_SERVED)}.css`
 export const PEN_LINES_SHEET = `/assets/pen-lines.${hashOf(PEN_LINES_CSS_SERVED)}.css`
@@ -167,9 +162,9 @@ export function penSheets(inks: InkSettings): { marks: string; lines: string } {
  * `plain` has no sheet at all, which is what makes it free.
  */
 const LOOK_CSS: Record<Exclude<SiteLook, 'plain'>, string> = {
-  code: minifyCss(LOOK_CODE_CSS),
-  paper: minifyCss(LOOK_PAPER_CSS),
-  notes: minifyCss(LOOK_NOTES_CSS),
+  code: SERVED_CSS['look-code'],
+  paper: SERVED_CSS['look-paper'],
+  notes: SERVED_CSS['look-notes'],
 }
 
 const LOOK_SHEETS = new Map<SiteLook, string>()
@@ -178,6 +173,17 @@ for (const [name, css] of Object.entries(LOOK_CSS)) {
   LOOK_SHEETS.set(name as SiteLook, path)
   BY_PATH.set(path, css)
 }
+
+/**
+ * Every bundle and sheet this BUILD names, by URL, taken before any request can add the sheets of
+ * an owner's chosen inks (`penSheets`) — those exist only once somebody chooses them. Hashed and
+ * immutable, every one, which is why the Cloudflare build (`scripts/build-worker.ts`) writes them
+ * into Static Assets at these URLs and the edge answers them before the Worker runs. What is not
+ * among them still reaches `/assets/:file` on both runtimes: a chosen ink's sheet, and a sheet hash
+ * from a previous deploy (`staleSheet`, below).
+ */
+const SHIPPED: readonly { url: string; body: string }[] = [...BY_PATH].map(([url, body]) => ({ url, body }))
+export const shippedAssets = (): readonly { url: string; body: string }[] => SHIPPED
 
 /** The stylesheet a look needs, or '' when it needs none. */
 export function lookSheet(look: SiteLook): string {

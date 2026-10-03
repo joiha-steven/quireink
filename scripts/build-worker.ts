@@ -1,7 +1,7 @@
 // Build Quire Ink for Cloudflare (ADR 0066): `bun run build:worker` -> dist/worker + dist/public.
 //
 // Bun's own bundler, so every import is loaded the way the server loads it under Bun — SQL and the
-// built islands as text, fonts and icons as files — with four differences, each the Cloudflare half
+// built islands as text, fonts and icons as files — with these differences, each the Cloudflare half
 // of something `src/runtime/ports.ts` describes:
 //
 //   1. `@/runtime/impl/<name>` resolves to `src/runtime/cf/<name>.ts`, not `bun/`.
@@ -9,16 +9,24 @@
 //      deploy time, because a Worker may not compile WASM from bytes while it runs.
 //   3. A file imported `with { type: 'file' }` (a font, an icon) is copied into the Static Assets
 //      directory, and the import gives its path there, which `cf/assets.ts` fetches.
-//   4. The admin's built bundle becomes a module (`quire:admin-dist`), so its chunk names exist
-//      before any request does.
+//   4. The admin's built bundle is written into Static Assets, and `quire:admin-dist` carries only
+//      what the shell must know about each file before any request does (`cf/assets.ts`).
 //   5. Shiki's grammars are written into the Static Assets directory as JSON, each one once, and
 //      `quire:grammars` says which files make up each language (`cf/shiki-engine.ts` says why).
+//   6. `@/web/served-css` — the public sheets, minified — is evaluated HERE and replaced by its six
+//      finished strings, so no isolate minifies CSS at module load (`web/served-css.ts`).
+//   7. Every file whose URL carries its own version — the islands, the sheets, the admin's chunks,
+//      the reading fonts — is written into Static Assets AT THAT URL, with a `_headers` giving each
+//      the year-long `immutable` and the security headers the Worker would have sent. Static Assets
+//      answers a path it has a file for before the Worker runs, so those requests never start an
+//      isolate or wake the Durable Object; before 2026-10-03 every one of them went through it.
+//      The lists come from the modules that name the files (`shipped*()`), never from here.
 //
 // Run `bun run build` first: the islands and the admin are inputs here.
 import type { BunPlugin } from 'bun'
 import { createHash } from 'node:crypto'
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { basename, join, resolve } from 'node:path'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { basename, dirname, join, resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '..')
 // `--entry <file> --out <dir>` builds another worker the same way: `scripts/test-cf.ts` uses it for
@@ -37,26 +45,70 @@ rmSync(PUBLIC, { recursive: true, force: true })
 mkdirSync(OUT, { recursive: true })
 mkdirSync(join(PUBLIC, 'static'), { recursive: true })
 
-const ADMIN_TYPES: Record<string, string> = {
-  '.js': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
+if (!existsSync(ADMIN) || readdirSync(ADMIN).length === 0) {
+  throw new Error('src/admin/dist is missing: run `bun run build` before `bun run build:worker`')
 }
 
-function adminModule(): string {
-  let names: string[] = []
-  try {
-    names = readdirSync(ADMIN).filter((n) => ADMIN_TYPES[n.slice(n.lastIndexOf('.'))])
-  } catch {
-    throw new Error('src/admin/dist is missing: run `bun run build` before `bun run build:worker`')
-  }
-  const files = names.map((name) => ({
-    name,
-    type: ADMIN_TYPES[name.slice(name.lastIndexOf('.'))],
-    b64: readFileSync(join(ADMIN, name)).toString('base64'),
-  }))
-  return `const decode = (b) => Uint8Array.from(atob(b), (c) => c.charCodeAt(0))
-export default ${JSON.stringify(files)}.map((f) => ({ name: f.name, type: f.type, body: decode(f.b64) }))`
+/** A file into Static Assets at its URL. */
+function publish(url: string, body: string | Uint8Array): void {
+  const path = join(PUBLIC, url)
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, body)
 }
+
+// ----- 7. what the edge serves by itself --------------------------------------------------------
+//
+// Imported under BUN, from the same modules the server runs, so every URL and every byte is the one
+// a Bun server would answer at that path: the hashes in the names are worked out by the same code.
+const { shippedAssets } = await import('../src/web/assets')
+const { shippedStaticFiles } = await import('../src/web/static')
+const { shippedAdminFiles } = await import('../src/web/admin/asset-route')
+const { adminDist } = await import('../src/runtime/bun/assets')
+const { SECURITY_HEADERS } = await import('../src/web/security-headers')
+
+const shipped: string[] = []
+for (const { url, body } of shippedAssets()) { publish(url, body); shipped.push(url) }
+for (const { url, ref } of shippedStaticFiles()) { publish(url, readFileSync(ref)); shipped.push(url) }
+const adminUrl = new Map<string, string>()
+for (const { url, name, file } of shippedAdminFiles()) {
+  publish(url, await file.body())
+  shipped.push(url)
+  adminUrl.set(name, url)
+}
+
+/**
+ * The Worker's half of the admin: every built file's name, type, hash and static imports, and the
+ * URL its bytes now sit at. A built file with no such URL would be a name the shell knows and no
+ * runtime can serve, so it stops the build.
+ */
+function adminModule(): string {
+  const files = [...adminDist()].map(([name, file]) => {
+    const path = adminUrl.get(name)
+    if (!path) throw new Error(`src/admin/dist/${name} has no URL in Static Assets (web/admin/spa.ts, shippedAdminFiles)`)
+    return { name, type: file.type, hash: file.hash, imports: [...file.imports], path }
+  })
+  return `export default ${JSON.stringify(files)}`
+}
+
+/**
+ * `_headers`: what Static Assets sends with the files above. Without it they would go out with its
+ * default `max-age=0, must-revalidate` — a revalidation round trip per file per visit for bytes whose
+ * URL already promises they never change — and without the four headers `web/security-headers.ts`
+ * puts on everything the Worker answers. One rule per directory, from the URLs themselves; the
+ * content types are Static Assets' own, which match the routes' (`scripts/parity.ts` compares them).
+ *
+ * `/fonts/*` and `/app-icon.png` carry no hash and are `immutable` all the same — that is what the
+ * Bun routes have always sent for them (`web/static.ts`): the files are part of the release and a
+ * font's name is its version. This keeps the two runtimes identical rather than deciding afresh.
+ */
+const IMMUTABLE = 'public, max-age=31536000, immutable'
+const rules = [...new Set(shipped.map((url) => (dirname(url) === '/' ? url : `${dirname(url)}/*`)))]
+const headerLines = [`Cache-Control: ${IMMUTABLE}`, ...Object.entries(SECURITY_HEADERS).map(([k, v]) => `${k}: ${v}`)]
+writeFileSync(join(PUBLIC, '_headers'), [
+  '# Written by scripts/build-worker.ts: the files Static Assets answers before the Worker runs.',
+  ...rules.flatMap((rule) => [rule, ...headerLines.map((line) => `  ${line}`)]),
+  '',
+].join('\n'))
 
 /**
  * Every grammar Shiki ships, written ONCE under `static/shiki/` as the JSON its module parses, and
@@ -107,8 +159,11 @@ const plugin: BunPlugin = {
       path: join(ROOT, 'src', 'runtime', 'cf', `${args.path.slice('@/runtime/impl/'.length)}.ts`),
     }))
     build.onResolve({ filter: /^quire:(admin-dist|grammars)$/ }, (args) => ({ path: args.path, namespace: 'quire' }))
+    build.onResolve({ filter: /^@\/web\/served-css$/ }, () => ({ path: 'quire:served-css', namespace: 'quire' }))
     build.onLoad({ filter: /.*/, namespace: 'quire' }, async (args) => ({
-      contents: args.path === 'quire:grammars' ? await grammarsModule() : adminModule(),
+      contents: args.path === 'quire:grammars' ? await grammarsModule()
+        : args.path === 'quire:served-css' ? `export const SERVED_CSS = ${JSON.stringify((await import('../src/web/served-css')).SERVED_CSS)}`
+          : adminModule(),
       loader: 'js',
     }))
     build.onResolve({ filter: /\.wasm$/ }, (args) => {
@@ -150,4 +205,4 @@ let code = readFileSync(entry, 'utf8')
 for (const [specifier, local] of wasm) code = code.split(JSON.stringify(specifier)).join(JSON.stringify(local))
 await Bun.write(entry, code)
 const size = result.outputs.reduce((n, o) => n + o.size, 0)
-console.log(`worker: ${(size / 1024 / 1024).toFixed(2)} MB in ${result.outputs.length} file(s), assets in dist/public`)
+console.log(`worker: ${(size / 1024 / 1024).toFixed(2)} MB in ${result.outputs.length} file(s), assets in ${PUBLIC.slice(ROOT.length + 1)} (${shipped.length} served before the Worker)`)

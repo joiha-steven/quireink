@@ -79,6 +79,16 @@ const TYPES: Record<string, string> = {
 export const staticPaths = (): string[] => Object.keys(FILES)
 
 /**
+ * The files the edge may answer by itself, by path, with the `ref` behind each: every one but
+ * `/favicon.ico`, whose route answers with the OWNER's icon once there is one (`asset-routes.ts`) —
+ * a file at that path would win over the route and put Quire Ink's mark back on somebody's blog.
+ * The Cloudflare build (`scripts/build-worker.ts`) copies each into Static Assets at its path, so a
+ * reading font is served before the Worker runs, under the same year-long `immutable` as below.
+ */
+export const shippedStaticFiles = (): { url: string; ref: string }[] =>
+  Object.entries(FILES).filter(([url]) => url !== '/favicon.ico').map(([url, ref]) => ({ url, ref }))
+
+/**
  * Serve one static file, or null when the path is not one of ours.
  *
  * Cached hard: these names change only when the file does, and a font is the LCP resource

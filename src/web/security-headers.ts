@@ -51,8 +51,12 @@ const PERMISSIONS_POLICY = [
  * cookie-authenticated admin is the attack it forecloses. `Referrer-Policy` keeps the path
  * a reader came from out of requests to other origins — an unpublished `/preview/…` URL
  * carries its own token in the query string.
+ *
+ * EXPORTED for the Cloudflare build, which writes these into the `_headers` of the files Static
+ * Assets answers before the Worker runs (`scripts/build-worker.ts`): a font served by the edge
+ * carries the same four as a font served by this middleware, from this one list.
  */
-const HEADERS: Record<string, string> = {
+export const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   'x-content-type-options': 'nosniff',
   'x-frame-options': 'DENY',
   'referrer-policy': 'strict-origin-when-cross-origin',
@@ -77,7 +81,7 @@ export function securityHeaders(): MiddlewareHandler {
     }
     // Never overwrite. A handler that has already said something more specific — and a
     // future one that wants to allow framing on a single route — keeps its answer.
-    for (const [name, value] of Object.entries(HEADERS)) {
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
       if (!c.res.headers.has(name)) c.res.headers.set(name, value)
     }
   }

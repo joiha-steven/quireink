@@ -31,27 +31,28 @@ const api = Bun.serve({
 afterAll(() => api.stop(true))
 const base = `http://127.0.0.1:${api.port}`
 
-/** A package of one tiny worker file, as `fetchPackage` would hand it over. */
-async function release(version: string): Promise<typeof fetch> {
-  const worker = new TextEncoder().encode('export default {}')
-  const hex = [...new Uint8Array(await crypto.subtle.digest('SHA-256', worker))].map((b) => b.toString(16).padStart(2, '0')).join('')
+/** A package of one tiny worker file and any `public/` files, as `fetchPackage` would hand it over. */
+async function release(version: string, publicFiles: Record<string, string> = {}): Promise<typeof fetch> {
+  const hexOf = async (b: Uint8Array<ArrayBuffer>) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', b))].map((x) => x.toString(16).padStart(2, '0')).join('')
+  const contents = [['worker/worker.js', 'export default {}'], ...Object.entries(publicFiles).map(([k, v]) => [`public/${k}`, v])]
+    .map(([name, text]) => ({ name: name!, body: new TextEncoder().encode(text!) }))
   const manifest = new TextEncoder().encode(JSON.stringify({
     format: 'quireink-cf/1', version, main: 'worker/worker.js', compatibilityDate: '2026-09-30', compatibilityFlags: [],
     durableObjects: [{ binding: 'BLOG', className: 'Blog' }], bindings: { r2: 'BLOBS', assets: 'ASSETS', images: 'IMAGES' },
-    files: [{ path: 'worker/worker.js', bytes: worker.length, sha256: hex }],
+    files: await Promise.all(contents.map(async (f) => ({ path: f.name, bytes: f.body.length, sha256: await hexOf(f.body) }))),
   }))
   const { tarStream } = await import('@/server/tar')
   const bytes = new Uint8Array(await new Response(tarStream([
     { name: 'manifest.json', size: manifest.length, body: manifest },
-    { name: 'worker/worker.js', size: worker.length, body: worker },
+    ...contents.map((f) => ({ name: f.name, size: f.body.length, body: f.body })),
   ])).arrayBuffer())
   const sum = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map((b) => b.toString(16).padStart(2, '0')).join('')
   return (async (url: string) => (String(url).endsWith('.sha256') ? new Response(`${sum}  x.tar`) : new Response(bytes))) as typeof fetch
 }
 
-const options = async (target: string) => ({
+const options = async (target: string, publicFiles?: Record<string, string>) => ({
   token: 't', accountId: 'a', scriptName: 'quireink-test', bucket: 'quireink-test', siteUrl: `${base}/site`, target,
-  apiBase: base, fetchImpl: await release(target), healthTimeout: 4,
+  apiBase: base, fetchImpl: await release(target, publicFiles), healthTimeout: 4,
 })
 
 describe('the one-click update', () => {
@@ -64,6 +65,19 @@ describe('the one-click update', () => {
     expect(put.body).toContain('"keep_bindings":["secret_text","plain_text"]')
     expect(put.body).not.toContain('new_sqlite_classes') // an update never re-declares the class
     expect(calls.some((c) => c.path.endsWith(`/scripts/quireink-test/subdomain`))).toBe(false) // workers.dev left alone
+  })
+
+  it('hands `_headers` over as Static Assets rules, never as a file anyone can fetch', async () => {
+    // The build writes `public/_headers` (scripts/build-worker.ts, item 7). wrangler leaves it out
+    // of the upload and sends its text with the Worker; uploaded as a file it would be served at
+    // `/_headers` and obeyed by nobody, and every font and chunk would go out revalidating.
+    calls.length = 0
+    healthVersion = '9.9.9'
+    const rules = '/fonts/*\n  Cache-Control: public, max-age=31536000, immutable\n'
+    await updateSelf(await options('9.9.9', { _headers: rules, 'fonts/a.woff2': 'wOF2' }))
+    const session = JSON.parse(calls.find((c) => c.path.endsWith('/assets-upload-session'))!.body) as { manifest: Record<string, unknown> }
+    expect(Object.keys(session.manifest)).toEqual(['/fonts/a.woff2'])
+    expect(calls.find((c) => c.method === 'PUT')!.body).toContain(`"config":{"_headers":${JSON.stringify(rules)}}`)
   })
 
   it('puts the version before back when the new one does not answer as itself', async () => {

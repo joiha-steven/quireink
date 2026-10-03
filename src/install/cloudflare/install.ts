@@ -69,7 +69,16 @@ const b64 = (bytes: Uint8Array): string => {
 const TYPES: Record<string, string> = {
   woff2: 'font/woff2', woff: 'font/woff', ttf: 'font/ttf', png: 'image/png', ico: 'image/x-icon',
   svg: 'image/svg+xml', jpg: 'image/jpeg', jpeg: 'image/jpeg', css: 'text/css', js: 'text/javascript',
+  json: 'application/json',
 }
+
+/**
+ * The files in `public/` that are RULES for Static Assets, not assets: wrangler leaves them out of the
+ * upload and hands their text over in the Worker's metadata, and so does this. Uploaded as files,
+ * `_headers` would be served to anyone at `/_headers` and obeyed by nobody — every font and chunk
+ * would go out revalidating, without the security headers (`scripts/build-worker.ts`, item 7).
+ */
+const RULE_FILES = ['_headers', '_redirects'] as const
 
 export async function installOnCloudflare(o: InstallOptions): Promise<InstallResult> {
   const api = new CloudflareApi(o.token, o.accountId, o.apiBase)
@@ -121,7 +130,12 @@ export async function installOnCloudflare(o: InstallOptions): Promise<InstallRes
 
   // 5. The static assets.
   say('assets')
-  const assets = o.manifest.files.filter((f) => f.path.startsWith('public/'))
+  const isRule = (path: string): boolean => (RULE_FILES as readonly string[]).includes(path.slice('public/'.length))
+  const assets = o.manifest.files.filter((f) => f.path.startsWith('public/') && !isRule(f.path))
+  const rules = Object.fromEntries(RULE_FILES.flatMap((name) => {
+    const bytes = o.files.get(`public/${name}`)
+    return bytes ? [[name, new TextDecoder().decode(bytes)]] : []
+  }))
   const manifest: Record<string, { hash: string; size: number }> = {}
   const byHash = new Map<string, { bytes: Uint8Array; type: string }>()
   for (const f of assets) {
@@ -163,7 +177,7 @@ export async function installOnCloudflare(o: InstallOptions): Promise<InstallRes
     ],
     // An upgrade keeps the secrets the blog already has (its SETUP_CODE, anything added later).
     keep_bindings: o.update ? ['secret_text', 'plain_text'] : ['secret_text'],
-    assets: { jwt: completion },
+    assets: { jwt: completion, config: rules },
     observability: { enabled: true },
     // The same five minutes of CPU as wrangler.jsonc gives: the hourly backup of a big blog needs it.
     limits: { cpu_ms: 300_000 },

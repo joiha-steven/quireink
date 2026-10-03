@@ -157,7 +157,7 @@ if (archive.size > CHUNK_ABOVE_BYTES) {
 
 // ----- 3½. the same pages from both, before anything writes to either --------------------------
 
-const parity = spawnSync(process.execPath, ['scripts/parity.ts', bunUrl, cfUrl], { cwd: ROOT, stdio: 'inherit' })
+const parity = spawnSync(process.execPath, ['scripts/parity.ts', bunUrl, cfUrl], { cwd: ROOT, stdio: 'inherit', env: { ...process.env, PARITY_SESSION: session } })
 // Stopped now, so the files restore-check compares against hold still.
 bun.kill('SIGTERM')
 if (parity.status !== 0 && process.env.PARITY_SOFT !== '1') fail('the two runtimes serve different pages for the same data')
