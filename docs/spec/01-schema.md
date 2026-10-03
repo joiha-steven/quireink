@@ -265,8 +265,8 @@ the executable, and applied at boot inside a transaction. (There is no executabl
 [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md); the text import
 still means the SQL ships with the source and needs no file path at runtime.) A failed migration aborts
 startup rather than degrading. Before a pending step touches an existing database,
-`store/upgrade.ts` empties `render_cache` and `body_cache` and writes a `VACUUM INTO` copy to
-`backups/pre-<step>-<stamp>-<file>` beside it, two kept; if the copy fails, the boot stops
+`store/upgrade.ts` empties `render_cache` and `body_cache` and has the runtime write a `VACUUM INTO` copy to
+`backups/pre-<step>-<stamp>-<file>` beside it, two kept (on Bun, `src/runtime/bun/snapshot.ts`); if the copy fails, the boot stops
 ([ADR 0063](../decisions/0063-an-upgrade-copies-first-and-gives-the-space-back.md)).
 
 **The accepted risk from the frozen tree does not carry over.** There, `schema.sql` was

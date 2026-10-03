@@ -173,3 +173,22 @@ export type Connection = {
 export type DbPort = {
   open: (path: string, synchronous: 'FULL' | 'NORMAL') => Connection
 }
+
+/**
+ * `snapshot.ts`: the two halves of what an upgrade owes the person running it (ADR 0063), where
+ * they need a FILE. A runtime with no file to copy or compact (a Durable Object: recovering from a
+ * bad upgrade there is Cloudflare's point-in-time restore) answers null and false.
+ *
+ * `emptyCaches` is the store's, handed in so the copy carries the writing and not the cache; it
+ * runs inside the same attempt as the copy and fails with it.
+ */
+export type SnapshotPort = {
+  /** The copy's path, or null when this runtime keeps no copy. Throws when one cannot be written. */
+  copyBeforeMigrating: (
+    conn: Connection, path: string, step: string, emptyCaches: (conn: Connection) => void,
+  ) => string | null
+  /** Whether it compacted, in which case `conn` IS CLOSED and the caller opens `path` again. */
+  compactIfMostlyFree: (
+    conn: Connection, path: string, thresholds?: { minShare?: number; minBytes?: number },
+  ) => boolean
+}
