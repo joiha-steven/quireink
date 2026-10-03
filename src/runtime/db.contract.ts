@@ -73,6 +73,16 @@ export function dbContract(test: Register, connect: () => Connection): void {
     if (!(row?.blob instanceof Uint8Array)) throw new Error('round trip: a blob must come back as a Uint8Array')
   })
 
+  // `analytics/chunked.ts` cuts a window into visitor ranges whose last one ends at an empty
+  // blob. That covers every visitor only because SQLite orders every TEXT before every BLOB, and
+  // only if the blob reaches SQLite as a blob — which on a Durable Object means an ArrayBuffer.
+  withConnection('an empty blob is an upper bound above every text, through an index', (conn) => {
+    conn.exec('create table t (v text not null); create index t_v on t (v)')
+    for (const v of ['', '0', 'ffff', 'zzz', '~', 'ÿ', '\u{10FFFF}']) conn.run('insert into t values (?)', v)
+    same(conn.one('select count(*) as n from t where v >= $lo and v < $hi', { lo: '', hi: new Uint8Array(0) }), { n: 7 }, 'all of them')
+    same(conn.one('select count(*) as n from t where v >= $lo and v < $hi', { lo: 'ffff', hi: new Uint8Array(0) }), { n: 5 }, 'the top range')
+  })
+
   withConnection('`run` reports the rows it changed and the rowid it inserted', (conn) => {
     conn.exec('create table t (id integer primary key, n integer)')
     same(conn.run('insert into t (n) values (?)', 1), { changes: 1, lastInsertRowid: 1 }, 'first insert')

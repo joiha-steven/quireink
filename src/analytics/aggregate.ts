@@ -50,11 +50,15 @@ export function dailySeries(ranges: BucketRange[], path: string | null): DailyPo
           group by b.i order by b.i`,
         { bounds: boundsJson(ranges) },
       )
+    // ⚠️ `+e.path`. With the bare column SQLite drove the join off analytics_events_path_idx and
+    // walked every event the page has EVER had once per bucket: the drill-down into the front
+    // page of a 1,000,000-event blog took 10.4 s for 365 days and 0.75 s for 30 (2026-10-03).
+    // Forced onto the created_at range, each bucket reads its own day: 0.20 s and 0.02 s.
     : all<{ i: number; views: number; visitors: number }>(
         `${BOUNDS_CTE}
          select b.i as i, count(*) as views, count(distinct e.visitor) as visitors
            from bounds b join analytics_events e on e.created_at >= b.lo and e.created_at < b.hi
-          where e.path = $path
+          where +e.path = $path
           group by b.i order by b.i`,
         { bounds: boundsJson(ranges), path },
       )
@@ -90,6 +94,11 @@ export function topReferrers(since: number, limit: number, path: string | null):
           group by referrer_host, visitor`,
         { since, path },
       )
+  return rankReferrers(sizes(referrerSets(pairs)), limit)
+}
+
+/** The (host, visitor) pairs folded to a set of visitors per canonical host. */
+export function referrerSets(pairs: { host: string; visitor: string }[]): Map<string, Set<string>> {
   const byHost = new Map<string, Set<string>>()
   for (const p of pairs) {
     const host = canonicalHost(p.host)
@@ -97,8 +106,16 @@ export function topReferrers(since: number, limit: number, path: string | null):
     set.add(p.visitor)
     byHost.set(host, set)
   }
-  return [...byHost]
-    .map(([host, visitors]) => ({ host, visitors: visitors.size }))
+  return byHost
+}
+
+/** Each set's size: visitors per key, which is all a ranking reads. */
+export const sizes = (sets: Map<string, Set<string>>): Map<string, number> =>
+  new Map([...sets].map(([k, s]) => [k, s.size]))
+
+export function rankReferrers(counts: Map<string, number>, limit: number): TopReferrer[] {
+  return [...counts]
+    .map(([host, visitors]) => ({ host, visitors }))
     .sort((a, b) => b.visitors - a.visitors || a.host.localeCompare(b.host))
     .slice(0, limit)
 }
@@ -190,49 +207,6 @@ export function engagement(since: number, path: string | null): { avgReadDepth: 
 }
 
 /**
- * Where "a glance" stops and "a read" starts.
- *
- * Ten seconds is the usual line and it is not arbitrary: it is about how long it takes to
- * realise a page is not the one you wanted. A quarter of the page is deliberately the SAME
- * boundary as the first bar of the read-depth split the admin already draws, so the two
- * never contradict each other on the same screen.
- */
-export const QUICK_MS = 10_000
-export const QUICK_DEPTH = 25
-
-/**
- * The share of measured leaves that were a glance, and how many leaves were measured.
- *
- * ⚠️ `measured` travels with the share, for the reason `transferred()` gives below and one
- * more of its own. A leave sample exists only when the browser delivered the beacon — and
- * until 2026-08-30 only when the reader had scrolled at all, which meant the visits this
- * measures were the exact ones missing from the table (see `assets/js/track.ts`). A share
- * shown without its denominator would read a long history as a site nobody bounces off.
- */
-export function leftQuickly(since: number, path: string | null): { share: number; measured: number } {
-  const row = path === null
-    ? one<{ measured: number; quick: number | null }>(
-        `select count(*) as measured,
-                sum(case when depth < $depth or (dwell_ms is not null and dwell_ms < $quick)
-                         then 1 else 0 end) as quick
-           from analytics_scroll where created_at >= $since`,
-        { since, depth: QUICK_DEPTH, quick: QUICK_MS },
-      )
-    : one<{ measured: number; quick: number | null }>(
-        `select count(*) as measured,
-                sum(case when depth < $depth or (dwell_ms is not null and dwell_ms < $quick)
-                         then 1 else 0 end) as quick
-           from analytics_scroll where created_at >= $since and path = $path`,
-        { since, path, depth: QUICK_DEPTH, quick: QUICK_MS },
-      )
-  const measured = row?.measured ?? 0
-  return {
-    measured,
-    share: measured === 0 ? 0 : Math.round(((row?.quick ?? 0) / measured) * 100),
-  }
-}
-
-/**
  * EVERY path with a view in the window, not the busiest N.
  *
  * The screen's default face stays the top table; this is what makes a piece that is not in
@@ -243,7 +217,12 @@ export function leftQuickly(since: number, path: string | null): { share: number
  */
 export function allPieces(since: number): PieceStat[] {
   return all<PieceStat>(
-    // `+path`: see `topPages` in summary.ts — the range index, not a walk of every event.
+    // ⚠️ `group by +path`, not `group by path`: the bare column makes SQLite walk
+    // analytics_events_path_idx — every event ever recorded, then a table lookup each — instead of
+    // the created_at range. Measured 2026-10-03 on 1,000,000 events: 1.04 s for 30 days, against
+    // 0.068 s through the range (ANALYZE does not change the choice). The busiest-pages table is
+    // ranked from these rows (`topPages` in summary.ts), and the front page's popular row asks the
+    // same shape of question (`getViewTotalsSince`): 0.93 s → 0.022 s.
     `select path, count(*) as views, count(distinct visitor) as visitors from analytics_events
       where created_at >= $since group by +path`,
     { since },
@@ -345,6 +324,14 @@ export function channels(since: number): ChannelStat[] {
       where created_at >= $since group by referrer_host, visitor`,
     { since },
   )
+  return rankChannels(sizes(channelSets(rows)))
+}
+
+/**
+ * The pairs folded to a set of visitors per channel. Every row of a visitor must be in `rows`
+ * together, because whether a bare row counts depends on that visitor's other rows (below).
+ */
+export function channelSets(rows: { referrer_host: string | null; visitor: string }[]): Map<string, Set<string>> {
   // ⚠️ A BARE ROW IS USUALLY NOT A DIRECT VISIT. The beacon sends a referrer only when it is
   // EXTERNAL (`externalReferrer` in assets/js/track.ts), so every second and third page a
   // reader opens writes `referrer_host = NULL` — and `channelOf(null)` is 'direct'. Anyone
@@ -365,8 +352,12 @@ export function channels(since: number): ChannelStat[] {
     set.add(r.visitor)
     byChannel.set(key, set)
   }
-  return [...byChannel]
-    .map(([channel, visitors]) => ({ channel, visitors: visitors.size }))
+  return byChannel
+}
+
+export function rankChannels(counts: Map<string, number>): ChannelStat[] {
+  return [...counts]
+    .map(([channel, visitors]) => ({ channel, visitors }))
     // Named tiebreak, so two channels on the same count keep their order between loads.
     .sort((a, b) => b.visitors - a.visitors || a.channel.localeCompare(b.channel))
 }

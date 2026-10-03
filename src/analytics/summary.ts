@@ -3,18 +3,20 @@
 //
 // The original was ONE Postgres call building a jsonb object out of a dozen scalar
 // subqueries. Here it is a dozen small statements against `analytics.db`, each of which
-// uses an index. That is fine at the present volume and is the shape 01-schema.md chose;
-// if `analytics_events` ever passes ~2 million rows and this takes more than 300 ms, the
-// answer is a daily rollup table maintained by the flush, not a cleverer query.
+// uses an index. 01-schema.md said a daily rollup table would be the answer past ~2 million
+// rows; measured on 1,000,000 events (2026-10-03) the cost is `count(distinct visitor)`, which
+// no rollup of days can answer, so the long windows are cut into pieces instead (`chunked.ts`)
+// and the screens keep what they read for a minute (`memo.ts`).
 
 import { analyticsQuery } from '@/store/query'
 import { nowMs } from '@/store/db'
 import { cacheStats } from '@/server/cache'
 import { bucketRanges, windowStart, type Bucket } from '@/analytics/buckets'
 import {
-  DWELL_CAP_MS, allPieces, channels, dailySeries, depthBuckets, engagement, facet,
-  topCountries, topReferrers, windowCounts, transferred,
+  DWELL_CAP_MS, depthBuckets, engagement, topCountries, topReferrers, transferred,
 } from '@/analytics/aggregate'
+import { countsIn, partsFor, pause, returningIn, seriesIn } from '@/analytics/chunked'
+import { piecesIn, rankPieces, windowIn, type WindowFacts } from '@/analytics/window'
 import {
   EMPTY_RIGHT_NOW, EMPTY_SUMMARY, reportTz,
   type AnalyticsSummary, type PieceStat, type RightNow, type TopPage, type YearStat,
@@ -24,40 +26,8 @@ export type { Bucket }
 
 const { all } = analyticsQuery
 
-/**
- * Visitors who saw exactly ONE PAGE in the window. Shown as "One page only".
- *
- * ⚠️ It counted `count(*) = 1`, which is one EVENT, not one page. A reader who opened a
- * single post and reloaded it, or came back to the same post a week later, has two events on
- * one page and was dropped from the count — so the rate came out low by exactly the readers
- * who bounced twice. Measured on a live blog 2026-08-30: 198 of 380 visitors by the old
- * count, 228 by this one, a bounce rate reading 52% where the honest figure is 60%. The
- * doc comment above the query had said "one page" since the port; only the SQL disagreed.
- *
- * The window, not a session, is still the unit: there are no sessions in this schema, so a
- * visitor who bounced in March and bounced again in April is one bouncer here, not two.
- * That is a real limit of the number and the reason it is a share of visitors rather than
- * of visits.
- */
-function singlePageVisitors(since: number): number {
-  return all<{ n: number }>(
-    `select count(*) as n from (
-       select visitor from analytics_events where created_at >= $since
-        group by visitor having count(distinct path) = 1)`,
-    { since },
-  )[0]?.n ?? 0
-}
-
-/** Visitors in the window who had also been seen before it. */
-function returningVisitors(since: number): number {
-  return all<{ n: number }>(
-    `select count(distinct e.visitor) as n from analytics_events e
-      where e.created_at >= $since
-        and exists (select 1 from analytics_events p
-                     where p.visitor = e.visitor and p.created_at < $since)`,
-    { since },
-  )[0]?.n ?? 0
-}
+/** Where a window's facts come from: read here, or the screens' minute-old copy (`memo.ts`). */
+export type WindowOf = (since: number) => Promise<WindowFacts>
 
 /**
  * Busiest pages, with their read depth and dwell.
@@ -65,19 +35,15 @@ function returningVisitors(since: number): number {
  * The original ran two correlated subqueries per returned path. Here the top N come first
  * and their engagement is fetched in one grouped read keyed by that list, which is the
  * same numbers with one round of work instead of 2N.
+ *
+ * Ranked from EVERY piece in the window rather than by a `limit` of its own since 2026-10-03:
+ * the screen asks for all of them anyway (`getPieces`), and on 365 days of a 1,000,000-event blog
+ * that one grouped read is 0.9 s, which the two used to spend twice.
  */
-function topPages(since: number, limit: number): TopPage[] {
-  // ⚠️ `group by +path`, not `group by path`: the bare column makes SQLite walk
-  // analytics_events_path_idx — every event ever recorded, then a table lookup each — instead of
-  // the created_at range. Measured 2026-10-03 on 1,000,000 events: 1.04 s for 30 days, against
-  // 0.068 s through analytics_events_created_path_idx (ANALYZE does not change the choice). The
-  // same query shape fed the public front page's popular row: 0.93 s → 0.022 s.
-  const pages = all<{ path: string; views: number; visitors: number }>(
-    `select path, count(*) as views, count(distinct visitor) as visitors from analytics_events
-      where created_at >= $since group by +path order by views desc, path limit $limit`,
-    { since, limit },
-  )
+async function topPages(pieces: PieceStat[], since: number, limit: number): Promise<TopPage[]> {
+  const pages = rankPieces(pieces, limit)
   if (pages.length === 0) return []
+  await pause()
   const depth = new Map(
     all<{ path: string; depth: number | null; dwell: number | null }>(
       // The same 30-minute dwell ceiling `engagement()` applies, so a page's row in this
@@ -102,54 +68,67 @@ function topPages(since: number, limit: number): TopPage[] {
   }))
 }
 
+/** Every read of the summary, in order, each on its own turn (`chunked.ts`). Throws. */
+export async function readSummary(days: number, bucket: Bucket, topN: number, windowOf: WindowOf): Promise<AnalyticsSummary> {
+  const now = Date.now()
+  // Aligned to the bucket, so the chart's first column is a whole day rather than the
+  // sliver of one `now - days * 86_400_000` used to leave there (see `windowStart`).
+  const since = windowStart(now, days, bucket, reportTz())
+  // The window just before `since`, of the SAME ELAPSED length. Not `days` again: the
+  // current window ends now, part-way through today, so a full previous day-count would
+  // be the longer of the two and every comparison would open showing a fall.
+  const prevSince = since - (now - since)
+
+  const current = await countsIn(since, null)
+  const previous = await countsIn(prevSince, since)
+  await pause()
+  const { avgReadDepth, avgDwellMs } = engagement(since, null)
+  const facts = await windowOf(since)
+
+  return {
+    totalViews: current.views,
+    uniqueVisitors: current.visitors,
+    avgReadDepth,
+    avgDwellMs,
+    singlePageVisitors: facts.singlePage,
+    topPages: await topPages(facts.pieces, since, topN),
+    daily: await seriesIn(bucketRanges(since, now, bucket, reportTz())),
+    prevViews: previous.views,
+    prevVisitors: previous.visitors,
+    returningVisitors: await returningIn(since),
+    topReferrers: facts.referrers.slice(0, topN),
+    topCountries: facts.countries.slice(0, topN),
+    channels: facts.channels,
+    devices: facts.devices.slice(0, topN),
+    browsers: facts.browsers.slice(0, topN),
+    systems: facts.systems.slice(0, topN),
+    depthBuckets: await pause().then(() => depthBuckets(since, null)),
+    transfer: await pause().then(() => transferred(since, null)),
+    // Not windowed like everything above it: the counters live in this process and start
+    // at boot, so they answer "is the cache working" and not "how did last month go".
+    cache: { ...cacheStats },
+  }
+}
+
 /**
  * Aggregated stats for the last `days` days. `bucket` controls the chart grain (hour for
  * 24h, day for a week/month, month for a year). Empty on failure: the dashboard degrades
  * to zeroes rather than erroring, as it did before.
+ *
+ * Read fresh on every call. The screens go through `memo.ts`, which keeps a minute.
  */
 export async function getAnalytics(days: number, bucket: Bucket = 'day', topN = 10): Promise<AnalyticsSummary> {
   try {
-    const now = Date.now()
-    // Aligned to the bucket, so the chart's first column is a whole day rather than the
-    // sliver of one `now - days * 86_400_000` used to leave there (see `windowStart`).
-    const since = windowStart(now, days, bucket, reportTz())
-    // The window just before `since`, of the SAME ELAPSED length. Not `days` again: the
-    // current window ends now, part-way through today, so a full previous day-count would
-    // be the longer of the two and every comparison would open showing a fall.
-    const prevSince = since - (now - since)
-
-    const current = windowCounts(since, null, null)
-    const previous = windowCounts(prevSince, since, null)
-    const { avgReadDepth, avgDwellMs } = engagement(since, null)
-
-    return {
-      totalViews: current.views,
-      uniqueVisitors: current.visitors,
-      avgReadDepth,
-      avgDwellMs,
-      singlePageVisitors: singlePageVisitors(since),
-      topPages: topPages(since, topN),
-      daily: dailySeries(bucketRanges(since, now, bucket, reportTz()), null),
-      prevViews: previous.views,
-      prevVisitors: previous.visitors,
-      returningVisitors: returningVisitors(since),
-      topReferrers: topReferrers(since, topN, null),
-      topCountries: topCountries(since, topN, null),
-      channels: channels(since),
-      devices: facet(since, 'device', topN),
-      browsers: facet(since, 'browser', topN),
-      systems: facet(since, 'os', topN),
-      depthBuckets: depthBuckets(since, null),
-      transfer: transferred(since, null),
-      // Not windowed like everything above it: the counters live in this process and start
-      // at boot, so they answer "is the cache working" and not "how did last month go".
-      cache: { ...cacheStats },
-    }
+    return await readSummary(days, bucket, topN, windowIn)
   } catch (error) {
     console.error(`[ERROR] analytics.getAnalytics: ${(error as Error).message}`)
     return EMPTY_SUMMARY
   }
 }
+
+/** The first instant of a window, as `getAnalytics` and `getPieces` both draw it. */
+export const sinceOf = (days: number, bucket: Bucket): number =>
+  windowStart(Date.now(), days, bucket, reportTz())
 
 /**
  * Every path read in the window, on the SAME window boundary the rest of the screen uses.
@@ -166,10 +145,43 @@ export async function getAnalytics(days: number, bucket: Bucket = 'day', topN = 
  */
 export async function getPieces(days: number, bucket: Bucket = 'day'): Promise<PieceStat[]> {
   try {
-    return allPieces(windowStart(Date.now(), days, bucket, reportTz()))
+    return await piecesIn(sinceOf(days, bucket))
   } catch (error) {
     console.error(`[ERROR] analytics.getPieces: ${(error as Error).message}`)
     return []
+  }
+}
+
+export type DashboardTraffic = {
+  totalViews: number
+  uniqueVisitors: number
+  avgReadDepth: number
+  avgDwellMs: number
+  daily: Awaited<ReturnType<typeof seriesIn>>
+  topReferrers: WindowFacts['referrers']
+  topCountries: WindowFacts['countries']
+}
+
+/** Every read of the dashboard's traffic card. Throws; `getDashboardTraffic` cannot. */
+export async function readDashboardTraffic(days: number, topN: number, windowOf: WindowOf): Promise<DashboardTraffic> {
+  const now = Date.now()
+  const since = windowStart(now, days, 'day', reportTz())
+  const current = await countsIn(since, null)
+  await pause()
+  const { avgReadDepth, avgDwellMs } = engagement(since, null)
+  // Two questions of a window, so a small one asks them as the two statements they are. A window
+  // big enough to be cut is read once for all eight (`window.ts`) — cheaper than two passes of
+  // the cut, and on the screens the same read the analytics page's 30 days makes (`memo.ts`).
+  const cut = partsFor(since, null).length > 0
+  const facts = cut ? await windowOf(since) : null
+  return {
+    totalViews: current.views,
+    uniqueVisitors: current.visitors,
+    avgReadDepth,
+    avgDwellMs,
+    daily: await seriesIn(bucketRanges(since, now, 'day', reportTz())),
+    topReferrers: facts ? facts.referrers.slice(0, topN) : await pause().then(() => topReferrers(since, topN, null)),
+    topCountries: facts ? facts.countries.slice(0, topN) : await pause().then(() => topCountries(since, topN, null)),
   }
 }
 
@@ -186,33 +198,17 @@ export async function getPieces(days: number, bucket: Bucket = 'day'): Promise<P
  * an Analytics door. `engagement` is one aggregate over `analytics_scroll` in the same window
  * the rest of this function already scans; it is not a second `getAnalytics` creeping back.
  */
-export async function getDashboardTraffic(days: number, topN = 10): Promise<{
-  totalViews: number
-  uniqueVisitors: number
-  avgReadDepth: number
-  avgDwellMs: number
-  daily: ReturnType<typeof dailySeries>
-  topReferrers: ReturnType<typeof topReferrers>
-  topCountries: ReturnType<typeof topCountries>
-}> {
+export async function getDashboardTraffic(days: number, topN = 10): Promise<DashboardTraffic> {
   try {
-    const now = Date.now()
-    const since = windowStart(now, days, 'day', reportTz())
-    const current = windowCounts(since, null, null)
-    const { avgReadDepth, avgDwellMs } = engagement(since, null)
-    return {
-      totalViews: current.views,
-      uniqueVisitors: current.visitors,
-      avgReadDepth,
-      avgDwellMs,
-      daily: dailySeries(bucketRanges(since, now, 'day', reportTz()), null),
-      topReferrers: topReferrers(since, topN, null),
-      topCountries: topCountries(since, topN, null),
-    }
+    return await readDashboardTraffic(days, topN, windowIn)
   } catch (error) {
     console.error(`[ERROR] analytics.getDashboardTraffic: ${(error as Error).message}`)
-    return { totalViews: 0, uniqueVisitors: 0, avgReadDepth: 0, avgDwellMs: 0, daily: [], topReferrers: [], topCountries: [] }
+    return EMPTY_TRAFFIC
   }
+}
+
+export const EMPTY_TRAFFIC: DashboardTraffic = {
+  totalViews: 0, uniqueVisitors: 0, avgReadDepth: 0, avgDwellMs: 0, daily: [], topReferrers: [], topCountries: [],
 }
 
 /**
@@ -274,19 +270,28 @@ export function firstEventAt(): number | null {
  *
  * The first month range is clamped to the first event, so the earliest year counts from the
  * day the blog started rather than from a January that has nothing in it.
+ *
+ * Each year is its own window (`countsIn`), cut by visitor when it is big: a busy year is the
+ * whole 365-day question again, 0.4 s in one statement on 1,000,000 events.
  */
-export function yearTotals(): YearStat[] {
+export async function readYears(): Promise<YearStat[]> {
+  const first = firstEventAt()
+  if (first === null) return []
+  const spans = new Map<string, { lo: number; hi: number }>()
+  for (const m of bucketRanges(first, Date.now(), 'month', reportTz())) {
+    const year = m.label.slice(0, 4)
+    const seen = spans.get(year)
+    if (seen) seen.hi = m.hi
+    else spans.set(year, { lo: m.lo, hi: m.hi })
+  }
+  const out: YearStat[] = []
+  for (const [year, span] of spans) out.push({ year, ...await countsIn(span.lo, span.hi) })
+  return out
+}
+
+export async function yearTotals(): Promise<YearStat[]> {
   try {
-    const first = firstEventAt()
-    if (first === null) return []
-    const spans = new Map<string, { lo: number; hi: number }>()
-    for (const m of bucketRanges(first, Date.now(), 'month', reportTz())) {
-      const year = m.label.slice(0, 4)
-      const seen = spans.get(year)
-      if (seen) seen.hi = m.hi
-      else spans.set(year, { lo: m.lo, hi: m.hi })
-    }
-    return [...spans].map(([year, span]) => ({ year, ...windowCounts(span.lo, span.hi, null) }))
+    return await readYears()
   } catch (error) {
     console.error(`[ERROR] analytics.yearTotals: ${(error as Error).message}`)
     return []
@@ -303,8 +308,9 @@ export function yearTotals(): YearStat[] {
  * that nothing is waiting on.
  *
  * A minute of staleness, because the block it feeds is "most viewed of all time" and the
- * ranking of an all-time list does not move inside a minute. The admin's own reads stay
- * exact: they happen a few times an hour and the owner may be watching a number change.
+ * ranking of an all-time list does not move inside a minute. The content tables' Views column
+ * stays exact; the dashboard's top posts read this since 2026-10-03, beside a traffic card that
+ * is a minute old too (`memo.ts`).
  */
 const VIEW_TOTALS_TTL_MS = 60_000
 let viewTotalsAt = 0
@@ -318,7 +324,7 @@ export async function getViewTotalsCached(): Promise<Record<string, number>> {
   return viewTotalsValue
 }
 
-/** Only for tests, which write analytics rows straight into the table. */
+/** Through `resetAnalyticsCaches` (memo.ts), which empties everything kept over these tables. */
 export function resetViewTotalsCache(): void {
   viewTotalsAt = 0
   viewTotalsValue = {}

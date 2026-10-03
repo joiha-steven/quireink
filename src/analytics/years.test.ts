@@ -32,18 +32,18 @@ beforeEach(() => {
 })
 
 describe('yearTotals', () => {
-  it('is empty on an install nobody has visited', () => {
+  it('is empty on an install nobody has visited', async () => {
     expect(firstEventAt()).toBeNull()
-    expect(yearTotals()).toEqual([])
+    expect(await yearTotals()).toEqual([])
   })
 
-  it('groups by calendar year, oldest first, and counts visitors distinctly', () => {
+  it('groups by calendar year, oldest first, and counts visitors distinctly', async () => {
     view('2024-03-01T10:00:00Z', 'v1')
     view('2024-06-01T10:00:00Z', 'v1') // same person, two views
     view('2024-09-01T10:00:00Z', 'v2')
     view('2025-02-01T10:00:00Z', 'v3')
 
-    const years = yearTotals()
+    const years = await yearTotals()
     const by = new Map(years.map((y) => [y.year, y]))
     expect(by.get('2024')).toEqual({ year: '2024', views: 3, visitors: 2 })
     expect(by.get('2025')).toEqual({ year: '2025', views: 1, visitors: 1 })
@@ -57,7 +57,7 @@ describe('yearTotals', () => {
   // would show up here and nowhere else on the screen.
   it('adds up to the all-time total', async () => {
     for (let i = 0; i < 12; i++) view(`202${4 + (i % 2)}-0${(i % 9) + 1}-15T08:00:00Z`, `v${i % 5}`)
-    const years = yearTotals()
+    const years = await yearTotals()
     const all = await getAnalytics(9_999, 'month')
     expect(years.reduce((n, y) => n + y.views, 0)).toBe(all.totalViews)
   })
@@ -67,11 +67,11 @@ describe('yearTotals', () => {
   // comparison this table exists for is exactly "is this year like last year". It also runs
   // to the CURRENT year whether or not it has anything yet, so the row for a January with
   // no visits reads as "nothing yet" rather than as a missing table.
-  it('draws every year from the first event to the present, quiet ones included', () => {
+  it('draws every year from the first event to the present, quiet ones included', async () => {
     view('2023-05-01T10:00:00Z', 'v1')
     view('2026-05-01T10:00:00Z', 'v2')
 
-    const years = yearTotals()
+    const years = await yearTotals()
     const thisYear = String(new Date().getFullYear())
     expect(years[0]!.year).toBe('2023')
     expect(years[years.length - 1]!.year).toBe(thisYear)

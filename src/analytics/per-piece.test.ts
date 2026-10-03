@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { analyticsDb } from '@/test/sqlite'
-import { QUICK_DEPTH, QUICK_MS, leftQuickly } from '@/analytics/aggregate'
+import { QUICK_DEPTH, QUICK_MS, leftQuickly } from '@/analytics/page'
 import { getPieces } from '@/analytics/summary'
 import { getPageAnalytics } from '@/analytics/page'
 

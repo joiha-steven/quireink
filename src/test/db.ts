@@ -11,7 +11,7 @@
 // per process and closes the previous pair, so files must not share a directory.
 import { rmSync } from 'node:fs'
 import { openDatabases, closeDatabases } from '@/store/db'
-import { resetViewTotalsCache } from '@/analytics/summary'
+import { resetAnalyticsCaches } from '@/analytics/memo'
 import { resetSettingsCache } from '@/content/settings'
 
 export function freshDatabase(dir: string): void {
@@ -20,7 +20,7 @@ export function freshDatabase(dir: string): void {
   // In-process caches that outlive a database do not survive one being replaced under
   // them. A test that writes analytics rows straight into the table and then renders the
   // sidebar would otherwise read the previous file's totals.
-  resetViewTotalsCache()
+  resetAnalyticsCaches()
   resetSettingsCache()
 }
 

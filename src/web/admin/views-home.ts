@@ -9,7 +9,8 @@ import { getActivity } from '@/server/activity'
 import { lastRunAt } from '@/server/backup'
 import { buildSha } from '@/server/build-info'
 import { updateState } from '@/server/update-check'
-import { getDashboardTraffic, getViewTotals } from '@/analytics/summary'
+import { getViewTotalsCached } from '@/analytics/summary'
+import { getDashboardTrafficCached } from '@/analytics/memo'
 import { countsByPosts } from '@/comments/comments'
 import { getIndex } from '@/content/posts'
 import { getPageIndex } from '@/content/pages'
@@ -128,8 +129,8 @@ export async function dashboardView() {
       // SIXTY, for six lines: a run is folded into one line with a count, and a count taken
       // from a six-entry fetch could never say more than six (release review, 2026-09-23).
       activityOn ? getActivity(60) : Promise.resolve([]),
-      getDashboardTraffic(30),
-      getViewTotals(),
+      getDashboardTrafficCached(30),
+      getViewTotalsCached(),
     ])
 
   // Top posts maps the all-time view totals (keyed by "/slug") back to titles, keeping

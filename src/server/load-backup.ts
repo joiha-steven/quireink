@@ -18,7 +18,7 @@ import { noUsersYet } from '@/auth/users'
 import { resetSecretCache } from '@/auth/secret'
 import { resetSettingsCache } from '@/content/settings'
 import { clearCache } from '@/server/cache'
-import { resetViewTotalsCache } from '@/analytics/summary'
+import { resetAnalyticsCaches } from '@/analytics/memo'
 import { forgetStorageStats } from '@/media/storage-stats'
 import { deleteByPathname, uploadFile, readBlob } from '@/media/blob'
 import { beginLiveLoad, firstNonEmptyTable, liveColumns, liveLedgers } from '@/store/archive-load'
@@ -150,7 +150,7 @@ async function loadOpened(items: AsyncGenerator<TarItem>): Promise<RowsReport & 
     resetSettingsCache()
     resetSecretCache()
     clearCache()
-    resetViewTotalsCache()
+    resetAnalyticsCaches()
     forgetStorageStats()
   }
 }

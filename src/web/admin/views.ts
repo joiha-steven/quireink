@@ -16,16 +16,17 @@
 // left `tsc` green while the screen went blank. Keep the returns inferred: an annotation like
 // `Record<string, unknown>` reopens the hole this closed.
 //
-// Everything is gated by the router group (Invariant 4) and nothing is cached: the admin
-// must never show a stale snapshot of the reader's own edits.
+// Everything is gated by the router group (Invariant 4) and nothing the owner WROTE is cached:
+// the admin must never show a stale snapshot of their own edits. What readers did is another
+// matter — the analytics windows are kept for a minute (`analytics/memo.ts`), because the
+// 365-day one is seconds of work on a big blog and no edit of the owner's can change it.
 
 import { getActivity } from '@/server/activity'
 import { getAutosave } from '@/content/autosave'
-import { firstEventAt, getAnalytics, getPieces, getRightNow, getViewTotals, yearTotals }
-  from '@/analytics/summary'
+import { firstEventAt, getRightNow, getViewTotals } from '@/analytics/summary'
+import { getAnalyticsCached, getPageAnalyticsCached, getPiecesCached, yearTotalsCached } from '@/analytics/memo'
 import type { Bucket } from '@/analytics/buckets'
 import { getTrashedSubscribers } from '@/news/subscribers'
-import { getPageAnalytics } from '@/analytics/page'
 import { getAdminComments, countsByPosts, getTrashedComments } from '@/comments/comments'
 import { getCommentEnv } from '@/comments/comment-env'
 import { getIntegrationStatus } from '@/store/integration-keys'
@@ -130,7 +131,7 @@ async function analyticsTitles() {
 export async function analyticsDetailView(path: string, { days, bucket, range }: Window) {
   const titles = await analyticsTitles()
   return {
-    detail: await getPageAnalytics(path, days, bucket),
+    detail: await getPageAnalyticsCached(path, days, bucket),
     title: titles[path] ?? path,
     range,
   }
@@ -147,13 +148,18 @@ export async function analyticsSummaryView({ days, bucket, range }: Window) {
   // TOGETHER, not one after another. Four independent reads that were awaited in a row, which
   // cost nothing worth naming while a fetch filled an already-painted screen and costs the
   // whole wait when the HTML response itself is the thing being held up (ADR 0054).
-  const [summary, rightNow, titles, pieces] = await Promise.all([
-    getAnalytics(days, bucket), getRightNow(), analyticsTitles(), getPieces(days, bucket),
+  //
+  // Every year that has data rides along, independent of the window above: the question "2024
+  // against 2025" is not a window question, and answering it by making the owner set a window
+  // twice and hold both numbers in their head is not answering it.
+  //
+  // The window's reads are a minute old at most (`analytics/memo.ts` says why that is honest);
+  // `getRightNow` is the one read here about this minute, and it stays fresh.
+  const [summary, rightNow, titles, pieces, years] = await Promise.all([
+    getAnalyticsCached(days, bucket), getRightNow(), analyticsTitles(), getPiecesCached(days, bucket),
+    yearTotalsCached(),
   ])
-  // Every year that has data, independent of the window above: the question "2024 against
-  // 2025" is not a window question, and answering it by making the owner set a window twice
-  // and hold both numbers in their head is not answering it.
-  return { summary, rightNow, titles, pieces, years: yearTotals(), range }
+  return { summary, rightNow, titles, pieces, years, range }
 }
 
 export async function commentsView() {
