@@ -1681,6 +1681,28 @@ export type AdminStrings = {
   setupPwShort: string
   setupPwCommon: string
   setupPwName: string
+  // ----- first run, the other door: a backup loaded into the empty blog (ADR 0067) ---------
+  // `{version}`, `{theirs}` and `{ours}` are release numbers; `{why}` is the reason in English
+  // for a failure nobody planned a sentence for.
+  setupRestoreLink: string
+  setupRestoreTitle: string
+  setupRestoreLede: string
+  setupRestoreTokenLabel: string
+  setupRestoreTokenHint: string
+  setupRestoreFile: string
+  setupRestoreFileHint: string
+  setupRestoreSealed: string
+  setupRestoreIdentity: string
+  setupRestorePassphrase: string
+  setupRestoreGo: string
+  setupRestoreNotEmpty: string
+  setupRestoreVersion: string
+  setupRestoreOldFormat: string
+  setupRestoreNeedsKey: string
+  setupRestoreWrongKey: string
+  setupRestoreBad: string
+  setupRestoreFailed: string
+  setupRestoreBusy: string
   // ----- first run, after the account: the two questions worth asking ------------
   // Deliberately only two screens. Palettes, fonts, book mode and the feature switches are
   // NOT here: nobody can judge them before the site has a single post, and a choice made

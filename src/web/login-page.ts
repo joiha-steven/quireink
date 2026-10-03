@@ -82,7 +82,7 @@ const EYE = '<svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="current
   + '<path d="M10 10.6a2.9 2.9 0 0 0 4.1 4.1"/><path d="M3 3l18 18"/></svg>'
 
 /** An inline error, next to the field it belongs to rather than floating at the top. */
-const errorBox = (message: string | undefined): string =>
+export const errorBox = (message: string | undefined): string =>
   message === undefined ? '' : `<p class="login-error" role="alert">${escapeHtml(message)}</p>`
 
 /**
@@ -275,9 +275,12 @@ ${errorBox(opts.error)}
     : `<p class="login-lede">${escapeHtml(s.setupUnclaimedLede)}</p>
 ${errorBox(opts.error)}
 <p class="login-hint">${escapeHtml(s.setupWhereToLook)}</p>`
+  // The other way out of an unclaimed install, a blog moving here (ADR 0067). It asks for the
+  // same secret, so offering it here gives nothing away.
   return loginShell(settings, s.setupUnclaimedTitle, `
 <h1>${escapeHtml(s.setupUnclaimedTitle)}</h1>
-${body}`)
+${body}
+<p class="login-alt"><a href="/setup/restore" data-setup-restore-link>${escapeHtml(s.setupRestoreLink)}</a></p>`)
 }
 
 /**
@@ -338,7 +341,8 @@ ${languageField(settings)}
 <p class="login-hint">${escapeHtml(fill(s.setupPwHint, { n: MIN_LENGTH }))}</p>
 
 <button type="submit" class="login-submit">${escapeHtml(s.setupCreate)}</button>
-</form>`)
+</form>
+<p class="login-alt"><a href="/setup/restore?token=${encodeURIComponent(opts.token)}" data-setup-restore-link>${escapeHtml(s.setupRestoreLink)}</a></p>`)
 }
 
 /**

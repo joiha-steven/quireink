@@ -12,25 +12,46 @@ import { createGunzip, createGzip, type Gunzip, type Gzip } from 'node:zlib'
 
 function zlibStage(z: Gzip | Gunzip): TransformStream<Uint8Array, Uint8Array> {
   let failed: Error | null = null
-  z.on('error', (error: Error) => { failed = error })
+  // The one write or flush waiting on zlib, woken by `drain`/`end` — or by an error, which zlib
+  // reports INSTEAD of either: a damaged gzip that only waited for `drain` would wait for ever.
+  let waiting: ((error: Error | null) => void) | null = null
+  z.on('error', (error: Error) => {
+    failed = error
+    const wake = waiting
+    waiting = null
+    wake?.(error)
+  })
+  const wait = (event: 'drain' | 'end'): Promise<void> => new Promise<void>((done, fail) => {
+    waiting = (error) => (error ? fail(error) : done())
+    z.once(event, () => {
+      const wake = waiting
+      waiting = null
+      wake?.(null)
+    })
+  })
   return new TransformStream<Uint8Array, Uint8Array>({
     start(controller) {
-      z.on('data', (out: Buffer) => controller.enqueue(new Uint8Array(out.buffer, out.byteOffset, out.byteLength)))
-    },
-    transform(chunk) {
-      return new Promise<void>((done, fail) => {
-        if (failed) { fail(failed); return }
-        if (z.write(chunk)) done()
-        else z.once('drain', () => done())
+      z.on('data', (out: Buffer) => {
+        // zlib may still be emptying its buffer after whoever reads this has gone away (a restore
+        // that refused the archive half-way): enqueuing then throws inside an event emitter,
+        // where nothing can catch it, so the stage stops zlib instead.
+        try {
+          controller.enqueue(new Uint8Array(out.buffer, out.byteOffset, out.byteLength))
+        } catch {
+          z.destroy()
+        }
       })
     },
-    flush() {
-      return new Promise<void>((done, fail) => {
-        if (failed) { fail(failed); return }
-        z.once('end', () => done())
-        z.once('error', fail)
-        z.end()
-      })
+    async transform(chunk) {
+      if (failed) throw failed
+      if (!z.write(chunk)) await wait('drain')
+      if (failed) throw failed
+    },
+    async flush() {
+      if (failed) throw failed
+      const ended = wait('end')
+      z.end()
+      await ended
     },
   })
 }

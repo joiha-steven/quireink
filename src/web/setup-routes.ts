@@ -32,6 +32,7 @@ import { saveSettings } from '@/content/settings'
 import { isSiteLang } from '@/locales/langs'
 import { siteStepScreen, faceStepScreen, readerStepScreen, lookStepScreen } from '@/web/setup-page'
 import { APP_VERSION } from '@/version'
+import { backupLoading } from '@/server/load-backup'
 
 const html = (body: string, status = 200): Response =>
   new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8' } })
@@ -40,9 +41,10 @@ const html = (body: string, status = 200): Response =>
 // token, which no rate limit is needed for; there for `SETUP_CODE`, which a person chose
 // and a person could choose badly. Only misses are charged, so the one right answer and the
 // page loads before it cost nothing.
-const TRIES = 10
-const TRIES_WINDOW = 15 * 60_000
-const tries = (c: Context): string => `setup:${clientIp(c)}`
+export const TRIES = 10
+export const TRIES_WINDOW = 15 * 60_000
+/** Shared with `setup-restore.ts`: a wrong token there is a wrong token here, from one budget. */
+export const tries = (c: Context): string => `setup:${clientIp(c)}`
 
 /**
  * `GET /setup`.
@@ -123,6 +125,8 @@ export async function handleSetupClaim(c: Context): Promise<Response> {
     if (!wantsHtml) return fail(c, s.setupClaimed, 409)
     return html(claimedScreen(settings), 409)
   }
+  // A backup is going in (`server/load-backup.ts`), and its owner account with it.
+  if (backupLoading()) return refuse(s.setupRestoreBusy, 409)
   if (overLimit(tries(c), TRIES, TRIES_WINDOW)) return refuse(s.setupTooMany, 429)
   if (!setupTokenMatches(token)) {
     recordHit(tries(c), TRIES_WINDOW)

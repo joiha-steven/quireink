@@ -24,6 +24,7 @@ scripts too, and that is the name to use: `bun run build:assets`, `bun run check
   test cannot hold belongs here, not in a comment.
 - **A check that needs a RUNNING instance does not go in `scripts/checks/`.** Those are static
   and `check:all` runs them with nothing serving. `restore-check.ts` needs an instance, a
-  session and its files on disk, so it hangs off `bun run tour`, which already has all three.
+  session and its files on disk, so it hangs off `bun run tour`, which already has all three;
+  so does `setup-restore-check.ts`, which boots a second, empty instance of its own and removes it.
   It may write, and it takes back everything it wrote — a check that leaves rows behind
   changes what the next run is testing.

@@ -180,11 +180,16 @@ export function ledgerNames(conn: Connection, table: string): string[] {
  *
  * Batches and not one transaction: a single one would have to hold every row of the table in
  * memory before it could begin, which is the thing this format exists not to do.
+ *
+ * `replace` is for a load into a RUNNING blog, which goes on serving between batches: a reader's
+ * pageview flushed mid-load, or a salt minted on a request, can take a key the archive also has,
+ * and the archive's row is the one that stays.
  */
 export async function loadTable(
   conn: Connection, table: string, columns: string[], lines: AsyncIterable<Uint8Array>,
+  opts: { replace?: boolean } = {},
 ): Promise<{ rows: number; sha256: string }> {
-  const insert = `insert into ${ident(table)} (${columns.map(ident).join(', ')}) values (${columns.map(() => '?').join(', ')})`
+  const insert = `insert ${opts.replace ? 'or replace ' : ''}into ${ident(table)} (${columns.map(ident).join(', ')}) values (${columns.map(() => '?').join(', ')})`
   const hash = createHash('sha256')
   const decoder = new TextDecoder()
   let carry = ''

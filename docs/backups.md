@@ -60,7 +60,9 @@ the default reaches only installs that never chose.
   design. Restoring means replacing the database files the running process holds open; doing
   it correctly means stopping the service, which is the shell procedure below. An application
   that can overwrite itself is the risk parity exception 1 removed, and it is not coming back
-  through this door.
+  through this door. The one thing a running Quire Ink does take is a backup loaded into a blog
+  that is still **empty**, from the first setup screen ([below](#starting-a-new-blog-from-a-backup)):
+  nothing is overwritten there, because there is nothing yet.
 - Retention prunes **after** the new archive is written. Pruning first would use less peak
   disk and would delete a good backup to make room for one that then failed.
 - **These are on the same disk as the thing they copy.** They survive a bad edit, a bad
@@ -238,10 +240,9 @@ if they matter, or use the built-in off-site copy, which puts everything in the 
 
 ## Restoring
 
-The same procedure for every archive, whichever of the four wrote it and whichever format it is
-in. The service has to stop: replacing a database under a running process is the torn-state
-problem the backup itself avoids, in the other direction. That is also why there is no restore
-button on a blog that already has content.
+One procedure for every archive, whichever of the four wrote it and in either format. The service
+has to stop: replacing a database under a running process is the torn-state problem the backup
+itself avoids, in the other direction — which is also why a blog with content has no restore button.
 
 ```sh
 systemctl stop quire
@@ -252,38 +253,48 @@ systemctl start quire
 ```
 
 [`scripts/restore.ts`](../scripts/restore.ts) refuses a data directory that still holds
-`quire.db` or `analytics.db` — nothing is ever overwritten, and the files you moved aside are the
-way back if this was the wrong archive. It builds in a staging directory and moves the two files
-into place only once all of it has passed:
+`quire.db` or `analytics.db` — nothing is ever overwritten, and the files moved aside are the way
+back if this was the wrong archive. It builds in a staging directory and moves the two files into
+place only once all of it has passed:
 
 - **A `quire-rows/1` archive** is rebuilt: each database from the archive's own `schema.sql` (the
   shape it was written in), every row inserted with foreign keys off and the full-text triggers
   on, then checked — every table dumped again must hash to the SHA-256 in the manifest,
   `foreign_key_check` must find nothing and `integrity_check` must say ok. A row count proves
   nothing was lost; the hash proves nothing was changed.
-- **An archive from before ADR 0067** holds the two database files. They are copied out and must
-  pass `integrity_check` before they are moved anywhere — the two `sqlite3` lines this section
-  used to ask you to type.
+- **An archive from before ADR 0067** holds the two database files, copied out and held to
+  `integrity_check` before they move. Without Bun, it still restores by hand as it always did:
+  `tar -xzf` it, `sqlite3 quire.db 'pragma integrity_check;'` (expect `ok`), then `cp` the two
+  `.db` files into the data directory with the service stopped.
 
 Either way the uploads land in `--uploads-dir` (default: `uploads` beside the data directory),
 refusing any file already there. The next start migrates the databases forward as on any
 upgrade, taking its own copy first ([ADR 0063](decisions/0063-an-upgrade-copies-first-and-gives-the-space-back.md)).
-
-Without Bun on the machine, an old archive restores by hand exactly as it always did:
-
-```sh
-tar -xzf quire-<tag>.tar.gz -C /tmp/restore
-sqlite3 /tmp/restore/quire.db 'pragma integrity_check;'   # expect: ok
-systemctl stop quire && cp /tmp/restore/*.db /var/lib/quire/data/ && systemctl start quire
-```
-
-> Archives written before 2026-08-01 are named `quire2-<tag>.tar.gz`. Same contents; only the
-> prefix changed when the script stopped being named after one installation.
+Archives written before 2026-08-01 are named `quire2-<tag>.tar.gz`; only the prefix differs.
 
 **Do this on a schedule, not only when something is on fire.** Restore a real archive into a
 scratch directory (`--data-dir /tmp/restore/data --uploads-dir /tmp/restore/uploads`) and check
 the post count against what the site actually shows: an untested backup is a belief, not a
 backup.
+
+### Starting a new blog from a backup
+
+A fresh install that nobody has claimed yet offers **Start from a backup** on its setup screen.
+It takes an archive written by the **same version** — the manifest's version and both migration
+ledgers must equal the running ones, or it refuses and says which version to upgrade the old
+blog to before taking a new backup — and loads every row and upload into the empty blog. It is
+protected exactly like the claim (the setup link or `SETUP_CODE`), it refuses a blog that has an
+owner or any content, and afterwards the blog belongs to the account in the archive: sign in as
+before. This is how a blog moves between machines, or between Bun and Cloudflare: a fresh
+install, and the backup loaded into it.
+
+A sealed archive asks for its key (the line in the key file) or its passphrase there, used once,
+in memory, and never stored. The archive streams straight from the upload into the tables — it is
+never held whole — and a load that fails part-way empties everything it put in, so the blog is
+left as empty as it was found and the right archive can go in after. The upload is bounded by the
+server's request ceiling (the larger of `MAX_UPLOAD_MB` and 100 MB); a larger archive restores
+with `scripts/restore.ts` instead, and so does an archive from before ADR 0067, which has no rows
+to load.
 
 ### The same questions, asked automatically
 
@@ -293,7 +304,11 @@ every table must hash back to its manifest digest, both rebuilt databases must p
 `integrity_check`, no table may come back with fewer rows than it had before the snapshot, and
 every upload must be byte-identical. It uploads one image first, because the seeded fixture
 writes `media` ROWS and no files — without that, the uploads assertion passes over an empty
-directory forever, which reads as coverage and is not.
+directory forever, which reads as coverage and is not. Then
+[`scripts/setup-restore-check.ts`](../scripts/setup-restore-check.ts) boots a second, empty
+instance and loads the same archive through **Start from a backup**, with the setup code, the way
+the form posts it: the sign-in must follow, a second load must be refused, and every row and
+upload must have arrived.
 
 It is not a substitute for restoring a REAL archive onto a real machine. It is the part that
 can run on every change, so that the part that cannot is the only one left to remember.

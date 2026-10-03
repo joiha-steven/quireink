@@ -68,6 +68,7 @@ import {
 } from '@/web/auth-routes'
 import { handleEnrol, handleEnrolDone, handleEnrolSkip } from '@/web/enrol-routes'
 import { handleSetupClaim, handleSetupPage, setupWizardRoutes } from '@/web/setup-routes'
+import { handleRestore, handleRestorePage } from '@/web/setup-restore'
 
 /**
  * The admin shell, for the owner, or a redirect to sign in.
@@ -233,6 +234,10 @@ export function createApp(): Hono {
   // more 404s rather than a door left standing open with nothing behind it.
   app.get('/setup', handleSetupPage)
   app.post('/api/setup/claim', handleSetupClaim)
+  // The other door out of an unclaimed install: a backup loaded into it (ADR 0067). As guarded as
+  // the claim, and as dead once there is an owner.
+  app.get('/setup/restore', handleRestorePage)
+  app.post('/setup/restore', handleRestore)
   app.post('/api/auth/logout', handleLogout)
 
   // ----- the admin API --------------------------------------------------------

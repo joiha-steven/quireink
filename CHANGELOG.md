@@ -27,6 +27,14 @@
   any machine that already serves something. Run it again and it is an update that leaves `.env`
   alone. The DigitalOcean user-data file is now a thin shell around it.
 
+- **Start a new blog from a backup.** A fresh install that nobody has claimed yet offers **Start
+  from a backup** on its setup screen: give it an archive written by the same version (and its key
+  or passphrase if it is encrypted), and every post, setting, subscriber and picture goes in; the
+  blog then belongs to the account in the backup, which signs in as before. It asks for the same
+  setup link or `SETUP_CODE` as claiming, refuses a blog that has an owner or any content, and
+  refuses an archive from another version with the version to upgrade the old blog to first. This
+  is how a blog moves between machines, or to Quire Ink on Cloudflare. In all eleven languages.
+
 ### Fixed
 
 - **A backup taken on Linux while a picture's smaller copies were being written failed with a 500**

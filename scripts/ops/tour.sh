@@ -89,4 +89,9 @@ echo
 QUIRE_SESSION="$SESSION" DATA_DIR="$TMP/data" STORAGE_LOCAL_DIR="$TMP/uploads" \
   bun scripts/restore-check.ts "http://127.0.0.1:$PORT" || status=$?
 
+# The other door: the same archive loaded into a second, empty instance through its setup screen.
+echo
+QUIRE_SESSION="$SESSION" DATA_DIR="$TMP/data" STORAGE_LOCAL_DIR="$TMP/uploads" \
+  bun scripts/setup-restore-check.ts "http://127.0.0.1:$PORT" || status=$?
+
 exit $status
