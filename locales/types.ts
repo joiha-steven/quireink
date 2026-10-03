@@ -886,6 +886,31 @@ export type AdminStrings = {
   securityWrongPassword: string
   securityTooMany: string
   securityBadCode: string
+  // Passkeys in the security card (ADR 0071). `securityPasskeysBound` carries `{host}`, filled by
+  // the island from `/api/security`, because the server drawing the card does not know the request.
+  securityPasskeys: string
+  securityPasskeysHint: string
+  securityPasskeysBound: string
+  securityPasskeyNone: string
+  securityPasskeyName: string
+  securityPasskeyNamePlaceholder: string
+  securityPasskeyAdd: string
+  securityPasskeyCreated: string
+  securityPasskeyLastUsed: string
+  securityPasskeyNever: string
+  securityPasskeyRemove: string
+  securityPasskeyDone: string
+  securityPasskeyGone: string
+  securityPasskeyUnsupported: string
+  securityPasskeyNeedsName: string
+  securityPasskeyCancelled: string
+  securityPasskeyExists: string
+  securityPasskeyFull: string
+  securityPasskeyBad: string
+  securityPasskeyExpired: string
+  askPasskeyTitle: string
+  askPasskeyBody: string
+  askPasskeyYes: string
   pwTooShort: string
   pwTooCommon: string
   pwContainsName: string
@@ -1712,6 +1737,10 @@ export type AdminStrings = {
   /** A right code the replay guard already spent. */
   authCodeReused: string
   authUseRecovery: string
+  /** The sign-in page's passkey button, and the two things it can say back (ADR 0071). */
+  authPasskeySignIn: string
+  authPasskeyFailed: string
+  authPasskeyExpired: string
   authRecoveryCode: string
   authRecoveryHint: string
   authUseAuthenticator: string

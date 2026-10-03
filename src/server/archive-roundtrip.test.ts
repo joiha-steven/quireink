@@ -46,6 +46,11 @@ beforeAll(async () => {
   const insert = a.prepare('insert into analytics_events (path, visitor, country, created_at) values (?, ?, ?, ?)')
   a.transaction(() => { for (let i = 0; i < 1500; i++) insert.run(`/post-${i % 30}`, `v${i % 97}`, i % 2 ? 'VN' : null, 1_700_000_000_000 + i) })()
   db().exec("insert into render_cache (key, html, created_at) values ('k', '<p>derived</p>', 1)")
+  // A passkey (ADR 0071), whose key is a BLOB: the one column type nothing else here seeds, and the
+  // way the owner signs in, which a restore that brings the blog back must bring back too.
+  db().exec("insert into users (id, username, email, password_hash, created_at, updated_at) values (1, 'owner', 'o@example.com', 'h', 1, 1)")
+  db().prepare('insert into passkeys (id, user_id, public_key, sign_count, transports, name, created_at) values (?, 1, ?, 4, ?, ?, 2)')
+    .run('Y3JlZGVudGlhbC1pZC1vZi1hLXBhc3NrZXk', new Uint8Array([0xa5, 0x01, 0x02, 0x03, 0x26, 0x00, 0xff]), 'internal,hybrid', 'Laptop')
 })
 
 async function archiveTo(path: string): Promise<void> {
@@ -83,6 +88,7 @@ describe('a rows archive', () => {
     expect(dump(join(out, 'data', 'quire.db'))).toEqual(want.content)
     expect(dump(join(out, 'data', 'analytics.db'))).toEqual(want.analytics)
     expect(want.analytics.analytics_events).toHaveLength(1500)
+    expect(want.content.passkeys).toHaveLength(1)
     expect(readFileSync(join(out, 'uploads', 'media', '2026', 'photo.webp')))
       .toEqual(readFileSync(join(UPLOADS, 'media', '2026', 'photo.webp')))
 

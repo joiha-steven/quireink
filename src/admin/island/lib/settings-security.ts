@@ -21,6 +21,7 @@ import { pageLang } from '@/admin/island/lib/page-lang'
 import type { SiteLang } from '@/types'
 import { plural } from '@/i18n/plural'
 import { ask, say } from './media-bridge'
+import { wirePasskeys } from './settings-passkeys'
 
 export type SecWords = Partial<Record<string, string>>
 
@@ -35,6 +36,8 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
   const box = card as HTMLElement
   const lang = (screen.dataset.lang ?? 'en') as SiteLang
 
+  let passkeys: ReturnType<typeof wirePasskeys> | undefined
+
   const current = (): string =>
     box.querySelector<HTMLInputElement>('[data-security-current]')?.value ?? ''
 
@@ -45,6 +48,7 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
       '[data-sec-change], [data-sec-recovery], [data-sec-reenrol]')) {
       key.disabled = !ready
     }
+    passkeys?.arm()
   }
 
   box.addEventListener('input', (e) => {
@@ -183,6 +187,12 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
     show(box.querySelector('[data-sec-enrol]'), false)
   })
 
+  // ---- the passkeys (ADR 0071) ------------------------------------------------------------
+
+  // Declared before `arm` first runs would read it: `arm` is called at the top of this function,
+  // while this is still undefined, which the `?.` above allows for.
+  passkeys = wirePasskeys({ box, w, post, current, refresh: () => { void refresh() } })
+
   // ---- the devices ------------------------------------------------------------------------
 
   box.addEventListener('click', (e) => {
@@ -227,6 +237,7 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
     const json = await res?.json().catch(() => null) as { success?: boolean; data?: SecurityWire } | null
     if (!json?.success || !json.data) return
     const { sessions, recoveryLeft, totpEnabled } = json.data
+    passkeys?.render(json.data.passkeys ?? [], json.data.passkeyRpId ?? '')
 
     const note = box.querySelector<HTMLElement>('[data-sec-recovery-note]')
     if (note) note.textContent = (note.dataset.tpl ?? '').replace('{n}', String(recoveryLeft))
@@ -235,7 +246,8 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
     show(box.querySelector('[data-sec-totp-off]'), !totpEnabled)
 
     const list = box.querySelector<HTMLElement>('[data-sec-sessions]')
-    const tpl = box.querySelector('template')
+    // BY NAME: the passkeys row carries a template of its own, above this one in the card.
+    const tpl = box.querySelector<HTMLTemplateElement>('template[data-sec-session-row]')
     if (!list || !tpl) return
     const rows = sessions.map((s) => {
       const clone = tpl.content.firstElementChild?.cloneNode(true)

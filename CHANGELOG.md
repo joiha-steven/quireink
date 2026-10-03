@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Added
+
+- **Sign in with a passkey.** Beside the password and the code, never in place of them: add one
+  in *Settings → Account → Security* (with your current password), and the sign-in page offers it
+  in the username box's autofill and as a *Sign in with a passkey* button under the form. One
+  fingerprint, face or device PIN and you are in, with no code screen, because a passkey that
+  checks one counts as both factors and cannot be phished. The card lists each passkey with when it
+  was added and last used, and removes one with the password. The password, the six-digit code and
+  the recovery codes keep working exactly as before. A passkey belongs to the blog's address: **if
+  the blog moves to another domain, its passkeys stop working there** and the password and code
+  still let you in; the card names the address. Passkeys travel in the backup. Works the same on a
+  Cloudflare install. In all eleven languages.
+
 ### Fixed
 
 - **A blog made with the Deploy button can be updated.** Cloudflare's import copies the repository

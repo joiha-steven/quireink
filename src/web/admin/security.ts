@@ -27,6 +27,9 @@ import { clientIp } from '@/server/rate-limit'
 import { fail, json } from '@/web/api'
 import { owner, ownerRouter, param, QUIET } from '@/web/guard'
 import type { SecurityWire } from '@/admin-shared/wire'
+import { listPasskeys } from '@/auth/passkeys'
+import { getSettings } from '@/content/settings'
+import { rpIdFor } from '@/web/passkey-routes'
 
 const body = async <T>(c: Context): Promise<Partial<T>> =>
   (await c.req.json().catch(() => ({}))) as Partial<T>
@@ -40,7 +43,7 @@ const str = (v: unknown): string => (typeof v === 'string' ? v : '')
  * that the session might not be the owner's, and an attacker holding a stolen cookie would
  * otherwise have unlimited guesses at the password from inside the admin.
  */
-async function confirms(c: Context): Promise<{ id: number; sessionId: string } | Response> {
+export async function confirms(c: Context): Promise<{ id: number; sessionId: string } | Response> {
   const { user, session } = owner(c)
   const ip = clientIp(c)
   if (rateLimited(`security:${ip}`, 10, 5 * 60_000)) return fail(c, 'too_many_attempts', 429)
@@ -50,7 +53,7 @@ async function confirms(c: Context): Promise<{ id: number; sessionId: string } |
   return { id: user.id, sessionId: session.id }
 }
 
-const isResponse = (v: unknown): v is Response => v instanceof Response
+export const isResponse = (v: unknown): v is Response => v instanceof Response
 
 export function securityRoutes() {
   const router = ownerRouter()
@@ -69,6 +72,10 @@ export function securityRoutes() {
       currentSessionId: session.id,
       recoveryLeft: remainingCodes(user.id),
       totpEnabled: totpStateFor(user.id)?.secret != null,
+      // A name, three dates and an id per passkey; never the key (ADR 0071). The RP ID rides
+      // along so the card can say WHICH address these belong to, before the owner moves it.
+      passkeys: listPasskeys(user.id),
+      passkeyRpId: rpIdFor(c, await getSettings()),
       sessions: listSessions(user.id).map((s) => ({
         id: s.id,
         device: s.userAgent,

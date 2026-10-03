@@ -70,7 +70,7 @@ copies of a rule means one is wrong within a month
 | [backup-load-api.md](backup-load-api.md) | Loading a backup of any size into an empty blog over HTTP, in parts: for a program moving a blog |
 | [update-check.md](update-check.md) | What the daily update check sends, and how to turn it off |
 | [self-host.md](self-host.md) | Running it on your own server |
-| [account.md](account.md) | Claiming the blog, and getting back in after a lost password or phone |
+| [account.md](account.md) | Claiming the blog, signing in with a passkey, and getting back in after a lost password or phone |
 | [self-host-docker.md](self-host-docker.md) | The same thing in a container, and on a NAS |
 
 ## How it is built
@@ -87,7 +87,7 @@ held up and are the working account.
 | [spec/02-structure.md](spec/02-structure.md) | Module layout, request flow, the seven invariants in full. **Reference** |
 | [spec/03-golden.md](spec/03-golden.md) | The rendering contract: fixtures, capture, and what a diff means |
 | [spec/04-frontend.md](spec/04-frontend.md) | Server-rendered HTML, the island model, the CSS split. **Reference** |
-| [spec/06-auth.md](spec/06-auth.md) | Password + TOTP + recovery codes, sessions, the cookie. **Reference** |
+| [spec/06-auth.md](spec/06-auth.md) | Password + TOTP + recovery codes, passkeys, sessions, the cookie. **Reference** |
 | [spec/07-parity-public.md](spec/07-parity-public.md) | Every reader-facing 1.x behaviour, with the fragile ones marked. The defence against silent feature loss, since the golden harness only sees public HTML |
 | [spec/07-parity-admin.md](spec/07-parity-admin.md) | The same for the admin, editor, settings, MCP, operations and auth, none of which the harness sees at all |
 

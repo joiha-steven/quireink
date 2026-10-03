@@ -8,7 +8,7 @@ import { mkdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { open } from '@/runtime/bun/db'
 import type { Connection } from '@/runtime/ports'
-import { digestTable, exportPlan, ledgerNames, loadTable, planFor, schemaScript, tablePages } from '@/store/rows'
+import { digestTable, exportPlan, ledgerNames, loadTable, planFor, schemaScript, SKIPPED_TABLES, tablePages } from '@/store/rows'
 
 const DIR = './.tmp/test-rows'
 rmSync(DIR, { recursive: true, force: true })
@@ -62,6 +62,14 @@ describe('the export plan', () => {
     expect(plans.find((p) => p.name === 'posts')!.order).toEqual(['rowid'])
     expect(ledgerNames(conn, 'ledger')).toEqual(['001-a', '002-b'])
     expect(ledgerNames(conn, 'nope')).toEqual([])
+  })
+
+  it('carries every way in: passwords, codes and passkeys are rows a restore must bring back', () => {
+    // ADR 0071. A table on the skip list is one a restored blog comes back without, and a blog
+    // whose owner signs in with a passkey would come back with the passkey still on the phone and
+    // nothing on the server to answer it. The password + code door would still work; that is the
+    // reason it is never the only one, not a reason to lose the other.
+    for (const table of ['users', 'recovery_codes', 'passkeys']) expect(SKIPPED_TABLES).not.toContain(table)
   })
 
   it('writes a schema that builds the same shape in an empty file, triggers last', () => {

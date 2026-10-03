@@ -1,7 +1,7 @@
 # Your account
 
-How the one owner of a Quire Ink blog comes into existence, and how they get back in when
-something is lost. Part of the [self-host guide](self-host.md) (§6).
+How the one owner of a Quire Ink blog comes into existence, how they sign in with a passkey, and
+how they get back in when something is lost. Part of the [self-host guide](self-host.md) (§6).
 
 ## Claiming the blog
 
@@ -43,6 +43,34 @@ at first sign-in either way, and the admin is unreachable until it is done.
 reaches that screen with the password enrols their own authenticator, so skipping on a
 laptop widens nothing. Set an address and the way out disappears at the next sign-in, which
 asks for enrolment again.
+
+## Signing in with a passkey
+
+A passkey signs you in with your fingerprint, your face or your device's PIN, in one step, in
+place of the password and the six-digit code ([ADR 0071](decisions/0071-a-passkey-is-a-second-door-not-the-only-one.md)).
+It is a second door, never the only one: the password, the code and the recovery codes keep
+working whether you have one passkey, ten or none.
+
+**Adding one.** *Settings → Account → Security*: type your current password in the box at the
+top, give the passkey a name you will recognise (*Laptop*, *Phone*), and press *Add a passkey*.
+Your browser or password manager asks for the fingerprint, face or PIN and keeps the key. The list
+under it shows each passkey with when it was added and when it last signed you in; *Remove* takes
+one away (it asks for the password too). Twenty at most.
+
+**Using one.** On the sign-in page, either pick the passkey from the username box's autofill, or
+press *Sign in with a passkey* under the form. Either way you land in the admin with no code
+screen: a passkey that checked your fingerprint, face or PIN already counts as both factors.
+
+⚠ **A passkey belongs to one address.** It is bound to the blog's host, the one in `SITE_URL` or
+in *Settings*, and the card says which. **If the blog moves to another domain, its passkeys stop
+working there**: no setting can carry them across, because the binding lives in your device, not
+on the server. Sign in with the password and the code on the new address, remove the old passkeys,
+and add new ones. For the same reason passkeys do not work when the admin is opened by another
+name than the blog's address, and they cannot be made at all on a blog reached by an IP address,
+which browsers refuse; open it by a name (even `localhost`) instead.
+
+A backup carries the passkeys with everything else, so a blog restored onto the same address
+signs in with the same passkeys.
 
 **Locked out?** The same CLI is the way back in, run at the machine — being at the machine is
 the authorisation:

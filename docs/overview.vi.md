@@ -58,7 +58,7 @@ bun --smol src/index.ts
 | 💾&nbsp;**Sao&nbsp;lưu** | Nút tải cả blog về máy, snapshot theo lịch, mỗi snapshot gửi thêm một bản lên bucket R2 hay S3 của bạn. [Chi tiết](./backups.md) |
 | 📥&nbsp;**Dọn&nbsp;nhà** | Nhập từ WordPress, Ghost, Substack, Medium. Ảnh được tải về, URL cũ được chuyển hướng sẵn. Muốn đi thì lấy một file ZIP toàn Markdown kèm front matter YAML, và blog này cũng đọc ngược lại được |
 | 🌍&nbsp;**Ngôn&nbsp;ngữ** | Mười một thứ tiếng, cả trong quản trị lẫn ngoài site, thêm một thứ nữa là thêm một file |
-| 🔐&nbsp;**Đăng&nbsp;nhập** | Mật khẩu băm argon2id, mã xác thực mỗi lần vào, mười mã khôi phục, danh sách thiết bị đang đăng nhập kèm nút cắt. Không có Google trong đường đăng nhập |
+| 🔐&nbsp;**Đăng&nbsp;nhập** | Mật khẩu băm argon2id, mã xác thực mỗi lần vào, mười mã khôi phục, danh sách thiết bị đang đăng nhập kèm nút cắt. Khóa truy cập (passkey) là cửa một bước đặt cạnh, không bao giờ thay thế. Không có Google trong đường đăng nhập |
 | 🤖&nbsp;**Trợ&nbsp;lý** | Khoá model của chính bạn: Claude, GPT, Gemini hay DeepSeek. Mỗi cuộc trò chuyện kèm một hoá đơn. Nó còn viết mô tả ảnh và lọc bình luận rác |
 | ⌨️&nbsp;**Quản&nbsp;trị** | HTML do máy chủ dựng, hành vi là những mẩu JavaScript viết tay, không framework. ⌘⇧K gõ tên là nhảy thẳng tới thiết lập cần tìm. ⌘F tìm và thay trong bài. Loạt bài, bản nháp, hẹn giờ, và làm trên điện thoại cũng được |
 

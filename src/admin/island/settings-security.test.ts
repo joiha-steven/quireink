@@ -31,6 +31,8 @@ const state = (over: Partial<SecurityWire> = {}): SecurityWire => ({
     { id: 'here', device: 'Safari on a Mac', createdAt: WHEN, lastSeenAt: WHEN, current: true },
     { id: 'phone', device: 'Chrome on Android', createdAt: WHEN, lastSeenAt: WHEN, current: false },
   ],
+  passkeys: [],
+  passkeyRpId: 'example.com',
   ...over,
 })
 

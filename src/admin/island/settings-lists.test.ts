@@ -298,6 +298,7 @@ describe('a stamp that is a number', () => {
     const wire: SecurityWire = {
       currentSessionId: 'a', recoveryLeft: 8, totpEnabled: true,
       sessions: [{ id: 'a', device: null, createdAt: WHEN, lastSeenAt: WHEN, current: true }],
+      passkeys: [], passkeyRpId: 'example.com',
     }
     expect(formatDateTimeShort(wire.sessions[0]!.lastSeenAt, 'en')).toBe(formatDateTimeShort(ISO, 'en'))
   })

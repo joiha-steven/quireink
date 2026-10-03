@@ -36,6 +36,9 @@ export type ActivityAction =
   // four events an owner most needs to see AFTER the fact: if one appears and they did not
   // do it, the session that did it is the one to end.
   | 'security.password' | 'security.recovery' | 'security.totp' | 'security.session'
+  // A passkey added or removed (ADR 0071). Written by `logAuthEvent`, whatever the toggle says:
+  // each is a way in appearing or going, which is the auth trail's business, not the edit log's.
+  | 'security.passkey.add' | 'security.passkey.remove'
   // Newsletter (Admin → Settings → Integrations). Delete is soft; restore/purge are the
   // Trash's, like every other kind.
   | 'subscriber.delete' | 'subscriber.restore' | 'subscriber.purge'

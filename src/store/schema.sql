@@ -578,6 +578,23 @@ create table if not exists recovery_codes (
   primary key (user_id, code_hash)
 ) without rowid;
 
+-- Passkeys (ADR 0071): a second way in beside the password and the code, never in place of them.
+-- `id` is the credential id as the browser names it (base64url), so a sign-in finds its row in
+-- one lookup. `public_key` is the COSE key exactly as the authenticator sent it: it is public by
+-- definition, and keeping the original bytes means a restore needs no conversion. `sign_count`
+-- is the clone detector (`auth/webauthn.ts`); a synced passkey keeps it at 0.
+create table if not exists passkeys (
+  id           text primary key,
+  user_id      integer not null references users(id) on delete cascade,
+  public_key   blob not null,
+  sign_count   integer not null default 0,
+  transports   text not null default '',     -- comma-separated hints: internal, hybrid, usb...
+  name         text not null default '',
+  created_at   integer not null,
+  last_used_at integer
+);
+create index if not exists passkeys_user_idx on passkeys (user_id);
+
 -- The assistant's conversations (ADR 0040). Stored here rather than in a browser tab so the
 -- owner can come back to one, and so it travels in the backup with everything else of theirs.
 --

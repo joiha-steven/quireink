@@ -109,6 +109,11 @@ function words(t: AdminStrings): string {
     totpDone: t.securityTotpDone, codesCopied: t.securityCodesCopied,
     askRecoveryTitle: t.askRecoveryTitle, askRecoveryBody: t.askRecoveryBody,
     askRecoveryYes: t.askRecoveryYes,
+    // Passkeys (ADR 0071): what the island says after each of its own steps. The server's
+    // refusals ride on the card like the others.
+    passkeyDone: t.securityPasskeyDone, passkeyGone: t.securityPasskeyGone,
+    passkeyCancelled: t.securityPasskeyCancelled, passkeyExists: t.securityPasskeyExists,
+    askPasskeyTitle: t.askPasskeyTitle, askPasskeyBody: t.askPasskeyBody, askPasskeyYes: t.askPasskeyYes,
   }))
 }
 

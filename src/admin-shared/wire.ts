@@ -40,6 +40,18 @@ export type SecurityWire = {
   recoveryLeft: number
   totpEnabled: boolean
   sessions: SessionWire[]
+  /** The owner's passkeys (ADR 0071). Epoch milliseconds; `lastUsedAt` null until first used. */
+  passkeys: PasskeyWire[]
+  /** The host they are bound to. An IP here means passkeys cannot be made at all. */
+  passkeyRpId: string
+}
+
+/** One passkey, as `/api/security` lists it. No key and no counter: a label and its dates. */
+export type PasskeyWire = {
+  id: string
+  name: string
+  createdAt: number
+  lastUsedAt: number | null
 }
 
 /** One archive on disk, as `/api/backup/list` sends it. ISO 8601, from the file's own mtime. */

@@ -70,6 +70,8 @@ import {
   handleLogin, handleLoginPage, handleLogout, handleTwoFactor, handleTwoFactorMode, handleTwoFactorPage,
 } from '@/web/auth-routes'
 import { handleEnrol, handleEnrolDone, handleEnrolSkip } from '@/web/enrol-routes'
+import { registerPasskeyRoutes } from '@/web/passkey-routes'
+import { passkeyAdminRoutes } from '@/web/admin/security-passkeys'
 import { handleSetupClaim, handleSetupPage, setupWizardRoutes } from '@/web/setup-routes'
 import { handleRestore, handleRestorePage } from '@/web/setup-restore'
 import { handlePartPut, handlePartsBegin, handlePartsDrop, handlePartsLoad, handlePartsStatus } from '@/web/setup-restore-parts'
@@ -233,6 +235,8 @@ export function createApp(): Hono {
   app.post('/api/auth/enrol', handleEnrol)
   app.post('/api/auth/enrol/done', handleEnrolDone)
   app.post('/api/auth/enrol/skip', handleEnrolSkip)
+  // A passkey, beside the password and never instead of it (ADR 0071).
+  registerPasskeyRoutes(app)
 
   // First run. Both refuse the moment an account exists, so on a claimed blog these are two
   // more 404s rather than a door left standing open with nothing behind it.
@@ -272,6 +276,7 @@ export function createApp(): Hono {
   // handed somebody's post by that name; the slug is reserved for the same reason.
   app.get('/webmention', (c) => c.text('Webmention endpoint. POST source and target, form-encoded.'))
   app.route('/', securityRoutes().routes)
+  app.route('/', passkeyAdminRoutes().routes)
   app.route('/', siteRoutes().routes)
   app.route('/', uploadRoutes().routes)
   app.route('/', newsRoutes().routes)

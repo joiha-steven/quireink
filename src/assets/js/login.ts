@@ -5,6 +5,8 @@
 // more on this page than anywhere else on the site, because it is the one page you cannot
 // route around.
 
+import { passkeySignIn } from './passkey-signin'
+
 /** Show/hide the password, and keep the button's label honest about what it will do. */
 function reveal(): void {
   const button = document.querySelector<HTMLButtonElement>('[data-reveal]')
@@ -119,3 +121,4 @@ capsLock()
 otpPaste()
 timezone()
 setupLanguage()
+passkeySignIn()

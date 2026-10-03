@@ -64,6 +64,9 @@ const PUBLIC_EXACT = new Set([
   '/api/comments', '/api/comments/me', '/api/comments/stamp', '/api/pen/me',
   '/api/newsletter/confirm', '/api/newsletter/open', '/api/newsletter/unsubscribe',
   '/.well-known/oauth-authorization-server', '/.well-known/oauth-protected-resource',
+  // A passkey challenge for the sign-in page (ADR 0071): a random value and the RP ID, which is
+  // the blog's own host. It grants nothing, lasts five minutes, and is capped per address.
+  '/api/auth/passkey/options',
 ])
 
 /** The static families, by shape rather than by name, so a new font is not a test failure. */

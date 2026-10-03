@@ -105,12 +105,41 @@ function insecureNote(text: string): string {
 }
 
 
+/** Lucide's key-round, in the idiom of the eye above: what a passkey looks like everywhere. */
+const KEY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"'
+  + ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+  + '<path d="M2.6 17.4A2 2 0 0 0 2 18.8V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1'
+  + 'a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4z"/>'
+  + '<circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>'
+
+/**
+ * The passkey door (ADR 0071), under the password form and never in place of it.
+ *
+ * SHIPPED HIDDEN, and only on a blog that has a passkey to sign in with. The island shows it when
+ * the browser has WebAuthn at all, so a browser without it sees the page exactly as it was; and a
+ * blog whose owner never made a passkey is not offered a button that can only fail. The sentences
+ * it may need ride on it as attributes, because the island has no dictionary.
+ *
+ * The username box gains `webauthn` in its autocomplete beside it: that token is what lets a
+ * browser with conditional UI offer the passkey in the box's own autofill, before anybody has
+ * found the button.
+ */
+function passkeyDoor(s: ReturnType<typeof adminT>, next: string | undefined): string {
+  return `<div class="login-passkey" data-passkey hidden`
+    + ` data-failed="${escapeAttr(s.authPasskeyFailed)}" data-expired="${escapeAttr(s.authPasskeyExpired)}"`
+    + `${next === undefined ? '' : ` data-next="${escapeAttr(next)}"`}>`
+    + `<p class="login-error" role="alert" data-passkey-error hidden></p>`
+    + `<button type="button" class="login-passkey-button" data-passkey-go>${KEY}`
+    + `<span>${escapeHtml(s.authPasskeySignIn)}</span></button></div>`
+}
+
 export function passwordScreen(
   settings: SiteSettings,
-  opts: { error?: string; username?: string; next?: string } = {},
+  opts: { error?: string; username?: string; next?: string; passkeys?: boolean } = {},
 ): string {
   const s = adminT(settings.language)
   const next = opts.next === undefined ? '' : `<input type="hidden" name="next" value="${escapeAttr(opts.next)}">`
+  const passkeys = opts.passkeys === true
   return loginShell(settings, s.authSignIn, `
 <h1>${escapeHtml(s.authSignIn)}</h1>
 <p class="login-lede">${escapeHtml(fill(s.authSignInLede, { site: settings.title }))}</p>
@@ -119,7 +148,7 @@ ${errorBox(opts.error)}
 <form method="post" action="/api/auth/login" class="login-form">
 ${next}
 <label for="username">${escapeHtml(s.authUsername)}</label>
-<input id="username" name="username" type="text" autocomplete="username" autocapitalize="none"
+<input id="username" name="username" type="text" autocomplete="username${passkeys ? ' webauthn' : ''}" autocapitalize="none"
        spellcheck="false" required autofocus value="${escapeAttr(opts.username ?? '')}">
 
 <label for="password">${escapeHtml(s.authPassword)}</label>
@@ -133,7 +162,8 @@ ${next}
 <p class="login-caps" data-caps hidden>${escapeHtml(s.authCapsLock)}</p>
 
 <button type="submit" class="login-submit">${escapeHtml(s.authContinue)}</button>
-</form>`)
+</form>
+${passkeys ? passkeyDoor(s, opts.next) : ''}`)
 }
 
 export function twoFactorScreen(

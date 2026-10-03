@@ -34,6 +34,7 @@ import { PANEL, panelList } from '@/web/admin/fields-box'
 import { pick, slider } from '@/web/admin/fields-pick'
 import { gate } from '@/web/admin/fields-pic'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
+import { passkeysRow } from '@/web/admin/screens/settings-account-passkeys'
 
 /** The row every toggle in this card's lists wears: `PANEL_LIST` draws the rule, the row the pad. */
 
@@ -176,6 +177,8 @@ function security(t: AdminStrings): string {
       + `<button type="button" data-sec-otp-close class="${buttonClass('secondary', 'md')}">`
       + `${escapeHtml(t.close)}</button></div>`,
       `class="${PANEL}" data-sec-enrol`)
+    // Passkeys (ADR 0071): a second way in, after the two it never replaces.
+    + passkeysRow(t)
     // EMPTY, with the row's shape beside it in a template. "Sign out everywhere else" appeared
     // at two sessions or more in React, so it ships hidden rather than absent — and hidden is
     // the honest state, because at render time the page knows of no sessions at all.
@@ -336,7 +339,13 @@ export function accountTab(t: AdminStrings, s: SiteSettings): string {
         + ` data-say-bad-code="${escapeAttr(t.securityBadCode)}"`
         + ` data-say-too-short="${escapeAttr(t.pwTooShort)}"`
         + ` data-say-too-common="${escapeAttr(t.pwTooCommon)}"`
-        + ` data-say-contains-name="${escapeAttr(t.pwContainsName)}"`,
+        + ` data-say-contains-name="${escapeAttr(t.pwContainsName)}"`
+        // The passkey routes' refusals (`web/admin/security-passkeys.ts`), by the same mechanism.
+        + ` data-say-bad-passkey="${escapeAttr(t.securityPasskeyBad)}"`
+        + ` data-say-passkey-expired="${escapeAttr(t.securityPasskeyExpired)}"`
+        + ` data-say-passkey-exists="${escapeAttr(t.securityPasskeyExists)}"`
+        + ` data-say-passkey-full="${escapeAttr(t.securityPasskeyFull)}"`
+        + ` data-say-passkey-needs-name="${escapeAttr(t.securityPasskeyNeedsName)}"`,
     })
     + `</div><div class="${COL}">`
     // AN ORDINARY CARD. It was a `connectionCard` with `state: 'good'` written in by hand and

@@ -223,7 +223,9 @@ const BUDGET: Record<string, number> = {
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.
-  'login.js': 1_500,
+  // 3,200 since ADR 0071 (3,031 measured), for the passkey: the conditional request on load, the button, and the
+  // four byte strings carried to the server as base64url. Still a script on one page.
+  'login.js': 3_200,
   // /setup/restore only, on a blog nobody has claimed: the parts, a retry, the resume, the load.
   // 2,420 measured at first landing (2026-10-03).
   'setup-restore.js': 2_600,

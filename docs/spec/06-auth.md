@@ -127,6 +127,9 @@ Extends the existing `rate-limit.ts` sliding window.
 | TOTP attempt, per IP | 30 / 15 min | 429 with `Retry-After` |
 | Recovery code attempt | 5 / hour, per IP | 429 |
 | Recovery code attempt, per account | 10 / hour | 429 |
+| Passkey challenge, per IP | 60 / 15 min | 429; the sign-in page asks for one on every load |
+| Passkey sign-in, per IP | 10 / 15 min | 429 with `Retry-After` |
+| Passkey sign-in, across addresses | 50 / 15 min | a wrong answer reads as throttled; a right one still passes |
 
 The two TOTP rows are the ones that survive a fresh ticket, and until 2026-09-19 they did
 not exist: the limit block was gated on the code NOT looking like a TOTP, so a six-digit
@@ -290,8 +293,26 @@ first use, per purpose (`analytics-visitor`, `session-ip`), never shown in any U
 fewer environment variable for a self-hoster to set, and no way to leave it unset. Distinct
 per purpose so a confirmed guess in one table proves nothing about the other.
 
-## Later, not now
+## Passkeys
 
-**Passkeys / WebAuthn** as an additional fast path alongside password + TOTP. Decided
-against for v2.0 to keep the surface small; the `users` table gains a `credentials`
-child table when it happens, and nothing above needs to change.
+A second door beside the password and the code, never the only one
+([ADR 0071](../decisions/0071-a-passkey-is-a-second-door-not-the-only-one.md)). The owner adds and
+removes them in the security card, with the password, like every change there; the sign-in page
+offers them in the username box's autofill (conditional UI) and as a button under the form, once
+one exists and only in a browser with WebAuthn.
+
+- **Table** `passkeys`: the credential id (base64url, the primary key), the COSE public key as the
+  authenticator sent it, the sign count, the transports it reported, a name, `created_at`,
+  `last_used_at`. Carried by the backup.
+- **Ceremonies** (`auth/webauthn.ts`): discoverable, `userVerification: 'required'`, attestation
+  `none` and not verified, ES256 / EdDSA / RS256 through Web Crypto on both runtimes. CBOR and COSE
+  are read by `auth/cbor.ts`, which refuses indefinite lengths, tags, floats and duplicate keys.
+- **Checks**: the challenge is single-use and lives five minutes (`auth/passkeys.ts`, in memory, a
+  registration challenge bound to the session that asked); the origin is the RP ID or under it, over
+  HTTPS or on `localhost`; the RP ID hash; user present AND user verified; a sign count that does not
+  go up against a non-zero stored one is refused and logged.
+- **RP ID**: the host of the blog's address, or the request's host when no address is set or the
+  address is an IP (`rpIdFor`, `web/passkey-routes.ts`). A domain move ends every passkey; the
+  password, the code and the recovery codes still work.
+- **Log**: a sign-in is `auth.login` with *via passkey*; a refusal is `auth.login.failed` with the
+  reason; adding and removing are `security.passkey.add` / `.remove`, always recorded.

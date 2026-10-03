@@ -482,3 +482,19 @@ create table if not exists broadcast_outbox (
   claimed_at integer
 );
 create index if not exists broadcast_outbox_due_idx on broadcast_outbox (run_id, state);
+
+-- migration: 023-passkeys
+-- Passkeys as a fast path beside the password and the code (ADR 0071). A new table with nothing
+-- to carry over, copied verbatim from `schema.sql`. It is NOT in `SKIPPED_TABLES`: a backup that
+-- brings the blog back brings back the way its owner signs in.
+create table if not exists passkeys (
+  id           text primary key,
+  user_id      integer not null references users(id) on delete cascade,
+  public_key   blob not null,
+  sign_count   integer not null default 0,
+  transports   text not null default '',
+  name         text not null default '',
+  created_at   integer not null,
+  last_used_at integer
+);
+create index if not exists passkeys_user_idx on passkeys (user_id);

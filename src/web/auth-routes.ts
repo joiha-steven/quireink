@@ -23,6 +23,9 @@ import {
 import { generateSecret, otpauthUri } from '@/auth/totp'
 import { pendingUser, submitPassword, submitSecondFactor } from '@/auth/login'
 import { noUsersYet } from '@/auth/users'
+import { anyPasskeys } from '@/auth/passkeys'
+import { isIpHost, rpIdFor } from '@/web/passkey-routes'
+import type { SiteSettings } from '@/types'
 import { qrSvg } from '@/render/qr'
 import { fail, json } from '@/web/api'
 import { html, readFields, safeNext, signedIn } from '@/web/auth-http'
@@ -34,6 +37,14 @@ import {
 
 // ----- the pages ---------------------------------------------------------------
 
+/**
+ * Whether the sign-in page offers a passkey (ADR 0071): only when there is one to use, and only on
+ * an address a browser will accept as an RP ID. The island still hides it from a browser that has
+ * no WebAuthn, which the server cannot know.
+ */
+const offersPasskey = (c: Context, settings: SiteSettings): boolean =>
+  anyPasskeys() && !isIpHost(rpIdFor(c, settings))
+
 export async function handleLoginPage(c: Context): Promise<Response> {
   // Already signed in: nothing to do here. A sign-in form shown to someone who is signed
   // in reads as though their session broke.
@@ -44,7 +55,8 @@ export async function handleLoginPage(c: Context): Promise<Response> {
   // opened `/admin` on a fresh install met a sign-in form for an account that did not exist,
   // and `/setup` — the page written for exactly that moment — only answered by name.
   if (noUsersYet()) return c.redirect('/setup', 302)
-  return html(passwordScreen(await getSettings(), { next: c.req.query('next') }))
+  const settings = await getSettings()
+  return html(passwordScreen(settings, { next: c.req.query('next'), passkeys: offersPasskey(c, settings) }))
 }
 
 export async function handleTwoFactorPage(c: Context): Promise<Response> {
@@ -107,6 +119,7 @@ export async function handleLogin(c: Context): Promise<Response> {
       error: s.authBadCredentials,
       username: values.username,
       next: values.next || undefined,
+      passkeys: offersPasskey(c, settings),
     }), 401)
   }
 

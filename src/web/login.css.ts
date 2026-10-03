@@ -138,6 +138,25 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
 :where(.login-submit,.login-reveal button):focus-visible{outline:2px solid var(--c-accent);
   outline-offset:2px}
 
+/* The passkey door (ADR 0071): a SECOND door, so it is dressed as one. Outlined in the rule ink
+   where the submit above it is filled, full width like it, so the two read as a pair and the
+   password stays the obvious answer. Hidden until the island has seen WebAuthn in this browser. */
+.login-passkey{display:flex;flex-direction:column;margin-top:.75rem}
+.login-passkey[hidden],.login-passkey .login-error[hidden]{display:none}
+.login-passkey .login-error{margin:0 0 .75rem}
+.login-passkey-button{display:flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.65rem 1rem;font:inherit;font-size:.9375rem;font-weight:500;color:var(--c-heading);
+  background:var(--c-bg);border:1px solid var(--c-rule);border-radius:8px;cursor:pointer;
+  transition:border-color var(--dur-fast), box-shadow var(--dur-fast), transform var(--dur-fast)}
+.login-passkey-button svg{width:17px;height:17px;flex:none}
+.login-passkey-button:hover{border-color:color-mix(in srgb, var(--c-text) 30%, var(--c-rule))}
+.login-passkey-button:active{transform:translateY(1px);transition-duration:0s;
+  box-shadow:inset 0 1.5px 2.5px color-mix(in srgb, var(--c-text) 14%, transparent)}
+.login-passkey-button:disabled{cursor:progress;opacity:.6}
+.login-passkey-button:focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}
+html[data-motion=off] .login-passkey-button:active{transform:none}
+@media (prefers-reduced-motion:reduce){.login-passkey-button:active{transform:none}}
+
 .login-error{margin:1.25rem 0 0;padding:.65rem .75rem;font-size:.875rem;color:var(--c-accent);
   border:1px solid color-mix(in srgb, var(--c-accent) 35%, var(--c-rule));border-radius:8px;
   background:color-mix(in srgb, var(--c-accent) 6%, var(--c-bg))}
