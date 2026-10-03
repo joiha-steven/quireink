@@ -178,7 +178,7 @@ step "Data        $DIR_ABS/data  (quire.db + analytics.db)"
 step "Uploads     $DIR_ABS/uploads"
 step "Address     ${SITE_URL:-not set — feeds and emails will say http://localhost:3000}"
 step ""
-step "Version     $(checkout_version .)${TAG:+ (release)}${TAG:- (main)}"
+if [ -n "${TAG:-}" ]; then step "Version     $(checkout_version .) (release)"; else step "Version     $(checkout_version .) (main)"; fi
 step ""
 step "Upgrading later:  cd $DIR_ABS && bun run upgrade"
 

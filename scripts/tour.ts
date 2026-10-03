@@ -16,12 +16,14 @@
 //   scripts/ops/tour.sh                 # seeds, serves, tours, tears down
 //   bun scripts/tour.ts <base-url>      # against something already running
 //
-// Env: CHROME (binary), QUIRE_SESSION (owner cookie value), ONLY=<substring> for a subset.
+// Env: CHROME (binary), QUIRE_SESSION (owner cookie value), ONLY=<substring> for a subset,
+// SMOKE=1 for the twelve flows an install is checked with (`smoke-flows.ts`, ADR 0065).
 
 import { mkdirSync, openSync, readFileSync, rmSync, mkdtempSync } from 'node:fs'
 import { chromePath } from './chrome-path'
 import { sweepAbandonedProfiles } from './chrome-scratch'
 import { registerFlows } from './tour-flows'
+import { SMOKE_FLOWS } from './smoke-flows'
 
 const CHROME = chromePath()
 
@@ -348,7 +350,15 @@ registerFlows({ flow, expect, atWidth })
 // Run them, in order, and report.
 
 const results: { name: string; verdict: string; ms: number }[] = []
-const picked = flows.filter((f) => !ONLY || f.name.includes(ONLY))
+const SMOKE = process.env.SMOKE === '1'
+if (SMOKE) {
+  const missing = SMOKE_FLOWS.filter((name) => !flows.some((f) => f.name === name))
+  if (missing.length) {
+    console.error(`smoke-flows.ts names flows the tour no longer has: ${missing.join('; ')}`)
+    process.exit(1)
+  }
+}
+const picked = flows.filter((f) => (!ONLY || f.name.includes(ONLY)) && (!SMOKE || (SMOKE_FLOWS as readonly string[]).includes(f.name)))
 for (const [i, f] of picked.entries()) {
   // ⚠️ THE NAME GOES OUT BEFORE THE FLOW RUNS, on stderr, and this is a diagnostic that paid
   // for itself the day it was written. The verdicts below print only when the whole tour is

@@ -42,7 +42,7 @@ it — `integrity_check` on both databases, no table with fewer rows than before
 every upload byte-identical. A backup nobody has restored is not a backup.
 
 For one page, looked at rather than asserted: [`scripts/drive.ts`](./scripts/drive.ts) and
-[`scripts/shot.ts`](./scripts/shot.ts). Verify against the **origin**, never through the CDN.
+[`scripts/shot.ts`](./scripts/shot.ts). Verify against the **origin**, never through the CDN. An install: `scripts/ops/matrix.sh <cell>` (ADR 0065).
 
 ## Read first
 

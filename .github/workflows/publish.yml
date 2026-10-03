@@ -71,12 +71,13 @@ jobs:
   # not be wrong. `main` carries no branch protection, deliberately, so the wait lives here
   # on the publishing side rather than in a rule that fights the push-to-main workflow.
   #
-  # It reads the CHECK RUNS on the tagged SHA and waits for the four `ci.yml` jobs to
-  # complete successfully, polling for up to twenty minutes (a full CI run is under three;
-  # the margin is for a queued runner). Any conclusion but `success` on any of the four
-  # fails this job, and with it the release, with the job named in the log. A commit CI
-  # never ran on at all (no check runs after twenty minutes) fails the same way: the
-  # absence of a verdict is not a verdict.
+  # It reads the CHECK RUNS on the tagged SHA and waits for the four `ci.yml` jobs AND the four
+  # cells of `release-matrix.yml` (ADR 0065: every tag is installed and upgraded through each
+  # package before anything is published) to complete successfully, polling for up to forty-five
+  # minutes (CI is under three; a matrix cell that builds the image takes about fifteen; the rest
+  # is for queued runners). Any conclusion but `success` on any of the eight fails this job, and
+  # with it the release, with the job named in the log. A commit nothing ran on at all fails the
+  # same way: the absence of a verdict is not a verdict.
   gate:
     runs-on: ubuntu-24.04
     permissions:
@@ -90,21 +91,22 @@ jobs:
           SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          for i in $(seq 1 80); do
+          for i in $(seq 1 180); do
             runs=$(gh api "repos/${REPO}/commits/${SHA}/check-runs?per_page=100" \
-              --jq '[.check_runs[] | select(.name == "check" or .name == "tour" or .name == "image" or .name == "audit")]')
+              --jq '[.check_runs[] | select(.name == "check" or .name == "tour" or .name == "image" or .name == "audit" or (.name | startswith("matrix (")))]')
             done_ok=$(jq '[.[] | select(.status == "completed" and .conclusion == "success") | .name] | unique | length' <<< "$runs")
             failed=$(jq -r '[.[] | select(.status == "completed" and .conclusion != "success" and .conclusion != "neutral" and .conclusion != "skipped") | "\(.name)=\(.conclusion)"] | join(" ")' <<< "$runs")
             if [ -n "$failed" ]; then
               echo "CI did not pass on ${SHA}: ${failed}"; exit 1
             fi
-            if [ "$done_ok" -ge 4 ]; then
-              echo "CI passed on ${SHA}: check, tour, image, audit"; exit 0
+            # Eight: the four CI jobs, and the four cells of release-matrix.yml (ADR 0065).
+            if [ "$done_ok" -ge 8 ]; then
+              echo "CI and the release matrix passed on ${SHA}"; exit 0
             fi
-            echo "waiting: ${done_ok}/4 CI jobs green on ${SHA} (attempt ${i}/80)"
+            echo "waiting: ${done_ok}/8 jobs green on ${SHA} (attempt ${i}/180)"
             sleep 15
           done
-          echo "CI never finished on ${SHA} within twenty minutes; not publishing"; exit 1
+          echo "CI and the release matrix never finished on ${SHA} within forty-five minutes; not publishing"; exit 1
 
   # One job per architecture, each pushing an untagged blob identified only by its digest.
   # Tags come later, once both exist: tagging here would mean the two architectures fight

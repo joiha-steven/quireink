@@ -1,0 +1,57 @@
+name: Release matrix
+
+# EVERY TAG IS INSTALLED AND UPGRADED BEFORE ANYTHING IS PUBLISHED (ADR 0065).
+#
+# CI (`ci.yml`) proves the code. This proves the PACKAGES: for the source checkout and for the
+# image, a fresh install and an upgrade from the release before it — on data that release's own
+# seeder wrote, because that is what an owner has on disk — each followed by `scripts/smoke.ts`
+# (twelve tour flows, `/api/health` naming the right version and package, `restore-check`).
+# `publish.yml` waits for all four cells as it waits for CI; one red cell and no image leaves.
+#
+# Run by hand on any commit to see the matrix without a tag: `scripts/ops/matrix.sh` then turns
+# that commit into a scratch release 9999.0.0 in a throwaway copy of the repository. Nothing is
+# pushed and nothing is published.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-matrix-${{ github.ref }}
+  cancel-in-progress: false
+
+# UBUNTU 24.04 BY NAME, like ci.yml and publish.yml, and on a real Linux host for the image cells:
+# a Mac's Docker maps ownership across its file share and hides exactly the failures a NAS has.
+jobs:
+  matrix:
+    name: matrix (${{ matrix.cell }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        cell: [source-fresh, source-upgrade, docker-fresh, docker-upgrade]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Every tag: the upgrade cells need the release before this one, and its seeder.
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      # The same pinned browser the tour job uses, for the same reasons (ci.yml says them).
+      - uses: actions/cache@v5
+        id: headless-shell
+        with:
+          path: ~/chrome
+          key: chrome-headless-shell-stable-${{ runner.os }}
+      - if: steps.headless-shell.outputs.cache-hit != 'true'
+        run: bunx @puppeteer/browsers install chrome-headless-shell@stable --path "$HOME/chrome"
+      # The smoke run drives the CURRENT tree's tour against whatever the cell installed, so the
+      # assets it serves itself are not what is under test; it still needs them to exist.
+      - run: bun run build:assets && bun run build:admin
+      - run: scripts/ops/matrix.sh ${{ matrix.cell }}

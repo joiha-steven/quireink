@@ -32,6 +32,14 @@ On any behavior change, update the matching doc in the SAME change:
   per release, is [CHANGELOG.md](../../CHANGELOG.md). The one lesson kept here: 2.2.4 went out
   as `2.3.4` for twenty minutes, and a wrong number is four public places (the tag, the
   release, two registries) plus every issue comment already written.
+- **Every tag is installed before it is published** ([ADR 0065](../decisions/0065-every-install-runs-a-release.md)).
+  Pushing `v<version>` starts `release-matrix.yml`: the source checkout and the image, each
+  installed fresh and upgraded from the release before on data that release's own seeder wrote,
+  each smoke-tested (`scripts/smoke.ts`: twelve tour flows, `/api/health` naming the version and
+  the package, `restore-check`). `publish.yml` waits for those four cells as it waits for CI. A
+  change to anything an install touches — `install.sh`, `scripts/upgrade.ts`, the `Dockerfile`,
+  the entrypoint, a migration — is worth one local `scripts/ops/matrix.sh <cell>` before the tag,
+  because the matrix is the only thing that installs it the way an owner does.
 - **Cutting a release** (only when asked): `bun run check:all` and `bun run build` both exit 0
   (there is no binary: [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "<version> - <tagline>" --notes-file <file>`,
