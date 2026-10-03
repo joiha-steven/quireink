@@ -40,6 +40,12 @@ On any behavior change, update the matching doc in the SAME change:
   change to anything an install touches — `install.sh`, `scripts/upgrade.ts`, the `Dockerfile`,
   the entrypoint, `server.sh`, a migration — is worth one local `scripts/ops/matrix.sh <cell>` before the tag,
   because the matrix is the only thing that installs it the way an owner does.
+- **And installed on Cloudflare for real, from the release manager's machine** (L10, ADR 0066):
+  `bun run build && bun run build:worker && bun scripts/pack-worker.ts`, then
+  `QUIREINK_CF_KEYFILE=<file> bun scripts/ops/cloudflare-l10.ts`. It installs the bundle on a real
+  Workers Paid account under a `quireink-l10-*` name, smoke-tests it, upgrades it in place keeping its
+  secrets, smoke-tests again and deletes everything; a pass writes `.tmp/l10/<sha>.json`. No tag
+  without that file for the commit being tagged. The token stays on that machine, never in CI.
 - **Cutting a release** (only when asked): `bun run check:all` and `bun run build` both exit 0
   (there is no binary: [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "<version> - <tagline>" --notes-file <file>`,
