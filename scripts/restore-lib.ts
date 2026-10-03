@@ -109,9 +109,10 @@ export async function restoreArchive(opts: RestoreOptions): Promise<RestoreRepor
     }
   }
   // WHO THE FILES BELONG TO, read before anything is created. Run as root — `docker exec`, or a
-  // root shell on a systemd box — every file this writes would be root's, the blog's own user
-  // could not write its database, and the next start would fail with nothing restored. Whoever
-  // owns the data directory is who the blog runs as, so that is who gets them.
+  // root shell on a systemd box — every file this writes would be root's and the blog's own user
+  // could not write its database. Measured in the image: the container came up healthy, pages
+  // served, and every write failed with `attempt to write a readonly database`. Whoever owns the
+  // data directory is who the blog runs as, so that is who gets them.
   const asRoot = process.getuid?.() === 0
   const dataOwner = ownerAbove(opts.dataDir)
   const uploadsOwner = ownerAbove(opts.uploadsDir)
