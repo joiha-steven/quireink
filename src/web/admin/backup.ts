@@ -16,7 +16,7 @@
 import {
   deleteSnapshot, encryptReady, isSnapshotName, lastRunAt, listSnapshots, runBackup, snapshotName,
 } from '@/server/backup'
-import { archiveStream } from '@/server/archive'
+import { archiveStream, withArchiveRetry } from '@/server/archive'
 import { openKept, stage } from '@/runtime/impl/archive'
 import { newIdentity, passphraseRecipient } from '@/server/backup-crypt'
 import { getSettings } from '@/content/settings'
@@ -58,7 +58,7 @@ export function backupRoutes() {
     log: (size: number) => void,
   ) => {
     try {
-      const held = await stage(name, await build())
+      const held = await withArchiveRetry(async () => stage(name, await build()))
       log(held.size)
       return new Response(held.body, {
         headers: {

@@ -17,7 +17,7 @@
 import { getSettings } from '@/content/settings'
 import { replicateSnapshot } from '@/server/backup-offsite'
 import { logActivityError } from '@/server/activity'
-import { archiveStream, encryptReady } from '@/server/archive'
+import { archiveStream, encryptReady, withArchiveRetry } from '@/server/archive'
 import { listKept, openKept, removeKept, writeKept } from '@/runtime/impl/archive'
 
 export { encryptReady }
@@ -101,7 +101,7 @@ async function takeSnapshot(): Promise<Snapshot> {
   // All or nothing (`ArchivePort.writeKept`): a failure leaves neither this name nor a half-written
   // file behind. A half-written archive is worse than none: it counts towards retention and it
   // looks like a backup until the day someone opens it.
-  const size = await writeKept(name, await archiveStream(settings))
+  const size = await withArchiveRetry(async () => writeKept(name, await archiveStream(settings)))
 
   const { keep } = (await getSettings()).backups
   for (const old of (await listSnapshots()).slice(Math.max(1, keep))) {

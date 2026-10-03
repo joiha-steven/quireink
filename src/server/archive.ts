@@ -26,6 +26,7 @@ import { sealer } from '@/server/backup-crypt'
 import { gzipStage } from '@/server/gzip'
 import { streamOf, tarChunks, type TarEntry } from '@/server/tar'
 import { openArchiveSource, type DatabaseSection } from '@/store/archive-db'
+import { flushAnalytics, holdFlushes } from '@/analytics/buffer'
 import type { Kind } from '@/store/db'
 import type { SiteSettings } from '@/types'
 import { APP_VERSION } from '@/version'
@@ -60,7 +61,22 @@ const inFlight = (pathname: string): boolean => /\.[0-9a-f]{12}\.part$/.test(pat
 
 async function* entries(): AsyncGenerator<TarEntry> {
   const blob = await import('@/runtime/impl/blob')
-  const source = await openArchiveSource()
+  // The buffered pageviews first, because they belong in the archive; then no flush until the rows
+  // are written, because on Cloudflare one landing between the archive's two passes over a table
+  // is a changed table and a failed backup (`holdFlushes`).
+  flushAnalytics()
+  const release = holdFlushes()
+  let source: Awaited<ReturnType<typeof openArchiveSource>>
+  try {
+    source = await openArchiveSource()
+  } catch (error) {
+    release()
+    throw error
+  }
+  const letGo = (): void => {
+    source.dispose()
+    release()
+  }
   try {
     const uploads = (await blob.list()).filter((f) => !inFlight(f.pathname))
     const manifest: Manifest = {
@@ -74,7 +90,7 @@ async function* entries(): AsyncGenerator<TarEntry> {
     yield { name: 'manifest.json', size: head.length, body: head }
     yield* source.parts()
     // The rows are written: let go of the databases before the uploads, which can take minutes.
-    source.dispose()
+    letGo()
     for (const file of uploads) {
       // The size is asked again right before the header, because the header is written first and
       // has to be true. A file deleted since the listing — the owner purging an image while the
@@ -91,7 +107,27 @@ async function* entries(): AsyncGenerator<TarEntry> {
       yield { name: `uploads/${file.pathname}`, size, body: stream }
     }
   } finally {
-    source.dispose()
+    letGo()
+  }
+}
+
+/** How many times an archive is taken again after a table changed under it. */
+const ATTEMPTS = 3
+
+/**
+ * Take the archive, and take it again if a table changed while it was being written. On Bun that
+ * cannot happen (a read transaction holds the tables still); in a Durable Object a comment or a save
+ * can land between the two passes over a table, and the window is under a second, so a second go
+ * nearly always finds a quiet one. `take` must build a fresh stream each time.
+ */
+export async function withArchiveRetry<T>(take: () => Promise<T>): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await take()
+    } catch (error) {
+      if (attempt >= ATTEMPTS || !String((error as Error).message).includes('changed while it was being written')) throw error
+      console.warn(`[WARN] backup: ${(error as Error).message} — attempt ${attempt + 1} of ${ATTEMPTS}`)
+    }
   }
 }
 

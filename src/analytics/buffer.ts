@@ -76,6 +76,27 @@ function enqueue(): void {
   schedule()
 }
 
+let held = 0
+
+/**
+ * Keep the buffer in memory until the returned function is called, then flush it.
+ *
+ * The backup archive reads every table twice (its size and digest first, the rows second) and
+ * fails if a table changed in between. On Bun a read transaction holds the tables still; a Durable
+ * Object has one connection, and this timer's flush is the write most likely to land in that gap —
+ * every pageview schedules one. Nothing is dropped: beacons still buffer, and go in on release.
+ */
+export function holdFlushes(): () => void {
+  held += 1
+  let done = false
+  return () => {
+    if (done) return
+    done = true
+    held -= 1
+    if (held === 0 && (events.length || scrolls.length)) schedule()
+  }
+}
+
 export function bufferEvent(row: EventRow): void {
   events.push(row)
   enqueue()
@@ -94,6 +115,7 @@ export function bufferScroll(row: ScrollRow): void {
  * costs those rows rather than retrying them forever behind every later pageview.
  */
 export function flushAnalytics(): void {
+  if (held > 0) return
   if (events.length === 0 && scrolls.length === 0) return
   const e = events
   const s = scrolls
