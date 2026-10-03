@@ -20,11 +20,17 @@
 //
 // The contracts below are what both sides must satisfy. Each implementation file says
 // `satisfies` against its contract, so a missing or mistyped export fails to compile on that side.
-import type { RegexEngine } from 'shiki'
+import type { LanguageRegistration, RegexEngine } from 'shiki/core'
 
-/** `shiki-engine.ts`: the regex engine syntax highlighting runs on. */
+/** `shiki-engine.ts`: the regex engine syntax highlighting runs on, and where its grammars come from. */
 export type ShikiEnginePort = {
   regexEngine: () => Promise<RegexEngine>
+  /**
+   * One language's grammars, by its id in `render/shiki-langs.ts`: the grammar itself and every one
+   * it embeds, in the order Shiki's own module lists them. Bun imports that module; Cloudflare
+   * fetches the same grammars from its Static Assets, so `worker.js` carries none of them.
+   */
+  grammar: (id: string) => Promise<LanguageRegistration[]>
 }
 
 /** `password.ts`: argon2id, with the parameters `@/auth/password` passes (ADR 0068). */

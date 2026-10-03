@@ -8,6 +8,8 @@
   "base_dir": "../../dist/cf-test",
   "find_additional_modules": true,
   "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": false }],
+  // The fonts, icons and Shiki's grammars that `scripts/build-worker.ts` writes beside the worker.
+  "assets": { "directory": "../../dist/cf-test-public", "binding": "ASSETS" },
   "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "quireink-contracts" }],
   "durable_objects": { "bindings": [{ "name": "PROBE", "class_name": "Probe" }] },
   // The archive store's cases (kept archives, the parts of an incoming one) need a bucket; local only.

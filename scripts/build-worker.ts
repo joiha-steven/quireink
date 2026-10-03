@@ -11,11 +11,13 @@
 //      directory, and the import gives its path there, which `cf/assets.ts` fetches.
 //   4. The admin's built bundle becomes a module (`quire:admin-dist`), so its chunk names exist
 //      before any request does.
+//   5. Shiki's grammars are written into the Static Assets directory as JSON, each one once, and
+//      `quire:grammars` says which files make up each language (`cf/shiki-engine.ts` says why).
 //
 // Run `bun run build` first: the islands and the admin are inputs here.
 import type { BunPlugin } from 'bun'
 import { createHash } from 'node:crypto'
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '..')
@@ -56,6 +58,37 @@ function adminModule(): string {
 export default ${JSON.stringify(files)}.map((f) => ({ name: f.name, type: f.type, body: decode(f.b64) }))`
 }
 
+/**
+ * Every grammar Shiki ships, written ONCE under `static/shiki/` as the JSON its module parses, and
+ * the module that maps each language id to its files. Read from the very modules Bun imports, and
+ * deduplicated the way Shiki's `resolveLangs` does it, so the list for a language is the array Bun
+ * hands the registry, in the same order. Measured 2026-10-03: 242 languages are 260 distinct
+ * grammars, 7.6 MB written once; written out per language, with what each embeds, they were 37.8 MB.
+ *
+ * Two grammars under one name would mean one silently replacing the other here and not on Bun, so
+ * that stops the build rather than shipping a language that highlights differently.
+ */
+async function grammarsModule(): Promise<string> {
+  const { bundledLanguagesInfo } = await import('shiki/langs')
+  mkdirSync(join(PUBLIC, 'static', 'shiki'), { recursive: true })
+  const files: string[] = []
+  const written = new Map<string, { text: string; index: number }>()
+  const langs: Record<string, number[]> = {}
+  for (const info of bundledLanguagesInfo) {
+    langs[info.id] = [...new Set((await info.import()).default)].map((g) => {
+      const text = JSON.stringify(g)
+      const seen = written.get(g.name)
+      if (seen && seen.text !== text) throw new Error(`two different Shiki grammars are both called ${g.name}`)
+      if (seen) return seen.index
+      const path = `/static/shiki/${g.name}.json`
+      writeFileSync(join(PUBLIC, path), text)
+      written.set(g.name, { text, index: files.push(path) - 1 })
+      return files.length - 1
+    })
+  }
+  return `export default ${JSON.stringify({ files, langs })}`
+}
+
 const sha = (() => {
   try {
     return Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: ROOT }).stdout.toString().trim()
@@ -73,8 +106,11 @@ const plugin: BunPlugin = {
     build.onResolve({ filter: /^@\/runtime\/impl\// }, (args) => ({
       path: join(ROOT, 'src', 'runtime', 'cf', `${args.path.slice('@/runtime/impl/'.length)}.ts`),
     }))
-    build.onResolve({ filter: /^quire:admin-dist$/ }, () => ({ path: 'quire:admin-dist', namespace: 'quire' }))
-    build.onLoad({ filter: /.*/, namespace: 'quire' }, () => ({ contents: adminModule(), loader: 'js' }))
+    build.onResolve({ filter: /^quire:(admin-dist|grammars)$/ }, (args) => ({ path: args.path, namespace: 'quire' }))
+    build.onLoad({ filter: /.*/, namespace: 'quire' }, async (args) => ({
+      contents: args.path === 'quire:grammars' ? await grammarsModule() : adminModule(),
+      loader: 'js',
+    }))
     build.onResolve({ filter: /\.wasm$/ }, (args) => {
       const from = args.path.startsWith('.') ? resolve(args.importer, '..', args.path) : Bun.resolveSync(args.path, args.importer)
       const name = basename(from)

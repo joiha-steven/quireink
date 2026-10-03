@@ -33,13 +33,24 @@
 // It arrives on the first fence that names a language this process has not answered yet — and
 // on a restart, usually never: the rendered BODY is cached in `render-cache.ts` and survives
 // the process, so a boot that serves from that cache never reaches this file at all.
+//
+// AND IT IS SHIKI'S CORE, NOT ITS FULL BUNDLE, since 2026-10-03. `import('shiki')` is lazy on Bun,
+// but a bundler that cannot split code follows every `import()` in it — and the full bundle names
+// all 346 spellings of 242 grammars, all of Shiki's themes and a second, inlined copy of the
+// Oniguruma WASM. The Cloudflare build has no splitting, so all of it sat inside `worker.js`: 9.7 of
+// its 16.14 MB, parsed by every isolate before its first request. Now the highlighter is
+// `createHighlighterCore` with the two themes it wears, the engine comes from the runtime seam as
+// before, and so do the grammars (`grammar()`: a module on Bun, a Static Asset on Cloudflare). The
+// spellings are a generated copy of Shiki's own table, `shiki-langs.ts`. Same registry, same
+// grammars, same order: `highlight.test.ts` holds the output to the full bundle's, byte for byte.
 
-import type { Highlighter } from 'shiki'
+import type { HighlighterCore } from 'shiki/core'
 import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
 import { detectLang } from '@/render/detect-lang'
 import { plainCode } from '@/render/plain-code'
 import { readableTheme } from '@/render/code-ink'
-import { regexEngine } from '@/runtime/impl/shiki-engine'
+import { SHIKI_LANGS } from '@/render/shiki-langs'
+import { grammar, regexEngine } from '@/runtime/impl/shiki-engine'
 
 // VITESSE, MADE READABLE on this site's code panels (`code-ink.ts`, FIXLIST 7.3). The names stay,
 // so the `shiki-themes` classes on a block do not move; the KEY carries `aa`, so no cache row
@@ -49,11 +60,11 @@ const THEME_KEY = `${THEMES.light}/${THEMES.dark}/aa`
 
 // One highlighter instance per server process, created lazily on first use, holding no
 // grammar until one is asked for.
-let hl: Promise<Highlighter> | null = null
-function highlighter(): Promise<Highlighter> {
+let hl: Promise<HighlighterCore> | null = null
+function highlighter(): Promise<HighlighterCore> {
   hl ??= Promise.all([
-    import('shiki'), import('shiki/themes/vitesse-light.mjs'), import('shiki/themes/vitesse-dark.mjs'),
-  ]).then(([shiki, light, dark]) => shiki.createHighlighter({
+    import('shiki/core'), import('shiki/themes/vitesse-light.mjs'), import('shiki/themes/vitesse-dark.mjs'),
+  ]).then(([shiki, light, dark]) => shiki.createHighlighterCore({
     themes: [
       readableTheme(light.default, 'light', THEMES.light),
       readableTheme(dark.default, 'dark', THEMES.dark),
@@ -66,27 +77,12 @@ function highlighter(): Promise<Highlighter> {
   return hl
 }
 
-/**
- * Every spelling Shiki answers to, mapped to the ONE id its grammar is filed under.
- *
- * Read out of the bundle rather than typed here: 346 languages and 104 aliases, and a
- * hand-kept copy of that would be wrong the day Shiki adds a language. The normalisation is
- * what keeps the cache honest — `bash`, `sh`, `zsh` and `shell` are one grammar, and without
- * this they would be four rows of identical HTML under four keys.
- */
-let canon: Promise<Map<string, string>> | null = null
-function canonical(): Promise<Map<string, string>> {
-  canon ??= import('shiki').then(({ bundledLanguages, bundledLanguagesInfo }) => {
-    const map = new Map<string, string>()
-    for (const id of Object.keys(bundledLanguages)) map.set(id, id)
-    for (const info of bundledLanguagesInfo) {
-      map.set(info.id, info.id)
-      for (const alias of info.aliases ?? []) map.set(alias, info.id)
-    }
-    return map
-  })
-  return canon
-}
+// EVERY SPELLING SHIKI ANSWERS TO, mapped to the ONE id its grammar is filed under, is
+// `SHIKI_LANGS`: 346 spellings of 242 grammars, generated from Shiki's own table and held to it by
+// `shiki-langs.test.ts`, never typed by hand — a hand-kept copy would be wrong the day Shiki adds a
+// language. The normalisation is what keeps the cache honest — `bash`, `sh`, `zsh` and `shell` are
+// one grammar, and without it they would be four rows of identical HTML under four keys. A copy
+// rather than Shiki's own also means a cache hit no longer loads Shiki at all just to ask the name.
 
 /**
  * The names people type that Shiki does NOT answer to.
@@ -114,21 +110,22 @@ const EXTRA: Record<string, string> = {
 }
 
 /** The grammar this fence names, under any spelling — or null if it names none. */
-const resolve = (table: Map<string, string>, lang: string): string | null => {
-  const direct = table.get(lang)
+const resolve = (lang: string): string | null => {
+  const direct = SHIKI_LANGS.get(lang)
   if (direct) return direct
   const alias = EXTRA[lang]
-  return alias ? table.get(alias) ?? null : null
+  return alias ? SHIKI_LANGS.get(alias) ?? null : null
 }
 
 // One load per language per process, and one PROMISE per language: two code blocks in the
 // same post reach here together, and without the shared promise both would start the same
 // download of the same grammar.
 const loads = new Map<string, Promise<boolean>>()
-function ensureGrammar(h: Highlighter, id: string): Promise<boolean> {
+function ensureGrammar(h: HighlighterCore, id: string): Promise<boolean> {
   let p = loads.get(id)
   if (!p) {
-    p = h.loadLanguage(id as Parameters<Highlighter['loadLanguage']>[0])
+    p = grammar(id)
+      .then((langs) => h.loadLanguage(...langs))
       .then(() => true)
       // A grammar that will not load is not a crash: the block falls back like any fence
       // naming a language nobody has. Dropped from the map so a transient failure can retry.
@@ -166,7 +163,7 @@ export async function highlightCode(code: string, lang: string): Promise<string 
   // nothing; only turning its answer into a grammar id does.
   const spelling = lang === 'text' ? detectLang(code) : lang
   if (spelling === 'text') return plainCode(code)
-  const language = resolve(await canonical(), spelling) ?? 'text'
+  const language = resolve(spelling) ?? 'text'
 
   // Nothing to highlight WITH, so nothing pretends to. `plain-code.ts` marks the two things
   // that are true in any notation and leaves the rest alone; it needs no grammar and no cache

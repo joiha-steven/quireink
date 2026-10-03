@@ -115,6 +115,27 @@ for (let i = 0; i < cases.length; i++) {
   if (result.ok) console.log(`  ✓ ${result.name}`)
   else { failed++; console.log(`  ✗ ${result.name} — ${result.error}`) }
 }
+
+// HIGHLIGHTING, ASKED OF BOTH RUNTIMES AND COMPARED. Not a case inside the worker, because the answer
+// it is held to is Bun's, and only this process has Bun: the same fences go to `highlightCode` here
+// and in workerd, where the grammars come from Static Assets instead of modules (2026-10-03), and the
+// HTML must be the same string. Ids, Shiki's aliases (`ts`, `sh`, `1c`), this product's (`terminal`),
+// grammars that embed a dozen others (`markdown`, `vue`), and a name nobody has.
+const CODE = 'const a: number = 1 // note\nfunction f(b) { return `${b}` + "s" }\n<div class="x">{a}</div>\n$ echo "$HOME"'
+const SAMPLES = ['typescript', 'ts', 'sh', 'bash', 'python', 'rust', 'html', 'markdown', 'vue', 'php', '1c', 'terminal', 'postgres', 'notalanguage']
+  .map((lang) => ({ code: CODE, lang }))
+const { highlightCode } = await import('../src/render/highlight')
+const fromWorkerd = await fetch(`${base}/highlight`, { method: 'POST', body: JSON.stringify(SAMPLES) })
+  .then((r) => r.json() as Promise<(string | null)[]>, () => [] as (string | null)[])
+const differ: string[] = []
+for (const [i, { code, lang }] of SAMPLES.entries()) {
+  const bun = await highlightCode(code, lang)
+  if (bun === null || fromWorkerd[i] !== bun) differ.push(lang)
+}
+if (differ.length) { failed++; console.log(`  ✗ highlight: workerd and Bun disagree on ${differ.join(', ')}`) }
+else console.log(`  ✓ highlight: ${SAMPLES.length} fences give the same HTML in workerd as in Bun, byte for byte`)
+const total = cases.length + 1
+
 stop()
-console.log(failed ? `✗ test:cf: ${failed} of ${cases.length} failed in workerd` : `✓ test:cf: ${cases.length} case(s) pass in workerd`)
+console.log(failed ? `✗ test:cf: ${failed} of ${total} failed in workerd` : `✓ test:cf: ${total} case(s) pass in workerd`)
 process.exit(failed ? 1 : 0)

@@ -7,9 +7,14 @@
 // above said a named fence is obeyed, right or wrong. The golden corpus could not catch it:
 // its only fences are TypeScript, none and a nonsense word.
 import { describe, expect, test, afterAll } from 'bun:test'
-import { bundledLanguages, bundledLanguagesInfo } from 'shiki'
+import { bundledLanguages, bundledLanguagesInfo, createHighlighter } from 'shiki'
+import light from 'shiki/themes/vitesse-light.mjs'
+import dark from 'shiki/themes/vitesse-dark.mjs'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { highlightCode } from '@/render/highlight'
+import { readableTheme } from '@/render/code-ink'
+import { plainCode } from '@/render/plain-code'
+import { regexEngine } from '@/runtime/impl/shiki-engine'
 
 const DIR = './.tmp/test-highlight'
 freshDatabase(DIR)
@@ -145,5 +150,39 @@ describe('grammars arrive when asked for', () => {
     expect(a).toBe(b)
     expect(b).toBe(c)
     expect(isPlain(a)).toBe(false)
+  })
+})
+
+describe('the same HTML as Shiki\'s full bundle', () => {
+  // `highlight.ts` left `createHighlighter` from `shiki` on 2026-10-03 for `createHighlighterCore`,
+  // a generated alias table and grammars from the runtime seam, so the Cloudflare build could stop
+  // carrying every grammar inside `worker.js`. That was allowed only because the output did not
+  // move, and this is what says so: the full bundle, set up the way `highlight.ts` used to set it
+  // up, is the oracle, and the fence's spelling goes to it untouched — its own alias handling, not
+  // ours. `bun run test:cf` asks workerd the same questions and compares with Bun's answers.
+  const CODE = 'const a: number = 1 // note\nfunction f(b) { return `${b}` + "s" }\n<div class="x">{a}</div>\n$ echo "$HOME"'
+  const oracle = createHighlighter({
+    themes: [readableTheme(light, 'light', 'vitesse-light'), readableTheme(dark, 'dark', 'vitesse-dark')],
+    langs: [],
+    engine: regexEngine(),
+  })
+
+  test('ids, Shiki\'s aliases, ours, and grammars that embed others, byte for byte', async () => {
+    const h = await oracle
+    // [the fence, what the full bundle is asked for]: `postgres` and `terminal` are this product's
+    // spellings (EXTRA), which the bundle has never heard of, so it is asked for their targets.
+    for (const [fence, asked] of [
+      ['typescript', 'typescript'], ['ts', 'ts'], ['sh', 'sh'], ['bash', 'bash'], ['python', 'python'],
+      ['rust', 'rust'], ['html', 'html'], ['markdown', 'markdown'], ['md', 'md'], ['vue', 'vue'],
+      ['php', 'php'], ['postgres', 'sql'], ['terminal', 'shellsession'], ['1c', '1c'],
+    ] as const) {
+      await h.loadLanguage(asked)
+      const want = h.codeToHtml(CODE, { lang: asked, themes: { light: 'vitesse-light', dark: 'vitesse-dark' }, defaultColor: 'light' })
+      expect({ fence, html: await highlightCode(CODE, fence) }).toEqual({ fence, html: want })
+    }
+  })
+
+  test('a language nobody has is the plain block, as before', async () => {
+    expect(await highlightCode(CODE, 'notalanguage')).toBe(plainCode(CODE))
   })
 })

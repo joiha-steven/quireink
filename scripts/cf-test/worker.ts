@@ -7,7 +7,9 @@ import { bind, type CfEnv } from '@/runtime/cf/bindings'
 import { open } from '@/runtime/cf/db'
 import { dbContract } from '@/runtime/db.contract'
 import { hash as cfHash, verify as cfVerify } from '@/runtime/cf/password'
-import { regexEngine } from '@/runtime/cf/shiki-engine'
+import { grammar, regexEngine } from '@/runtime/cf/shiki-engine'
+import { SHIKI_LANGS } from '@/render/shiki-langs'
+import { highlightCode } from '@/render/highlight'
 import { generateKeyPairSync } from 'node:crypto'
 import { signRequest, verifySignature } from '@/ap/signature'
 import { SmtpSession } from '@/news/smtp'
@@ -292,6 +294,31 @@ async function offsiteMultipart(): Promise<void> {
 /** The fake bucket `scripts/test-cf.ts` serves on loopback. */
 let s3Port = 0
 
+/**
+ * Highlighting, by the code the blog runs: `[{ code, lang }]` in, the HTML out, in order.
+ * `scripts/test-cf.ts` asks Bun the same questions and holds the two answers to each other byte for
+ * byte, which is the whole of the claim that moving the grammars into Static Assets changed nothing.
+ */
+async function highlightHere(request: Request): Promise<Response> {
+  const samples = (await request.json()) as { code: string; lang: string }[]
+  const out: (string | null)[] = []
+  for (const { code, lang } of samples) out.push(await highlightCode(code, lang))
+  return Response.json(out)
+}
+
+/** G2.5's grammar load: `n` languages, each fetched from Static Assets and used once. */
+async function loadShiki(request: Request): Promise<Response> {
+  const n = Number(new URL(request.url).searchParams.get('n') ?? 40)
+  const [{ createHighlighterCore }, light] = await Promise.all([import('shiki/core'), import('shiki/themes/vitesse-light.mjs')])
+  const h = await createHighlighterCore({ themes: [light.default], langs: [], engine: regexEngine() })
+  const ids = [...new Set(SHIKI_LANGS.values())].slice(0, n)
+  for (const id of ids) {
+    await h.loadLanguage(...await grammar(id))
+    h.codeToHtml('x = 1', { lang: id, theme: 'vitesse-light' })
+  }
+  return Response.json({ loaded: ids.length })
+}
+
 export class Probe extends DurableObject<CfEnv> {
   constructor(ctx: DurableObjectState, env: CfEnv) {
     super(ctx, env)
@@ -299,6 +326,9 @@ export class Probe extends DurableObject<CfEnv> {
   }
 
   override async fetch(request: Request): Promise<Response> {
+    const path = new URL(request.url).pathname
+    if (path === '/highlight') return highlightHere(request)
+    if (path === '/load/shiki') return loadShiki(request)
     smtpPort = Number((this.env as unknown as { CF_TEST_SMTP_PORT?: string }).CF_TEST_SMTP_PORT ?? 0)
     s3Port = Number((this.env as unknown as { CF_TEST_S3_PORT?: string }).CF_TEST_S3_PORT ?? 0)
     const index = Number(new URL(request.url).searchParams.get('case'))
@@ -324,16 +354,9 @@ export default {
       await cfVerify('a long enough passphrase', old)
       return Response.json({ ok: await cfVerify('a long enough passphrase', h) })
     }
-    if (url.pathname === '/load/shiki') {
-      const n = Number(url.searchParams.get('n') ?? 40)
-      const shiki = await import('shiki')
-      const h = await shiki.createHighlighter({ themes: ['vitesse-light'], langs: [], engine: regexEngine() })
-      const langs = Object.keys(shiki.bundledLanguages).slice(0, n)
-      for (const lang of langs) {
-        await h.loadLanguage(lang as Parameters<typeof h.loadLanguage>[0])
-        h.codeToHtml('x = 1', { lang, theme: 'vitesse-light' })
-      }
-      return Response.json({ loaded: langs.length })
+    // Both need the blog's bindings — the grammars are Static Assets — so both run in an object.
+    if (url.pathname === '/load/shiki' || url.pathname === '/highlight') {
+      return env.PROBE.get(env.PROBE.idFromName('shiki')).fetch(request)
     }
     // A third: what an upload asks of the Images binding for one picture (`uploadPictureWork`).
     if (url.pathname === '/load/image' && request.method === 'POST') {
