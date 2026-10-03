@@ -2,8 +2,8 @@
 //
 // Quire Ink runs on Bun and on Cloudflare from one tree. Everything one of them cannot load lives
 // in `src/runtime/bun/` or `src/runtime/cf/` behind `@/runtime/impl/<name>`; nowhere else may a
-// server file import `bun:*`, `node:fs`, `node:net`, `node:tls`, `node:child_process` or
-// `cloudflare:*`, or touch the `Bun` global. One such line in a shared file and the Cloudflare
+// server file import `bun:*`, `node:fs`, `node:net`, `node:tls`, `node:child_process`,
+// `cloudflare:*` or `sharp` (a native codec no Worker can load), or touch the `Bun` global. One such line in a shared file and the Cloudflare
 // bundle either fails to build or, worse, builds and fails on the request that reaches it.
 //
 // A RATCHET, while the seam is being cut (G1 of the Cloudflare plan): `PENDING` names the files that
@@ -20,22 +20,18 @@ import { join, relative } from 'node:path'
 const ROOT = join(import.meta.dir, '..', '..')
 const SRC = join(ROOT, 'src')
 
-const FORBIDDEN = /from\s+['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:tls|node:child_process|cloudflare:[\w-]+)['"]|import\(\s*['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:tls|node:child_process|cloudflare:[\w-]+)['"]\s*\)|\bBun\.[A-Za-z]/
+const FORBIDDEN = /from\s+['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:tls|node:child_process|cloudflare:[\w-]+|sharp)['"]|import\(\s*['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:tls|node:child_process|cloudflare:[\w-]+|sharp)['"]\s*\)|\bBun\.[A-Za-z]/
 
 /** Still crossing the seam, and where each is going. Shrinks to nothing; never grows. */
 const PENDING: Record<string, string> = {
   'src/content/settings-save.ts': 'node:fs -> the Blob or Assets port (G1.7)',
   'src/import/zip-write.ts': 'Bun.file -> the Archive port (G1.8)',
-  'src/media/blob-local.ts': 'the local blob store -> src/runtime/bun/blob.ts (G1.7)',
-  'src/media/encode-variant.ts': 'the sharp child process -> src/runtime/bun/ (G1.7)',
-  'src/media/image.ts': 'Bun.spawn -> @/runtime/impl/image (G1.7)',
   'src/server/backup-offsite.ts': 'Bun.S3Client, Bun.file -> the Archive port (G1.8)',
   'src/server/backup.ts': 'tar via Bun.spawn -> the pure-JS archive writer (G1.8)',
   'src/server/export-md.ts': 'Bun.file -> the Archive port (G1.8)',
   'src/store/db.ts': 'bun:sqlite -> @/runtime/impl/db (G1.7)',
   'src/store/query.ts': 'bun:sqlite types -> @/runtime/impl/db (G1.7)',
   'src/store/upgrade.ts': 'bun:sqlite, VACUUM INTO -> @/runtime/impl/snapshot (G1.7)',
-  'src/web/admin/ops.ts': 'node:fs/promises in the storage health check -> the Blob port (G1.7)',
   'src/web/admin/backup.ts': 'Bun.file -> the Archive port (G1.8)',
 }
 

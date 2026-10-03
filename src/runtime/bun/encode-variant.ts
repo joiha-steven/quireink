@@ -1,6 +1,6 @@
 // ONE display variant, in a process of its own, and the process is the whole point.
 //
-// Run by `makeDisplay` in `image.ts`, once per width and format. It reads the original's
+// Run by `encodeVariant` in `runtime/bun/image.ts`, once per width and format. It reads the original's
 // bytes on stdin and writes the encoded ones to stdout, so nothing about it needs the
 // database, the blob store or the app's configuration.
 //
@@ -29,7 +29,7 @@
 // already the rule that a 900px source stays 900px at every larger size. Proved by removing
 // it and watching `image.test.ts` still hold the widths, and by breaking `withoutEnlargement`
 // and watching the same test go red.
-import { sharp } from '@/media/sharp'
+import { sharp } from '@/runtime/bun/sharp'
 
 const [rawWidth, format, rawEffort] = process.argv.slice(2)
 const width = Number(rawWidth)

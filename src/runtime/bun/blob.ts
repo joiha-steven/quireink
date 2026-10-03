@@ -1,8 +1,8 @@
-// Local-filesystem storage driver — the self-host / Docker binary store. Provides the
-// IO surface the storage facade expects (put / read / list / del), writing files
-// straight to a mounted directory (STORAGE_LOCAL_DIR, default ./uploads). Reached only
-// through a dynamic import() from `blob.ts` so node:fs never lands in a client bundle.
-// SERVER-ONLY.
+// Bun's binary store: the local filesystem — the self-host / Docker store. Provides the IO
+// surface the storage facade (`media/blob.ts`) expects, writing files straight to a mounted
+// directory (STORAGE_LOCAL_DIR, default ./uploads). Behind `@/runtime/impl/blob` (ADR 0066;
+// Cloudflare's is R2), reached through a dynamic import() so node:fs never lands in a client
+// bundle. SERVER-ONLY.
 //
 // Files are served back over HTTP by app/uploads/[...path]/route.ts under the
 // `/uploads` prefix, which is the same prefix blob.ts uses to build public URLs.
@@ -17,6 +17,7 @@ import path from 'node:path'
 // storage facade — into the driver underneath it, for one number that comes from the
 // environment either way.
 import { readEnv } from '@/env'
+import type { BlobPort } from '@/runtime/ports'
 
 // Read at USE, not at import. In the Docker image cwd is /app, so the default maps to
 // /app/uploads — mount a volume there to persist binaries across deploys.
@@ -164,3 +165,19 @@ export async function list(under = ''): Promise<{ pathname: string; size: number
   await walk(under ? path.join(storeDir(), under) : storeDir(), under)
   return out
 }
+
+/**
+ * WRITABLE, not merely present: a full disk or a read-only mount is exactly the failure a health
+ * probe exists to catch, and both pass an existence check. (Was inline in `web/admin/ops.ts`.)
+ */
+export async function storageWritable(): Promise<boolean> {
+  try {
+    await fs.access(path.resolve(process.env.STORAGE_LOCAL_DIR || './uploads'), (await import('node:fs')).constants.W_OK)
+    return true
+  } catch {
+    return false
+  }
+}
+
+// The contract, checked here so a missing or mistyped export fails to compile on this side.
+void ({ ensureBlobStore, put, read, statSize, stream, del, list, storageWritable } satisfies BlobPort)

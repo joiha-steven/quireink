@@ -316,7 +316,7 @@ describe('upload limits', () => {
   })
 
   /**
-   * The backstop. `blob-local.put()` is the one function every stored byte passes through, so
+   * The backstop. `put()` in `runtime/bun/blob.ts` is the one function every stored byte passes through, so
    * a caller that never asked about limits still cannot write past the deployment's ceiling.
    */
   it('refuses at the storage driver even when no route checked', async () => {

@@ -22,6 +22,7 @@ import { clientIp, rateLimited } from '@/server/rate-limit'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
 import { readEnv } from '@/env'
+import { storageWritable } from '@/runtime/impl/blob'
 import { APP_VERSION } from '@/version'
 import { MAX_IMPORT_BYTES } from '@/web/body-cap'
 import { ownerRouter } from '@/web/guard'
@@ -311,15 +312,4 @@ function checkDatabase(): boolean {
   }
 }
 
-async function checkStorage(): Promise<boolean> {
-  try {
-    const { access, constants } = await import('node:fs/promises')
-    const { resolve } = await import('node:path')
-    // WRITABLE, not merely present. A full disk or a read-only mount is exactly the
-    // failure a probe exists to catch, and both pass an existence check.
-    await access(resolve(process.env.STORAGE_LOCAL_DIR || './uploads'), constants.W_OK)
-    return true
-  } catch {
-    return false
-  }
-}
+const checkStorage = (): Promise<boolean> => storageWritable()

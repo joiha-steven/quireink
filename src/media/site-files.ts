@@ -16,7 +16,7 @@
 import { uploadFile, collapseBlob, readBlob } from '@/media/blob'
 import { safeFetch } from '@/server/safe-fetch'
 import { readCapped, uploadLimits } from '@/media/limits'
-import { sharp as sharpDoor } from '@/media/sharp'
+import { renderLogo as drawLogo } from '@/runtime/impl/image'
 
 // contentType -> extension. `.ico` arrives as x-icon / vnd.microsoft.icon.
 const EXT: Record<string, string> = {
@@ -100,38 +100,15 @@ export async function renderLogo(
     if ('tooLarge' in read) return null // caller serves the original untouched
     src = Buffer.from(read.body)
   }
-  // PORT NOTE: sharp arrives HERE, not at the top of the file. It is the only sharp user
-  // reachable from `content/settings.ts`, which every request touches, so a top-level import
-  // put it on the BOOT path — and `bun build --compile` bundles sharp's JavaScript but not
-  // its native module, so the compiled binary refused to start at all. Deferred, the same
-  // install serves every page and fails only when a logo is rendered. `@/media/sharp` IS a
-  // top-level import and is not a hole in that: it holds nothing but a type and a memoised
-  // `await import`, so the codec still arrives on this line.
-  const sharp = await sharpDoor()
+  // The pixels are the runtime's (`@/runtime/impl/image`): sharp on Bun, loaded on first use.
   try {
-    // @2x for retina; withoutEnlargement never upscales past the source.
-    const out = await sharp(src, { failOn: 'none' })
-      .rotate()
-      .resize({ width: Math.round(width * 2), withoutEnlargement: true })
-      .webp({ quality: 85 })
-      .toBuffer()
-    const meta = await sharp(out).metadata()
+    const logo = await drawLogo(src, width)
     const stamp = Date.now()
-    const url = await uploadFile(`files/logo-${stamp}.webp`, out, 'image/webp')
+    const url = await uploadFile(`files/logo-${stamp}.webp`, logo.webp, 'image/webp')
     // Displayed height = CSS width × the rendered aspect ratio.
-    const height = meta.width ? Math.round(width * (meta.height ?? 0) / meta.width) : 0
-    // The email twin: same @2x box, PNG, alpha preserved so it sits on any background.
+    const height = logo.width ? Math.round(width * logo.height / logo.width) : 0
     let emailUrl = ''
-    try {
-      const png = await sharp(src, { failOn: 'none' })
-        .rotate()
-        .resize({ width: Math.round(width * 2), withoutEnlargement: true })
-        .png({ compressionLevel: 9 })
-        .toBuffer()
-      emailUrl = await uploadFile(`files/logo-${stamp}-mail.png`, png, 'image/png')
-    } catch {
-      // Best effort: a missing email twin costs the newsletter its logo, not the header.
-    }
+    if (logo.png) emailUrl = await uploadFile(`files/logo-${stamp}-mail.png`, logo.png, 'image/png').catch(() => '')
     return { url, height, emailUrl }
   } catch {
     return null // decode/encode failure: caller falls back to the original

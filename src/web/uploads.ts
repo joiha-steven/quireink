@@ -10,7 +10,7 @@
 // inside the driver blocks any `..` traversal.
 
 import type { Context } from 'hono'
-import { statSize, stream } from '@/media/blob-local'
+import { statSize, stream } from '@/runtime/impl/blob'
 import { mimeOf } from '@/media/mime'
 import { parseRange } from '@/media/http-range'
 

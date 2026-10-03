@@ -8,7 +8,7 @@
 //
 // TWO LAYERS, and the split is deliberate:
 //
-//   1. `blob-local.put()` refuses anything over the ENVIRONMENT's ceiling. It is the single
+//   1. `put()` in `runtime/bun/blob.ts` refuses anything over the ENVIRONMENT's ceiling. It is the single
 //      point every stored byte passes through — media, attachments, icons, fonts, the derived
 //      variants, the MCP tool that rehosts from a URL — so a route that forgets to ask still
 //      cannot write past it. It reads no settings, so it cannot cycle back through

@@ -28,7 +28,7 @@ export const VARIANT_BUDGET_MS = 6_000
  * A save hands its finalize off in the background, and a second save or the hourly tick could
  * start the same one while it ran: both encoded, and both rewrote files served `immutable` for
  * a year, so an edge fetching mid-rewrite kept a truncated copy (2026-09-30). The second run
- * now skips what the first holds; the write itself is also atomic now (`blob-local.ts`).
+ * now skips what the first holds; the write itself is also atomic now (`runtime/bun/blob.ts`).
  */
 const inFlight = new Set<string>()
 

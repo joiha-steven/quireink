@@ -21,7 +21,7 @@
 // shared link is opened.
 
 import type { SatoriOptions } from 'satori'
-import { sharp as sharpModule } from '@/media/sharp'
+import { rasterizeSvg } from '@/runtime/impl/image'
 import { DEFAULT_THEME } from '@/content/themes'
 import { PEN_LIGHT, penStrokeFlat } from '@/pen/pigments'
 import { readAsset } from '@/runtime/impl/assets'
@@ -221,12 +221,6 @@ export async function renderOgCard(card: OgCard): Promise<Uint8Array> {
   const { default: satori } = await import('satori')
   const svg = await satori(tree(card, family) as never, { ...OG_SIZE, fonts: all })
 
-  // sharp is loaded HERE, not at the top of the file, and the reason is measured rather
-  // than stylistic: `bun build --compile` bundles sharp's JavaScript but not its native
-  // module, so a compiled binary throws "Could not load the sharp module". As a top-level
-  // import that happens during boot and the server never starts — a blog that serves
-  // nothing because it cannot draw a social card. Deferred, the same broken install serves
-  // every page and fails only `/og`, which the caller turns into a 500 for that one URL.
-  const draw = await sharpModule()
-  return new Uint8Array(await draw(Buffer.from(svg), { density: DENSITY }).png().toBuffer())
+  // The PNG is the runtime's (`@/runtime/impl/image`): sharp on Bun, loaded on first use.
+  return rasterizeSvg(svg, DENSITY)
 }

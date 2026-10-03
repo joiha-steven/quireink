@@ -90,3 +90,40 @@ export type AssetsPort = {
   /** The admin's built files by name, loaded once and synchronously (the shell needs their names). */
   adminDist: () => ReadonlyMap<string, { body: Uint8Array; type: string }>
 }
+
+/**
+ * `blob.ts`: where uploaded bytes live, under the facade in `media/blob.ts` (which owns the URL
+ * rules and the size ceilings). Bun: a directory on disk. Cloudflare: an R2 bucket.
+ */
+export type BlobPort = {
+  ensureBlobStore: () => void
+  /** `exclusive`: refuse to overwrite a file that exists (the import's name-collision rule). */
+  put: (pathname: string, body: Buffer | ArrayBuffer, opts?: { exclusive?: boolean }) => Promise<string>
+  read: (pathname: string) => Promise<Buffer>
+  statSize: (pathname: string) => Promise<number>
+  stream: (pathname: string, range?: { start: number; end: number }) => ReadableStream
+  del: (pathname: string) => Promise<void>
+  list: (under?: string) => Promise<{ pathname: string; size: number }[]>
+  storageWritable: () => Promise<boolean>
+}
+
+/**
+ * `image.ts`: the operations the product does to pictures, not a codec's API. Bun runs sharp
+ * (libvips), each display variant in a child process (ADR 0061); Cloudflare runs its Images binding,
+ * and rasterises the OG card with a WASM renderer. The POLICY — which widths, which formats, the
+ * cap on an original — stays in `media/image.ts`, shared.
+ */
+export type ImagePort = {
+  /** Downscale to `cap` px wide keeping the format; anything that will not decode comes back untouched. */
+  capOriginal: (buf: Buffer, contentType: string, cap: number) => Promise<Buffer>
+  /** Pixel dimensions, auto-oriented. Throws when the bytes are not an image. */
+  imageSize: (buf: Buffer) => Promise<{ width: number; height: number }>
+  /** The library thumbnail: WebP, `width` px, never enlarged. */
+  makeThumb: (buf: Buffer, width: number) => Promise<Buffer>
+  /** One display variant, never enlarged. Throws when it could not be made; the sweep retries. */
+  encodeVariant: (buf: Buffer, width: number, format: 'webp' | 'avif') => Promise<Buffer>
+  /** The site logo at @2x of `cssWidth`: WebP for the page, PNG (alpha kept) for email or null. */
+  renderLogo: (src: Buffer, cssWidth: number) => Promise<{ webp: Buffer; width: number; height: number; png: Buffer | null }>
+  /** An SVG drawn to PNG at `density` dpi (the OG card). */
+  rasterizeSvg: (svg: string, density: number) => Promise<Uint8Array>
+}

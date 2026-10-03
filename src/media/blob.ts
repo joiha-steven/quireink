@@ -5,7 +5,7 @@
 // Storage is the local filesystem: binaries live under STORAGE_LOCAL_DIR and are
 // served at /uploads by app/uploads/[...path]/route.ts. The pure URL/rewrite helpers
 // below stay filesystem-free (safe in a client bundle); the IO helpers dispatch to
-// the local driver (blob-local.ts) via a dynamic import() so node:fs never reaches a
+// the runtime's store (`@/runtime/impl/blob`) via a dynamic import() so node:fs never reaches a
 // client bundle. No src file may import a cloud storage SDK (check:no-direct-blob).
 
 const LOCAL_BASE = '/uploads' // serving-route prefix; also the public URL prefix
@@ -123,7 +123,7 @@ function announceWrite(change: BlobChange): void {
 
 // List every stored binary (pathname + size). Used for site stats and backups.
 export async function listBlobs(under = ''): Promise<{ pathname: string; size: number }[]> {
-  return (await import('./blob-local')).list(under)
+  return (await import('@/runtime/impl/blob')).list(under)
 }
 
 // Upload a binary and return its public URL. `_contentType` is part of the facade
@@ -135,7 +135,7 @@ export async function uploadFile(
   opts?: { exclusive?: boolean },
 ): Promise<string> {
   try {
-    const url = await (await import('./blob-local')).put(pathname, body, opts)
+    const url = await (await import('@/runtime/impl/blob')).put(pathname, body, opts)
     announceWrite({ pathname, size: body.byteLength })
     return url
   } catch (error) {
@@ -150,13 +150,13 @@ export async function uploadFile(
 
 // Read a binary back by pathname (used by the backup builder).
 export async function readBlob(pathname: string): Promise<Buffer> {
-  return (await import('./blob-local')).read(pathname)
+  return (await import('@/runtime/impl/blob')).read(pathname)
 }
 
 // Delete a binary by pathname. No-op when missing (idempotent).
 export async function deleteByPathname(pathname: string): Promise<void> {
   try {
-    await (await import('./blob-local')).del(pathname)
+    await (await import('@/runtime/impl/blob')).del(pathname)
     announceWrite({ pathname, size: null })
   } catch (error) {
     console.error(`[ERROR] blob.deleteByPathname(${pathname}): ${(error as Error).message}`)
