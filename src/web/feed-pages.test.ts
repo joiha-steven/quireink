@@ -6,7 +6,7 @@
 // than one page, and nothing else in `app.test.ts` needs more than one.
 import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { savePost } from '@/content/posts'
 import { savePage } from '@/content/pages'
 import { getSettings, saveSettings } from '@/content/settings'

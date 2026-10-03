@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { analyticsDb, db } from '@/store/db'
+import { analyticsDb, db } from '@/test/sqlite'
 import { getAnalytics } from '@/analytics/summary'
 import { channelOf } from '@/analytics/channel'
 

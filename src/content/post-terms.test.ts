@@ -4,7 +4,7 @@
 // array in JS, and here the merge falls out of a primary-key conflict.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { all } from '@/store/query'
 import {
   savePost, getPost, updateTerm, getCategories, getTags, getPublicTaxonomy,

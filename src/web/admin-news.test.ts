@@ -5,7 +5,7 @@
 // suite — a test that could send is a test that will, eventually, send to a real address.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one } from '@/store/query'
 import { createApp } from '@/web/app'
 import { createUser } from '@/auth/users'

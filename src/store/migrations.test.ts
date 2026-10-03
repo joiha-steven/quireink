@@ -4,6 +4,7 @@ import { expect, test, afterAll } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { mkdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
+import { openSqlite } from '@/test/sqlite'
 import { openDatabases, closeDatabases, parseMigrations } from './db'
 import migrations from './migrations.sql' with { type: 'text' }
 import analyticsMigrations from './migrations-analytics.sql' with { type: 'text' }
@@ -48,7 +49,7 @@ test('a text before a header is not swallowed into a step', () => {
 
 test('a fresh database records every step WITHOUT running it', () => {
   rmSync(DIR, { recursive: true, force: true })
-  const { db } = openDatabases(DIR)
+  const { db } = openSqlite(DIR)
   // schema.sql already states the final shape, so running the steps would fail on a
   // duplicate column. Recording them is what stops that happening on the next boot.
   expect(columns(db, 'integration_keys')).toContain('google_client_id')
@@ -131,7 +132,7 @@ test('an OLD database gets the columns it was created without', () => {
   old.run(`insert into render_cache (key, html, created_at) values ('old-body', '<p>x</p>', 1)`)
   old.close()
 
-  const { db } = openDatabases(dir)
+  const { db } = openSqlite(dir)
   expect(columns(db, 'integration_keys')).toContain('google_client_id')
   expect(columns(db, 'integration_keys')).toContain('google_client_secret')
   expect(applied(db)).toContain('001-google-comment-keys')
@@ -188,7 +189,7 @@ test('a FRESH database already has every column a migration would add', () => {
   // cannot go stale: a step added tomorrow is checked tomorrow.
   const fresh = `${DIR}-fresh`
   rmSync(fresh, { recursive: true, force: true })
-  const { db, analyticsDb } = openDatabases(fresh)
+  const { db, analyticsDb } = openSqlite(fresh)
 
   const missing: string[] = []
   for (const [file, handle, sql] of [

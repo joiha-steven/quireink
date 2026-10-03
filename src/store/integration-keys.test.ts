@@ -3,7 +3,7 @@
 // never carry a secret.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import {
   getIntegrationKeys, getIntegrationStatus, saveIntegrationKeys,
 } from '@/store/integration-keys'

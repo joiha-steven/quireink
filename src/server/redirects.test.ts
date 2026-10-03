@@ -2,7 +2,7 @@
 // router would follow forever, and it is easy to create by renaming a slug back.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one } from '@/store/query'
 import {
   getRedirects, saveRedirect, deleteRedirect, clearRedirectForPath, RedirectInputError,

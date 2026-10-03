@@ -2,7 +2,7 @@
 // lands in a table, and rows that go when nobody has touched them for a year.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { resetSecretCache } from '@/auth/secret'
 import {
   forgetReader, getMarks, mintCode, pagesOf, putMarks, readerOfCode, readerOfEmail, sweepReaderMarks,

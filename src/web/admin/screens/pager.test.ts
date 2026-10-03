@@ -10,7 +10,7 @@
 // turned pages would answer a question nobody asked.
 import { describe, it, expect, afterAll, beforeEach } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { run } from '@/store/query'
 import { getSettings } from '@/content/settings'
 import { trashScreen } from './trash'

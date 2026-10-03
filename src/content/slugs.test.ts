@@ -2,7 +2,8 @@
 // PostgREST builder is gone and the rows are real (see src/test/db.ts).
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db, nowMs } from '@/store/db'
+import { nowMs } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { ensureSlugFree, RESERVED_SLUGS, SlugConflictError } from '@/content/slugs'
 import { savePost } from '@/content/posts'
 import { createApp } from '@/web/app'

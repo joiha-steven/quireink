@@ -18,7 +18,7 @@
 
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { saveSettings } from '@/content/settings'
 import { savePost } from '@/content/posts'
 import { findUnusedMedia } from '@/media/media-usage'

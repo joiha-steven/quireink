@@ -4,7 +4,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { existsSync, rmSync } from 'node:fs'
 import sharp from 'sharp'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { addMediaBatch } from '@/media/media'
 
 const DIR = './.tmp/test-media-batch'

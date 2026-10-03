@@ -2,7 +2,7 @@
 // backstop keeps its own window instead of inheriting the minute tick's.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { onFlush } from '@/server/cache'
 import { HOURLY_LOOKBACK_MS, PUBLISH_TICK_LOOKBACK_MS, resetSweepWindow, sweepScheduled } from '@/server/scheduled'
 

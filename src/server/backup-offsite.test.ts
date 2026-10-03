@@ -3,7 +3,7 @@
 // name shape, nothing else) is exactly the part worth proving.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { saveSettings } from '@/content/settings'
 import { DEFAULT_BACKUPS } from '@/content/settings-defaults'
 import {

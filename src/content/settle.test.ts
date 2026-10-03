@@ -2,7 +2,7 @@
 // counted by spaces they do not write, and every stored count is recounted at boot.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one } from '@/store/query'
 import { savePost } from '@/content/posts'
 import { settleReadingMinutes } from '@/content/settle'

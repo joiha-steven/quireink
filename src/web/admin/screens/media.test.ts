@@ -11,7 +11,7 @@
 //   4. Nothing a filename carries becomes markup.
 import { describe, it, expect, afterAll, beforeEach } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { run } from '@/store/query'
 import { getSettings } from '@/content/settings'
 import { mediaScreen } from './media'

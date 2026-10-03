@@ -8,7 +8,7 @@
 // owner of the same blog.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { createUser, getUserByUsername, noUsersYet } from '@/auth/users'
 
 const DIR = './.tmp/test-users'

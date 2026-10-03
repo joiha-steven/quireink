@@ -4,7 +4,7 @@
 // person once however many hosts they arrived from.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { analyticsDb } from '@/store/db'
+import { analyticsDb } from '@/test/sqlite'
 import { getAnalytics, getRightNow, getViewTotals } from '@/analytics/summary'
 import { getPageAnalytics } from '@/analytics/page'
 import { resetAnalyticsBuffer } from '@/analytics/buffer'

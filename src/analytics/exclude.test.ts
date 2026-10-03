@@ -4,7 +4,7 @@
 
 import { describe, expect, it, afterAll, beforeEach } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db, analyticsDb } from '@/store/db'
+import { db, analyticsDb } from '@/test/sqlite'
 import { createUser } from '@/auth/users'
 import { createSession } from '@/auth/sessions'
 import { isInternalIp } from '@/analytics/exclude'

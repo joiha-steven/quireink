@@ -6,7 +6,7 @@
 // is a content leak rather than a bug.
 import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { savePost } from '@/content/posts'
 import { savePage } from '@/content/pages'
 import { getSettings, saveSettings } from '@/content/settings'

@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import type { PostWithContent } from '@/types'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { all } from '@/store/query'
 import { getRevisions, pushRevision, renameRevisions, deleteRevisions } from '@/content/revisions'
 

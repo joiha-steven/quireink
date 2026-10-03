@@ -1,7 +1,7 @@
 // Micropub into the notebook (ADR 0046): a bearer, an h-entry, a note.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { createApp } from '@/web/app'
 import { resetSecretCache } from '@/auth/secret'
 import { resetLimits } from '@/server/rate-limit'

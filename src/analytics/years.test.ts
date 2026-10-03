@@ -11,7 +11,7 @@
 // figure, and the boundaries must be the site's midnight rather than UTC's.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { analyticsDb, db } from '@/store/db'
+import { analyticsDb, db } from '@/test/sqlite'
 import { firstEventAt, getAnalytics, yearTotals } from '@/analytics/summary'
 
 const DIR = './.tmp/test-analytics-years'

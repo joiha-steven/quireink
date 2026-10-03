@@ -1,7 +1,7 @@
 // The notebook on the reading side (ADR 0044): its own address, apart from the posts.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { savePost } from '@/content/posts'
 import { saveNote } from '@/content/notes'
 import { clearCache } from '@/server/cache'

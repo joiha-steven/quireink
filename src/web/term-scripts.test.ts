@@ -14,7 +14,7 @@
 // which had matched the raw term all along.
 import { describe, it, expect, afterAll, beforeEach } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { createApp } from '@/web/app'
 import { savePost } from '@/content/posts'
 import { getSeriesList } from '@/content/series'

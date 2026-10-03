@@ -2,7 +2,7 @@
 // arrives with everything the island needs and takes the quote gesture with it.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { savePost } from '@/content/posts'
 import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'

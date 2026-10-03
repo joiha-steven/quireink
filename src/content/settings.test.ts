@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one } from '@/store/query'
 import { resetSettingsCache, getSettings, saveSettings, DEFAULT_SETTINGS } from '@/content/settings'
 

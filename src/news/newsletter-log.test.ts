@@ -2,7 +2,7 @@
 // carrying three posts is ONE row and ONE pixel, but must credit all three posts.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one, all } from '@/store/query'
 import {
   logSend, statsByEmail, statsByPost, recordOpen, deleteSendsFor, newOpenToken,

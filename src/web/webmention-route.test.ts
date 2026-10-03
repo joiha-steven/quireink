@@ -1,7 +1,7 @@
 // The receiving endpoint (ADR 0046): what it answers, and that it never waits on anybody.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { createApp } from '@/web/app'
 import { resetLimits } from '@/server/rate-limit'
 import { listMentions } from '@/server/webmention'

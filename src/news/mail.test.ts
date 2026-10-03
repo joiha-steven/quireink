@@ -8,7 +8,7 @@
 // accepting mail with no setting having been touched.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { getSmtpConfig, saveSmtpConfig, isMailConfigured, getMailStatus, mailBlocked, sendMail } from '@/news/mail'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 

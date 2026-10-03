@@ -11,7 +11,7 @@
 
 import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { all } from '@/store/query'
 import { renderPostContent } from '@/render/post-content'
 import { pruneRendered } from '@/render/render-cache'

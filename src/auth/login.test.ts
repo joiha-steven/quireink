@@ -5,7 +5,7 @@
 // twice, and that a ticket dies when it is used.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one, run } from '@/store/query'
 import { createUser, setTotpSecret, totpStateFor } from './users'
 import { codeForStep, generateSecret, stepAt } from './totp'

@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { mkdirSync, rmSync } from 'node:fs'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { savePost, getPost } from '@/content/posts'
 import { savePage, getPage } from '@/content/pages'
 import { getRevisions } from '@/content/revisions'

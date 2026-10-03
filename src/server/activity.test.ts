@@ -3,7 +3,7 @@
 // a save. The owner's off switch is the second rule.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one } from '@/store/query'
 import { logActivity, logActivityError, getActivity, clearActivity, sweepActivityLog, ACTIVITY_RETENTION } from '@/server/activity'
 import { saveSettings, DEFAULT_SETTINGS } from '@/content/settings'

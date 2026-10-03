@@ -5,7 +5,7 @@
 // side means "no cap from me" rather than "a cap of zero".
 import { describe, it, expect, beforeEach, afterAll, afterEach } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { saveSettings } from '@/content/settings'
 import { checkUpload, readCapped, uploadLimits } from '@/media/limits'
 

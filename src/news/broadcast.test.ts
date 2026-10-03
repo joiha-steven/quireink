@@ -9,7 +9,7 @@
 // delivery is refused at once. What is under test is the bookkeeping around the loop.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { savePost } from '@/content/posts'
 import { addSubscriber, confirmSubscriber } from '@/news/subscribers'
 import { BroadcastError, broadcastPosts, broadcastRun, resetBroadcastRun } from '@/news/broadcast'

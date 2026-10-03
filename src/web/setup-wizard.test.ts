@@ -7,7 +7,7 @@
 // each protected by the router it is registered on rather than by a check inside it.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { createApp } from '@/web/app'
 import { getSettings } from '@/content/settings'
 import { APP_VERSION } from '@/version'

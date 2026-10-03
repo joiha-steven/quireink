@@ -3,7 +3,7 @@
 
 import { describe, it, expect, beforeEach, afterAll, afterEach } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one } from '@/store/query'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 import { buildRequest, parseAlt, parseModels, describeUpload, DEFAULT_MODELS } from './alt-text'

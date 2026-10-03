@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import type { Turn } from '@/server/assistant-dialects'
 import {
   createChat, deleteChat, getChat, listChats, renameChat, saveChat, titleFrom,

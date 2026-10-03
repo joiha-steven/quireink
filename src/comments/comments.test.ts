@@ -4,7 +4,8 @@
 // prove the depth is derived from the STORED parent rather than from the caller.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db, nowMs } from '@/store/db'
+import { nowMs } from '@/store/db'
+import { db } from '@/test/sqlite'
 import {
   buildCommentTree, addComment, getCommentTree, countsByPosts, getAdminComments,
   getTrashedComments, softDeleteComment, restoreComment, purgeComment,

@@ -1,7 +1,7 @@
 // The pen as a stylesheet anyone may link (ADR 0048).
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { createApp } from '@/web/app'
 import { saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'

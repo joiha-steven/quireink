@@ -3,7 +3,7 @@
 // The rule is in `web/admin/stale.ts`; the editor half is a tour flow ("two tabs: …").
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { createApp } from '@/web/app'
 import { createUser } from '@/auth/users'
 import { COOKIE_NAME, createSession } from '@/auth/sessions'

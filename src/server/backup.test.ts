@@ -14,7 +14,7 @@ import {
   snapshotName, deleteSnapshot,
   tarVerdict,
 } from '@/server/backup'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { Database } from 'bun:sqlite'
 
 const DIR = './.tmp/test-backup'

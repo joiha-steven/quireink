@@ -13,7 +13,7 @@
 //    which a Durable Object does not have. `src/runtime/` is where drivers live.
 //
 // Tests are skipped (`*.test.ts`, `src/test/`): they seed rows with whatever SQL states the case
-// most plainly.
+// most plainly, through `src/test/sqlite.ts`.
 
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'

@@ -4,7 +4,7 @@
 // second leave from the same sitting updating the first rather than joining it.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { analyticsDb, db } from '@/store/db'
+import { analyticsDb, db } from '@/test/sqlite'
 import { getViewTotals } from '@/analytics/summary'
 import { isBot, normalizePath, recordView, recordScroll } from '@/analytics/record'
 import { flushAnalytics, resetAnalyticsBuffer, pendingAnalytics } from '@/analytics/buffer'

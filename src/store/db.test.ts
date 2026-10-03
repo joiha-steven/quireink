@@ -3,11 +3,12 @@
 import { expect, test, afterAll } from 'bun:test'
 import { rmSync } from 'node:fs'
 import { Database } from 'bun:sqlite'
+import { openSqlite } from '@/test/sqlite'
 import { openDatabases, closeDatabases, liveOnly, isEmpty } from './db'
 
 const DIR = './.tmp/test-db'
 rmSync(DIR, { recursive: true, force: true })
-let { db, analyticsDb } = openDatabases(DIR)
+let { db, analyticsDb } = openSqlite(DIR)
 
 afterAll(() => {
   closeDatabases()
@@ -16,7 +17,7 @@ afterAll(() => {
   try { rmSync(DIR, { recursive: true, force: true }) } catch { /* ignore */ }
 })
 
-const names = (d: ReturnType<typeof openDatabases>['db'], type = 'table') =>
+const names = (d: Database, type = 'table') =>
   d.query<{ name: string }, []>(`select name from sqlite_master where type='${type}' order by name`)
     .all().map((r) => r.name)
 
@@ -65,17 +66,17 @@ test('an analytics.db with the old ledger name keeps every row under the new one
   const before = file.query<{ n: number }, []>('select count(*) as n from analytics_schema_migrations').get()!.n
   file.run('alter table analytics_schema_migrations rename to schema_migrations') // as every install before 2026-10-03 has it
   file.close()
-  const reopened = openDatabases(dir)
+  const reopened = openSqlite(dir)
   const after = reopened.analyticsDb.query<{ n: number }, []>('select count(*) as n from analytics_schema_migrations').get()!.n
   expect(after).toBe(before)
   expect(names(reopened.analyticsDb)).not.toContain('schema_migrations')
   closeDatabases()
   rmSync(dir, { recursive: true, force: true })
-  ;({ db, analyticsDb } = openDatabases(DIR))
+  ;({ db, analyticsDb } = openSqlite(DIR))
 })
 
 test('applying the schema twice is a no-op, and does not leak the first handles', () => {
-  expect(() => { ({ db, analyticsDb } = openDatabases(DIR)) }).not.toThrow()
+  expect(() => { ({ db, analyticsDb } = openSqlite(DIR)) }).not.toThrow()
   expect(names(db)).toContain('posts')
 })
 
@@ -137,7 +138,7 @@ test('002-pages-fts runs against an EXISTING database, and backfills the pages a
   db.run(`delete from schema_migrations where name = '002-pages-fts'`)
   expect(names(db)).not.toContain('pages_fts')
 
-  ;({ db, analyticsDb } = openDatabases(DIR))
+  ;({ db, analyticsDb } = openSqlite(DIR))
 
   expect(names(db)).toContain('pages_fts')
   const found = db.query<{ slug: string }, [string]>(

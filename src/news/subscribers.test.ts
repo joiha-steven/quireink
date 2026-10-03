@@ -3,7 +3,7 @@
 // really removes the address, log included.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one, all } from '@/store/query'
 import {
   addSubscriber, confirmSubscriber, unsubscribeByToken, getConfirmedSubscribers,

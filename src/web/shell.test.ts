@@ -7,7 +7,7 @@
 // let the reader pan the page sideways. Measured at 390px: the document was 980px wide.
 import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { savePost } from '@/content/posts'
 import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache, pageCache } from '@/server/cache'

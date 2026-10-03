@@ -9,7 +9,7 @@
 
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { ageBucket, installKind, sizeBucket } from '@/server/update-facts'
 
 const DIR = './.tmp/test-update-facts'

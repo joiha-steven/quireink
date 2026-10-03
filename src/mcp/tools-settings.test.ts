@@ -9,7 +9,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { createApp } from '@/web/app'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { createUser } from '@/auth/users'
 import { COOKIE_NAME, createSession } from '@/auth/sessions'
 import { resetSecretCache } from '@/auth/secret'

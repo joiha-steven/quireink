@@ -13,7 +13,7 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { saveSettings, getSettings } from '@/content/settings'
 import { DEFAULT_BACKUPS } from '@/content/settings-defaults'
 import { buildArchive, encryptReady, isSnapshotName, snapshotName } from '@/server/backup'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { sanitizeBackups } from '@/content/settings-sanitize'
 import {
   MAGIC, decodeSecret, newIdentity, opener, passphraseIdentity, passphraseRecipient, unseal,

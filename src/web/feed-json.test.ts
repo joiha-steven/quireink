@@ -8,7 +8,7 @@
 // it; the counter-test is the same document being asked to prove it does hold the post.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { savePost } from '@/content/posts'
 import { saveNote } from '@/content/notes'
 import { saveSettings } from '@/content/settings'

@@ -5,7 +5,8 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db, nowMs } from '@/store/db'
+import { nowMs } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { one } from '@/store/query'
 import {
   listTokens, createToken, mintOAuthToken, deleteToken, verifyTokenHash, OAUTH_TOKEN_NAME,

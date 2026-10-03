@@ -2,7 +2,7 @@
 // fields a later tier depends on.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import {
   saveNote, getNote, getNoteIndex, getPublicNotes, deleteNote, restoreNote, purgeNote,
   getTrashedNotes, emptyNotesTrash,

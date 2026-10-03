@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { rmSync } from 'node:fs'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { all } from '@/store/query'
 import { finalizePendingVariants, finalizeVariants, VARIANT_BUDGET_MS } from '@/media/finalize'
 import { VARIANT_VERSION } from '@/media/image'

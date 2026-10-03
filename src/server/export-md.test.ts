@@ -10,7 +10,7 @@
 // the same case asserts that a value which SHOULD be in there is found by the same means.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import { savePost, getPost, deletePost } from '@/content/posts'
 import { savePage, getPage } from '@/content/pages'
 import { saveNote, getNote } from '@/content/notes'

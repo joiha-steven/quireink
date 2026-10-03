@@ -1,7 +1,7 @@
 // Webmention, both ways (ADR 0046), with the network stood in for.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { db } from '@/store/db'
+import { db } from '@/test/sqlite'
 import {
   discoverEndpoint, keptPassage, listMentions, mostKept, receiveWebmention, sendWebmention,
   sweepWebmentions, verifyMention,
