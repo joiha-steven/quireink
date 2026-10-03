@@ -284,3 +284,49 @@ describe('the streaming reader the owner restores with', () => {
     }
   })
 })
+
+describe('the key agreement is the X25519 node:crypto computed', () => {
+  // ⚠️ THE COMPATIBILITY PROMISE of moving to `@noble/curves` (2026-10-03, because workerd's
+  // `diffieHellman` refuses imported public keys). Every archive sealed before then was wrapped
+  // with node's X25519; if the two ever disagreed on one byte, those archives would answer
+  // `no-matching-key` to the right key. So node is asked here, on Bun where it works, and must
+  // agree with what the module now computes — the public half, and the shared secret.
+  it('agrees with node on the public half and the shared secret, seed after seed', async () => {
+    const { x25519 } = await import('@noble/curves/ed25519.js')
+    const { diffieHellman } = await import('node:crypto')
+    const keyOf = (seed: Buffer) => createPrivateKey({ key: Buffer.concat([PKCS8, seed]), format: 'der', type: 'pkcs8' })
+    for (let i = 0; i < 32; i++) {
+      const a = randomBytes(32)
+      const b = randomBytes(32)
+      expect(Buffer.from(x25519.getPublicKey(a)).equals(rawPublicOf(keyOf(a)))).toBe(true)
+      const nodeShared = diffieHellman({ privateKey: keyOf(a), publicKey: createPublicKey(keyOf(b)) })
+      expect(Buffer.from(x25519.getSharedSecret(a, x25519.getPublicKey(b))).equals(nodeShared)).toBe(true)
+    }
+  })
+
+  it('opens an archive whose stanza was wrapped by node itself', async () => {
+    const { createCipheriv, diffieHellman, generateKeyPairSync, hkdfSync } = await import('node:crypto')
+    const owner = newIdentity()
+    const ownerRaw = decodePublic(owner.publicKey)
+    // A stanza made the way the module made them before the move: node's ephemeral key, node's DH.
+    const eph = generateKeyPairSync('x25519')
+    const ephRaw = rawPublicOf(eph.privateKey)
+    const shared = diffieHellman({ privateKey: eph.privateKey, publicKey: createPublicKey(identityOf(owner.secret)) })
+    const wrap = Buffer.from(hkdfSync('sha256', shared, Buffer.concat([ephRaw, ownerRaw]), 'quire-backup-v1 wrap', 32))
+    const fileKey = randomBytes(32)
+    const c = createCipheriv('aes-256-gcm', wrap, Buffer.alloc(12))
+    const key = Buffer.concat([c.update(fileKey), c.final()])
+    const stanza = { t: 'x25519', eph: ephRaw.toString('base64'), key: key.toString('base64'), tag: c.getAuthTag().toString('base64') }
+    // Splice it into a real header, replacing the stanza the module wrote.
+    const built = seal(Buffer.from('hello'), [owner.publicKey], '')
+    const text = built.toString('latin1')
+    const one = text.indexOf('\n')
+    const two = text.indexOf('\n', one + 1)
+    const header = JSON.parse(text.slice(one + 1, two)) as { recipients: unknown[] }
+    header.recipients = [stanza]
+    // The header MAC is keyed by the file key, so the hand-made archive cannot pass it; what this
+    // asserts is that the WRAP opens — a key mismatch would say `no-matching-key` instead.
+    const forged = Buffer.from(`${MAGIC}\n${JSON.stringify(header)}\nAAAA\n`, 'latin1')
+    expect(() => unseal(forged, identityOf(owner.secret))).toThrow('header-tampered')
+  })
+})

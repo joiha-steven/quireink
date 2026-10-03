@@ -33,7 +33,7 @@ if (!token || !accountId) {
   process.exit(2)
 }
 
-const files = readTar(new Uint8Array(readFileSync(join(ROOT, 'dist', `quireink-cf-${APP_VERSION}.tar`))))
+const files = await readTar(new Uint8Array(readFileSync(join(ROOT, 'dist', `quireink-cf-${APP_VERSION}.tar`))))
 const manifest = JSON.parse(new TextDecoder().decode(files.get('manifest.json')!)) as Manifest
 const stamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)
 const scriptName = `quireink-l10-${stamp}`

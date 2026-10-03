@@ -18,6 +18,7 @@ import path from 'node:path'
 // environment either way.
 import { readEnv } from '@/env'
 import type { BlobPort } from '@/runtime/ports'
+import { isReservedBlobPath } from '@/runtime/blob-reserved'
 
 // Read at USE, not at import. In the Docker image cwd is /app, so the default maps to
 // /app/uploads — mount a volume there to persist binaries across deploys.
@@ -53,6 +54,7 @@ export function ensureBlobStore(): void {
 // Confine every pathname under the store directory — a stored ref like `media/x.webp` must never
 // escape via `..` into the rest of the container filesystem.
 export function resolveSafe(pathname: string): string {
+  if (isReservedBlobPath(pathname)) throw new Error(`Invalid blob path: ${pathname}`)
   const base = storeDir()
   const abs = path.resolve(base, pathname)
   if (abs !== base && !abs.startsWith(base + path.sep)) throw new Error(`Invalid blob path: ${pathname}`)
@@ -155,6 +157,7 @@ export async function list(under = ''): Promise<{ pathname: string; size: number
     for (const e of entries) {
       const abs = path.join(dir, e.name)
       const rel = base ? `${base}/${e.name}` : e.name
+      if (isReservedBlobPath(rel)) continue
       if (e.isDirectory()) await walk(abs, rel)
       else {
         const { size } = await fs.stat(abs)

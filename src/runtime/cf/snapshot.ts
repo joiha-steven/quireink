@@ -18,10 +18,13 @@ export const copyBeforeMigrating: SnapshotPort['copyBeforeMigrating'] = () =>
 // Nothing to compact: the platform owns the file and gives the space back itself.
 export const compactIfMostlyFree: SnapshotPort['compactIfMostlyFree'] = () => false
 
-/** Into the bucket, under a prefix nothing ever serves (`private/`), written after the request. */
+/** Into the bucket under `private/`, which the blob port refuses to serve (`runtime/blob-reserved.ts`), written after the request. */
 export const keepAside: SnapshotPort['keepAside'] = (_dataDir, name, text) => {
   const { env, ctx } = bound()
   const key = `private/aside/${name}`
   ctx.waitUntil(env.BLOBS.put(key, text).then(() => undefined))
   return `r2:${key}`
 }
+
+// A Durable Object has one connection and runs one thing at a time: the archive reads the live one.
+export const consistentCopy: SnapshotPort['consistentCopy'] = () => null

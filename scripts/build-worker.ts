@@ -74,20 +74,6 @@ const plugin: BunPlugin = {
       path: join(ROOT, 'src', 'runtime', 'cf', `${args.path.slice('@/runtime/impl/'.length)}.ts`),
     }))
     build.onResolve({ filter: /^quire:admin-dist$/ }, () => ({ path: 'quire:admin-dist', namespace: 'quire' }))
-    // ⚠️ TEMPORARY, until the row archive (G1.8) takes the last `bun:sqlite` out of the shared tree:
-    // only `server/backup.ts` still imports it, for the file archive Cloudflare cannot make anyway.
-    // A stub that refuses loudly, so a backup on Cloudflare fails with a reason instead of the whole
-    // Worker failing to load. It fails the build the moment check:runtime's list no longer names it.
-    build.onResolve({ filter: /^bun:sqlite$/ }, (args) => {
-      if (!readFileSync(join(ROOT, 'scripts', 'checks', 'runtime.ts'), 'utf8').includes(`'src/server/backup.ts'`)) {
-        throw new Error(`bun:sqlite imported by ${args.importer}, and the stub for the file archive is no longer needed: remove it`)
-      }
-      return { path: 'bun:sqlite', namespace: 'quire-stub' }
-    })
-    build.onLoad({ filter: /.*/, namespace: 'quire-stub' }, () => ({
-      contents: `export class Database { constructor() { throw new Error('the file archive does not run on Cloudflare (G1.8)') } }`,
-      loader: 'js',
-    }))
     build.onLoad({ filter: /.*/, namespace: 'quire' }, () => ({ contents: adminModule(), loader: 'js' }))
     build.onResolve({ filter: /\.wasm$/ }, (args) => {
       const from = args.path.startsWith('.') ? resolve(args.importer, '..', args.path) : Bun.resolveSync(args.path, args.importer)

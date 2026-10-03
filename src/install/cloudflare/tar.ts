@@ -1,36 +1,26 @@
-// Read a tar archive held in memory: the Cloudflare package of a release (`scripts/pack-worker.ts`),
-// which is small (about 20 MB) and read once per install. ustar, plus the PAX `path` record for a
-// name longer than the header holds. Plain JS, so it runs on both runtimes.
-const dec = new TextDecoder()
+// The Cloudflare package of a release (`scripts/pack-worker.ts`), unpacked whole into memory: it is
+// small (about 20 MB) and read once per install. The reading itself is the archive's reader
+// (`server/tar.ts`: ustar, PAX and GNU long names, every header's checksum), so there is one tar
+// reader in the codebase rather than two that disagree about an edge.
+import { tarEntries } from '@/server/tar'
 
-const field = (block: Uint8Array, at: number, len: number): string => {
-  const raw = block.subarray(at, at + len)
-  const end = raw.indexOf(0)
-  return dec.decode(end < 0 ? raw : raw.subarray(0, end))
+async function* once(bytes: Uint8Array): AsyncGenerator<Uint8Array> {
+  yield bytes
 }
 
-export function readTar(bytes: Uint8Array): Map<string, Uint8Array> {
+export async function readTar(bytes: Uint8Array): Promise<Map<string, Uint8Array>> {
   const out = new Map<string, Uint8Array>()
-  let at = 0
-  let longName: string | null = null
-  while (at + 512 <= bytes.length) {
-    const header = bytes.subarray(at, at + 512)
-    if (header.every((b) => b === 0)) break
-    const prefix = field(header, 345, 155)
-    const name = field(header, 0, 100)
-    const size = parseInt(field(header, 124, 12).trim() || '0', 8)
-    const type = String.fromCharCode(header[156] || 48)
-    const body = bytes.subarray(at + 512, at + 512 + size)
-    at += 512 + Math.ceil(size / 512) * 512
-    if (type === 'x') {
-      const path = /(?:^|\n)\d+ path=([^\n]*)\n/.exec(dec.decode(body))
-      longName = path ? path[1]! : null
+  for await (const item of tarEntries(once(bytes))) {
+    if (item.kind !== 'file') {
+      await item.skip()
       continue
     }
-    if (type !== '0' && type !== '\0') { longName = null; continue }
-    const path = (longName ?? (prefix ? `${prefix}/${name}` : name)).replace(/^\.\//, '')
-    longName = null
-    out.set(path, body)
+    const parts: Uint8Array[] = []
+    for await (const chunk of item.body()) parts.push(chunk)
+    const body = new Uint8Array(item.size)
+    let at = 0
+    for (const p of parts) { body.set(p, at); at += p.length }
+    out.set(item.name.replace(/^\.\//, ''), body)
   }
   return out
 }

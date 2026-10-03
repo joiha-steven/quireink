@@ -33,10 +33,15 @@
 // service, so the day this is needed there may be no Quire Ink running to ask.
 
 import {
-  createCipheriv, createDecipheriv, createHmac, createPrivateKey, createPublicKey,
-  diffieHellman, generateKeyPairSync, hkdfSync, randomBytes, scryptSync, timingSafeEqual,
-  type KeyObject,
+  createCipheriv, createDecipheriv, createHmac, createPrivateKey, hkdfSync, randomBytes, scryptSync,
+  timingSafeEqual, type KeyObject,
 } from 'node:crypto'
+// ⚠️ THE KEY AGREEMENT IS NOT `node:crypto`'s (2026-10-03). Inside workerd, `diffieHellman()`
+// refuses every X25519 public key it did not generate itself — imported as DER or as JWK alike —
+// with "Failed to derive shared diffie-hellman secret", so a Cloudflare blog could neither seal an
+// archive to its owner nor open one. X25519 is fixed by RFC 7748 (clamp the seed, multiply the
+// base point), so this computes the same 32 bytes Node did and every archive already written opens.
+import { x25519 } from '@noble/curves/ed25519.js'
 
 export const MAGIC = 'QUIREBAK1'
 /** 64 KiB, which is age's choice and for its reasons: bounded memory, bounded damage. */
@@ -59,23 +64,19 @@ const KDF = { N: 65_536, r: 8, p: 1, maxmem: 128 << 20 } as const
 // The DER preambles for a raw X25519 key. `node:crypto` has no raw import for these, and the
 // alternative is carrying a PEM around in a settings field for the sake of 32 bytes.
 const PKCS8 = Buffer.from('302e020100300506032b656e04220420', 'hex')
-const SPKI = Buffer.from('302a300506032b656e032100', 'hex')
 
 const secretFromSeed = (seed: Uint8Array): KeyObject =>
   createPrivateKey({ key: Buffer.concat([PKCS8, Buffer.from(seed)]), format: 'der', type: 'pkcs8' })
 
-const publicFromRaw = (raw: Uint8Array): KeyObject =>
-  createPublicKey({ key: Buffer.concat([SPKI, Buffer.from(raw)]), format: 'der', type: 'spki' })
+/** The 32-byte seed back out of an identity: PKCS#8 for X25519 is the preamble above, then the seed. */
+function seedOf(identity: KeyObject): Uint8Array {
+  const der = identity.export({ type: 'pkcs8', format: 'der' })
+  if (der.length !== PKCS8.length + 32 || !der.subarray(0, PKCS8.length).equals(PKCS8)) throw new Error('not-an-identity')
+  return der.subarray(PKCS8.length)
+}
 
-/**
- * The 32 raw bytes of a public key.
- *
- * ⚠️ Bun REFUSES `createPublicKey()` on a key object that is already public
- * (`ERR_CRYPTO_INVALID_KEY_OBJECT_TYPE`), which Node allows, so the branch is not tidiness.
- */
-const rawPublic = (key: KeyObject): Buffer =>
-  (key.type === 'private' ? createPublicKey(key) : key)
-    .export({ type: 'spki', format: 'der' }).subarray(12)
+/** The 32 raw bytes of the public half of a seed. */
+const rawPublic = (seed: Uint8Array): Buffer => Buffer.from(x25519.getPublicKey(seed))
 
 const b64 = (b: Uint8Array): string => Buffer.from(b).toString('base64')
 const un64 = (s: string): Buffer => Buffer.from(s, 'base64')
@@ -100,7 +101,7 @@ export function decodeSecret(text: string): Buffer {
 /** A fresh identity. The secret is returned to be shown once and is never written down here. */
 export function newIdentity(): { secret: string; publicKey: string } {
   const seed = randomBytes(32)
-  return { secret: encodeSecret(seed), publicKey: encodePublic(rawPublic(secretFromSeed(seed))) }
+  return { secret: encodeSecret(seed), publicKey: encodePublic(rawPublic(seed)) }
 }
 
 /**
@@ -115,7 +116,7 @@ export function passphraseRecipient(
   passphrase: string, salt: Uint8Array = randomBytes(16),
 ): { publicKey: string; salt: string } {
   const seed = scryptSync(passphrase, Buffer.from(salt), 32, KDF)
-  return { publicKey: encodePublic(rawPublic(secretFromSeed(seed))), salt: b64(salt) }
+  return { publicKey: encodePublic(rawPublic(seed)), salt: b64(salt) }
 }
 
 /**
@@ -206,9 +207,9 @@ function nonceFor(i: number, last: boolean): Buffer {
 
 /** Wrap the file key for one recipient. */
 function seal(fileKey: Uint8Array, recipientRaw: Uint8Array): Stanza {
-  const eph = generateKeyPairSync('x25519')
-  const ephRaw = rawPublic(eph.publicKey)
-  const shared = diffieHellman({ privateKey: eph.privateKey, publicKey: publicFromRaw(recipientRaw) })
+  const ephSeed = randomBytes(32)
+  const ephRaw = rawPublic(ephSeed)
+  const shared = x25519.getSharedSecret(ephSeed, recipientRaw)
   const c = createCipheriv('aes-256-gcm', wrapKey(shared, ephRaw, recipientRaw), Buffer.alloc(12))
   const key = Buffer.concat([c.update(Buffer.from(fileKey)), c.final()])
   return { t: 'x25519', eph: b64(ephRaw), key: b64(key), tag: b64(c.getAuthTag()) }
@@ -218,8 +219,9 @@ function seal(fileKey: Uint8Array, recipientRaw: Uint8Array): Stanza {
 function open(stanza: Stanza, identity: KeyObject): Buffer | null {
   try {
     const ephRaw = un64(stanza.eph)
-    const shared = diffieHellman({ privateKey: identity, publicKey: publicFromRaw(ephRaw) })
-    const d = createDecipheriv('aes-256-gcm', wrapKey(shared, ephRaw, rawPublic(identity)), Buffer.alloc(12))
+    const seed = seedOf(identity)
+    const shared = x25519.getSharedSecret(seed, ephRaw)
+    const d = createDecipheriv('aes-256-gcm', wrapKey(shared, ephRaw, rawPublic(seed)), Buffer.alloc(12))
     d.setAuthTag(un64(stanza.tag))
     return Buffer.concat([d.update(un64(stanza.key)), d.final()])
   } catch {

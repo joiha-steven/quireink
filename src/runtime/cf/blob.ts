@@ -4,12 +4,13 @@
 // `MAX_UPLOAD_MB` is written whatever called.
 import { readEnv } from '@/env'
 import type { BlobPort } from '@/runtime/ports'
+import { isReservedBlobPath } from '@/runtime/blob-reserved'
 import { bound } from './bindings'
 
-/** Store-relative, no `..`, no leading slash, no empty segment: what `resolveSafe` guarantees on Bun. */
+/** Store-relative, no `..`, no leading slash, no empty segment, not `private/` (`runtime/blob-reserved.ts`). */
 function keyOf(pathname: string): string {
   const parts = pathname.split('/')
-  if (!pathname || pathname.startsWith('/') || parts.some((p) => p === '' || p === '.' || p === '..')) {
+  if (!pathname || pathname.startsWith('/') || parts.some((p) => p === '' || p === '.' || p === '..') || isReservedBlobPath(pathname)) {
     throw new Error(`Invalid blob path: ${pathname}`)
   }
   return pathname
@@ -32,13 +33,15 @@ export const put: BlobPort['put'] = async (pathname, body, opts) => {
 }
 
 export const read: BlobPort['read'] = async (pathname) => {
-  const object = await bound().env.BLOBS.get(keyOf(pathname))
+  const key = keyOf(pathname)
+  const object = await bound().env.BLOBS.get(key)
   if (!object) throw new Error(`ENOENT: ${pathname}`)
   return Buffer.from(await object.arrayBuffer())
 }
 
 export const statSize: BlobPort['statSize'] = async (pathname) => {
-  const head = await bound().env.BLOBS.head(keyOf(pathname))
+  const key = keyOf(pathname)
+  const head = await bound().env.BLOBS.head(key)
   if (!head) throw new Error(`ENOENT: ${pathname}`)
   return head.size
 }
@@ -55,7 +58,8 @@ export const stream: BlobPort['stream'] = (pathname, range) => {
 }
 
 export const del: BlobPort['del'] = async (pathname) => {
-  await bound().env.BLOBS.delete(keyOf(pathname))
+  const key = keyOf(pathname)
+  await bound().env.BLOBS.delete(key)
 }
 
 export const list: BlobPort['list'] = async (under = '') => {
@@ -64,7 +68,7 @@ export const list: BlobPort['list'] = async (under = '') => {
   let cursor: string | undefined
   do {
     const page = await bound().env.BLOBS.list({ prefix, cursor })
-    for (const o of page.objects) if (!o.key.startsWith('private/')) out.push({ pathname: o.key, size: o.size })
+    for (const o of page.objects) if (!isReservedBlobPath(o.key)) out.push({ pathname: o.key, size: o.size })
     cursor = page.truncated ? page.cursor : undefined
   } while (cursor)
   return out

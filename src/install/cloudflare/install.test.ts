@@ -13,14 +13,14 @@ beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'quire-cf-install-')) })
 afterAll(() => rmSync(dir, { recursive: true, force: true }))
 
 describe('readTar', () => {
-  it('reads what tar wrote, a long path included', () => {
+  it('reads what tar wrote, a long path included', async () => {
     const long = `${'deep/'.repeat(30)}file.txt`
     mkdirSync(join(dir, 'src', long, '..'), { recursive: true })
     writeFileSync(join(dir, 'src', 'a.txt'), 'alpha')
     writeFileSync(join(dir, 'src', long), 'omega')
     const r = spawnSync('tar', ['--format', 'pax', '-cf', join(dir, 'x.tar'), 'a.txt', long], { cwd: join(dir, 'src') })
     expect(r.status).toBe(0)
-    const files = readTar(new Uint8Array(readFileSync(join(dir, 'x.tar'))))
+    const files = await readTar(new Uint8Array(readFileSync(join(dir, 'x.tar'))))
     expect(new TextDecoder().decode(files.get('a.txt'))).toBe('alpha')
     expect(new TextDecoder().decode(files.get(long))).toBe('omega')
   })

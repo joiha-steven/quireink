@@ -64,6 +64,10 @@ const ALLOWED: Record<string, string> = {
   'prosemirror-dropcursor': 'B. Where a dragged picture would land',
   'prosemirror-gapcursor': 'B. A caret between two blocks that cannot hold one',
 
+  // X25519 for the backup seal (ADR 0060) on both runtimes: src/server/backup-crypt.ts.
+  '@noble/curves':
+    'B. X25519 for the backup seal: workerd\'s `diffieHellman` refuses every X25519 public key it did not generate (DER or JWK), so a Cloudflare blog could not seal or open an archive. RFC 7748 fixes the arithmetic, and a test holds it to node\'s on Bun. Audited, same author as @noble/hashes, whose exact version it pins',
+
   // The Cloudflare runtime (ADR 0066), and only there: src/runtime/cf/password.ts.
   '@noble/hashes':
     'B. argon2id in plain JS for Cloudflare (ADR 0069): the WASM builds reserve 65 MB of memory up front (argon2id 1.0.1 declares 1,040 pages) in a 128 MB isolate; this one allocates what `m` asks for and gives it back. Audited, no dependencies',

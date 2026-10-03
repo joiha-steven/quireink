@@ -20,7 +20,7 @@
     "test": "bun run build:assets && bun test",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src/assets/js && tsc --noEmit -p src/admin",
     "check:filesize": "bun scripts/checks/file-size.ts",
-    "check:all": "bun run build:assets && bun run build:admin && bun run typecheck && bun run check:filesize && bun run check:css && bun run check:nul && bun run check:sql && bun run check:routes && bun run check:type && bun run check:admin-kit && bun run check:bundle && bun run check:contract && bun run check:docs && bun run check:motion && bun run check:i18n && bun run check:deps && bun run check:runtime && bun run check:install-matrix && bun run check:admin-css && bun run check:admin-wired && bun test",
+    "check:all": "bun run build:assets && bun run build:admin && bun run typecheck && bun run typecheck:worker && bun run check:filesize && bun run check:css && bun run check:nul && bun run check:sql && bun run check:routes && bun run check:type && bun run check:admin-kit && bun run check:bundle && bun run check:contract && bun run check:docs && bun run check:motion && bun run check:i18n && bun run check:deps && bun run check:runtime && bun run check:install-matrix && bun run check:admin-css && bun run check:admin-wired && bun test",
     "check:css": "bun scripts/checks/css-literal.ts",
     "check:nul": "bun scripts/checks/no-nul.ts",
     "check:sql": "bun scripts/checks/sql-rules.ts",
@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "@noble/curves": "2",
     "@noble/hashes": "2",
     "@resvg/resvg-wasm": "^2.6.2",
     "hono": "^4.13.7",

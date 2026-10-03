@@ -11,6 +11,9 @@ import { regexEngine } from '@/runtime/cf/shiki-engine'
 import { generateKeyPairSync } from 'node:crypto'
 import { signRequest, verifySignature } from '@/ap/signature'
 import { SmtpSession } from '@/news/smtp'
+import { read as blobRead, statSize as blobStatSize } from '@/runtime/cf/blob'
+import { gunzipStage, gzipStage } from '@/server/gzip'
+import { identityFromSecret, newIdentity, opener, passphraseRecipient, sealer, unseal } from '@/server/backup-crypt'
 
 type Case = { name: string; body: () => void | Promise<void> }
 
@@ -20,6 +23,10 @@ function collect(): Case[] {
   dbContract((name, body) => cases.push({ name: `db: ${name}`, body }), () => open('contract.db', 'NORMAL'))
   cases.push({ name: 'ap: an RSA-2048 key is made, signs a delivery, and the signature verifies', body: apRoundTrip })
   cases.push({ name: 'smtp: one connection authenticates and hands over two messages, then quits', body: smtpTwoMessages })
+  cases.push({ name: 'blob: `private/` is refused before the bucket is asked, so /uploads cannot serve a backup', body: blobPrivateRefused })
+  cases.push({ name: 'archive: the node:zlib gzip stage round-trips a stream', body: gzipRoundTrip })
+  cases.push({ name: 'archive: an X25519 seal (ADR 0060) opens with its identity and not with another', body: sealRoundTrip })
+  cases.push({ name: 'archive: a passphrase recipient derives (scrypt, N=65536 r=8: 64 MB)', body: () => { passphraseRecipient('correct horse battery staple') } })
   cases.push({ name: 'smtp: STARTTLS lets go of the plain streams and reaches the TLS handshake', body: smtpReachesHandshake })
   return cases
 }
@@ -77,6 +84,50 @@ async function smtpReachesHandshake(): Promise<void> {
     return
   }
   throw new Error('a handshake with a relay that hung up succeeded')
+}
+
+/** `runtime/blob-reserved.ts`: the bucket holding the uploads also holds the backups. */
+async function blobPrivateRefused(): Promise<void> {
+  for (const attempt of [() => blobRead('private/backups/quire-x.tar.gz'), () => blobStatSize('private/aside/settings.json')]) {
+    try {
+      await attempt()
+    } catch (error) {
+      if (String((error as Error).message).startsWith('Invalid blob path')) continue
+      throw error
+    }
+    throw new Error('a private key was read through the blob port')
+  }
+}
+
+/** ADR 0067's archive gzips through `node:zlib`, which workerd provides behind `nodejs_compat`. */
+async function gzipRoundTrip(): Promise<void> {
+  const text = 'quire-rows/1 '.repeat(50_000)
+  const back = await new Response(new Blob([text]).stream().pipeThrough(gzipStage()).pipeThrough(gunzipStage())).text()
+  if (back !== text) throw new Error(`gzip round trip changed ${text.length} chars into ${back.length}`)
+}
+
+function sealRoundTrip(): void {
+  const owner = newIdentity()
+  const s = sealer([owner.publicKey], '')
+  const plain = new Uint8Array(200_000).map((_, i) => i % 251)
+  const parts = [s.header(), s.push(plain), s.end()]
+  const sealed = new Uint8Array(parts.reduce((n, p) => n + p.length, 0))
+  let at = 0
+  for (const p of parts) { sealed.set(p, at); at += p.length }
+  const { fileKey, start, header } = unseal(Buffer.from(sealed), identityFromSecret(owner.secret))
+  const open = opener(fileKey, header.chunk)
+  const frame = header.chunk + 16
+  const body = Buffer.from(sealed.subarray(start))
+  const out: Buffer[] = []
+  for (let i = 0, off = 0; off < body.length; i++, off += frame) out.push(open(body.subarray(off, off + frame), off + frame >= body.length, i))
+  if (!Buffer.concat(out).equals(Buffer.from(plain))) throw new Error('the sealed payload did not open to what went in')
+  try {
+    unseal(Buffer.from(sealed), identityFromSecret(newIdentity().secret))
+  } catch (error) {
+    if ((error as Error).message === 'no-matching-key') return
+    throw error
+  }
+  throw new Error('a stranger\'s identity opened the archive')
 }
 
 export class Probe extends DurableObject<CfEnv> {
