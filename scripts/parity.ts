@@ -8,7 +8,9 @@
 // on status, content type and body, with only what has to differ taken out first: each one's own
 // origin, and the per-response nonce. Anything else that differs is a runtime leaking into a page.
 //
-// Env: PARITY_MAX (pages, default all), PARITY_SHOW (how many differing pages to print in full).
+// Env: PARITY_MAX (pages, default all), PARITY_SHOW (how many differing pages to print in full),
+// PARITY_SITE_URL when both serve the same SITE_URL (a staging copy of a live blog), and
+// PARITY_ASSET_HASHES=0 when they run different builds.
 
 const [A, B] = process.argv.slice(2).map((u) => (u ?? '').replace(/\/+$/, ''))
 if (!A || !B) {
@@ -26,7 +28,10 @@ const paths = [...new Set([
 ])].slice(0, MAX)
 
 /** What may differ between two servers of the same data. */
-function normalize(body: string, origin: string): string {
+function normalize(body: string, base: string): string {
+  // PARITY_SITE_URL: both serve the same SITE_URL (a staging copy of a live blog), so their
+  // absolute links already agree and only that one address is taken out.
+  const origin = process.env.PARITY_SITE_URL || base
   const host = new URL(origin).host
   let out = body
   // Each spelling of the address a page carries: plain, and percent-encoded inside another URL
@@ -39,6 +44,12 @@ function normalize(body: string, origin: string): string {
     .replace(/'nonce-[^']*'/g, "'nonce-{nonce}'")
     // The comment form's proof-of-work challenge: a fresh salt per response, on purpose.
     .replace(/data-stamp="[^"]*"/g, 'data-stamp="{stamp}"')
+    // Cloudflare Web Analytics, which a proxied zone injects into the page on its way out: the
+    // zone's script, not the blog's.
+    .replace(/<script[^>]*static\.cloudflareinsights\.com[^>]*><\/script>\n?/g, '')
+    // PARITY_ASSET_HASHES=0 when the two run different builds (a live release against a newer
+    // tree): the content hash in an asset's name differs by construction.
+    .replace(process.env.PARITY_ASSET_HASHES === '0' ? /(\/(?:assets|fonts|static)\/[\w-]+)[.-][0-9a-z]{8,16}(\.\w+)/g : /$^/g, '$1.{hash}$2')
 }
 
 type Got = { status: number; type: string; body: string }
