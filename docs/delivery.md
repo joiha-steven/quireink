@@ -162,7 +162,7 @@ seen surviving a deploy, look at the cache key before looking at the worker.**
 
 ### The warm, and the CDN purge
 
-`clearCache()` carries a hook list, and `src/index.ts` registers a debounced
+`clearCache()` carries a hook list, and the boot (`src/runtime/bun/main.ts`) registers a debounced
 warm-then-purge (`server/warm.ts`). Warm FIRST, purge second, so the edge refetches into a
 warm origin. It runs on boot too, which is what makes a deploy clear the edge without
 anyone remembering to.

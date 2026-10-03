@@ -26,7 +26,6 @@ const FORBIDDEN = /from\s+['"](bun:[\w-]+|node:fs(?:\/promises)?|node:net|node:t
 const PENDING: Record<string, string> = {
   'src/content/settings-save.ts': 'node:fs -> the Blob or Assets port (G1.7)',
   'src/import/zip-write.ts': 'Bun.file -> the Archive port (G1.8)',
-  'src/index.ts': 'the Bun entry itself -> src/runtime/bun/ (G1.7)',
   'src/media/blob-local.ts': 'the local blob store -> src/runtime/bun/blob.ts (G1.7)',
   'src/media/encode-variant.ts': 'the sharp child process -> src/runtime/bun/ (G1.7)',
   'src/media/image.ts': 'Bun.spawn -> @/runtime/impl/image (G1.7)',
