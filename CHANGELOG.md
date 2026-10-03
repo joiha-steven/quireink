@@ -1,207 +1,142 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-10-03 · Quire Ink 2.2.17
 
-### Added
+Three days after 2.2.16, and the biggest change since the rewrite: **Quire Ink runs on Cloudflare**,
+from a button for a new blog or from Settings for one that already runs somewhere, with the same
+pages, the same admin and the same backups as on a server. Beta, and on Workers Paid only. Around
+it, the work that moving a blog between machines needed anyway: a backup made of rows that loads
+into a fresh install from its first screen, at any size, and an install path that only ever runs
+a published release. Upgrading is the usual pull and restart, with one thing to read below if you
+run a compose file from a checkout.
 
-- **Updating a blog on Cloudflare, the way it was installed.** A blog moved from a server or set up
-  by the installer updates from Settings → Server → Cloudflare with one key: the Worker uploads the
-  new release, keeps the variables and secrets, waits for the blog to answer as the new version and
-  puts the one before back if it does not. A blog made with the Deploy button updates from its copy
-  on GitHub — Actions → *Update Quire Ink* — which brings the release in and keeps the names the
-  button chose. The same card shows what the month should cost, from the blog's own views and sizes.
-  The button installs the newest release (the `release` branch, moved by each release), not
-  whatever was merged most recently.
-  And leaving: the card offers a backup to take away, then deletes the blog from Cloudflare —
-  uploads, bucket, Worker and database — once the password and the blog's address are typed.
+### Upgrading
 
-- **Run on Cloudflare: move a blog off its server from the admin** (Settings → Server). A Quire Ink on
-  a server, in Docker or on a NAS copies itself — posts, pictures, accounts, settings — into a Worker
-  in the owner's own Cloudflare account: it checks the token and the plan (Workers Paid), fetches this
-  version's Cloudflare package from its GitHub Release and checks it, creates the Worker, its storage
-  and its address, and loads a backup into it, step by step on screen. The old blog keeps serving
-  until the domain is pointed at the Worker, which the card can do when the token may edit the
-  domain. The password is asked again first.
-- **Deploy to Cloudflare (beta): a blog from one button**, in both READMEs and first in
-  `docs/self-host-cloudflare.md`. Cloudflare copies the repository into the owner's GitHub or
-  GitLab, creates the Worker, the Durable Object and the R2 bucket, asks for `SETUP_CODE` with a
-  sentence saying it is how the blog is claimed (`.dev.vars.example`, the `cloudflare` section of
-  `package.json`), and deploys on every push to the copy. `bun run deploy` is now
-  `scripts/deploy-cloudflare.ts`: Cloudflare's build machine has Bun 1.2.15, whose bundler writes a
-  different Worker, so there the script builds under the Bun 1.3.14 that CI tests every release
-  with. `wrangler.jsonc` keeps the variables set in the dashboard (`keep_vars`), and CI runs only
-  here and in forks, not in the copies the button makes. The guide says how a button install takes
-  a newer release, and why the Free plan is not supported.
+- **Migration 022 runs by itself** on the first start: it adds the two tables a newsletter send is
+  now worked through from (see Fixed).
+- **Every compose file runs the published image.** `docker-compose.yml` and
+  `docker-compose.caddy.yml` said `build: .` and were upgraded with `git pull`, which built whatever
+  was last pushed. They now pull `quireink/quireink:${QUIREINK_TAG:-latest}`. **If you run one of
+  them from a checkout, run `docker compose pull` before your next `up`.** Building from the
+  checkout is `-f docker-compose.build.yml`.
+- **`install.sh` installs a release, not `main`** ([ADR 0065](docs/decisions/0065-every-install-runs-a-release.md)),
+  and **`bun run upgrade`** takes a source install to the newest release (or the one you name),
+  rebuilds, restarts, waits for `/api/health` to name the new version, and goes back to the old
+  release by itself if any step fails. It replaces the four commands in `docs/self-host.md` §9. An
+  existing checkout of `main` is never moved backwards.
+- **The backup archive holds rows now, not database files** ([ADR 0067](docs/decisions/0067-the-backup-is-rows-and-goes-only-into-an-empty-blog.md)).
+  Same name, same place, same seal; restoring reads the new archives and every older one.
+- **Passwords are hashed at 19 MiB instead of 64 MiB** ([ADR 0068](docs/decisions/0068-new-password-hashes-use-19-mib.md)),
+  OWASP's floor for argon2id and small enough for a Cloudflare isolate. Nothing to do: signing in
+  stores an old password again at the new setting, once ([ADR 0069](docs/decisions/0069-a-sign-in-brings-an-old-hash-up-to-date.md)).
 
-- **`/api/health` names the version and the package it runs** (`version`, `package`), so an install
-  test, a monitor or a person can tell which release answered and whether it came from the source,
-  the image or Cloudflare ([ADR 0065](docs/decisions/0065-every-install-runs-a-release.md)).
-- **`QUIREINK_PACKAGE`**: set by the package, never by hand. The image carries `docker`; unset means
-  `source`. A value nobody ships stops the boot.
-- **`bun run upgrade`** for an install from source: it moves to the newest release (or the one you
-  name), installs, runs both builds, restarts the service and waits for `/api/health` to report the
-  new version. If any step fails it checks the old release out again, rebuilds, restarts, and names
-  the copy of the database the new version took before migrating. It never goes back on purpose.
-  Replaces the four commands in `docs/self-host.md` §9.
-- **Settings → Server shows how to upgrade, for this install only.** Under the news that a newer
-  release exists: `bun run upgrade` for a checkout, `docker compose pull && docker compose up -d`
-  for the image (or the NAS app's Update button), and for Cloudflare the way that blog was installed
-  (its Update workflow, one key on the Cloudflare card, or `bun run deploy`). In all eleven languages.
+### Quire Ink on Cloudflare (beta)
 
-- **`server.sh`: a blank Ubuntu or Debian server to a running blog in one command.** It installs
-  Docker if there is none, runs the image of the newest release with Caddy and a Let's Encrypt
-  certificate when you give it `--domain` (plain HTTP on the machine's address when you do not),
-  keeps the data in `/var/lib/quireink`, waits until the blog answers and says how to claim it
-  (`--setup-code`, so no log is needed). It runs as root, and it refuses any machine that already
-  serves something. Run it again and it is an update, whose one change to `.env` is a `--domain`
-  given for the first time. The DigitalOcean user-data file is now a thin shell around it.
+- **Deploy to Cloudflare: a blog from one button.** Cloudflare copies the repository into your
+  GitHub or GitLab, creates the Worker, its Durable Object and its R2 bucket, asks for a
+  `SETUP_CODE` (how the blog is claimed), and deploys. The button installs the newest release,
+  not whatever was merged last. `docs/self-host-cloudflare.md` has it step by step, and says why
+  the Free plan is not supported: 100,000 requests a day, and 10 ms of CPU a request.
+- **Move a blog you already run, from its own admin** (Settings, Server, Run on Cloudflare). A
+  Quire Ink on a server, in Docker or on a NAS checks your token and plan, fetches this version's
+  Cloudflare package and checks it, creates the Worker, its storage and its address in your
+  account, and loads a backup of itself into it, step by step on screen. Any size: the backup is
+  sent in 16 MB parts, a part resent when the connection drops. The old blog keeps serving until
+  you point the domain at the Worker, which the card can do when the token may. Measured: a blog
+  with 66 MB of uploads moved in 71 seconds.
+- **Updating, the way the blog was installed.** A moved blog updates from Settings with one key:
+  the Worker uploads the new release, keeps your variables and secrets, waits for the blog to
+  answer as the new version and puts the old one back if it does not (14 seconds on a real account,
+  and a package that lied about its version was rolled back by itself). A button blog updates from
+  its copy on GitHub, Actions, *Update Quire Ink*, which takes published releases only and never an
+  older one. The same card shows what the month should cost from the blog's own numbers: $5.00 for
+  100,000 views, about $5.15 for a million.
+- **Leaving.** The card offers a backup to take away, then deletes the blog from Cloudflare,
+  uploads, bucket, Worker and database, once your password and the blog's address are typed. A
+  blog that was in the middle of a backup is waited for first.
+- **The same blog as on a server.** Every page of the demo compared byte for byte between the two
+  (105 of 105), the whole browser tour run against it, and a backup taken there restored to what the
+  server had. The Worker is 4.6 MB, a new copy of it starts on 45 ms of CPU, its fonts, scripts and
+  stylesheets are served by Cloudflare before the blog's code runs, and code highlighting loads a
+  language's grammar the first time a post uses it.
 
-- **Start a new blog from a backup.** A fresh install that nobody has claimed yet offers **Start
-  from a backup** on its setup screen: give it an archive written by the same version (and its key
-  or passphrase if it is encrypted), and every post, setting, subscriber and picture goes in; the
-  blog then belongs to the account in the backup, which signs in as before. It asks for the same
-  setup link or `SETUP_CODE` as claiming, refuses a blog that has an owner or any content, and
-  refuses an archive from another version with the version to upgrade the old blog to first. This
-  is how a blog moves between machines, or to Quire Ink on Cloudflare. In all eleven languages.
-- **…and a backup of any size.** Past 48 MB the setup screen sends the archive in parts of 16 MB
-  instead of one request — Cloudflare refuses a request over 100 MB, and a proxy in front of a
-  server often far less — shows how far it has got, tries a dropped part again, and carries on where
-  it stopped when the same file is chosen again. A wrong passphrase keeps what was sent. The same
-  door is an HTTP API for a program moving a blog with its `SETUP_CODE`, written out in
-  `docs/backup-load-api.md`. Parts nobody loads are removed after a day.
+### Moving a blog, and backups
+
+- **Start a new blog from a backup.** A fresh install nobody has claimed offers **Start from a
+  backup** on its setup screen: give it an archive written by the same version (and its key or
+  passphrase if it is sealed), and every post, setting, subscriber and picture goes in, with the
+  account that signs in as before. It asks for the same setup link or `SETUP_CODE` as claiming,
+  refuses a blog with an owner or any content, and refuses an archive from another version with
+  the version to upgrade the old blog to first. In all eleven languages.
+- **…at any size.** Past 48 MB the page sends the archive in 16 MB parts, shows how far it has got,
+  tries a dropped part again, and carries on where it stopped when the same file is chosen again.
+  The same door is an HTTP API for a program, in `docs/backup-load-api.md`.
+- **Restoring is one command:** `bun scripts/restore.ts <archive> --data-dir <dir>` with the
+  service stopped. It rebuilds and checks everything in a staging directory and moves the files in
+  only when all of it has passed; every table must hash back to the manifest. **The image carries
+  it**, so a Docker or NAS install restores with `docker compose run` and nothing on the host.
+- **`server.sh`: a blank Ubuntu or Debian server to a running blog in one command,** with Caddy
+  and a Let's Encrypt certificate when you give it `--domain`. It refuses a machine that already
+  serves something; run again, it is an update. The DigitalOcean file is a shell around it.
+- **`/api/health` names the version and the package** (`source`, `docker` or `cloudflare`), and
+  Settings, Server shows how to upgrade this install and only this one.
+
+### Faster and lighter
+
+- **Opening a year of analytics no longer freezes the blog.** On a blog with a million recorded
+  views the 365-day screen took ten seconds, and every reader waited with it, up to twelve seconds
+  for the front page. It now reads in small pieces with readers served in between (the front page
+  waits a tenth of a second at most), loads in under four seconds, and opens again within a minute
+  instantly. One page's drill-down over a year went from eleven seconds to half a second. Every
+  number is the same as before.
+- **A highlighted post carries only the pen strokes it uses**, inside the page, instead of two
+  stylesheets of 120 strokes. On the demo's 31 marked posts the first visit fell from 1,084 KB to
+  344 KB; a post with one highlight from 28 KB to 10 KB. Same look, light and dark.
+- **The admin's pages are a quarter to a third smaller**: Settings from 881 KB to 571 KB of HTML,
+  the other screens by 17 to 24%. Nothing on screen moves.
+- **An import ZIP is read a slice at a time**, so a large export costs memory for one entry.
+- **An install from source no longer downloads the Cloudflare tooling**: 91 MB instead of 325 MB.
 
 ### Fixed
 
-- **Pack the Cloudflare package on a Mac without AppleDouble files.** `scripts/pack-worker.ts` run on
-  macOS put a `._name` beside each of its 385 files; release packages are built on Linux and were
-  never affected.
-- **The colour fields in Settings show where the keyboard is.** A colour swatch and its hex had
-  no focus ring at all — the rules for it were never written — so tabbing through the palette
-  showed nothing on the field being typed in. They now ring like every other field.
-- **Opening a year of analytics no longer freezes the blog.** On a blog with a million recorded
-  views, the 365-day Analytics screen took about ten seconds, and every reader asking for a page in
-  the meantime waited for it — up to twelve seconds for the front page. The long windows are now
-  read in small pieces with readers served between them (the front page waits a tenth of a second
-  at most), the year screen loads in under four seconds, and opening it again within a minute is
-  instant: the screens and the dashboard keep what they read for one minute, except "reading right
-  now", which stays live. One page's drill-down over a year went from eleven seconds to half a
-  second, and the "one page only" count stopped reading every view ever recorded for a 7-day
-  window. Every number on the screens is the same as before. Works the same on a server and on
-  Cloudflare.
-- **Uploading pictures on Cloudflare takes far less memory.** Every request to the Images binding
-  copied the picture twice first, and an upload makes nine — a 25 MB picture came to 450 MB of
-  copies in a blog that has 128 MB; it is now handed over as it is, with the same results byte for
-  byte. A batch of photos or attachments is read one file at a time instead of all at once beside
-  the upload itself, a picture's type is checked from its first kilobyte, and a photo scaled down
-  on upload gets its smaller sizes from the copy already in hand rather than a second download.
-- **A newsletter cut off half-way carries on, and nobody gets it twice.** The send kept its place
-  in memory, so a restart in the middle of one — every deploy on Cloudflare, an eviction, a server
-  upgrade — stopped it silently, and the resend box would have mailed the first half again. The
-  list is now written down when you press send and worked through from the database: within a
-  minute or two of the blog coming back it picks up where it stopped, still one message at a time.
-  The one message that was with the mail server at that instant is never sent again; if the send
-  log cannot show it arrived, it is marked failed as `interrupted` in People. A second press while
-  a send is still going is refused, restart or not.
-- **A backup from somewhere else is held to what a backup can be.** `scripts/restore.ts` ran the
-  archive's `schema.sql` as it found it; it now refuses any statement that is not a `CREATE` of a
-  table, index, trigger, view or full-text index, so an archive cannot attach a file at a path of
-  its choosing. Reading one is bounded too: a tar name header past 64 KB, an upload or a row that
-  claims more than it carries, a sealed archive with an unusual frame size, and a passphrase cost
-  past 256 MB of memory are each refused before anything is allocated for them. The first setup
-  screen counts the form's fields before it checks the token, and a claim and a backup load can no
-  longer both go in at once.
-- **The Deploy-button update installs published releases only**, never a draft, a pre-release or
-  a version older than the one running.
-- **On Cloudflare, a kept backup past 64 MB could not be downloaded or copied off-site.** The
-  archive was read whole into the Worker to be sent; it now streams from the bucket, and the
-  off-site copy goes up as a multipart upload 16 MB at a time. A download from Cloudflare also says
-  how big it is again, so the browser shows its progress.
 - **A favicon, app icon or author portrait could not be uploaded, and a removed one could not be
-  deleted** ([#69](https://github.com/joiha-steven/quireink/issues/69)). Picking a file in Settings
-  sent nothing at all, with no message. Remove cleared the setting but kept the file, and Library →
-  Files then listed it under Site icons with no way to delete it; deleting it anyway said "Moved to
-  Trash", changed nothing, and it was back on the next load. Now: picking a file uploads it, and a
-  refusal says why (wrong type, too large, no room left). Under Site icons, an icon Settings still
-  uses says so and is not deleted — with a message naming why; one nothing uses is marked *Not used*,
-  ticks like any file and goes to the Trash, from where it can be restored or deleted for good. An
-  icon uploaded with no kind (`icon-…`), which was listed nowhere, now shows there too. The
-  assistant's `delete_file` no longer reports a deletion that did not happen.
+  deleted** ([#69](https://github.com/joiha-steven/quireink/issues/69)). Picking a file sent
+  nothing, with no message; Remove kept the file, and deleting it from Library, Files said "Moved to
+  Trash" and changed nothing. Now picking a file uploads it, a refusal says why, an icon still in
+  use says so and is kept, and one nothing uses goes to the Trash like any file.
+- **A newsletter cut off half-way carries on, and nobody gets it twice.** A restart in the middle
+  of a send stopped it silently, and the resend box would have mailed the first half again. The
+  list is now written down when you press send and worked through from the database; after a
+  restart it picks up within a minute or two. The one message that was with the mail server at
+  that instant is never sent again, and is marked `interrupted` in People if the log cannot show it
+  arrived.
+- **A backup from somewhere else is held to what a backup can be.** `scripts/restore.ts` ran the
+  archive's `schema.sql` as it found it; it now runs only `CREATE` statements, so an archive cannot
+  write a file at a path of its choosing. Oversized names, uploads, rows, frames and passphrase
+  costs are refused before anything is allocated, the setup screen counts its fields before the
+  token, and a claim and a backup load can no longer both go in at once.
+- **The colour fields in Settings show where the keyboard is.** The swatch and its hex had no focus
+  ring at all.
+- **A backup taken on Linux while a picture's smaller copies were being written failed** with
+  `file changed as we read it`. The archive is no longer written by `tar`; a file deleted meanwhile
+  is left out with a line in the log.
+- **Uploading pictures on Cloudflare** copied each one twice per resize (450 MB of copies for a
+  25 MB picture in a 128 MB isolate); a batch is now read one file at a time.
 
-- **A backup taken on Linux while a picture's smaller copies were being written failed with a 500**
-  and `tar: uploads: file changed as we read it`; the same request a second later worked. Found by
-  the new install matrix, in the image. The archive is no longer written by `tar` at all (see
-  Changed); a file deleted while the archive is being written is now left out with a line in the
-  log, and the backup kept.
+### What 2.2.17 does not do
 
-### Changed
-
-- **A highlighted post loads about a third of what it did, and no stylesheet for its ink.** A post
-  with highlights, underlines or rings carried the pen's two whole sheets — 120 hand-drawn strokes
-  and more, 35 KB compressed, before the page could paint — to show the handful it used. It now
-  carries only the strokes on the page, inside the page, looking exactly the same in light and dark.
-  On the demo's 31 marked posts the first visit fell from 1,084 KB to 344 KB in all; a post with one
-  highlight went from 28 KB to 10 KB. The editor and the reader's own pen still have every stroke.
-- **The admin's pages are a quarter to a third smaller.** Settings went from 881 KB to 571 KB of
-  HTML, the dashboard from 230 KB to 180 KB, the posts list, editor, analytics and library by 17–24%:
-  the same fields, buttons and switches, named once in the stylesheet instead of spelled out in full
-  on every control. Nothing on screen moves. The admin stylesheet also stops shipping 10 KB of its
-  own comments.
-- **An import ZIP is read a slice at a time.** The importer read the uploaded archive whole; it now
-  reads the end of the file, the directory, and then only the entries it keeps, so a large export
-  costs memory for one entry rather than the whole file. On Cloudflare the import limit is 30 MB.
-- **A blog on Cloudflare starts in less than half the time, and its fonts and scripts never wake
-  it.** The Worker is under a third of the size it was (16.2 MB to 4.6 MB; 3.5 MB to 1.3 MB
-  compressed), and a new copy of it starts on 45 ms of CPU instead of 117 ms. Syntax highlighting
-  loads a language's grammar the first time a post uses it instead of carrying all of them, with
-  the same colours to the byte; the admin's files, the public scripts and stylesheets and the
-  reading fonts are served by Cloudflare directly, before the blog's code runs, with the same
-  addresses and the same caching as before. Nothing changes for a blog on a server.
-- **Move to Cloudflare carries a blog of any size.** It used to refuse a blog past 95 MB, because the
-  backup went in one request; it now writes the backup to disk and sends it in 16 MB parts, resending
-  a part when the connection drops, and the card shows how much has gone.
-- **The backup archive holds rows, not database files** ([ADR 0067](docs/decisions/0067-the-backup-is-rows-and-goes-only-into-an-empty-blog.md)).
-  Same name, same place, same seal when encryption is on; inside, a `manifest.json`, each
-  database's `schema.sql`, one `.jsonl` file per table and the uploads as before. The manifest
-  records every table's row count and a SHA-256 of its rows, so a restore can prove nothing was
-  lost or changed. It is written as it streams, so its size is never bounded by memory, and it is
-  the same archive Quire Ink on Cloudflare writes.
-- **Restoring is one command:** `bun scripts/restore.ts <archive> --data-dir <dir>` (add
-  `--identity` or `--passphrase` for a sealed one), with the service stopped. It reads both the
-  new archives and every older one, refuses a data directory that still holds a database, rebuilds
-  and checks everything in a staging directory first, and moves the files into place only when all
-  of it has passed. **The image carries it**, so a Docker or NAS install restores with
-  `docker compose run` and nothing installed on the host (`docs/self-host-docker.md`, "Restoring a
-  backup"). Pictures already in the uploads folder with the same bytes are left as they are, so
-  restoring a blog onto its own machine after a bad edit needs only the two databases moved
-  aside; a database's leftover `-wal` or `-shm` file stops it, because a restored database opened
-  beside the old blog's log comes up as the old blog; and run as root it hands what it wrote to
-  the owner of the data directory, so the blog can still write to it. `docs/backups.md` has the
-  procedure, and how to put back the copy an upgrade took; the `sqlite3` lines for old archives
-  still work.
-- **An install from source no longer downloads the Cloudflare tooling.** `install.sh` and
-  `bun run upgrade` install a release's production dependencies only: the Cloudflare runtime
-  brought `wrangler` and its 125 MB `workerd` in as development tools, which took a full install
-  from 132 MB to 325 MB on a server that never runs them. It is now 91 MB, and the two builds are
-  byte-identical either way. `QUIREINK_CHANNEL=main`, the developer's channel, keeps the full set.
-
-- **Every compose file runs the published image.** `docker-compose.yml` and
-  `docker-compose.caddy.yml` said `build: .` and were upgraded with `git pull`, which built
-  whatever was last pushed to `main`. They now pull `quireink/quireink:${QUIREINK_TAG:-latest}`
-  like `docker-compose.image.yml`, and upgrading is `docker compose pull && docker compose up -d`.
-  **If you run one of them from a checkout, your next `up` should be preceded by a `pull`.**
-  Building from the checkout is `-f docker-compose.build.yml`. `.env.docker.example` gained
-  `SETUP_CODE` and `QUIREINK_TAG`.
-- **New password hashes use argon2id at 19 MiB, not Bun's default 64 MiB** ([ADR 0068](docs/decisions/0068-new-password-hashes-use-19-mib.md)):
-  OWASP's floor for argon2id, and small enough for a 128 MB Cloudflare isolate. Existing passwords
-  and recovery codes keep working untouched; a password changed from now on gets the new
-  parameters. **Signing in stores an old password again at the new parameters**
-  ([ADR 0069](docs/decisions/0069-a-sign-in-brings-an-old-hash-up-to-date.md)), once, with nothing to do on your side.
-- **`install.sh` installs a release, not `main`** ([ADR 0065](docs/decisions/0065-every-install-runs-a-release.md)).
-  Until now it cloned `main` and updated with `git pull`, so an install from source ran whatever was
-  pushed last while the image only ever moved on a tag. It now finds the newest release with
-  `git ls-remote` and checks that out; `QUIREINK_VERSION` asks for one, `QUIREINK_CHANNEL=main`
-  follows `main` for development. **An existing checkout of `main` is never moved backwards:** it
-  stays where it is until a release newer than it appears, then moves onto that.
+- **Cloudflare is beta, and Workers Paid only** ($5 a month per account). On Cloudflare an upload is
+  25 MB at most and an import 30 MB, by default; the blog's database and clock live in one Durable
+  Object, in one region; and an operator's `CSP` and the owner's redirects do not reach the files
+  Cloudflare serves itself (fonts, scripts, stylesheets).
+- **A backup loads only into an empty blog of the same version.** Restoring over a blog that has
+  content is still the command line, with the service stopped.
+- **Move to Cloudflare needs room on the server's disk for one backup**, and leaves the domain to
+  you or to a token that may edit it.
+- **A button blog updates from GitHub, not from Settings**, and leaving one is done in the
+  Cloudflare dashboard; the card says how.
+- **A newsletter interrupted by a restart may miss one address** (the one being sent at that
+  moment), rather than risk mailing it twice.
 
 ## 2026-09-30 · Quire Ink 2.2.16
 

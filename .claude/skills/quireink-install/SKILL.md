@@ -125,6 +125,19 @@ nothing. `/api/cron` still exists for that case, and for a deploy hook (`?purge=
 
 **No CDN, no Cloudflare account.** Both are optional and unconfigured is a no-op.
 
+**No server at all: Cloudflare (beta).** A user with a Cloudflare account on Workers Paid ($5 a
+month; the Free plan is not supported) needs none of the above: the Deploy to Cloudflare button,
+or `bun run deploy` from a checkout, and a blog already running on a server moves itself from
+its own Settings, Server, Run on Cloudflare. That is the owner's account and the owner's
+browser; do not drive it over SSH. [`docs/self-host-cloudflare.md`](../../../docs/self-host-cloudflare.md)
+has every step, the cost, and how each kind of install upgrades and leaves.
+
+**Moving a blog to a new machine** is a fresh install plus its backup: before anyone claims the new
+blog, its setup screen offers *Start from a backup*, which takes an archive written by the same
+version and the same setup link or `SETUP_CODE` as claiming ([`docs/backups.md`](../../../docs/backups.md)).
+Upgrade the old blog to the new one's version first, or the archive is refused with the version
+to upgrade to.
+
 ## Prove it before saying it works
 
 Never report success from a `docker ps` line or an HTTP 200 through a CDN. Check, in order:

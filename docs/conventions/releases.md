@@ -23,7 +23,7 @@ On any behavior change, update the matching doc in the SAME change:
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (do NOT auto-bump):** the version is **`2.2.16`**, cut 2026-09-30, the release that came out of reading the whole product again: Help and the admin's dates in the owner's language, curly quotes on the published page behind a switch, a picture described by hand, and the fixes that reading found, a second factor that could be skipped among them (2.2.15 was 2026-09-25). From 2.0
+- **Versioning (do NOT auto-bump):** the version is **`2.2.17`**, cut 2026-10-03, the release that put Quire Ink on Cloudflare: a Deploy button for a new blog, Move to Cloudflare from Settings for one already running, one-key updates and leaving, and a fresh install that starts from a backup of any size (2.2.16 was 2026-09-30). From 2.0
   the number is semver and means something (the 1.5.x `x` was a running counter): MAJOR for a
   break in how the thing is installed or run, MINOR for a feature, PATCH for a fix. The owner
   picks the number, and has taken the patch slot for minor-sized work nine releases running;
