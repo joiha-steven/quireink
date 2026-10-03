@@ -41,7 +41,6 @@ const PENDING: Record<string, string> = {
   'src/web/admin/ops.ts': 'node:fs/promises in the storage health check -> the Blob port (G1.7)',
   'src/web/admin/backup.ts': 'Bun.file -> the Archive port (G1.8)',
   'src/web/admin/spa.ts': 'Bun.embeddedFiles, node:fs -> @/runtime/impl/assets (G1.7)',
-  'src/web/compress.ts': 'Bun.hash, Bun.gzipSync -> src/runtime/bun/ (Cloudflare compresses at the edge) (G1.7)',
   'src/web/static.ts': 'Bun.file -> @/runtime/impl/assets (G1.7)',
 }
 

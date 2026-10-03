@@ -188,7 +188,7 @@ button all call it.
 ## Compression
 
 `Bun.serve` sends exactly what a handler returns and nothing set `content-encoding`, so the
-stylesheet, every page and every feed left the origin raw. `web/compress.ts` compresses text
+stylesheet, every page and every feed left the origin raw. `runtime/bun/compress.ts` compresses text (on Cloudflare the edge does, ADR 0066)
 responses over 1 KB when the client asked, and sets `Vary: Accept-Encoding`. Nothing under
 `/api/` is compressed except the search index (`/api/search/index`).
 

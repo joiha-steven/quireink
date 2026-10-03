@@ -41,6 +41,7 @@
 // zstd is deliberately not offered. Measured on the same six responses it saves 18% against
 // brotli's 27%, and Safari does not send it at all.
 
+import type { CompressPort } from '@/runtime/ports'
 import { brotliCompress, brotliCompressSync, constants as zlib } from 'node:zlib'
 import { promisify } from 'node:util'
 import type { MiddlewareHandler } from 'hono'
@@ -278,7 +279,9 @@ const matches = (header: string | undefined, tag: string): boolean =>
   header !== undefined
   && header.split(',').some((x) => { const v = x.trim(); return v === '*' || v === tag })
 
-export function compression(): MiddlewareHandler {
+export const compression: CompressPort['compression'] = (): MiddlewareHandler => compressionMiddleware()
+
+function compressionMiddleware(): MiddlewareHandler {
   return async (c, next) => {
     await next()
     const res = c.res

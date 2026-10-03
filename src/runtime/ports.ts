@@ -42,3 +42,13 @@ export type RuntimeInfoPort = {
   /** The raw contents of the build's commit file, or null; `server/build-info.ts` validates it. */
   readBuildSha: () => string | null
 }
+
+/**
+ * `compress.ts`: the response-compression middleware. Bun compresses here (brotli and gzip, with a
+ * content-addressed cache, `bun/compress.ts`); on Cloudflare the edge compresses, and doing it in
+ * the Worker as well sent `br(br(html))` (measured 2026-10-03), so the Cloudflare side passes
+ * responses through untouched.
+ */
+export type CompressPort = {
+  compression: () => import('hono').MiddlewareHandler
+}
