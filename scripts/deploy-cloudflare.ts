@@ -77,5 +77,7 @@ step('the islands and the admin', ['run', 'build'])
 step('the Worker', ['run', 'build:worker'])
 // `bun x` finds the wrangler in node_modules first: the version package.json pins, which is also
 // the one Workers Builds says it uses.
-step('wrangler deploy', ['x', 'wrangler', 'deploy', ...args])
+// How this blog takes a newer release, for the update card in Settings: `git` when Workers Builds
+// deploys a copy of the repository (the button), `cli` when a person ran this on their machine.
+step('wrangler deploy', ['x', 'wrangler', 'deploy', '--var', `QUIREINK_UPDATES:${onWorkersBuilds ? 'git' : 'cli'}`, ...args])
 if (shim) rmSync(shim, { recursive: true, force: true })

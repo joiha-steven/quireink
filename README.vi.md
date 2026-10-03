@@ -90,7 +90,7 @@ Rồi một câu hỏi — **bạn đang có gì?**
 | **Đã có Docker** và tên miền | [`docker-compose.image.yml`](./docker-compose.image.yml) + [`Caddyfile`](./Caddyfile) ([cách làm](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
 | **Một máy chủ bạn tự lo**, có Bun 1.3+ | [`install.sh`](./install.sh), rồi systemd và nginx ([tự host](./docs/self-host.md)) | `bun run upgrade` |
 | **Kubernetes**, hoặc **một droplet DigitalOcean** | [Manifest](./deploy/kubernetes/README.md) · [một file dán vào](./deploy/digitalocean/README.md) | Đổi tag · như dòng VPS |
-| **Một tài khoản Cloudflare** gói Workers Paid (5 USD/tháng, không phải gói Free), không cần máy chủ nào — bản beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink) ([từng bước, và vì sao không dùng gói Free](./docs/self-host-cloudflare.md)) | Đưa bản phát hành mới vào bản sao trên GitHub của bạn; Cloudflare tự triển khai ([cách làm](./docs/self-host-cloudflare.md#upgrading)) |
+| **Một tài khoản Cloudflare** gói Workers Paid (5 USD/tháng, không phải gói Free), không cần máy chủ nào — bản beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release) ([từng bước, và vì sao không dùng gói Free](./docs/self-host-cloudflare.md)) | Trong bản sao trên GitHub: Actions → Update Quire Ink; Cloudflare tự triển khai ([cách làm](./docs/self-host-cloudflare.md#upgrading)) |
 
 Trên một VPS mới, khi DNS của tên miền đã trỏ về máy:
 

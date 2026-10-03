@@ -9,6 +9,14 @@ export type CfEnv = {
   ASSETS: Fetcher
   /** Cloudflare Images, for picture variants. */
   IMAGES?: ImagesBinding
+  /** Set by the API installer (`install/cloudflare/install.ts`), read by the one-click update. */
+  QUIREINK_SCRIPT?: string
+  QUIREINK_BUCKET?: string
+  QUIREINK_UPDATES?: string
+  SITE_URL?: string
+  /** Secrets, present when the owner let the blog update itself (G5.3's checkbox). */
+  CLOUDFLARE_API_TOKEN?: string
+  CLOUDFLARE_ACCOUNT_ID?: string
 }
 
 let current: { env: CfEnv; ctx: DurableObjectState } | null = null

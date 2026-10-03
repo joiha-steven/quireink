@@ -1,5 +1,5 @@
 // Settings → Server → Run on Cloudflare (G5.3): the card that moves a Bun blog into a Worker in the
-// owner's own Cloudflare account. The move is `install/cloudflare/move.ts`, its routes are
+// owner's own Cloudflare account — and, on a blog already there, its update and its cost (G5.4). The move is `install/cloudflare/move.ts`, its routes are
 // `web/admin/cloudflare-move.ts`, and what each key does is `admin/island/lib/settings-cloud.ts`.
 //
 // ⚠️ NOTHING HERE IS A SETTING. The account ID, the token and the password are `textControl`s with
@@ -38,9 +38,39 @@ function words(t: AdminStrings): string {
   }))
 }
 
-/** The move, on a Bun install. A Cloudflare install draws nothing here: it has nowhere to go. */
+/**
+ * On Cloudflare (G5.4): the version, how this blog takes a newer one, and what the month costs. All of
+ * it comes from `GET /api/cloudflare/status`, which this render has not called — so every variant
+ * ships drawn and hidden, and the island shows the one that applies.
+ */
+function onCloudflare(t: AdminStrings): string {
+  const words = escapeAttr(JSON.stringify({
+    version: t.cfVersion, updateTo: t.cfUpdateTo, newest: t.cfUpdateNewest, updating: t.cfUpdating,
+    updated: t.cfUpdated, rolledBack: t.cfRolledBack, failed: t.cfUpdateFailed, cost: t.cfCost,
+  }))
+  return panelCard({
+    title: t.cardCloudOn,
+    attrs: `data-cf-live data-cf-words="${words}"`,
+    body: `<div class="space-y-4">`
+      + `<p class="${LINE}" data-cf-version></p>`
+      + `<div class="space-y-3" data-cf-path="api" hidden>`
+      + `<div class="space-y-3" data-cf-ask-token hidden><p class="${NOTE_TEXT}">${escapeHtml(t.cfUpdateTokenNote)}</p>`
+      + settingRow({ label: t.cfAccountLabel, control: textControl({ value: '', label: t.cfAccountLabel, attrs: 'data-cf-u-account autocomplete="off" spellcheck="false"' }) })
+      + settingRow({ label: t.cfTokenLabel, control: textControl({ value: '', type: 'password', label: t.cfTokenLabel, attrs: 'data-cf-u-token autocomplete="off"' }) })
+      + `</div>`
+      + `<button type="button" data-cf-update class="${buttonClass('primary', 'sm')}" hidden></button>`
+      + `<p class="${LINE}" data-cf-update-line aria-live="polite" hidden></p></div>`
+      + `<p class="${NOTE_TEXT}" data-cf-path="git" hidden>${escapeHtml(t.cfUpdateGit)}</p>`
+      + `<p class="${NOTE_TEXT}" data-cf-path="cli" hidden>${escapeHtml(t.cfUpdateCli)}</p>`
+      + `<p class="${NOTE_ALERT}" data-cf-error role="alert" hidden></p>`
+      + `<p class="${NOTE_TEXT}" data-cf-cost></p>`
+      + `</div>`,
+  })
+}
+
+/** The move on a Bun install; the version, the update and the cost on Cloudflare. */
 export function cloudCard(t: AdminStrings): string {
-  if (readEnv().package === 'cloudflare') return ''
+  if (readEnv().package === 'cloudflare') return onCloudflare(t)
   const steps = MOVE_STEPS.map((step) =>
     `<li class="flex items-center gap-2.5" data-cf-step="${step}">`
     + lamp({ state: 'off', attrs: 'data-cf-lamp' })

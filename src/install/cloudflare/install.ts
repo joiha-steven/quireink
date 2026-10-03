@@ -44,6 +44,14 @@ export type InstallOptions = {
   onStep?: (step: string, detail?: string) => void
   /** How long to wait for the new version to answer, in seconds. */
   healthTimeout?: number
+  /**
+   * An UPDATE of a blog already running (G5.4): keep the plain variables it has — SITE_URL and
+   * whatever the owner set in the dashboard — rather than replacing them with `vars`, and leave its
+   * workers.dev address as it is (an owner on a Custom Domain may have switched it off).
+   */
+  update?: boolean
+  /** Where to ask `/api/health` once deployed, instead of the workers.dev address. */
+  healthUrl?: string
   /** For tests. */
   apiBase?: string
 }
@@ -137,7 +145,8 @@ export async function installOnCloudflare(o: InstallOptions): Promise<InstallRes
 
   // 6. The Worker.
   say('worker', existing ? 'upgrade' : 'first install')
-  const vars = { ...(o.vars ?? {}), QUIREINK_PACKAGE: 'cloudflare' }
+  // `QUIREINK_UPDATES: api`: this blog updates the way it was installed, through the API (Settings).
+  const vars = { QUIREINK_UPDATES: 'api', ...(o.vars ?? {}), QUIREINK_PACKAGE: 'cloudflare' }
   const metadata = {
     main_module: o.manifest.main.replace(/^worker\//, ''),
     compatibility_date: o.manifest.compatibilityDate,
@@ -151,7 +160,7 @@ export async function installOnCloudflare(o: InstallOptions): Promise<InstallRes
       ...Object.entries(o.secrets ?? {}).map(([name, text]) => ({ type: 'secret_text', name, text })),
     ],
     // An upgrade keeps the secrets the blog already has (its SETUP_CODE, anything added later).
-    keep_bindings: ['secret_text'],
+    keep_bindings: o.update ? ['secret_text', 'plain_text'] : ['secret_text'],
     assets: { jwt: completion },
     observability: { enabled: true },
     ...(existing ? {} : { migrations: { new_tag: 'v1', new_sqlite_classes: o.manifest.durableObjects.map((d) => d.className) } }),
@@ -167,9 +176,9 @@ export async function installOnCloudflare(o: InstallOptions): Promise<InstallRes
 
   // 7. workers.dev.
   say('address')
-  await api.json('address', `/accounts/:account/workers/scripts/${o.scriptName}/subdomain`, 'POST', { enabled: true, previews_enabled: false })
+  if (!o.update) await api.json('address', `/accounts/:account/workers/scripts/${o.scriptName}/subdomain`, 'POST', { enabled: true, previews_enabled: false })
   const { subdomain } = await api.call<{ subdomain: string }>('address', '/accounts/:account/workers/subdomain')
-  const url = `https://${o.scriptName}.${subdomain}.workers.dev`
+  const url = o.healthUrl?.replace(/\/+$/, '') || `https://${o.scriptName}.${subdomain}.workers.dev`
 
   // 8. The new version answers.
   say('health', url)

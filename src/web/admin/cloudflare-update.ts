@@ -1,0 +1,79 @@
+// A Quire Ink on Cloudflare: what Settings → Server → Cloudflare shows (G5.4) — the version, how this
+// blog takes a newer one, and what it costs — and the owner check the Worker asks before it runs an
+// update (`src/worker.ts` → `install/cloudflare/update.ts`).
+//
+// ⚠️ THE UPDATE ITSELF IS NOT HERE. Replacing the code restarts this Durable Object, so an update
+// run from inside it would cut itself off; the Worker runs it, and asks this route first whether
+// the request comes from the owner. That question goes through the owner gate like any other write
+// (session, same-origin), which is the whole of the Worker's authority to act.
+//
+// Only on a Cloudflare install. A Bun install's card is the move (`cloudflare-move.ts`).
+import type { Context } from 'hono'
+import { readEnv } from '@/env'
+import { getSettings, resolveSiteUrl } from '@/content/settings'
+import { getViewTotalsSince } from '@/analytics/summary'
+import { storageStats } from '@/media/storage-stats'
+import { updateState } from '@/server/update-check'
+import { logActivity } from '@/server/activity'
+import { fail, json } from '@/web/api'
+import { ownerRouter, QUIET } from '@/web/guard'
+import { APP_VERSION } from '@/version'
+import { databaseBytes } from '@/runtime/impl/runtime-info'
+
+/** How this blog takes a newer release (`QUIREINK_UPDATES`): set by whatever deployed it. */
+export type UpdatePath = 'api' | 'git' | 'cli'
+const updatePath = (): UpdatePath => {
+  const v = process.env.QUIREINK_UPDATES
+  return v === 'api' || v === 'git' || v === 'cli' ? v : 'cli'
+}
+
+/**
+ * What the month costs, from what the blog knows of itself. Workers Paid is $5 and includes 10
+ * million requests, 1 million Durable Object requests, 5 GB of SQLite and 10 GB of R2 a month
+ * (docs/self-host-cloudflare.md). A page view is two Worker requests (the page and its beacon) and
+ * one Durable Object request; the estimate is that, and storage past what is included.
+ */
+export function estimateMonthly(views30: number, r2Bytes: number, dbBytes: number): { requests: number; usd: number } {
+  const requests = views30 * 2
+  const over = (n: number, free: number) => Math.max(0, n - free)
+  const usd = 5
+    + over(requests, 10e6) / 1e6 * 0.30
+    + over(views30, 1e6) / 1e6 * 0.15
+    + over(r2Bytes / 1e9, 10) * 0.015
+    + over(dbBytes / 1e9, 5) * 0.20
+  return { requests, usd: Math.round(usd * 100) / 100 }
+}
+
+export function cloudflareUpdateRoutes() {
+  const router = ownerRouter()
+  const here = (c: Context) => (readEnv().package !== 'cloudflare' ? fail(c, 'not_on_cloudflare', 404) : null)
+
+  router.get('/api/cloudflare/status', async (c) => {
+    const no = here(c)
+    if (no) return no
+    const u = updateState()
+    const views30 = Object.values(await getViewTotalsSince(30)).reduce((n, v) => n + v, 0)
+    const stats = await storageStats()
+    const dbBytes = databaseBytes()
+    return json({
+      current: APP_VERSION,
+      latest: u.state === 'behind' ? u.release.latest : null,
+      updates: updatePath(),
+      hasToken: Boolean(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID),
+      siteUrl: resolveSiteUrl(await getSettings()),
+      cost: { views30, r2Bytes: stats.totalBytes, dbBytes, ...estimateMonthly(views30, stats.totalBytes, dbBytes) },
+    })
+  })
+
+  /** The Worker's question before an update: is this the owner, and what is newest? */
+  router.post('/api/cloudflare/update/authorize', async (c) => {
+    const no = here(c)
+    if (no) return no
+    if (updatePath() !== 'api') return fail(c, `updates_through_${updatePath()}`, 409)
+    const u = updateState()
+    void logActivity('cloudflare.update', u.state === 'behind' ? `${APP_VERSION} → ${u.release.latest}` : APP_VERSION)
+    return json({ current: APP_VERSION, latest: u.state === 'behind' ? u.release.latest : null, siteUrl: resolveSiteUrl(await getSettings()) })
+  }, QUIET)
+
+  return router
+}

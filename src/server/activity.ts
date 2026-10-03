@@ -47,6 +47,8 @@ export type ActivityAction =
   | 'backup.export' | 'backup.run' | 'backup.delete' | 'backup.offsite' | 'backup.keys'
   // The blog copied into a new Worker in the owner's Cloudflare account (G5.3, `install/cloudflare/move.ts`).
   | 'cloudflare.move'
+  // An update of a Cloudflare install from its admin (G5.4, run by the Worker: `install/cloudflare/update.ts`).
+  | 'cloudflare.update'
   | 'export.markdown'
   // Reader comments (create is public; restore/purge from the admin Trash).
   | 'comment.create' | 'comment.delete' | 'comment.restore' | 'comment.purge'

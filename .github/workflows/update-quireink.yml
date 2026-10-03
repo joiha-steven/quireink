@@ -1,0 +1,54 @@
+# Update Quire Ink — for a blog made with the Deploy to Cloudflare button (ADR 0066).
+#
+# The button copies this repository into the owner's GitHub and Cloudflare deploys whatever reaches
+# that copy's main branch. The copy is not a fork, so GitHub offers no "Sync fork": this is it. Run
+# it from the copy's Actions tab (Update Quire Ink → Run workflow). It brings in a release — the
+# newest, or the one asked for — file for file, keeps the Worker and bucket names the button wrote
+# into wrangler.jsonc, commits and pushes; Workers Builds deploys a few minutes later, and the blog
+# migrates its database on its next start, after a bookmark (30 days of restorable history).
+#
+# ⚠️ IT LEAVES .github/workflows ALONE. The token a workflow gets may not push changes to workflow
+# files, so updating them would refuse the whole push. They change rarely; the release notes say
+# when one did.
+#
+# It never runs in joiha-steven/quireink itself or in a fork — only in the copies the button makes.
+name: Update Quire Ink
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The release to install, e.g. 2.2.17 (blank for the newest)
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.repository != 'joiha-steven/quireink' && !github.event.repository.fork
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Bring the release in
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WANT: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -n "${WANT}" ]; then tag="v${WANT#v}"; else tag=$(gh api repos/joiha-steven/quireink/releases/latest --jq .tag_name); fi
+          echo "installing ${tag}"
+          # The names the button chose: the Worker's (the first "name" in the file) and the bucket's.
+          name=$(grep -m1 -oE '"name": *"[^"]*"' wrangler.jsonc | sed -E 's/.*"([^"]*)"$/\1/')
+          bucket=$(grep -m1 -oE '"bucket_name": *"[^"]*"' wrangler.jsonc | sed -E 's/.*"([^"]*)"$/\1/')
+          git fetch --depth 1 https://github.com/joiha-steven/quireink.git "refs/tags/${tag}"
+          git rm -rq -- . ':(exclude).github/workflows'
+          git checkout FETCH_HEAD -- . ':(exclude).github/workflows'
+          sed -i -E "0,/\"name\": *\"[^\"]*\"/s//\"name\": \"${name}\"/" wrangler.jsonc
+          sed -i -E "s/\"bucket_name\": *\"[^\"]*\"/\"bucket_name\": \"${bucket}\"/" wrangler.jsonc
+          git add -A
+          if git diff --cached --quiet; then echo "already on ${tag}"; exit 0; fi
+          git -c user.name="Quire Ink update" -c user.email="actions@users.noreply.github.com" commit -qm "Quire Ink ${tag}"
+          git push
+          echo "### Quire Ink ${tag}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Pushed. Cloudflare deploys it in a few minutes; the blog's /api/health then names ${tag#v}." >> "$GITHUB_STEP_SUMMARY"

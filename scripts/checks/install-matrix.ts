@@ -115,7 +115,7 @@ if (existsSync(join(ROOT, 'docs/self-host-cloudflare.md')) && !installIndex.incl
 
 // ---- B1 (ADR 0066): what the Deploy to Cloudflare button reads ---------------------------------
 
-const BUTTON = '[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink)'
+const BUTTON = '[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release)'
 for (const [name, text] of [['README.md', readme], ['README.vi.md', readmeVi]] as const) {
   if (!text.includes(BUTTON)) faults.push(`B1: ${name}'s install table has no Deploy to Cloudflare button pointing at the repository`)
 }

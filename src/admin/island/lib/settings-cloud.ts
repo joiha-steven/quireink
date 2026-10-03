@@ -164,3 +164,68 @@ export function wireCloud(screen: HTMLElement): void {
     if (r.data) { paint(r.data); if (r.data.running) void follow() }
   })
 }
+
+type Live = {
+  current: string
+  latest: string | null
+  updates: 'api' | 'git' | 'cli'
+  hasToken: boolean
+  cost: { views30: number; requests: number; r2Bytes: number; dbBytes: number; usd: number }
+}
+
+const size = (n: number): string => (n >= 1e9 ? `${(n / 1e9).toFixed(1)} GB` : n >= 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.round(n / 1e3)} KB`)
+
+/**
+ * The card on a Cloudflare install (G5.4). ⚠️ THE UPDATE IS ONE LONG REQUEST to the Worker
+ * (`POST /api/cloudflare/update`, about a minute), not a job to poll: the Worker runs it, and the
+ * object that would answer a poll is the thing being replaced. A reload follows a success, so the
+ * page comes back from the new version.
+ */
+export function wireCloudLive(screen: HTMLElement): void {
+  const card = screen.querySelector<HTMLElement>('[data-cf-live]')
+  if (!card) return
+  const w = JSON.parse(card.dataset.cfWords ?? '{}') as Words
+  const $ = <E extends Element = HTMLElement>(sel: string) => card.querySelector<E>(sel)
+  const say = (el: HTMLElement | null, text: string): void => { if (el) { el.textContent = text; el.hidden = !text } }
+  const key = $<HTMLButtonElement>('[data-cf-update]')!
+  const line = $('[data-cf-update-line]')
+  const error = $('[data-cf-error]')
+  let target: string | null = null
+
+  void call<Live>('/api/cloudflare/status').then((r) => {
+    const s = r.data
+    if (!s) return
+    say($('[data-cf-version]'), fill(w.version, { v: s.current }))
+    for (const el of card.querySelectorAll<HTMLElement>('[data-cf-path]')) el.hidden = el.dataset.cfPath !== s.updates
+    target = s.latest
+    if (s.updates === 'api') {
+      $('[data-cf-ask-token]')!.hidden = s.hasToken || !s.latest
+      key.hidden = !s.latest
+      key.textContent = fill(w.updateTo, { v: s.latest ?? '' })
+      if (!s.latest) say(line, w.newest ?? '')
+    }
+    const c = s.cost
+    say($('[data-cf-cost]'), fill(w.cost, {
+      views: c.views30.toLocaleString(), requests: c.requests.toLocaleString(), r2: size(c.r2Bytes), db: size(c.dbBytes), usd: c.usd.toFixed(2),
+    }))
+  })
+
+  key.addEventListener('click', async () => {
+    key.disabled = true
+    say(error, '')
+    say(line, w.updating ?? '')
+    const r = await post<{ to: string; rolledBack: boolean; error: string }>('/api/cloudflare/update', {
+      target,
+      token: $<HTMLInputElement>('[data-cf-u-token]')?.value ?? '',
+      accountId: $<HTMLInputElement>('[data-cf-u-account]')?.value ?? '',
+    }).catch(() => ({ success: false, error: 'network' }) as Envelope<never>)
+    key.disabled = false
+    if (r.success && r.data) {
+      say(line, fill(w.updated, { v: r.data.to }))
+      setTimeout(() => location.reload(), 2500)
+      return
+    }
+    say(line, '')
+    say(error, r.data?.rolledBack ? fill(w.rolledBack, { why: r.error ?? '' }) : `${w.failed ?? ''} ${r.error ?? ''}`.trim())
+  })
+}

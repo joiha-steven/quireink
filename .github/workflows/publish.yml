@@ -126,6 +126,9 @@ jobs:
       attestations: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          # The whole history, so the release branch can be pushed as a fast-forward of itself.
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
@@ -140,6 +143,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "${GITHUB_REF_NAME}" dist/quireink-cf-*.tar dist/quireink-cf-*.tar.sha256 --clobber
+      # THE BUTTON'S BRANCH. Deploy to Cloudflare copies one branch, and pointing it at main would
+      # install whatever was merged this morning — against ADR 0065, every way in installs a release.
+      # `release` is moved here, to this tag's commit, after CI and the matrix passed (the gate), and
+      # only forward: a push that is not a fast-forward fails, rather than moving installs back.
+      - name: Move the release branch to this tag
+        if: env.DRY != 'true'
+        run: |
+          git fetch --no-tags origin '+refs/heads/release:refs/remotes/origin/release' || true
+          git push origin "${GITHUB_SHA}:refs/heads/release"
       - name: Dry run, so nothing is attached
         if: env.DRY == 'true'
         run: ls -la dist/quireink-cf-* >> "$GITHUB_STEP_SUMMARY"

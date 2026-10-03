@@ -756,6 +756,19 @@ export type AdminStrings = {
   cfRunning: string
   cfFailed: string
   cfTooMany: string
+  // The same card on a Cloudflare install (G5.4): version, update, cost.
+  cardCloudOn: string
+  cfVersion: string
+  cfUpdateTo: string
+  cfUpdateNewest: string
+  cfUpdateTokenNote: string
+  cfUpdating: string
+  cfUpdated: string
+  cfRolledBack: string
+  cfUpdateFailed: string
+  cfUpdateGit: string
+  cfUpdateCli: string
+  cfCost: string
   copiedUrl: string
   loadMediaFailed: string
   // uploader

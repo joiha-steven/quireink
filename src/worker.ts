@@ -18,6 +18,8 @@ import { setupBanner } from '@/web/setup-routes'
 import { flushAnalytics } from '@/analytics/buffer'
 import { fullTick, publishTick } from '@/server/tick'
 import { APP_VERSION } from '@/version'
+import { newestRelease, updateSelf } from '@/install/cloudflare/update'
+import { isNewer } from '@/server/update-check'
 
 /** Due posts every minute and housekeeping every hour: the clock Bun's `startClock` keeps (ADR 0031). */
 const MINUTE = 60_000
@@ -75,8 +77,42 @@ export class Blog extends DurableObject<CfEnv> {
   }
 }
 
+/**
+ * The one-click update (G5.4), run HERE and not in the object: replacing the code restarts the
+ * object, and an update running inside it would cut itself off halfway. This request finishes on
+ * the version it started on. The object is asked first, through its owner gate, whether the request
+ * is the owner's (`web/admin/cloudflare-update.ts`); that answer is the only authority this acts on.
+ */
+async function update(request: Request, env: CfEnv, blog: DurableObjectStub): Promise<Response> {
+  const input = (await request.json().catch(() => ({}))) as { target?: unknown; token?: unknown; accountId?: unknown }
+  const headers = new Headers(request.headers)
+  headers.set('content-type', 'application/json')
+  const asked = await blog.fetch(new Request(new URL('/api/cloudflare/update/authorize', request.url), { method: 'POST', headers, body: '{}' }))
+  if (!asked.ok) return asked
+  const { data } = (await asked.json()) as { data: { current: string; latest: string | null; siteUrl: string } }
+  const say = (error: string, status: number) => Response.json({ success: false, error }, { status })
+  const wanted = typeof input.target === 'string' && /^\d+\.\d+\.\d+$/.test(input.target) ? input.target : null
+  const target = wanted ?? data.latest ?? await newestRelease()
+  if (!target || !isNewer(target, data.current)) return say('already_newest', 409)
+  const token = env.CLOUDFLARE_API_TOKEN || (typeof input.token === 'string' ? input.token.trim() : '')
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID || (typeof input.accountId === 'string' ? input.accountId.trim() : '')
+  if (!token || !accountId) return say('token_required', 400)
+  if (!env.QUIREINK_SCRIPT || !env.QUIREINK_BUCKET) return say('not_installed_by_api', 409)
+  try {
+    const result = await updateSelf({
+      token, accountId, scriptName: env.QUIREINK_SCRIPT, bucket: env.QUIREINK_BUCKET,
+      siteUrl: data.siteUrl || new URL(request.url).origin, target,
+    })
+    return Response.json({ success: !result.error, data: result, ...(result.error ? { error: result.error } : {}) })
+  } catch (error) {
+    return say((error as Error).message, 502)
+  }
+}
+
 export default {
   fetch(request: Request, env: CfEnv): Promise<Response> {
-    return env.BLOG.get(env.BLOG.idFromName('blog')).fetch(request)
+    const blog = env.BLOG.get(env.BLOG.idFromName('blog'))
+    if (request.method === 'POST' && new URL(request.url).pathname === '/api/cloudflare/update') return update(request, env, blog)
+    return blog.fetch(request)
   },
 } satisfies ExportedHandler<CfEnv>

@@ -41,6 +41,11 @@ export type RuntimeInfoPort = {
   machineLabel: () => string
   /** The raw contents of the build's commit file, or null; `server/build-info.ts` validates it. */
   readBuildSha: () => string | null
+  /**
+   * What the databases take on disk, in bytes, or 0 when it cannot be read. Bun: the two files and
+   * their write-ahead logs. Cloudflare: the Durable Object's SQLite, which is what it bills as storage.
+   */
+  databaseBytes: () => number
 }
 
 /**

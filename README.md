@@ -91,7 +91,7 @@ Then one question — **what do you have?**
 | **Docker already**, and a domain | [`docker-compose.image.yml`](./docker-compose.image.yml) + the [`Caddyfile`](./Caddyfile) ([how](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
 | **A server you look after yourself**, with Bun 1.3+ | [`install.sh`](./install.sh), then systemd and nginx ([self-hosting](./docs/self-host.md)) | `bun run upgrade` |
 | **Kubernetes**, or **a DigitalOcean droplet** | [The manifests](./deploy/kubernetes/README.md) · [one pasted file](./deploy/digitalocean/README.md) | Change the tag · as the VPS row |
-| **A Cloudflare account** on Workers Paid ($5/month, not the Free plan), and no server at all — beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink) ([step by step, and why not Free](./docs/self-host-cloudflare.md)) | Bring the newer release into the copy on your GitHub; Cloudflare deploys it ([how](./docs/self-host-cloudflare.md#upgrading)) |
+| **A Cloudflare account** on Workers Paid ($5/month, not the Free plan), and no server at all — beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release) ([step by step, and why not Free](./docs/self-host-cloudflare.md)) | In your copy on GitHub: Actions → Update Quire Ink; Cloudflare deploys it ([how](./docs/self-host-cloudflare.md#upgrading)) |
 
 On a fresh VPS, with the domain's DNS already pointing at it:
 

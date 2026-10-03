@@ -26,7 +26,7 @@ image transformations a month): **$5.00** for 100,000 views a month; about **$5.
 
 ## With the Deploy to Cloudflare button (the easy way)
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release)
 
 No terminal and nothing to install. Cloudflare copies this repository into your GitHub or GitLab
 account, builds it on its own machines and deploys it into your account
@@ -81,8 +81,14 @@ The database migrates when the blog next starts, after Cloudflare has bookmarked
 (a bookmark restores the whole blog to that point, for 30 days, from the dashboard or the API).
 
 **Installed with the button:** Cloudflare deploys whatever reaches your copy's `main` branch, so an
-upgrade is bringing the newer release into the copy. GitHub's "Sync fork" is not there, because the
-copy is not a fork. With git, from any machine:
+upgrade is bringing the newer release into the copy — and the copy carries the workflow that does it.
+On GitHub, open your copy → **Actions → Update Quire Ink → Run workflow** (leave the version blank
+for the newest). It brings the release in file for file, keeps the Worker and bucket names the button
+chose, commits and pushes; a few minutes later the blog's `/api/health` names the new version. It
+leaves `.github/workflows` alone, because the token a workflow gets may not change workflow files;
+the release notes say when one of those changed.
+
+Without the workflow, the same by hand, with git:
 
 ```bash
 git clone https://github.com/<you>/<your copy>.git blog && cd blog
@@ -96,8 +102,14 @@ The release's `wrangler.jsonc` carries the default names. If the button wrote a 
 `name` or `bucket_name` into your copy, the diff shows those lines going back to `quireink` and
 `quireink-blobs`: put your values back and `git add wrangler.jsonc` before committing. Every other
 line in that diff is the release's and stays: a bucket name left at the default would point the blog
-at another bucket, without its uploads and backups. A few minutes after the push, the blog's `/api/health`
-answers with the new version.
+at another bucket, without its uploads and backups.
+
+**Moved from a server, or installed by the installer:** Settings → Server → Cloudflare shows the
+newest release and a key to update to it. The Worker uploads the new version, keeps your variables
+and secrets, waits for the blog to answer as the new version — and puts the version before back if
+it does not. It uses the token kept in the Worker when you allowed self-updates during the move, or
+asks for one. Measured on 2026-10-03 against a real account: 14 seconds, variables and secrets kept,
+and going back restored the old version.
 
 **Installed from the command line:** check out the newer release and run `bun run deploy` again.
 
@@ -118,7 +130,6 @@ which a Worker can verify within its memory.
 
 ## Coming before this leaves beta
 
-- An upgrade with **no terminal** for a button install, and a **one-click upgrade** in the admin.
 - A run on Cloudflare itself before every release, not only under `wrangler dev`. (Every release
   already moves a Bun blog onto this build through `/setup/restore`, compares every page with Bun's,
   runs the whole tour of the product — 286 flows — and checks that a backup taken there restores to

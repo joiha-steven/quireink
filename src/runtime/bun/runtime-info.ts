@@ -1,7 +1,7 @@
 // Bun: the runtime and its version, as the dashboard's system line has always printed it.
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { release, type } from 'node:os'
-import { resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 import type { RuntimeInfoPort } from '@/runtime/ports'
 
 export const runtimeLabel: RuntimeInfoPort['runtimeLabel'] = () => `Bun ${Bun.version}`
@@ -41,4 +41,13 @@ export const readBuildSha: RuntimeInfoPort['readBuildSha'] = () => {
   } catch {
     return null
   }
+}
+
+export const databaseBytes: RuntimeInfoPort['databaseBytes'] = () => {
+  const dir = process.env.DATA_DIR || './data'
+  let n = 0
+  for (const f of ['quire.db', 'quire.db-wal', 'analytics.db', 'analytics.db-wal']) {
+    try { n += statSync(join(dir, f)).size } catch { /* not there: nothing to count */ }
+  }
+  return n
 }

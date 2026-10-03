@@ -19,7 +19,7 @@ import { wireCode } from './lib/settings-code'
 import { wireFont } from './lib/settings-font'
 import { wireHome } from './lib/settings-home'
 import { wireImport } from './lib/settings-import'
-import { wireCloud } from './lib/settings-cloud'
+import { wireCloud, wireCloudLive } from './lib/settings-cloud'
 import { wireControls } from './lib/settings-controls'
 import { wireLists } from './lib/settings-lists'
 import { wireMail } from './lib/settings-mail'
@@ -66,6 +66,7 @@ if (root) {
   wireImport(screen, words)
   // Run on Cloudflare (G5.3): its words ride on its own card.
   wireCloud(screen)
+  wireCloudLive(screen)
   wireSound(screen)
   wireFont(screen, words)
   // The Home tab's four lists. Each is one `data-k-json` value this owns, not a field per row.
