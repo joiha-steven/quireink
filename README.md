@@ -19,6 +19,8 @@ One process. Two SQLite files. No cloud account needed, and Cloudflare if you wa
 
 [**quireink.com**](https://quireink.com) · [**Try it**](https://demo.quireink.com) · [**Install**](#install) · [**Docs**](#where-to-go-next) · [**In full**](./docs/overview.md) · [**Changelog**](./CHANGELOG.md) · [**License**](#license)
 
+<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/brand/button-cloudflare-dark.svg"><img src="docs/brand/button-cloudflare-light.svg" alt="Deploy to Cloudflare" height="48"></picture></a>&nbsp;&nbsp;<a href="#install"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/brand/button-server-dark.svg"><img src="docs/brand/button-server-light.svg" alt="Install on a server" height="48"></picture></a>
+
 <br/>
 
 <img src="docs/demo.jpg" alt="A composed front page with a lead story and section rows, beside the same site's article page with a contents rail, pen marks and a mounted letter facsimile" width="960">
@@ -82,27 +84,44 @@ Every part, in detail and against the alternatives: [**Quire Ink, in full**](./d
 
 **Try it first, nothing to install:** [demo.quireink.com](https://demo.quireink.com), or your own throwaway blog at [try.quireink.com](https://try.quireink.com), wiped twice an hour.
 
-Then one question — **what do you have?**
+Then pick the way that matches what you have. All of them end at the same blog.
 
-| You have | The way in | Upgrading |
-|:--|:--|:--|
-| **A fresh VPS** (Ubuntu or Debian, the cheapest tier) and a domain pointed at it | The one command below ([`server.sh`](./server.sh)) | `docker compose pull && docker compose up -d` in `/opt/quireink`; a new release line: run it again |
-| **A NAS** | Unraid: **Apps → `QuireInk`**. Synology, QNAP, Runtipi: paste one compose file ([step by step](./docs/self-host-docker.md#on-a-nas-or-a-home-server)) | The container app's **Update** |
-| **Docker already**, and a domain | [`docker-compose.image.yml`](./docker-compose.image.yml) + the [`Caddyfile`](./Caddyfile) ([how](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
-| **A server you look after yourself**, with Bun 1.3+ | [`install.sh`](./install.sh), then systemd and nginx ([self-hosting](./docs/self-host.md)) | `bun run upgrade` |
-| **Kubernetes**, or **a DigitalOcean droplet** | [The manifests](./deploy/kubernetes/README.md) · [one pasted file](./deploy/digitalocean/README.md) | Change the tag · as the VPS row |
-| **A Cloudflare account** on Workers Paid ($5/month, not the Free plan), and no server at all — beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release) ([step by step, and why not Free](./docs/self-host-cloudflare.md)). Already running Quire Ink: **Settings → Server → Run on Cloudflare** moves it ([how](./docs/self-host-cloudflare.md#moving-a-blog-you-already-run)) | Add the update workflow to your copy once from Settings (Cloudflare's import leaves it out), then Actions → Update Quire Ink ([how](./docs/self-host-cloudflare.md#upgrading)). Moved: one key in Settings |
+### No server: on Cloudflare <sup>beta</sup>
 
-On a fresh VPS, with the domain's DNS already pointing at it:
+About five minutes, and **$5 a month** for Cloudflare's Workers Paid plan, which covers every blog in the account. The Free plan is not enough: it stops a blog at 100,000 requests a day ([why](./docs/self-host-cloudflare.md)).
+
+<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/brand/button-cloudflare-dark.svg"><img src="docs/brand/button-cloudflare-light.svg" alt="Deploy to Cloudflare" height="48"></picture></a>
+
+1. Press the button and sign in to Cloudflare and GitHub. Cloudflare copies Quire Ink into your GitHub and builds it.
+2. When the form asks for a **setup code**, make one up: twelve characters or more.
+3. Open your blog's address with `/setup` on the end, type the code, and answer seven short screens.
+
+**Updating:** once, in **Settings → Server → Cloudflare**, add the update workflow to your copy (one click, then *Commit*). After that, each update is one click in your copy's **Actions** tab.
+
+**Already running Quire Ink on a server?** In its admin, **Settings → Server → Run on Cloudflare** moves it there, posts and pictures included. Everything else is in [the Cloudflare guide](./docs/self-host-cloudflare.md).
+
+### A rented server (VPS): one command
+
+Ubuntu or Debian (the cheapest tier is enough) and a domain pointed at it. About ten minutes:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/server.sh \
   | sudo bash -s -- --domain blog.example.com --setup-code 'twelve-or-more-characters'
 ```
 
-It installs Docker, runs the image of the newest release with a Let's Encrypt certificate, and stops on any machine that already serves something. Then open `https://blog.example.com/setup`, type the code, and a short setup — account, authenticator, the look — ends in the editor.
+[`server.sh`](./server.sh) installs Docker, runs the newest release with a free HTTPS certificate, and refuses a machine that already serves something. Then open `https://blog.example.com/setup` and type the code. **Updating:** `docker compose pull && docker compose up -d` in `/opt/quireink`.
 
-**Every way in installs a release**, never unreleased work ([ADR 0065](./docs/decisions/0065-every-install-runs-a-release.md)), and every release is installed through them before it is published: from source, the image and a blank server in a fresh install and an upgrade from the release before, and the Cloudflare package under `wrangler dev` with a backup moved Bun → Cloudflare → Bun, then on a real account. Images exist for `amd64` and `arm64`. **Setting it up once is the technical part:** hand the server to an AI agent and the [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) skill walks it through, checks included.
+### Something else
+
+| You have | How | Updating |
+|:--|:--|:--|
+| **A NAS** (Unraid, Synology, QNAP, Runtipi) | Unraid: **Apps → `QuireInk`**. The others: paste one compose file ([step by step](./docs/self-host-docker.md#on-a-nas-or-a-home-server)) | The container app's **Update** |
+| **Docker already**, and a domain | [`docker-compose.image.yml`](./docker-compose.image.yml) + the [`Caddyfile`](./Caddyfile) ([how](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
+| **A server you look after yourself**, with Bun 1.3+ | [`install.sh`](./install.sh), then systemd and nginx ([self-hosting](./docs/self-host.md)) | `bun run upgrade` |
+| **Kubernetes** | [The manifests](./deploy/kubernetes/README.md) | Change the image tag |
+| **A DigitalOcean droplet** | [One pasted file](./deploy/digitalocean/README.md) | As the VPS above |
+
+Every way installs a published release, tried on each of these paths before it ships ([how](./docs/install.md)). Images exist for `amd64` and `arm64`. **Rather not do it yourself?** Hand the server to an AI agent: the [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) skill walks it through, checks included.
 
 ## Let an AI agent write for you
 

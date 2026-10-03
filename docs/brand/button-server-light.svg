@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="48" viewBox="0 0 200 48" role="img" aria-label="Install on a server">
+<title>Install on a server</title>
+<rect x="1" y="1" width="198" height="46" rx="10" fill="none" stroke="#161513" stroke-width="1.5"/>
+<g transform="translate(18 12)" fill="none" stroke="#161513" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5h14v5H5zM5 13.5h14v5H5zM8 8h.01M8 16h.01"/></g>
+<text x="50" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#161513">Install on a server</text>
+</svg>

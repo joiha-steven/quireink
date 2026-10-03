@@ -117,9 +117,12 @@ if (existsSync(join(ROOT, 'docs/self-host-cloudflare.md')) && !installIndex.incl
 
 // ---- B1 (ADR 0066): what the Deploy to Cloudflare button reads ---------------------------------
 
-const BUTTON = '[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release)'
+// The LINK, not Cloudflare's badge image: since 2026-10-04 the READMEs draw their own button in the
+// wordmark's ink (docs/brand/button-cloudflare-*.svg, light and dark). What has to stay true is where
+// it goes: the deploy page, for this repository's release branch, never main.
+const DEPLOY = 'https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release'
 for (const [name, text] of [['README.md', readme], ['README.vi.md', readmeVi]] as const) {
-  if (!text.includes(BUTTON)) faults.push(`B1: ${name}'s install table has no Deploy to Cloudflare button pointing at the repository`)
+  if (!text.includes(`href="${DEPLOY}"`) && !text.includes(`](${DEPLOY})`)) faults.push(`B1: ${name} has no Deploy to Cloudflare link to ${DEPLOY}`)
 }
 const pkg = JSON.parse(read('package.json')) as { scripts: Record<string, string>; cloudflare?: { bindings?: Record<string, { description?: string }> } }
 const described = pkg.cloudflare?.bindings ?? {}

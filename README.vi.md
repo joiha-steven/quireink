@@ -18,6 +18,8 @@ Không thuật toán, không quảng cáo, không nền tảng nào đứng gi�
 
 [**quireink.com**](https://quireink.com) · [**Xem thử**](https://demo.quireink.com) · [**Cài đặt**](#cài-đặt) · [**Tài liệu**](#đọc-tiếp-ở-đâu) · [**Bản đầy đủ**](./docs/overview.vi.md) · [**Giấy phép**](#giấy-phép)
 
+<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/brand/button-cloudflare-dark.svg"><img src="docs/brand/button-cloudflare-light.svg" alt="Deploy to Cloudflare" height="48"></picture></a>&nbsp;&nbsp;<a href="#cài-đặt"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/brand/button-server-dark.svg"><img src="docs/brand/button-server-light.svg" alt="Cài lên máy chủ" height="48"></picture></a>
+
 <br/>
 
 <img src="docs/demo.jpg" alt="Hai ảnh chụp cạnh nhau: trang chủ dạng báo với bài dẫn và các hàng chuyên mục, và trang bài viết của cùng site với cột mục lục bên trái, cột thông tin bên phải, một câu gạch dưới bút chì, một chữ khoanh bút bi đỏ, một câu tô xanh và bức thư tay Van Gogh đóng khung làm hình đầu bài" width="960">
@@ -81,27 +83,44 @@ Từng phần, chi tiết và so với các lựa chọn khác: [**Quire Ink, b�
 
 **Thử trước, không cài gì:** [demo.quireink.com](https://demo.quireink.com), hoặc một blog nháp của riêng bạn ở [try.quireink.com](https://try.quireink.com), xoá sạch hai lần mỗi giờ.
 
-Rồi một câu hỏi — **bạn đang có gì?**
+Rồi chọn cách hợp với cái bạn đang có. Cách nào cũng ra cùng một blog.
 
-| Bạn có | Cách vào | Nâng cấp |
-|:--|:--|:--|
-| **Một VPS mới** (Ubuntu hoặc Debian, gói rẻ nhất) và một tên miền đã trỏ về | Một lệnh bên dưới ([`server.sh`](./server.sh)) | `docker compose pull && docker compose up -d` trong `/opt/quireink`; lên dòng phát hành mới: chạy lại lệnh đó |
-| **Một NAS** | Unraid: **Apps → `QuireInk`**. Synology, QNAP, Runtipi: dán một file compose ([từng bước](./docs/self-host-docker.md#on-a-nas-or-a-home-server)) | Nút **Update** của ứng dụng container |
-| **Đã có Docker** và tên miền | [`docker-compose.image.yml`](./docker-compose.image.yml) + [`Caddyfile`](./Caddyfile) ([cách làm](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
-| **Một máy chủ bạn tự lo**, có Bun 1.3+ | [`install.sh`](./install.sh), rồi systemd và nginx ([tự host](./docs/self-host.md)) | `bun run upgrade` |
-| **Kubernetes**, hoặc **một droplet DigitalOcean** | [Manifest](./deploy/kubernetes/README.md) · [một file dán vào](./deploy/digitalocean/README.md) | Đổi tag · như dòng VPS |
-| **Một tài khoản Cloudflare** gói Workers Paid (5 USD/tháng, không phải gói Free), không cần máy chủ nào — bản beta | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release) ([từng bước, và vì sao không dùng gói Free](./docs/self-host-cloudflare.md)). Đang chạy Quire Ink rồi: **Settings → Server → Run on Cloudflare** chuyển nó sang ([cách làm](./docs/self-host-cloudflare.md#moving-a-blog-you-already-run)) | Thêm workflow cập nhật vào bản sao một lần từ Settings (Cloudflare không chép nó), rồi Actions → Update Quire Ink ([cách làm](./docs/self-host-cloudflare.md#upgrading)). Bản đã chuyển: một phím trong Settings |
+### Không có máy chủ: chạy trên Cloudflare <sup>beta</sup>
 
-Trên một VPS mới, khi DNS của tên miền đã trỏ về máy:
+Khoảng năm phút, và **5 USD mỗi tháng** cho gói Workers Paid của Cloudflare, dùng chung cho mọi blog trong tài khoản. Gói Free không đủ: nó dừng blog khi quá 100.000 lượt truy cập một ngày ([vì sao](./docs/self-host-cloudflare.md)).
+
+<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/brand/button-cloudflare-dark.svg"><img src="docs/brand/button-cloudflare-light.svg" alt="Deploy to Cloudflare" height="48"></picture></a>
+
+1. Bấm nút, đăng nhập Cloudflare và GitHub. Cloudflare chép Quire Ink vào GitHub của bạn và dựng nó.
+2. Khi form hỏi **setup code**, tự nghĩ một mã: từ mười hai ký tự trở lên.
+3. Mở địa chỉ blog, thêm `/setup` vào cuối, gõ mã, rồi trả lời bảy màn ngắn.
+
+**Cập nhật:** một lần, trong **Settings → Server → Cloudflare**, thêm workflow cập nhật vào bản sao (một cú bấm, rồi *Commit*). Sau đó mỗi lần cập nhật là một cú bấm ở thẻ **Actions** của bản sao.
+
+**Đang chạy Quire Ink trên máy chủ rồi?** Trong trang quản trị của nó, **Settings → Server → Run on Cloudflare** chuyển nó sang, kèm cả bài và ảnh. Mọi thứ khác có trong [hướng dẫn Cloudflare](./docs/self-host-cloudflare.md).
+
+### Một máy chủ thuê (VPS): một lệnh
+
+Ubuntu hoặc Debian (gói rẻ nhất là đủ) và một tên miền đã trỏ về máy. Khoảng mười phút:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/server.sh \
   | sudo bash -s -- --domain blog.example.com --setup-code 'muoi-hai-ky-tu-tro-len'
 ```
 
-Lệnh này cài Docker, chạy image của bản phát hành mới nhất kèm chứng chỉ Let's Encrypt, và dừng lại nếu máy đã đang phục vụ thứ gì khác. Sau đó mở `https://blog.example.com/setup`, gõ mã, qua vài bước ngắn — tài khoản, ứng dụng xác thực, giao diện — là vào thẳng trình soạn.
+[`server.sh`](./server.sh) cài Docker, chạy bản phát hành mới nhất kèm chứng chỉ HTTPS miễn phí, và từ chối máy đã đang phục vụ thứ khác. Rồi mở `https://blog.example.com/setup` và gõ mã. **Cập nhật:** `docker compose pull && docker compose up -d` trong `/opt/quireink`.
 
-**Cách nào cũng cài một bản phát hành**, không bao giờ là code chưa phát hành ([ADR 0065](./docs/decisions/0065-every-install-runs-a-release.md)), và bản phát hành nào cũng được cài thử trước khi đưa ra: bản nguồn, image và máy chủ trắng được cài mới và nâng cấp từ bản trước, còn gói Cloudflare chạy dưới `wrangler dev` với một bản sao lưu chuyển Bun → Cloudflare → Bun, rồi trên một tài khoản thật. Image có cho `amd64` và `arm64`. **Dựng lần đầu là phần kỹ thuật:** giao máy chủ cho một AI agent, skill [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) dẫn nó đi từng bước, có cả bước kiểm tra.
+### Cách khác
+
+| Bạn có | Cách cài | Cập nhật |
+|:--|:--|:--|
+| **Một NAS** (Unraid, Synology, QNAP, Runtipi) | Unraid: **Apps → `QuireInk`**. Các loại khác: dán một file compose ([từng bước](./docs/self-host-docker.md#on-a-nas-or-a-home-server)) | Nút **Update** của ứng dụng container |
+| **Đã có Docker** và tên miền | [`docker-compose.image.yml`](./docker-compose.image.yml) + [`Caddyfile`](./Caddyfile) ([cách làm](./docs/self-host-docker.md)) | `docker compose pull && docker compose up -d` |
+| **Một máy chủ bạn tự lo**, có Bun 1.3+ | [`install.sh`](./install.sh), rồi systemd và nginx ([tự host](./docs/self-host.md)) | `bun run upgrade` |
+| **Kubernetes** | [Manifest](./deploy/kubernetes/README.md) | Đổi tag image |
+| **Một droplet DigitalOcean** | [Một file dán vào](./deploy/digitalocean/README.md) | Như VPS ở trên |
+
+Cách nào cũng cài một bản phát hành đã được thử qua từng đường cài trước khi đưa ra ([cách thử](./docs/install.md)). Image có cho `amd64` và `arm64`. **Không muốn tự làm?** Giao máy chủ cho một AI agent: skill [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) dẫn nó đi từng bước, có cả bước kiểm tra.
 
 ## Để AI viết hộ
 
