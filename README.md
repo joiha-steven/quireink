@@ -131,7 +131,7 @@ bun run dev                         # http://localhost:3000
 # the log prints a /setup link to claim it; or: bun run user create --username me --email me@example.com
 ```
 
-Nothing is finished until `bun run check:all` passes: a typecheck, fourteen static guards and the tests, all offline, with no credentials and no services. `bun run tour` then drives every screen in a real browser and opens the backup it built. Start at [`CONTRIBUTING.md`](./CONTRIBUTING.md), which points to the house rules in [`CLAUDE.md`](./CLAUDE.md).
+Nothing is finished until `bun run check:all` passes: a typecheck, seventeen static guards and the tests, all offline, with no credentials and no services. `bun run tour` then drives every screen in a real browser and opens the backup it built. Start at [`CONTRIBUTING.md`](./CONTRIBUTING.md), which points to the house rules in [`CLAUDE.md`](./CLAUDE.md).
 
 <details>
 <summary><b>Where things live</b></summary>

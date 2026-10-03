@@ -64,9 +64,13 @@ that terminal: closing the session stops it, and a reboot does not bring it back
 **Native, by hand.** Bun 1.3+, its own unprivileged user, and the checkout IS the deployment:
 
 ```bash
-sudo -u quire -H bash -lc 'git clone https://github.com/joiha-steven/quireink.git /home/quire/app'
-sudo -u quire -H bash -lc 'cd /home/quire/app && bun install && bun run build:assets && bun run build:admin'
+sudo -u quire -H bash -lc 'git clone --depth 1 --branch v<newest release> https://github.com/joiha-steven/quireink.git /home/quire/app'
+sudo -u quire -H bash -lc 'cd /home/quire/app && bun install --frozen-lockfile --production && bun run build:assets && bun run build:admin'
 ```
+
+A release tag, never `main`, which carries unreleased work (ADR 0065); the newest is on the
+repository's Releases page. `--production` because the devDependencies are the workshop — wrangler
+and its 125 MB of workerd among them — and neither build reads them; it is what `install.sh` runs.
 
 Then write the environment into `/home/quire/app/.env`, mode 600, owned by the blog's user
 (`DATA_DIR`, `STORAGE_LOCAL_DIR`, `SITE_URL`): the systemd unit in `docs/self-host.md` §4

@@ -93,8 +93,20 @@
   `--identity` or `--passphrase` for a sealed one), with the service stopped. It reads both the
   new archives and every older one, refuses a data directory that still holds a database, rebuilds
   and checks everything in a staging directory first, and moves the files into place only when all
-  of it has passed. `docs/backups.md` has the procedure; the `sqlite3` lines for old archives still
-  work.
+  of it has passed. **The image carries it**, so a Docker or NAS install restores with
+  `docker compose run` and nothing installed on the host (`docs/self-host-docker.md`, "Restoring a
+  backup"). Pictures already in the uploads folder with the same bytes are left as they are, so
+  restoring a blog onto its own machine after a bad edit needs only the two databases moved
+  aside; a database's leftover `-wal` or `-shm` file stops it, because a restored database opened
+  beside the old blog's log comes up as the old blog; and run as root it hands what it wrote to
+  the owner of the data directory, so the blog can still write to it. `docs/backups.md` has the
+  procedure, and how to put back the copy an upgrade took; the `sqlite3` lines for old archives
+  still work.
+- **An install from source no longer downloads the Cloudflare tooling.** `install.sh` and
+  `bun run upgrade` install a release's production dependencies only: the Cloudflare runtime
+  brought `wrangler` and its 125 MB `workerd` in as development tools, which took a full install
+  from 132 MB to 325 MB on a server that never runs them. It is now 91 MB, and the two builds are
+  byte-identical either way. `QUIREINK_CHANNEL=main`, the developer's channel, keeps the full set.
 
 - **Every compose file runs the published image.** `docker-compose.yml` and
   `docker-compose.caddy.yml` said `build: .` and were upgraded with `git pull`, which built

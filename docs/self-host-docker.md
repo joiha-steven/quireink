@@ -126,8 +126,41 @@ Four things worth knowing before you change anything in `docker-compose.yml`:
   apply — and **if that copy cannot be written the container exits instead of migrating**,
   saying which path and why. Two are kept.
 
-To get data out without a bind mount, use the backup button in the admin (it hands you both
-databases plus every upload), or `docker compose cp quire:/var/lib/quire/data ./data`.
+To get data out without a bind mount, use the backup button in the admin (it hands you one
+archive with every row of both databases and every upload), or
+`docker compose cp quire:/var/lib/quire/data ./data`.
+
+## Restoring a backup
+
+The image carries [`scripts/restore.ts`](../scripts/restore.ts), so a restore needs nothing on the
+host but Docker. The procedure and what the script checks are in
+[backups.md](backups.md#restoring); this is the same thing in `docker compose` terms. Each line
+goes through the image's entrypoint, so it runs as the blog's user (`PUID`/`PGID`) and leaves
+nothing owned by root:
+
+```bash
+docker compose stop quire
+docker compose run --rm --no-deps quire sh -c \
+  'cd /var/lib/quire/data && mkdir before && mv quire.db* analytics.db* before/'
+docker compose run --rm --no-deps -v "$PWD/quire-<tag>.tar.gz:/restore.tar.gz:ro" quire \
+  bun scripts/restore.ts /restore.tar.gz --data-dir /var/lib/quire/data --uploads-dir /var/lib/quire/uploads
+docker compose start quire
+```
+
+- **A snapshot the blog took itself** is already inside the volume: drop the `-v` and name
+  `/var/lib/quire/data/backups/quire-<tag>.tar.gz`.
+- **Sealed** (`.enc`): mount the key file too (`-v "$PWD/key.txt:/key.txt:ro"`) and add
+  `--identity /key.txt`, or add `--passphrase` and type it; `docker compose run` gives it a terminal.
+- **`quire.db*`, not `quire.db`**: a container that was killed rather than stopped leaves the
+  database's `-wal` beside it, and a restored file next to the old log opens as the old blog. The
+  script refuses to start while one is there.
+- **The uploads can stay where they are.** A file already in the volume with the same bytes is
+  left as it is; only a different file at the same path stops the restore.
+- **`docker run` instead of compose:** the same two commands as
+  `docker run --rm -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads … quireink/quireink:latest <command>`,
+  with the container stopped first.
+
+The next start migrates the restored databases forward as on any upgrade.
 
 ## On a NAS or a home server
 

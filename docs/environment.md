@@ -8,7 +8,7 @@ Everything that configures Quire Ink from outside the admin, in one place. Two m
 | `SITE_URL` | Your public address, used in feeds, OG images and email. Left empty, all of them say `http://localhost:3000`, so the site still reads fine and only crawlers and mail clients notice. It is deliberately not guessed from the request |
 
 <details>
-<summary><b>The other eighteen</b> &nbsp;ports, limits, storage, cron, mail, proxying</summary>
+<summary><b>The other twenty</b> &nbsp;ports, limits, storage, cron, mail, proxying</summary>
 
 | Variable | What it does |
 |---|---|
@@ -48,5 +48,11 @@ challenge (`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`), the cache purge
 (`AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`) and the assistant (`AI_PROVIDER`, `AI_API_KEY`,
 `AI_MODEL`). A value set this way lives in the environment, not in the database, so a backup
 does not carry it.
+
+**What installs and upgrades read is not here.** `install.sh` (`QUIREINK_VERSION`,
+`QUIREINK_CHANNEL`, `QUIREINK_SOURCE`, …), `bun run upgrade` (`QUIREINK_RESTART`,
+`QUIREINK_SERVICE`, …) and `server.sh` take their own options, listed at the top of each file; the
+compose files read `QUIREINK_TAG` and the image's entrypoint `PUID` and `PGID`
+([Docker](self-host-docker.md)). None of them reaches the running blog.
 
 SMTP, Turnstile and CDN credentials go in **Settings → Comments & mail** and **Server & connections**, and stay on the server. Your posts live in `DATA_DIR` and your uploads folder, never in git.

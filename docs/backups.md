@@ -196,7 +196,7 @@ bun scripts/backup-decrypt.ts quire-<tag>.tar.gz.enc --passphrase
 
 Either writes `quire-<tag>.tar.gz` beside it. You rarely need to: `scripts/restore.ts` below
 takes the same `--identity` and `--passphrase` and decrypts on the way.
-The script ships inside the image and needs nothing running. If it is gone too, ADR 0060
+Both scripts ship inside the image and need nothing running. If it is gone too, ADR 0060
 describes the format completely enough to rebuild a reader from it — which is why it is written
 out there rather than pointed at in code.
 
@@ -240,22 +240,26 @@ if they matter, or use the built-in off-site copy, which puts everything in the 
 
 ## Restoring
 
-One procedure for every archive, whichever of the four wrote it and in either format. The service
-has to stop: replacing a database under a running process is the torn-state problem the backup
-itself avoids, in the other direction — which is also why a blog with content has no restore button.
+One procedure for every archive, whichever of the four wrote it and in either format, as the blog's
+own user. The service has to stop: replacing a database under a running process is the torn-state
+problem the backup avoids, in the other direction — which is why a blog with content has no restore button.
 
 ```sh
 systemctl stop quire
-mv /var/lib/quire/data/quire.db /var/lib/quire/data/quire.db.before      # and analytics.db
-bun scripts/restore.ts quire-<tag>.tar.gz --data-dir /var/lib/quire/data --uploads-dir /var/lib/quire/uploads
-#   sealed: add --identity key.txt or --passphrase
+cd /var/lib/quire/data && mkdir before && mv quire.db* analytics.db* before/   # the -wal and -shm too
+sudo -u quire -H bash -lc 'cd /home/quire/app && bun scripts/restore.ts /path/to/quire-<tag>.tar.gz \
+  --data-dir /var/lib/quire/data --uploads-dir /var/lib/quire/uploads'   # sealed: --identity key.txt or --passphrase
 systemctl start quire
 ```
 
+**In Docker** it runs inside the image: [Restoring a backup](self-host-docker.md#restoring-a-backup). Run as
+root, it hands what it wrote to the data directory's owner: a `quire.db` the blog cannot write fails every write.
+
 [`scripts/restore.ts`](../scripts/restore.ts) refuses a data directory that still holds
-`quire.db` or `analytics.db` — nothing is ever overwritten, and the files moved aside are the way
-back if this was the wrong archive. It builds in a staging directory and moves the two files into
-place only once all of it has passed:
+`quire.db` or `analytics.db` **or the `-wal` and `-shm` beside them** — nothing is ever overwritten,
+and the files moved aside are the way back. Hence `quire.db*`: a blog killed rather than stopped
+leaves its write-ahead log, SQLite does not check that a log belongs to the file beside it, and a
+restored database next to it opens as the OLD blog. It builds in a staging directory first:
 
 - **A `quire-rows/1` archive** is rebuilt: each database from the archive's own `schema.sql` (the
   shape it was written in), every row inserted with foreign keys off and the full-text triggers
@@ -267,15 +271,20 @@ place only once all of it has passed:
   `tar -xzf` it, `sqlite3 quire.db 'pragma integrity_check;'` (expect `ok`), then `cp` the two
   `.db` files into the data directory with the service stopped.
 
-Either way the uploads land in `--uploads-dir` (default: `uploads` beside the data directory),
-refusing any file already there. The next start migrates the databases forward as on any
+Either way the uploads land in `--uploads-dir` (default: `uploads` beside the data directory). **A
+file already there with the same bytes is left as it is**, so restoring onto the machine the blog
+came from needs only the databases moved aside; one with **different** bytes stops the restore,
+and then the uploads go aside too. The next start migrates the databases forward as on any
 upgrade, taking its own copy first ([ADR 0063](decisions/0063-an-upgrade-copies-first-and-gives-the-space-back.md)).
 Archives written before 2026-08-01 are named `quire2-<tag>.tar.gz`; only the prefix differs.
 
+**The copy an upgrade took is not an archive:** `backups/pre-<step>-<stamp>-quire.db` is a bare
+database file. With the service stopped, move `quire.db` and its `-wal` and `-shm` aside and copy
+that file in as `quire.db`, owned by the blog's user; `analytics.db` stays as it is.
+
 **Do this on a schedule, not only when something is on fire.** Restore a real archive into a
-scratch directory (`--data-dir /tmp/restore/data --uploads-dir /tmp/restore/uploads`) and check
-the post count against what the site actually shows: an untested backup is a belief, not a
-backup.
+scratch directory (`--data-dir /tmp/restore/data --uploads-dir /tmp/restore/uploads`) and check the
+post count against what the site actually shows: an untested backup is a belief, not a backup.
 
 ### Starting a new blog from a backup
 
@@ -342,7 +351,6 @@ lands on one copy and not the other, which is exactly how the two diverged here.
 They are variables rather than literals because **this repository is public**. A script that
 names somebody's data directory, their bucket and their alert endpoint publishes all three
 to everyone who reads it.
-
 
 ## The Markdown export, which is not a backup
 

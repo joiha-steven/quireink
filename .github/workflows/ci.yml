@@ -213,6 +213,15 @@ jobs:
           fi
           docker rm -f qi-vol
 
+      # The tools the docs send an owner to INSIDE the container, on the day they need them.
+      # `restore.ts` was missing from the image while every doc called restoring one command, and
+      # nothing here noticed because nothing ran it. `--help` is enough: it loads every import, and
+      # a file left out answers `Module not found` with a non-zero exit.
+      - name: it carries the restore and the decrypt
+        run: |
+          docker run --rm quireink:ci bun scripts/restore.ts --help
+          docker run --rm quireink:ci bun scripts/backup-decrypt.ts --help >/dev/null
+
   # The dependency advisories, because NOTHING ELSE HERE LOOKS AT THEM and Dependabot
   # cannot.
   #
