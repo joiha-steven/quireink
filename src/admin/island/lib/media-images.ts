@@ -17,6 +17,7 @@ import { elOf } from './mark-dom'
 import { wireGrid } from './media-grid'
 import { ask, owned, say, sendImages, wellIn, wireWell, type Words } from './media-bridge'
 import { altEditor } from './media-alt'
+import { onTyped } from '@/admin/components/composing'
 
 const show = (el: Element | null, on: boolean): void => {
   if (el instanceof HTMLElement) el.hidden = !on
@@ -83,7 +84,7 @@ export function wireImages(panel: HTMLElement, tools: HTMLElement | null, w: Wor
     show(panel.querySelector('[data-media-del-picked]'), n > 0)
   })
 
-  find?.addEventListener('input', refilter)
+  if (find) onTyped(find, refilter)
   sort?.addEventListener('change', () => {
     const by = sort.value
     grid.order(by === 'name' || by === 'size' ? by : 'new')

@@ -13,6 +13,7 @@ import type { RightNow } from '@/analytics/types'
 import { formatCount } from '@/i18n/format'
 import { fold } from '@/admin-shared/fold'
 import { TOP_N } from '@/admin-shared/analytics'
+import { onTyped } from '@/admin/components/composing'
 
 const root = document.querySelector<HTMLElement>('[data-screen="analytics"]')
 
@@ -64,7 +65,7 @@ if (root) {
       if (fewer) fewer.hidden = !showAll || needle.length > 0 || shown <= TOP_N
     }
 
-    box.addEventListener('input', apply)
+    onTyped(box, apply)
     screen.querySelector('[data-piece-showall]')?.addEventListener('click', () => {
       showAll = true
       apply()

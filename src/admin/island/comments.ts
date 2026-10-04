@@ -18,6 +18,7 @@ import { pressKey } from './lib/press-key'
 import type { SiteLang } from '@/types'
 import { commentTally } from '@/admin-shared/tally'
 import { formatCount } from '@/i18n/format'
+import { onTyped } from '@/admin/components/composing'
 
 const root = document.querySelector<HTMLElement>('[data-screen="comments"]')
 const cardHost = root?.querySelector<HTMLElement>('[data-comment-cards]')
@@ -173,7 +174,7 @@ if (root && cardHost) {
       apply()
     })
   }
-  search?.addEventListener('input', apply)
+  if (search) onTyped(search, apply)
 
   // ----- what is ticked -----
 

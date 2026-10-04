@@ -8,6 +8,7 @@
 // chosen picture's default alt, so a description saved here is the one the next insert uses.
 import { CONTROL, buttonClass } from '@/admin-shared/kit'
 import { say, type Words } from './media-bridge'
+import { composing } from '@/admin/components/composing'
 
 export function altEditor(tile: HTMLElement | null, url: string, w: Words): HTMLElement {
   const box = document.createElement('div')
@@ -45,7 +46,10 @@ export function altEditor(tile: HTMLElement | null, url: string, w: Words): HTML
     say(w.altSaved ?? '')
   }
   save.addEventListener('click', () => void send())
-  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); void send() } })
+  // The Enter that confirms a composed word is the input method's, not a request to save: asked
+  // first, as every Enter handler in the admin does (`composing.ts`). This one did not, and saved
+  // the half-typed `việ` as the picture's description.
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !composing(e)) { e.preventDefault(); void send() } })
 
   row.append(label, save)
   box.append(row)

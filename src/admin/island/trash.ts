@@ -19,6 +19,7 @@
 import { indexIn, lanes, type Lanes } from '@/accent'
 import { showTab } from './lib/tab-strip'
 import { pressKey } from './lib/press-key'
+import { onTyped } from '@/admin/components/composing'
 
 const root = document.querySelector<HTMLElement>('[data-screen="trash"]')
 
@@ -127,7 +128,7 @@ if (root) {
   // On arrival too: the server draws the selected tab, so the painter above has never run
   // when the page opens, and a strip too wide for a phone opens showing the wrong end.
   showTab(strip)
-  search?.addEventListener('input', apply)
+  if (search) onTyped(search, apply)
   root.addEventListener('change', (e) => {
     if ((e.target as HTMLElement).hasAttribute('data-trash-pick')) countPicked()
   })

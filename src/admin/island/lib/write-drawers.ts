@@ -10,6 +10,7 @@
 // carrying it and MERGES on a collision; deleting one strips it from all of them. That is why
 // both ask first, and why the question names the term rather than the action.
 import { say } from './media-bridge'
+import { composing } from '@/admin/components/composing'
 
 type Words = Partial<Record<string, string>>
 
@@ -70,7 +71,7 @@ export function wireDrawers(screen: HTMLElement): void {
     key.addEventListener('click', () => open(null))
   }
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && panels.some((p) => !p.hidden)) open(null)
+    if (e.key === 'Escape' && !composing(e) && panels.some((p) => !p.hidden)) open(null)
   })
 
   // ---- the writes ---------------------------------------------------------------------

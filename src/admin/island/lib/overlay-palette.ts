@@ -13,7 +13,7 @@
 import { indexIn, lanes } from '@/accent'
 import { el } from '@/admin/components/node-dom'
 import { say } from './media-bridge'
-import { composing } from '@/admin/components/composing'
+import { composing, onTyped } from '@/admin/components/composing'
 import { FOUND_NAME, FOUND_ROW, FOUND_WHERE } from '@/admin-shared/found'
 
 /**
@@ -240,7 +240,7 @@ export function wirePalette(words: PaletteWords): () => void {
     box!.focus()
   }
 
-  box.addEventListener('input', () => {
+  onTyped(box, () => {
     cursor = 0
     settle()
     clearTimeout(timer)

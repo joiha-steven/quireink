@@ -31,6 +31,21 @@ describe('the description box', () => {
     expect(said.at(-1)).toBe('Saved')
   })
 
+  it('leaves the Enter that confirms a composed word to the input method', async () => {
+    let sends = 0
+    globalThis.fetch = (() => { sends += 1; return Promise.resolve(new Response('{"success":true}')) }) as unknown as typeof fetch
+    const box = altEditor(null, '/media/a.png', { save: 'Save', altSaved: 'Saved' })
+    const input = box.querySelector('input')!
+    input.value = 'việ'
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', isComposing: true }))
+    await settle()
+    expect(sends).toBe(0)
+    input.value = 'việc'
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }))
+    await settle()
+    expect(sends).toBe(1)
+  })
+
   it('keeps the tile as it was when the save failed', async () => {
     const tile = document.createElement('figure')
     tile.dataset.alt = 'kept'

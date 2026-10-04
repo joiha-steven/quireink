@@ -18,7 +18,7 @@ import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { buttonClass, CONTROL_CHROME } from '@/admin-shared/kit'
 import { ICONS } from '@/icons'
 import { el, svgGlyph } from './node-dom'
-import { composing } from './composing'
+import { composing, onTyped } from './composing'
 
 /** The five things the strip can ask for, and nothing about what it is searching. */
 export type FindActions = {
@@ -196,7 +196,8 @@ export function mountFindBar(host: HTMLElement, hooks: FindBarHooks): FindBar {
   // Opened by the chord, and by the chevron for a hand that came in through `Mod-f` and then
   // changed its mind. It never closes itself: a writer who opened it is mid-task.
   disclose.addEventListener('click', () => { replacing = !replacing; paint() })
-  find.addEventListener('input', () => ask(find.value, caseSensitive))
+  // Not per step of a composed word: each one rescanned the whole piece (`onTyped`).
+  onTyped(find, () => ask(find.value, caseSensitive))
   matchCase.addEventListener('click', () => ask(query, !caseSensitive))
   find.addEventListener('keydown', (e) => {
     if (composing(e)) return

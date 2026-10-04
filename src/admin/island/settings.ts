@@ -31,7 +31,7 @@ import { wireSecurity } from './lib/settings-security'
 import { wireSound } from './lib/settings-sound'
 import { wireTheme } from './lib/settings-theme'
 import { wireType } from './lib/settings-type'
-import { composing } from '@/admin/components/composing'
+import { composing, onTyped } from '@/admin/components/composing'
 
 const root = document.querySelector<HTMLElement>('[data-screen="settings"]')
 
@@ -224,7 +224,7 @@ if (root) {
   const found = screen.querySelector<HTMLElement>('[data-settings-found]')
   const none = screen.querySelector<HTMLElement>('[data-settings-none]')
 
-  find?.addEventListener('input', () => {
+  if (find) onTyped(find, () => {
     const q = fold(find.value.trim())
     // Two characters is where it starts answering: below that the panel would flash open on the
     // first keystroke with the whole index in it.

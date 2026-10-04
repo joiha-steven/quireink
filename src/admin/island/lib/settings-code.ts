@@ -11,6 +11,7 @@
 // second implementation would be a second answer to "is this broken".
 import { braceBalance } from '@/admin-shared/css-brace'
 import { snippetBytes, unclosed } from '@/admin-shared/snippet'
+import { composing } from '@/admin/components/composing'
 
 const show = (el: Element | null, on: boolean): void => {
   if (el instanceof HTMLElement) el.hidden = !on
@@ -37,7 +38,7 @@ function gutter(box: HTMLTextAreaElement, rail: HTMLElement): void {
  * this admin ships is written that way.
  */
 function tabKey(e: KeyboardEvent, box: HTMLTextAreaElement): void {
-  if (e.key !== 'Tab' || e.shiftKey) return
+  if (e.key !== 'Tab' || e.shiftKey || composing(e)) return
   e.preventDefault()
   insert(box, '  ')
 }

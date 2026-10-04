@@ -14,6 +14,7 @@ import type { SiteLang } from '@/types'
 import { dateLocale } from '@/i18n/format'
 import { formatTyped, parseTyped, toValue } from '@/admin-shared/date-typing'
 import { el } from '@/admin/components/node-dom'
+import { composing } from '@/admin/components/composing'
 
 const className = {
   pop: 'absolute z-30 mt-1 w-72 rounded-lg border border-neutral-200 bg-white p-3 shadow-lg'
@@ -205,7 +206,7 @@ export function wireDate(
   // taking away two things, when the writer meant to dismiss the grid and go on typing the
   // date. Events reach `document` before `window`, so this one gets to decide.
   const escape = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape' || !pop) return
+    if (e.key !== 'Escape' || !pop || composing(e)) return
     e.stopPropagation()
     shut()
   }

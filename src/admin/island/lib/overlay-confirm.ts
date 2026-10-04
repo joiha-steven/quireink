@@ -15,6 +15,8 @@
 // ⚠️ THE ASK ARRIVES AS AN EVENT and `cancelable` is how the caller learns whether anybody was
 // listening: no `preventDefault` means no dialog, and the caller falls back to the browser's own
 // question rather than deleting something in silence.
+import { composing } from '@/admin/components/composing'
+
 export type ConfirmAnswer = 'confirm' | 'alt' | 'cancel'
 
 export type ConfirmRequest = {
@@ -107,7 +109,8 @@ export function wireConfirm(): () => void {
   form?.addEventListener('submit', (e) => { e.preventDefault(); answer('confirm') })
 
   const onKey = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape' || !settle) return
+    // Not an input method's Escape, which cancels the word being composed in the field.
+    if (e.key !== 'Escape' || !settle || composing(e)) return
     e.preventDefault()
     answer('cancel')
   }

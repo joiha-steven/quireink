@@ -11,6 +11,8 @@
 // screen reader the rest of the page has gone, and the rest of the page is right there. The
 // server cannot know — whether it docks is a question about the window — so the markup says
 // nothing and this writes it.
+import { composing } from '@/admin/components/composing'
+
 const DOCK_AT = '(min-width: 85rem)'
 
 export type Panel = {
@@ -84,7 +86,9 @@ export function wirePanel(root: HTMLElement, onShut: () => void): Panel {
 
   // Escape closes it. On the window rather than on the panel, because the keyboard may
   // legitimately be inside a field, a suggestion list or the calendar by then.
-  const escape = (e: KeyboardEvent): void => { if (e.key === 'Escape' && open) hide() }
+  // ⚠️ NOT WHILE A WORD IS BEING COMPOSED in one of its fields: on a Mac, Escape is how an input
+  // method throws away the word it is building, and the panel went with it.
+  const escape = (e: KeyboardEvent): void => { if (e.key === 'Escape' && open && !composing(e)) hide() }
   const resize = (): void => { if (open) paint() }
   window.addEventListener('keydown', escape)
   wide.addEventListener('change', resize)

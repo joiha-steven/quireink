@@ -12,6 +12,7 @@ import { formatDateTimeShort } from '@/admin-shared/when'
 import { pageLang } from '@/admin/island/lib/page-lang'
 import { buttonClass, INSET } from '@/admin-shared/kit'
 import { el } from '@/admin/components/node-dom'
+import { composing } from '@/admin/components/composing'
 
 const className = {
   row: INSET,
@@ -101,7 +102,7 @@ export function wireHistory(
   // A click on the backdrop is "not now"; a click inside the box is not.
   box.addEventListener('click', (e) => { if (e.target === box) shut() })
   root.querySelector<HTMLElement>('[data-history-shut]')?.addEventListener('click', shut)
-  const escape = (e: KeyboardEvent): void => { if (e.key === 'Escape' && !box.hidden) shut() }
+  const escape = (e: KeyboardEvent): void => { if (e.key === 'Escape' && !box.hidden && !composing(e)) shut() }
   window.addEventListener('keydown', escape)
 
   return {

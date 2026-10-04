@@ -10,7 +10,7 @@ import { CONTROL } from '@/admin-shared/kit'
 import { el } from '@/admin/components/node-dom'
 import { wireDate, type DateField } from './sheet-calendar'
 import { safeImageSrc } from '@/md/html-rules'
-import { composing } from '@/admin/components/composing'
+import { composing, onTyped } from '@/admin/components/composing'
 
 export type Picked = { url: string; alt?: string } | { urls: string[] } | null
 
@@ -137,7 +137,7 @@ function wireChips(
   for (const offer of offers.querySelectorAll<HTMLElement>('[data-chip-add]')) {
     offer.addEventListener('click', () => add(offer.dataset.chipAdd ?? ''))
   }
-  entry?.addEventListener('input', paint)
+  if (entry) onTyped(entry, paint)
   entry?.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' || composing(e)) return
     e.preventDefault()
@@ -181,9 +181,9 @@ function wirePick(box: HTMLElement, edit: Edit): void {
       shut()
     })
   }
-  entry.addEventListener('input', () => { edit({ [key]: entry.value } as Partial<SheetDraft>); paint() })
+  onTyped(entry, () => { edit({ [key]: entry.value } as Partial<SheetDraft>); paint() })
   entry.addEventListener('focus', paint)
-  entry.addEventListener('keydown', (e) => { if (e.key === 'Escape') shut() })
+  entry.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !composing(e)) shut() })
   document.addEventListener('mousedown', (e) => { if (!box.contains(e.target as Node)) shut() })
   shut()
 }

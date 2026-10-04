@@ -19,6 +19,7 @@ import { applyAll, keepStanding, pieces, showHits, sortBy } from './lib/write-fi
 import { WRITE_PAGE } from '@/admin-shared/write'
 import { wirePicking } from './lib/write-pick'
 import { wireDrawers } from './lib/write-drawers'
+import { onTyped } from '@/admin/components/composing'
 
 /** Per tab, per address: two panes in two tabs do not share a scroll position. */
 const MEMORY = 'quireink-write-column'
@@ -115,7 +116,7 @@ function wirePane(screen: HTMLElement): () => void {
 
   // ---- the search ---------------------------------------------------------------------
 
-  search?.addEventListener('input', () => {
+  if (search) onTyped(search, () => {
     const q = search.value.trim()
     keep({ q: search.value })
     clearTimeout(timer)

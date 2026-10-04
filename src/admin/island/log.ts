@@ -13,6 +13,7 @@
 import { fold } from '@/admin-shared/fold'
 import type { SiteLang } from '@/types'
 import { plural } from '@/i18n/plural'
+import { onTyped } from '@/admin/components/composing'
 
 const root = document.querySelector<HTMLElement>('[data-screen="log"]')
 
@@ -60,7 +61,7 @@ if (root) {
   const reset = (): void => { shown = PAGE; apply() }
   kind?.addEventListener('change', reset)
   days?.addEventListener('change', reset)
-  search?.addEventListener('input', reset)
+  if (search) onTyped(search, reset)
   more?.querySelector('button')?.addEventListener('click', () => { shown += PAGE; apply() })
 
   /**

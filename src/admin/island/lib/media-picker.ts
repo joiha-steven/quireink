@@ -17,6 +17,7 @@ import { mediaTileMark, type MediaWords } from '@/admin-shared/media-marks'
 import { elOf } from './mark-dom'
 import { wireGrid } from './media-grid'
 import { say } from './media-bridge'
+import { composing } from '@/admin/components/composing'
 
 export type PickWords = MediaWords & {
   title: string; titleMulti: string; hintMulti: string; add: string; close: string
@@ -94,6 +95,7 @@ export async function openPicker(req: PickRequest): Promise<void> {
 
   /** Escape closes; Tab is kept inside, which is what `aria-modal` promises. */
   function onKey(e: KeyboardEvent): void {
+    if (composing(e)) return
     if (e.key === 'Escape') { e.preventDefault(); finish(null); return }
     if (e.key !== 'Tab') return
     const stops = [...panel.querySelectorAll<HTMLElement>(

@@ -16,6 +16,7 @@ import type { SiteLang } from '@/types'
 import { formatCount } from '@/i18n/format'
 import { SUBSCRIBERS_PER_PAGE as PER_PAGE } from '@/admin-shared/analytics'
 import { pressKey } from './press-key'
+import { onTyped } from '@/admin/components/composing'
 
 export type SubscriberWords = { showing?: string; deleteFailed?: string }
 
@@ -122,7 +123,7 @@ export function wireSubscribers(screen: HTMLElement, opts: {
     countPicked()
   }
 
-  search?.addEventListener('input', () => { page = 0; apply() })
+  if (search) onTyped(search, () => { page = 0; apply() })
   scopeStrip?.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]')
     if (!b?.dataset.tab) return

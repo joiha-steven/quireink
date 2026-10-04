@@ -4,7 +4,7 @@
 // Enter as a new line: `Title line\nbody after enter` reached <title>, og:title, the <h1>, the
 // contents rail and the feeds (2026-09-30). Enter now moves to the writing, as it does in every
 // editor with a title above the body, and a line break pasted in becomes a space.
-import { composing } from '@/admin/components/composing'
+import { composing, onTyped } from '@/admin/components/composing'
 
 export function wireTitle(box: HTMLTextAreaElement, onTitle: (title: string) => void, toBody: () => void): void {
   box.addEventListener('keydown', (e) => {
@@ -12,7 +12,10 @@ export function wireTitle(box: HTMLTextAreaElement, onTitle: (title: string) => 
     e.preventDefault()
     toBody()
   })
-  box.addEventListener('input', () => {
+  // The title is reported when a word is SETTLED, not at each step of an input method building it:
+  // the slug follows the title, and a slug rebuilt from every half-composed step is a field that
+  // rewrites itself under the writer's eyes (`onTyped`).
+  onTyped(box, () => {
     const one = box.value.replace(/[\r\n]+/g, ' ')
     if (one !== box.value) {
       const at = box.selectionStart
