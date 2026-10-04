@@ -15,8 +15,34 @@
   still let you in; the card names the address. Passkeys travel in the backup. Works the same on a
   Cloudflare install. In all eleven languages.
 
+### Changed
+
+- **Typing in a long post is as quick as in a short one.** On a 13,000-word draft with 1,500 pen
+  marks, a keystroke cost 3.7 ms of script and now costs 1.0 ms; with the processor slowed to a
+  modest laptop's, a letter reached the screen in 43 ms (54 ms at the slow end) and now does in
+  26 ms (34 ms), with no stall at all where there used to be two. Three things were redone every
+  key over the whole post: every pen mark's pen was dealt again, every mark's blending was
+  re-layered by the browser even off screen, and the word count serialized the post every four
+  seconds whether or not anything had changed. Now only what a key changed is dealt, blocks off
+  the screen are not drawn while you type, and the count waits for you to pause.
+
 ### Fixed
 
+- **Vietnamese input methods sound like one key per key.** EVKey, OpenKey, Unikey and
+  GoTiengViet put an accent on by sending Backspaces and retyping the letters in a few
+  milliseconds, and the editor clicked for every one of them: typing "Tiếng Việt có dấu, gõ nhanh
+  không lỗi." made 65 sounds for 49 keys, a stutter on every accented word. The Mac's and
+  Windows' own Telex ended each word on two clicks. Both now make exactly one sound and one caret
+  step per key you press, a real Backspace still sounds like one, and the text is unchanged.
+- **The key sound is ready before the first key.** The first key after opening a post built the
+  whole sound machinery and held the letter back while it did (174 ms measured); it is now built
+  when you click into the page. A held key clicks once instead of thirty times a second, and
+  pasting, dropping, cutting and the spelling checker are silent, as the settings always said.
+- **The admin's fields wait for a composed word to finish.** With the Mac's or Windows' Telex,
+  the title no longer rebuilds the slug at every step of a word, list searches and the find strip
+  no longer search for half a word, the Enter that confirms a word no longer saves a picture's
+  description, and the Escape that cancels a word no longer closes the attributes panel, a dialog,
+  the calendar or the picture picker.
 - **A blog made with the Deploy button can be updated.** Cloudflare's import copies the repository
   into your GitHub without `.github/workflows`, so the *Update Quire Ink* workflow the guide and the
   Settings card pointed to was in no copy at all (found on a real button install). Settings,

@@ -66,12 +66,14 @@ between a line here and the running software is either a bug or an unrecorded `�
 - Preview draft opens the preview URL after saving pending edits
 - `⚠` Key feedback, as a choice of four (2026-08-24): typewriter, mechanical-tactile,
   mechanical-linear, off (renamed woody · crisp · deep · off since; [admin-editor.md](../admin-editor.md)). A block caret that holds still while you type, and a synthesized
-  click — no audio files. Ignores composition, modifiers, navigation keys, paste and held
-  repeats. Nothing animates the text itself
+  click — no audio files. One strike per key pressed, through either kind of Vietnamese input
+  method; silent for modifiers, navigation keys, paste and held repeats. Nothing animates the
+  text itself
 - `⚠` Key volume (2026-08-25): 0-100, set by a slider that plays a key as it moves, stored as
   `motion.keyVolume`. 1.x had no sound at all, so there is nothing to be at parity with
 - `⚠` **Vietnamese IME (Telex) must be tested explicitly.** Toolbar and autosave must not
-  interfere mid-composition
+  interfere mid-composition. `scripts/typing-check.ts` drives both kinds (composing, and
+  backspace-based like EVKey) in Chrome; a real EVKey or OpenKey install is still the last word
 - Title grows instead of clipping; toolbar sticky (`✂` it wraps in 2.0, by owner verdict,
   [editing.md](../features/editing.md)); focusing prose draws no black outline
 

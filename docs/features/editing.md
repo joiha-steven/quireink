@@ -48,10 +48,31 @@
   synthesized filtered-noise click (no audio file), at `settings.motion.keyVolume` out of 100.
   Applying a highlight, underline or ring draws the stroke in over 200ms and, with
   `settings.motion.penSqueak` on, squeaks like a felt tip (ADR 0049).
-  It ignores composition, modifier/navigation keys, paste, and held repeats. The master
-  `settings.motion.enabled` and `prefers-reduced-motion` still gate the visual half; `off`
-  makes the editor standard and silent, and a volume of 0 keeps the caret without the sound.
-  Nothing animates the text itself — see [admin-editor.md](../admin-editor.md).
+  The master `settings.motion.enabled` and `prefers-reduced-motion` still gate the visual half;
+  `off` makes the editor standard and silent, and a volume of 0 keeps the caret without the
+  sound. Nothing animates the text itself — see [admin-editor.md](../admin-editor.md).
+  - **One strike per key PRESSED** (`key-feedback.ts`, `key-burst.ts`). A backspace-based input
+    method (EVKey, OpenKey, Unikey) writes an accent as Backspaces plus the retyped letters 1-4 ms
+    apart: events within `BURST_MS` (16) of each other are one key, timed by the KEYDOWN's stamp
+    so keys queued behind a busy page stay apart. A burst opening with an insert strikes at once;
+    one opening with a delete waits 16 ms and strikes as what it ended on (a tap, or the space
+    that committed the word), or as a delete when nothing followed. A composing method (the Mac's
+    and Windows' Telex) strikes per composition step; the commit that re-inserts the same word is
+    silent. Held repeats, paste, drop, cut, `insertReplacementText` and undo make no sound.
+  - **The machinery is built on the first gesture** (`warmKeys`: the click into the paper, a key
+    in the title), in idle slices, not inside the first key's `beforeinput` holding the letter.
+  - **Measured, not heard:** `scripts/typing-check.ts` types Vietnamese both ways in Chrome, reads
+    the text back, counts scheduled sources and times key-to-paint (`THROTTLE=4`: a slow machine).
+- **Typing in a long post.** A keystroke's cost is the edit, not the post: the pens are re-dealt
+  only where an update changed something (`dealChanged`, `pen-deal.ts`), the drawn caret is
+  measured once per frame, the word count runs after a one-second pause in idle time, and the
+  autosave takes one snapshot per tick. Off-screen plain blocks carry `content-visibility: auto`
+  (`admin.css`): every pen stroke is a `mix-blend-mode` the browser re-layers on every frame, on
+  screen or not, which was 17 of 36 ms per key on a 1,491-stroke post with the CPU slowed 4x.
+- **Fields and input methods:** every Enter, Escape and Tab handler asks `composing(e)` first,
+  and a field that filters, searches or derives (the slug from the title) listens through
+  `onTyped` (`components/composing.ts`), which skips the steps of a composed word and acts on
+  `compositionend`. A backspace-based method's half-built `tieng` is real text and passes.
 - **Getting a picture in:** the toolbar's **Image** (one) and **Gallery** (multi-select) buttons,
   the same two rows in the `/` menu, dragging files onto the sheet — they upload in order and
   land at the drop point, not at the stale cursor — and **pasting**. Paste was silence until
