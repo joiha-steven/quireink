@@ -13,8 +13,9 @@
 // TEXT survives: the sound carries the keystroke, the caret carries the position, and the
 // words hold still. On a real machine the paper moves and the words do not.
 import type { Editor } from '@/admin/editor/editor'
-import { playKey, type KeySound } from './key-sound'
+import { playKey, warmKeys, type KeySound } from './key-sound'
 import type { Strike } from './key-voices'
+import { KeyBurst } from './key-burst'
 import { motionOn, dur, ease } from '@/admin/motion'
 
 /**
@@ -29,9 +30,23 @@ import { motionOn, dur, ease } from '@/admin/motion'
 const SETTLE_MS = 700
 let settleTimer = 0
 
+/** Carets with a placement already waiting for the next frame. */
+const queued = new WeakSet<HTMLElement>()
+
+/**
+ * Put the drawn caret where the selection is, once per frame however often it is asked.
+ *
+ * ⚠️ ONE FRAME, ONE MEASUREMENT. A keystroke asks three times — its `beforeinput`, the
+ * selection update its transaction makes, and its `keyup` — and an input method's rewrite asks
+ * once per event inside it. Each answer was its own animation frame calling `coordsAtPos` and
+ * `getBoundingClientRect`, so a single key read the layout up to three times over. The caret
+ * can only be in one place when the frame is drawn; it is measured once, there.
+ */
 export function placeCaret(view: Editor['view'], caret: HTMLElement | null): void {
-  if (!caret) return
+  if (!caret || queued.has(caret)) return
+  queued.add(caret)
   requestAnimationFrame(() => {
+    queued.delete(caret)
     const stage = caret.parentElement
     const visible = view.hasFocus() && view.state.selection.empty
     if (!stage || !visible) {
@@ -56,12 +71,21 @@ function holdBlink(caret: HTMLElement | null): void {
 }
 
 /**
- * One keystroke's worth of feedback.
+ * THE INPUT TYPES THAT ARE A FINGER ON A KEY, and nothing else makes a sound.
  *
- * The caret moves and, in `woody` alone, takes a small step as it goes — that is the
- * carriage, and it is the one motion left in this file. A keyboard does not move the page,
- * so the two mechanical voices leave it alone.
+ * The test used to be "starts with insert or delete", which let in every way text arrives
+ * without a key: `insertFromPaste` and `insertFromDrop` struck a key for a whole article,
+ * `deleteByCut` struck a delete, and `insertReplacementText` — the spelling checker, or the
+ * Mac's autocorrect swapping a word as the space goes in — struck a second key on top of the
+ * space that caused it. The documentation promised paste was silent; it never was.
  */
+const KEYED = new Set([
+  'insertText', 'insertCompositionText', 'insertParagraph', 'insertLineBreak', 'insertTranspose',
+  'deleteContentBackward', 'deleteContentForward', 'deleteWordBackward', 'deleteWordForward',
+  'deleteSoftLineBackward', 'deleteSoftLineForward', 'deleteHardLineBackward',
+  'deleteHardLineForward', 'deleteEntireSoftLine',
+])
+
 /**
  * Which key this was, as far as any of the three instruments is concerned.
  *
@@ -69,50 +93,109 @@ function holdBlink(caret: HTMLElement | null): void {
  * the same mechanism: the space bar lets the carriage step once, and the return throws it
  * all the way back across the machine and into the stop.
  */
-function strikeOf(inputType: string, data: string | null, deleting: boolean): Strike {
-  if (deleting) return 'back'
+function strikeOf(inputType: string, data: string | null): Strike {
+  if (inputType.startsWith('delete')) return 'back'
   if (inputType === 'insertParagraph' || inputType === 'insertLineBreak') return 'return'
-  return data === ' ' ? 'space' : 'tap'
+  // The LAST character, because an input method that rewrites a word and its space in one
+  // insert (`ếng `) is carrying the space the writer pressed.
+  return data && data.endsWith(' ') ? 'space' : 'tap'
 }
 
-export function pulseInput(
-  view: Editor['view'],
-  event: InputEvent,
-  caret: HTMLElement | null,
+/** What the writing surface hands over: the key behind an edit, the edit, and the IME's edges. */
+export type KeyFeedback = {
+  /** Every `keydown`: when the key was made, and whether it is a held key repeating. */
+  key: (event: KeyboardEvent) => void
+  /** Every `beforeinput`. */
+  input: (view: Editor['view'], event: InputEvent) => void
+  /** `compositionstart` and `compositionend`: a word an input method is building begins or ends. */
+  composition: () => void
+}
+
+/**
+ * The editor's answer to the hand, built once per writing surface.
+ *
+ * ⚠️ TIMED BY THE KEY, NOT BY THE EVENT. `beforeinput` is stamped when the page gets round to
+ * it; `keydown` is stamped when the key was made. On a long post with the page busy for a
+ * moment, three keys typed 90 ms apart reach `beforeinput` back to back — and timed by that,
+ * three real keys would be taken for one input-method burst and two of them silenced. The
+ * keydown's stamp is the one a busy page cannot move, so it is the one `KeyBurst` is fed.
+ * An insert with no keydown before it (an input method that posts text directly) falls back
+ * to its own stamp, which is the best there is.
+ */
+export function keyFeedback(
+  caret: () => HTMLElement | null,
   sound: KeySound,
-): void {
-  if (sound.mode === 'off') return
-  const inputType = event.inputType
-  // An IME redrawing its buffer: many engines clear and re-insert the composition on
-  // EVERY keystroke, so this event is bookkeeping, not a key — reacting to it doubled
-  // the click. The keystroke's own sound comes from the insert half below.
-  if (inputType === 'deleteCompositionText') return
-  const deleting = inputType.startsWith('delete')
-  if (!deleting && !inputType.startsWith('insert')) return
+  // The player, handed in so `key-feedback.test.ts` can count strikes and read their kinds
+  // without an audio engine. Nothing else passes it.
+  play: (sound: KeySound, kind: Strike) => void = playKey,
+): KeyFeedback {
+  /** The last keydown, until the edit it caused has been heard. */
+  let pressed: { at: number; repeat: boolean; seen: number } | null = null
+  /** What the input method is showing for the word it is building, so its echo is known. */
+  let composed = ''
 
-  // A composing keystroke still IS a keystroke. The old guard silenced the whole
-  // composition, so anyone on an IME — Vietnamese Telex, Japanese, Chinese — heard one
-  // click per finished WORD while their fingers made ten: a typewriter that skips keys.
-  // `insertCompositionText` fires once per key inside the composition; everything else
-  // that is composing (the commit's own echo) stays silent so a word does not end on a
-  // double strike.
-  if (!event.isComposing || inputType === 'insertCompositionText') {
-    playKey(sound, strikeOf(inputType, event.data, deleting))
+  const burst = new KeyBurst((kind) => {
+    play(sound, kind)
+    // The carriage step, once per KEY: an input method's four events were four twitches.
+    const drawn = caret()
+    if (sound.mode !== 'woody' || !drawn || !motionOn()) return
+    // Compositor-only, on the caret and nothing else. `transform` and `opacity` on one 2px
+    // element cost a composite; the version this replaced repainted a whole paragraph.
+    drawn.animate(
+      kind === 'back'
+        ? [{ transform: 'translateX(-2px) scaleY(0.86)' }, { transform: 'translateX(0) scaleY(1)' }]
+        : [{ transform: 'translateY(1px) scaleY(0.9)' }, { transform: 'translateY(0) scaleY(1)' }],
+      // ⚠️ THE ENGINE'S FAST, not a fourth curve and a fourth number. This was 110ms on
+      // cubic-bezier(.2,.8,.2,1), which nothing else in the product used; the settle is 40ms
+      // longer now and on the one curve everything else settles on.
+      { duration: dur('fast'), easing: ease() },
+    )
+  })
+
+  return {
+    key: (event) => {
+      if (sound.mode === 'off') return
+      pressed = { at: event.timeStamp, repeat: event.repeat, seen: performance.now() }
+      // The first key of a session is the one that would pay for the audio machinery: build
+      // it now, while this key is still on its way to the page (`warmKeys`, key-sound.ts).
+      warmKeys(sound)
+    },
+    composition: () => { composed = '' },
+    input: (view, event) => {
+      if (sound.mode === 'off') return
+      const type = event.inputType
+      if (!KEYED.has(type)) return
+      // The keydown that caused this, if one did and it has not been spent. Fifty ms is far
+      // longer than a keydown and its edit are ever apart, and short enough that a navigation
+      // key nobody typed text with cannot lend its time to some later insert.
+      const key = pressed && performance.now() - pressed.seen < 50 ? pressed : null
+      pressed = null
+      placeCaret(view, caret())
+      holdBlink(caret())
+
+      // A HELD KEY IS SILENT after its first strike, which is the machine telling the truth:
+      // a switch held down does not click again, and a typewriter key held down does not
+      // strike again. Before this, holding Backspace was thirty deletes a second, every one
+      // of them heard.
+      if (key?.repeat) return
+
+      let kind: Strike
+      if (type === 'insertCompositionText') {
+        const data = event.data ?? ''
+        // ⚠️ THE COMMIT'S ECHO. Chrome commits a composed word by inserting it once more, with
+        // the same text, and THEN the space or return that committed it arrives as its own
+        // edit. Heard, every word ended on two strikes — measured, 57 for 49 keys. A
+        // composition update that changes nothing on screen was not a key.
+        if (data === composed) return
+        // Backspace inside a composition shortens it rather than deleting anything.
+        kind = data.length < composed.length && composed.startsWith(data) ? 'back' : 'tap'
+        composed = data
+      } else {
+        // Anything else that is composing is the input method's bookkeeping, not a key.
+        if (event.isComposing) return
+        kind = strikeOf(type, event.data)
+      }
+      burst.feed(kind, key ? key.at : event.timeStamp, key !== null)
+    },
   }
-  placeCaret(view, caret)
-  holdBlink(caret)
-
-  if (sound.mode !== 'woody' || !caret || !motionOn()) return
-
-  // Compositor-only, on the caret and nothing else. `transform` and `opacity` on one 2px
-  // element cost a composite; the version this replaced repainted a whole paragraph.
-  caret.animate(
-    deleting
-      ? [{ transform: 'translateX(-2px) scaleY(0.86)' }, { transform: 'translateX(0) scaleY(1)' }]
-      : [{ transform: 'translateY(1px) scaleY(0.9)' }, { transform: 'translateY(0) scaleY(1)' }],
-    // ⚠️ THE ENGINE'S FAST, not a fourth curve and a fourth number. This was 110ms on
-    // cubic-bezier(.2,.8,.2,1), which nothing else in the product used; the settle is 40ms
-    // longer now and on the one curve everything else settles on.
-    { duration: dur('fast'), easing: ease() },
-  )
 }

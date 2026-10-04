@@ -9,7 +9,7 @@
 // ⚠️ THE TWO VIEWS ARE BOTH IN THE MARKUP, and this only flips `hidden`. See `sheet-raw.ts`.
 import { Selection } from 'prosemirror-state'
 import { Editor } from '@/admin/editor/editor'
-import type { KeySound } from '@/admin/components/key-sound'
+import { warmKeys, type KeySound } from '@/admin/components/key-sound'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import type { Hit } from '@/admin/components/editorFind'
 import type { SlashAt } from '@/admin/components/editor-menus'
@@ -57,6 +57,8 @@ export type Paper = {
   setMarkdown: (markdown: string) => void
   insertImage: (url: string, alt?: string) => void
   insertGalleryMany: (urls: string[]) => void
+  /** Goes up on every edit to the body, so a reader can tell nothing changed without reading it. */
+  readonly revision: number
   /** Swap between the writing and the raw Markdown source. */
   toggleRaw: () => void
   readonly raw: boolean
@@ -75,6 +77,8 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
     ? null
     : el('span', { className: 'typewriter-caret', 'aria-hidden': 'true' })
   const caretRef = { current: caret }
+  /** Every edit to the body, in either view: the word count skips a tick with none. */
+  let revision = 0
 
   /** The image files out of a DataTransfer, from a drop or from the clipboard. */
   const imageFiles = (list: FileList | null | undefined): File[] =>
@@ -151,15 +155,23 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
   // pause between two sentences, so the stall landed in every one — 126ms frozen on an 18k-word
   // draft carrying 2,159 pen marks (2026-09-13). Every reader asks the editor for the text at
   // the moment it needs it instead.
-  editor.on('update', () => hooks.onDirty())
+  editor.on('update', () => { revision += 1; hooks.onDirty() })
   if (caret) parts.paperSlot.appendChild(caret)
+
+  // THE SOUND IS MADE READY ON THE FIRST GESTURE ANYWHERE ON THE PAGE — the click that puts the
+  // caret in the paper, a key in the title — so the first key in the writing finds it built
+  // (`warmKeys`). Not at load: before a gesture the browser would build it suspended and say so.
+  const warm = (): void => warmKeys(keySound)
+  document.addEventListener('pointerdown', warm, { capture: true, passive: true })
+  document.addEventListener('keydown', warm, { capture: true, passive: true })
+  warm()
 
   // The source view is built ONCE, now, and never rebuilt: the switch into it carries a caret
   // offset, and a textarea that does not exist at the moment the switch is thrown is a caret
   // that lands at the end of the document.
   const source = mountSource(parts.sourceSlot, {
     onChange: (next) => { raw.setText(next); hooks.onText(next) },
-    onDirty: hooks.onDirty,
+    onDirty: () => { revision += 1; hooks.onDirty() },
   })
 
   const raw = wireRaw(source, editor, {
@@ -179,7 +191,7 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
     area: source.area,
     raw: () => raw.on,
     rawText: () => raw.text,
-    onRawText: (next) => { raw.setText(next); source.setValue(next); hooks.onText(next); hooks.onDirty() },
+    onRawText: (next) => { raw.setText(next); source.setValue(next); hooks.onText(next); revision += 1; hooks.onDirty() },
     onRawHits: (hits: Hit[], current: number) => source.setHits(hits, current),
     onOpen: () => chrome.sync(),
     onHeight: (px) => chrome.setFindHeight(px),
@@ -224,12 +236,15 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
     },
     toggleRaw: () => raw.toggle(),
     get raw() { return raw.on },
+    get revision() { return revision },
     focusStart: () => {
       const box = raw.on ? parts.sourceSlot.querySelector('textarea') : null
       if (box) { box.focus(); box.setSelectionRange(0, 0); return }
       editor.commands.focus(Selection.atStart(editor.state.doc).from)
     },
     destroy: () => {
+      document.removeEventListener('pointerdown', warm, { capture: true })
+      document.removeEventListener('keydown', warm, { capture: true })
       stopFocus()
       find.destroy()
       chrome.destroy()

@@ -202,22 +202,42 @@ const PHRASE_GAP = 0.135
 
 function strike(sound: KeySound, kinds: Strike[]): void {
   if (sound.mode === 'off') return
-  const level = gainFor(sound.volume)
-  if (level <= 0) return
+  if (gainFor(sound.volume) <= 0) return
+  withContext((context) => fire(context, sound, kinds))
+}
+
+/**
+ * The one context, made if it is not there yet. A context the browser has CLOSED cannot be
+ * resumed and is replaced; the rendered buffers survive it, because an `AudioBuffer` belongs to
+ * no context and only its sample rate has to match.
+ */
+function context(): AudioContext | null {
   const AudioContextClass = window.AudioContext
-  if (!AudioContextClass) return
+  if (!AudioContextClass) return null
+  if (audio?.state === 'closed') { audio = null; limiter = null }
   audio ??= new AudioContextClass()
-  const context = audio
-  // A context that has not been unlocked yet cannot be handed a source and told to start
-  // NOW: its clock is not moving, so the scheduled moment is already in the past by the time
-  // the resume lands, and the sound is dropped without an error. Chrome unlocks a context
-  // built inside a gesture; Safari does not, and the very first key a writer presses is
-  // exactly the one that would go missing.
-  if (context.state === 'suspended') {
-    void context.resume().then(() => fire(context, sound, kinds)).catch(() => {})
+  return audio
+}
+
+/**
+ * `fn` with a context that is actually running.
+ *
+ * A context that has not been unlocked yet cannot be handed a source and told to start NOW: its
+ * clock is not moving, so the scheduled moment is already in the past by the time the resume
+ * lands, and the sound is dropped without an error. Chrome unlocks a context built after the
+ * page has seen a gesture; Safari does not, and the very first key a writer presses is exactly
+ * the one that would go missing. NOT-RUNNING rather than `suspended`, because Safari has a
+ * fourth state of its own — `interrupted`, after a call or another app takes the audio — that
+ * needs the same resume and was left playing into a stopped clock.
+ */
+function withContext(fn: (context: AudioContext) => void): void {
+  const ctx = context()
+  if (!ctx) return
+  if (ctx.state !== 'running') {
+    void ctx.resume().then(() => fn(ctx)).catch(() => {})
     return
   }
-  fire(context, sound, kinds)
+  fn(ctx)
 }
 
 /**
@@ -226,15 +246,58 @@ function strike(sound: KeySound, kinds: Strike[]): void {
  * and the node to connect to, and is not called at all when the context cannot be had.
  */
 export function withAudio(fn: (context: AudioContext, out: AudioNode) => void): void {
-  const AudioContextClass = window.AudioContext
-  if (!AudioContextClass) return
-  audio ??= new AudioContextClass()
-  const context = audio
-  if (context.state === 'suspended') {
-    void context.resume().then(() => fn(context, ceiling(context))).catch(() => {})
-    return
-  }
-  fn(context, ceiling(context))
+  withContext((ctx) => fn(ctx, ceiling(ctx)))
+}
+
+/** The four strikes an instrument has, which is everything a writer can make it play. */
+const KINDS: Strike[] = ['tap', 'space', 'back', 'return']
+
+/** The instrument already warmed, so the second call and every one after is one comparison. */
+let warmed: string | null = null
+
+/** After whatever the page is doing now, and not in the middle of a frame where there is one. */
+function later(fn: () => void): void {
+  const idle = (window as { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+  if (idle) idle(fn, { timeout: 300 })
+  else setTimeout(fn, 0)
+}
+
+/**
+ * Build the machinery BEFORE the first key needs it.
+ *
+ * ⚠️ THE FIRST KEY OF A SESSION PAID FOR EVERYTHING. It constructed the AudioContext, the
+ * ceiling and its own three renderings, all inside its own `beforeinput` — and `beforeinput`
+ * runs before the letter goes in, so the LETTER waited too. Measured in Chrome on the first key
+ * after opening a post: 187 ms between the key and the letter on screen, 177 of it the
+ * context's constructor. Every later strike of a new kind (the first space, the first
+ * Backspace, the first return) rendered its own three takes mid-sentence as well.
+ *
+ * Called by the sheet on the first pointer press or key anywhere on the page, and by the
+ * writing surface on every key (where it is one comparison after the first). The work is done
+ * in idle slices — the context in one, each strike's takes in its own — so none of it lands on
+ * a keystroke. The context is only built once the page has seen a gesture: before that a
+ * browser makes it suspended and says so in the console, and the gesture that unlocks it is the
+ * thing that calls this. Silent at volume 0 and with the instrument off, as `strike` is.
+ */
+export function warmKeys(sound: KeySound): void {
+  if (sound.mode === 'off' || gainFor(sound.volume) <= 0 || warmed === sound.mode) return
+  const activation = (navigator as { userActivation?: { hasBeenActive: boolean } }).userActivation
+  if (activation && !activation.hasBeenActive) return
+  const mode: Instrument = sound.mode
+  warmed = mode
+  later(() => {
+    const ctx = context()
+    if (!ctx) return
+    ceiling(ctx)
+    let i = 0
+    const next = (): void => {
+      const kind = KINDS[i++]
+      if (!kind) return
+      buffers(ctx, mode, kind)
+      later(next)
+    }
+    next()
+  })
 }
 
 function fire(context: AudioContext, sound: KeySound, kinds: Strike[]): void {

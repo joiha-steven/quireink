@@ -15,7 +15,7 @@
 import type { EditorProps } from 'prosemirror-view'
 import type { Editor } from '@/admin/editor/editor'
 import type { KeySound } from './key-sound'
-import { placeCaret, pulseInput } from './key-feedback'
+import { keyFeedback, placeCaret } from './key-feedback'
 import { isVideoUrl } from '@/render/video'
 import type { SlashAt } from './editor-menus'
 import { composing } from './composing'
@@ -41,6 +41,7 @@ export type SurfaceHooks = {
 export function writingSurface(
   { keySound, caretRef, slashRef, setSlash, slashKey, editorRef, insertImages, imageFiles }: SurfaceHooks,
 ): EditorProps {
+  const feedback = keyFeedback(() => caretRef.current, keySound)
   return {
       attributes: { class: 'prose max-w-none min-h-[420px] px-4 py-4' },
       // "/" on an empty line CALLS the insert menu (the Writing Desk mock's gesture), and is
@@ -64,8 +65,22 @@ export function writingSurface(
         return !!slashRef.current && !composing(event) && slashKey(event.key)
       },
       handleDOMEvents: {
+        // The key, then the edit it made: `key-feedback.ts` needs both, because the edit says
+        // WHAT happened and only the keydown says WHEN the finger did it.
+        keydown(_view, event) {
+          feedback.key(event)
+          return false
+        },
         beforeinput(view, event) {
-          if (event instanceof InputEvent) pulseInput(view, event, caretRef.current, keySound)
+          if (event instanceof InputEvent) feedback.input(view, event)
+          return false
+        },
+        compositionstart() {
+          feedback.composition()
+          return false
+        },
+        compositionend() {
+          feedback.composition()
           return false
         },
         focus(view) {

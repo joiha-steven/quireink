@@ -9,11 +9,11 @@
 
 import { describe, expect, it, beforeAll, afterAll, beforeEach } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
-import { gainFor, playKey, previewKey, takes, LEVEL } from '@/admin/components/key-sound'
+import { gainFor, playKey, previewKey, takes, warmKeys, LEVEL } from '@/admin/components/key-sound'
 import { peakOf } from '@/admin/components/key-render'
 import type { Instrument, Strike } from '@/admin/components/key-voices'
 
-const built = { gains: [] as number[], rates: [] as number[], buffers: [] as unknown[], starts: 0, contexts: 0, shapers: 0 }
+const built = { gains: [] as number[], rates: [] as number[], buffers: [] as unknown[], starts: 0, contexts: 0, shapers: 0, made: 0 }
 
 class FakeContext {
   state = 'running'
@@ -22,6 +22,7 @@ class FakeContext {
   destination = {}
   constructor() { built.contexts += 1 }
   createBuffer(_c: number, length: number) {
+    built.made += 1
     return { length, getChannelData: () => new Float32Array(length) }
   }
   createBufferSource() {
@@ -160,3 +161,29 @@ describe('the graph', () => {
     expect(new Set(lengths).size).toBe(4)
   })
 })
+
+describe('before the first key', () => {
+  it('renders every strike of the instrument in idle time, so no key pays for it', async () => {
+    built.made = 0
+    // `deep`'s taps are already cached by the cases above; its back, space and return are not.
+    warmKeys({ mode: 'deep', volume: 40 })
+    await Bun.sleep(50)
+    // The four strikes, three takes each, minus whatever earlier cases already rendered: never
+    // more than twelve, and the back, space and return of `deep` were never played above.
+    expect(built.made).toBeGreaterThanOrEqual(9)
+    expect(built.made).toBeLessThanOrEqual(12)
+    const after = built.made
+    warmKeys({ mode: 'deep', volume: 40 })
+    await Bun.sleep(30)
+    expect(built.made).toBe(after)
+  })
+
+  it('does nothing at volume 0 or with the instrument off', async () => {
+    built.made = 0
+    warmKeys({ mode: 'crisp', volume: 0 })
+    warmKeys({ mode: 'off', volume: 80 })
+    await Bun.sleep(30)
+    expect(built.made).toBe(0)
+  })
+})
+
