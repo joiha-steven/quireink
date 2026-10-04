@@ -185,8 +185,7 @@ function boot(root: HTMLElement, data: Payload): void {
       if (slugBox) slugBox.value = draft.slug
     }
     markDirty()
-    // A FIELD changed, so the Publish key's word, the scheduled line or the live link may too.
-    sayState()
+    if ('status' in patch || 'date' in patch) sayState() // the line reads no other field
   }
 
   // ---- the panel, its fields, and the safety net ----------------------------------------
@@ -203,6 +202,7 @@ function boot(root: HTMLElement, data: Payload): void {
     t,
     lang,
     getText: body, // the body alone, as the page counts it: the title made the two disagree
+    revision: () => paper.revision,
     onSaveDraft: () => {
       const status = statusForSave(savedStatus, draft.status)
       void saveAs(status, status === 'published' ? t.savedChanges : t.savedDraft)

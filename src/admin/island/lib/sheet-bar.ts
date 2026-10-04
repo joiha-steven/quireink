@@ -23,8 +23,20 @@ import { formatTime } from '@/admin-shared/when'
 import { matchesChord, printChord, SHORTCUTS } from '@/admin/components/editorKeys'
 import { focusOn, onFocusChange, setFocus } from './focus-mode'
 
-/** Four seconds is the same number to a human, and it is not a re-count per keystroke. */
-const COUNT_EVERY = 4000
+/**
+ * When the count is taken: once the writing has stood still this long, or — for somebody who
+ * never stops — once it is this stale. Polled once a second, which is two comparisons.
+ */
+const COUNT_AFTER_PAUSE = 1000
+const COUNT_AT_MOST_EVERY = 15000
+const POLL = 1000
+
+/** In a gap in the typing, or within a second if the writer never stops. */
+function idle(fn: () => void): void {
+  const ask = (window as { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+  if (ask) ask(fn, { timeout: 1000 })
+  else setTimeout(fn, 0)
+}
 
 export type BarHooks = {
   t: SheetWords
@@ -32,6 +44,8 @@ export type BarHooks = {
   lang: SiteLang
   /** The title and the body, for the word count. Read on the tick, never held. */
   getText: () => string
+  /** Goes up on every edit: a tick with the same number as the last count has nothing to count. */
+  revision: () => number
   onSaveDraft: () => void
   onPublish: () => void
   onPreview: () => void
@@ -141,15 +155,36 @@ export function wireBar(root: HTMLElement, hooks: BarHooks): Bar {
 
   /**
    * The count is POLLED, and that is deliberate: it is read off the document, which means
-   * serializing it, and nobody reads a word count mid-word. A number that is at most four
-   * seconds stale is the same number to a human.
+   * serializing it, and nobody reads a word count mid-word.
+   *
+   * ⚠️ AND IT WAITS FOR THE HANDS TO STOP. It serialized the whole piece every four seconds,
+   * typed into or not, on a timer that lands wherever it lands — between a key and its letter as
+   * readily as anywhere. And the count is two passes, not one: the Markdown, then `toPlainText`
+   * over it, because the number has to be the page's own (`word-count.ts`). Measured in Chrome
+   * on a 15,000-word post: 7 ms at full speed, 50-60 ms with the CPU throttled to a modest
+   * laptop's, which is a key's worth of stall every four seconds of typing. Now nothing is
+   * counted while nothing changed, the count is taken in the first second the writing stands
+   * still, in the page's idle time, and somebody typing without a pause sees it refreshed every
+   * fifteen seconds.
    */
+  let counted = hooks.revision()
+  let seen = counted
+  let still = 0
+  let countedAt = Date.now()
   const counting = setInterval(() => {
-    const next = countWords(hooks.getText())
-    if (next === words) return
-    words = next
-    sayLine()
-  }, COUNT_EVERY)
+    const revision = hooks.revision()
+    if (revision !== seen) { seen = revision; still = 0 } else still += POLL
+    if (revision === counted) return
+    if (still < COUNT_AFTER_PAUSE && Date.now() - countedAt < COUNT_AT_MOST_EVERY) return
+    counted = revision
+    countedAt = Date.now()
+    idle(() => {
+      const next = countWords(hooks.getText())
+      if (next === words) return
+      words = next
+      sayLine()
+    })
+  }, POLL)
   words = countWords(hooks.getText())
   sayLine()
   sayKeys()

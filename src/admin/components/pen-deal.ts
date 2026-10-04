@@ -24,9 +24,10 @@
 // transaction, nothing is in the undo history, and a save cannot see it.
 
 import { Plugin, PluginKey } from 'prosemirror-state'
-import { DOMSerializer, type Mark } from 'prosemirror-model'
+import { DOMSerializer, type Mark, type Node as PMNode } from 'prosemirror-model'
 import type { MarkView } from 'prosemirror-view'
 import { penSeed } from '@/pen/grammar'
+import { findKey } from './FindExtension'
 
 /** Every stroke the writing surface can be holding. `<u>` is the underline; `<mark>` is both
  *  the highlighter and — with `data-form="o"` — the ring. */
@@ -42,8 +43,9 @@ const STROKES = 'mark,u'
  */
 type Surface = {
   dom: HTMLElement
-  state: { selection: { from: number; to: number } }
+  state: { selection: { from: number; to: number }; doc: PMNode }
   domAtPos: (pos: number) => { node: Node; offset: number }
+  nodeDOM: (pos: number) => Node | null
 }
 
 /**
@@ -98,13 +100,67 @@ export function dealPens(view: Surface): number {
   const held = underTheHand(view)
   let changed = 0
   for (const el of view.dom.querySelectorAll(STROKES)) {
-    const has = el.getAttribute('data-pen')
-    if (el === held && has !== null) continue
-    const want = String(penSeed(penRawOf(el)))
-    if (has === want) continue
-    el.setAttribute('data-pen', want)
-    changed++
+    if (el === held && el.getAttribute('data-pen') !== null) continue
+    if (deal(el)) changed++
   }
+  return changed
+}
+
+/** One stroke, dealt the pen its words hash to. True when that changed its hand. */
+function deal(el: Element): boolean {
+  const want = String(penSeed(penRawOf(el)))
+  if (el.getAttribute('data-pen') === want) return false
+  el.setAttribute('data-pen', want)
+  return true
+}
+
+/** Strokes the browser has drawn and nobody has dealt yet: a native query, no loop over the rest. */
+const UNDEALT = 'mark:not([data-pen]),u:not([data-pen])'
+
+/**
+ * The same answer as `dealPens`, for what ONE update can have changed. Returns how many changed.
+ *
+ * ⚠️ THE WHOLE-DOCUMENT PASS RAN ON EVERY KEYSTROKE, and on a long post it was most of what a
+ * keystroke cost. Every update — a letter typed, the caret moved — read every stroke's text and
+ * hashed it, to find that none of them had changed. Profiled in Chrome on a 13,000-word post
+ * holding 1,491 strokes: 0.99 ms of the 1.73 ms ProseMirror spent per key, more than the edit,
+ * the decorations and the redraw together.
+ *
+ * Three things are all an update can do to a stroke, and each is found without the walk:
+ *  - **A stroke the view drew fresh** — a new mark, a block redrawn, a decoration that split a
+ *    run — has no `data-pen` at all. An edit only redraws the blocks it changed, which the next
+ *    point re-deals anyway; anything else that redraws (a find query highlighting, a plugin
+ *    mounted) is `anywhere`, and the selector engine finds the undealt natively. Even that
+ *    native walk was 0.6 ms a key over 1,491 strokes on a CPU slowed four times, so a
+ *    keystroke does not pay it.
+ *  - **A stroke whose words changed under an element the view kept** — a replace, an undo, a
+ *    paste — lies inside the stretch where the two documents differ. `findDiffStart` and
+ *    `findDiffEnd` find it by comparing nodes by identity, so the cost is the size of the
+ *    change rather than of the post; the top-level blocks across it are re-dealt.
+ *  - **The stroke the hand just left** settles to the page's pen, which is the deferral
+ *    `dealPens` describes, now kept as the one element it is.
+ */
+export function dealChanged(view: Surface, before: PMNode, left: Element | null, anywhere = true): number {
+  const held = underTheHand(view)
+  let changed = 0
+  if (anywhere) for (const el of view.dom.querySelectorAll(UNDEALT)) if (deal(el)) changed++
+  const doc = view.state.doc
+  if (doc !== before) {
+    const from = doc.content.findDiffStart(before.content)
+    const end = doc.content.findDiffEnd(before.content)
+    if (from !== null && end) {
+      const to = Math.max(from, end.a)
+      doc.forEach((block, at) => {
+        if (at + block.nodeSize < from || at > to) return
+        const dom = view.nodeDOM(at)
+        if (!(dom instanceof Element)) return
+        for (const el of dom.matches(STROKES) ? [dom] : dom.querySelectorAll(STROKES)) {
+          if (el !== held && deal(el)) changed++
+        }
+      })
+    }
+  }
+  if (left && left !== held && left.isConnected && deal(left)) changed++
   return changed
 }
 
@@ -140,11 +196,26 @@ export function penDealPlugin(): Plugin {
     key: new PluginKey('quirePenDeal'),
     props: { markViews: { ink: penMarkView, underline: penMarkView, ring: penMarkView } },
     // `update` runs after the view has redrawn, so the strokes a transaction produced are
-    // already in the DOM and no frame has to be waited for. Nothing is scheduled and nothing is
-    // remembered between calls: the attribute in the DOM is the state.
+    // already in the DOM and no frame has to be waited for. Nothing is scheduled, and the one
+    // thing remembered between calls is which stroke the hand is in: the attribute in the DOM
+    // is the state of every other one.
+    //
+    // ONE WHOLE PASS, when the view is built; after that each update deals only what it changed
+    // (`dealChanged`), and the stroke the hand just left.
     view: (view) => {
       dealPens(view)
-      return { update: () => { dealPens(view) } }
+      let held = underTheHand(view)
+      return {
+        update: (_view, previous) => {
+          const edited = view.state.doc !== previous.doc
+          const moved = !view.state.selection.eq(previous.selection)
+          // Neither an edit nor a caret move — a find query, a plugin mounted — or the find
+          // strip's highlights moved: either can redraw a block the edit did not touch.
+          const anywhere = (!edited && !moved) || findKey.getState(view.state) !== findKey.getState(previous)
+          dealChanged(view, previous.doc, held, anywhere)
+          held = underTheHand(view)
+        },
+      }
     },
   })
 }

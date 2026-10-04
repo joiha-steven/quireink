@@ -82,12 +82,13 @@ export function wireSafety(hooks: SafetyHooks): Safety {
   const tell = (): void => hooks.onOffer(offerNow())
 
   /** The device copy. Cheap, synchronous, and the only one a piece with no row can have. */
-  const keep = (): void => {
-    if (!hooks.dirty()) return
-    const at = writeSnapshot(key, hooks.take())
-    if (at === null) return
+  const keep = (snap: Snapshot = hooks.take()): boolean => {
+    if (!hooks.dirty()) return false
+    const at = writeSnapshot(key, snap)
+    if (at === null) return false
     keptAt = at
     hooks.onKept()
+    return true
   }
 
   /**
@@ -95,14 +96,15 @@ export function wireSafety(hooks: SafetyHooks): Safety {
    * whether it worked, and a beacon reports nothing back. A failed request leaves `sentAt`
    * alone — claiming a save that 500ed is the one thing an autosave indicator must never do.
    */
-  const send = async (): Promise<void> => {
-    if (!slug || !hooks.dirty()) return
-    const body = JSON.stringify(hooks.take())
-    if (body === sent) return
-    if (!(await sendSnapshot(hooks.kind, slug, body))) return
+  const send = async (snap: Snapshot = hooks.take()): Promise<boolean> => {
+    if (!slug || !hooks.dirty()) return true
+    const body = JSON.stringify(snap)
+    if (body === sent) return true
+    if (!(await sendSnapshot(hooks.kind, slug, body))) return false
     sent = body
     sentAt = Date.now()
     hooks.onKept()
+    return true
   }
 
   /** The way out. No await is possible and none is wanted: a beacon outlives the document. */
@@ -114,7 +116,18 @@ export function wireSafety(hooks: SafetyHooks): Safety {
     void sendSnapshot(hooks.kind, slug, body, true).then((ok) => { if (ok) sent = body })
   }
 
-  const tick = setInterval(() => { keep(); void send() }, hooks.intervalMs)
+  /**
+   * ⚠️ ONE SNAPSHOT A TICK. The tick took the document twice — once for this device, once for
+   * the server — and serializing is the one expensive thing here: on a 15,000-word post, two
+   * Markdown passes and two `JSON.stringify` of the whole body every tick while the piece is
+   * dirty, typed into or not. It is taken once and handed to both.
+   */
+  const tick = setInterval(() => {
+    if (!hooks.dirty()) return
+    const snap = hooks.take()
+    keep(snap)
+    void send(snap)
+  }, hooks.intervalMs)
   const onHidden = (): void => { if (document.visibilityState === 'hidden') beacon() }
   /**
    * Ask before leaving with unsaved changes.

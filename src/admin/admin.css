@@ -255,6 +255,30 @@ body {
 }
 .ProseMirror pre { white-space: pre-wrap; }
 .ProseMirror li { position: relative; }
+
+/* ⚠️ A BLOCK OFF SCREEN IS NOT DRAWN WHILE SOMEBODY TYPES (2026-10-04). Every pen stroke is
+   `mix-blend-mode: multiply`, and to the browser each one is a blending effect it re-layers,
+   re-commits and hit-tests on EVERY frame — all of them, on screen or not, because a keystroke
+   repaints and the effect tree is the whole document's. Traced in Chrome with the CPU slowed
+   four times: on a 13,000-word post holding 1,491 strokes, 36 ms of main thread per key, of
+   which layering, commit and hit-testing were 17; on one holding 5,040, 74 ms per key and
+   key-to-paint at 56 ms. With the blocks off screen skipped, 20 and 22 ms per key and
+   key-to-paint at 26 ms on both — a long post types like a short one.
+   Only the plain blocks, never a figure: a gallery tile's toolbar is positioned against the
+   writing column, and the containment this brings would make the figure its containing block.
+   The editor floats nothing (see the 30% figure below), so no paragraph has a float to wrap.
+   `overflow-clip-margin` because skipping brings paint containment, which clips at the block's
+   edge, and a ring at the start of a line reaches a quarter of an em past it (measured by
+   screenshot: the left cap was cut). The `@supports` is that same fact: a browser that cannot
+   push the clip out is left drawing everything, as before, rather than clipping the pen.
+   The size is a guess for a block never yet drawn; `auto` keeps the real one once it has been. */
+@supports (overflow-clip-margin: 1em) {
+  .ProseMirror > :is(p, h1, h2, h3, h4, h5, h6, blockquote, ul, ol, pre) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 5em;
+    overflow-clip-margin: 1em;
+  }
+}
 .ProseMirror-hideselection *::selection { background: transparent; }
 .ProseMirror-hideselection { caret-color: transparent; }
 .ProseMirror [draggable][contenteditable=false] { user-select: text; }

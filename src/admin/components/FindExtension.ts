@@ -117,7 +117,10 @@ export function findPlugin(): Plugin<FindState> {
       init: () => EMPTY,
       apply(tr, value) {
         const meta = tr.getMeta(findKey) as FindMeta | undefined
-        if (!meta && !tr.docChanged) return value
+        // Nothing being looked for is the state on every keystroke of an ordinary session, and
+        // it stays the SAME object, so anything comparing the find state (`pen-deal.ts`) can
+        // tell nothing moved without a fresh empty answer being built for each letter.
+        if (!meta && (!tr.docChanged || !value.query)) return value
         const query = meta?.query ?? value.query
         const caseSensitive = meta?.caseSensitive ?? value.caseSensitive
         const hits = query ? hitsIn(tr.doc, query, { caseSensitive }) : []
