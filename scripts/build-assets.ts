@@ -206,7 +206,11 @@ const BUDGET: Record<string, number> = {
   // 8,400 since 2026-09-30 (8,150 measured), for the keyboard: Space on a focused button
   // turned the page instead of pressing it, and Tab into a later column scrolled the window
   // under the pages while the counter stayed on the first; focus now turns to its spread.
-  'book-mode.js': 8_400,
+  // 8,600 since 2026-10-08 (8,459 measured), for margins in every look: the Newspaper's rail
+  // left a footprint too narrow for two pages, so a 1440 desktop took the phone's 20px margin
+  // and the arrows sat on the text. The arrows are now centred in the margin the island
+  // measured, hidden below 44px, and a side click turns the page there instead.
+  'book-mode.js': 8_600,
   'comment-thread.js': 6_700,
   // The reader's pen: the selection bar, the anchor maths (a text-quote selector, found
   // again by its surroundings), the store, the note card and the copy gesture it absorbed
