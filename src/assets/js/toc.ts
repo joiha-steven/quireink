@@ -9,9 +9,11 @@
 // middle of a long section: the heading has already scrolled away, so nothing intersects
 // and no row is marked.
 
-import { onScrollFrame } from './motion'
+import { onScrollFrame, scrollBehavior } from './motion'
 
 const READING_LINE = 120 // px from the top of the viewport
+// How close to the scroller's edge the lit row may come before the index is moved under it.
+const EDGE = 48
 
 /**
  * The end-of-article facts exist TWICE, and only one copy is ever on screen.
@@ -76,6 +78,16 @@ export function toc(): void {
   // in the argument, so no scroll position should ever light it.
   const sections = links.filter((a) => !a.classList.contains('toc-end'))
 
+  // THE INDEX FOLLOWS THE ROW IT LIGHTS. A post with forty headings has an index taller than
+  // the window, and the gutter scrolls it on its own (rail-css.ts): the highlight moved down a
+  // list that did not, so from the eighth section on the row being lit was below the fold and
+  // the index said nothing about where the reader was. When the lit row CHANGES and has come
+  // within EDGE of the scroller's top or bottom, the index is moved to put it a third of the
+  // way down. Only on a change, so an index the reader has scrolled by hand is left where they
+  // put it until the next section begins. The scroller is whichever of the two boxes actually
+  // scrolls: the gutter's inner box, or the phone drawer itself. In the band neither does.
+  let shown: HTMLAnchorElement | null = null
+
   // The READ half measures every heading; the WRITE half moves the class. Split so the
   // engine can run every island's reads before any island's writes in the same frame.
   onScrollFrame(() => {
@@ -91,13 +103,28 @@ export function toc(): void {
     // The title row is the one anchor with no element behind it (#top scrolls the
     // document). Falling back to `targets[0]` instead would light the first HEADING while
     // the reader is still above it, which is a different claim.
-    return current ?? sections.find((a) => idOf(a) === 'top') ?? null
-  }, (lit) => {
+    const lit = current ?? sections.find((a) => idOf(a) === 'top') ?? null
+    let box: HTMLElement | undefined
+    let to = 0
+    if (lit && lit !== shown) {
+      box = [nav.closest<HTMLElement>('.rail-inner'), nav.closest<HTMLElement>('.rail')]
+        .find((el) => el && el.scrollHeight > el.clientHeight + 1) ?? undefined
+      if (box) {
+        const b = box.getBoundingClientRect()
+        const r = lit.getBoundingClientRect()
+        if (r.top < b.top + EDGE || r.bottom > b.bottom - EDGE) to = box.scrollTop + r.top - b.top - box.clientHeight / 3
+        else box = undefined
+      }
+    }
+    shown = lit
+    return { lit, box, to }
+  }, ({ lit, box, to }) => {
     for (const link of links) {
       const on = link === lit
       link.classList.toggle('is-active', on)
       if (on) link.setAttribute('aria-current', 'location')
       else link.removeAttribute('aria-current')
     }
+    box?.scrollTo({ top: to, behavior: scrollBehavior() })
   })
 }

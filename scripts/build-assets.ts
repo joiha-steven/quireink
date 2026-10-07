@@ -176,7 +176,13 @@ const BUDGET: Record<string, number> = {
   // 8,000 since 2026-09-30 (7,797 measured): a quote widened to whole words at its edges. A
   // drag that began or ended mid-word made a `#:~:text=` Chrome will not match, so the link
   // opened at the top of the page instead of at the sentence.
-  'post.js': 8_000,
+  //
+  // 8,400 since 2026-10-07 (8,172 measured), and the 375 bytes bought an index that follows
+  // the reader. A post with forty headings has a contents list taller than the window, and the
+  // gutter scrolls it on its own: the highlight walked off the bottom of a list that did not
+  // move, so from about the eighth section the index no longer showed where the reader was.
+  // When the lit row changes and nears the scroller's edge the list is moved under it.
+  'post.js': 8_400,
   // Only on a page whose switch is on (article.ts). Priced with their own copy of `dom` and
   // `motion` (~1.5 KB each): an IIFE cannot share, and a shared chunk would be a request
   // every page pays for two pages' benefit.

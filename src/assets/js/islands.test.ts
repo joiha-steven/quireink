@@ -261,6 +261,38 @@ describe('table of contents', () => {
     expect(document.querySelectorAll('.toc a[aria-current]').length).toBe(1)
   })
 
+  it('moves a scrolling index to the lit row, and only when the lit row changes', async () => {
+    // A gutter index 300px tall holding a list that scrolls. "Two" sits at 290, inside the
+    // last EDGE of the box, so lighting it has to bring it up; lighting "One" at 50 does not.
+    page(`<aside class="rail"><div class="rail-inner">${nav}</div></aside>`, LABELS)
+    const box = document.querySelector<HTMLElement>('.rail-inner')!
+    Object.defineProperty(box, 'scrollHeight', { value: 2000, configurable: true })
+    Object.defineProperty(box, 'clientHeight', { value: 300, configurable: true })
+    box.getBoundingClientRect = () => ({ top: 0, bottom: 300 }) as DOMRect
+    const row = (href: string, top: number) => {
+      document.querySelector<HTMLElement>(`.toc a[href="${href}"]`)!.getBoundingClientRect =
+        () => ({ top, bottom: top + 20 }) as DOMRect
+    }
+    row('#one', 50); row('#two', 290)
+    const moves: number[] = []
+    box.scrollTo = ((o: ScrollToOptions) => { moves.push(o.top ?? 0) }) as typeof box.scrollTo
+    place('one', -600); place('two', 900)
+    toc()
+    expect(current()).toBe('One')
+    expect(moves).toEqual([])
+
+    place('one', -1400); place('two', -100)
+    scrolledTo(1800, 4000)
+    await frame()
+    expect(current()).toBe('Two')
+    expect(moves).toEqual([190]) // 0 + 290 - 0 - 300 / 3
+
+    // Still "Two": the reader may have scrolled the index by hand, and it is left alone.
+    scrolledTo(1900, 4000)
+    await frame()
+    expect(moves).toEqual([190])
+  })
+
   it('does nothing on a page with no contents list', () => {
     page('<article>x</article>', LABELS)
     expect(() => toc()).not.toThrow()
