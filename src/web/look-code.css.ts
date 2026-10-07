@@ -234,14 +234,31 @@ html[data-look=code] .rail li::before{content:counter(ln);position:absolute;
    post with fourteen sub-headings in one section (2026-09-14): the pill for "2.10" wants
    51.8px and reaches 38.4px past the rail's edge, so the rail cut the last digit off every
    number from 2.10 down — and the plain ring's own 5px halo was 2.5px over even before that.
-   56px clears "10.12" (43.4px) and its halo with room to spare. It costs no width: the box
-   grows and the padding gives it straight back.
+   It costs no width: the box grows and the padding gives it straight back.
 
    ONE RULE, and there used to be a second: .toc .rail-inner asked for 32px and matched
    nothing, because the ToC is INSIDE the scroller (div.rail-inner > nav.toc) rather than
    around it. A selector written backwards fails in the one way that is hard to see — it does
-   not error, it simply never applies, and the number it carried looked like the live one. */
-html[data-look=code] .rail-inner{width:calc(100% + 56px);padding-right:56px}
+   not error, it simply never applies, and the number it carried looked like the live one.
+
+   ⚠️ AND IT CANNOT BE WIDER THAN THE GAP. It was 56px, past a 40px --rail-gap, so the
+   scroller ran 16px into the reading column: on a long index its scrollbar was drawn over
+   the first letters of every line, and a wheel or a drag-select there went to the index
+   instead of the article (measured 2026-10-07 at 1440: the box at 126-432 against a column
+   starting at 416). The gap is the whole of the room there is. "2.10" (38.4px) fits inside
+   it; "10.12" (43.4px) loses 3px of its edge at the column's edge, where before it was
+   drawn over the text.
+
+   AND ITS SCROLLBAR GOES ON THE FAR SIDE. A scrollbar is drawn at the box's right edge,
+   which is now the column's left edge: the bar stood flush against the first letter of
+   every line and still read as lying on the article. direction:rtl moves it to the rail's
+   outer edge, where it belongs to the index; the children are set back to ltr so nothing
+   they hold reads backwards, and the rows were ranged right already. The 12px is the
+   scrollbar's own lane, so an overlay bar does not sit on the first letters of the longest
+   rows instead. */
+html[data-look=code] .rail-inner{width:calc(100% + var(--rail-gap));padding-right:var(--rail-gap);
+  direction:rtl;padding-left:12px}
+html[data-look=code] .rail-inner > *{direction:ltr}
 /* The active marker sits at the row's right edge, which used to be the rail's edge and
    nothing else - now the ring is out past it, so at 0 the hairline read as belonging to
    the ring rather than to the row it marks. Pulled in, but only 3px: 6px put it close

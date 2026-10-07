@@ -164,7 +164,12 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
     expect(LOOK_CODE_CSS).toContain('left:calc(100% + 12.5px);transform:translateX(-50%)')
     expect(LOOK_CODE_CSS).not.toMatch(/li:has\(\.rail-sub\)::before\{[^}]*width:30px/)
     // The scroller has to be wider than the widest pill reaches, or it clips them itself.
-    expect(idelines()).toContain('.rail-inner{width:calc(100% + 56px);padding-right:56px}')
+    expect(idelines()).toContain('.rail-inner{width:calc(100% + var(--rail-gap));padding-right:var(--rail-gap);')
+    // ...but never wider than the gap, or its scrollbar lands on the reading column; and the
+    // bar is turned to the rail's outer edge, with the contents set back to ltr.
+    expect(LOOK_CODE_CSS).not.toMatch(/\.rail-inner\{width:calc\(100% \+ \d+px\)/)
+    expect(LOOK_CODE_CSS).toContain('direction:rtl;padding-left:12px}')
+    expect(idelines()).toContain('.rail-inner > *{direction:ltr}')
   })
 
   it('gives the archive year a path mark rather than brackets', () => {

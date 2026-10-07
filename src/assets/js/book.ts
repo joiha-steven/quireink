@@ -244,11 +244,27 @@ export function book(): void {
     // made the browser scroll the clipping viewport under the translated flow, so the screen
     // showed spread 4 while the counter said 1 / 4 and the arrows turned from the wrong place
     // (2026-09-30). The scroll is taken back at once, and the spread holding the focus is shown.
-    viewport.addEventListener('scroll', () => { if (viewport.scrollLeft) viewport.scrollLeft = 0 })
+    //
+    // AND THE SCROLL ASKS WHERE FOCUS IS, not only focusin. focus() moves focus and scrolls the
+    // viewport whether or not the window has system focus, but fires focusin only when it does:
+    // measured in headless Chrome on 2026-10-07, document.hasFocus() false, scrollLeft 3732 after
+    // the call, no focusin at all — so the scroll was taken back and the counter stayed at 1 / 4
+    // over a focused link on spread 4. Whichever arrives, the spread follows the focused element;
+    // goto() ignores the second one. Its place is measured against the flow's, which the
+    // translate and the scroll move together, so the difference is its column whatever either is.
+    const follow = (target: Element | null) => {
+      if (target && target !== flow && flow.contains(target)) {
+        goto(Math.floor((target.getBoundingClientRect().left - flow.getBoundingClientRect().left) / step))
+      }
+    }
+    viewport.addEventListener('scroll', () => {
+      if (!viewport.scrollLeft) return
+      follow(document.activeElement)
+      viewport.scrollLeft = 0
+    })
     viewport.addEventListener('focusin', (e) => {
       viewport.scrollLeft = 0
-      const at = (e.target as HTMLElement).getBoundingClientRect().left - flow.getBoundingClientRect().left
-      goto(Math.floor(at / step))
+      follow(e.target as Element)
     })
 
     // The phone turns pages the way every e-reader does: a horizontal swipe, or a tap in

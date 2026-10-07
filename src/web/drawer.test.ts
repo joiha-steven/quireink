@@ -37,9 +37,10 @@ describe('the IDE chrome rail', () => {
   // ONE RULE SINCE 2026-09-14, and there used to be two. The second asked for 32px on
   // `.toc .rail-inner` and matched nothing — the ToC is INSIDE the scroller, not around it —
   // so the overhang the index actually got was the 24px below, which cut the last digit off
-  // every sub-heading number from 2.10 on. The live rule is 56px and the dead one is gone.
+  // every sub-heading number from 2.10 on. The dead one is gone, and the live one is the gap
+  // itself since 2026-10-07: at 56px the scroller ran 16px into the reading column.
   const GUTTER_ONLY = [
-    'html[data-look=code] .rail-inner{width:calc(100% + 56px);padding-right:56px}',
+    'html[data-look=code] .rail-inner{width:calc(100% + var(--rail-gap));padding-right:var(--rail-gap);',
   ]
 
   it.each(GUTTER_ONLY)('keeps %s inside a min-width media query', (rule) => {
