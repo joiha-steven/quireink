@@ -31,9 +31,19 @@ describe('book mode sets its blocks on whole lines', () => {
     // else: 81px of white above the words against 34px below. Reported 2026-09-14.
     // One line of margin and a two-line box is three slots, with the face in the middle of
     // its own air: about a line and a half above and half a line below.
-    expect(BOOK_TEXT_CSS).toContain(
-      '.book-flow.prose > :is(h1,h2,h3,h4,h5){margin-top:var(--book-line);\n  line-height:calc(2 * var(--book-line))}')
+    expect(BOOK_TEXT_CSS).toContain('.book-flow.prose > :is(h1,h2,h3,h4,h5){margin-top:var(--book-line)}')
     expect(BOOK_TEXT_CSS).toContain('.book-flow.prose > :is(h1,h2,h3,h4,h5) + *{margin-top:0}')
+  })
+
+  it('sets a heading\'s leading from its type role, so a wrapped one is not three lines apart', () => {
+    // A flat two-line box put the two lines of a wrapped h2 63px apart on a 375px phone,
+    // three times the paragraph's leading (2026-10-08). The spread snaps the ROLE's
+    // line-height to whole body lines; the scrolled phone reader keeps the role as it is.
+    expect(BOOK_TEXT_CSS).toContain('round(nearest,calc(1em * var(--book-hlh)),var(--book-line))')
+    for (const n of [1, 2, 3, 4, 5]) {
+      expect(BOOK_TEXT_CSS).toContain(`> h${n}{--book-hlh:var(--lh-h${n})}`)
+    }
+    expect(BOOK_TEXT_CSS).not.toMatch(/\.book-reader[^{]*\{[^}]*line-height:calc\(2 \*/)
   })
 
   it('separates two paragraphs by the indent alone, which is what a book does', () => {
@@ -50,5 +60,27 @@ describe('book mode sets its blocks on whole lines', () => {
     // outranks a plain figure element. Two lines there looked like one until it was measured.
     expect(BOOK_TEXT_CSS).toContain('.book-flow.prose > figure{margin-top:calc(2 * var(--book-line));margin-bottom:0}')
     expect(BOOK_TEXT_CSS).toContain('.book-flow.prose > figure + *{margin-top:calc(2 * var(--book-line))}')
+  })
+})
+
+describe('the spread\'s arrows', () => {
+  it('sit centred in the margin beside the spread, and leave when it cannot hold one', async () => {
+    // At 1440 the newspaper's rail is in the column, the footprint came out too narrow for
+    // two pages and the phone margin (20px) was taken: the left arrow, a fixed 28px from the
+    // screen edge, sat on the first words of the page.
+    const { BOOK_CSS } = await import('./book.css')
+    expect(BOOK_CSS).toContain('.book-prev{left:calc(var(--book-gutter,48px) / 2)')
+    expect(BOOK_CSS).toContain('.book-stage.no-arrows .book-arrow{display:none}')
+    expect(BOOK_CSS).not.toContain('clamp(4px,2vw,28px)')
+  })
+})
+
+describe('turning a page without arrows', () => {
+  it('lets the outer thirds of the page turn it whenever the arrows have left', async () => {
+    // At 640-711px the margin (20px) cannot hold an arrow, so .no-arrows hides them; a mouse
+    // user there had no visible way to turn the page, because the side-third click was
+    // gated on a phone-width window alone.
+    const src = await Bun.file(new URL('../assets/js/book.ts', import.meta.url)).text()
+    expect(src).toContain("if (innerWidth >= 640 && !stage.classList.contains('no-arrows')) return")
   })
 })

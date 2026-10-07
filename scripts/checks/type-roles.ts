@@ -60,7 +60,7 @@ const ALLOWED = new Map<string, string>([
     + 'h1, so it still moves with their scale.',
   ],
   [
-    'html[data-look=paper] .site-bar > .title',
+    'html[data-look=paper] .site-bar .title',
     'a paper\'s masthead, on the same argument as its headline. Derived from the owner\'s h1.',
   ],
   [

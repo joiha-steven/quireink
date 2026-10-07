@@ -56,7 +56,7 @@ html[data-look=paper] article > header h1{font-size:calc(var(--fs-h1) * 1.3);
    This rule shipped once already and never applied - the masthead block below restated
    font-size four rules later, at plain --fs-h1 and in the reading face, and same-specificity
    order handed it the argument. */
-html[data-look=paper] .site-bar > .title{font-size:calc(var(--fs-h1) * 1.5);
+html[data-look=paper] .site-bar .title{font-size:calc(var(--fs-h1) * 1.5);
   line-height:1.05;letter-spacing:-.02em;
   font-family:'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',
     Georgia,'Times New Roman',serif}

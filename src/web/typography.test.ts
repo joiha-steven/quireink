@@ -8,6 +8,8 @@ import { typographyToCss } from '@/content/settings'
 import { DEFAULT_TYPOGRAPHY, TYPE_ROLES, getFontPreset } from '@/content/themes'
 import { PUBLIC_CSS } from '@/web/public.css'
 import { monoTracking } from '@/render/font-faces'
+import { LOOK_PAPER_CSS } from '@/web/look-paper.css'
+import { LOOK_NOTES_CSS } from '@/web/look-notes.css'
 
 // The three blocks together, which is what `MONO_TRACKING` used to be and what these
 // assertions are about: WHICH selectors the correction may and may not name. Which of the
@@ -341,6 +343,35 @@ describe('a page carries only the tracking it can match', () => {
   it('the source-code look carries the look block whatever the font is', () => {
     expect(monoTracking('inter', 'code')).toContain('html[data-look=code]')
     expect(monoTracking('inter', 'code')).not.toContain('data-chrome-font')
+  })
+
+  it('the newspaper and the notebook correct only what is still mono there', () => {
+    // look=paper puts body in the reading face and look=notes in Inter, so the chrome rules
+    // must not carry -0.05em (Literata 15.2px measured at -0.76px). `.code-copy` names
+    // var(--font-sans) itself, which is still the mono, so it keeps the correction.
+    for (const look of ['paper', 'notes']) {
+      for (const font of ['plex-mono', 'jetbrains-mono']) {
+        const css = monoTracking(font, look)
+        expect(css).toContain(`html[data-chrome-font="${font}"] .code-copy{letter-spacing:`)
+        expect(css).not.toContain('aside.series')
+        expect(css).not.toContain('header.site')
+        expect(css).not.toContain('body')
+      }
+    }
+    expect(monoTracking('jetbrains-mono', 'plain')).toContain('aside.series')
+  })
+
+  it('sets the site name by `.site-bar .title` in both looks, so an h1-wrapped name is not mono', () => {
+    // `> .title` missed the name when a listing wraps it in <h1 class="site-h1">: it kept
+    // var(--font-sans), the mono, in a look that says otherwise.
+    expect(LOOK_PAPER_CSS).toContain('html[data-look=paper] .site-bar .title{')
+    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] .site-bar .title{')
+  })
+
+  it('balances the strapline in every look', () => {
+    // look=code at 375px wrapped "Letterforms, and the making of / pages" (2026-10-08).
+    expect(PUBLIC_CSS).toContain('header.site .tagline{color:var(--c-meta)')
+    expect(PUBLIC_CSS).toMatch(/header\.site \.tagline\{[^}]*text-wrap:balance\}/)
   })
 
   it('the look block comes LAST, so it wins over a font it is no longer drawing', () => {

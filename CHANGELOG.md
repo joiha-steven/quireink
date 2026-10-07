@@ -28,6 +28,20 @@
 
 ### Fixed
 
+- **Newspaper and Notebook no longer squeeze their words together under a mono chrome font.**
+  With the chrome set to JetBrains Mono or IBM Plex Mono, the series box, the masthead's tagline,
+  the side rail and the footer were drawn in the reading face but kept the mono's tighter spacing,
+  so "The measure is the design" read as one word. They now take their own spacing; the copy
+  button on code, still mono in those looks, keeps the correction. A site name wrapped as the
+  page's heading on a listing now takes the look's face too.
+- **Book mode keeps its margins in every look.** In Newspaper on a desktop the left page ran to
+  the screen's edge and the page arrows sat on the text. The arrows now sit in the margin, and
+  where the margin is too narrow for them a click on either side of the page turns it. A heading
+  that wraps in book mode is no longer three lines apart.
+- **A formula keeps its brackets.** "a perfect fourth (r = 1.333)" could break after the "(",
+  leaving it at the end of one line and the formula on the next. Punctuation touching an inline
+  formula now stays with it.
+- **The tagline balances its lines**, instead of leaving one word on the second.
 - **Vietnamese input methods sound like one key per key.** EVKey, OpenKey, Unikey and
   GoTiengViet put an accent on by sending Backspaces and retyping the letters in a few
   milliseconds, and the editor clicked for every one of them: typing "Tiếng Việt có dấu, gõ nhanh

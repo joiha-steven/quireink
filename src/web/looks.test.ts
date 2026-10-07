@@ -179,7 +179,7 @@ describe('the newspaper dialect', () => {
       if (!css.includes('body{font-family')) continue
       // The declaration can sit anywhere in the rule, so the RULE is what is read — the
       // newspaper writes its size first and its face last.
-      const rule = new RegExp(`\\.site-bar > \\.title\\{[^}]*font-family`).test(css)
+      const rule = new RegExp(`\\.site-bar \\.title\\{[^}]*font-family`).test(css)
       expect(`${name}: ${rule}`).toBe(`${name}: true`)
     }
   })

@@ -336,7 +336,7 @@ html[data-look=code] body{font-family:var(--font-mono)}
    introduced by was the one word in the header not speaking it: an Inter wordmark over a
    monospace strapline, monospace menu and bracketed monospace controls. The notebook's own
    name rule exists for the mirror image of this (look-notes.css.ts). */
-html[data-look=code] .site-bar > .title{font-family:var(--font-mono)}
+html[data-look=code] .site-bar .title{font-family:var(--font-mono)}
 
 /* --- THE HEADLINES ARE SET IN THE MONOSPACE, BOLD ---------------------------
    Since 2026-09-23 the contrast moved one step inward: every headline - the piece's title,

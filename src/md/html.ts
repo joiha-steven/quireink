@@ -12,6 +12,7 @@
 import type { Block, Document, Inline, ListItem } from './ast'
 import { resolveEntities } from './entity'
 import { type PageRules, SPEC, safeHref } from './html-rules'
+import { glueMath } from './math-glue'
 import { DEFAULT_INK, penSeed } from '@/pen/grammar'
 
 /** The five characters that cannot appear raw in HTML text, escaped the way the spec does. */
@@ -127,8 +128,20 @@ function href(url: string): string {
 // ----- inline ---------------------------------------------------------------------------
 
 export function inlineToHtml(nodes: Inline[]): string {
+  const glue = glueMath(nodes)
   let out = ''
-  for (const node of nodes) out += oneInline(node)
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i]!
+    if (glue === null) {
+      out += oneInline(node)
+    } else if (node.type === 'text') {
+      out += escapeText(glue.text[i]!)
+    } else if (node.type === 'math' && !node.display && (glue.open[i] || glue.close[i])) {
+      out += `<span class="math-glue">${escapeText(glue.open[i]!)}${oneInline(node)}${escapeText(glue.close[i]!)}</span>`
+    } else {
+      out += oneInline(node)
+    }
+  }
   return out
 }
 

@@ -241,8 +241,8 @@ const CHROME_TRACKED = [
  * Ported late. It was missing from 2.0 entirely — public and admin — which is why a site set
  * to a mono chrome looked loose next to the frozen tree.
  */
-const track = (id: string, em: string): string =>
-  `${CHROME_TRACKED.map((s) => `html[data-chrome-font="${id}"] ${s}`).join(',')}{letter-spacing:${em}}`
+const track = (id: string, em: string, only: readonly string[] = CHROME_TRACKED): string =>
+  `${only.map((s) => `html[data-chrome-font="${id}"] ${s}`).join(',')}{letter-spacing:${em}}`
 
 /**
  * ...and the source-code LOOK sets the chrome in JetBrains Mono whatever the chrome-font
@@ -252,6 +252,24 @@ const track = (id: string, em: string): string =>
  * wins over a plex-mono setting whose face is no longer the one being drawn.
  */
 const trackLook = CHROME_TRACKED.map((s) => `html[data-look=code] ${s}`).join(',')
+
+/**
+ * Looks that do not draw the chrome in the chrome font. The newspaper sets `body` in the
+ * reading face and the notebook in Inter, so nearly every surface in CHROME_TRACKED renders
+ * in a proportional face there and -0.05em on it runs the words together (measured
+ * 2026-10-08, look=paper under JetBrains Mono: the series box's Literata link at -0.76px).
+ * Those looks change `body`, NOT `--font-sans`, which the chrome font still points at the
+ * mono, so whatever names `font-family:var(--font-sans)` itself is still mono there and keeps
+ * its correction: today that is the copy button on a code block. (The site name is not one of
+ * them: both looks set it by `.site-bar .title`, so it takes the look's face even when the
+ * name is wrapped in an h1.) The code look is absent on purpose: it forces JetBrains Mono and
+ * has its own block below.
+ */
+const LOOKS_OFF_THE_CHROME_FONT = new Set(['paper', 'notes'])
+const STILL_MONO_IN_THOSE_LOOKS = ['.code-copy'] as const
+
+const fontTrack = (id: string, em: string, look: string): string =>
+  LOOKS_OFF_THE_CHROME_FONT.has(look) ? track(id, em, STILL_MONO_IN_THOSE_LOOKS) : track(id, em)
 
 /**
  * The correction this page actually needs, and nothing else.
@@ -264,7 +282,7 @@ const trackLook = CHROME_TRACKED.map((s) => `html[data-look=code] ${s}`).join(',
  * not already seen, so this is per view rather than once per deploy.
  */
 export const monoTracking = (chromeFont: string, look: string): string =>
-  (chromeFont === 'plex-mono' ? track('plex-mono', '-0.04em') : '')
-  + (chromeFont === 'jetbrains-mono' ? track('jetbrains-mono', '-0.05em') : '')
+  (chromeFont === 'plex-mono' ? fontTrack('plex-mono', '-0.04em', look) : '')
+  + (chromeFont === 'jetbrains-mono' ? fontTrack('jetbrains-mono', '-0.05em', look) : '')
   // Last, so it wins over a plex-mono setting whose face is no longer the one being drawn.
   + (look === 'code' ? `${trackLook}{letter-spacing:-0.05em}` : '')

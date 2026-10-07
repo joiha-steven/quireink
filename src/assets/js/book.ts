@@ -25,6 +25,7 @@ const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport e
 // the page off the bezel and gives the words 335px. Under 640, matching mobile.css.ts.
 const PHONE_MARGIN = 20
 const MAX_WIDTH = 1400 // px, so the spread does not sprawl on an ultrawide monitor
+const ARROW_ROOM = 44 // px of margin an arrow needs beside the spread
 const COL_GAP = 56 // px between the two facing pages
 // The narrowest a single page may be. Below twice this the spread becomes ONE page: on a
 // 390px phone, halving the footprint and taking the gutter out of the middle left two
@@ -147,6 +148,11 @@ export function book(): void {
       // 288px pages with the crease inside the gutter. Above 752px the full margins fit
       // beside a spread anyway, so nothing wider moves.
       const spreadMin = MIN_COLUMN * 2 + COL_GAP
+      // A rail that is not in a side gutter (the newspaper's sits in the column, 608px wide
+      // at 1440) leaves a footprint too narrow for two pages, and the yield below then took
+      // the PHONE margin on a desktop: text 20px from the edge with the arrow on top of it.
+      // The desktop margin is what applies unless the glass really cannot hold it.
+      if (footprint < spreadMin) footprint = innerWidth - margin * 2
       if (footprint < spreadMin && innerWidth - PHONE_MARGIN * 2 >= spreadMin) {
         footprint = innerWidth - PHONE_MARGIN * 2
       }
@@ -163,6 +169,11 @@ export function book(): void {
       // the spread is centred and the fold falls in the gutter by symmetry.
       flow.style.setProperty('--book-col-w', `${column}px`)
       viewport.style.width = `${column * pages + COL_GAP * (pages - 1)}px`
+      // The arrows are centred in the margin either side of the spread, so they can never
+      // sit on a word; where the margin cannot hold one (a folded phone's 20px) they leave.
+      const gutter = Math.floor((innerWidth - column * pages - COL_GAP * (pages - 1)) / 2)
+      stage.style.setProperty('--book-gutter', `${gutter}px`)
+      stage.classList.toggle('no-arrows', gutter < ARROW_ROOM)
       // Read by the stylesheet, which draws the spine down the CENTRE of the viewport: with
       // one page that line runs through the middle of the text instead of down a gutter.
       viewport.dataset.pages = String(pages)
@@ -256,8 +267,10 @@ export function book(): void {
       if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) turn(dx < 0 ? 1 : -1)
     }, { passive: true })
     viewport.addEventListener('click', (e) => {
-      if (innerWidth >= 640) return
+      if (innerWidth >= 640 && !stage.classList.contains('no-arrows')) return
       if ((e.target as HTMLElement).closest('a,button')) return
+      // A mouse drag that selects words inside one paragraph still ends in a click.
+      if (!getSelection()?.isCollapsed) return
       const x = e.clientX / innerWidth
       if (x < 0.35) turn(-1)
       else if (x > 0.65) turn(1)

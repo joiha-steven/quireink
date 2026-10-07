@@ -65,16 +65,41 @@ export const BOOK_TEXT_CSS = `
    else. Reported from a published spread, 2026-09-14 — the gaps between sections read as
    the loudest thing on the page.
 
-   One line of margin and a TWO-line box now: the face sits in the middle of its own air, so
-   the reader gets about a line and a half above the words and half a line below, in three
-   slots rather than four. Above still beats below, which is this admin's rule about what a
-   heading belongs to, and every gap is still a whole number of lines — which is the only
-   thing keeping the two columns of a spread in phase. h1 already took a two-line box,
-   because 2em of face does not fit in one. */
+   One line of margin, then the heading's own box, with the face in the middle of its own
+   air: about a line and a half above the words and half a line below, in three slots rather
+   than four for a one-line h2. Above still beats below, which is this admin's rule about
+   what a heading belongs to, and every gap is still a whole number of lines, which is the
+   only thing keeping the two columns of a spread in phase. The box comes in two branches,
+   set out below: where the engine has round() it is the role's leading snapped to whole body
+   lines with half a line of padding either side; without it, a flat two-line box (h1 always
+   took two, because 2em of face does not fit in one). */
 .book-flow.prose{--book-line:calc(var(--fs-body) * var(--lh-body))}
 .book-flow.prose > p{margin-top:0}
-.book-flow.prose > :is(h1,h2,h3,h4,h5){margin-top:var(--book-line);
-  line-height:calc(2 * var(--book-line))}
+.book-flow.prose > :is(h1,h2,h3,h4,h5){margin-top:var(--book-line)}
+/* THE HEADING'S LEADING IS ITS ROLE'S, snapped to whole lines of the body. It was a flat
+   two-line box, which is right for a heading that fits on one line and 2x too loose for one
+   that wraps: "A ratio, and the honesty to break it" on a 375px phone sat its two lines a
+   full 63px apart, three times the leading of the paragraph beside it (measured
+   2026-10-08). Now the box is the role's line-height (--lh-hN) rounded to the nearest
+   whole body line, never less than one, so a wrapped heading reads as one phrase and the
+   grid still holds: the half line of air the old two-line box put above and below the face
+   is padding instead, so a one-line h2 still takes the same three line-slots it always did.
+   The first declaration is the fallback for an engine without round(). */
+.book-overlay .book-flow.prose > :is(h1,h2,h3,h4,h5){line-height:calc(2 * var(--book-line))}
+.book-overlay .book-flow.prose > h1{--book-hlh:var(--lh-h1)}
+.book-overlay .book-flow.prose > h2{--book-hlh:var(--lh-h2)}
+.book-overlay .book-flow.prose > h3{--book-hlh:var(--lh-h3)}
+.book-overlay .book-flow.prose > h4{--book-hlh:var(--lh-h4)}
+.book-overlay .book-flow.prose > h5{--book-hlh:var(--lh-h5)}
+@supports (line-height:round(nearest,1px,1px)){
+  .book-overlay .book-flow.prose > :is(h1,h2,h3,h4,h5){
+    line-height:max(var(--book-line),round(nearest,calc(1em * var(--book-hlh)),var(--book-line)))}
+  .book-overlay .book-flow.prose > :is(h2,h3,h4,h5){
+    padding-block:calc(var(--book-line) / 2)}
+}
+/* On the phone the reader is scrolled, not paged: there are no two columns to keep in phase,
+   so a heading takes its role's leading as it is and the half line of air is padding. */
+.book-reader .book-flow.prose > :is(h1,h2,h3,h4,h5){padding-block:calc(var(--book-line) / 2)}
 .book-flow.prose > :is(h1,h2,h3,h4,h5) + *{margin-top:0}
 /* Everything that is not a paragraph or a heading — a list, a quote, a figure, a rule —
    takes one blank line above and one below, so it occupies whole lines too. */

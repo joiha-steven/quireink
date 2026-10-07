@@ -211,11 +211,16 @@ body:has(.book-overlay[open]){overflow:hidden}
   background:var(--c-rule);opacity:.7;pointer-events:none}
 /* One page, so there is no gutter for a spine to sit in. */
 .book-viewport[data-pages="1"]::after{display:none}
-.book-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;background:none;
+.book-arrow{position:absolute;top:50%;z-index:2;background:none;
   border:0;cursor:pointer;color:var(--c-meta);font-size:2rem;line-height:1;padding:12px 16px}
 .book-arrow:hover{color:var(--c-heading)}
-.book-prev{left:clamp(4px,2vw,28px)}
-.book-next{right:clamp(4px,2vw,28px)}
+/* CENTRED IN THE MARGIN beside the spread, whatever width the margin is: book.ts writes
+   its width to --book-gutter. They sat at a fixed 2vw from the screen edge, which on a
+   spread with a 20px margin put the arrow on top of the first words of the page. Where the
+   margin is too narrow to hold one the island adds .no-arrows and they leave. */
+.book-prev{left:calc(var(--book-gutter,48px) / 2);transform:translate(-50%,-50%)}
+.book-next{right:calc(var(--book-gutter,48px) / 2);transform:translate(50%,-50%)}
+.book-stage.no-arrows .book-arrow{display:none}
 /* Under 640px the arrows retire: they are hover furniture sized for a mouse, and they sat
    on top of a margin the phone no longer spares. The page turns by swipe or by a tap in
    the outer thirds (book.ts) — the e-reader gestures a thumb already knows. */

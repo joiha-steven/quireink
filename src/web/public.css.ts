@@ -172,7 +172,7 @@ html.dark header.site .logo-dark{display:block}
 /* Tight to the wordmark: the two are one lockup, and at .75rem the tagline floated far
    enough from the logo to read as a separate element. */
 header.site .tagline{color:var(--c-meta);font-size:var(--fs-small);
-  line-height:var(--lh-small);letter-spacing:var(--ls-small);margin:.35rem 0 0}
+  line-height:var(--lh-small);letter-spacing:var(--ls-small);margin:.35rem 0 0;text-wrap:balance}
 
 /* The reading face for .prose is in prose.css.ts, with the rest of the .prose rules, so the
    editor gets it too. There is deliberately no "article h1" rule: an article IS also the

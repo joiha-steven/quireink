@@ -17,6 +17,12 @@ export const MATH_CSS = `
    --fs-body would flatten the smaller script sizes inside a subscript or an integral. */
 .prose math{color:var(--c-text)}
 
+/* The bracket or the comma that touches an inline formula travels with it. A formula is one
+   atomic box and a browser may break on either side of it, which stranded an opening bracket
+   at the end of one line while the formula and its closing bracket began the next. The span
+   holds only the formula and the punctuation stuck to it, never a word. */
+.math-glue{white-space:nowrap}
+
 /* THE ONE RULE THAT EARNS ITS PLACE. A derivation is routinely wider than the measure, and
    an element that cannot scroll widens the PAGE instead — which on a phone means every
    paragraph in the article gets a horizontal scrollbar because of one formula. A code block

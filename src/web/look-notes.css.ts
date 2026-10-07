@@ -31,7 +31,7 @@ html[data-look=notes] body{font-family:'Inter','Inter Fallback',system-ui,-apple
    face that would say "notebook" is a handwriting face, and every one of them in reach
    carries no Vietnamese - on a blog in this product's own first language it would fall back
    to a system face on every accented word, which is worse than not trying. */
-html[data-look=notes] .site-bar > .title{font-family:var(--font-reading)}
+html[data-look=notes] .site-bar .title{font-family:var(--font-reading)}
 
 /* --- THE DESK, AND THE PAGE ON IT -------------------------------------------
    The desk is a TONE darker than the page and nothing else. A dotted desk was drawn first

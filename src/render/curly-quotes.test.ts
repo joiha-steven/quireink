@@ -25,6 +25,14 @@ describe('curlyQuotes', () => {
     expect(await page("ein 'Wort' hier", 'de')).toBe('<p>ein ‚Wort‘ hier</p>')
   })
 
+  test("an apostrophe after an inline formula is not taken for a closing quote (the math glue stops short of it)", async () => {
+    // `render` wraps punctuation touching a formula in a span (`md/math-glue.ts`); a quote that
+    // went inside it would hide the `s` after it from this pass and curl as a closer.
+    expect(await page("ein '$x$'s Wert", 'de')).toBe('<p>ein <span class="math-glue">‚<math><mi>x</mi></math></span>’s Wert</p>')
+    expect(await page("ein '$x$' hier", 'de')).toContain('<span class="math-glue">')
+    expect(await page("ein '$x$' hier", 'de')).toContain('</math>‘</span> hier')
+  })
+
   test('a quote across inline markup still pairs', async () => {
     expect(await page('say *"odd"* and "[link](https://x.y)"', 'en'))
       .toBe('<p>say <em>“odd”</em> and “<a href="https://x.y">link</a>”</p>')
