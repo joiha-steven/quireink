@@ -13,11 +13,11 @@
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteLang } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { formatDateTimeShort } from '@/admin-shared/when'
+import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { UTIL } from '@/admin-shared/scale'
 import type { WriteItem } from '@/web/admin/screens/content-items'
 
-export function recentPieces(items: WriteItem[], t: AdminStrings, lang: SiteLang, limit = 3): string {
+export function recentPieces(items: WriteItem[], t: AdminStrings, lang: SiteLang, tz: string, limit = 3): string {
   const shown = items.filter((it) => it.touched > 0).slice(0, limit)
   // Nothing written yet: draw NOTHING. A heading over an empty list, on a screen whose whole
   // message is "there is nothing here", is a second empty state inside the first one.
@@ -35,7 +35,7 @@ export function recentPieces(items: WriteItem[], t: AdminStrings, lang: SiteLang
       + `<span class="min-w-0 truncate text-sm text-neutral-800 dark:text-neutral-200">`
       + `${escapeHtml(it.title || `${t.untitled} #${it.untitledNo ?? 1}`)}</span>`
       + `<span class="shrink-0 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">`
-      + `${escapeHtml(formatDateTimeShort(it.touched, lang))}</span>`
+      + `${escapeHtml(siteDateTimeShort(it.touched, tz, lang))}</span>`
       + `</a></li>`).join('')
     + `</ul></div>`
 }

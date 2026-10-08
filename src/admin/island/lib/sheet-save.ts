@@ -145,3 +145,50 @@ export async function savePiece(
   const savedAt = json.data?.updatedAt ? Date.parse(json.data.updatedAt) : null
   return { ok: true, slug: json.data?.slug ?? String(body.slug ?? ''), savedAt }
 }
+
+/**
+ * Preview's step in the save queue: read WHEN IT RUNS (`saveChain`), so a Publish still in flight
+ * at the press has landed. A live piece then goes by snapshot (`previewPlan`); anything else is
+ * saved first, silently, with the status a plain Save would write.
+ */
+export function previewStep(
+  saved: () => SheetDraft['status'], chosen: () => SheetDraft['status'], snapshot: () => Promise<boolean>,
+): () => Planned | Promise<Planned> {
+  return () => {
+    const plan = previewPlan(saved(), chosen())
+    return 'save' in plan ? { status: plan.save, done: '' } : snapshot()
+  }
+}
+
+/** What one save sends and says. `follow`: the form's status choice follows it once it is stored. */
+export type Plan = { status: SheetDraft['status']; done: string; follow?: boolean }
+
+/** A plan, or an answer already reached some other way: `true` done, `false` or `null` nothing. */
+export type Planned = Plan | boolean | null
+
+/**
+ * ONE SAVE AT A TIME, AND EACH ONE DECIDED WHEN IT RUNS.
+ *
+ * Every save waits for the one before it, so an autosave and a Publish can never race or
+ * double-create a piece.
+ *
+ * ⚠️ THE PLAN IS READ WHEN THE SAVE RUNS, never when its key was pressed. Save worked its status
+ * out at the press: Publish a draft, press Save before the publish came back, and the queued save
+ * had already decided "draft" — from a server that still held one — and took the post straight
+ * back off the site. Read after the save in front of it has finished, a plan sees what the server
+ * confirmed. Preview's choice between saving and a snapshot is read the same way.
+ */
+export function saveChain(
+  write: (plan: Plan) => Promise<boolean>,
+): (plan: () => Planned | Promise<Planned>) => Promise<boolean> {
+  let chain: Promise<unknown> = Promise.resolve()
+  return (plan) => {
+    const run = async (): Promise<boolean> => {
+      const p = await plan()
+      return typeof p === 'boolean' ? p : p ? write(p) : false
+    }
+    const result = chain.then(run, run)
+    chain = result.catch(() => {})
+    return result
+  }
+}

@@ -28,6 +28,7 @@ import { emptyState, pageHeader, sheetTop } from '@/web/admin/kit'
 import { htmlOf } from '@/web/admin/mark-html'
 import { assistantScreenView } from '@/web/admin/views-ai'
 import { chatPane, toolLog } from '@/web/admin/screens/assistant-panes'
+import { siteZone } from '@/analytics/types'
 
 const AI_SETTINGS = '/admin/settings?tab=server'
 
@@ -39,7 +40,7 @@ const AI_SETTINGS = '/admin/settings?tab=server'
  * `{tab}` is already filled here — which tab it names does not depend on anything the browser
  * learns later.
  */
-function words(t: AdminStrings, lang: SiteLang): AssistantWords {
+function words(t: AdminStrings, lang: SiteLang, zone: string): AssistantWords {
   const tabbed = (s: string) => s.replace('{tab}', t.tabServer)
   return {
     busy: t.assistantBusy, send: t.assistantSend,
@@ -51,7 +52,7 @@ function words(t: AdminStrings, lang: SiteLang): AssistantWords {
     untitled: t.assistantUntitled, noChats: t.assistantNoChats,
     deleteOne: t.assistantDelete, deleteYes: t.assistantDeleteYes,
     didNothing: t.assistantDidNothing,
-    lang,
+    lang, zone,
   }
 }
 
@@ -132,7 +133,7 @@ function composer(t: AdminStrings, configured: boolean): string {
 
 export async function assistantScreen(settings: SiteSettings, query: URLSearchParams): Promise<string> {
   const t = adminT(settings.language)
-  const w = words(t, settings.language)
+  const w = words(t, settings.language, siteZone(settings.timezone))
   const view = await assistantScreenView(query.get('chat'))
   const turns = view.open?.turns ?? []
   const blocks = htmlOf(blockMarks(turns, w))

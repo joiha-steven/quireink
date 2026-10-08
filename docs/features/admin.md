@@ -74,7 +74,7 @@
   quiet neutral surface (one fill per light/dark mode); the sidebar + cards sit on solid surfaces
   above it. (The editorial redesign replaced the old dotted-grid canvas — see
   `docs/admin-design.md`.)
-- **Sidebar (`AdminSidebar`):** four destinations + "Everything else" (which remembers an
+- **Sidebar (`AdminSidebar`):** four destinations + "Manage" (which remembers an
   explicit open/close across sessions) by default; the owner can drag any row between the
   three zones, hide the wordmark and the search button, and the order follows them between
   machines as a site setting (`src/content/nav-order.ts`, [admin-design.md](../admin-design.md)). Two registers that must not dress alike: nav rows
@@ -82,7 +82,7 @@
   smaller `SIDEBAR_UTIL`. The collapse/expand control sits at the TOP next to the
   wordmark (a compact chrome button, NOT a nav row) so it can't be mistaken for Sign out;
   Sign out sits alone under its own divider. The "Show icons" switch (bottom of
-  Everything else) governs the whole rail's glyphs. Palette selection was REMOVED from
+  Manage) governs the whole rail's glyphs. Palette selection was REMOVED from
   the admin chrome — it lives on the public site now; the admin only toggles light/dark,
   and that menu opens upward inside the rail (the rail carries `z-30`: `sticky` makes it
   a stacking context the content would otherwise paint over).

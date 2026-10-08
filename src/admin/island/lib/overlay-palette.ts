@@ -10,10 +10,10 @@
 // ⚠️ THE TWO LANES ARE THE VIETNAMESE RULE, and they are `src/accent.ts`'s, not a second copy:
 // an unaccented query finds every accent, an accented one finds only itself. Folding both sides
 // would make `lề` match `lệ`, which is a different word.
-import { indexIn, lanes } from '@/accent'
 import { el } from '@/admin/components/node-dom'
 import { say } from './media-bridge'
 import { composing, onTyped } from '@/admin/components/composing'
+import { arrangeRows, rankRows } from './palette-rank'
 import { FOUND_NAME, FOUND_ROW, FOUND_WHERE } from '@/admin-shared/found'
 
 /**
@@ -100,31 +100,19 @@ export function wirePalette(words: PaletteWords): () => void {
     if (shown.length === 0) box!.removeAttribute('aria-activedescendant')
   }
 
-  // A row's two lanes, folded the first time a query reaches it and kept: the markup carries the
-  // words once (`web/admin/overlays.ts`), and a keystroke should not fold a hundred rows again.
-  const folded = new WeakMap<HTMLElement, { text: string; lower: string; folded: string }>()
-  const laneOf = (r: HTMLElement): { text: string; lower: string; folded: string } => {
-    let lane = folded.get(r)
-    if (!lane) {
-      const l = lanes(r.dataset.palSearch ?? '')
-      // `text` is the lower lane, as it always was here: the match is case-blind either way.
-      lane = { text: l.lower, lower: l.lower, folded: l.folded }
-      folded.set(r, lane)
-    }
-    return lane
-  }
-
   const settle = (): void => {
     const needle = box.value.trim()
     const asked = needle !== ''
+    const ranks = asked ? rankRows(rows(), needle) : null
     for (const r of rows()) {
       // An empty box offers the short list, not a hundred and seven rows.
       if (!asked) {
         r.hidden = r.dataset.palGroup === 'setting'
         continue
       }
-      r.hidden = indexIn(laneOf(r), needle) === -1
+      r.hidden = ranks?.get(r) === -1
     }
+    arrangeRows(rows(), ranks)
     // A HEADING IS ONLY A HEADING IF SOMETHING FOLLOWS IT. The list is drawn in group order,
     // so each one shows exactly when its own group has a row left.
     let firstHead = true

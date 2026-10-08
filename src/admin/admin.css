@@ -773,6 +773,12 @@ input[type='color']::-moz-color-swatch {
   animation-timeline: scroll(self inline);
 }
 
+/* The settings tabs: seven labels, four of them past the edge at 375px, and the 24px band left
+   the cut-off word looking merely clipped (UX review 2026-10-08). A wider band says "this goes
+   on"; it is the same timeline, so it is gone at the end and on a desktop where the strip fits. */
+@keyframes fade-x-end-wide { from, 98% { --fade-x: 48px; } to { --fade-x: 0px; } }
+[data-settings-tabs].scroll-fade-x { animation-name: fade-x-end-wide; }
+
 /* A table in the WRITING SHEET scrolls. The editor was the one surface where a wide table
    simply stuck out: measured at 344px, a four-column table reached 410px and took the page
    with it.
@@ -888,11 +894,42 @@ input[type='color']::-moz-color-swatch {
 }
 
 /* A ROW CHECKBOX is drawn 16px and must be hit at 24px on a phone or any coarse pointer.
-   The input itself carries an invisible ring of 5px (past the 1px border) on every side, so the drawn box, the row
-   and the tick on top of it do not move. */
+
+   The INPUT is the target and is made 24px itself, with no pseudo-element on it: an `<input>` is
+   a replaced element, and a `::before` on one is not drawn by every engine, so a hit area built
+   from one worked in Chromium and was a 16px target elsewhere. Here the input grows by a 4px
+   TRANSPARENT border on every side, its background is clipped to the padding box (the 16px the
+   box has always been) and the 1px edge is an inset shadow on that box, so the drawn square is
+   the same 16px. A -4px margin gives the 4px back, so the 16px wrapper, the row and the tick
+   drawn over it do not move. The edge colour is a variable so the checked and dark looks only
+   restate a colour. The focus ring moves from a box-shadow (which would be drawn around the
+   24px) to an outline offset back onto the 16px, the same 2px ring in the same place. */
 @media (max-width: 48rem), (pointer: coarse) {
-  .kit-tick { position: relative; }
-  .kit-tick::before { content: ''; position: absolute; inset: -5px; }
+  .kit-tick {
+    --tick-edge: var(--color-neutral-300);
+    --tick-ring: var(--color-neutral-300);
+    box-sizing: border-box; width: 1.5rem; height: 1.5rem; margin: -4px;
+    border: 4px solid transparent; border-radius: 8px; background-clip: padding-box;
+    --u-inset-shadow: inset 0 0 0 1px var(--tick-edge);
+  }
+  .kit-tick:checked { --tick-edge: var(--color-neutral-900); }
+  .dark .kit-tick { --tick-edge: var(--color-neutral-600); --tick-ring: var(--color-neutral-700); }
+  .dark .kit-tick:checked { --tick-edge: var(--color-white); }
+  .kit-tick:focus-visible {
+    --u-ring-shadow: 0 0 #0000; outline: 2px solid var(--tick-ring); outline-offset: -4px;
+  }
+  /* A native box (the Cloudflare card) cannot be resized without changing the drawn square, so
+     its LABEL reaches 6px past the box on the left and gives the same 24px to a thumb. */
+  .kit-native-tick { margin-left: -6px; padding-left: 6px; }
+  /* FORCED COLOURS drop the inset-shadow edge and paint the transparent 4px border in a system
+     colour, which would turn the 16px box into a 24px square with a heavy frame. The border goes
+     back to the page colour and the 1px edge is an outline hugging the 16px from inside it; the
+     checked box is filled with Highlight and a focused one keeps the thicker outline. */
+  @media (forced-colors: active) {
+    .kit-tick { border-color: Canvas; outline: 1px solid CanvasText; outline-offset: -5px; --u-inset-shadow: 0 0 #0000; }
+    .kit-tick:checked { background-color: Highlight; outline-color: Highlight; }
+    .kit-tick:focus-visible { outline: 2px solid Highlight; outline-offset: -4px; }
+  }
 }
 
 /* BELOW lg THE SHELL IS A COLUMN, so a short page (the trash, an empty list) still fills the

@@ -19,15 +19,15 @@ import {
   type SheetData, type SheetDraft, type SheetWords,
 } from '@/admin-shared/sheet-wire'
 import { saveStatusLine } from '@/admin-shared/draft-keep'
-import { formatDateTimeShort, formatTime } from '@/admin-shared/when'
+import { formatTime } from '@/admin-shared/when'
 import { formatWallClock } from '@/i18n/format'
-import { isScheduled, titleSlug } from '@/utils'
-import { ahead, mainWord, standing, type Standing } from '@/admin-shared/sheet-state'
+import { titleSlug } from '@/utils'
+import { ahead, mainWord, siteDateTimeShort, standing, type Standing } from '@/admin-shared/sheet-state'
 import { withLiveIdentity } from '@/admin/components/restore-identity'
 import { askForLink } from './lib/ask-link'
 import { say } from './lib/media-bridge'
 import { readSnapshot, sendSnapshot } from './lib/sheet-keep'
-import { nameEnough, payloadOf, previewPlan, savePiece, statusForSave, worthSaving } from './lib/sheet-save'
+import { nameEnough, payloadOf, previewStep, saveChain, savePiece, statusForSave, worthSaving, type Plan } from './lib/sheet-save'
 import { mountPaper } from './lib/sheet-paper'
 import { wireTitle } from './lib/sheet-title'
 import { wireBar } from './lib/sheet-bar'
@@ -36,6 +36,7 @@ import { wirePanel } from './lib/sheet-open'
 import { wireSafety, type Snapshot } from './lib/sheet-safety'
 import { wireHistory } from './lib/sheet-history'
 import { sayStanding } from './lib/sheet-standing'
+import { liveSave } from './lib/sheet-live'
 import { moveToTrash, openPreview, uploadInline } from './lib/sheet-errands'
 
 type Payload = SheetData & { words: SheetWords }
@@ -125,11 +126,11 @@ function boot(root: HTMLElement, data: Payload): void {
 
   // ---- what the sheet says about itself -------------------------------------------------
 
-  // A page has no date at all, so it is never scheduled — `isScheduled` says so on its own.
-  const scheduled = (): boolean => isScheduled(draft.status, draft.date)
+  // A page has no date at all, so it is never scheduled — `ahead('')` says so on its own.
+  const scheduled = (): boolean => draft.status === 'published' && future()
   // What Publish WOULD do: a future date schedules, whatever the status (was "Publish" till 09-30).
-  const future = (): boolean => ahead(draft.date)
-  const held = (): Standing => (slug ? standing(savedStatus, savedDate) : 'draft') // what the SERVER holds
+  const future = (): boolean => ahead(draft.date, timezone) // on the SITE's clock (`sheet-state.ts`)
+  const held = (): Standing => (slug ? standing(savedStatus, savedDate, timezone) : 'draft') // what the SERVER holds
 
   function sayState(): void {
     const st = held()
@@ -152,7 +153,7 @@ function boot(root: HTMLElement, data: Payload): void {
     // The header, the main key and the live link, from what the SERVER holds.
     sayStanding({ bar: sheetBar, metaLine, statusOut: at('[data-status-out]'), stats }, t, lang, {
       kind, slug, st, savedDate, chosen: draft.status, chosenAhead: future(),
-      touched: savedAt ? formatDateTimeShort(savedAt, lang) : touchedAt,
+      touched: savedAt ? siteDateTimeShort(savedAt, timezone, lang) : touchedAt,
     })
   }
 
@@ -196,10 +197,7 @@ function boot(root: HTMLElement, data: Payload): void {
     lang,
     getText: body, // the body alone, as the page counts it: the title made the two disagree
     revision: () => paper.revision,
-    onSaveDraft: () => {
-      const status = statusForSave(savedStatus, draft.status)
-      void saveAs(status, status === 'published' ? t.savedChanges : t.savedDraft)
-    },
+    onSaveDraft: () => void plain.press(), // decided when it RUNS; crossing the date asks (`sheet-live.ts`)
     onPublish: () => {
       // THE FIRST PUBLISH OPENS THE ATTRIBUTES instead of publishing: they are the publish-time
       // questions — the slug, the date, the terms, both pictures — and they all already carry
@@ -211,20 +209,22 @@ function boot(root: HTMLElement, data: Payload): void {
         return
       }
       const updating = mainWord(held(), draft.status, future()) === 'update'
-      void saveAs('published', updating ? t.savedChanges : future() ? t.scheduled : t.published)
+      void saveAs('published', updating ? t.savedChanges : future() ? plain.scheduledSay() : t.published)
     },
     // ⚠️ A LIVE PIECE IS PREVIEWED FROM ITS SNAPSHOT, never saved first (`previewPlan`).
-    onPreview: () => void openPreview(t, () => {
-      if (!dirty) return Promise.resolve(true)
-      const plan = previewPlan(savedStatus, draft.status)
-      return 'save' in plan ? enqueue(plan.save) : sendSnapshot(kind, slug, JSON.stringify({ ...draft, content: body() }))
-    }, () => slug),
+    onPreview: () => void openPreview(t, () => (!dirty ? Promise.resolve(true) : enqueue(previewStep(
+      () => savedStatus, () => draft.status, () => sendSnapshot(kind, slug, JSON.stringify({ ...draft, content: body() })),
+    ))), () => slug),
     onToggleMd: () => { paper.toggleRaw(); sheetBar.setMd(paper.raw) },
     onToggleAttrs: () => { panel.toggle(); sheetBar.setAttrs(panel.open) },
     onRestore: () => void restoreSnapshot(),
     // UNDOABLE, NOT ASKED: the toast carries the way back, as the trash's does.
     onDiscard: () => { safety.dismiss(); say(t.draftDiscarded, undefined, { label: t.undo, run: () => void safety.undismiss() }) },
   })
+
+  const plain = liveSave({ t, lang, timezone, held, savedDate: () => savedDate, date: () => draft.date,
+    status: () => statusForSave(savedStatus, draft.status), queue: (plan) => enqueue(plan),
+    keepDate: (date) => { edit({ date }); fields.setDate(date) } })
 
   const safety = wireSafety({
     kind,
@@ -249,9 +249,7 @@ function boot(root: HTMLElement, data: Payload): void {
   // ---- saving ---------------------------------------------------------------------------
 
   /** What the write column's row shows of this piece. A save that changes it redraws it. */
-  let listed = JSON.stringify([slug, draft.title, draft.status, draft.excerpt])
-
-  let chain: Promise<unknown> = Promise.resolve()
+  let listed = JSON.stringify([slug, draft.title, draft.status, draft.excerpt, draft.date])
 
   async function persist(status?: SheetDraft['status']): Promise<boolean> {
     const text = body()
@@ -286,7 +284,7 @@ function boot(root: HTMLElement, data: Payload): void {
       // THE ADDRESS BAR IS SYNCED AND THE PAGE IS NOT RELOADED. A reload would cost the caret,
       // the selection and the whole undo stack on the click that saved the work.
       window.history.replaceState(null, '', `${SHEET_PATH[kind]}/${encodeURIComponent(res.slug)}`)
-      const now = JSON.stringify([slug, draft.title, status ?? draft.status, draft.excerpt])
+      const now = JSON.stringify([slug, draft.title, status ?? draft.status, draft.excerpt, sentDate])
       if (now !== listed) { listed = now; void redrawColumn() }
       return true
     } catch {
@@ -298,34 +296,26 @@ function boot(root: HTMLElement, data: Payload): void {
     }
   }
 
-  /** Queue a save behind any in-flight save and hand back its answer. */
-  function enqueue(status?: SheetDraft['status']): Promise<boolean> {
-    const run = (): Promise<boolean> => persist(status)
-    const result = chain.then(run, run)
-    chain = result.catch(() => {})
-    return result
-  }
-
-  async function saveAs(status: SheetDraft['status'], done: string): Promise<boolean> {
-    if (status === 'published' && !nameEnough(kind, draft, body())) {
+  /** One plan, when its turn comes (`saveChain`): a nameless piece is not sent out. */
+  const enqueue = saveChain(async (p: Plan): Promise<boolean> => {
+    if (p.status === 'published' && !nameEnough(kind, draft, body())) {
       say(kind === 'note' ? t.needTitleNote : t.needTitle, 'error')
       return false
     }
-    // The STATUS FOLLOWS THE SAVE. Set first, a refused save left the sheet saying Published
-    // for a piece the server still had as a draft.
-    if (!(await enqueue(status))) return false
-    draft.status = status
-    savedStatus = status
-    fields.setStatus(status)
-    sayState()
-    say(done)
+    if (!(await persist(p.status))) return false
+    // The STATUS FOLLOWS THE SAVE, and inside the chain, so the next save in the queue reads it.
+    // Set first, a refused save left the sheet saying Published for a piece still a draft.
+    if (p.follow) { draft.status = p.status; fields.setStatus(p.status); sayState() }
+    if (p.done) say(p.done)
     return true
-  }
+  })
+  const saveAs = (status: SheetDraft['status'], done: string): Promise<boolean> =>
+    enqueue(() => ({ status, done, follow: true }))
 
   at('[data-panel-publish]')?.addEventListener('click', () => {
     // ⚠️ THE PANEL STAYS OPEN ON A REFUSAL. Closing it regardless would take the writer away
     // from the one screen carrying the field that was refused — a taken slug is answered here.
-    void saveAs('published', future() ? t.scheduled : t.published).then((went) => {
+    void saveAs('published', future() ? plain.scheduledSay() : t.published).then((went) => {
       if (went) { asking = false; panel.hide() }
     })
   })

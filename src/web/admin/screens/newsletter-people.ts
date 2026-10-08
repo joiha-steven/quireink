@@ -22,7 +22,7 @@
 // both faces at once; splitting them is what this screen must never do.
 import type { SiteLang } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { escapeAttr, escapeHtml } from '@/utils'
+import { escapeAttr, escapeHtml, isoToZonedInput } from '@/utils'
 import { dateLocale, formatCount } from '@/i18n/format'
 import { CONTROL_SM, TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
 import { ICON_KEY } from '@/admin-shared/controls'
@@ -39,7 +39,9 @@ type People = Awaited<ReturnType<typeof subscribersView>>
 type Row = People['subscribers'][number]
 
 
-const shortDate = (iso: string | undefined, lang: SiteLang): string => (iso ? formatDateShort(iso, lang) : '—')
+// The day on the SITE's calendar: the first ten characters of the instant are UTC's day.
+const shortDate = (iso: string | undefined, lang: SiteLang, tz: string): string =>
+  (iso ? formatDateShort(isoToZonedInput(iso, tz) || iso, lang) : '—')
 
 /**
  * A status word as a HEADING — a tab or a figure's label — beside "All" and "Subscribers".
@@ -61,7 +63,7 @@ const openRate = (s: Row['stats']): string | null =>
 
 
 export function peoplePanel(
-  t: AdminStrings, lang: SiteLang, data: People, open: boolean, pagerHtml = '',
+  t: AdminStrings, lang: SiteLang, data: People, open: boolean, pagerHtml = '', tz = '',
 ): string {
   const { subscribers, counts } = data
   const n = (x: number): string => escapeHtml(formatCount(x, lang))
@@ -102,7 +104,7 @@ export function peoplePanel(
     return `<tr data-sub data-id="${s.id}" data-status="${escapeAttr(s.status)}"`
       + ` data-find="${escapeAttr(s.email.toLowerCase())}" data-email="${escapeAttr(s.email)}"`
       // ISO for the export: `30/9/26` in a CSV is a different day on every machine that opens it.
-      + ` data-joined="${escapeAttr(s.createdAt.slice(0, 10))}" data-sent="${s.stats?.sent ?? 0}"`
+      + ` data-joined="${escapeAttr((isoToZonedInput(s.createdAt, tz) || s.createdAt).slice(0, 10))}" data-sent="${s.stats?.sent ?? 0}"`
       + ` data-rate="${escapeAttr(rate ?? '')}" class="${TROW}"${i < PER_PAGE ? '' : ' hidden'}>`
       + `<td class="px-4 py-2 align-middle">${tick({ label: s.email, attrs: `data-sub-pick data-id="${s.id}"` })}</td>`
       // `max-w-0` beside the head's `w-full`: without it every column shared the width evenly
@@ -113,7 +115,7 @@ export function peoplePanel(
       + `<td class="whitespace-nowrap px-2 py-2 align-middle">`
       + `<span class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">`
       + lamp({ state: LAMP[s.status] }) + escapeHtml(statusLabel[s.status] ?? s.status) + `</span></td>`
-      + `<td class="whitespace-nowrap px-2 py-2 align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${escapeHtml(shortDate(s.createdAt, lang))}</td>`
+      + `<td class="whitespace-nowrap px-2 py-2 align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${escapeHtml(shortDate(s.createdAt, lang, tz))}</td>`
       // Failures are the whole point of keeping the log. Never hide them.
       + `<td class="whitespace-nowrap px-2 py-2 text-right align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${n(s.stats?.sent ?? 0)}${failed}</td>`
       + `<td class="whitespace-nowrap px-2 py-2 text-right align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${escapeHtml(rate ?? '—')}</td>`
@@ -132,7 +134,7 @@ export function peoplePanel(
       + `<span class="block truncate text-sm font-medium text-neutral-800 dark:text-neutral-200" title="${escapeAttr(s.email)}">${escapeHtml(s.email)}</span>`
       + `<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">`
       + `<span class="flex items-center gap-1.5">${lamp({ state: LAMP[s.status] })}${escapeHtml(statusLabel[s.status] ?? s.status)}</span>`
-      + `<span class="tabular-nums">${escapeHtml(shortDate(s.createdAt, lang))}</span>`
+      + `<span class="tabular-nums">${escapeHtml(shortDate(s.createdAt, lang, tz))}</span>`
       + `<span class="tabular-nums">${escapeHtml(t.nlColSent)} ${n(s.stats?.sent ?? 0)}</span>`
       + (rate ? `<span class="tabular-nums">${escapeHtml(t.nlColOpenRate)} ${escapeHtml(rate)}</span>` : '')
       + `</div></div>`

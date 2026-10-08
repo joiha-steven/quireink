@@ -10,7 +10,8 @@
 import type { ActivityEntry } from '@/server/activity'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteLang } from '@/types'
-import { escapeAttr, escapeHtml, formatDateTimeShort } from '@/utils'
+import { escapeAttr, escapeHtml } from '@/utils'
+import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { formatCount } from '@/i18n/format'
 import { ICONS } from '@/icons'
 import { TAP, UTIL } from '@/admin-shared/scale'
@@ -197,14 +198,14 @@ function runs(entries: ActivityEntry[]): { e: ActivityEntry; times: number }[] {
  * ONE clock for the whole list, read once: eight rows each asking the time can straddle a
  * minute boundary and print two different answers for the same instant.
  */
-function activityCard(t: AdminStrings, lang: SiteLang, entries: ActivityEntry[], enabled: boolean): string {
+function activityCard(t: AdminStrings, lang: SiteLang, tz: string, entries: ActivityEntry[], enabled: boolean): string {
   const now = Date.now()
   const body = !enabled || entries.length === 0
     ? `<p class="${QUIET}">${escapeHtml(t.logEmpty)}</p>`
     : `<ul class="${FEED_LIST}">` + runs(entries).slice(0, 6).map(({ e, times }) => {
       // The stamp and the sentence in full; never the machine code (2026-09-30).
-      const title = `${formatDateTimeShort(e.at, lang)} · ${logSentence(t, e.action, e.detail)}`
-      const when = (ago(e.at, now, lang) || formatDateTimeShort(e.at, lang)) + (times > 1 ? ` · ×${times}` : '')
+      const title = `${siteDateTimeShort(e.at, tz, lang)} · ${logSentence(t, e.action, e.detail)}`
+      const when = (ago(e.at, now, lang) || siteDateTimeShort(e.at, tz, lang)) + (times > 1 ? ` · ×${times}` : '')
       return `<li class="${FEED_ROW}" title="${escapeAttr(title)}">`
         + `<span class="${FEED_MARK} ${inkFor(e.action)}">`
         + `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"`
@@ -241,10 +242,10 @@ function activityCard(t: AdminStrings, lang: SiteLang, entries: ActivityEntry[],
  * THE ORDER IS THE OWNER'S QUESTION ORDER: what needs me, what did well, where they came from,
  * what happened.
  */
-export function widgets(t: AdminStrings, lang: SiteLang, data: DashboardData, recent: ActivityEntry[], activityEnabled: boolean): string {
+export function widgets(t: AdminStrings, lang: SiteLang, tz: string, data: DashboardData, recent: ActivityEntry[], activityEnabled: boolean): string {
   const cell = (inner: string): string => `<div class="min-w-0 [&>section]:h-full">${inner}</div>`
   return cell(needsCard(t, data.needs))
     + cell(topPostsCard(t, lang, data.topPosts))
     + cell(sourcesCard(t, lang, data.sources))
-    + cell(activityCard(t, lang, recent, activityEnabled))
+    + cell(activityCard(t, lang, tz, recent, activityEnabled))
 }

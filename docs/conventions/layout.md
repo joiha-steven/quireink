@@ -48,7 +48,7 @@ inside it. In book mode the same break becomes the asterism.
   links add `SIDEBAR_NAV_ACTIVE`); the footer holds the **light/dark toggle + Clear cache + Sign out**
   (palette selection moved to the public site); on mobile
   it's a hamburger drawer (always icon+label).
-  By default it lists **four destinations** and puts the rest behind one "Everything else" button
+  By default it lists **four destinations** and puts the rest behind one "Manage" button
   (the owner can reorder and hide rows: [admin-design.md](../admin-design.md))
   ([ADR 0024](../decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6) — the group is
   indented by a RULE on its wrapper, never by padding on the rows, because those rows share the

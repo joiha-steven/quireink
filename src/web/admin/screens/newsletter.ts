@@ -21,6 +21,7 @@ import { pageHeader, pager, sheet, sheetTop, tabs } from '@/web/admin/kit'
 import { newsletterView, subscribersView } from '@/web/admin/views-news'
 import { peoplePanel } from '@/web/admin/screens/newsletter-people'
 import { sendPanel, testPanel } from '@/web/admin/screens/newsletter-send'
+import { siteZone } from '@/analytics/types'
 
 const LINK = 'font-medium text-neutral-900 underline underline-offset-2 dark:text-white'
 
@@ -82,8 +83,8 @@ export async function newsletterScreen(settings: SiteSettings, query: URLSearchP
     + pageHeader({ title: t.navNewsletter, actions: link })
     + sheet(sheetTop(strip) + warning
       + peoplePanel(t, settings.language, people, open === 'people',
-        pager(t, '/admin/newsletter', 'people', people.at, people.pages))
-      + sendPanel(t, settings.language, letter.posts, open === 'send', settings.timezone)
+        pager(t, '/admin/newsletter', 'people', people.at, people.pages), siteZone(settings.timezone))
+      + sendPanel(t, settings.language, letter.posts, open === 'send', siteZone(settings.timezone))
       + testPanel(t, open === 'test', letter.mailConfigured)
       + `<div class="${SHEET_FOOT}">${escapeHtml(t.nlPageHint)}</div>`)
     + `</div>`

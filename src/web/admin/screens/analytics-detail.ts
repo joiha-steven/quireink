@@ -59,8 +59,10 @@ export async function analyticsDetailScreen(settings: SiteSettings, path: string
 
   // `rel="noopener noreferrer"` on a link out to the reader's own site: it opens in a new tab,
   // and a new tab that can reach back into the admin through `window.opener` is a hole.
+  // 13px of text is a 16px target on a phone. `hit-24` (utilities.css) draws a 24px band centred on
+  // the line with a pseudo-element, so nothing around it moves (padding re-flowed the line).
   const address = `<a href="${escapeAttr(detail.path)}" target="_blank" rel="noopener noreferrer"`
-    + ` class="hover:underline">${escapeHtml(detail.path)}</a>`
+    + ` class="hit-24 hover:underline">${escapeHtml(detail.path)}</a>`
 
   const strip = linkTabs({
     items: RANGES.map((r) => ({

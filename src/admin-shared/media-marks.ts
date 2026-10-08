@@ -18,6 +18,8 @@
 import { el, leaf, type Mark } from '@/admin-shared/markup'
 import { TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP } from '@/admin-shared/kit'
 import type { IconName } from '@/icons'
+import { formatBytes, formatDate } from '@/i18n/format'
+import type { MediaItem, SiteLang } from '@/types'
 
 export type MediaRow = {
   url: string
@@ -137,6 +139,11 @@ export type TileState = {
 }
 
 /** One tile: the picture, the selection tick, the hover actions, the caption. */
+/** The tile's hover text, one description for the server's tile and the one an island adds: the upload day is the SITE's (`zone`). */
+export const tileTitle = (m: MediaItem, lang: SiteLang, zone: string): string =>
+  `${m.filename}\n${m.width && m.height ? `${m.width}×${m.height} · ` : ''}`
+  + `${formatBytes(m.size)} · ${formatDate(m.uploadedAt, lang, zone)}`
+
 export function mediaTileMark(row: MediaRow, w: MediaWords, s: TileState): Mark {
   const inside: Mark[] = [
     el('button', 'absolute inset-0 block', [

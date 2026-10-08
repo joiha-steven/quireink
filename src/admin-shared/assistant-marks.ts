@@ -15,7 +15,7 @@ import { el, leaf, txt, type Mark } from '@/admin-shared/markup'
 import { META } from '@/admin-shared/scale'
 import { buttonClass, SHEET_TOOL } from '@/admin-shared/kit'
 import { richMarks } from '@/admin-shared/rich-text'
-import { formatDateTimeShort } from '@/admin-shared/when'
+import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import type { SiteLang } from '@/types'
 import {
   argsJson, blocksOf, clock, entriesOf, foldMarks, jsonMarks, tokens,
@@ -32,6 +32,8 @@ export type AssistantWords = {
   didNothing: string
   /** The admin's language, for the date on each chat row. */
   lang: SiteLang
+  /** The SITE's zone (never empty), for the date on each chat row and the clock on each call. */
+  zone: string
 }
 
 const ASKED = 'rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm leading-relaxed'
@@ -146,7 +148,7 @@ const PRE = 'mt-1 whitespace-pre-wrap break-all font-mono text-xs leading-relaxe
 export function logEntryMark(e: Entry, w: AssistantWords): Mark {
   const kids: Mark[] = [
     el('p', 'flex items-baseline gap-2', [
-      leaf('span', `${META} tabular-nums`, clock(e.at), { 'data-ai-clock': String(e.at ?? '') }),
+      leaf('span', `${META} tabular-nums`, clock(e.at, w.zone), { 'data-ai-clock': String(e.at ?? '') }),
       leaf('span', LOG_NAME, e.name),
     ]),
     el('pre', PRE, jsonMarks(argsJson(e.args))),
@@ -189,7 +191,7 @@ export type ChatRow = { id: number; title: string; updatedAt: string; context: n
  */
 export function chatRowMark(c: ChatRow, activeId: number | null, w: AssistantWords): Mark {
   const active = c.id === activeId
-  const meta: Mark[] = [leaf('span', '', formatDateTimeShort(c.updatedAt, w.lang))]
+  const meta: Mark[] = [leaf('span', '', siteDateTimeShort(c.updatedAt, w.zone, w.lang))]
   if (c.context > 0) meta.push(leaf('span', 'tabular-nums', tokens(c.context)))
 
   return el('li', 'relative border-b border-neutral-100 dark:border-neutral-800', [

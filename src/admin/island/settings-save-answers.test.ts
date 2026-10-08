@@ -182,3 +182,20 @@ describe('a server refusal and the blur after it', () => {
     expect(f.hasAttribute('aria-invalid')).toBe(false)
   })
 })
+
+describe('the zone a save moves', () => {
+  it('moves <html data-tz> BEFORE the receipt reads the clock, so "Saved at" is on the new zone', async () => {
+    document.documentElement.dataset.tz = 'UTC'
+    screen.insertAdjacentHTML('beforeend', '<span data-settings-said></span>')
+    const form = wireSave(screen, { ...WORDS, savedAt: 'at' })
+    typeAddress('https://example.test')
+    answer.body = { success: true, data: { ...s, timezone: '', zone: 'America/Los_Angeles' } }
+    const before = Date.now()
+    expect(await form.save()).toBe(true)
+    const said = screen.querySelector('[data-settings-said]')!.textContent ?? ''
+    const la = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    expect([la.format(before), la.format(Date.now())]).toContain(said.replace('at ', ''))
+    expect(document.documentElement.dataset.tz).toBe('America/Los_Angeles')
+    delete document.documentElement.dataset.tz
+  })
+})

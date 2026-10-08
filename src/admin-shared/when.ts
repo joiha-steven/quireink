@@ -202,5 +202,16 @@ export function formatDateShort(at: string, lang: SiteLang): string {
 export function formatTime(iso: string): string {
   const at = new Date(iso)
   if (Number.isNaN(at.getTime())) return ''
+  // On the SITE's clock when the page names its zone (`<html data-tz>`, as the header and Settings
+  // print), so the editor's "Saved at" agrees with them. No document or an unknown zone: the
+  // reader's own clock.
+  // (This file compiles for the server too, which has no DOM types.)
+  const page = (globalThis as { document?: { documentElement?: { dataset?: Record<string, string | undefined> } } }).document
+  const zone = page?.documentElement?.dataset?.tz ?? ''
+  if (zone) {
+    try {
+      return new Intl.DateTimeFormat('en-GB', { timeZone: zone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(at)
+    } catch { /* an unknown zone falls through to the reader's clock */ }
+  }
   return `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`
 }

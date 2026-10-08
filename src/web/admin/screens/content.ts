@@ -28,6 +28,7 @@ import { writePane } from '@/web/admin/screens/content-pane'
 import { writeDrawers } from '@/web/admin/screens/content-drawers'
 import { recentPieces } from '@/web/admin/screens/recent-pieces'
 import { writingFrame } from '@/web/admin/screens/sheet-frame'
+import { siteZone } from '@/analytics/types'
 
 /**
  * Everything the column needs, and nothing else.
@@ -46,13 +47,13 @@ async function paneData(): Promise<{
 }
 
 /** The empty paper: the invitation, and what was touched last. */
-function blankSheet(items: WriteItem[], t: ReturnType<typeof adminT>, lang: SiteLang): string {
+function blankSheet(items: WriteItem[], t: ReturnType<typeof adminT>, lang: SiteLang, tz: string): string {
   const keys = `<div class="flex flex-col items-center">`
     + `<div class="flex items-center gap-2">`
     + `<a href="/admin/note-editor" class="${buttonClass('secondary')}">${escapeHtml(t.newNote)}</a>`
     + `<a href="/admin/page-editor" class="${buttonClass('secondary')}">${escapeHtml(t.newPage)}</a>`
     + `<a href="/admin/editor" class="${buttonClass('primary')}">${escapeHtml(t.newPost)}</a>`
-    + `</div>${recentPieces(items, t, lang)}</div>`
+    + `</div>${recentPieces(items, t, lang, tz)}</div>`
   // Hidden where the pane takes the whole width — the list IS the screen there.
   return `<div data-write-empty class="hidden min-w-0 flex-1 xl:block ${CARD} lg:min-h-[calc(100vh-1.5rem)]">`
     + `<div class="flex min-h-[calc(100vh-1.5rem)] flex-col items-center justify-center">`
@@ -73,10 +74,10 @@ export async function contentScreen(_settings: SiteSettings, query: URLSearchPar
   const t = adminT(_settings.language)
   const { items, views, posts } = await paneData()
   const pane = writePane({
-    t, lang: _settings.language, items, views,
+    t, lang: _settings.language, timezone: siteZone(_settings.timezone), items, views,
     needs: needsFrom(query), openKey: '', alone: true, now: Date.now(),
   })
-  return `<div class="flex items-start gap-6">${pane}${blankSheet(items, t, _settings.language)}</div>`
+  return `<div class="flex items-start gap-6">${pane}${blankSheet(items, t, _settings.language, siteZone(_settings.timezone))}</div>`
     + writeDrawers(t, posts)
 }
 
@@ -126,7 +127,7 @@ export async function editorFrame(settings: SiteSettings, path: string): Promise
     at ? writingFrame(settings, at.kind, at.slug) : Promise.resolve(''),
   ])
   const pane = writePane({
-    t, lang: settings.language, items, views,
+    t, lang: settings.language, timezone: siteZone(settings.timezone), items, views,
     needs: null, openKey: openKeyOf(path), alone: false, now: Date.now(),
   })
   // `min-w-0` is not tidy-up: a flex item's `min-width:auto` refuses to shrink below its

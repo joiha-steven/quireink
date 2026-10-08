@@ -109,10 +109,10 @@ export function entriesOf(turns: Turn[]): Entry[] {
   return order.map((id) => byId.get(id)).filter((e): e is Entry => e !== undefined)
 }
 
-/** The wall-clock time a call went out, in whichever timezone is reading it. */
-export const clock = (at?: number): string =>
+/** The wall-clock time a call went out, on the SITE's clock (`zone`), like every other admin stamp. */
+export const clock = (at: number | undefined, zone: string): string =>
   at === undefined ? '' : new Date(at).toLocaleTimeString(undefined, {
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', ...(zone ? { timeZone: zone } : {}),
   })
 
 const JSON_KEY = 'font-medium text-neutral-800 dark:text-neutral-200'

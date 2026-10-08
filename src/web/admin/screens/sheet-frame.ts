@@ -12,11 +12,11 @@
 import type { NoteWithContent, PageWithContent, PostWithContent, SiteLang, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
-import { escapeAttr, escapeHtml, isScheduled, isoToZonedInput } from '@/utils'
-import { formatDateTimeShort } from '@/admin-shared/when'
+import { escapeAttr, escapeHtml, isoToZonedInput } from '@/utils'
+import { siteZone } from '@/analytics/types'
 import { formatWallClock } from '@/i18n/format'
 import { buttonClass } from '@/admin-shared/kit'
-import { ahead, mainReady, mainWord, metaLineOf, standing } from '@/admin-shared/sheet-state'
+import { ahead, mainReady, mainWord, metaLineOf, siteDateTimeShort, standing } from '@/admin-shared/sheet-state'
 import { NOTE_TEXT } from '@/admin-shared/scale'
 import {
   emptyDraft, LIVE_PATH, sheetWords,
@@ -97,9 +97,11 @@ function draftOf(kind: SheetKind, row: Loaded['row'], timezone: string): SheetDr
 }
 
 /** The line under the title, from what the server holds (`sheet-state.ts`). */
-function metaLine(kind: SheetKind, t: AdminStrings, lang: SiteLang, draft: SheetDraft, touched: string): string {
-  const st = standing(draft.status, draft.date)
-  return metaLineOf(kind, t, st, draft.date, touched ? formatDateTimeShort(touched, lang) : '', lang)
+function metaLine(
+  kind: SheetKind, t: AdminStrings, lang: SiteLang, draft: SheetDraft, touched: string, zone: string,
+): string {
+  const st = standing(draft.status, draft.date, zone)
+  return metaLineOf(kind, t, st, draft.date, touched, lang)
 }
 
 /**
@@ -111,10 +113,10 @@ function metaLine(kind: SheetKind, t: AdminStrings, lang: SiteLang, draft: Sheet
  * yet" and "is it live yet" both change WITHOUT a reload, and a control that only the server
  * can draw is a control the first save cannot produce.
  */
-function headerLinks(t: AdminStrings, kind: SheetKind, draft: SheetDraft, saved: boolean): string {
+function headerLinks(t: AdminStrings, kind: SheetKind, draft: SheetDraft, saved: boolean, zone: string): string {
   if (kind !== 'post') return ''
   const quiet = 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-  const live = saved && draft.status === 'published' && !isScheduled(draft.status, draft.date)
+  const live = saved && draft.status === 'published' && !ahead(draft.date, zone)
   return `<button type="button" data-sheet-history class="${quiet}"${saved ? '' : ' hidden'}>`
     + `${escapeHtml(t.history)}</button>`
     + `<a data-piece-stats href="/admin/analytics?path=${escapeAttr(encodeURIComponent(`/${draft.slug}`))}"`
@@ -165,17 +167,22 @@ export async function writingFrame(
   if (!loaded) return missing(t)
 
   const { row, lists } = loaded
-  const draft = draftOf(kind, row, settings.timezone)
+  // THE SITE'S EFFECTIVE ZONE — the setting, else `ANALYTICS_TZ`, else UTC (`siteZone`) — and the
+  // only one this sheet reads: the date box, the schedule, and every "is it ahead" the island asks.
+  const zone = siteZone(settings.timezone)
+  const draft = draftOf(kind, row, zone)
   const content = row ? (row as { content?: string }).content ?? '' : ''
   const saved = Boolean(row)
-  const scheduled = isScheduled(draft.status, draft.date)
+  const scheduled = draft.status === 'published' && ahead(draft.date, zone)
   const live = draft.status === 'published' && saved && !(kind === 'post' && scheduled)
-  const savedStanding = saved ? standing(draft.status, draft.date) : 'draft'
+  const savedStanding = saved ? standing(draft.status, draft.date, zone) : 'draft'
+  // The last touch on the SITE's clock, as the Write list beside the sheet prints it.
+  const touched = row?.updatedAt ? siteDateTimeShort(row.updatedAt, zone, settings.language) : ''
 
   const data: SheetData = {
     kind,
     lang: settings.language,
-    timezone: settings.timezone,
+    timezone: zone,
     slug: row?.slug ?? '',
     content,
     draft,
@@ -212,7 +219,7 @@ export async function writingFrame(
     // Already worded, server-side: the group's members in their own language names. The panel
     // only prints it, because the island holds no dictionary and no list of pieces.
     translations: await groupMembersLine(draft.slug, draft.translationGroup),
-    zone: settings.timezone || 'UTC',
+    zone,
     scheduledNote: scheduled
       ? `${t.scheduledForPrefix} ${formatWallClock(draft.date, settings.language)}`
       : '',
@@ -220,7 +227,7 @@ export async function writingFrame(
 
   const panel = sheetPanel({
     t, lang: settings.language, piece, lists,
-    headerRight: headerLinks(t, kind, draft, saved),
+    headerRight: headerLinks(t, kind, draft, saved, zone),
     bottom: trashKey(t, kind, draft.slug),
   })
 
@@ -230,8 +237,8 @@ export async function writingFrame(
       slug: row?.slug ?? '',
       title: draft.title,
       content,
-      metaLine: metaLine(kind, t, settings.language, draft, row?.updatedAt ?? ''),
-      touched: row?.updatedAt ? formatDateTimeShort(row.updatedAt, settings.language) : '',
+      metaLine: metaLine(kind, t, settings.language, draft, touched, zone),
+      touched,
       kind,
     },
     links: {
@@ -247,7 +254,7 @@ export async function writingFrame(
       schedule: t.schedule,
       update: t.update,
       // What the server holds decides "Update"; the date decides publish or schedule.
-      main: mainWord(savedStanding, draft.status, ahead(draft.date)),
+      main: mainWord(savedStanding, draft.status, ahead(draft.date, zone)),
       mainReady: mainReady(savedStanding, false, false),
       published: saved && draft.status === 'published',
     },

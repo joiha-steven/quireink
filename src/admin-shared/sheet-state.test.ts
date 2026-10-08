@@ -5,22 +5,48 @@ import { describe, expect, it } from 'bun:test'
 import { ahead, mainReady, mainWord, standing, standingDate } from './sheet-state'
 import { formatDateTimeShort } from './when'
 
-const NOW = new Date('2026-10-08T10:54').getTime()
+const NOW = Date.parse('2026-10-08T10:54:00Z')
 
 describe('the standing', () => {
   it('is draft whatever the date when the status is draft', () => {
-    expect(standing('draft', '2026-10-19T09:00', NOW)).toBe('draft')
-    expect(standing('draft', '2020-01-01T00:00', NOW)).toBe('draft')
+    expect(standing('draft', '2026-10-19T09:00', 'UTC', NOW)).toBe('draft')
+    expect(standing('draft', '2020-01-01T00:00', 'UTC', NOW)).toBe('draft')
   })
   it('is scheduled when published with a date still ahead', () => {
-    expect(standing('published', '2026-10-19T09:00', NOW)).toBe('scheduled')
-    expect(standing('published', '2026-10-08T10:55', NOW)).toBe('scheduled')
+    expect(standing('published', '2026-10-19T09:00', 'UTC', NOW)).toBe('scheduled')
+    expect(standing('published', '2026-10-08T10:55', 'UTC', NOW)).toBe('scheduled')
   })
   it('is published when the date has passed, is now, or is missing', () => {
-    expect(standing('published', '2026-10-08T10:54', NOW)).toBe('published')
-    expect(standing('published', '2026-01-01T00:00', NOW)).toBe('published')
-    expect(standing('published', '', NOW)).toBe('published')
-    expect(ahead('not a date', NOW)).toBe(false)
+    expect(standing('published', '2026-10-08T10:54', 'UTC', NOW)).toBe('published')
+    expect(standing('published', '2026-01-01T00:00', 'UTC', NOW)).toBe('published')
+    expect(standing('published', '', 'UTC', NOW)).toBe('published')
+    expect(ahead('not a date', 'UTC', NOW)).toBe(false)
+  })
+})
+
+describe('ahead, on the SITE’s clock whatever clock the machine reading it is on', () => {
+  // 10:00 UTC is 17:00 in Hanoi and 03:00 in Los Angeles.
+  const TEN_UTC = Date.parse('2026-10-08T10:00:00Z')
+  const onMachine = (tz: string, run: () => void): void => {
+    // Put back by NAME: `delete process.env.TZ` leaves Bun on that zone for good after.
+    const was = process.env.TZ || Intl.DateTimeFormat().resolvedOptions().timeZone
+    process.env.TZ = tz
+    try { run() } finally { process.env.TZ = was }
+  }
+  it('a site on UTC read from a browser in Hanoi: today 12:00 is still ahead', () => {
+    onMachine('Asia/Ho_Chi_Minh', () => {
+      expect(new Date('2026-10-08T12:00').getTime()).toBeLessThan(TEN_UTC) // what it used to compare
+      expect(ahead('2026-10-08T12:00', 'UTC', TEN_UTC)).toBe(true)
+      expect(standing('published', '2026-10-08T12:00', 'UTC', TEN_UTC)).toBe('scheduled')
+    })
+  })
+  it('a site in Hanoi read from a browser on UTC: today 16:00 has already gone', () => {
+    onMachine('UTC', () => {
+      expect(new Date('2026-10-08T16:00').getTime()).toBeGreaterThan(TEN_UTC)
+      expect(ahead('2026-10-08T16:00', 'Asia/Ho_Chi_Minh', TEN_UTC)).toBe(false)
+      expect(standing('published', '2026-10-08T16:00', 'Asia/Ho_Chi_Minh', TEN_UTC)).toBe('published')
+      expect(ahead('2026-10-08T17:01', 'Asia/Ho_Chi_Minh', TEN_UTC)).toBe(true)
+    })
   })
 })
 

@@ -133,7 +133,22 @@
 - **A newsletter is never pre-selected twice.** Send no longer ticks a post already sent, counts
   the people who received it rather than the sends, links its mail warning to the setting, and the
   consent line survives a reload.
-- **Smaller things across the admin:** a Scheduled filter on the Write list (scheduled posts and
+- **Saving can no longer take a post down, or put one up, by itself.** Publishing and then
+  pressing Save before the publish finished queued a save that sent the post back to draft; a
+  queued save now decides its status when it runs, from what the server confirmed. Moving a
+  live post's date into the future, or a scheduled post's date into the past, now asks first
+  (Schedule or Keep it live; Publish now or Keep it scheduled), compared on the site's clock
+  rather than the browser's.
+- **The admin tells time on the site's clock.** The Write list, the log, trash, comments, the
+  dashboard, the library, subscribers, backups, tokens, sessions, the assistant and "Saved at"
+  printed the server's or the browser's time; they now use the site timezone, which when empty
+  falls back to `ANALYTICS_TZ` and then UTC, as the setting always said, and follow a new
+  timezone as soon as it is saved.
+- **Smaller things across the admin:** the command palette ranks a title match above a match
+  in a description ("upload" finds Largest upload before Activity log); row ticks have a 24px
+  target in every engine and keep their drawn box in Windows High Contrast; the settings tabs
+  show they scroll; the phone drawer's Clear cache is labelled and has no idle collapse key;
+  a backup run in the last hour shows its seconds; a Scheduled filter on the Write list (scheduled posts and
   notes no longer count as Published); library tile keys visible on touch tablets; row ticks,
   sign-in links and small links with a 24px target; grey small print, code line numbers and badges
   at 4.5:1 or better; a refused sign-in or claim password says so under the field; the recovery

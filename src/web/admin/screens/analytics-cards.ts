@@ -10,7 +10,8 @@
 import type { SiteLang } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { AnalyticsSummary, RightNow, TopPage } from '@/analytics/types'
-import { escapeAttr, escapeHtml, formatBytes, formatDateTimeShort } from '@/utils'
+import { escapeAttr, escapeHtml, formatBytes } from '@/utils'
+import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { formatCount } from '@/i18n/format'
 import { TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
 import { NOTE_TEXT } from '@/admin-shared/scale'
@@ -79,7 +80,7 @@ export function liveNow(t: AdminStrings, lang: SiteLang, now: RightNow, titles: 
  * NO horizontal padding on the grid: `statCard bare` carries its own `px-5`, and a `px-4` here
  * put the two figures 36px in while every other row on the sheet sits at 20px.
  */
-export function deliveryPanel(t: AdminStrings, lang: SiteLang, summary: AnalyticsSummary): string {
+export function deliveryPanel(t: AdminStrings, lang: SiteLang, tz: string, summary: AnalyticsSummary): string {
   const { transfer, cache } = summary
   if (!transfer && !cache) return ''
   const cells: string[] = []
@@ -106,7 +107,7 @@ export function deliveryPanel(t: AdminStrings, lang: SiteLang, summary: Analytic
       bare: true,
       label: t.analyticsCache,
       value: rate === null ? '—' : `${rate}%`,
-      sub: `${fraction}${t.analyticsCacheSince} ${formatDateTimeShort(new Date(cache.since).toISOString(), lang)}`,
+      sub: `${fraction}${t.analyticsCacheSince} ${siteDateTimeShort(cache.since, tz, lang)}`,
     }) + `<p class="${NOTE_TEXT} mt-2 px-5">${escapeHtml(t.analyticsCacheNote)}</p></div>`)
   }
 

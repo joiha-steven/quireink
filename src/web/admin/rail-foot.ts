@@ -25,19 +25,31 @@ import { floor, glyph, renderRow } from '@/web/admin/rail-rows'
  * the owner's menu with Account and Sign out, which is where a tool's own settings are
  * looked for.
  */
-export function footStrip(ids: readonly string[], rows: Map<string, RailRow>, t: AdminStrings, avatar: string): string {
+export function footStrip(
+  ids: readonly string[], rows: Map<string, RailRow>, t: AdminStrings, avatar: string, drawer = false,
+): string {
   const key = (id: string): string => {
     const row = rows.get(id)
     switch (id) {
       case 'collapse':
+        // ⚠️ NOT IN THE PHONE'S DRAWER. It narrows the desktop column, which is not on screen
+        // there (the drawer is `lg:hidden`), so the key drew a chevron that changed nothing.
+        if (drawer) return ''
         return `<button type="button" data-rail-key="collapse" aria-label="${escapeAttr(t.navCollapse)}"`
           + ` title="${escapeAttr(t.navCollapse)}" class="${SIDEBAR_ICON}">`
           + `<span class="rail-collapse-chevron grid place-items-center transition-transform">${glyph('prev')}</span></button>`
       case 'theme':
         return themeKey(t)
-      case 'cache':
-        return `<button type="button" data-rail-key="cache" title="${escapeAttr(t.clearCache)}"`
-          + ` aria-label="${escapeAttr(t.clearCache)}" class="${SIDEBAR_ICON}">${glyph('cache')}</button>`
+      case 'cache': {
+        const attrs = `data-rail-key="cache" title="${escapeAttr(t.clearCache)}" aria-label="${escapeAttr(t.clearCache)}"`
+        // A `title` is a hover, and a finger does not hover: in the drawer the glyph carries its
+        // word INSIDE the same button, so tapping the words runs it and the one key that runs
+        // something is never a bare icon.
+        return drawer
+          ? `<button type="button" ${attrs} class="${SIDEBAR_ICON}" style="width:auto;display:flex;gap:.25rem;padding-inline:.5rem">`
+            + `${glyph('cache')}<span aria-hidden="true" class="text-xs">${escapeHtml(t.clearCache)}</span></button>`
+          : `<button type="button" ${attrs} class="${SIDEBAR_ICON}">${glyph('cache')}</button>`
+      }
       // Both live in the menu below. A stored order that still lists them draws nothing here
       // rather than drawing them twice.
       case 'icons':
@@ -136,6 +148,7 @@ export function themeKey(t: AdminStrings): string {
   const item = 'flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
   return `<div class="relative">`
     + `<button type="button" data-rail-key="theme" aria-label="${escapeAttr(t.themeLabel)}"`
+    + ` title="${escapeAttr(t.themeLabel)}"`
     + ` aria-expanded="false" class="${SIDEBAR_ICON}">`
     + `<span class="rail-sun">${glyph('theme')}</span><span class="rail-moon">${glyph('moon')}</span></button>`
     + `<div data-rail-menu="theme" hidden class="absolute bottom-full left-0 z-50 mb-1 w-44 overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">`

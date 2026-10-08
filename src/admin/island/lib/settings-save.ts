@@ -15,6 +15,8 @@ import { plural } from '@/i18n/plural'
 import { changedCount, fieldsIn, partialOf, settle, type Field } from './settings-form'
 import { applyLiveGates } from './settings-controls'
 import { show } from './list-dom'
+import { isoToZonedInput } from '@/utils'
+import { pageZone } from './page-lang'
 
 export type SaveWords = Partial<Record<string, string>>
 
@@ -24,8 +26,8 @@ const say = (message: string, kind?: 'error'): void => {
 
 /** `HH:mm`, because the useful fact a minute later is the time and not the word "saved". */
 const clock = (): string => {
-  const d = new Date()
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  // The site's clock, like the stamps the server drew on this screen.
+  return isoToZonedInput(new Date().toISOString(), pageZone()).slice(11, 16)
 }
 
 /**
@@ -175,6 +177,10 @@ export function wireSave(screen: HTMLElement, w: SaveWords): Form {
       // the server on and pressing this key left both blocks shut until a reload.
       if (panels) applyLiveGates(panels)
       if (panels) paintAddresses(panels, json.data)
+      // The zone may be what this very save changed: move the page's before the clock reads it,
+      // and everything the island draws from here on (backups, tokens, sessions) follows.
+      const zone = (json.data as { zone?: unknown } | undefined)?.zone
+      if (typeof zone === 'string' && zone) document.documentElement.dataset.tz = zone
       savedAt = clock()
       say(w.saved ?? '')
       return true

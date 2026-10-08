@@ -222,6 +222,8 @@ export type PanelFields = {
   apply: (draft: SheetDraft) => void
   /** Tick the status choice that matches what was just saved. */
   setStatus: (status: SheetDraft['status']) => void
+  /** Write a date into the field without it reporting an edit — Keep it live (`sheet-live.ts`). */
+  setDate: (date: string) => void
   destroy: () => void
 }
 
@@ -255,6 +257,7 @@ export function wireFields(
         radio.checked = radio.value === status
       }
     },
+    setDate: (date: string) => { for (const field of dates) field.setValue(date) },
     apply: (next: SheetDraft) => {
       for (const node of root.querySelectorAll<HTMLElement>('[data-k]')) {
         const key = node.dataset.k as keyof SheetDraft

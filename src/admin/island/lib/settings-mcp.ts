@@ -18,8 +18,7 @@
 // unhides it. A token assembled into markup here would be a credential this file had to be
 // trusted not to leave lying in the DOM of a screen with seven other tabs on it.
 import type { McpTokenWire } from '@/admin-shared/wire'
-import { formatDateTimeShort } from '@/admin-shared/when'
-import { pageLang } from '@/admin/island/lib/page-lang'
+import { pageStamp } from '@/admin/island/lib/page-lang'
 import { say } from './media-bridge'
 import { broke, copy, put, read, row, show, type ListWords } from './list-dom'
 
@@ -129,16 +128,16 @@ function paintTokens(rows: HTMLElement, tokens: McpTokenWire[]): void {
     put(el, 'data-mcp-prefix', tk.prefix)
     // The admin's own stamp in all three columns, which is what the React table printed. Cut
     // to ten characters they were a different format from every other date on this screen.
-    put(el, 'data-mcp-made', formatDateTimeShort(tk.createdAt, pageLang()))
+    put(el, 'data-mcp-made', pageStamp(tk.createdAt))
     // NEVER-USED IS A DRAWN SPAN, not a word this file holds. The template ships both halves
     // and the island shows one; a string here would be an untranslated twelfth locale.
-    put(el, 'data-mcp-used', tk.lastUsedAt ? formatDateTimeShort(tk.lastUsedAt, pageLang()) : '')
+    put(el, 'data-mcp-used', tk.lastUsedAt ? pageStamp(tk.lastUsedAt) : '')
     show(el.querySelector('[data-mcp-used]'), tk.lastUsedAt != null)
     show(el.querySelector('[data-mcp-never]'), tk.lastUsedAt == null)
     // The expiry column, and the word that replaces it once the date has passed. `expired` is
     // the SERVER's answer against the server's clock: a browser with a wrong clock must not be
     // what decides whether a token still works, because it is not what the route asks.
-    put(el, 'data-mcp-expires', formatDateTimeShort(tk.expiresAt, pageLang()))
+    put(el, 'data-mcp-expires', pageStamp(tk.expiresAt))
     show(el.querySelector('[data-mcp-expires]'), !tk.expired)
     show(el.querySelector('[data-mcp-expired]'), tk.expired)
     // A BADGE ONLY WHEN THE GRANT IS NARROWER THAN FULL. `full` is what every token was before

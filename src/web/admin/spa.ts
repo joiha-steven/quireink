@@ -25,6 +25,7 @@ import { escapeHtml } from '@/utils'
 import { allFontFaceCss } from '@/render/font-faces'
 import { fontPresetCss, themesToCss } from '@/content/themes'
 import { typographyToCss, fontToCss, tableToCss } from '@/content/settings'
+import { siteZone } from '@/analytics/types'
 
 type Asset = AdminFile
 
@@ -268,7 +269,7 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
   // emitted here. Stamping it would leave a hook that says the admin follows a setting it
   // does not.
   return `<!DOCTYPE html>
-<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)} data-admin-screen="${found ? found.name : 'not-found'}">
+<html lang="${esc(settings.language)}" data-tz="${esc(siteZone(settings.timezone))}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)} data-admin-screen="${found ? found.name : 'not-found'}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

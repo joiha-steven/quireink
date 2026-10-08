@@ -18,9 +18,9 @@
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { MediaItem, SiteLang } from '@/types'
 import { escapeAttr, escapeHtml, formatBytes } from '@/utils'
-import { formatCount, formatDate } from '@/i18n/format'
+import { formatCount } from '@/i18n/format'
 import { CONTROL_SM, DROPZONE, DROPZONE_IDLE, SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
-import { mediaTileMark, type MediaWords } from '@/admin-shared/media-marks'
+import { mediaTileMark, tileTitle, type MediaWords } from '@/admin-shared/media-marks'
 import { emptyState, select } from '@/web/admin/kit'
 import { htmlOf } from '@/web/admin/mark-html'
 
@@ -127,13 +127,12 @@ function actionRow(t: AdminStrings): string {
 }
 
 /** One tile, from the description both faces draw it from. */
-export const tileHtml = (m: MediaItem, w: MediaWords, lang: SiteLang, mode: 'page' | 'picker'): string =>
+export const tileHtml = (m: MediaItem, w: MediaWords, lang: SiteLang, tz: string, mode: 'page' | 'picker'): string =>
   htmlOf(mediaTileMark(m, w, {
     mode,
     tickable: true,
     sizeLabel: formatBytes(m.size),
-    title: `${m.filename}\n${m.width && m.height ? `${m.width}×${m.height} · ` : ''}`
-      + `${formatBytes(m.size)} · ${formatDate(m.uploadedAt, lang)}`,
+    title: tileTitle(m, lang, tz),
   }))
 
 /**
@@ -148,10 +147,10 @@ export const tileHtml = (m: MediaItem, w: MediaWords, lang: SiteLang, mode: 'pag
  * drew. One wrapper, and the stack has one child again whichever state is showing.
  */
 export function imagesPanel(
-  t: AdminStrings, lang: SiteLang, items: MediaItem[], open: boolean, pagerHtml = '',
+  t: AdminStrings, lang: SiteLang, tz: string, items: MediaItem[], open: boolean, pagerHtml = '',
 ): string {
   const w = mediaWords(t)
-  const tiles = items.map((m) => tileHtml(m, w, lang, 'page')).join('')
+  const tiles = items.map((m) => tileHtml(m, w, lang, tz, 'page')).join('')
   return `<div data-media-panel="images" class="px-4 pt-4 pb-2"${open ? '' : ' hidden'}>`
     + `<div class="space-y-5">`
     + dropWell(t, 'media', t.dropzone, IMAGE_ACCEPT)

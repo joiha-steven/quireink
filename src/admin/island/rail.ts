@@ -210,6 +210,7 @@ function wireMenus(): void {
 function wireTheme(): void {
   const KEY = 'theme'
   const read = (): string => { try { return localStorage.getItem(KEY) ?? 'system' } catch { return 'system' } }
+  // The BROWSER's clock on purpose: a greeting follows the owner's own time of day, not the site's.
   const night = (): boolean => { const h = new Date().getHours(); return h >= 18 || h < 6 }
   const resolve = (mode: string): boolean =>
     mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)

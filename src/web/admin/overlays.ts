@@ -161,7 +161,8 @@ function palette(t: AdminStrings): string {
       // The words ONCE, as written. The two search lanes were drawn here as well, a lower-cased
       // and an accent-folded copy of every row — 4,222 bytes, 17% of every admin page, for a
       // palette most screens never open (2026-09-19). The island folds a row the first time a
-      // query reaches it, with the same `lanes`.
+      // query reaches it, with the same `lanes` (`palette-rank.ts` keeps them), and the row's
+      // name is the title the rank reads.
       + ` data-pal-search="${escapeAttr(`${r.search} ${r.hint}`)}"`
       + (r.run ? ` data-pal-run="${escapeAttr(r.run)}"` : ` data-pal-href="${escapeAttr(r.href)}"`)
       + ` hidden class="${FOUND_ROW}">`

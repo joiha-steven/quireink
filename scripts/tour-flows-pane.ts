@@ -269,9 +269,10 @@ export function registerAutosaveFlows({ flow, expect, atWidth }: Tour): void {
   })
 
   // THE SMALL PRINT HOLDS ONE LINE, in all eleven languages — the rule `content-pane.ts` states
-  // for the row of two lamps and the sort key, and nothing measured until 2026-09-23. The audit
-  // of 2026-09-19 found "Published" 67% longer in Russian and the sort key beside it never
-  // weighed. Measured at 1280, where the pane is at its narrowest: 320px, before it starts growing.
+  // for the row of two lamps, and nothing measured until 2026-09-23. (The sort key has since
+  // moved to the tools row.) The audit of 2026-09-19 found "Published" 67% longer in Russian
+  // and the row never weighed. Measured at 1280, where the pane is at its narrowest: 320px,
+  // before it starts growing.
   flow('admin: the pane\'s small print keeps to one line in every language', async () => {
     const LANGS = ['en', 'vi', 'de', 'ja', 'zh', 'ko', 'fr', 'es', 'pt', 'it', 'ru']
     const put = (lang: string) => expect('/admin/content', `

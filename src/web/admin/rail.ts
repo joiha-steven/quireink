@@ -131,7 +131,7 @@ export function railHtml({ settings, aiConfigured, path }: RailOptions): string 
     + `<nav data-rail-drawer hidden class="rail-glyphs admin-drawer fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto p-3 lg:hidden ${OVERLAY}">`
     + `<div class="rail-column">${nav}</div>`
     + `<span class="my-1 block h-px w-full bg-neutral-200 dark:bg-neutral-700" aria-hidden="true"></span>`
-    + `<div>${footStrip(order.footer, rows, t, avatar)}</div></nav>`
+    + `<div>${footStrip(order.footer, rows, t, avatar, true)}</div></nav>`
 
   return aside + bar + drawer + arrangeTemplate(t)
 }
@@ -187,7 +187,7 @@ ${(Object.keys(MEDIA_VIEW_KEYS) as MediaKind[]).map((kind) =>
   + `:${JSON.stringify(MEDIA_VIEW_DEFAULT[kind])});`).join('\n')}
 h.style.setProperty('--admin-nav-w',shut?${JSON.stringify(RAIL_WIDTH.shut)}:${JSON.stringify(RAIL_WIDTH.open)});
 if(/mac|iphone|ipad/i.test(navigator.platform||''))h.setAttribute('data-mac','1');
-var hr=new Date().getHours();
+/* the BROWSER's clock on purpose: a greeting follows the owner's own time of day */var hr=new Date().getHours();
 h.setAttribute('data-daypart',hr<5?'night':hr<12?'morning':hr<18?'afternoon':hr<22?'evening':'night');
 var m=S.getItem('theme')||'system';
 if(m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches)||(m==='time'&&(hr>=18||hr<6)))h.classList.add('dark');

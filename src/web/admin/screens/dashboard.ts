@@ -13,7 +13,8 @@
 import type { SiteLang, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
-import { escapeAttr, escapeHtml, formatBytes, formatDateTimeShort } from '@/utils'
+import { escapeAttr, escapeHtml, formatBytes } from '@/utils'
+import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { buttonClass } from '@/admin-shared/kit'
 import { CARD_GAP, META_ON_CANVAS, SECTION_GAP, TAP, TITLE } from '@/admin-shared/scale'
 import { DAY_PARTS, dayPartName, relativeDay, sinceStart } from '@/admin-shared/when'
@@ -24,6 +25,7 @@ import { icon } from '@/web/admin/kit'
 import { card, statBand, statCard } from '@/web/admin/kit-figures'
 import { trafficCard, widgets } from '@/web/admin/screens/dashboard-cards'
 import { dashboardView } from '@/web/admin/views-home'
+import { siteZone } from '@/analytics/types'
 
 /**
  * The two links the greeting owns, by the `?setting=` route ADR 0041 kept working: straight to
@@ -149,7 +151,7 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
  * to be a list; past four the band SAYS there are more, because a cap nobody is told about
  * reads as "this is all of it".
  */
-function pickUp(t: AdminStrings, lang: SiteLang, band: { items: { title: string; href: string; touched: string; untitledNo?: number }[]; total: number }): string {
+function pickUp(t: AdminStrings, lang: SiteLang, tz: string, band: { items: { title: string; href: string; touched: string; untitledNo?: number }[]; total: number }): string {
   if (band.items.length === 0) return ''
   return card({
     title: escapeHtml(t.dashPickUp),
@@ -163,7 +165,7 @@ function pickUp(t: AdminStrings, lang: SiteLang, band: { items: { title: string;
       // `truncate` on the TITLE only, so a long headline shortens and the timestamp beside it
       // is never pushed out of the chip.
       + `<span class="truncate">${escapeHtml(it.title || `${t.untitled} #${it.untitledNo ?? 1}`)}</span>`
-      + (it.touched ? `<span class="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(formatDateTimeShort(it.touched, lang))}</span>` : '')
+      + (it.touched ? `<span class="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(siteDateTimeShort(it.touched, tz, lang))}</span>` : '')
       + `</a>`).join('') + `</div>`,
   })
 }
@@ -230,8 +232,8 @@ export async function dashboardScreen(settings: SiteSettings): Promise<string> {
     // zeroes is the least useful thing a new owner can be shown first.
     + firstRun(t, d.firstRunDone, d.setup as unknown as Record<string, boolean>)
     + trafficCard(t, lang, d.dashboard.traffic)
-    + pickUp(t, lang, d.dashboard.pickUp)
-    + `<div class="grid ${CARD_GAP} lg:grid-cols-2">${widgets(t, lang, d.dashboard, d.recent, d.activityEnabled)}</div>`
+    + pickUp(t, lang, siteZone(settings.timezone), d.dashboard.pickUp)
+    + `<div class="grid ${CARD_GAP} lg:grid-cols-2">${widgets(t, lang, siteZone(settings.timezone), d.dashboard, d.recent, d.activityEnabled)}</div>`
     + statBand(
       statCard({ bare: true, label: t.statPosts, value: String(d.posts), href: '/admin/content' })
       + statCard({ bare: true, label: t.statPages, value: String(d.pages), href: '/admin/content' })

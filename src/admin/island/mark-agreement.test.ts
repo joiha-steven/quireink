@@ -29,6 +29,7 @@ const WORDS = {
   untitled: 'Untitled', noChats: 'Nothing yet.', deleteOne: 'Delete', deleteYes: 'Delete',
   didNothing: 'Nothing yet in this conversation.',
   lang: 'en' as const,
+  zone: 'UTC',
 }
 
 /**

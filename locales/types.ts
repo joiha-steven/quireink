@@ -420,6 +420,16 @@ export type AdminStrings = {
   noteSourceUrlHint: string
   savedDraft: string
   savedChanges: string
+  takeDownTitle: string
+  takeDownBody: string
+  keepLive: string
+  takenDownUntil: string
+  keptLive: string
+  publishNowTitle: string
+  publishNowBody: string
+  publishNow: string
+  keepScheduled: string
+  keptScheduled: string
   published: string
   imageUploadFailed: string
   /** `{size}` and `{limit}` in megabytes: a file over the upload cap. */

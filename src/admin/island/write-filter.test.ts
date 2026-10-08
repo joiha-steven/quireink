@@ -46,7 +46,7 @@ let pane: HTMLElement
 
 const draw = (items: WriteItem[] = ITEMS, needs: 'excerpt' | 'image' | null = null): void => {
   root.innerHTML = writePane({
-    t, lang: 'en', items, views: {}, needs, openKey: '', alone: true, now: NOW,
+    t, lang: 'en', timezone: 'UTC', items, views: {}, needs, openKey: '', alone: true, now: NOW,
   })
   pane = root.querySelector<HTMLElement>('[data-write-pane]')!
 }

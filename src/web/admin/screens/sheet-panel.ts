@@ -99,7 +99,7 @@ function common(t: AdminStrings, lang: SiteLang, piece: PanelPiece): string {
     k: 'date', label: piece.zone ? `${t.publishDate} (${piece.zone})` : t.publishDate,
     value: piece.date, lang, t, note: piece.scheduledNote,
   })
-  return slug + date + statusPair(t, piece.status, ahead(piece.date))
+  return slug + date + statusPair(t, piece.status, ahead(piece.date, piece.zone))
 }
 
 function postFields(t: AdminStrings, piece: PanelPiece, lists: PanelLists): string {

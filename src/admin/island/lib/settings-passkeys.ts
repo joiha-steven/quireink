@@ -11,8 +11,7 @@
 // ⚠️ A PASSKEY IS NEVER THE ONLY DOOR, and nothing here pretends otherwise: removing the last one
 // changes nothing about the password, the code or the recovery codes.
 import type { PasskeyWire } from '@/admin-shared/wire'
-import { formatDateTimeShort } from '@/admin-shared/when'
-import { pageLang } from '@/admin/island/lib/page-lang'
+import { pageStamp } from '@/admin/island/lib/page-lang'
 import { ask, say } from './media-bridge'
 
 type Words = Partial<Record<string, string>>
@@ -138,9 +137,9 @@ export function wirePasskeys(o: {
         const name = row.querySelector('[data-sec-passkey-name]')
         if (name) name.textContent = p.name
         const created = row.querySelector('[data-sec-passkey-created]')
-        if (created) created.textContent = formatDateTimeShort(p.createdAt, pageLang())
+        if (created) created.textContent = pageStamp(p.createdAt)
         const when = row.querySelector('[data-sec-passkey-when]')
-        if (when && p.lastUsedAt !== null) when.textContent = formatDateTimeShort(p.lastUsedAt, pageLang())
+        if (when && p.lastUsedAt !== null) when.textContent = pageStamp(p.lastUsedAt)
         show(row.querySelector('[data-sec-passkey-used]'), p.lastUsedAt !== null)
         show(row.querySelector('[data-sec-passkey-never]'), p.lastUsedAt === null)
         return row

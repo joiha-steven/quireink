@@ -34,7 +34,11 @@ that file first; this one only adds what is true here.
   never the form (2026-10-08): ticking Published on an unsaved draft turned the line to
   "Published" and raised a View key onto a 404. A scheduled piece is dated by its PUBLISH date
   (the site's wall clock, as the Attributes panel says it); anything else by its last touch. The
-  status radio names its second choice Scheduled while the date is ahead, as the Write list does. It aligns with the public reading column, wraps
+  status radio names its second choice Scheduled while the date is ahead, as the Write list does.
+  **Every date on this line and in the Write list is the SITE's clock** (`siteDateTimeShort`,
+  2026-10-08): the list printed the server process's zone, so from 1640px, where both show, a
+  host on UTC under a blog set to Hanoi printed two times for one scheduled post. The list dates
+  a scheduled note by its publish date as well, as this line does. It aligns with the public reading column, wraps
   naturally, and uses content-driven height so a long one is never clipped.
 - **The toolbar is BACK, by the owner's verdict after writing on the bare version**
   (2026-08-17 — "/" alone is fine in the Markdown view, but the normal view wants a
@@ -110,7 +114,20 @@ that file first; this one only adds what is true here.
   stays a draft, a published piece stays published and the key reads "Save" rather than "Save
   draft". Until 2.2.15 it saved as a draft whatever the piece was, so ⌘S on a live post took
   it off the site. Unpublishing is the status choice in the panel, and a restored revision
-  brings back words, never a status. Collisions were checked against the live keymap
+  brings back words, never a status. ⚠️ **The date is the one way Save can still move a piece
+  across now** (2026-10-08): the status stays published, but the date decides which side of the
+  site it is on. So Save and ⌘S ask first, in the kit's dialog, when the server holds the piece
+  LIVE and the form's date is ahead ("…takes it off the site until <date>": **Schedule**, **Keep
+  it live**, Cancel), or holds it SCHEDULED and the form's date is now or gone ("It is scheduled
+  for <date>. Saving with this date publishes it now": **Publish now**, **Keep it scheduled**,
+  Cancel). Keep puts the saved date back into the field and saves the rest; an unanswered
+  question saves nothing; a draft is never asked. Taken down, the toast names the date, from the
+  main key as well, which already reads Schedule or Publish and asks nothing
+  (`island/lib/sheet-live.ts`).
+  ⚠️ **A queued save is decided when it RUNS** (`saveChain` in `island/lib/sheet-save.ts`), from
+  what the save in front of it left the server holding — never at the press. Save pressed while
+  a Publish was in flight had already decided "draft" and took the post straight back off the
+  site; Preview's choice between saving and a snapshot is read the same way. Collisions were checked against the live keymap
   and against the browsers; `Mod-Shift-i` and `Mod-Shift-p` were dropped for belonging to
   DevTools and to a Firefox private window.
 - **The autosave is TWO copies and neither of them is the published body.** localStorage on

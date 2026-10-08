@@ -20,6 +20,7 @@ import { getPageIndex } from '@/content/pages'
 import { getNoteIndex } from '@/content/notes'
 import { writeItems } from '@/web/admin/screens/content-items'
 import { recentPieces } from '@/web/admin/screens/recent-pieces'
+import { siteZone } from '@/analytics/types'
 
 export async function notFoundScreen(settings: SiteSettings): Promise<string> {
   const t = adminT(settings.language)
@@ -34,7 +35,7 @@ export async function notFoundScreen(settings: SiteSettings): Promise<string> {
     + `${escapeHtml(t.paletteTitle)}</button>`
     + `<a href="/admin" class="${escapeAttr(buttonClass('secondary'))}">${escapeHtml(t.navHome)}</a>`
     + `</div>`
-    + recentPieces(writeItems(posts, pages, notes), t, settings.language)
+    + recentPieces(writeItems(posts, pages, notes), t, settings.language, siteZone(settings.timezone))
     + `</div>`
 
   return `<div class="min-w-0 flex-1" data-admin-404>`

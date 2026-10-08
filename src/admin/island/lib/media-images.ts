@@ -10,10 +10,11 @@
 // page was drawn — an upload — and it builds it from the same description the server drew the
 // others from (`admin-shared/media-marks.ts`).
 import type { MediaItem, SiteLang } from '@/types'
-import { formatBytes, formatDate } from '@/i18n/format'
+import { formatBytes } from '@/i18n/format'
 import { buttonClass, DROPZONE_IDLE, DROPZONE_OVER } from '@/admin-shared/kit'
-import { mediaTileMark, type MediaWords } from '@/admin-shared/media-marks'
+import { mediaTileMark, tileTitle, type MediaWords } from '@/admin-shared/media-marks'
 import { elOf } from './mark-dom'
+import { pageZone } from './page-lang'
 import { wireGrid } from './media-grid'
 import { ask, owned, say, sendImages, wellIn, wireWell, type Words } from './media-bridge'
 import { altEditor } from './media-alt'
@@ -155,8 +156,7 @@ export function wireImages(panel: HTMLElement, tools: HTMLElement | null, w: Wor
           mode: 'page',
           tickable: true,
           sizeLabel: formatBytes(m.size),
-          title: `${m.filename}\n${m.width && m.height ? `${m.width}×${m.height} · ` : ''}`
-            + `${formatBytes(m.size)} · ${formatDate(m.uploadedAt, lang)}`,
+          title: tileTitle(m, lang, pageZone()),
         })))
         retotal()
         refilter()

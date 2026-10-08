@@ -214,17 +214,17 @@ character and none of its typographic rules **except one**, below.
   2026-09-07 is what retired it: four destinations plus a group, every row 40px of 14px grey
   `oklch(0.556)`, nothing on the column but text at one size — a list of words is scanned
   letter by letter where a glyph is recognised. The switch lives at the BOTTOM of
-  "Everything else" (2026-08-17 — a set-once device preference does not need a permanent
+  "Manage" (2026-08-17 — a set-once device preference does not need a permanent
   footer row), and it means the WHOLE rail: nav glyphs and the footer controls' glyphs alike
   A COLLAPSED rail has no labels, so it stays icon-only
   and the collapse control is always available. Reading the setting as "no icons anywhere"
   is what hid the collapse control in the first cut, and the owner could not find it.
-  The "Everything else" group itself remembers an EXPLICIT open/close across sessions
+  The "Manage" group itself remembers an EXPLICIT open/close across sessions
   (localStorage); arriving on a page inside it still opens it for the visit, unrecorded.
 - **The rail holds FOUR destinations**, and everything else sits behind one control on it
   ([ADR 0024](./decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6): home, write,
   library, newsletter — then analytics, comments, trash, settings, log, help and View blog
-  under "Everything else". The group opens itself when the current page is inside it, because
+  under "Manage". The group opens itself when the current page is inside it, because
   a rail that hides where you are is worse than a long one. Eleven rows was eleven decisions
   before the one that matters, and the four are what the owner came to do.
 - **The rail is the owner's to arrange** (2026-09-06). "Rearrange sidebar", under the collapse
@@ -245,7 +245,7 @@ character and none of its typographic rules **except one**, below.
   migration —
   `content/nav-order.ts` reconciles a stored order against the live rail on every mount. The
   rail widens from 208 to 256px while arranging, measured: the grip and two steppers take 62px,
-  and at 208 "Everything else" read as "Ever…". **Done and Reset are two real keys at the FOOT
+  and at 208 "Everything else" (the group's old name, now "Manage") read as "Ever…". **Done and Reset are two real keys at the FOOT
   of the rail** (2026-09-11), under the last row and under the two switches. They rode under the
   collapse row until then — which is a row the owner can DRAG, so on a rail whose collapse row
   had been moved up, the one control that ends the mode sat in the middle of the thing being
@@ -361,7 +361,7 @@ wearing the nav's row, one of them reading as a page named "Light"): destination
 wear `SIDEBAR_NAV`; the footer's controls (theme, Clear cache, Sign out) wear the smaller,
 quieter `SIDEBAR_UTIL`, and their glyphs are ALWAYS drawn — the "Show icons" switch governs
 decoration beside nav labels, and a control's glyph is not decoration, it is the part that
-says "this does something". That switch itself lives at the bottom of "Everything else",
+says "this does something". That switch itself lives at the bottom of "Manage",
 not on a permanent footer row. The theme control shows its sun/moon glyph before the
 applied mode label, and its menu opens UPWARD inside the rail (the rail carries `z-30`
 because `sticky` makes it a stacking context the content would otherwise paint over).

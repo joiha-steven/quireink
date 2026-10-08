@@ -34,6 +34,7 @@ import { clearCache } from '@/server/cache'
 import { clearActivity, getActivity, logActivity, type ActivityAction } from '@/server/activity'
 import { fail, json } from '@/web/api'
 import { ownerRouter, param } from '@/web/guard'
+import { siteZone } from '@/analytics/types'
 
 const body = async <T>(c: Context): Promise<Partial<T>> =>
   (await c.req.json().catch(() => ({}))) as Partial<T>
@@ -199,7 +200,9 @@ export function siteRoutes() {
     // A save that changed nothing still goes in — see `settings-diff.ts` for why that is a
     // fact worth reading.
     if (!isDeskOnly(before, next)) void logActivity('settings.save', describeSettingsSave(before, next))
-    return json(next)
+    // `zone`: what an empty timezone MEANS here, so the page can move `<html data-tz>` without
+    // knowing the operator's environment.
+    return json({ ...next, zone: siteZone(next.timezone) })
   })
 
   // ----- the activity log -----------------------------------------------------

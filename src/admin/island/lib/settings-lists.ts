@@ -14,8 +14,7 @@ import { ask, owned, say } from './media-bridge'
 import { broke, put, read, row, show, type ListWords } from './list-dom'
 import { fillTokens, wireMcp } from './settings-mcp'
 import { wireApi } from './settings-api'
-import { formatDateTimeShort } from '@/admin-shared/when'
-import { pageLang } from '@/admin/island/lib/page-lang'
+import { pageStamp } from '@/admin/island/lib/page-lang'
 
 export type { ListWords }
 
@@ -221,7 +220,21 @@ async function dropBackup(row: HTMLElement, name: string, w: ListWords): Promise
 
 // The admin's one stamp, as everywhere else: `toLocaleString()` printed "9/30/2026, 11:13:13 AM"
 // beside rows that said `30/9/26 - 11:11`.
-const backupWhen = (iso: string): string => formatDateTimeShort(iso, pageLang())
+const backupWhen = (iso: string): string => pageStamp(iso)
+
+/**
+ * THE LAST RUN, to the second while it is recent. Two runs inside one minute printed the same
+ * "30/9/26 - 11:11", so pressing Back up now twice looked as if the second did nothing. Under an
+ * hour old the stamp is the admin's own with `:ss` on the clock; older, it is the plain one.
+ */
+const backupRunWhen = (iso: string): string => {
+  const base = backupWhen(iso)
+  const at = new Date(iso).getTime()
+  const age = Date.now() - at
+  // A browser clock a few seconds behind the server's is the normal case right after "Back up now".
+  if (Number.isNaN(at) || age < -60_000 || age >= 3_600_000) return base
+  return `${base}:${String(new Date(at).getSeconds()).padStart(2, '0')}`
+}
 
 async function fillBackups(screen: HTMLElement): Promise<void> {
   const list = screen.querySelector<HTMLElement>('[data-backup-list]')
@@ -254,7 +267,7 @@ async function fillBackups(screen: HTMLElement): Promise<void> {
   const last = card?.querySelector<HTMLElement>('[data-backup-last]')
   if (last) {
     const label = last.dataset.wordLabel ?? ''
-    const value = data.lastRunAt ? backupWhen(data.lastRunAt) : (last.dataset.wordNever ?? '')
+    const value = data.lastRunAt ? backupRunWhen(data.lastRunAt) : (last.dataset.wordNever ?? '')
     last.textContent = label ? `${label}: ${value}` : value
   }
   // The lamp says whether there is one AT ALL, before the date is read.

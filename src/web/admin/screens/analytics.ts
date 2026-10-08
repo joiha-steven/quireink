@@ -22,6 +22,7 @@ import { barList, trendChart, trendMark, type BarRow } from '@/web/admin/screens
 import { deliveryPanel, liveNow, topPages } from '@/web/admin/screens/analytics-cards'
 import { pieceIndex } from '@/web/admin/screens/analytics-pieces'
 import { analyticsDetailScreen } from '@/web/admin/screens/analytics-detail'
+import { siteZone } from '@/analytics/types'
 
 /**
  * What the TABS offer, which is not what the address accepts.
@@ -206,7 +207,7 @@ export async function analyticsScreen(settings: SiteSettings, query: URLSearchPa
       // Under the chart rather than in the headline band: these two answer "what does my blog
       // cost to serve", which is a different question from the five reader metrics, and one of
       // them is not even windowed by the range tabs.
-      + deliveryPanel(t, lang, summary)
+      + deliveryPanel(t, lang, siteZone(settings.timezone), summary)
       + byYear
       + topPages(t, lang, summary.topPages, titles, range)
       // The index is handed what the table above just drew, so it can open on the rest.

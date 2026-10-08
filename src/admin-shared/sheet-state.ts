@@ -12,11 +12,16 @@
 // ⚠️ A SCHEDULED PIECE IS DATED BY ITS SCHEDULE. The line read "Scheduled · <last save>", so a
 // post scheduled for the 19th printed the 8th, and right after scheduling it printed the
 // moment of the click. It now prints the publish date as the wall clock on the SITE's zone,
-// which is what the Attributes panel says. The Write list dates it by the same publish date but
-// formats that instant in the server process's own zone (`content-pane.ts`), so the two agree
-// only where the server runs on the site's zone — a separate, older mismatch.
+// which is what the Attributes panel says. The Write list beside it prints the same publish date
+// through `siteDateTimeShort` below, so from 1640px, where both are on screen, they agree.
+//
+// ⚠️ EVERY DATE HERE IS THE SITE'S CLOCK. The list printed its instants in the SERVER PROCESS's
+// zone while the header printed the site's, so a host on UTC under a blog set to Hanoi showed
+// 19/10/26 - 02:00 in the list beside 19/10/26 - 09:00 over the paper. The last-touch time goes
+// through the same helper on the server (`sheet-frame.ts`) and in the island (`island/sheet.ts`).
 import type { PostStatus, SiteLang } from '@/types'
 import { formatDateTimeShort } from '@/admin-shared/when'
+import { isoToZonedInput, zonedInputToIso } from '@/utils'
 
 export type Standing = 'draft' | 'scheduled' | 'published'
 
@@ -24,21 +29,27 @@ export type Standing = 'draft' | 'scheduled' | 'published'
 export type WallClock = string
 
 /**
- * Is a wall-clock date still ahead? Read as the reading machine's own clock, which is what the
- * sheet has always done (`isScheduled` on the draft's date): the digits are the site's, the
- * comparison is local, and the two only part company for a writer in another zone in the hour
- * either side of the publish time.
+ * Is a wall-clock date still ahead? The digits are a time on the SITE's zone, and they are turned
+ * into the instant the server will store (`zonedInputToIso`, which the save itself uses) before
+ * they are compared with now.
+ *
+ * ⚠️ NEVER THE READING MACHINE'S CLOCK. It was `new Date(date)` — the browser's zone on the island,
+ * the server process's on the first paint. A writer in Hanoi on a site set to UTC, at 10:00 UTC,
+ * dating a live post today 12:00: the browser read that as 05:00 UTC, gone, so Save asked nothing
+ * and the server stored 12:00 UTC, ahead, and took the post off the site. `timezone` is the zone
+ * the sheet was sent (`sheet-frame.ts`), already resolved past an empty setting.
  */
-export function ahead(date: WallClock, now: number = Date.now()): boolean {
-  if (!date) return false
-  const at = new Date(date).getTime()
-  return !Number.isNaN(at) && at > now
+export function ahead(date: WallClock, timezone: string, now: number = Date.now()): boolean {
+  if (!date || Number.isNaN(new Date(`${date}:00.000Z`).getTime())) return false
+  return Date.parse(zonedInputToIso(date, timezone)) > now
 }
 
 /** Draft, scheduled or published, from a status and a date — what the SERVER holds. */
-export function standing(status: PostStatus, date: WallClock, now: number = Date.now()): Standing {
+export function standing(
+  status: PostStatus, date: WallClock, timezone: string, now: number = Date.now(),
+): Standing {
   if (status !== 'published') return 'draft'
-  return ahead(date, now) ? 'scheduled' : 'published'
+  return ahead(date, timezone, now) ? 'scheduled' : 'published'
 }
 
 /**
@@ -53,6 +64,20 @@ export function standingDate(
 ): string {
   if (st === 'scheduled' && date) return formatDateTimeShort(date, lang)
   return touched
+}
+
+/**
+ * An instant as the SITE's wall clock reads it, in the admin's short shape (`19/10/26 - 09:00`).
+ *
+ * The instant is turned into the site's wall clock first (`isoToZonedInput`, which the date field
+ * uses), then printed as `standingDate` prints a wall clock — so the list, the header and the
+ * Attributes panel answer from one zone whatever zone the server or the browser runs in. An empty
+ * zone is UTC, as it is everywhere else the setting is read. Empty for a stamp that will not parse.
+ */
+export function siteDateTimeShort(at: string | number, timezone: string, lang: SiteLang): string {
+  const d = new Date(at)
+  if (Number.isNaN(d.getTime())) return ''
+  return formatDateTimeShort(isoToZonedInput(d.toISOString(), timezone), lang)
 }
 
 /** The words the line under the title is made of. */

@@ -108,6 +108,13 @@ with the screens, the two actions and the writing beside it — so "make the tex
 - **It REPLACES nothing.** The rail, the seven tabs and the settings search all stay. A palette
   that removes the menus it shortcuts has to be discovered before the admin can be used at all,
   which makes it a lock rather than a door. This one is for hands that already know it is there.
+- **A hit in a title ranks above a hit in a description.** "upload" lists the setting "Largest upload
+  (MB)" (a word-start hit in its title) before the Activity log row, whose description merely
+  mentions uploads: title prefix, then
+  the start of a title word, then inside a title, then the rest of the row's words; equal ranks
+  keep the order they were drawn in (`island/lib/palette-rank.ts`, tested beside it).
+- **The rail's fold-away group is called "Manage"** (`navMore`), in the rail, the drawer and the
+  docs. It was "Everything else" in the design notes while the screen said Manage.
 - **It navigates; it does not set.** Landing on the tab is honest about what the index knows —
   a label, and where it lives. Changing a value BY NAME is
   [`content/settings-path.ts`](../src/content/settings-path.ts), whose doors are MCP and the

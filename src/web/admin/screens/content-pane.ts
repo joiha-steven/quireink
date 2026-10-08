@@ -20,7 +20,7 @@ import type { SiteLang } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount } from '@/i18n/format'
 import { plural } from '@/i18n/plural'
-import { formatDateTimeShort } from '@/admin-shared/when'
+import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { CONTROL_SM, SHEET_TOOL, SHEET_TOOL_DANGER, buttonClass } from '@/admin-shared/kit'
 import { fold } from '@/admin-shared/fold'
 import { WRITE_PAGE } from '@/admin-shared/write'
@@ -101,12 +101,12 @@ type RowWords = Pick<AdminStrings,
  * is the baseline row that holds the lamp, the middle one is the `min-w-0` box that lets a long
  * title truncate instead of shoving the lamp off the row, and the inner one is the clamp.
  */
-function rowBody(it: WriteItem, t: RowWords, views: Record<string, number>, lang: SiteLang, now: number): string {
+function rowBody(it: WriteItem, t: RowWords, views: Record<string, number>, lang: SiteLang, zone: string, now: number): string {
   const drafty = it.status !== 'published'
   const queued = isQueued(it, now)
-  // The date beside "Published" is the PUBLICATION date — showing the last save there read as a
-  // wrong publish time. A draft's only honest date is its save.
-  const when = !drafty && it.kind === 'post' ? it.created : it.touched
+  // Beside "Published" the PUBLICATION date (a scheduled note's too, as the header says): the last
+  // save there read as a wrong publish time. A draft's only honest date is its save.
+  const when = !drafty && (it.kind === 'post' || queued) ? it.created : it.touched
   const seen = views[`/${it.slug}`] ?? 0
 
   // THE ROW'S STATE, in the admin's one lamp rather than in a dot of its own. Three answers,
@@ -163,7 +163,7 @@ function rowBody(it: WriteItem, t: RowWords, views: Record<string, number>, lang
     // SCHEDULED is its own word. The lamp beside this line already knew and pulsed amber, while
     // the line said "Published" under a date that had not come yet (seen 2026-09-23).
     + escapeHtml(drafty ? t.statusDraft : queued ? t.scheduled : t.statusPublished)
-    + (when ? ` · ${escapeHtml(formatDateTimeShort(when, lang))}` : '')
+    + (when ? ` · ${escapeHtml(siteDateTimeShort(when, zone, lang))}` : '')
     // The count says what it counts: a bare "· 124" after a date read as part of the date.
     + (!drafty && seen ? ` · ${escapeHtml(plural(t.writeViews, seen, lang, formatCount(seen, lang)))}` : '')
     + `</span>`
@@ -187,7 +187,7 @@ function rowBody(it: WriteItem, t: RowWords, views: Record<string, number>, lang
  * it, and a row that is currently a tick target must not answer that query.
  */
 function row(
-  it: WriteItem, t: RowWords, views: Record<string, number>, lang: SiteLang, now: number,
+  it: WriteItem, t: RowWords, views: Record<string, number>, lang: SiteLang, zone: string, now: number,
   openKey: string, out: boolean, over: boolean,
 ): string {
   const key = `${it.kind}:${it.slug}`
@@ -212,7 +212,7 @@ function row(
   return `<a data-write-row href="${escapeAttr(it.editHref)}"`
     + ` data-href="${escapeAttr(it.editHref)}"${facts}`
     + (open ? ' aria-current="page"' : '') + (out || over ? ' hidden' : '')
-    + ` class="${ROW}">${rowBody(it, t, views, lang, now)}</a>`
+    + ` class="${ROW}">${rowBody(it, t, views, lang, zone, now)}</a>`
 }
 
 /**
@@ -336,7 +336,7 @@ function head(t: AdminStrings, needs: WriteNeeds, anyQueued: boolean): string {
  */
 export function writePane(opts: {
   t: AdminStrings
-  lang: SiteLang
+  lang: SiteLang; timezone: string // `settings.timezone`: every date in the column is on its clock
   items: WriteItem[]
   views: Record<string, number>
   needs: WriteNeeds
@@ -345,7 +345,7 @@ export function writePane(opts: {
   alone: boolean
   now: number
 }): string {
-  const { t, lang, items, views, needs, openKey, alone, now } = opts
+  const { t, lang, timezone, items, views, needs, openKey, alone, now } = opts
   // BOTH FACES IN ONE BOX (trap 4): the sentence and the scroller are mutually exclusive, and a
   // stack that hides one of a pair hands the other a margin it never had.
   const none = needs !== null && !items.some((it) => needsOf(it).split(' ').includes(needs))
@@ -355,7 +355,7 @@ export function writePane(opts: {
   const rows = items.map((it) => {
     const out = needs !== null && !needsOf(it).split(' ').includes(needs)
     if (!out) shown += 1
-    return row(it, t, views, lang, now, openKey, out, !out && shown > WRITE_PAGE)
+    return row(it, t, views, lang, timezone, now, openKey, out, !out && shown > WRITE_PAGE)
   }).join('')
   // An EMPTY blog is not a filter that matched nothing (FIXLIST 8.6): its own sentence.
   const empty = items.length === 0

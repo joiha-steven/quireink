@@ -137,6 +137,15 @@ export function reportTz(): string {
   } catch {
     /* an unreadable settings row is not a reason to fail a chart */
   }
-  const tz = (stored || process.env.ANALYTICS_TZ || '').trim()
+  return siteZone(stored)
+}
+
+/**
+ * The zone a SETTING means: the setting, else `ANALYTICS_TZ`, else UTC. The one place the empty
+ * setting is resolved, so a stamp the server draws, `<html data-tz>` and what an island redraws
+ * all read the same clock. Never empty.
+ */
+export function siteZone(setting: string): string {
+  const tz = (setting || process.env.ANALYTICS_TZ || '').trim()
   return /^[A-Za-z0-9_+/-]{1,40}$/.test(tz) ? tz : 'UTC'
 }
