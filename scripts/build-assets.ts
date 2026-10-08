@@ -227,7 +227,9 @@ const BUDGET: Record<string, number> = {
   // standfirst and byline, read off the article's own header as text (`fillFlow`), and the body
   // begins on the facing page. Cheaper than it looks: the running head's two copies of the
   // title lookup collapsed into the one `fillFlow` returns, and the rule is a pseudo-element.
-  'book-mode.js': 8_800,
+  // 8,900 since 2026-10-08 (8,802 measured in the image's oven/bun:1-slim, 8,800 on Bun 1.3.14):
+  // the same source minifies two bytes larger there, and the 2.2.18 image build stopped on it.
+  'book-mode.js': 8_900,
   // 6,800 since 2026-10-08 (6,766 measured), for the site's zone: comment times read it off <html data-tz>.
   'comment-thread.js': 6_800,
   // The reader's pen: the selection bar, the anchor maths (a text-quote selector, found
