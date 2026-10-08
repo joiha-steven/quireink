@@ -32,6 +32,8 @@ html[data-look=paper] article .rail{text-align:left;position:static;width:auto;h
   border-bottom:1px solid var(--c-rule);background:none;transform:none;visibility:visible;
   overflow:visible;transition:none}
 html[data-look=paper] article .rail::after{display:none}
+/* A shelf is not a drawer, so the drawer's search box has no place on it. */
+html[data-look=paper] article .rail-search{display:none}
 html[data-look=paper] article .rail-inner{position:static;max-height:none;overflow:visible;
   width:auto;padding:0}
 html[data-look=paper] article .rail h2{margin:0;padding-left:0}
@@ -68,8 +70,11 @@ html[data-look=paper] article .rail-row{padding-left:0}
 html[data-look=paper] article .rail-row[aria-current]::after{left:0;right:0;top:auto;
   bottom:-4px;width:auto;height:2px;background:var(--c-heading)}
 html[data-look=paper] article .toc-end{margin-top:0}
+/* The summary was 17.5px tall, under the 24px a tap needs (WCAG 2.5.8). Padding grows the hit
+   area, the negative margin gives the layout its height back and the relative offset keeps the
+   words where they were; a negative TOP margin would collapse through the details instead. */
 html[data-look=paper] article .toc summary{pointer-events:auto;cursor:pointer;display:flex;
-  align-items:center;gap:.5rem;margin-bottom:.6rem}
+  align-items:center;gap:.5rem;padding-block:.4rem;margin-bottom:-.2rem;position:relative;top:-.4rem}
 html[data-look=paper] article .toc summary h2{margin:0}
 html[data-look=paper] article .toc summary::before{content:"";width:.4em;height:.4em;
   flex:none;border-right:1.5px solid var(--c-meta);border-bottom:1.5px solid var(--c-meta);

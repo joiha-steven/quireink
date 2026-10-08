@@ -66,6 +66,13 @@
 - **Book mode's A− and A+ work on a phone.** The phone reader kept one text size whatever was
   pressed; body, headings and the title page now follow the buttons, as on the spread. Its
   default is now the spread's slightly larger size.
+- **A reading column wider than the default keeps its rails apart.** Between 1272px and the
+  column's own breakpoint the default geometry pulled the rail into a gutter too narrow for it,
+  and the year index landed on top of the menu; that range now keeps the drawer and the chips.
+- **Small links are at least 24px tall to a finger** on phones and tablets: the card's category,
+  the series and related lists, the author, the byline and the 404's way home. Nothing moves.
+- **The 404 and an article's drawer carry the same search box** as the search page, and the
+  search page of a blog with nothing published says what the box is for.
 - **Vietnamese input methods sound like one key per key.** EVKey, OpenKey, Unikey and
   GoTiengViet put an accent on by sending Backspaces and retyping the letters in a few
   milliseconds, and the editor clicked for every one of them: typing "Tiếng Việt có dấu, gõ nhanh

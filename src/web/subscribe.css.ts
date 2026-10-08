@@ -29,7 +29,7 @@ export const SUBSCRIBE_CSS = `
 .search-input:focus{border-color:var(--c-heading)}
 /* The browser's own clear button is a blue ✕ no palette reaches (2026-09-30). The overlay has
    a close key of its own, and a field is cleared the way any field is. */
-.search-input::-webkit-search-cancel-button,form.search input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+.search-input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
 .search-results{list-style:none;padding:0;margin:.85rem 0 0;overflow-y:auto}
 .search-results li{margin:0 0 .6rem}
 .search-results a{color:var(--c-heading);text-decoration:none}

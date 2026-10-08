@@ -14,16 +14,16 @@ import { getSettings } from '@/content/settings'
 import { formatDate, t } from '@/i18n/i18n'
 import type { Dict } from '@/locales/types'
 import type { SiteSettings } from '@/types'
-import { ICONS } from '@/icons'
 import { tagText, termSlug } from '@/content/taxonomy'
 import { langAttr } from '@/content/translations'
 import { postName } from '@/content/untitled'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { renderListing } from '@/web/listing'
 import { listingPage } from '@/web/listing-page'
+import { searchBox } from '@/web/chrome'
 
 // The canonical escaper, NOT a private copy. The copy that used to live here escaped `& < >`
-// and nothing else, and the form (`searchBox` below) interpolates the reader's
+// and nothing else, and the form (`searchBox` in chrome.ts) interpolates the reader's
 // own query into an attribute: `/search?q=" onfocus=alert(1) autofocus x="` came back as
 // `value="" onfocus=alert(1) autofocus x=""`, which is a live event handler on a public page.
 // Reproduced against a local instance before this line was written; there is a test for it.
@@ -35,21 +35,6 @@ const PER_MINUTE = 60
 /** How many tags the empty page offers, and how many recent posts under them. */
 const TAG_CHIPS = 8
 const RECENT_POSTS = 5
-
-/**
- * The search box: one form, the button INSIDE the input's border at its right end.
- * Self-contained (classes in `search-page.css.ts`), so the menu drawer can draw the same
- * thing. The input keeps `aria-label`; the icon button takes its name from `search`.
- * `q` is escaped with the canonical attribute escaper (a reflected query once ran script).
- */
-export function searchBox(s: Pick<Dict, 'search'>, q = ''): string {
-  const name = escapeAttr(s.search)
-  return `<form class="qbox" action="/search" method="get" role="search">`
-    + `<input type="search" name="q" value="${escapeAttr(q)}" placeholder="${name}" aria-label="${name}">`
-    + `<button type="submit" aria-label="${name}" title="${name}">`
-    + `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"`
-    + ` stroke-linejoin="round" aria-hidden="true">${ICONS.search}</svg></button></form>`
-}
 
 /** With no query: the busiest tags, then the newest public posts. One read of the public posts serves both. */
 async function suggestions(tx: Dict, settings: SiteSettings): Promise<string> {
@@ -94,7 +79,11 @@ export async function handleSearchPage(c: Context): Promise<Response> {
   // The box UNDER its heading (FIXLIST 8.6): it stood above "Search", the one page where the
   // heading was not the first thing on it.
   const head = `<header class="listing-head"><h1>${escapeHtml(tx.search)}</h1></header>`
-  const body = !q ? head + searchBox(tx) + await suggestions(tx, settings) : renderListing({
+  // A site with no posts and no tags has nothing to suggest; the hint keeps the page from
+  // being a heading and a box alone.
+  const body = !q
+    ? head + searchBox(tx) + (await suggestions(tx, settings) || `<p class="empty">${escapeHtml(tx.searchHint)}</p>`)
+    : renderListing({
     headingHtml: escapeHtml(tx.search),
     afterHead: searchBox(tx, q)
       + (q ? `<p class="meta search-count">${escapeHtml(fill(tx.searchResults, { n: results.length, q }))}</p>` : ''),

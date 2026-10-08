@@ -48,7 +48,7 @@ const ALLOWED = new Map<string, string>([
   ['.book-arrow', 'the page-turn arrows in book mode, sized with their hit targets'],
   ['.overlay-close', 'the × glyph that closes a header overlay'],
   [
-    'form.search input,form.qbox input,form.subscribe input,.search-input,.comment-form input,.comment-form textarea',
+    'form.qbox input,form.subscribe input,.search-input,.comment-form input,.comment-form textarea',
     'not a size but a FLOOR: max(16px,1em). iOS Safari zooms the whole page when a focused '
     + 'control sits below 16px and --fs-small measures 14px here, so tapping the sign-up '
     + 'field shifted the layout sideways and left it there. A larger type role still wins.',

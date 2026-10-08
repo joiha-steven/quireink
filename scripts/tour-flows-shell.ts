@@ -90,7 +90,7 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
     (async () => {
       const r = await fetch(location.pathname)
       if (r.status !== 404) return 'answered ' + r.status + ', not 404'
-      const form = document.querySelector('form.search input[name=q]')
+      const form = document.querySelector('form.qbox input[name=q]')
       if (!form) return 'no search box'
       const latest = document.querySelectorAll('.related li a[href^="/"]').length
       if (latest < 1) return 'no newest posts listed'

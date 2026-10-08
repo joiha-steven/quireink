@@ -1,7 +1,9 @@
 // The rail's three states are three media ranges, and the middle one is the newest: a band
 // under the title from 60rem to the rail breakpoint, where before there was only a drawer.
 import { describe, expect, it } from 'bun:test'
-import { articleBandCss, DEFAULT_RAIL_WIDTH, railLookCss, singleRailCss } from '@/render/rail-css'
+import {
+  articleBandCss, CUSTOM_COL_ATTR, DEFAULT_RAIL_WIDTH, railLookCss, scopeToDefaultWidth, singleRailCss,
+} from '@/render/rail-css'
 import { DEFAULT_SETTINGS } from '@/content/settings'
 import { PUBLIC_CSS } from '@/web/public.css'
 
@@ -26,7 +28,7 @@ describe('singleRailCss', () => {
     // the breakpoint. The article shell hides it on its own pages.
     expect(band).not.toContain('.rail-toggle')
     expect(articleBandCss(672)).toBe(
-      '@media (min-width:60rem) and (max-width:1271px){.rail-toggle,.rail-scrim{display:none}}')
+      '@media (min-width:60rem) and (max-width:1271px){.rail-toggle,.rail-scrim,.rail-search{display:none}}')
   })
 
   it('marks the heading it INVENTS, so the band has one register and not two', () => {
@@ -85,7 +87,7 @@ describe('the default geometry lives in the cached sheet', () => {
   })
 
   it('the sheet carries it, so a default page does not have to', () => {
-    expect(PUBLIC_CSS).toContain(singleRailCss(DEFAULT_RAIL_WIDTH))
+    expect(PUBLIC_CSS).toContain(singleRailCss(DEFAULT_RAIL_WIDTH, { scoped: true }))
   })
 
   it('sits after the rule that sizes the same button, because the two are a tie', () => {
@@ -96,7 +98,7 @@ describe('the default geometry lives in the cached sheet', () => {
     // rules ahead of the sizing, and lost the tie: measured at 1440px on a blog running the
     // default column, the button computed `display:flex` beside a rail already in the gutter,
     // and the source-code look draws a word next to every control, so it read `[menu]`.
-    const geometry = PUBLIC_CSS.indexOf(singleRailCss(DEFAULT_RAIL_WIDTH))
+    const geometry = PUBLIC_CSS.indexOf(singleRailCss(DEFAULT_RAIL_WIDTH, { scoped: true }))
     const sizing = PUBLIC_CSS.indexOf('.icon-btn{display:flex')
     expect(sizing).toBeGreaterThan(-1)
     expect(geometry).toBeGreaterThan(sizing)
@@ -104,7 +106,48 @@ describe('the default geometry lives in the cached sheet', () => {
 
   it('a moved column still gets its own, and it differs', () => {
     const moved = singleRailCss(900)
-    expect(moved).not.toBe(singleRailCss(DEFAULT_RAIL_WIDTH))
+    expect(moved).not.toBe(singleRailCss(DEFAULT_RAIL_WIDTH, { scoped: true }))
     expect(PUBLIC_CSS).not.toContain(moved)
   })
+
+  it('a moved column\'s own copy is NOT scoped, so it is what applies on that page', () => {
+    expect(singleRailCss(720)).not.toContain(':where(')
+    expect(singleRailCss(720)).toContain('@media (min-width:1320px){.rail{')
+  })
 })
+
+describe('the sheet\'s copy stands down for a moved column', () => {
+  // Measured 2026-10-08 at contentWidth 720, 1280x800: the sheet's gutter (from 1272px) ran
+  // under the site's own (from 1320px), so the left rail was pulled into a gutter too narrow
+  // for it, the right rail landed on top of it, and the drawer-only copies and the chip row
+  // showed beside them. The sheet's copy must match only when <html> has no `data-col`.
+  const scope = `:where(html:not([${CUSTOM_COL_ATTR}]))`
+  const sheet = singleRailCss(DEFAULT_RAIL_WIDTH, { scoped: true })
+
+  it('scopes every selector of the gutter and the band, with no added specificity', () => {
+    expect(sheet).toContain(`@media (min-width:1272px){${scope} .rail{position:absolute`)
+    expect(sheet).toContain(`@media (min-width:60rem) and (max-width:1271px){${scope} .rail-toc{position:static`)
+    // The list selector is split on its top-level commas only, not inside :is().
+    expect(sheet).toContain(`${scope} .prose > :is(figure.img-wide,.video-wide):nth-child(-n+2){`)
+    expect(sheet).toContain(`${scope} .post-meta,${scope} .taxo-rule,${scope} .post-taxo{display:none}`)
+  })
+
+  it('leaves nothing bare: every rule inside the scoped copy starts with the scope', () => {
+    const bare = sheet.replace(/@media[^{]*\{/g, '|').split(/\}(?=[^}])/).filter(Boolean)
+    for (const rule of bare) {
+      const head = rule.replace(/^[|}]+/, '').split('{')[0]!
+      if (head.trim() === '') continue
+      for (const sel of head.split(/,(?![^(]*\))/)) expect(sel.trim().startsWith(scope)).toBe(true)
+    }
+  })
+
+  it('keeps the rules and their order, only prefixing', () => {
+    expect(sheet.replaceAll(`${scope} `, '')).toBe(singleRailCss(DEFAULT_RAIL_WIDTH))
+  })
+
+  it('handles a plain rule and a comma list', () => {
+    expect(scopeToDefaultWidth('.a,.b:is(.c,.d){x:y}@media (min-width:1px){.e{z:w}}'))
+      .toBe(`${scope} .a,${scope} .b:is(.c,.d){x:y}@media (min-width:1px){${scope} .e{z:w}}`)
+  })
+})
+

@@ -18,7 +18,7 @@ import { menuRail, renderSidebar } from '@/web/sidebar'
 import { renderChips } from '@/web/chips'
 import { timelineCss } from '@/render/rail-css'
 import { ogCardUrl, siteDomain } from '@/render/og'
-import { chromeLabels, searchForm, siteFooter, siteHeader } from '@/web/chrome'
+import { chromeLabels, searchBox, siteFooter, siteHeader } from '@/web/chrome'
 import { getPublicPosts } from '@/content/posts'
 import { langAttr } from '@/content/translations'
 import { getMailStatus } from '@/news/mail'
@@ -247,7 +247,7 @@ export async function notFoundPage(): Promise<Response> {
     // is an empty listing, so it is dressed as one rather than as a new kind of page.
     body: `<div class="listing-head"><h1>${escapeHtml(s.notFoundTitle)}</h1></div>
 <p class="empty">${escapeHtml(s.notFoundText)}</p>
-${searchForm(s)}
+${searchBox(s)}
 <p class="mt-3"><a class="link-accent" href="/">${escapeHtml(s.backHome)}</a></p>${latestBlock}`,
   })
   return new Response(html, {

@@ -246,7 +246,8 @@ describe('the markup hooks the IDE chrome needs', () => {
     // The rule itself moved into the hashed sheet on 2026-09-16, with the rest of the rail's
     // default geometry, so it is no longer in the page's own `<style>`. `rail-css.test.ts`
     // holds that the sheet carries it; what this file asserts is the MARKUP it acts on.
-    expect(PUBLIC_CSS).toContain('.post-meta,.taxo-rule,.post-taxo{display:none}')
+    expect(PUBLIC_CSS).toContain(':where(html:not([data-col])) .post-meta,:where(html:not([data-col])) .taxo-rule,'
+      + ':where(html:not([data-col])) .post-taxo{display:none}')
     // Both copies carry the wrappers the IDE chrome needs, or the panel would be the one
     // surface on the site where a date is not a literal.
     expect(html.match(/<span class="term-list">/g)).toHaveLength(4)

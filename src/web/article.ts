@@ -26,7 +26,7 @@ import { isUntitled, postName } from '@/content/untitled'
 import { langOf, siblingsOf } from '@/content/translations'
 import { articleHead } from '@/web/article-head'
 import { TOC_ANCHORS } from '@/render/toc'
-import { menuBlock } from '@/web/sidebar'
+import { drawerSearch, menuBlock } from '@/web/sidebar'
 import { termSlug } from '@/content/taxonomy'
 import { formatCount, formatDate, t } from '@/i18n/i18n'
 import { articleScripts } from '@/web/assets'
@@ -294,7 +294,7 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
   // what the band selects on -- a listing keeps its drawer there instead (`articleBandCss`).
   const menu = menuBlock(settings.menu, s.menu)
   const toc = contents || menu
-    ? `<aside class="rail rail-toc"><div class="rail-inner">${menu}${contents}</div></aside>`
+    ? `<aside class="rail rail-toc">${drawerSearch(settings)}<div class="rail-inner">${menu}${contents}</div></aside>`
     : ''
   // The comment thread is a MOUNT POINT, not markup: the island fetches it. The article
   // page is cached HTML (Invariant 1) and a comment is not a post, so rendering the thread

@@ -28,7 +28,7 @@
   are duplicated into the right rail's drawer (`.drawer-only`), giving the order menu → most viewed →
   featured → categories → tags. Assembled in `ListingSidebar` (two `<Rail className="rail-left|rail-right">`
   reusing `IndexBlock`/`CategoryCloud`/`TagCloud`); the geometry (per-page breakpoint + column width + right-rail mirror)
-  is injected from `src/render/rail-css.ts` (`singleRailCss` for the layout's default/post ToC rail,
+  is injected from `src/render/rail-css.ts` (`singleRailCss` for the default/post ToC rail, its sheet copy scoped by `data-col`, see performance.md;
   `listingRailCss` for the two rails — the latter uses higher-specificity `.rail.rail-left|right` so it
   wins without ordering games). Each block self-hides when empty. **Post/page reading views show ONLY the
   menu and the `toc`** in a single left rail (full width; the free right gutter stays for wide images). **Between

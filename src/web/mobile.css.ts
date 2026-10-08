@@ -13,6 +13,8 @@
 //
 // NO BACKTICKS anywhere below: check:css-literal enforces that.
 
+import { TAP_CSS } from '@/web/tap.css'
+
 export const MOBILE_CSS = `
 @media (max-width:639px){
 /* iOS Safari zooms the whole page when a focused control is set below 16px, and --fs-small
@@ -20,7 +22,7 @@ export const MOBILE_CSS = `
    it there. A FLOOR rather than a size, so a larger type role still wins. Each selector
    names the rule that set the size, because font:inherit on those carries the same
    specificity as a bare element selector would. */
-form.search input,form.qbox input,form.subscribe input,.search-input,
+form.qbox input,form.subscribe input,.search-input,
 .comment-form input,.comment-form textarea{font-size:max(16px,1em)}
 
 /* THE META LINE ABOVE THE TITLE, in two short lines: "date · N min read", then "by Author".
@@ -142,6 +144,8 @@ footer.site a{display:inline-block;padding-block:.35rem}
    footer keeps that much clear below its last line. */
 @media (max-width:767px){footer.site{padding-bottom:calc(7.5rem + env(safe-area-inset-bottom,0px))}}
 .rail{padding-left:calc(1.25rem + env(safe-area-inset-left,0px))}
+
+${TAP_CSS}
 
 /* A FINGER'S 44px, where the pointer is a finger (FIXLIST 7.10). Measured at 390: header keys
    40x40, the copy key 50x28, Reply 42x24, the meta line's section and tag links 21px tall, the

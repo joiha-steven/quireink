@@ -15,6 +15,7 @@ import type { SiteSettings, SiteLang } from '@/types'
 import { fontPreloadHrefs } from '@/content/themes'
 import { resolveAppIcon, getDefaultTheme } from '@/content/settings'
 import { penStyleFor, lookSheet } from '@/web/assets'
+import { CUSTOM_COL_ATTR, DEFAULT_RAIL_WIDTH } from '@/render/rail-css'
 
 // The settings half of the sheet lives in `layout-styles.ts` now, and is re-exported here for
 // the same reason `utils.ts` re-exports the two clock helpers: nine call sites had this import
@@ -223,6 +224,9 @@ export function renderDocument(
   // attribute, links no dialect sheet, and cannot be told from one built before looks
   // existed. Each dialect's whole ruleset hangs off this one attribute selector.
   const look = settings.look === 'plain' ? '' : ` data-look="${escapeAttr(settings.look)}"`
+  // The reading column is not the default one: the hashed sheet's rail geometry (written for
+  // the default) stands down and the page's own inline copy takes over (`CUSTOM_COL_ATTR`).
+  const col = settings.contentWidth === DEFAULT_RAIL_WIDTH ? '' : ` ${CUSTOM_COL_ATTR}="custom"`
   // And the fourth, for the scroll fade: the cards easing in at the foot of a listing and
   // the text dimming at the edges of an article are one effect on two screens, so they are
   // one attribute. Written only when it is ON, so the whole ruleset is a selector that
@@ -243,7 +247,7 @@ export function renderDocument(
     escapeAttr(paper.light.bg)}">\n<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${
     escapeAttr(paper.dark.bg)}">\n`
   return `<!DOCTYPE html>
-<html lang="${escapeAttr(head.lang ?? settings.language)}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${look}${fade}>
+<html lang="${escapeAttr(head.lang ?? settings.language)}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${look}${fade}${col}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

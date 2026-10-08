@@ -10,6 +10,7 @@
 // load-bearing.
 
 import type { SiteSettings } from '@/types'
+import type { Dict } from '@/locales/types'
 import { t } from '@/i18n/i18n'
 import { renderInlineMarkdown, expandFooterTokens } from '@/render/inline-md'
 
@@ -239,18 +240,21 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
 }
 
 /**
- * The search box as a plain form: `/search?q=` with no script at all.
- *
- * Used by the 404, a page whose reader arrived looking for something. The search page and
- * the drawer draw `searchBox` (search-page.ts) instead. The query goes back into the field through `escapeAttr` — the
- * search page once had a private copy of the escaping that skipped quotes, and a query
- * with `" onfocus=` in it came back as a live handler (`search-page.ts` keeps that story).
+ * The search box: one form, the button INSIDE the input's border at its right end, a GET to
+ * `/search?q=` with no script at all. Drawn by the search page, the menu drawer and the 404.
+ * Self-contained (classes in `search-page.css.ts`), so it leans on nothing around it. The input
+ * keeps `aria-label`; the icon button takes its name from `search`.
+ * `q` goes back into the field through `escapeAttr`, the canonical attribute escaper: the
+ * search page once had a private copy that skipped quotes, and a query with `" onfocus=` in it
+ * came back as a live handler (`search-page.ts` keeps that story).
  */
-export function searchForm(s: { search: string }, q = ''): string {
-  return `<form class="search" action="/search" method="get" role="search">
-<input type="search" name="q" value="${escapeAttr(q)}" placeholder="${escapeAttr(s.search)}" aria-label="${escapeAttr(s.search)}">
-<button type="submit">${escapeHtml(s.search)}</button>
-</form>`
+export function searchBox(s: Pick<Dict, 'search'>, q = ''): string {
+  const name = escapeAttr(s.search)
+  return `<form class="qbox" action="/search" method="get" role="search">`
+    + `<input type="search" name="q" value="${escapeAttr(q)}" placeholder="${name}" aria-label="${name}">`
+    + `<button type="submit" aria-label="${name}" title="${name}">`
+    + `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"`
+    + ` stroke-linejoin="round" aria-hidden="true">${ICONS.search}</svg></button></form>`
 }
 
 /** The footer: the owner's own line, centred, and nothing else. */

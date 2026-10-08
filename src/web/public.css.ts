@@ -372,5 +372,5 @@ ${FRONT_CSS}
 ${POST_IMAGE_CSS}
 ${MOTION_CSS}
 ${MOBILE_CSS}
-${singleRailCss(DEFAULT_RAIL_WIDTH)}
+${singleRailCss(DEFAULT_RAIL_WIDTH, { scoped: true })}
 ${PRINT_CSS}`

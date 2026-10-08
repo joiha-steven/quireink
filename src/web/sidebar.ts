@@ -20,7 +20,7 @@ import { t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { postName } from '@/content/untitled'
 import { isSafeHref } from '@/content/safe-href'
-import { searchBox } from '@/web/search-page'
+import { searchBox } from '@/web/chrome'
 
 /** Curated posts shown in the "Featured" block. */
 const FEATURED_MAX = 5
@@ -113,7 +113,7 @@ export function menuBlock(items: MenuItem[], label: string): string {
  * `rail-search` so the gutter geometry (`render/rail-css.ts`) puts it away above the
  * breakpoint, where the header's search icon is on screen. Empty with the feature off.
  */
-function drawerSearch(settings: SiteSettings): string {
+export function drawerSearch(settings: SiteSettings): string {
   if (!settings.features.search) return ''
   return `<div class="rail-search">${searchBox(t(settings.language))}</div>`
 }

@@ -61,11 +61,11 @@ html[data-rail=open],html[data-rail=open] body{overflow:hidden}
 .rail{overscroll-behavior:contain}
 /* Two-rail listings only: on mobile there is no gutter, so the LEFT rail is hidden and its
    blocks appear in the right rail's drawer through .drawer-only. */
-.rail-left{display:none}
+.rail.rail-left{display:none}
 /* The single layout's right-hand rail (the year index, Most viewed, Featured) is a gutter and
    nothing else: the left rail is the drawer and holds a drawer-only copy of what this one
    carries, so on a phone it is not drawn at all. */
-.rail-aside{display:none}
+.rail.rail-aside{display:none}
 /* The drawer is a surface of the page's own tokens (the same --c-bg and --c-rule the page is
    drawn in, so a light page opens a light drawer and a dark one a dark drawer, in every
    palette and look): nothing in it is a literal colour. */

@@ -6,18 +6,24 @@
 // no control with it, and the stylesheet that gives it a page of its own and keeps the old
 // historical ligatures off is the one that ships. The columns themselves were looked at in a
 // browser (the counter reads the flow's own width, so a page that takes a column is counted).
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 import { page, useDom } from './test-dom'
 import { book } from './book'
 import { BOOK_CSS } from '../../web/book.css'
 import { BOOK_TEXT_CSS } from '../../web/book-text.css'
 import { BOOK_PHONE_CSS } from '../../web/book-phone.css'
+import { fillFlow } from './book-scroll'
+
 
 useDom()
 
 const LABELS = { bookModePrev: 'Previous page', bookModeNext: 'Next page', bookModeClose: 'Close' }
 
-/** The article as the server writes it, header and series card included. */
+/**
+ * A MINIMAL hand-written article: just enough markup for the title page's selectors, with a
+ * series card. It is NOT the server's output (no .meta-by wrapper, no post-title id); the
+ * 'a real article' block below renders one through the app and is the guard against drift.
+ */
 const ARTICLE = `<article>
   <header>
     <p class="post-meta"><a class="post-cat" href="/category/typography">Typography</a>
@@ -168,5 +174,51 @@ describe('book mode sets only the common ligatures', () => {
     expect(settings).toContain('"dlig" 0')
     expect(settings).toContain('"hlig" 0')
     expect(settings).not.toMatch(/"(dlig|hlig)" 1/)
+  })
+})
+
+describe('the title page of a REAL article, as the server writes it', () => {
+  const html: { titled: string; untitled: string } = { titled: '', untitled: '' }
+  // Rendered in a child process: the server does not compile in this DOM-only project.
+  beforeAll(() => {
+    const run = Bun.spawnSync(['bun', new URL('../../test/render-book-article.ts', import.meta.url).pathname])
+    if (run.exitCode !== 0) throw new Error(run.stderr.toString())
+    const out = run.stdout.toString()
+    Object.assign(html, JSON.parse(out.slice(out.lastIndexOf('@@BOOK-ARTICLE@@') + 16)) as typeof html)
+  })
+
+  const fill = (markup: string) => {
+    const doc = new DOMParser().parseFromString(markup, 'text/html')
+    page(doc.body.innerHTML, LABELS)
+    const flow = document.createElement('div')
+    const src = document.querySelector<HTMLElement>('article .prose')!
+    const title = fillFlow(flow, src)
+    return { flow, title }
+  }
+
+  it('carries the kicker, the title, the standfirst and the byline', () => {
+    const { flow, title } = fill(html.titled)
+    expect(title).toBe('A real headline')
+    const tp = flow.querySelector('.book-tp')!
+    expect(tp.querySelector('h1')!.textContent).toBe('A real headline')
+    expect(tp.querySelector('.tp-kick')!.textContent).toContain('Typography')
+    expect(tp.querySelector('.tp-deck')!.textContent).toBe('The written standfirst.')
+    const by = tp.querySelector('.tp-by')!.textContent!
+    expect(by).toContain('by Ada Lovelace')
+    expect(by).not.toContain('Book mode')
+  })
+
+  it('brings no id along, so the page has none twice', () => {
+    const { flow } = fill(html.titled)
+    expect(flow.querySelector('.book-tp')!.querySelectorAll('[id]').length).toBe(0)
+    document.body.appendChild(flow)
+    const ids = [...document.querySelectorAll('[id]')].map((n) => n.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('gives an untitled post no title page', () => {
+    const { flow, title } = fill(html.untitled)
+    expect(title).toBe('')
+    expect(flow.querySelector('.book-tp')).toBeNull()
   })
 })

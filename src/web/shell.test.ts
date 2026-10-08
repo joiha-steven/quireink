@@ -215,7 +215,24 @@ describe('the owner menu on the header row', () => {
     // The article pays for its own line, on the pages that have a band to justify it.
     const article = await (await get('/published')).text()
     expect(article)
-      .toContain('@media (min-width:60rem) and (max-width:1271px){.rail-toggle,.rail-scrim{display:none}}')
+      .toContain('@media (min-width:60rem) and (max-width:1271px){.rail-toggle,.rail-scrim,.rail-search{display:none}}')
+  })
+
+  it('marks <html> only when the column is not the default, so the sheet\'s rail geometry stands down', async () => {
+    const before = await (await get('/')).text()
+    expect(before).not.toContain('data-col=')
+    await saveSettings({ contentWidth: 720 })
+    try {
+      clearCache()
+      const moved = await (await get('/')).text()
+      expect(moved).toMatch(/<html [^>]*data-col="custom"/)
+      // ...and carries its own geometry inline, from its own breakpoint (720 + 600 = 1320).
+      expect(moved).toContain('@media (min-width:1320px){.rail{')
+    } finally {
+      // A failure above must not leave every later test on a 720 column.
+      await saveSettings({ contentWidth: 672 })
+      clearCache()
+    }
   })
 
   it('keeps a rail for the menu alone when the sidebar is switched off', async () => {

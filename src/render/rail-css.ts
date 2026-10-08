@@ -55,7 +55,59 @@ const INNER =
 
 // Single left-gutter rail (post ToC + the default). Text ranged RIGHT toward the column;
 // the freed right gutter lets a "large" image nose right by one rail width.
-export function singleRailCss(colWidth: number): string {
+export function singleRailCss(colWidth: number, opts: { scoped?: boolean } = {}): string {
+  const css = singleRailRules(colWidth)
+  return opts.scoped ? scopeToDefaultWidth(css) : css
+}
+
+/**
+ * The attribute `<html>` carries when the owner has moved the reading column off
+ * `DEFAULT_RAIL_WIDTH`. The hashed sheet's precomputed rail geometry is written for the default
+ * column only and is scoped to `html:not([data-col])`; a site with its own column gets its own
+ * geometry inline (unscoped) and this attribute puts the sheet's copy away.
+ *
+ * WHY: without it the sheet's gutter rules (from 1272px) ran underneath the site's own, which
+ * only start at THEIR breakpoint. At a 720px column, between 1272 and 1319px the rail was pulled
+ * into a gutter too narrow for it, the listing's right rail landed on the left one, and the
+ * drawer-only copies and the chip row showed beside them (measured 1280x800, 2026-10-08).
+ */
+export const CUSTOM_COL_ATTR = 'data-col'
+const SCOPE = `:where(html:not([${CUSTOM_COL_ATTR}]))`
+
+/**
+ * Prefix every selector of a flat stylesheet (rules, and `@media` blocks holding rules) with
+ * the default-width scope. `:where()` adds no specificity, so each rule keeps the cascade
+ * position it was written for (a listing's `.rail.rail-left` still beats a bare `.rail`).
+ * Understands only what `singleRailRules` writes: no nested braces but `@media`, none in a string.
+ */
+export function scopeToDefaultWidth(css: string): string {
+  const prefix = (head: string): string => {
+    const parts: string[] = []
+    let depth = 0
+    let cur = ''
+    for (const ch of head) {
+      if (ch === '(') depth += 1
+      if (ch === ')') depth -= 1
+      if (ch === ',' && depth === 0) { parts.push(cur); cur = '' } else cur += ch
+    }
+    parts.push(cur)
+    return parts.map((x) => `${SCOPE} ${x.trim()}`).join(',')
+  }
+  let out = ''
+  let i = 0
+  while (i < css.length) {
+    if (css[i] === '}') { out += '}'; i += 1; continue }
+    const open = css.indexOf('{', i)
+    const head = css.slice(i, open)
+    if (head.startsWith('@')) { out += head + '{'; i = open + 1; continue }
+    const close = css.indexOf('}', open)
+    out += prefix(head) + css.slice(open, close + 1)
+    i = close + 1
+  }
+  return out
+}
+
+function singleRailRules(colWidth: number): string {
   const at = breakpoint(colWidth)
   return (
     // THE BAND: from 60rem up to the rail breakpoint the rail is neither a drawer nor a
@@ -190,7 +242,7 @@ export function singleRailCss(colWidth: number): string {
  */
 export function articleBandCss(colWidth: number): string {
   return `@media (min-width:60rem) and (max-width:${breakpoint(colWidth) - 1}px)` +
-    `{.rail-toggle,.rail-scrim{display:none}}`
+    `{.rail-toggle,.rail-scrim,.rail-search{display:none}}`
 }
 
 // Infinite-scroll timeline. NOT a boxed rail: a spine runs the full height of the feed in

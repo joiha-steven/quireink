@@ -2,7 +2,7 @@
 // "recent" list under it. Theme tokens only. NO BACKTICKS below (one template literal).
 //
 // `.qbox` is self-contained on purpose: the menu drawer reuses the same markup
-// (`searchBox()` in search-page.ts), so nothing here may lean on the page around it.
+// (`searchBox()` in chrome.ts), so nothing here may lean on the page around it.
 
 export const SEARCH_PAGE_CSS = `
 /* The box is the bordered thing; the input inside has no border of its own and the button
@@ -32,11 +32,4 @@ form.qbox button svg{width:20px;height:20px}
 .qs-recent a{color:var(--c-heading);font-weight:var(--fw-heading,600)}
 .qs-recent small{display:block;margin-top:.125rem;color:var(--c-meta);font-size:var(--fs-small);
   line-height:var(--lh-small);letter-spacing:var(--ls-small)}
-/* The older, labelled form (the not-found page still draws it). */
-form.search{display:flex;gap:.5rem;margin:0 0 2rem}
-form.search input{min-width:0;flex:1;padding:.5rem .75rem;border:1px solid var(--c-rule);
-  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;box-shadow:var(--well)}
-form.search button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
-  background:var(--c-bg);color:var(--c-heading);font:inherit;cursor:pointer;white-space:nowrap}
-@media (max-width:639px){form.search{flex-direction:column}}
 `

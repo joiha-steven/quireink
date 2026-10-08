@@ -151,6 +151,14 @@ describe('the drawer', () => {
     expect(await get('/')).not.toContain('class="rail-search"')
   })
 
+  it('opens an article\'s drawer on the same search box, ahead of the menu and the contents', async () => {
+    const toc = railOf(await get('/newest'), 'rail-toc')
+    expect(toc).toContain('<div class="rail-search"><form class="qbox" action="/search" method="get" role="search">')
+    expect(toc.indexOf('rail-search')).toBeLessThan(toc.indexOf('rail-inner'))
+    await set({}, { search: false })
+    expect(await get('/newest')).not.toContain('class="rail-search"')
+  })
+
   it('carries the search box on the two-rail layout and on a rail that holds the menu alone', async () => {
     await set({ sidebarLayout: 'two' })
     expect(railOf(await get('/'), 'rail-right')).toContain('class="rail-search"')
@@ -169,9 +177,10 @@ describe('the drawer', () => {
   })
 
   it('is put away above the breakpoint in both layouts, and the right rail below it', () => {
-    expect(PUBLIC_CSS).toContain('.rail-aside{display:none}')
+    expect(PUBLIC_CSS).toContain('.rail.rail-aside{display:none}')
     expect(listingRailCss(672)).toContain('.rail-search{display:none}')
-    expect(PUBLIC_CSS).toContain('.rail-toggle,.rail-scrim,.rail-search{display:none}')
+    expect(PUBLIC_CSS).toContain(':where(html:not([data-col])) .rail-toggle,:where(html:not([data-col])) .rail-scrim,'
+      + ':where(html:not([data-col])) .rail-search{display:none}')
   })
 
   it('takes focus on the container, with no outline, so a touch draws no ring', () => {

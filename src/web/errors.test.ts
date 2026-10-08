@@ -85,6 +85,12 @@ describe('a URL no route claims', () => {
     }
   })
 
+  it('offers the same search box as the search page, a GET form to /search', async () => {
+    const html = await (await app.request('/no-such-post')).text()
+    expect(html).toContain('<form class="qbox" action="/search" method="get" role="search">')
+    expect(html).not.toContain('<form class="search"')
+  })
+
   it('gives an API client JSON, at any depth', async () => {
     for (const path of ['/api/nope', '/api/deeply/nested/nope']) {
       const res = await app.request(path)

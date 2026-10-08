@@ -184,6 +184,12 @@ describe('the newspaper dialect', () => {
     }
   })
 
+  it('keeps the drawer search box off the shelf, at every width', () => {
+    // The shelf is the article rail drawn inline, outside any media query; the rail-css
+    // rules that hide the box only cover the band and the gutter, so a phone showed it.
+    expect(LOOK_PAPER_CSS).toContain('html[data-look=paper] article .rail-search{display:none}')
+  })
+
   it('moves the shelf inline on a PIECE and never on a listing', () => {
     // Moved on a listing it landed under thirty-three posts. Every inline-shelf rule is
     // scoped inside an <article>, which a listing's rail is not.
