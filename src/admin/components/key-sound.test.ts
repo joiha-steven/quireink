@@ -163,18 +163,28 @@ describe('the graph', () => {
 })
 
 describe('before the first key', () => {
+  // The renders run in idle callbacks, which a loaded machine (check:all runs every file at
+  // once) can hold past a fixed sleep; wait until the count stops moving instead.
+  async function settle(atLeast = 0): Promise<void> {
+    let last = -1
+    for (let waited = 0; waited < 2000 && (built.made < atLeast || built.made !== last); waited += 60) {
+      last = built.made
+      await Bun.sleep(60)
+    }
+  }
+
   it('renders every strike of the instrument in idle time, so no key pays for it', async () => {
     built.made = 0
     // `deep`'s taps are already cached by the cases above; its back, space and return are not.
     warmKeys({ mode: 'deep', volume: 40 })
-    await Bun.sleep(50)
+    await settle(9)
     // The four strikes, three takes each, minus whatever earlier cases already rendered: never
     // more than twelve, and the back, space and return of `deep` were never played above.
     expect(built.made).toBeGreaterThanOrEqual(9)
     expect(built.made).toBeLessThanOrEqual(12)
     const after = built.made
     warmKeys({ mode: 'deep', volume: 40 })
-    await Bun.sleep(30)
+    await settle()
     expect(built.made).toBe(after)
   })
 
@@ -182,7 +192,7 @@ describe('before the first key', () => {
     built.made = 0
     warmKeys({ mode: 'crisp', volume: 0 })
     warmKeys({ mode: 'off', volume: 80 })
-    await Bun.sleep(30)
+    await settle()
     expect(built.made).toBe(0)
   })
 })
