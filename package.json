@@ -59,44 +59,45 @@
     "check:motion": "bun scripts/checks/motion-drift.ts"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261003.1",
-    "@happy-dom/global-registrator": "^20.14.0",
+    "@cloudflare/workers-types": "^5.20261008.1",
+    "@happy-dom/global-registrator": "^20.14.5",
     "@types/bun": "latest",
     "typescript": "^5.9.3",
-    "wrangler": "4"
+    "wrangler": "^4.148.0"
   },
   "overrides": {
     "fast-uri": "^3.1.8",
-    "hono": "^4.13.7",
+    "hono": "^4.13.13",
     "ip-address": "^10.7.2",
     "qs": "^6.16.0",
-    "prosemirror-view": "1.42.3",
-    "prosemirror-transform": "1.12.1",
-    "zod": "4.6.0"
+    "prosemirror-model": "1.25.12",
+    "prosemirror-view": "1.42.6",
+    "prosemirror-transform": "1.12.2",
+    "zod": "4.6.5"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "@noble/curves": "2",
-    "@noble/hashes": "2",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
     "@resvg/resvg-wasm": "^2.6.2",
-    "aws4fetch": "1",
-    "hono": "^4.13.7",
+    "aws4fetch": "^1.0.20",
+    "hono": "^4.13.13",
     "prosemirror-commands": "^1.7.2",
-    "prosemirror-dropcursor": "^1.8.3",
+    "prosemirror-dropcursor": "^1.8.4",
     "prosemirror-gapcursor": "^1.4.1",
-    "prosemirror-history": "^1.5.0",
+    "prosemirror-history": "^1.5.1",
     "prosemirror-inputrules": "^1.5.1",
     "prosemirror-keymap": "^1.2.3",
-    "prosemirror-model": "^1.25.11",
+    "prosemirror-model": "^1.25.12",
     "prosemirror-schema-list": "^1.5.1",
     "prosemirror-state": "^1.4.4",
     "prosemirror-tables": "^1.8.5",
-    "prosemirror-transform": "^1.12.1",
-    "prosemirror-view": "^1.42.3",
+    "prosemirror-transform": "^1.12.2",
+    "prosemirror-view": "^1.42.6",
     "satori": "^0.29.1",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "shiki": "4.4.3",
     "temml": "^0.13.5",
-    "zod": "^4.6.0"
+    "zod": "^4.6.5"
   }
 }
