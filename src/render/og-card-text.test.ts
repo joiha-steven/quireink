@@ -141,3 +141,16 @@ describe('renderOgCard', () => {
     }
   })
 })
+
+describe('the clip is only paid for when it is needed', () => {
+  // satori draws overflow:hidden as a clip path and the rasteriser charges ~30 ms each over
+  // the pen strokes; two on every card made a render 6x slower and timed the cap tests out.
+  it('a short title gets no overflow clip anywhere in the tree', () => {
+    const tree = JSON.stringify(ogCardTree({ title: 'A short title', date: 'May 1, 2026' }, 'Inter'))
+    expect(tree).not.toContain('"overflow":"hidden"')
+  })
+  it('a title long enough to wrap past its lines keeps the clip', () => {
+    const tree = JSON.stringify(ogCardTree({ title: 'word '.repeat(60), date: 'May 1, 2026' }, 'Inter'))
+    expect(tree).toContain('"overflow":"hidden"')
+  })
+})

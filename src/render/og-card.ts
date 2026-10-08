@@ -118,8 +118,19 @@ const LINE_EM = 1.24 + 0.08 + 0.1
 const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
 const graphemes = (text: string): string[] => Array.from(segmenter.segment(text), (x) => x.segment)
 
+const titleBudget = (size: number, lines: number): number => Math.floor((COLUMN / (size * 0.56)) * lines * 0.9)
+
+/**
+ * Whether a line of this length could plausibly wrap past its box. Only then is the box
+ * clipped: satori draws `overflow: hidden` as a clip path, and the rasteriser pays about
+ * 30 ms for each one over the pen strokes (12 ms a card without, 78 ms with both), which is
+ * what pushed the per-caller render cap's tests past five seconds on CI.
+ */
+const mayOverflow = (text: string, size: number, lines: number): boolean =>
+  graphemes(text).length > titleBudget(size, lines) * 0.6
+
 function clampTitle(text: string, size: number, lines: number): string {
-  const budget = Math.floor((COLUMN / (size * 0.56)) * lines * 0.9)
+  const budget = titleBudget(size, lines)
   const g = graphemes(text)
   if (g.length <= budget) return text
   const cut = g.slice(0, budget - 1).join('')
@@ -207,7 +218,7 @@ function marked(text: string, size: number, lines?: number): Node {
   // arithmetic `.prose mark` uses (padding:0 .16em; margin:0 -.12em).
   const padX = Math.round(size * 0.16)
   // `lines` makes it a clamped block: the box is `lines` line boxes tall and hides the rest.
-  const clamp = lines
+  const clamp = lines && mayOverflow(text, size, lines)
     ? { maxHeight: Math.round(size * LINE_EM * lines - size * 0.1), overflow: 'hidden' }
     : {}
   return div({ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', ...clamp },
@@ -286,7 +297,7 @@ export function ogCardTree(card: OgCard, family: string): Node {
   rows.push(div({
     // flexShrink + overflow: whatever happens inside, the foot below stays on the card.
     display: 'flex', flexDirection: 'column', flexGrow: 1, flexShrink: 1, minHeight: 0,
-    overflow: 'hidden', justifyContent: 'center',
+    ...(mayOverflow(headlineText, titleSize, titleLines) ? { overflow: 'hidden' } : {}), justifyContent: 'center',
     padding: card.bg ? '36px 72px 0' : '56px 72px 0',
   }, block))
 
