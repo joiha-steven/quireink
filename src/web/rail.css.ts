@@ -62,6 +62,22 @@ html[data-rail=open],html[data-rail=open] body{overflow:hidden}
 /* Two-rail listings only: on mobile there is no gutter, so the LEFT rail is hidden and its
    blocks appear in the right rail's drawer through .drawer-only. */
 .rail-left{display:none}
+/* The single layout's right-hand rail (the year index, Most viewed, Featured) is a gutter and
+   nothing else: the left rail is the drawer and holds a drawer-only copy of what this one
+   carries, so on a phone it is not drawn at all. */
+.rail-aside{display:none}
+/* The drawer is a surface of the page's own tokens (the same --c-bg and --c-rule the page is
+   drawn in, so a light page opens a light drawer and a dark one a dark drawer, in every
+   palette and look): nothing in it is a literal colour. */
+/* The search box at the head of the drawer. The gutter rules put it away above the
+   breakpoint, where the header's icon is on screen. */
+.rail-search{margin:0 0 1.5rem}
+.rail-search form.qbox{margin:0}
+/* The drawer itself takes focus when a TOUCH opens it, so there is nothing to ring: a
+   programmatic focus() on the first link drew the global focus ring around it on every tap of
+   the menu button. A keyboard opens it onto the first control, whose :focus-visible ring is the
+   global one. The container is not a control, so it never shows one. */
+.rail:focus{outline:none}
 /* Tap anywhere else to close. No dim: the drawer already owns a solid surface. */
 .rail-scrim{position:fixed;inset:0;z-index:39}
 .rail-inner{position:sticky;top:2.5rem}
@@ -103,7 +119,7 @@ html[data-rail=open],html[data-rail=open] body{overflow:hidden}
 .term-count{margin-left:.25rem;font-variant-numeric:tabular-nums}
 .term-count::before{content:"("}
 .term-count::after{content:")"}
-.rail-row.is-active,.rail-tags a.is-active{font-weight:500;color:var(--c-heading)}
+.rail-row.is-active,.rail-tags a.is-active,.rail-row[data-year][aria-current]{font-weight:500;color:var(--c-heading)}
 .rail-tags a.is-active{text-decoration:underline;text-decoration-color:var(--c-accent);
   text-underline-offset:4px}
 /* No panel: no border, no shadow, no background, just type sitting on the page. It had a

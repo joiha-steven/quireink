@@ -796,7 +796,7 @@ const en = {
   sidebarLayoutLabel: 'Sidebar layout',
   sidebarLayoutSingle: 'Single column',
   sidebarLayoutTwo: 'Two columns',
-  sidebarLayoutHint: 'One column stacks everything in a left rail; two columns split discovery (left) and navigation (right) with a narrower reading column on desktop. Mobile is one drawer either way.',
+  sidebarLayoutHint: 'One column puts the menu and subjects on the left and a year index with Most viewed and Featured on the right; two columns split discovery (left) and navigation (right) with a narrower reading column on desktop. Mobile is one drawer either way.',
   homeModeLabel: 'Homepage',
   homeModeList: 'Post list',
   homeModePage: 'A page',

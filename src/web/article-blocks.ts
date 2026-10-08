@@ -70,7 +70,9 @@ export function byline(settings: SiteSettings, byLabel: string): string {
   const who = url
     ? `<a class="link-accent" href="${escapeAttr(url)}" rel="author">${escapeHtml(name)}</a>`
     : escapeHtml(name)
-  return ` · <span class="byline">${escapeHtml(byLabel)} ${who}</span>`
+  // Its own line on a phone (`mobile.css.ts`), which is why the separator is a span of its own.
+  return `<span class="meta-by"><span class="meta-sep">\u00A0· </span><span class="byline">${
+    escapeHtml(byLabel)} ${who}</span></span>`
 }
 
 /**

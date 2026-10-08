@@ -69,7 +69,7 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
     // read as source code for two inches and then gave up.
     const ide = idelines()
     for (const label of [
-      '.rail h2::before', 'header.site .tagline::before', 'aside.series .series-head::before',
+      '.rail h2::before', 'header.site .tagline::before', 'aside.series .series-name::before',
       '.related h2::before', '.subscribe-card h2::before', '#comments h2::before',
       '.empty::before',
       // ⚠️ The band's own invented heading is marked too, and it is NOT asserted here: that

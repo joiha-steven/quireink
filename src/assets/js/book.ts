@@ -17,7 +17,7 @@
 
 import { el, label } from './dom'
 import { glide, onScrollFrame } from './motion'
-import { openScrollReader, sizeControl, renameAnchors } from './book-scroll'
+import { openScrollReader, sizeControl, fillFlow } from './book-scroll'
 
 const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport edge
 // A phone cannot afford the desktop's margins: 48px a side took 96 of a 375px screen —
@@ -72,11 +72,10 @@ export function book(): void {
   function open(): void {
     if (phone()) {
       if (scrolling) return
-      const heading = document.querySelector('article > header h1')?.textContent ?? ''
       // Nothing to re-measure: one column, scrolled, so a bigger glyph is simply a longer
       // page. `sizeControl` is the same pair the spread uses (`book-scroll.ts`).
       const size = sizeControl({ min: SCALE_MIN, max: SCALE_MAX, step: SCALE_STEP, key: SCALE_KEY }, () => {})
-      scrolling = openScrollReader(source!, heading, { sizes: size.sizes, onScale: size.attach }, opener)
+      scrolling = openScrollReader(source!, { sizes: size.sizes, onScale: size.attach }, opener)
       return
     }
     if (dialog) {
@@ -86,8 +85,7 @@ export function book(): void {
     const flow = el('div', { class: 'book-flow' })
     // A CLONE. The original stays in the document, so the page a search engine and a screen
     // reader see is untouched by anything that happens in here.
-    flow.innerHTML = source!.innerHTML
-    renameAnchors(flow)
+    const heading = fillFlow(flow, source!)
 
     // The flow is also `.prose`, so the body keeps the article's own typography inside the
     // reader: the drop cap, the indents and the justification are the same rules.
@@ -223,8 +221,6 @@ export function book(): void {
     // a bigger glyph is fewer lines per column, which is a different page count.
     const size = sizeControl({ min: SCALE_MIN, max: SCALE_MAX, step: SCALE_STEP, key: SCALE_KEY }, () => measure())
 
-    // The title recedes: regular weight, faint, body size, so the article stays the focus.
-    const heading = document.querySelector('article > header h1')?.textContent ?? ''
     // `autofocus` steers showModal(): without it the dialog focuses the FIRST focusable
     // element, which is the size control — and the focus ring around that little glyph is
     // the "black seam" the owner photographed. Initial focus belongs on the stage (where
@@ -298,7 +294,10 @@ export function book(): void {
     size.attach(next)
     next.append(
       el('div', { class: 'book-chrome book-top' },
-        el('span', { class: 'book-title' }, heading),
+        // The running head: the title again, faint, once the title page has stated it in full. It
+        // is decoration for the eye, hidden from a screen reader, which gets the title once from
+        // the title page's h1.
+        el('span', { class: 'book-title', 'aria-hidden': 'true' }, heading),
         el('span', { class: 'book-topright' },
           // The two size buttons are ONE control and now look like it. Four evenly spaced
           // glyphs in a row (A− A+ 1/3 ✕) read as a string of characters rather than as

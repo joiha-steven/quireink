@@ -20,17 +20,20 @@ import { t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { postName } from '@/content/untitled'
 import { isSafeHref } from '@/content/safe-href'
+import { searchBox } from '@/web/search-page'
 
 /** Curated posts shown in the "Featured" block. */
 const FEATURED_MAX = 5
 /** Listing column = 80% of the post/reading width, in the two-rail layout. */
-const LISTING_WIDTH_RATIO = 0.8
+export const LISTING_WIDTH_RATIO = 0.8
 
 type IndexLink = {
   href: string
   label: string
   /** Categories show a post count; tags do not. */
   count?: number
+  /** A year row: the island points it at that year's first post on the page and lights it while the year is in view. */
+  year?: string
 }
 
 /** `aria-current="page"` plus the classes that mark the row the reader is already on. */
@@ -52,7 +55,8 @@ function indexBlock(title: string, links: IndexLink[], activeHref?: string): str
   const digits = Math.max(1, ...links.map((l) => (l.count == null ? 1 : String(l.count).length)))
   const rows = links.map((l) => {
     const { attr, cls } = activeBits(l.href, activeHref)
-    return `<li><a class="rail-row link-accent t-small${cls}" href="${escapeAttr(l.href)}"${attr}>`
+    const year = l.year ? ` data-year="${escapeAttr(l.year)}"` : ''
+    return `<li><a class="rail-row link-accent t-small${cls}" href="${escapeAttr(l.href)}"${attr}${year}>`
       + `<span>${escapeHtml(l.label)}</span>`
       + (l.count == null ? '' : `<span class="rail-count">${l.count}</span>`)
       + '</a></li>'
@@ -70,7 +74,8 @@ function termCloud(
   if (links.length === 0) return ''
   const items = links.map((l) => {
     const { attr, cls } = activeBits(l.href, activeHref)
-    return `<a class="link-accent t-small${cls}" href="${escapeAttr(l.href)}"${attr}>`
+    const year = l.year ? ` data-year="${escapeAttr(l.year)}"` : ''
+    return `<a class="link-accent t-small${cls}" href="${escapeAttr(l.href)}"${attr}${year}>`
       // A tag's spaces become hyphens so each one is a single unbroken token: a cloud of
       // two-word tags reads as a sentence otherwise, with no way to see where one ends.
       + escapeHtml(opts.lower ? tagText(l.label) : l.label)
@@ -102,8 +107,19 @@ export function menuBlock(items: MenuItem[], label: string): string {
   return `<nav aria-label="${escapeAttr(label)}"><ul>${rows}</ul></nav>`
 }
 
-const rail = (variant: string, blocks: string) =>
-  `<aside class="rail${variant}"><div class="rail-inner">${blocks}</div></aside>`
+/**
+ * The search box at the head of the DRAWER, a GET form to /search exactly as the search page's
+ * own. Outside `.rail-inner` so it takes no part in the gutter's first-line alignment, and
+ * `rail-search` so the gutter geometry (`render/rail-css.ts`) puts it away above the
+ * breakpoint, where the header's search icon is on screen. Empty with the feature off.
+ */
+function drawerSearch(settings: SiteSettings): string {
+  if (!settings.features.search) return ''
+  return `<div class="rail-search">${searchBox(t(settings.language))}</div>`
+}
+
+const rail = (variant: string, blocks: string, head = '') =>
+  `<aside class="rail${variant}">${head}<div class="rail-inner">${blocks}</div></aside>`
 
 /**
  * A rail carrying the owner's menu and nothing else.
@@ -116,7 +132,7 @@ const rail = (variant: string, blocks: string) =>
  */
 export function menuRail(settings: SiteSettings): Sidebar {
   if (settings.menu.length === 0) return { html: '', css: '' }
-  return { html: rail('', menuBlock(settings.menu, t(settings.language).menu)), css: '' }
+  return { html: rail('', menuBlock(settings.menu, t(settings.language).menu), drawerSearch(settings)), css: '' }
 }
 
 export type Sidebar = {
@@ -201,40 +217,73 @@ export async function renderSidebar(
 
   const discovery = indexBlock(labels.mostViewedTitle, mostViewed, activeHref)
     + indexBlock(labels.featuredTitle, featured, activeHref)
-  // Categories, then series, then tags. A series is a reading ORDER rather than a subject,
-  // so it sits below the subjects and above the tags, which are the loosest of the three.
-  // It carries a count for the same reason a category does: how long is this.
-  const nav = termCloud(labels.categoriesTitle,
+  const cats = termCloud(labels.categoriesTitle,
     shownCategories.map((c) => ({ href: `/category/${termSlug(c.name)}`, label: c.name, count: c.count })),
     {}, activeHref)
-    + termCloud(labels.seriesTitle,
-      allSeries.map((x) => ({ href: `/series/${x.slug}`, label: x.name, count: x.count })),
-      {}, activeHref)
-    // Above the tags, not below them: it is a short, bounded, counted list like the two
-    // above it, and a tag cloud is the one block on this rail with no ceiling on its length.
-    // Under it, the years would sit below a hundred words on a real blog.
-    + termCloud(labels.archiveTitle, years, {}, activeHref)
-    + termCloud(labels.tagsTitle,
-      shownTags.map((tag) => ({ href: `/tag/${termSlug(tag.name)}`, label: tag.name })),
-      { lower: true }, activeHref)
+  // A series is a reading ORDER rather than a subject, so it sits below the subjects and
+  // above the tags, which are the loosest of the three. It carries a count for the same
+  // reason a category does: how long is this.
+  const seriesBlock = termCloud(labels.seriesTitle,
+    allSeries.map((x) => ({ href: `/series/${x.slug}`, label: x.name, count: x.count })),
+    {}, activeHref)
+  const tagBlock = termCloud(labels.tagsTitle,
+    shownTags.map((tag) => ({ href: `/tag/${termSlug(tag.name)}`, label: tag.name })),
+    { lower: true }, activeHref)
+  // Above the tags, not below them: it is a short, bounded, counted list like the two
+  // above it, and a tag cloud is the one block on this rail with no ceiling on its length.
+  // Under it, the years would sit below a hundred words on a real blog.
+  const yearCloud = termCloud(labels.archiveTitle, years, {}, activeHref)
+  const nav = cats + seriesBlock + yearCloud + tagBlock
+  // The single layout's copies of the years are the ones the island points at the page's own
+  // posts and lights (`data-year`). The two-rail layout's cloud is not: it stays a plain link
+  // to the archive, as it always was.
+  const marked = years.map((y) => ({ ...y, year: y.label }))
+  const search = drawerSearch(settings)
 
-  // Infinite scroll forces the single left rail: the right gutter is taken by the
-  // timeline, so a two-rail split cannot apply.
+  // Infinite scroll forces the single layout: its timeline needs the right gutter, so a
+  // two-rail split cannot apply. (Where the single layout fills that gutter itself, the
+  // timeline gives way to the year index; see `listingRailCss`.)
   const layout = settings.features.infiniteScroll ? 'single' : settings.sidebarLayout
-
-  // Single (the default): one left rail, everything stacked, full-width column. The
-  // layout's own `singleRailCss` already positions `.rail`, so this needs no extra sheet.
-  if (layout !== 'two') {
-    return { html: rail('', menuBlock(settings.menu, labels.menu) + discovery + nav), css: '' }
-  }
 
   // Two: discovery left, nav right, narrower column. The right rail is also the mobile
   // drawer, so it carries a desktop-hidden copy of the discovery blocks — without it the
   // drawer would lose them entirely on a phone, where the left rail does not exist.
+  if (layout === 'two') {
+    return {
+      html: rail(' rail-left', discovery)
+        + rail(' rail-right', menuBlock(settings.menu, labels.menu)
+          + `<div class="drawer-only">${discovery}</div>` + nav, search),
+      css: listingRailCss(Math.round(settings.contentWidth * LISTING_WIDTH_RATIO)),
+    }
+  }
+
+  // Single (the default): the full-width column with a rail on EACH side. Left, the places
+  // to go: the owner's menu and the subjects. Right, a sticky index of the years, then the
+  // blocks that surface posts (Most viewed, Featured), so both gutters carry something and
+  // the page is not lopsided. The left rail is also the drawer below the breakpoint, so it
+  // holds a desktop-hidden copy of what the right one carries; the right one is not on a
+  // phone at all.
+  const yearIndex = indexBlock(labels.archiveTitle, marked.length
+    ? [...marked, { href: '/archive', label: labels.frontAllPosts, count: posts.length }]
+    : [])
+  const markedCloud = termCloud(labels.archiveTitle, marked, {}, activeHref)
+  const aside = yearIndex + discovery
+  if (aside === '') {
+    return { html: rail('', menuBlock(settings.menu, labels.menu) + nav, search), css: '' }
+  }
+  // What the left rail shows in the GUTTER. The paper look carries the menu in its masthead and
+  // hides the rail's copy, so it does not count there. With nothing left the rail is still the
+  // drawer, but above the breakpoint it is not drawn: an empty box with a divider beside it
+  // reads as a fault.
+  const gutter = (settings.look === 'paper' ? '' : menuBlock(settings.menu, labels.menu))
+    + cats + seriesBlock + tagBlock
   return {
-    html: rail(' rail-left', discovery)
-      + rail(' rail-right', menuBlock(settings.menu, labels.menu)
-        + `<div class="drawer-only">${discovery}</div>` + nav),
-    css: listingRailCss(Math.round(settings.contentWidth * LISTING_WIDTH_RATIO)),
+    html: rail(gutter === '' ? ' rail-main rail-drawer' : ' rail-main', menuBlock(settings.menu, labels.menu)
+      + (discovery ? `<div class="drawer-only">${discovery}</div>` : '')
+      + cats + seriesBlock
+      + (markedCloud ? `<div class="drawer-only">${markedCloud}</div>` : '')
+      + tagBlock, search)
+      + rail(' rail-aside', aside),
+    css: listingRailCss(settings.contentWidth, { shell: false, left: 'rail-main', right: 'rail-aside' }),
   }
 }

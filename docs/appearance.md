@@ -27,8 +27,8 @@ not cover.
 | **List thumbnail** | Home & menu → Post list | Whether that picture appears on list rows, as a small square or a large 3:2. **Off by default** — see below |
 | Figure frame | Posts → Pictures | The frame every in-body picture wears unless it says otherwise |
 | Content width | Home & menu → Layout & menu | How wide the reading column runs |
-| Sidebar | Home & menu → Layout & menu | One rail or two, and whether there is a rail at all. Switching it off leaves the rail carrying the owner's MENU alone: that switch owns the discovery blocks, never the site's navigation |
-| Archive in the sidebar | Home & menu → Post list | The years, as a block in the rail. Separate from the `/archive` PAGE switch — the block can leave while the page stays reachable |
+| Sidebar | Home & menu → Layout & menu | One rail or two, and whether there is a rail at all. With one rail (the default), a wide screen puts the menu and the subjects on the left and, in a sticky column on the right, an index of years with their post counts (the year in view lit, and an *All posts* link), then Most viewed and Featured; the infinite-scroll timeline gives way to that index there. Two rails keeps discovery on the left and everything else on the right. Switching it off leaves the rail carrying the owner's MENU alone: that switch owns the discovery blocks, never the site's navigation. On a phone the rail is a drawer that opens from the left in the page's own palette, with a search box on top when Search is on |
+| Archive in the sidebar | Home & menu → Post list | The years, as a block in the rail (with one rail, the year index on the right; each year links to its first post on the page when it is there, else to `/archive`). Separate from the `/archive` PAGE switch — the block can leave while the page stays reachable |
 | Series in the sidebar | Home & menu → Post list | The series list, each linking to its own page |
 | Tags in the sidebar | Home & menu → Post list | The tag cloud. The one block in the rail with no ceiling on its length, which is why it sits last |
 | Categories in the sidebar | Home & menu → Post list | The categories, each with how many posts it holds |
@@ -96,7 +96,7 @@ them kept the exact pages it had; nothing grew a picture without being asked. Th
 | Where | Choices |
 |---|---|
 | **Cover on the post** | Not shown · **Show it** — a 3:2 cover above the headline, the width of the reading column |
-| **Thumbnail in lists** | Not shown · **Small square** beside the words, with the text wrapping under it · **Large 3:2** above the title |
+| **Thumbnail in lists** | Not shown · **Small square** beside the headline (64px on a phone; from 40rem 96px beside the headline and standfirst, with the date and reading time underneath at full width) · **Large 3:2** above the title |
 
 The shapes are fixed on purpose. One blog's pictures should look like one blog's pictures,
 and picking that is the design's job rather than a question put to you three times. It also
@@ -110,9 +110,31 @@ pixels from the reading column, so a wider picture prints over them.
 Posts without a picture are unaffected either way — there is no placeholder, and there
 will not be one.
 
+On a list row the category is a small label above the headline (when category labels are on), and the date and reading time come last, under the standfirst.
+
 If you want pictures on your homepage **and** the ordinary list layout, `thumb` is the
 setting you want. The newspaper homepage mode is a different answer to the same wish, with
 a different shape.
+
+### What the pages do without a knob
+
+These follow your other settings and the active look, and have no switch of their own:
+
+- **A row of subjects on tablets.** On list pages between 40rem and the width where the rail
+  appears, the categories and then the series sit as one row of chips under the header,
+  scrolling sideways when they overflow. They obey the sidebar's switches: no chips when the
+  sidebar is off, and each of *Categories* and *Series* removes its own. The page you are on
+  is filled in.
+- **The line under a post title on a phone.** Under 640px it is two short lines, the date and
+  reading time and then the author, and the word count is left out. Wider screens keep one line.
+- **The series box.** The series name and *Part N/M* share a row, with a thin bar of one
+  segment per post (capped at 40) above the list of parts.
+- **The Source code look's headline on a phone.** Under 640px the article headline is 0.8 of
+  your Heading 1 size, because a monospace is wide; it still follows your Heading 1 setting.
+- **The search page.** With nothing typed, `/search` shows the box with its button inside,
+  your eight busiest tags and your five newest posts.
+- **Book mode's first page** is a title page: the category and series part, the headline,
+  the standfirst and the byline. The body starts on the next page.
 
 ## When the knobs are not enough: your own CSS
 

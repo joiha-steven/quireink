@@ -11,6 +11,8 @@
 // written by the same render, but the CSS that acts on it is not — so the two shapes cost
 // one selector each and nothing has to be re-rendered when the setting moves.
 
+import { LIST_CARD_CSS } from '@/web/list-card.css'
+
 export const POST_IMAGE_CSS = `
 /* --- the hero, above an article ------------------------------------------------
    The reading column, and no wider. A breakout version existed for one afternoon
@@ -33,10 +35,9 @@ export const POST_IMAGE_CSS = `
   object-fit:cover;border-radius:var(--radius,.5rem)}
 
 /* --- the thumbnail, on a list row ----------------------------------------------
-   'side' turns the card into a two-column grid; the words keep their order in the
-   markup and the picture is placed, so a screen reader and a no-CSS reader both get
-   the headline first. A phone drops back to one column: 96px of picture beside a
-   headline at 375px leaves the headline nowhere to go. */
+   'side' turns the card into a two-column grid (list-card.css.ts); the picture follows the
+   headline in the markup and is placed, so a screen reader and a no-CSS reader both get
+   the headline first. */
 /* CROPPED, ALWAYS, and the shape is not a setting.
    A gallery gets to choose because a gallery IS the photographs; a list thumbnail is
    chrome, and its job is recognition. Measured with three real files on 2026-08-29 —
@@ -49,41 +50,8 @@ export const POST_IMAGE_CSS = `
 .post-list article[data-thumb=top] .card-thumb img{aspect-ratio:3/2}
 .post-list article[data-thumb=top] .card-thumb{margin:0 0 calc(var(--sp) * .75)}
 
-/* FLOATED, not a grid column. A two-column grid pins the words beside the picture for the
-   whole card, so a 96px square against four lines of standfirst leaves a hole under the
-   picture and the row reads as a table with an empty cell. Floating lets the text run past
-   the picture and close up underneath it, which is what the space is for.
-
-   'flow-root' contains the float: without it a card shorter than its own picture would let
-   the picture hang into the card below. It does not clip, so the timeline marker — absolutely
-   positioned out in the gutter by rail-css.ts — is untouched. */
-.post-list article[data-thumb=side]{display:flow-root}
-.post-list article[data-thumb=side] .card-thumb{float:left;width:96px;
-  margin:.2rem calc(var(--sp) * 1.1) calc(var(--sp) * .45) 0}
-
-/* THE STANDFIRST STARTS UNDER THE PICTURE, not beside it, and this is the half the rule above
-   got wrong. It assumed four lines would run past the picture and close up; what actually sits
-   beside a 96px square is the kind line and the headline, and the standfirst gets one or two
-   lines before the float ends. Measured at 1440 on 2026-09-12: one card ran two lines at 529.6
-   and then dropped to 416, another ran a SINGLE line at 529.6 before dropping — a paragraph
-   whose left edge steps 113.6px in the middle of itself, which reads as a mistake rather than
-   as a wrap. Clearing it costs the white beside a one-line headline and buys every line of
-   every standfirst on the front page one left edge. */
-.post-list article[data-thumb=side] > :is(h2,h3) + p{clear:left}
-
-/* A PHONE GETS A GRID, NOT A FLOAT. Beside a floated picture the kind line wrapped to three
-   lines and the headline started halfway across, then ran back under the picture ("The reed
-   pen, in Van / Gogh's letters") — measured at 390 on 2026-09-23 on the home, category and tag
-   pages. Two columns hold the picture to the right of the kind line and the headline, each of
-   which now has one left edge, and the standfirst runs the full width beneath them. */
-@media (max-width:559px){
-  .post-list article[data-thumb=side]{display:grid;grid-template-columns:minmax(0,1fr) 72px;
-    column-gap:calc(var(--sp) * .8);align-items:start}
-  .post-list article[data-thumb=side] > *{grid-column:1}
-  .post-list article[data-thumb=side] .card-thumb{grid-column:2;grid-row:1 / span 2;float:none;
-    width:72px;margin:.2rem 0 0}
-  .post-list article[data-thumb=side] > :is(h2,h3) + p{grid-column:1 / -1}
-}
+/* WHERE A SIDE PICTURE GOES (beside the headline, a grid, 64px on a phone) is list-card.css.ts. */
+${LIST_CARD_CSS}
 
 /* --- the author box ------------------------------------------------------------
    Same quiet register as '.related' above it: this is chrome at the end of the

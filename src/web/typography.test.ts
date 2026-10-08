@@ -187,7 +187,7 @@ describe('book mode is one number, and the reader may move it', () => {
   //   every gap inside the article = the same x the scale
   // Type and the space around it are one system. Enlarging the words and leaving the gaps
   // gives crowded reading, not bigger reading.
-  it('emits every scale-dependent variable TWICE, on :root and on .book-overlay', () => {
+  it('emits every scale-dependent variable TWICE, on :root and on the book readers', () => {
     // The mechanism, not decoration. A var() inside a custom property is substituted where
     // that property is DECLARED, so `--fs-body` on :root resolves --type-scale against
     // :root — where it is undefined — and overriding the scale on a descendant changes
@@ -195,7 +195,9 @@ describe('book mode is one number, and the reader may move it', () => {
     // was measured. Re-declaring the identical text on .book-overlay re-substitutes it
     // there, where the overlay's scale applies.
     const root = /:root\{(.*?)\}/s.exec(css)?.[1] ?? ''
-    const book = /\.book-overlay\{(.*?)\}/s.exec(css)?.[1] ?? ''
+    // The second block serves both readers: the spread (.book-overlay) and the phone's
+    // scrolled one (.book-reader), whose A-/A+ did nothing until it had one (2026-10-08).
+    const book = /\.book-overlay,\.book-reader\{(.*?)\}/s.exec(css)?.[1] ?? ''
     expect(root).not.toBe('')
     expect(book).toBe(root)
     for (const role of TYPE_ROLES) {

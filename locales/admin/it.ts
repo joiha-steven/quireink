@@ -796,7 +796,7 @@ const it = {
   sidebarLayoutLabel: 'Disposizione della barra laterale',
   sidebarLayoutSingle: 'Una colonna',
   sidebarLayoutTwo: 'Due colonne',
-  sidebarLayoutHint: 'Una colonna impila tutto in un binario a sinistra; due colonne separano scoperta (sinistra) e navigazione (destra), con una colonna di lettura più stretta su desktop. Su mobile è un solo cassetto in entrambi i casi.',
+  sidebarLayoutHint: 'Una colonna mette menu e argomenti a sinistra e un indice degli anni con Più letti e In evidenza a destra; due colonne separano scoperta (sinistra) e navigazione (destra), con una colonna di lettura più stretta su desktop. Su mobile è un solo cassetto in entrambi i casi.',
   homeModeLabel: 'Home page',
   homeModeList: 'Lista degli articoli',
   homeModePage: 'Una pagina',

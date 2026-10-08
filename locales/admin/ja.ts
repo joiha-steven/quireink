@@ -796,7 +796,7 @@ const ja = {
   sidebarLayoutLabel: 'サイドバーのレイアウト',
   sidebarLayoutSingle: '1カラム',
   sidebarLayoutTwo: '2カラム',
-  sidebarLayoutHint: '1カラムは左のレールにまとめて表示。2カラムは発見（左）とナビゲーション（右）に分け、デスクトップでは本文列が狭くなります。モバイルはどちらも1つのドロワーです。',
+  sidebarLayoutHint: '1カラムはメニューとテーマを左に、年のインデックスと人気記事・注目記事を右に置きます。2カラムは発見（左）とナビゲーション（右）に分け、デスクトップでは本文列が狭くなります。モバイルはどちらも1つのドロワーです。',
   homeModeLabel: 'ホーム',
   homeModeList: '記事一覧',
   homeModePage: 'ページ',

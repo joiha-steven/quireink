@@ -15,6 +15,7 @@ import { issueStamp } from '@/comments/stamp'
 import { siteFooter, siteHeader, subscribeCard } from '@/web/chrome'
 import { heroImage, byline, authorBox } from '@/web/article-blocks'
 import { getSeriesForPost } from '@/content/series'
+import { seriesBox as seriesBoxHtml } from '@/web/series-box'
 import { collapseBlob } from '@/media/blob'
 import { renderPostContent } from '@/render/post-content'
 import { standaloneUrls } from '@/render/link-cards'
@@ -22,7 +23,7 @@ import { cardFacts, noteLinks } from '@/content/link-cards'
 import type { ImageDims, ReadyOriginals } from '@/render/figures'
 import { extractHeadings } from '@/utils'
 import { isUntitled, postName } from '@/content/untitled'
-import { langAttr, langOf, siblingsOf } from '@/content/translations'
+import { langOf, siblingsOf } from '@/content/translations'
 import { articleHead } from '@/web/article-head'
 import { TOC_ANCHORS } from '@/render/toc'
 import { menuBlock } from '@/web/sidebar'
@@ -133,18 +134,22 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     // `toPlainText` over the whole body, and this pair used to be taken twice here and twice
     // more in `postInfoPanel`: four passes for two numbers on one screen.
     const words = features.readingTime ? wordCount(post.content) : 0
+    // The word count is its own span WITH its separator inside, so a phone (which drops it,
+    // `mobile.css.ts`) takes the middot with it and no line starts or ends on a stray one. The
+    // separators are glued to the text before them (a no-break space): a line may end on a
+    // middot, never begin with one.
     const length = features.readingTime
       // `meta-part` holds each figure to its unit, as the listing does (FIXLIST 7.11).
-      ? ` · <span class="meta-part"><span class="num">${formatCount(words, settings.language)}</span>`
-        + ` ${escapeHtml(s.wordsSuffix)}</span>`
-        + ` · <span class="meta-part"><span class="num">${minutesFor(words)}</span> ${escapeHtml(s.readingSuffix)}</span>`
+      ? `<span class="meta-words">\u00A0· <span class="meta-part"><span class="num">${formatCount(words, settings.language)}</span>`
+        + ` ${escapeHtml(s.wordsSuffix)}</span></span>`
+        + `\u00A0· <span class="meta-part"><span class="num">${minutesFor(words)}</span> ${escapeHtml(s.readingSuffix)}</span>`
       : ''
     // Desktop and tablet only, hidden by CSS on a narrow screen: two columns of type in
     // a phone-width viewport is worse than one, not better.
     // The separator is INSIDE the span, so it goes when the button does. It was a bare text
     // node, which left every phone-width article ending its meta line on a stray middot.
     const book = features.bookMode
-      ? `<span class="meta-book"> · ${bookToggle(escapeHtml(s.bookMode))}</span>`
+      ? `<span class="meta-book">\u00A0· ${bookToggle(escapeHtml(s.bookMode))}</span>`
       : ''
     // `post-meta` is the handle the wide layout hides it by: above the rail breakpoint the
     // same facts are in the right gutter, one per line, and two copies would be two copies.
@@ -179,16 +184,7 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
     // linked there, so `/series/<slug>` existed and was unreachable), the header says which
     // part of how many, and it sits at the top of the post rather than after it.
     const series = await getSeriesForPost(post.slug)
-    const seriesBox = series && series.posts.length > 1
-      ? `<aside class="series"><p class="series-head"><a class="link-accent" href="/series/${
-          escapeAttr(series.slug)}">${escapeHtml(series.name)}</a> · <span class="meta-part">${escapeHtml(s.seriesPartPrefix)} ${
-          series.currentIndex + 1}/${series.posts.length}</span></p><ol>${
-          series.posts.map((p) => (p.slug === post.slug
-            ? `<li aria-current="page"${langAttr(p, settings.language)}>${escapeHtml(postName(p))}</li>`
-            : `<li><a href="/${escapeAttr(p.slug)}"${langAttr(p, settings.language)}>${
-              escapeHtml(postName(p))}</a></li>`)).join('')
-        }</ol></aside>`
-      : ''
+    const seriesBox = seriesBoxHtml(series, post.slug, settings.language, s.seriesPartPrefix)
     // Tags and categories, each on its own labelled line, over a rule. The rule is the
     // article ending; without it the taxonomy reads as one more paragraph.
     // The run of terms is wrapped so the IDE chrome can bracket it into an array literal.

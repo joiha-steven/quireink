@@ -17,6 +17,27 @@
 
 ### Changed
 
+- **List rows read top to bottom.** The category is a small label above the headline, the date
+  and reading time come last under the standfirst, and a small thumbnail sits beside the
+  headline (64px on a phone). The old single line of category, date and minutes wrapped on a
+  phone with a thumbnail and could start a line with "·".
+- **Both sides of a wide screen carry something.** With one rail, the right-hand side now holds
+  an index of years with their post counts, the year in view lit, then Most viewed and Featured;
+  the menu and the subjects stay on the left. Before, the right side showed one year and a line.
+  Two rails are unchanged.
+- **Tablets get the subjects back.** Between a phone and the width where the rail appears, the
+  categories and series sit as a row of chips under the header instead of only in the menu.
+- **The post's opening reads better on a phone.** The date and reading time and then the author
+  on two short lines, the word count left out; the series box puts its name and part on one row
+  over a bar of one segment per post; the Source code look sets the article headline a step
+  smaller on a phone so a long title is not three lines of monospace.
+- **The menu drawer has a search box on top**, and opening it with a tap no longer draws a
+  focus ring on the first link; the keyboard still gets one.
+- **The search page is no longer empty before you type.** The button sits inside the box, and
+  your eight busiest tags and five newest posts are there to start from.
+- **Book mode opens on a title page** (category and series part, headline, standfirst,
+  byline), with the body from the next page, and drops the historical "st" and "ct"
+  ligatures that set "list" as "liſt".
 - **Typing in a long post is as quick as in a short one.** On a 13,000-word draft with 1,500 pen
   marks, a keystroke cost 3.7 ms of script and now costs 1.0 ms; with the processor slowed to a
   modest laptop's, a letter reached the screen in 43 ms (54 ms at the slow end) and now does in
@@ -42,6 +63,9 @@
   leaving it at the end of one line and the formula on the next. Punctuation touching an inline
   formula now stays with it.
 - **The tagline balances its lines**, instead of leaving one word on the second.
+- **Book mode's A− and A+ work on a phone.** The phone reader kept one text size whatever was
+  pressed; body, headings and the title page now follow the buttons, as on the spread. Its
+  default is now the spread's slightly larger size.
 - **Vietnamese input methods sound like one key per key.** EVKey, OpenKey, Unikey and
   GoTiengViet put an accent on by sending Backspaces and retyping the letters in a few
   milliseconds, and the editor clicked for every one of them: typing "Tiếng Việt có dấu, gõ nhanh

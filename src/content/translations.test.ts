@@ -301,7 +301,8 @@ describe('what a LIST says', () => {
     // and the byline stay in the site's language). A `lang` on the card would hand the date to
     // Korean to win the title, so the attribute must be on the heading and not on the article.
     expect(home).not.toContain('<article class="reveal" lang=')
-    const meta = home.match(/<p class="t-small text-meta"[^>]*>/)
+    const meta = home.match(/<p class="card-meta t-small text-meta"[^>]*>/)
+    expect(meta, 'the facts line').not.toBeNull()
     expect(meta?.[0]).not.toContain('lang=')
   })
 

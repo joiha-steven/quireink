@@ -48,5 +48,11 @@ html.book-reading body>*:not(.book-reader){display:none}
 /* The inset, the bar and its rule, so the first line clears all three when the bar shows. */
 .book-page{padding:calc(env(safe-area-inset-top,0px) + 56px + 1.5rem) 20px calc(3rem + env(safe-area-inset-bottom,0px))}
 .book-reader .book-flow{max-width:38rem;margin:0 auto;columns:auto;column-width:auto;width:auto}
+/* THE TITLE PAGE IS THE FIRST SCREEN, in svh: the SMALL viewport, so it does not grow under a
+   reader's finger when Safari's toolbar collapses (dvh moved about 80px). The glass less the
+   page's own top padding (the inset, the bar and the rule under it, above), so it ends on the
+   bottom edge and the body begins where the first scroll lands rather than peeking under the
+   title. A taller title (a long one at a large size) simply pushes the body further down. */
+.book-reader .book-tp{height:auto;min-height:calc(100svh - 56px - 1.5rem - env(safe-area-inset-top,0px))}
 /* Motion off is the engine gate in motion.css.ts, not a rule here. */
 `.trim()

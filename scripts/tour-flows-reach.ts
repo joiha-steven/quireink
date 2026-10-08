@@ -42,7 +42,9 @@ export function registerReachFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
   // first `.rail` is display:none below this width, so focus went into a hidden subtree.
   flow('shell: the drawer is a dialog, and the page behind it holds still', () => atWidth(375, '/', `
     (async () => {
-      const rails = document.querySelectorAll('.rail')
+      // The drawer is the last rail that is not the wide screen's right-hand aside (theme.ts
+      // picks it the same way); the aside is never a drawer.
+      const rails = document.querySelectorAll('.rail:not(.rail-aside)')
       const rail = rails[rails.length - 1]
       const button = document.querySelector('[data-rail-toggle]')
       if (!rail || !button) return 'skip: this page has no drawer'

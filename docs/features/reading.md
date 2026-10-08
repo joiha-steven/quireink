@@ -13,10 +13,12 @@
   Under 640px the button is not offered at all (`mobile.css.ts`): measured at 390, a grid there
   was the same one column minus its excerpts. A choice made on a laptop still travels.
 - **Sidebar** (`sidebar`): the MAIN (listing) sidebar has two layouts, chosen by `settings.sidebarLayout`
-  (**Settings → Home & menu**): `single` (default) = one left rail with every block stacked
-  (full-width column); `two` = **TWO gutter rails on desktop** flanking a narrower reading column
-  (listing column = 80% of the post width, via `--shell-w`; the extra compactness pulls both rails in) —
-  the two-rail geometry/CSS is emitted ONLY in this mode. **Left rail** = discovery: **most viewed** (auto: top
+  (**Settings → Home & menu**): `single` (default) = a rail on EACH side of the full-width column: left the menu and
+  subjects (also the phone drawer); right a sticky **Archive** year index (counts, year in view lit by
+  `assets/js/years.ts`, rows link to the year's first post on the page else `/archive#yYYYY`), Most viewed
+  and Featured; no right content = one left rail as before; `two` = **TWO gutter rails on desktop** flanking a
+  narrower reading column (listing column = 80% of the post width, via `--shell-w`; the extra compactness pulls both rails in) —
+  its geometry also serves `single` whenever the right rail exists. **Left rail** = discovery: **most viewed** (auto: top
   `settings.mostViewedCount` public posts by all-time views — default 3, `0` hides it —
   `getViewTotals()` joined to `getPublicPosts()`) + **featured** (owner-curated `settings.featured`
   slugs, in order, first 5, dropped when a slug stops being public). **Right rail** = navigation:
@@ -55,10 +57,8 @@
   `noindex, follow`: it is the reader's and the island's way through, not a URL to index. ⚠ Until
   2026-09-07 the server rendered every card and hid the tail, which was 49,905 bytes on a 33-post demo
   and would have been about 450 KB on a five-hundred-post blog, per visit and per cache entry; the
-  reveals also moved the footer under a reader who had reached it (0.136 CLS at 390px, now 0). The left
-  rail is forced to its single-rail
-  branch (all blocks stacked); the right gutter holds a **date timeline** — but NOT a boxed widget: a spine
-  runs the full height of the feed (`.post-list::after`) and the FIRST card of each month/year carries a
+  reveals also moved the footer under a reader who had reached it (0.136 CLS at 390px, now 0). The layout is forced to `single`; the right gutter holds a **date timeline** (above the rail
+  breakpoint the year index replaces it, `listingRailCss`) — NOT a boxed widget: a spine runs the full height of the feed (`.post-list::after`) and the FIRST card of each month/year carries a
   timeline. The feed is grouped by year (`.tl-yr`): each **month**'s first card carries a `.tl-mark` (round
   `--c-meta` dot + month name) absolutely positioned in the gutter and scrolling with the post, while the
   **year** is a STICKY header (`.tl-year` = a 0-size gutter anchor; `.tl-year-tag` = a compact `fs-h3` number
@@ -194,10 +194,11 @@
   server and the admin can import it): `series_order` ascending, then date
   ascending — so a series reads oldest-to-newest / lowest-order-first. `getSeriesForPost(slug)`
   returns the ordered PUBLIC siblings + the current index (a draft/scheduled part never shows).
-- **Series box** (`src/web/article.ts`) renders at the top of a post when its series has >1 public
-  part: a `Part n/total` line linking to `/series/:slug` and the ordered list of parts (current
-  part highlighted, not linked). Colours are theme tokens only (`border-rule`, `text-meta`,
-  `text-heading`, `link-accent`).
+- **Series box** (`src/web/series-box.ts`, styles `src/web/series.css.ts`) renders at the top of a
+  post when its series has >1 public part: one head row, the name (linking to `/series/:slug`)
+  left and `Part n/total` right (the name wraps, the indicator does not), an `aria-hidden`
+  segmented progress bar (one segment per part up to the current one; capped at 40), and the
+  ordered list of parts (current one highlighted, not linked). Theme tokens only.
 - **Admin management** (Content → **Series** drawer,
   [`screens/content-drawers.ts`](../../src/web/admin/screens/content-drawers.ts) drawing and
   [`island/lib/write-drawers.ts`](../../src/admin/island/lib/write-drawers.ts) acting): every

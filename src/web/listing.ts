@@ -23,6 +23,15 @@ import { isUntitled, postName } from '@/content/untitled'
 const yearOf = (iso: string, tz: string) => zonedDay(iso, tz).slice(0, 4)
 const monthOf = (iso: string, tz: string) => zonedDay(iso, tz).slice(0, 7)
 
+/**
+ * Marks a card as the first of its year ON THIS PAGE, which is what the year index in the right
+ * gutter reads: it points each year's row at the first post of that year that is on the page
+ * and lights the row while that year is in view (`yearIndex()` in `assets/js/years.ts`).
+ * A data attribute and not an id, so a feed that appends page two cannot print the same id
+ * twice; the island gives the id to the first one. No-op on markup that is not an article.
+ */
+const yearMark = (card: string, year: string) => card.replace(/^<article /, `<article data-yr="${year}" `)
+
 type CardOptions = {
   /**
    * Originals with responsive variants, for the thumbnail. Absent means no thumbnails:
@@ -39,9 +48,12 @@ type CardOptions = {
 /**
  * One card. Metadata only: a listing never loads a body.
  *
- * The ORDER is load-bearing and was wrong: the meta line sits ABOVE the title, not below.
- * That is the frozen tree's `PostCard` and it is what the owner reads first — the date and
- * the reading time frame the headline rather than trailing it.
+ * The ORDER, since 2026-10-08: the kicker (the category), the headline, the standfirst, and
+ * the date and reading time LAST. The meta line used to sit above the headline as one row
+ * "Category · Date · N min read"; beside a side thumbnail on a phone that row had 200px to
+ * live in, wrapped, and began a line with a bare "·". Split in two, the category is a short
+ * label that cannot wrap badly and the facts close the card, where a line of them has the
+ * whole width (`list-card.css.ts`).
  *
  * Sizes come from the type roles, never a literal, so a listing and an article agree
  * without anyone keeping two numbers in step.
@@ -50,14 +62,15 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
   const tx = t(settings.language)
   const { readingTime, categoryLabel } = settings.features
   const category = categoryLabel ? post.categories[0] : undefined
-  const categoryLink = category
-    ? `<a class="link-accent" href="/category/${escapeAttr(termSlug(category))}">${escapeHtml(category)}</a> · `
+  const kicker = category
+    ? `<p class="card-kick t-small"><a class="link-accent" href="/category/${escapeAttr(termSlug(category))}">${escapeHtml(category)}</a></p>
+`
     : ''
   // The suffix comes from the locale table. It read a hardcoded " min" here, so a
   // Vietnamese blog said "38 min" where every other surface said "38 phút đọc".
   // The figure is wrapped and the unit is not, so the IDE chrome can set the literal apart.
   const minutes = readingTime && post.readingMinutes
-    ? ` · <span class="meta-part"><span class="num">${post.readingMinutes}</span> ${escapeHtml(tx.readingSuffix)}</span>`
+    ? `<span class="meta-part"><span class="num">${post.readingMinutes}</span> ${escapeHtml(tx.readingSuffix)}</span>`
     : ''
   const Title = opts.lead ? 'h1' : 'h2'
   const size = opts.lead ? 'fs-h1' : 'fs-h2'
@@ -74,8 +87,8 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
   // is off or unsupported (pure CSS, `animation-timeline: view()`).
   // The post's own picture, when the owner asked for thumbnails and this post has one.
   //
-  // `sizes` is the measured box, not the column: `side` draws a 96px square (192 at 2x) and
-  // `top` fills the card. Declaring the column width here would download an image four
+  // `sizes` is the measured box, not the column: `side` draws a square, 96px from 40rem and 64px on a phone
+  // (the 96px file serves both), and `top` fills the card. Declaring the column width here would download an image four
   // times the size of the hole it goes in, which is the whole reason the shapes differ.
   const thumbKind = settings.postImage.thumb
   const thumb = thumbKind !== 'none' && opts.ready
@@ -88,7 +101,8 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
     // it after the layout says where it goes. Every card after it stays lazy.
     opts.lead === true) ?? ''
     : ''
-  const thumbBlock = thumb ? `<div class="card-thumb">${thumb}</div>` : ''
+  const thumbBlock = thumb ? `<div class="card-thumb">${thumb}</div>
+` : ''
   // A SHORT POST (ADR 0064) has no headline, so the card is its words — and the DATE is the
   // way in, the permalink every microblog puts there. Something on the card has to be the
   // link, and a headline invented from the first words would print them twice.
@@ -97,11 +111,23 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
   const when = untitled
     ? `<a class="link-accent" href="/${escapeAttr(post.slug)}" aria-label="${escapeAttr(postName(post))}">${time}</a>`
     : time
-  const shape = thumb ? ` data-thumb="${thumbKind}"` : ''
-  return `<article class="reveal"${shape}${opts.lead ? ' data-lead' : ''}>${mark}${thumbBlock}
-<p class="t-small text-meta">${categoryLink}${when}${minutes}</p>
-${untitled ? '' : `<${Title} class="reading-font mt-2 ${size} font-semibold"${lang}><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
-`}${post.excerpt ? `<p class="reading-font mt-3 t-body text-text"${lang}>${escapeHtml(post.excerpt)}</p>` : ''}
+  // NO SEPARATOR EVER BEGINS A LINE: the "·" belongs to the item BEFORE it, inside the same
+  // unbreakable run, so the line can only break after a separator and never before one. A
+  // fact that does not fit goes down whole, with the dot left behind at the end of the line.
+  const facts = [when, minutes].filter(Boolean)
+  const metaHtml = facts.map((f, i) => (i < facts.length - 1
+    ? `<span class="meta-part">${f}<span aria-hidden="true"> ·</span></span>`
+    : f)).join(' ')
+  // `data-short`: no headline, so the grid places the standfirst beside a side picture (list-card.css.ts).
+  const shape = `${thumb ? ` data-thumb="${thumbKind}"` : ''}${untitled ? ' data-short' : ''}`
+  // The picture's place in the markup: 'top' leads the card, 'side' follows the headline.
+  // CSS puts a side picture to the right of the headline whatever the order, and a reader
+  // with no CSS meets the words before the picture.
+  const top = thumbKind === 'top' ? thumbBlock : ''
+  const side = thumbKind === 'side' ? thumbBlock : ''
+  return `<article class="reveal"${shape}${opts.lead ? ' data-lead' : ''}>${mark}${top}${kicker}${untitled ? '' : `<${Title} class="reading-font ${size} font-semibold"${lang}><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
+`}${side}${post.excerpt ? `<p class="reading-font card-exc t-body text-text"${lang}>${escapeHtml(post.excerpt)}</p>
+` : ''}<p class="card-meta t-small text-meta">${metaHtml}</p>
 </article>`
 }
 
@@ -175,11 +201,12 @@ function timeline(posts: Post[], settings: SiteSettings, lead: boolean, ready?: 
       const prev = posts[i - 1]
       const firstOfYear = !prev || yearOf(prev.date, tz) !== g.year
       const firstOfMonth = !prev || monthOf(prev.date, tz) !== monthOf(post.date, tz)
-      return card(post, settings, {
+      const html = card(post, settings, {
         lead: lead && i === 0,
         month: firstOfMonth && !firstOfYear ? formatMonth(post.date, settings.language, settings.timezone) : undefined,
         ready,
       })
+      return firstOfYear ? yearMark(html, g.year) : html
     }).join('\n')
     return `<div class="tl-yr"><div class="tl-year" aria-hidden="true">`
       + `<span class="tl-year-tag"><span class="tl-dot"></span>${g.year}</span></div>${cards}</div>`
@@ -237,8 +264,13 @@ export function renderListing(view: ListingView, settings: SiteSettings): string
       timeline(view.paged.items, settings, lead, view.ready)
     }</div>${feedMore(view.paged, view.basePath, t(settings.language))}`
   }
+  const tz = settings.timezone
   const body = view.paged.items
-    .map((p, i) => card(p, settings, { lead: lead && i === 0, ready: view.ready }))
+    .map((p, i) => {
+      const html = card(p, settings, { lead: lead && i === 0, ready: view.ready })
+      const year = yearOf(p.date, tz)
+      return i === 0 || yearOf(view.paged.items[i - 1]!.date, tz) !== year ? yearMark(html, year) : html
+    })
     .join('\n')
   return `${head}<div class="post-list">${body}</div>${pager(view.paged, view.basePath, t(settings.language))}`
 }

@@ -117,4 +117,34 @@ export const BOOK_TEXT_CSS = `
    plain figure element — which is why two lines here looked like one until it was measured. */
 .book-flow.prose > figure{margin-top:calc(2 * var(--book-line));margin-bottom:0}
 .book-flow.prose > figure + *{margin-top:calc(2 * var(--book-line))}
+
+/* THE TITLE PAGE (book-scroll.ts): kicker, title, standfirst, a short rule, the byline. The
+   first page of the spread, and the body begins on the facing one (the column break below;
+   the body's own first-child rules in book.css.ts follow it). Every size is a type ROLE, so
+   it follows the owner's scale and the reader's A-/A+, and every colour is a token. The title
+   is a real h1 carrying the class the article's own title carries, so it takes whatever the
+   look gives a heading - the code look's mono, the paper's regular-weight serif - and only
+   its air is set here. Plain divs, never a p: nothing on this page is a paragraph.
+   ⚠️ A TITLE PAGE THAT DOES NOT FIT ITS COLUMN (a landscape phone, 844x390, at a large A+)
+   takes as many columns as it needs, and the body starts after it: min-height rather than
+   height, so it can grow, and safe centring, so it grows DOWN from the top instead of past
+   it, where the viewport's overflow clipped the kicker. Measured clipped by 11px at one A+ and
+   45px at the largest, and the byline split onto the body's first line.
+   ⚠️ 100%, NOT --book-page-h: that variable is the flow's clientHeight, which is
+   ROUNDED, and a column at 619.84px given 620px spills 0.16px into the next one - the body then
+   starts a column late and the spread has a blank page (measured at 1024x768, 2026-10-08). */
+.book-tp{display:flex;flex-direction:column;justify-content:safe center;text-align:left;
+  text-indent:0;break-after:column;min-height:100%}
+.book-tp h1{margin:0 0 .6em;font-size:var(--fs-h1);line-height:var(--lh-h1);
+  letter-spacing:var(--ls-h1);color:var(--c-heading);text-wrap:balance;hyphens:manual}
+.tp-kick,.tp-by{font-size:var(--fs-small);line-height:var(--lh-small);
+  letter-spacing:var(--ls-small);color:var(--c-meta);text-wrap:balance}
+.tp-kick{padding-bottom:1.1em}
+.tp-deck{font-style:italic;font-size:var(--fs-h4);line-height:var(--lh-h4);
+  letter-spacing:var(--ls-h4);padding-bottom:1.2em;text-wrap:balance}
+.book-tp :is(.tp-kick,.tp-deck,.tp-by):empty{display:none}
+/* The short rule between the standfirst and the byline is drawn by the byline, so a title
+   page with no byline has no rule hanging over nothing. */
+.tp-by::before{content:"";display:block;width:3rem;border-top:1px solid var(--c-heading);
+  margin:0 0 .9em}
 `

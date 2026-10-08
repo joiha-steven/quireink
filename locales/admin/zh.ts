@@ -796,7 +796,7 @@ const zh = {
   sidebarLayoutLabel: '侧边栏布局',
   sidebarLayoutSingle: '单栏',
   sidebarLayoutTwo: '双栏',
-  sidebarLayoutHint: '单栏把所有块堆在左侧栏；双栏在桌面端将发现（左）与导航（右）分开，正文列更窄。移动端始终是一个抽屉。',
+  sidebarLayoutHint: '单栏把菜单和主题放左侧，把年份索引、最多浏览和精选放右侧；双栏在桌面端将发现（左）与导航（右）分开，正文列更窄。移动端始终是一个抽屉。',
   homeModeLabel: '首页',
   homeModeList: '文章列表',
   homeModePage: '一个页面',

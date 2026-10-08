@@ -796,7 +796,7 @@ const ko = {
   sidebarLayoutLabel: '사이드바 레이아웃',
   sidebarLayoutSingle: '한 단',
   sidebarLayoutTwo: '두 단',
-  sidebarLayoutHint: '한 단은 모든 블록을 왼쪽 레일에 쌓습니다. 두 단은 데스크톱에서 탐색(왼쪽)과 내비게이션(오른쪽)을 나누고 본문 열이 좁아집니다. 모바일은 항상 하나의 서랍입니다.',
+  sidebarLayoutHint: '한 단은 메뉴와 주제를 왼쪽에, 연도 색인과 많이 본 글·추천 글을 오른쪽에 둡니다. 두 단은 데스크톱에서 탐색(왼쪽)과 내비게이션(오른쪽)을 나누고 본문 열이 좁아집니다. 모바일은 항상 하나의 서랍입니다.',
   homeModeLabel: '홈',
   homeModeList: '글 목록',
   homeModePage: '페이지',

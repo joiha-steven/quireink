@@ -79,6 +79,12 @@ html[data-look=paper] article .rail-inner > nav:not(.toc)::before{
 html[data-look=paper] :is(.post-meta,.fc-meta,.t-small.text-meta,.post-taxo){
   font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
   letter-spacing:.02em}
+/* A LIST ROW'S KICKER is the same kind of word as the front page's .fc-cat above: a section
+   label over a headline, set the way a paper sets one. The facts line under the standfirst
+   takes the rule above. */
+html[data-look=paper] .card-kick{
+  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
+  text-transform:uppercase;letter-spacing:.07em;font-weight:600}
 
 /* --- THE CHROME IS SET IN THE READING FACE ----------------------------------
    A paper has no monospace on it anywhere, and this is the move that changes the most:
@@ -341,6 +347,13 @@ html[data-look=paper] .post-list article + article{border-top:1px solid var(--c-
 html[data-look=paper][data-list=grid] .post-list article{
   border-top:1px solid var(--c-rule);padding-top:.75rem}
 
+/* The chip row: section names between two rules, the current one underlined as a masthead
+   marks the page. safe centring, so a row too long for the page starts at its first name. */
+html[data-look=paper] .chips{border-top:1px solid var(--c-rule);border-bottom:1px solid var(--c-rule);
+  padding-block:.375rem;justify-content:safe center}
+html[data-look=paper] .chips .chip{border:0;border-radius:0;padding:0 .75rem}
+html[data-look=paper] .chips .chip[aria-current]{background:none;color:var(--c-heading);
+  box-shadow:inset 0 -2px 0 var(--c-heading)}
 `.trim()
 
 /** The dialect, in one string: everything above, then the shelf. */

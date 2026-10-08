@@ -108,18 +108,22 @@ html[data-look=paper] article .toc li:not(:first-child):not(:has(.toc-end)) .rai
    straight after the byline, then jumped back up to the contents - a reading order that is not
    the visual one (WCAG 1.3.2, 2.4.3). Moving it is a markup decision, not a sheet's. What this
    sheet can do is make it short: one head band and one run of numbered parts. */
-html[data-look=paper] aside.series{border:0;border-radius:0;padding:0 0 1rem;
+html[data-look=paper] aside.series{border:0;border-radius:0;padding:0 0 .55rem;
   border-top:2px solid var(--c-heading);border-bottom:1px solid var(--c-rule)}
-html[data-look=paper] aside.series .series-head{margin:0 0 .7rem;padding:.45rem 0;
-  line-height:1;color:var(--c-heading);border-bottom:1px solid var(--c-rule);
+html[data-look=paper] aside.series .series-head{margin:0 0 .4rem;padding:.3rem 0;
+  line-height:1.25;color:var(--c-heading);border-bottom:1px solid var(--c-rule);
   font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
   text-transform:uppercase;letter-spacing:.08em;font-weight:600}
 html[data-look=paper] aside.series .series-head a{color:inherit;text-decoration:none}
+/* The indicator is the part of the head that must not drop to a line of its own: it keeps one
+   line beside the name, which wraps inside its own box (the base sheet gives it the basis). */
+html[data-look=paper] aside.series .series-part{color:var(--c-meta);font-weight:400}
+html[data-look=paper] aside.series .series-bar{margin:0 0 .5rem}
 /* THE PARTS ARE ONE RUN, numbered, like the contents line under it: a column of four
    rows was 200px of box between the byline and the first word. Numbered by a counter
    because a flex row drops the list's own markers. The part being read is marked the way
    the contents mark the section being read, with a rule under it in heading ink. */
-html[data-look=paper] aside.series ol{display:flex;flex-wrap:wrap;gap:.35rem 1.4rem;
+html[data-look=paper] aside.series ol{display:flex;flex-wrap:wrap;gap:.2rem 1.4rem;
   border-top:0;padding:0;list-style:none;counter-reset:part}
 html[data-look=paper] aside.series li{margin:0;padding:0;counter-increment:part}
 html[data-look=paper] aside.series li::before{content:counter(part) ".";margin-right:.6ch;

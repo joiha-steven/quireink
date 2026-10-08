@@ -797,7 +797,7 @@ const pt = {
   sidebarLayoutLabel: 'Layout da barra lateral',
   sidebarLayoutSingle: 'Uma coluna',
   sidebarLayoutTwo: 'Duas colunas',
-  sidebarLayoutHint: 'Uma coluna empilha tudo em um trilho à esquerda; duas colunas separam descoberta (esquerda) e navegação (direita), com uma coluna de leitura mais estreita no desktop. No celular é uma gaveta só, de qualquer jeito.',
+  sidebarLayoutHint: 'Uma coluna põe o menu e os assuntos à esquerda e um índice de anos com Mais lidos e Em destaque à direita; duas colunas separam descoberta (esquerda) e navegação (direita), com uma coluna de leitura mais estreita no desktop. No celular é uma gaveta só, de qualquer jeito.',
   homeModeLabel: 'Página inicial',
   homeModeList: 'Lista de posts',
   homeModePage: 'Uma página',

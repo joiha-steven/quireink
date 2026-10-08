@@ -796,7 +796,7 @@ const de = {
   sidebarLayoutLabel: 'Seitenleisten-Layout',
   sidebarLayoutSingle: 'Eine Spalte',
   sidebarLayoutTwo: 'Zwei Spalten',
-  sidebarLayoutHint: 'Eine Spalte stapelt alles in einer linken Leiste; zwei Spalten trennen Entdeckung (links) und Navigation (rechts) mit schmalerer Lesespalte am Desktop. Mobil immer eine Schublade.',
+  sidebarLayoutHint: 'Eine Spalte setzt Menü und Themen nach links, einen Jahresindex mit Meistgelesen und Empfohlen nach rechts; zwei Spalten trennen Entdeckung (links) und Navigation (rechts) mit schmalerer Lesespalte am Desktop. Mobil immer eine Schublade.',
   homeModeLabel: 'Startseite',
   homeModeList: 'Beitragsliste',
   homeModePage: 'Eine Seite',

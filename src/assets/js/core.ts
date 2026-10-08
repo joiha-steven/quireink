@@ -14,11 +14,13 @@ import { search } from './search'
 import { subscribe } from './subscribe'
 import { palette, rail, theme } from './theme'
 import { track } from './track'
+import { yearIndex } from './years'
 
 track()
 theme()
 palette()
 rail()
+yearIndex()
 search()
 subscribe()
 listing()

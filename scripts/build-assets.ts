@@ -127,7 +127,18 @@ const BUDGET: Record<string, number> = {
   // results at all: Enter now opens them, the arrows walk the list, and a "See all" row links
   // the page. The phone drawer declared `aria-modal` and let Tab walk out into the page behind
   // it, and a Contents entry left it open over the heading it had just scrolled to.
-  'core.js': 13_200,
+  //
+  // 13,700 since 2026-10-08 (13,670 measured), for the listing's year index and the drawer's
+  // touch focus. The index points each year's row at that year's first post on the page and
+  // lights the year in view as the feed scrolls (about 430 bytes: a rAF-throttled scroll pass
+  // over the server's `data-yr` marks, re-read each time because the feed grows), and a touch
+  // that opens the drawer now focuses the drawer itself and not its first link, which drew the
+  // global focus ring round that link on every tap (about 40 bytes, and Shift+Tab from the
+  // drawer itself wraps to its last control so focus still cannot leave it). Raised to 13,800
+  // (13,762 measured) for telling a key press from a pointer on the button, because a screen
+  // reader's click is indistinguishable from a keyboard's by `detail` and focusing the drawer's
+  // search box from one pops the phone's keyboard.
+  'core.js': 13_800,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Same rule as above — each raise is named and priced.
   //
@@ -210,7 +221,13 @@ const BUDGET: Record<string, number> = {
   // left a footprint too narrow for two pages, so a 1440 desktop took the phone's 20px margin
   // and the arrows sat on the text. The arrows are now centred in the margin the island
   // measured, hidden below 44px, and a side click turns the page there instead.
-  'book-mode.js': 8_600,
+  // 8,800 since 2026-10-08 (8,800 measured, +341, with the running head hidden from a screen
+  // reader: 42 of those bytes), for the title page: the book opened straight
+  // into the body with the title as a faint running head. The first page is now kicker, title,
+  // standfirst and byline, read off the article's own header as text (`fillFlow`), and the body
+  // begins on the facing page. Cheaper than it looks: the running head's two copies of the
+  // title lookup collapsed into the one `fillFlow` returns, and the rule is a pseudo-element.
+  'book-mode.js': 8_800,
   'comment-thread.js': 6_700,
   // The reader's pen: the selection bar, the anchor maths (a text-quote selector, found
   // again by its surroundings), the store, the note card and the copy gesture it absorbed

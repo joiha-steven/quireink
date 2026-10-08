@@ -18,14 +18,15 @@ export function registerEdgeFlows({ flow, atWidth }: Tour): void {
   })()`))
 
   // Beside a floated picture the kind line wrapped three times and the headline began halfway
-  // across, then ran back under the picture. A phone lays the card out as two columns.
+  // across, then ran back under the picture. The card is a grid now: the kicker, the headline and
+  // the standfirst share one left edge, and the headline stops short of the picture.
   flow('a card with a picture keeps one left edge on a phone', () => atWidth(390, '/', `(() => {
     const card = document.querySelector('.post-list article[data-thumb=side]')
     if (!card) return 'no card with a side picture on the front page'
     const thumb = card.querySelector('.card-thumb').getBoundingClientRect()
-    const meta = card.querySelector('.card-thumb ~ p').getBoundingClientRect()
+    const meta = card.querySelector('.card-exc, .card-meta').getBoundingClientRect()
     const head = card.querySelector('h2, h3').getBoundingClientRect()
-    if (Math.abs(head.left - meta.left) > 1) return 'the headline starts ' + Math.round(head.left - meta.left) + 'px from the kind line'
+    if (Math.abs(head.left - meta.left) > 1) return 'the headline starts ' + Math.round(head.left - meta.left) + 'px from the standfirst'
     if (head.right > thumb.left + 1) return 'the headline runs under the picture'
     return 'ok'
   })()`))

@@ -796,7 +796,7 @@ const es = {
   sidebarLayoutLabel: 'Disposición de la barra lateral',
   sidebarLayoutSingle: 'Una columna',
   sidebarLayoutTwo: 'Dos columnas',
-  sidebarLayoutHint: 'Una columna apila todo en un carril izquierdo; dos columnas separan descubrimiento (izquierda) y navegación (derecha) con una columna de lectura más estrecha en escritorio. En móvil es un solo cajón en ambos casos.',
+  sidebarLayoutHint: 'Una columna pone el menú y los temas a la izquierda y un índice de años con Más vistos y Destacados a la derecha; dos columnas separan descubrimiento (izquierda) y navegación (derecha) con una columna de lectura más estrecha en escritorio. En móvil es un solo cajón en ambos casos.',
   homeModeLabel: 'Portada',
   homeModeList: 'Lista de entradas',
   homeModePage: 'Una página',

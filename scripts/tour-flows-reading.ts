@@ -28,7 +28,7 @@ export function registerReadingFlows({ flow, atWidth, expect }: Pick<Tour, 'flow
       if (!withPicture) return 'skip: no card in the feed carries a picture'
       const stepped = []
       for (const card of cards) {
-        const p = card.querySelector('h2 + p, h3 + p')
+        const p = card.querySelector('.card-exc')
         if (!p) continue
         // Grouped by line: a Range hands back one rect per inline run, so a line containing a
         // link or an em yields several and only the leftmost of them is that line's edge.

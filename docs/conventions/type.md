@@ -38,6 +38,13 @@
   `letter-spacing` on a public heading or title: it overrides the owner's tuned value and the Admin
   letter-spacing control stops working. The one sanctioned exception is the mono-chrome tracking
   correction in `src/render/font-faces.ts`, which corrects a FACE, not a role.
+- **Two look headlines are derived from the owner's h1 rather than set by a role**, each listed
+  in `scripts/checks/type-roles.ts` with its reason, and each a calc() on `--fs-h1`, never a typed
+  size, so the owner's scale still moves them. The paper look's article headline is
+  `calc(var(--fs-h1) * 1.3)` at every width (it is the thing the page is recognised by). The
+  source-code look's article headline is `calc(var(--fs-h1) * .8)` UNDER 640px only
+  (`look-code.css.ts`): a monospace glyph is about .6em wide, so a long title that the book
+  serif sets in two lines on a phone broke into three. From 640px it takes the h1 role untouched.
 - **Reading-optimized defaults.** Restrained, monotonic heading scale (h1 2.0 → h5 1.0),
   18px body at ~1.7 leading. Two claims that used to sit here were measured on 2026-07-29
   and are not true: h5 (1.0rem = 16px) renders BELOW body (1.125rem = 18px), and the

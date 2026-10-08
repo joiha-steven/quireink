@@ -179,9 +179,13 @@ body:has(.book-overlay[open]){overflow:hidden}
   padding:clamp(4px,2vh,24px) 0}
 .book-flow{height:100%;column-gap:56px;column-width:var(--book-col-w,340px);column-fill:auto;
   max-width:none;
-  /* Oldstyle figures and discretionary ligatures. Both were missing from every subset
-     until scripts/ops/subset-fonts.py put them back, so this had never rendered. */
-  font-feature-settings:"onum" 1,"liga" 1,"dlig" 1}
+  /* Oldstyle figures and the COMMON ligatures (fi, fl, ff). The discretionary and the
+     historical ones were on until 2026-10-08, and they are the long-s and the c-t of an
+     eighteenth-century printer: "list" came out as "liſt" and "section" as "seĉtion" on a
+     page that reads as modern. Off is stated, not left to the face, because a face's own
+     default for them differs. Oldstyle figures were missing from every subset until
+     scripts/ops/subset-fonts.py put them back, so this had never rendered. */
+  font-feature-settings:"onum" 1,"liga" 1,"dlig" 0,"hlig" 0}
 /* Media stays column-width and never taller than a page, so nothing overflows the spread. */
 .book-flow :is(img,video,iframe,pre,table,blockquote,figure){break-inside:avoid}
 .book-flow :is(img,video,iframe){max-width:100%;max-height:var(--book-page-h,70vh);object-fit:contain}
@@ -191,14 +195,16 @@ body:has(.book-overlay[open]){overflow:hidden}
    rail geometry injects, which otherwise leaks in because the flow is also .prose. */
 .book-flow.prose figure.img-wide,.book-flow.prose .video-wide{
   width:100%;max-width:100%;margin-left:auto;margin-right:auto}
-/* The first column opens flush with the top of the page. */
-.book-flow.prose > :first-child{margin-top:0}
+/* The first column opens flush with the top of the page, and so does the first one AFTER the
+   title page: that page ends in a column break, and the body starts on a fresh page. */
+.book-flow.prose > :first-child,.book-flow.prose > .book-tp + *{margin-top:0}
+
 
 /* Drop cap: the first paragraph opens with a large raised initial spanning about three
    lines, which is the classic chapter opening. The line beside it is not also indented. */
-.book-flow.prose > p:first-child::first-letter{float:left;margin:.02em .09em 0 0;
+.book-flow.prose > p:first-child::first-letter,.book-flow.prose > .book-tp + p::first-letter{float:left;margin:.02em .09em 0 0;
   font-size:3.1em;line-height:.72;font-weight:600;color:var(--c-heading)}
-.book-flow.prose > p:first-child{text-indent:0}
+.book-flow.prose > p:first-child,.book-flow.prose > .book-tp + p{text-indent:0}
 /* In the reader the same break becomes an asterism: more room, so the ornament can be a
    real one. The width and the top border are reset explicitly because the article's short
    rule is the more specific selector and would otherwise draw a line under the mark. */

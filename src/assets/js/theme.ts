@@ -311,11 +311,12 @@ export function rail(): void {
   // (the discovery blocks) before `.rail-right`, and below the breakpoint the left one is
   // `display:none` while the right one is the drawer. Taking the first match sent focus
   // into a hidden subtree, where `focus()` does nothing: on a two-rail site the drawer
-  // opened and the keyboard stayed behind it, and Escape restored nothing.
+  // opened and the keyboard stayed behind it, and Escape restored nothing. The single
+  // layout's `.rail-aside` is hidden on a phone too and comes last, so it is left out.
   //
   // A page with no rail — an article with no table of contents, /search, a 404 — would open
   // nothing, so the button removes itself rather than sitting there dead.
-  const rails = document.querySelectorAll<HTMLElement>('.rail')
+  const rails = document.querySelectorAll<HTMLElement>('.rail:not(.rail-aside)')
   const rail = rails[rails.length - 1]
   if (!rail) {
     button.hidden = true
@@ -333,7 +334,7 @@ export function rail(): void {
   const name = button.getAttribute('aria-label') ?? ''
   // `back` = hand focus back to the button on closing. Not after a link was followed: focusing
   // the button in the header would scroll the page back up past where the link just went.
-  const set = (open: boolean, back = true) => {
+  const set = (open: boolean, back = true, keys = true) => {
     const was = html.dataset.rail === 'open'
     if (open) html.dataset.rail = 'open'
     else delete html.dataset.rail
@@ -353,14 +354,26 @@ export function rail(): void {
     // link inside it; closing it with Escape while a link was focused dropped focus on the
     // body, because the closed drawer is visibility:hidden and a hidden element cannot keep
     // it. The button is the place a keyboard user was before the drawer opened.
-    if (open) rail.querySelector<HTMLElement>('a[href],button')?.focus()
-    else if (back && was && rail.contains(document.activeElement)) button.focus()
+    // A touch puts focus on the drawer itself, a key on the first control: focus() from script
+    // on a link drew the :focus-visible ring round the first item on every tap.
+    if (open) {
+      rail.tabIndex = -1
+      ;(keys ? rail.querySelector<HTMLElement>('input,a[href],button') : rail)?.focus()
+    } else if (back && was && rail.contains(document.activeElement)) button.focus()
   }
 
   const scrim = el('div', { class: 'rail-scrim', hidden: '', 'aria-hidden': 'true' })
   document.body.append(scrim)
   scrim.addEventListener('click', () => set(false))
-  button.addEventListener('click', () => set(html.dataset.rail !== 'open'))
+  // How the button was last worked: a key says keyboard, a pointer says touch or mouse. Not
+  // `click.detail`: a screen reader's click has 0 too, and focusing the search box pops the keyboard.
+  let typed = false
+  addEventListener('keydown', () => { typed = true }, true)
+  addEventListener('pointerdown', () => { typed = false }, true)
+  button.addEventListener('click', () => {
+    set(html.dataset.rail !== 'open', true, typed)
+    typed = false
+  })
   document.addEventListener('keydown', (e) => {
     if (html.dataset.rail !== 'open') return
     if (e.key === 'Escape') { set(false); return }
@@ -372,7 +385,10 @@ export function rail(): void {
     const first = stops[0]
     const last = stops[stops.length - 1]
     if (!first || !last) return
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+    // The drawer itself holds focus after a touch: Shift+Tab from there must not leave it.
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === rail)) {
+      e.preventDefault(); last.focus()
+    }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
   })
   // A link inside the drawer takes the reader somewhere, and the drawer was left open over it:

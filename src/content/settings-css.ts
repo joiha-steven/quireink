@@ -34,7 +34,10 @@ import { fontFormat } from '@/content/settings-type'
 //   #b { --scale:2 }                        (inherits #a's) ->  calc(10px * 1)   <- the trap
 //   #c { --scale:2; --unit:calc(10px * var(--scale,1)) }  ->  calc(10px * 2)   <- the fix
 //
-// Re-declaring the identical text on `.book-overlay` re-substitutes it THERE. The numbers
+// Re-declaring the identical text on `.book-overlay` re-substitutes it THERE - and on `.book-reader`,
+// the phone's scrolled reader, which had no block of its own until 2026-10-08: its A-/A+ moved
+// `--type-scale` on an element nothing was substituted against, so it changed nothing (measured
+// at 375px: the body stayed 18.08px at 0.9 and at 1.2). The numbers
 // still live in one place: this function. Pinned by `web/typography.test.ts`.
 function scaledVars(t: TypographySettings): string {
   const roles = TYPE_ROLES.map((r) => {
@@ -58,7 +61,7 @@ function scaledVars(t: TypographySettings): string {
 export function typographyToCss(t: TypographySettings): string {
   const vars = scaledVars(t)
   const smooth = t.smoothing ? `body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}` : ''
-  return `:root{${vars}}.book-overlay{${vars}}${smooth}`
+  return `:root{${vars}}.book-overlay,.book-reader{${vars}}${smooth}`
 }
 
 // Emit one @font-face per uploaded weight for the owner typeface and point

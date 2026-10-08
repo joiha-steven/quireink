@@ -36,6 +36,9 @@ import { UTILITY_CSS } from '@/web/utility.css'
 import { ARCHIVE_CSS } from '@/web/archive.css'
 import { FIGURE_CSS } from '@/web/figure.css'
 import { CARD_CSS } from '@/web/card.css'
+import { SERIES_CSS } from '@/web/series.css'
+import { SEARCH_PAGE_CSS } from '@/web/search-page.css'
+import { CHIPS_CSS } from '@/web/chips.css'
 import { POST_IMAGE_CSS } from '@/web/postimage.css'
 import { PRINT_CSS } from '@/web/print.css'
 
@@ -184,7 +187,7 @@ article > header .t-small{margin:0}
    over the headline and the second under it (web/article.ts says why). Here they stay one
    sentence, which is what the middot is doing in the sheet rather than in the markup: the
    newspaper dialect takes it away in the same rule that separates the two. */
-.post-cat::after{content:" · "}
+.post-cat::after{content:"\\00a0· "}
 /* Standfirst: the excerpt, so a long read opens on a sentence rather than a wall.
    It is the AUTHOR'S words — the same string a list card prints — so it is set in the
    reading face. It was not: with no family of its own it fell to --font-sans, so the same
@@ -261,7 +264,6 @@ ${UTILITY_CSS}
    frozen tree's, and it turned a quiet feed into a table. The gap has to be wide enough to
    read as a break rather than a paragraph space, which is what 4rem buys. */
 .post-list{display:flex;flex-direction:column;gap:4rem}
-.post-list > article > p:first-of-type{margin:0}
 /* The timeline groups its cards by year, so the gap moves onto the cards themselves: the
    year marker is zero-height and sticky, and a flex gap would still reserve a row for it. */
 .post-list.tl-feed{display:block}
@@ -296,34 +298,9 @@ ${ARCHIVE_CSS}
    with no JavaScript sees it: the island reads its address, hides it, and puts it back if
    the fetch fails. */
 .feed-more{justify-content:flex-end}.feed-back{justify-content:flex-start;margin:0 0 1.5rem}
-form.search{display:flex;gap:.5rem;margin:0 0 2rem}
-/* min-width:0 is what stops this row leaving the viewport. An <input> carries an intrinsic
-   width from its size attribute, a flex item will not shrink below its own min-content by
-   default, so at 390px the pair measured wider than the column and the button's right
-   border sat off-screen: the page scrolled sideways. form.subscribe already carried this
-   rule; the search form was written from the same shape and lost it. */
-form.search input{min-width:0;flex:1;padding:.5rem .75rem;border:1px solid var(--c-rule);
-  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;box-shadow:var(--well)}
-/* nowrap because the label is what pushed the row wide: "Tìm kiếm" broke over two lines and
-   took the whole control to 78px tall to make room for itself. */
-form.search button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
-  background:var(--c-bg);color:var(--c-heading);font:inherit;cursor:pointer;white-space:nowrap}
-/* Stacked on a phone, exactly as the sign-up form stacks and at the same width. */
-@media (max-width:639px){form.search{flex-direction:column}}
-/* The series box, a bordered card at the TOP of the post: part 3 of 6 comes BEFORE reading.
-   Refined 2026-08-31 — the name is the card's title in heading ink, a hairline parts head
-   from list, and the current part wears the rail's own 2px accent "you are here" bar. */
-aside.series{border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);padding:1.25rem 1.5rem;
-  margin:2rem 0 0;font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
-aside.series .series-head{margin:0 0 .875rem;color:var(--c-meta)}
-aside.series .series-head a{font-weight:var(--fw-heading,600)}
-aside.series ol{margin:0;border-top:1px solid var(--c-rule);padding:1rem 0 0 1.25rem}
-aside.series li + li{margin-top:.65rem}
-aside.series li a{color:var(--c-meta);text-decoration:none}
-aside.series li a:hover{color:var(--c-heading)}
-aside.series li[aria-current]{position:relative;color:var(--c-heading);font-weight:var(--fw-heading,600)}
-aside.series li[aria-current]::after{content:"";position:absolute;left:-2.75rem;top:3px;bottom:3px;
-  width:2px;background:var(--c-accent)}
+${SEARCH_PAGE_CSS}
+${CHIPS_CSS}
+${SERIES_CSS}
 p.tags{margin-top:1.5rem;font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small);color:var(--c-meta)}
 

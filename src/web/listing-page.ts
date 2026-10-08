@@ -15,6 +15,7 @@ import { renderListing, type ListingView } from '@/web/listing'
 import { readyFrom, type ReadyImages } from '@/web/front-card'
 import { getMediaRefs } from '@/media/media-refs'
 import { menuRail, renderSidebar } from '@/web/sidebar'
+import { renderChips } from '@/web/chips'
 import { timelineCss } from '@/render/rail-css'
 import { ogCardUrl, siteDomain } from '@/render/og'
 import { chromeLabels, searchForm, siteFooter, siteHeader } from '@/web/chrome'
@@ -65,12 +66,14 @@ export type ListingPage = {
    * that is not a feed with a sidebar.
    */
   noRail?: boolean
+  /** The search page: a results list is not a place, so the chip row has nothing to say there. */
+  noChips?: boolean
 }
 
 /** Wrap listing markup in the site shell. Shared by home, taxonomy, series and search. */
 export async function listingPage(
   { title, body, description, noindex = false, jsonLd, canonicalPath, cardTitle, activeHref,
-    css = '', noRail = false, feed }: ListingPage,
+    css = '', noRail = false, noChips = false, feed }: ListingPage,
 ): Promise<string> {
   const settings = await getSettings()
   const site = resolveSiteUrl(settings)
@@ -84,8 +87,13 @@ export async function listingPage(
           + ` title="${escapeAttr(feed.title)}" href="${escapeAttr(feed.json)}">`
         : '')
     : ''
-  const [{ configured: mailConfigured }, rail] = await Promise.all([
+  const [{ configured: mailConfigured }, rail, chips] = await Promise.all([
     getMailStatus(), renderSidebar(settings, activeHref),
+    // The tablet band's way into the subjects (chips.ts). Not on the search page, nor where
+    // the page has no rail at all. `noindex` is NOT the test: a deep page of an infinite
+    // feed is noindex and still a listing. A series page names no
+    // active row for the rail, so its own address stands in for it.
+    noChips || noRail ? Promise.resolve({ html: '', css: '' }) : renderChips(settings, activeHref ?? canonicalPath),
   ])
   // No discovery rail does not mean no rail: the menu still needs its drawer under 60rem,
   // where the header's copy of it is display:none. Above that width the words are in the
@@ -113,7 +121,7 @@ export async function listingPage(
       stylesheet: PUBLIC_SHEET,
       extra: feedLink,
     },
-    pageStyles(settings, [css, sidebar.css, noRailCss].filter(Boolean).join('\n')),
+    pageStyles(settings, [css, sidebar.css, noRailCss, chips.css].filter(Boolean).join('\n')),
     // The rail is rendered LAST inside `main`: it is absolutely placed, so DOM order is
     // free, and this way the page heading still leads the document outline.
     `<div class="wrap">
@@ -130,7 +138,7 @@ ${/* The header carries the menu only where there is no rail to hold it, which i
     // rendered body rather than of the settings, because four different callers build this
     // body and only the string knows which of them ended up with a heading.
     titleIsHeading: !/<h1[\s>]/.test(body),
-  })}
+  })}${chips.html}
 <div class="with-rail"><main id="content">${body}${sidebar.html}</main></div>
 ${siteFooter(settings, { mailConfigured })}
 </div>`,

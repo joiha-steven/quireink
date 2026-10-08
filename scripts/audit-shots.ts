@@ -3,7 +3,7 @@
 import { chromePath } from './chrome-path'
 
 const CHROME = chromePath()
-const PORT = 9333
+const PORT = Number(process.env.CDP_PORT ?? 9333)
 const specFile = process.argv[2]
 if (!specFile) { console.error('usage: bun scripts/audit-shots.ts <spec.json>'); process.exit(1) }
 type Spec = {

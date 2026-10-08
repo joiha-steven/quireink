@@ -20,8 +20,20 @@ export const MOBILE_CSS = `
    it there. A FLOOR rather than a size, so a larger type role still wins. Each selector
    names the rule that set the size, because font:inherit on those carries the same
    specificity as a bare element selector would. */
-form.search input,form.subscribe input,.search-input,
+form.search input,form.qbox input,form.subscribe input,.search-input,
 .comment-form input,.comment-form textarea{font-size:max(16px,1em)}
+
+/* THE META LINE ABOVE THE TITLE, in two short lines: "date · N min read", then "by Author".
+   One line of date, words, minutes and byline wrapped into three ragged ones at 375px and
+   could start a line on a middot. The word count goes (it is in the info panel and the
+   reading time already says how long), and the byline takes a line of its own with its
+   separator. Other widths keep the one line. The separators are no-break-space-led, so a
+   line may END on one and never begin with one. */
+.meta-words,.meta-by .meta-sep{display:none}
+.meta-by{display:block}
+/* The section stands alone over them, as a kicker, instead of leading line one with a middot. */
+.post-cat{display:block;width:fit-content}
+.post-cat::after{content:none}
 
 /* The grid button does nothing a phone can see: measured at 390, pressing it dropped the
    excerpts and kept the one column, so the control promised a layout the screen could not

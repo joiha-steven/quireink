@@ -40,7 +40,7 @@ export const LOOK_CODE_CSS = `
    file is for. */
 html[data-look=code] .rail h2::before,
 html[data-look=code] header.site .tagline::before,
-html[data-look=code] aside.series .series-head::before,
+html[data-look=code] aside.series .series-name::before,
 html[data-look=code] .related h2::before,
 html[data-look=code] .subscribe-card h2::before,html[data-look=code] .overlay h2::before,
 html[data-look=code] .front-label::before,
@@ -389,4 +389,11 @@ html[data-look=code] pre.shiki .line::before{content:counter(ln);display:inline-
    beside nothing reads as a line the reader cannot see. An empty line INSIDE the block keeps
    its number: that one is part of the code. */
 html[data-look=code] pre.shiki .line:last-child:empty::before{content:none}
+/* THE ARTICLE'S HEADLINE, ONE STEP SMALLER ON A PHONE: a monospace glyph is ~.6em wide, so a
+   long title set in three lines here that the serif sets in two. DERIVED from the owner's h1,
+   never typed; the reason is in scripts/checks/type-roles.ts and docs/conventions/type.md. */
+@media (max-width:639px){
+html[data-look=code] article > header h1{font-size:calc(var(--fs-h1) * .8)}
+}
+html[data-look=code] .chips .chip{border-radius:0}
 `.trim()

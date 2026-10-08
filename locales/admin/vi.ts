@@ -796,7 +796,7 @@ const vi = {
   sidebarLayoutLabel: 'Kiểu thanh bên',
   sidebarLayoutSingle: '1 cột',
   sidebarLayoutTwo: '2 cột',
-  sidebarLayoutHint: '1 cột dồn hết vào thanh bên trái. 2 cột tách khám phá (trái) và điều hướng (phải), cột đọc hẹp lại trên desktop. Trên điện thoại thì kiểu nào cũng gom vào một ngăn.',
+  sidebarLayoutHint: '1 cột đặt menu và chủ đề bên trái, mục lục theo năm cùng Xem nhiều và Nổi bật bên phải. 2 cột tách khám phá (trái) và điều hướng (phải), cột đọc hẹp lại trên desktop. Trên điện thoại thì kiểu nào cũng gom vào một ngăn.',
   homeModeLabel: 'Trang chủ',
   homeModeList: 'Danh sách bài',
   homeModePage: 'Một trang',

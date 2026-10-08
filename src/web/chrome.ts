@@ -241,8 +241,8 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
 /**
  * The search box as a plain form: `/search?q=` with no script at all.
  *
- * Shared by the search page and the 404, which is the other page whose reader arrived
- * looking for something. The query goes back into the field through `escapeAttr` — the
+ * Used by the 404, a page whose reader arrived looking for something. The search page and
+ * the drawer draw `searchBox` (search-page.ts) instead. The query goes back into the field through `escapeAttr` — the
  * search page once had a private copy of the escaping that skipped quotes, and a query
  * with `" onfocus=` in it came back as a live handler (`search-page.ts` keeps that story).
  */

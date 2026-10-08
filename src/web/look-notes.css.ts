@@ -239,7 +239,7 @@ html[data-look=notes] aside.series .series-head{display:flex;align-items:baselin
   gap:.5em;margin-bottom:.7rem;color:var(--c-heading)}
 html[data-look=notes] aside.series .series-head::before{content:"";flex:none;width:1rem;
   border-top:2px solid var(--c-meta);transform:translateY(-.32em)}
-html[data-look=notes] aside.series ol{border-top:1px solid var(--c-rule);padding-top:.8rem}
+html[data-look=notes] aside.series .series-bar{margin-bottom:.8rem}
 /* The part being read is ticked in ink, not barred in the accent: the accent here is the
    link colour, and a blue bar beside black type says the line is a link. */
 html[data-look=notes] aside.series li[aria-current]::after{background:var(--c-heading)}
@@ -262,4 +262,8 @@ html[data-look=notes] .related ul{list-style:none;padding-left:0}
 html[data-look=notes] .related li{position:relative;padding-left:1.5rem}
 html[data-look=notes] .related li::before{content:"\\2192";position:absolute;left:0;top:0;
   color:var(--c-meta)}
+/* The chip row: slips of paper lying on the desk. */
+html[data-look=notes] .chips .chip{border:0;border-radius:2px;background:var(--c-bg);
+  box-shadow:0 1px 2px color-mix(in srgb,var(--c-text) 14%,transparent)}
+html[data-look=notes] .chips .chip[aria-current]{background:var(--c-heading)}
 `.trim()

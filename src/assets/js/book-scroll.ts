@@ -90,9 +90,41 @@ export function renameAnchors(clone: HTMLElement): void {
   }
 }
 
+/**
+ * The article as the reader sets it: a copy with its own anchors, behind a TITLE PAGE. Returns
+ * the title, for the running head.
+ *
+ * A book opens on its title, and this one opened straight into the body with the title as a
+ * faint running head. The page is read off the article's own header as TEXT and set in fresh
+ * elements, so it carries no id of the header's, no link, and no copy of the book-mode button.
+ * The reader is a dialog (or hides the page), so the real header is out of the accessibility
+ * tree while this is open; the running head is `aria-hidden`, so the title page's h1 is the
+ * only place a screen reader meets the title. A short post has no h1 and so no
+ * title page: the words are the piece, there is nothing to put on it.
+ *
+ * The selectors are the whole contract with `article.ts`: `article>header` with `h1`,
+ * `.post-cat`, `.deck`, `.byline`, `time` and `.meta-part`, and the series card's `.series-name`
+ * and `.series-part` (two elements, so they are joined here rather than read as one run). A part that is not there is left out, never an error.
+ */
+export function fillFlow(flow: HTMLElement, source: HTMLElement): string {
+  flow.innerHTML = source.innerHTML
+  renameAnchors(flow)
+  const said = (s: string) => [...document.querySelectorAll(s)]
+    .map((n) => n.textContent!.trim()).filter(Boolean).join(' · ')
+  const title = said('article>header h1')
+  const line = (c: string, text: string) => el('div', { class: c }, text)
+  if (title) {
+    flow.prepend(el('div', { class: 'book-tp' },
+      line('tp-kick', said('article>header .post-cat,aside.series :is(.series-name,.series-part)')),
+      el('h1', { class: 'reading-font' }, title),
+      line('tp-deck', said('article>header .deck')),
+      line('tp-by', said('article>header :is(time,.meta-part,.byline)'))))
+  }
+  return title
+}
+
 export function openScrollReader(
   source: HTMLElement,
-  heading: string,
   chrome: { sizes: HTMLElement; onScale: (el: HTMLElement) => void },
   /**
    * Where focus goes on the way out, asked for at that moment rather than remembered.
@@ -108,14 +140,13 @@ export function openScrollReader(
   const flow = el('div', { class: 'book-flow prose' })
   // A CLONE, like the spread's: the document's own article is untouched, so a screen reader
   // and a crawler see exactly what they saw before.
-  flow.innerHTML = source.innerHTML
-  renameAnchors(flow)
+  const heading = fillFlow(flow, source)
 
   const close = el('button', {
     type: 'button', class: 'book-x', 'aria-label': label('bookModeClose'), title: label('bookModeClose'),
   }, '✕')
   const bar = el('div', { class: 'book-chrome book-top' },
-    el('span', { class: 'book-title' }, heading),
+    el('span', { class: 'book-title', 'aria-hidden': 'true' }, heading),
     el('span', { class: 'book-topright' }, chrome.sizes, close))
   const reader = el('div', { class: 'book-reader' }, bar, el('div', { class: 'book-page' }, flow))
   chrome.onScale(reader)

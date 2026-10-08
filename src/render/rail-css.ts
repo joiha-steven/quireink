@@ -35,7 +35,7 @@ export const RAIL_BREATHING = 10 // clear space between a rail and the viewport 
 export const DEFAULT_RAIL_WIDTH = 672
 
 // Viewport width at which BOTH gutters can hold a rail (keeps the column centred).
-function breakpoint(colWidth: number): number {
+export function breakpoint(colWidth: number): number {
   return colWidth + 2 * (RAIL_W + RAIL_GAP + RAIL_BREATHING)
 }
 
@@ -114,7 +114,7 @@ export function singleRailCss(colWidth: number): string {
     `.rail li a{justify-content:flex-end}` +
     `.rail-row{padding-left:0;padding-right:var(--rail-pad)}` +
     `.rail-row[aria-current]::after{left:auto;right:0}` +
-    `.rail-toggle,.rail-scrim{display:none}` +
+    `.rail-toggle,.rail-scrim,.rail-search{display:none}` +
     // The post info panel takes the right gutter: the date, the length, the way into book
     // mode and the taxonomy, one fact per line. It is NOT sticky and its inner box does not
     // scroll — it stands at the top of the article and leaves with it. A sticky panel would
@@ -239,30 +239,49 @@ export function timelineCss(colWidth: number): string {
 // Two rails for listing pages: LEFT (discovery, ranged right toward the column) + RIGHT
 // (nav, mirrored: ranged left toward the column, divider + marker on the left). Also sets
 // the narrower `--shell-w` and hides the drawer-only duplicate above the breakpoint.
-export function listingRailCss(colWidth: number): string {
+//
+// Used by TWO layouts. The "two" layout names its rails `rail-left` / `rail-right` and narrows
+// the column. The single layout, when its right gutter has something to hold (the year index,
+// Most viewed, Featured), names them `rail-main` (the left rail, which is also the drawer) and
+// `rail-aside` and keeps the full-width column, so it passes `shell: false`; it breaks at the
+// same width the layout's own single rail does, and it takes the year index's place in the right
+// gutter from the feed's timeline: the spine, the year tag and the month ticks all hang in that
+// same gutter and would draw through the rail, so above this width they are not drawn and the
+// index says the same thing with counts and links. Below it the timeline is as it was.
+export function listingRailCss(
+  colWidth: number,
+  opts: { shell?: boolean; left?: string; right?: string } = {},
+): string {
   const at = breakpoint(colWidth)
+  const L = `.rail.${opts.left ?? 'rail-left'}`
+  const R = `.rail.${opts.right ?? 'rail-right'}`
   return (
-    `:root{--shell-w:${colWidth}px}` +
+    (opts.shell === false ? '' : `:root{--shell-w:${colWidth}px}`) +
     `@media (min-width:${at}px){` +
     // Left rail — discovery.
-    `.rail.rail-left{${GUTTER};right:calc(100% + var(--rail-gap));left:auto;text-align:right}` +
-    `.rail.rail-left::after{content:"";position:absolute;top:0;bottom:0;right:-${DIVIDER}px;width:1px;background:var(--c-rule);z-index:-1}` +
-    `.rail.rail-left h2,.rail.rail-left .rail-tags{padding-left:0;padding-right:var(--rail-pad)}` +
-    `.rail.rail-left .rail-tags{justify-content:flex-end}` +
-    `.rail.rail-left li a{justify-content:flex-end}` +
-    `.rail.rail-left .rail-row{padding-left:0;padding-right:var(--rail-pad)}` +
-    `.rail.rail-left .rail-row[aria-current]::after{left:auto;right:0}` +
+    `${L}{${GUTTER};right:calc(100% + var(--rail-gap));left:auto;text-align:right}` +
+    `${L}::after{content:"";position:absolute;top:0;bottom:0;right:-${DIVIDER}px;width:1px;background:var(--c-rule);z-index:-1}` +
+    `${L} h2,${L} .rail-tags{padding-left:0;padding-right:var(--rail-pad)}` +
+    `${L} .rail-tags{justify-content:flex-end}` +
+    `${L} li a{justify-content:flex-end}` +
+    `${L} .rail-row{padding-left:0;padding-right:var(--rail-pad)}` +
+    `${L} .rail-row[aria-current]::after{left:auto;right:0}` +
     // Right rail — nav, mirrored.
-    `.rail.rail-right{${GUTTER};left:calc(100% + var(--rail-gap));right:auto;text-align:left}` +
-    `.rail.rail-right::after{content:"";position:absolute;top:0;bottom:0;left:-${DIVIDER}px;width:1px;background:var(--c-rule);z-index:-1}` +
-    `.rail.rail-right h2,.rail.rail-right .rail-tags{padding-right:0;padding-left:var(--rail-pad)}` +
-    `.rail.rail-right .rail-tags{justify-content:flex-start}` +
-    `.rail.rail-right li a{justify-content:flex-start}` +
-    `.rail.rail-right .rail-row{padding-right:0;padding-left:var(--rail-pad)}` +
-    `.rail.rail-right .rail-row[aria-current]::after{right:auto;left:0}` +
+    `${R}{${GUTTER};left:calc(100% + var(--rail-gap));right:auto;text-align:left}` +
+    `${R}::after{content:"";position:absolute;top:0;bottom:0;left:-${DIVIDER}px;right:auto;width:1px;background:var(--c-rule);z-index:-1}` +
+    `${R} h2,${R} .rail-tags{padding-right:0;padding-left:var(--rail-pad)}` +
+    `${R} .rail-tags{justify-content:flex-start}` +
+    // A counted row (the years) keeps its number at the rail's far edge, in a column of its own.
+    `${R} li a{justify-content:${opts.shell === false ? 'space-between' : 'flex-start'}}` +
+    `${R} .rail-row{padding-right:0;padding-left:var(--rail-pad)}` +
+    `${R} .rail-row[aria-current]::after{right:auto;left:0}` +
     INNER +
     `.drawer-only{display:none}` +
-    `.rail-toggle,.rail-scrim{display:none}}`
+    `.rail-toggle,.rail-scrim,.rail-search{display:none}` +
+    (opts.shell === false
+      ? `.rail.rail-main.rail-drawer{display:none}.with-rail .tl-feed::after,.with-rail .tl-feed .tl-year,.with-rail .tl-feed article .tl-mark{display:none}`
+      : '') +
+    `}`
   )
 }
 
@@ -296,5 +315,15 @@ export function railLookCss(colWidth: number, look: string): string {
     // reads as one run-on string. The index below keeps its numbers, because there each entry
     // is a line of its own and the number falls at the end of it.
     + `html[data-look=code] .rail-inner > nav:not(.toc) li::before{content:none}`
+    + `}`
+    // THE LISTING'S RIGHT RAIL, mirrored. The look's rings, the overhang that keeps them from
+    // being clipped and the scrollbar's lane are all written for a rail in the LEFT gutter, so
+    // they hang off its right edge, which on the right rail is the viewport's. Here they hang off
+    // the left edge, on that rail's own divider, and the scrollbar keeps the default far side.
+    + `@media (min-width:${at}px){`
+    + `html[data-look=code] .rail-aside .rail-inner{direction:ltr;width:calc(100% + var(--rail-gap));`
+    + `margin-left:calc(-1 * var(--rail-gap));padding:0 12px 0 var(--rail-gap)}`
+    + `html[data-look=code] .rail-aside li::before{right:auto;left:-21.5px}`
+    + `html[data-look=code] .rail-aside .rail-row[aria-current]::after{right:auto;left:3px}`
     + `}`
 }

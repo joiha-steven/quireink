@@ -796,7 +796,7 @@ const fr = {
   sidebarLayoutLabel: 'Disposition de la barre latérale',
   sidebarLayoutSingle: 'Une colonne',
   sidebarLayoutTwo: 'Deux colonnes',
-  sidebarLayoutHint: 'Une colonne empile tout dans un rail à gauche ; deux colonnes séparent la découverte (gauche) et la navigation (droite), avec une colonne de lecture plus étroite sur ordinateur. Sur mobile, c’est un seul tiroir dans les deux cas.',
+  sidebarLayoutHint: 'Une colonne place le menu et les sujets à gauche, un index des années avec Les plus lus et À la une à droite ; deux colonnes séparent la découverte (gauche) et la navigation (droite), avec une colonne de lecture plus étroite sur ordinateur. Sur mobile, c’est un seul tiroir dans les deux cas.',
   homeModeLabel: 'Page d’accueil',
   homeModeList: 'Liste des articles',
   homeModePage: 'Une page',
