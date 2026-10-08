@@ -185,9 +185,9 @@
   - **Timezone:** time buckets are truncated in the site's zone — **Settings → Blog →
     Timezone**, falling back to the `ANALYTICS_TZ` variable and then to UTC — so "days" line
     up with local midnight rather than with UTC. Since 2026-08-22 that one setting is the
-    whole site's clock and not just this chart's: it also decides the date printed under
-    every post, which until then was read off the SERVER's timezone and therefore changed
-    if the site moved machine. The daily
+    whole site's clock and not just this chart's: it decides the date under every post and,
+    since 2026-10-08, every date in the admin (Write list, log, trash, comments, dashboard,
+    library, backups, tokens, sessions). Empty means `ANALYTICS_TZ`, then UTC. The daily
     series emits **every bucket, zeros included** — a quiet day is a point on the chart, not a gap.
   - **The window is whole days, aligned to that zone** (`windowStart`), so a 30-day range is
     thirty full columns rather than thirty-one with a sliver at the left. The LAST column is

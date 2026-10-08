@@ -1,3 +1,4 @@
+import { siteZone } from '@/i18n/format'
 import { one } from '@/store/query'
 // Shapes the admin reads. Unchanged from the frozen tree, including the optional fields:
 // they were optional because the pre-v2 migration might not have run yet, and the admin
@@ -145,7 +146,4 @@ export function reportTz(): string {
  * setting is resolved, so a stamp the server draws, `<html data-tz>` and what an island redraws
  * all read the same clock. Never empty.
  */
-export function siteZone(setting: string): string {
-  const tz = (setting || process.env.ANALYTICS_TZ || '').trim()
-  return /^[A-Za-z0-9_+/-]{1,40}$/.test(tz) ? tz : 'UTC'
-}
+export { siteZone }

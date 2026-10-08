@@ -43,6 +43,7 @@ Stated so a report can say which of these is wrong, which is more useful than a 
   address; while it has none, first enrolment may be skipped once ([ADR 0030](./docs/decisions/0030-two-factor-can-wait-until-there-is-an-address.md)),
   and a used step is recorded so a code cannot be replayed. Ten single-use recovery codes are hashed at
   rest and shown once.
+- A passkey is a second door beside the password, never the only one ([ADR 0071](./docs/decisions/0071-a-passkey-is-a-second-door-not-the-only-one.md)): a user-verified one counts as both factors, is bound to the blog's host, and can be removed only with the password.
 - Every write route is protected by **where it is mounted**, not by a check inside the
   handler, and a static guard (`bun run check:routes`) fails the build if a route escapes
   that group. See `docs/invariants.md`.

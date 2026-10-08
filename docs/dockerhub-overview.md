@@ -104,7 +104,7 @@ A real editor over Markdown, with tables, footnotes, callouts, mathematics and v
 saves as you type and can hold a post until Tuesday. Six palettes in light and dark, four reading
 fonts, a book mode set in two columns like paper, and a five-ink highlighter whose strokes are
 grown rather than drawn, so no two on a page share a shape. Search that answers as you type,
-comments, a newsletter, and analytics without cookies. An article page costs about 120 KB.
+comments, a newsletter, analytics without cookies, and sign-in with a passkey beside the password and the code. An article page costs about 120 KB.
 
 An AI agent can write and publish for you over MCP, through exactly the rules the admin
 follows, and you can take its access away at any moment.

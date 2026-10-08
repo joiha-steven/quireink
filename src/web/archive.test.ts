@@ -62,7 +62,12 @@ describe('grouping', () => {
       title: 'a', slug: 'a', date: '2025-12-31T19:00:00.000Z',
       status: 'published' as const, categories: [], tags: [],
     }
-    expect(byYear([post])[0]?.year).toBe(2025)
+    // An empty zone is UTC unless ANALYTICS_TZ says otherwise; pin it so a developer's env cannot leak in.
+    const was = process.env.ANALYTICS_TZ
+    delete process.env.ANALYTICS_TZ
+    try { expect(byYear([post])[0]?.year).toBe(2025) } finally {
+      if (was !== undefined) process.env.ANALYTICS_TZ = was
+    }
     // 02:00 on 1 January 2026 in Hanoi.
     expect(byYear([post], 'Asia/Ho_Chi_Minh')[0]?.year).toBe(2026)
     // And the mirror case west of Greenwich: 14:00 on 31 December in New York.

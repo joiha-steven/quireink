@@ -81,7 +81,7 @@
   text; a query typed WITH them is narrowed back to them by `src/accent.ts`, because a folded index
   answers "lề" with every "lệ" and "lê" as well. The header search is a
   `<dialog>` overlay opened by `src/assets/js/search.ts`, on the one `.overlay` panel the
-  sign-up overlay shares (`subscribe.css.ts`); the `/search` route stays for deep links
+  sign-up overlay shares (`subscribe.css.ts`); the `/search` route stays for deep links (empty, it offers the busiest tags and newest posts; the 404 and the drawer draw its box, `searchBox` in `chrome.ts`)
   and no-JS.
 - Post page: back-to-top, ToC and related posts (`getRelatedPosts`: shared tags ×2 + categories).
   The reading-progress bar is CSS (`animation-timeline: scroll()`), not an island. There is no
@@ -318,13 +318,13 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
 
 - **What:** an opt-in "Chế độ đọc sách" link on the post meta line (after the reading time)
   opens the article as a **fullscreen two-column book spread**, paged horizontally and with a
-  soft fade between spreads. Gated by `features.bookMode` (default **on**; the "Reading
+  soft fade between spreads, opening on a **title page** (kicker, headline, standfirst, byline; the body starts on the next page). Gated by `features.bookMode` (default **on**; the "Reading
   features" card in Admin → Settings → **Posts**). **Posts only** (the toggle is emitted
   from the post branch of `src/web/article.ts`).
 - **The reader sets the type size.** The a/A pair in the overlay chrome moves `--type-scale` between
   0.85 and 1.35 in 0.05 steps, persisted per browser under `quire-book-scale` and written as an
   INLINE override, so a reader who has never touched it follows whatever the sheet ships. The
-  sheet's own default is **1.05** (it was 1.15 until 2026-08-21). Every change re-measures: a
+  sheet's own default is **1.05**; the phone reader follows the same buttons and default. Every change re-measures: a
   bigger glyph is fewer lines per column, which is a different page count.
 - **Not the Fullscreen API — a `<dialog>`.** Escape, focus trapping and the inert background come
   from the browser instead of from this file, so **desktop and iPad behave identically** and there

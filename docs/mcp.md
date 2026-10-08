@@ -67,6 +67,7 @@
   `src/admin/island/lib/settings-mcp.ts`. The five-token cap is the SERVER's
   (`src/mcp/tokens.ts`, `token_limit` → 409) and counts manual tokens only; the card reports it
   and does not enforce it. It **shows the endpoint URL with a copy button** while the toggle is on — a client has to be pointed somewhere and nothing else on the card says where. It
+  is absolute and follows a saved Site address at once (or says the address is missing); it
   prefers `settings.siteUrl` and falls back to the address the request arrived on (the server has
   that from the request; the React card used the browser's origin), since a blank `siteUrl` resolves
   from the environment, which the admin cannot read.
@@ -109,6 +110,7 @@
   path one at a time with every other path watched (`content/settings-path.test.ts`), so a patch
   built from one path cannot damage a neighbour. The route to disk is unchanged —
   `saveSettings`, which sanitises, clamps and refuses exactly as it does for the form — so
-  nothing reachable here is anything the owner's own screens could not already do.
+  an unusable Site address, author link or source repository is refused with the reason, as on the
+  Settings screen, and not saved as empty; nothing reachable here is anything the owner's own screens could not already do.
   `get_settings` reads all. **A tool that mutates still calls `logActivity`;
   the door itself flushes the cache after every write tool (Invariant 1).**

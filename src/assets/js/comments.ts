@@ -47,7 +47,7 @@ function render(comment: Comment): HTMLElement {
 
   // Date AND time. A thread is a conversation, and two replies on the same day said nothing
   // about their order while only the date was shown. The `datetime` attribute keeps the full
-  // ISO instant either way; this is only what the reader sees, in their own zone.
+  // ISO instant either way; this is only what the reader sees, in the site's zone.
   //
   // Formatted in two halves and joined, NOT by one `toLocaleString`. Several locales put the
   // clock first — Vietnamese renders "lúc 21:58 23 tháng 6, 2026" — and this thread wants
@@ -56,8 +56,13 @@ function render(comment: Comment): HTMLElement {
   const at = new Date(comment.createdAt)
   const lang = document.documentElement.lang || 'en'
   const when = el('time', { datetime: comment.createdAt })
-  when.textContent = `${at.toLocaleDateString(lang, { year: 'numeric', month: 'long', day: 'numeric' })}`
-    + ` ${at.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' })}`
+  // The SITE's clock, read off `<html data-tz>` (the server resolved the empty setting), so
+  // the time under a comment agrees with the dates the server printed on the same page.
+  const timeZone = document.documentElement.dataset.tz
+  const f = (o: Intl.DateTimeFormatOptions) => {
+    try { return at.toLocaleString(lang, { ...o, timeZone }) } catch { return at.toLocaleString(lang, o) }
+  }
+  when.textContent = `${f({ year: 'numeric', month: 'long', day: 'numeric' })} ${f({ hour: '2-digit', minute: '2-digit' })}`
 
   const body = el('div', { class: 'comment-body' })
   if (comment.deleted) body.textContent = label('commentDeleted')

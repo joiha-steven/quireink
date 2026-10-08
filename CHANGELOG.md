@@ -31,7 +31,7 @@
   on two short lines, the word count left out; the series box puts its name and part on one row
   over a bar of one segment per post; the Source code look sets the article headline a step
   smaller on a phone so a long title is not three lines of monospace.
-- **The menu drawer has a search box on top**, and opening it with a tap no longer draws a
+- **The menu drawer has the search page's box on top**, and opening it with a tap no longer draws a
   focus ring on the first link; the keyboard still gets one.
 - **The search page is no longer empty before you type.** The button sits inside the box, and
   your eight busiest tags and five newest posts are there to start from.
@@ -46,9 +46,24 @@
   re-layered by the browser even off screen, and the word count serialized the post every four
   seconds whether or not anything had changed. Now only what a key changed is dealt, blocks off
   the screen are not drawn while you type, and the count waits for you to pause.
+- **Dependencies are at their latest within range:** Hono 4.13.13, zod 4.6.5, the MCP SDK
+  1.32.1, the editor's ProseMirror packages, sharp 0.35.5 and wrangler 4.148.0. prosemirror-model
+  is pinned in `overrides`, because bumping it alone left nested copies under the other
+  ProseMirror packages and wrapping a paragraph in a list threw "multiple versions of
+  prosemirror-model were loaded".
 
 ### Fixed
 
+- **The share image no longer draws empty boxes, and a long title no longer pushes the date off it.**
+  Emoji are left out of the drawn title; a title (or site name, date or excerpt) in a script the
+  bundled font cannot draw, such as Japanese, makes the card lead with the site name and the date
+  instead of boxes. A title is cut to three lines (two over a photo) with an ellipsis, and a word
+  too long for the card breaks inside itself.
+- **The public site now reads an empty timezone setting the way the admin does.** With *Settings →
+  Blog → Timezone* left empty, post dates, month and year markers, the archive, feeds' printed
+  dates, newsletter emails and comment times used the server machine's own zone, so a date on the
+  public page could differ by a day from the admin's. An empty setting now means `ANALYTICS_TZ`,
+  then UTC, everywhere; comment times on a page follow the site's zone instead of the visitor's.
 - **Newspaper and Notebook no longer squeeze their words together under a mono chrome font.**
   With the chrome set to JetBrains Mono or IBM Plex Mono, the series box, the masthead's tagline,
   the side rail and the footer were drawn in the reading face but kept the mono's tighter spacing,
@@ -71,8 +86,8 @@
   and the year index landed on top of the menu; that range now keeps the drawer and the chips.
 - **Small links are at least 24px tall to a finger** on phones and tablets: the card's category,
   the series and related lists, the author, the byline and the 404's way home. Nothing moves.
-- **The 404 and an article's drawer carry the same search box** as the search page, and the
-  search page of a blog with nothing published says what the box is for.
+- **The 404 carries the same search box** as the search page, and the search page of a blog with
+  nothing published says what the box is for.
 - **Vietnamese input methods sound like one key per key.** EVKey, OpenKey, Unikey and
   GoTiengViet put an accent on by sending Backspaces and retyping the letters in a few
   milliseconds, and the editor clicked for every one of them: typing "Tiếng Việt có dấu, gõ nhanh
@@ -149,8 +164,8 @@
   target in every engine and keep their drawn box in Windows High Contrast; the settings tabs
   show they scroll; the phone drawer's Clear cache is labelled and has no idle collapse key;
   a backup run in the last hour shows its seconds; a Scheduled filter on the Write list (scheduled posts and
-  notes no longer count as Published); library tile keys visible on touch tablets; row ticks,
-  sign-in links and small links with a 24px target; grey small print, code line numbers and badges
+  notes no longer count as Published); library tile keys visible on touch tablets;
+  sign-in links with a 24px target; grey small print, code line numbers and badges
   at 4.5:1 or better; a refused sign-in or claim password says so under the field; the recovery
   codes step explains Continue and can copy the codes; analytics names what its trend compares
   against; the log names posts by title; the upload-too-large message says where the limit is set.
@@ -167,6 +182,10 @@ run a compose file from a checkout.
 
 ### Upgrading
 
+- **Dates follow the Timezone setting, then `ANALYTICS_TZ`, then UTC, never the machine's zone.**
+  Public post dates and comment times used to follow the server's own zone when *Settings → Blog →
+  Timezone* was empty. If your host or container's system zone is not UTC, set the Timezone
+  setting to keep the dates you see now.
 - **Migration 022 runs by itself** on the first start: it adds the two tables a newsletter send is
   now worked through from (see Fixed).
 - **Every compose file runs the published image.** `docker-compose.yml` and

@@ -228,7 +228,8 @@ const BUDGET: Record<string, number> = {
   // begins on the facing page. Cheaper than it looks: the running head's two copies of the
   // title lookup collapsed into the one `fillFlow` returns, and the rule is a pseudo-element.
   'book-mode.js': 8_800,
-  'comment-thread.js': 6_700,
+  // 6,800 since 2026-10-08 (6,766 measured), for the site's zone: comment times read it off <html data-tz>.
+  'comment-thread.js': 6_800,
   // The reader's pen: the selection bar, the anchor maths (a text-quote selector, found
   // again by its surroundings), the store, the note card and the copy gesture it absorbed
   // from post.js. 9,229 at first landing (2026-09-09), about 3.5 KB gzipped, on a page

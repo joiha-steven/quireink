@@ -42,6 +42,7 @@ Colour, type, the shape of the front page and the menu are all settings in the a
 - **A real editor over Markdown**, with tables, footnotes, callouts, maths, galleries and video. It saves as you type, keeps versions, and schedules.
 - **Four looks, six palettes, four reading fonts**, light and dark, and a book mode that sets a post in two columns like paper.
 - **A pen for you and for your readers**: highlight in five inks, underline, ring a word — drawn by hand, never the same stroke twice.
+- **Sign in with a passkey** (fingerprint, face or device PIN) beside the password and the code, never in place of them.
 - **Analytics without cookies**, per post and per site, and a newsletter on your own mail server.
 - **Moving in and out**: WordPress, Ghost, Substack or Medium in; a ZIP of Markdown out.
 - **An AI agent can run it.** A built-in MCP server lets an assistant draft, publish, read your numbers and tidy up, through the same rules the admin follows.
@@ -56,9 +57,9 @@ Every part, in detail and against the alternatives: [**Quire Ink, in full**](./d
 
 <sub>**Four looks, one setting.** The same post as plain paper, source code, a newspaper and a notebook. A look sets shape, type and marks; the colour always comes from the palette.</sub>
 
-<img src="docs/demo-reading.jpg" alt="Book mode, the post set in two columns like a printed page with a drop cap, beside the same site in the dark theme scrolled to a four-painting gallery" width="960">
+<img src="docs/demo-reading.jpg" alt="Book mode, opening on its title page with the category, headline, standfirst and byline, then the post set in two columns like a printed page with a drop cap, beside the same site in the dark theme scrolled to a four-painting gallery" width="960">
 
-<sub>**Book mode and the dark theme.** Any post opens as a paginated book; every palette is drawn twice, once for light and once for dark.</sub>
+<sub>**Book mode and the dark theme.** Any post opens as a paginated book that starts on a title page; every palette is drawn twice, once for light and once for dark.</sub>
 
 <img src="docs/demo-code.jpg" alt="Three panels: a formula rendered as MathML in the reading face, a highlighted code block beside a table, and a paragraph marked with the pen in several inks" width="960">
 
@@ -68,11 +69,11 @@ Every part, in detail and against the alternatives: [**Quire Ink, in full**](./d
 
 <sub>**Readers get the pen too.** Their marks stay in their own browser, and travel between their devices only if they ask.</sub>
 
-<img src="docs/demo-mobile.jpg" alt="Four phone screens: the post list, a post with its series box, book mode on a phone, and instant search" width="960">
+<img src="docs/demo-mobile.jpg" alt="Four phone screens: the post list with the category above each headline and a thumbnail beside it, a post with its series box and progress bar, book mode on a phone, and the menu drawer with its search box on top" width="960">
 
-<sub>**On a phone,** the list, a post, book mode and search as you type.</sub>
+<sub>**On a phone,** the list, a post with its series bar, book mode and the menu drawer with search on top.</sub>
 
-<img src="docs/demo-admin.jpg" alt="The admin: a post open in the editor with the toolbar and pen marks, beside the Appearance settings with the four looks drawn as tiles, the fonts and the custom CSS box" width="960">
+<img src="docs/demo-admin.jpg" alt="The admin: a post open in the editor with the toolbar, pen marks and the saved state in its header, beside the Appearance settings with the four looks drawn as tiles, the picked one marked, the fonts and the custom CSS box" width="960">
 
 <sub>**The admin.** The editor on the left, and on the right the settings that decide how the site looks: all of it a setting, none of it code.</sub>
 

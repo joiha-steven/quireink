@@ -41,7 +41,7 @@ export function formatCount(n: number, lang: SiteLang): string {
 }
 
 /**
- * The site's own zone, or the machine's if nothing has said otherwise.
+ * The site's own zone (`siteZone`: the setting, else `ANALYTICS_TZ`, else UTC).
  *
  * **`tz` is not optional decoration, and leaving it out is the bug this argument exists
  * for.** `getDate()` and a bare `toLocaleDateString` read the SERVER's timezone, and a
@@ -56,9 +56,22 @@ export function formatCount(n: number, lang: SiteLang): string {
 function zoned(iso: string, tz: string): { d: Date; opts: Intl.DateTimeFormatOptions } | null {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return null
-  const timeZone = tz.trim()
-  if (!timeZone) return { d, opts: {} }
-  return ZONE_OK(timeZone) ? { d, opts: { timeZone } } : { d, opts: {} }
+  // An empty zone is the contract's `ANALYTICS_TZ`, then UTC; never the server process's zone.
+  const timeZone = siteZone(tz)
+  return { d, opts: { timeZone } }
+}
+
+/**
+ * The zone a SETTING means: the setting, else `ANALYTICS_TZ`, else UTC. The one place the empty
+ * setting is resolved, so a date the server prints, `<html data-tz>` and what an island redraws
+ * all read the same clock. Never empty. Lives here (re-exported by `analytics/types`) because
+ * the formatters below need it and the admin's browser bundle imports this file.
+ */
+export function siteZone(setting: string): string {
+  const env = typeof process !== 'undefined' ? process.env?.ANALYTICS_TZ : ''
+  const tz = (setting || env || '').trim()
+  // A name this runtime does not know (ANALYTICS_TZ=Asia/Hanoi) is UTC, never an exception later.
+  return /^[A-Za-z0-9_+/-]{1,40}$/.test(tz) && ZONE_OK(tz) ? tz : 'UTC'
 }
 
 /**

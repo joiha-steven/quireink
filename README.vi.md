@@ -41,6 +41,7 @@ Màu, chữ, bố cục trang chủ và menu đều là cài đặt trong trang 
 - **Trình soạn Markdown thật**, có bảng, chú thích, hộp ghi chú, công thức, bộ ảnh và video. Tự lưu khi gõ, giữ các bản cũ, hẹn giờ đăng.
 - **Bốn kiểu giao diện, sáu bảng màu, bốn font đọc**, sáng và tối, và chế độ sách dàn bài thành hai cột như trang giấy.
 - **Cây bút cho bạn và cho người đọc**: tô năm màu mực, gạch chân, khoanh chữ — vẽ tay, không nét nào giống nét nào.
+- **Đăng nhập bằng passkey** (vân tay, khuôn mặt hoặc mã PIN của máy) bên cạnh mật khẩu và mã xác thực, không thay chúng.
 - **Thống kê không dùng cookie**, theo từng bài và cả site, và bản tin gửi bằng máy chủ mail của bạn.
 - **Dọn vào và dọn ra**: nhận WordPress, Ghost, Substack hay Medium; xuất ra một ZIP Markdown.
 - **Một AI agent trông được nó.** Máy chủ MCP có sẵn cho trợ lý viết nháp, đăng bài, đọc số liệu và dọn dẹp, theo đúng luật mà trang quản trị theo.
@@ -55,9 +56,9 @@ Từng phần, chi tiết và so với các lựa chọn khác: [**Quire Ink, b�
 
 <sub>**Bốn lối giao diện, một lựa chọn.** Cùng một bài ở dạng giấy thường, mã nguồn, bài báo và sổ tay. Giao diện quyết định hình khối, kiểu chữ và các dấu; màu thì luôn do bảng màu quyết định.</sub>
 
-<img src="docs/demo-reading.jpg" alt="Chế độ đọc sách, bài dàn hai cột như trang in có chữ cái đầu in lớn, cạnh cùng trang đó ở nền tối, cuộn tới một bộ bốn bức tranh" width="960">
+<img src="docs/demo-reading.jpg" alt="Chế độ đọc sách, mở đầu bằng trang tựa có chuyên mục, tiêu đề, dòng dẫn và tên tác giả, rồi bài dàn hai cột như trang in có chữ cái đầu in lớn, cạnh cùng trang đó ở nền tối, cuộn tới một bộ bốn bức tranh" width="960">
 
-<sub>**Chế độ đọc sách và nền tối.** Bài nào cũng mở được thành sách có lật trang; bảng màu nào cũng được vẽ hai lần, cho nền sáng và nền tối.</sub>
+<sub>**Chế độ đọc sách và nền tối.** Bài nào cũng mở được thành sách có lật trang, bắt đầu bằng một trang tựa; bảng màu nào cũng được vẽ hai lần, cho nền sáng và nền tối.</sub>
 
 <img src="docs/demo-code.jpg" alt="Ba khung: một công thức hiển thị bằng MathML, một khối code tô màu cạnh một bảng, và một đoạn văn được đánh dấu bằng bút nhiều màu" width="960">
 
@@ -67,11 +68,11 @@ Từng phần, chi tiết và so với các lựa chọn khác: [**Quire Ink, b�
 
 <sub>**Người đọc cũng cầm bút.** Dấu của họ nằm trong trình duyệt của chính họ, và chỉ đi theo sang thiết bị khác khi họ muốn.</sub>
 
-<img src="docs/demo-mobile.jpg" alt="Bốn màn hình điện thoại: danh sách bài, một bài có hộp loạt bài, chế độ đọc sách trên điện thoại, và tìm kiếm tức thì" width="960">
+<img src="docs/demo-mobile.jpg" alt="Bốn màn hình điện thoại: danh sách bài với chuyên mục phía trên mỗi tiêu đề và ảnh nhỏ bên cạnh, một bài có hộp loạt bài kèm thanh tiến độ, chế độ đọc sách trên điện thoại, và ngăn menu với ô tìm kiếm ở trên cùng" width="960">
 
-<sub>**Trên điện thoại:** danh sách bài, một bài viết, chế độ đọc sách và tìm kiếm ngay khi gõ.</sub>
+<sub>**Trên điện thoại:** danh sách bài, một bài có thanh tiến độ loạt bài, chế độ đọc sách và ngăn menu có ô tìm kiếm ở trên cùng.</sub>
 
-<img src="docs/demo-admin.jpg" alt="Trang quản trị: một bài mở trong trình soạn thảo có thanh công cụ và vết bút, cạnh phần cài đặt Giao diện với bốn lối giao diện vẽ thành thẻ, phông chữ và ô CSS riêng" width="960">
+<img src="docs/demo-admin.jpg" alt="Trang quản trị: một bài mở trong trình soạn thảo có thanh công cụ, vết bút và trạng thái đã lưu ở đầu trang, cạnh phần cài đặt Giao diện với bốn lối giao diện vẽ thành thẻ, thẻ đang chọn được đánh dấu, phông chữ và ô CSS riêng" width="960">
 
 <sub>**Trang quản trị.** Trình soạn thảo bên trái, bên phải là phần cài đặt quyết định site trông ra sao: tất cả đều là tuỳ chọn, không phải viết code.</sub>
 

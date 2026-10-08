@@ -50,7 +50,7 @@ bun --smol src/index.ts
 | 🖍️&nbsp;**Cây&nbsp;bút** | `==tô sáng==`, `++gạch chì++`, `@@khoanh bút đỏ@@`. Nét vẽ như tay người, mực không đều, không vệt nào giống vệt nào. Cho người đọc cầm bút nếu bạn muốn. Trang nào cũng link được `/pen.css` để viết bằng mực của bạn |
 | 📓&nbsp;**Sổ&nbsp;tay** | Loại viết thứ ba bên cạnh bài và trang: ghi chú và trích đoạn, nguồn của đoạn trích là một trường riêng. Nói IndieAuth, Micropub và Webmention |
 | 💻&nbsp;**Code** | Tô màu sẵn ở máy chủ, 346 ngôn ngữ nạp theo nhu cầu. Người đọc không phải tải bộ tô màu nào |
-| 🔍&nbsp;**Đọc** | Tìm kiếm hiện kết quả trong lúc gõ, và gõ dấu nào thì ra đúng chữ đó. Mục lục bài, bài liên quan, thời gian đọc. Chế độ sách: hai cột trên nền giấy ở máy bàn, một cột cuộn trên điện thoại, nhớ chỗ đang đọc |
+| 🔍&nbsp;**Đọc** | Tìm kiếm hiện kết quả trong lúc gõ, và gõ dấu nào thì ra đúng chữ đó. Thanh bên có menu và chủ đề ở một bên, chỉ mục theo năm kèm số bài ở bên kia (máy tính bảng có hàng chip chủ đề), hoặc mục lục của bài. Bài liên quan, thời gian đọc. Chế độ sách mở bằng trang tựa: hai cột trên nền giấy ở máy bàn, một cột cuộn trên điện thoại, nhớ chỗ đang đọc |
 | 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie: ai đọc bài nào, đọc tới đâu, đến từ đâu. Không có gì bị xoá, nên bảng theo năm lùi được tới người đọc đầu tiên. Kèm nhật ký hoạt động và thùng rác hoàn tác được |
 | 💬&nbsp;**Bình&nbsp;luận** | Người đọc bình luận không cần tài khoản. Chống spam bằng cách tự ký thử thách, không qua bên thứ ba nào |
 | 🔎&nbsp;**Máy&nbsp;tìm&nbsp;kiếm** | Sitemap, `robots.txt`, `llms.txt`, ảnh chia sẻ vẽ riêng cho từng bài. RSS và JSON Feed, cho blog và cho sổ tay. Đổi đường dẫn thì link cũ vẫn chạy |

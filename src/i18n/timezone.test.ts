@@ -6,12 +6,20 @@
 // site. Found 2026-08-22 while the analytics day boundary was being made a setting; the
 // same zone now answers both.
 
-import { describe, it, expect } from 'bun:test'
+import { describe, it, expect, afterAll } from 'bun:test'
 import { formatDate, formatMonth, zonedDay } from '@/i18n/i18n'
 import { sanitizeTimezone } from '@/content/settings-sanitize'
 
 // 18:00 UTC — which is already tomorrow in Hanoi and still today in London and New York.
 const EVENING = '2026-08-22T18:00:00Z'
+
+// These expect an empty zone to be UTC, so a developer's own ANALYTICS_TZ must not leak in.
+const WAS_ANALYTICS = process.env.ANALYTICS_TZ
+delete process.env.ANALYTICS_TZ
+afterAll(() => {
+  if (WAS_ANALYTICS === undefined) delete process.env.ANALYTICS_TZ
+  else process.env.ANALYTICS_TZ = WAS_ANALYTICS
+})
 
 describe('formatDate in an explicit zone', () => {
   it('gives the same answer for one instant, whatever machine asks', () => {
@@ -78,7 +86,7 @@ describe('zonedDay', () => {
     expect(zonedDay('not a date', 'UTC')).toBe('not a date')
   })
 
-  it('with no zone reads the machine, which is what an unset setting means', () => {
-    expect(zonedDay(EVENING)).toMatch(/^2026-08-2[23]$/)
+  it('with no zone and no ANALYTICS_TZ is the UTC day', () => {
+    expect(zonedDay(EVENING)).toBe('2026-08-22')
   })
 })

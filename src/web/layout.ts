@@ -110,6 +110,7 @@ const dataAttr = (key: string) => `data-${key.replace(/[A-Z]/g, (c) => `-${c.toL
 
 
 import { escapeAttr, escapeHtml } from '@/utils'
+import { siteZone } from '@/i18n/format'
 
 
 export function renderDocument(
@@ -247,7 +248,7 @@ export function renderDocument(
     escapeAttr(paper.light.bg)}">\n<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${
     escapeAttr(paper.dark.bg)}">\n`
   return `<!DOCTYPE html>
-<html lang="${escapeAttr(head.lang ?? settings.language)}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${look}${fade}${col}>
+<html lang="${escapeAttr(head.lang ?? settings.language)}" data-tz="${escapeAttr(siteZone(settings.timezone))}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${look}${fade}${col}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
