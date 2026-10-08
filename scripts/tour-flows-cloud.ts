@@ -17,7 +17,9 @@ export function registerCloudFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       const paths = [...live.querySelectorAll('[data-cf-path]')].filter((el) => !el.hidden)
       if (paths.length !== 1) return paths.length + ' ways to update shown, expected one'
       if (!live.querySelector('[data-cf-cost]').textContent.includes('$')) return 'no cost line'
-      if ([...live.querySelectorAll('input')].some((el) => el.hasAttribute('data-k'))) return 'a box on the card is a setting'
+      // The source repository (data-cf-wf-repo) IS a setting, saved with the sheet since the update
+      // workflow came in; every other box on the card is a credential or a typed confirmation.
+      if ([...live.querySelectorAll('input')].some((el) => el.hasAttribute('data-k') && !el.hasAttribute('data-cf-wf-repo'))) return 'a secret box on the card is a setting'
       return 'ok (' + paths[0].dataset.cfPath + ', ' + live.querySelector('[data-cf-cost]').textContent.slice(0, 40) + '…)'
     })()`, 1500))
 
