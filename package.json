@@ -62,7 +62,7 @@
     "@cloudflare/workers-types": "^5.20261008.1",
     "@happy-dom/global-registrator": "^20.14.5",
     "@types/bun": "latest",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "wrangler": "^4.148.0"
   },
   "overrides": {
@@ -96,8 +96,8 @@
     "prosemirror-view": "^1.42.6",
     "satori": "^0.29.1",
     "sharp": "^0.35.5",
-    "shiki": "4.4.3",
-    "temml": "^0.13.5",
+    "shiki": "4.5.0",
+    "temml": "^0.14.0",
     "zod": "^4.6.5"
   }
 }

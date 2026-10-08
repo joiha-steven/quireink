@@ -267,7 +267,7 @@ export function wirePalette(words: PaletteWords): () => void {
     // And even then, not over something that has already answered the key.
     if (e.defaultPrevented) return
     e.preventDefault()
-    show(scrim.hidden)
+    show(scrim.hidden !== false)
   }
   const onAsk = (): void => show(true)
   window.addEventListener('keydown', onKey)

@@ -46,7 +46,7 @@ beforeEach(() => {
 })
 
 const gated = (): boolean[] =>
-  [...screen.querySelectorAll<HTMLElement>('[data-gate-live="mcp.enabled"]')].map((el) => el.hidden)
+  [...screen.querySelectorAll<HTMLElement>('[data-gate-live="mcp.enabled"]')].map((el) => el.hidden !== false)
 
 const flipMcp = (): void => {
   screen.querySelector<HTMLElement>('[data-switch][data-k="mcp.enabled"]')!.setAttribute('aria-checked', 'true')

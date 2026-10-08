@@ -21,9 +21,8 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "baseUrl": "../..",
     // `@/locales/*` points at the repo-root translations folder; see the root tsconfig.
-    "paths": { "@/locales/*": ["./locales/*"], "@/runtime/impl/*": ["./src/runtime/bun/*"], "@/*": ["./src/*"] }
+    "paths": { "@/locales/*": ["../../locales/*"], "@/runtime/impl/*": ["../runtime/bun/*"], "@/*": ["../*"] }
   },
   // The ambient declarations live outside this folder, and every server module the admin
   // type-imports leans on them. Without this line those modules fail to resolve their

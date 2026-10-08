@@ -35,7 +35,7 @@ const draw = (enabled: boolean): void => {
 }
 
 const gated = (): boolean[] =>
-  [...card.querySelectorAll<HTMLElement>('[data-gate-live]')].map((el) => el.hidden)
+  [...card.querySelectorAll<HTMLElement>('[data-gate-live]')].map((el) => el.hidden !== false)
 
 const flip = (on: boolean): void => {
   const sw = card.querySelector<HTMLElement>('[data-switch][data-k="mcp.enabled"]')!

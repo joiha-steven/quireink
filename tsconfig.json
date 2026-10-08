@@ -56,7 +56,6 @@
     "skipLibCheck": true,
     "noEmit": true,
 
-    "baseUrl": ".",
     "paths": {
       // The translations live at the repository ROOT (`locales/`) so the community can
       // find them without knowing the tree — the specifier stays `@/locales/*` on purpose,
