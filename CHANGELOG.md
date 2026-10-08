@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-10-08 · Quire Ink 2.2.18
+
+Five days after 2.2.17: **sign in with a passkey**, beside the password and the code and never in
+place of them, and reading pages redrawn from a device-by-device audit, with list rows that read
+top down, a year index on wide screens, subject chips on tablets and a title page for book mode.
+The admin tells time on the site's clock and stops a save from changing a post's standing behind
+your back. Upgrading is the usual pull and restart, with one line to read below if your server's
+clock is not on UTC.
+
+### Upgrading
+
+- **Dates follow the Timezone setting, then `ANALYTICS_TZ`, then UTC, never the machine's zone.**
+  Public post dates and comment times used to follow the server's own zone when *Settings → Blog →
+  Timezone* was empty. If your host or container's system zone is not UTC, set the Timezone
+  setting to keep the dates you see now.
 
 ### Added
 
@@ -182,10 +196,6 @@ run a compose file from a checkout.
 
 ### Upgrading
 
-- **Dates follow the Timezone setting, then `ANALYTICS_TZ`, then UTC, never the machine's zone.**
-  Public post dates and comment times used to follow the server's own zone when *Settings → Blog →
-  Timezone* was empty. If your host or container's system zone is not UTC, set the Timezone
-  setting to keep the dates you see now.
 - **Migration 022 runs by itself** on the first start: it adds the two tables a newsletter send is
   now worked through from (see Fixed).
 - **Every compose file runs the published image.** `docker-compose.yml` and

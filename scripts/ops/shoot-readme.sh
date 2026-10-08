@@ -111,22 +111,48 @@ echo "== phone panels =="
 # page lays itself out for a desktop and is then cropped, so the first two panels came back
 # with every headline cut off mid-word at the right edge while the third — the only one
 # driven — wrapped correctly. Two panels of a phone plate that were not phones.
-MOBILE=1 bun run drive "$L/"      "$P/m-list.png" "void 0" 390 844 600 > /dev/null
+# Scrolled to the first row that has a thumbnail: the plate is about the row (category, then the
+# headline beside its thumbnail), not about the lead story above it, which has no picture.
+MOBILE=1 bun run drive "$L/"      "$P/m-list.png" \
+  "var a=document.querySelector('article[data-thumb]'); scrollTo(0, a.getBoundingClientRect().top + scrollY - 70)" \
+  390 844 800 > /dev/null
 MOBILE=1 bun run drive "$L/$MPOST" "$P/m-post.png" "void 0" 390 844 600 > /dev/null
-# Book mode on a phone scrolls the document (book-scroll.ts); the meta-line toggle is
+# Book mode on a phone scrolls the document (book-scroll.ts) and opens on its title page, which
+# is what the plate shows, so there is no scroll after the click. The meta-line toggle is
 # display:none at this width, but clicking it from script still opens the reader.
 MOBILE=1 bun run drive "$L/$MPOST" "$P/m-book.png" \
-  "document.querySelector('[data-book-open]').click(); setTimeout(function(){scrollTo(0,460)},300); setTimeout(function(){scrollTo(0,420)},700)" \
+  "document.querySelector('[data-book-open]').click()" \
   390 844 1200 > /dev/null
-MOBILE=1 bun run drive "$L/$POST" "$P/m-search.png" \
-  "document.querySelector('[data-search-open]').click(); setTimeout(function(){var i=document.querySelector('.search-panel input, input[type=search]'); if(i){i.value='page'; i.dispatchEvent(new Event('input',{bubbles:true}))}}, 200)" \
-  390 844 1400 > /dev/null
+# The menu drawer (the rail's phone form), opened by the header's menu button: its search box
+# sits on top, then the menu and the rest of the rail.
+MOBILE=1 bun run drive "$L/$POST" "$P/m-menu.png" \
+  "document.querySelector('[data-rail-toggle]').click()" \
+  390 844 1200 > /dev/null
 
 echo "== admin panels =="
 # The slug is a PATH segment, not a query parameter (src/admin/App.tsx routes on
 # /admin/editor/<slug>). With ?slug= the SPA opened a blank "Start writing..." editor and
 # the panel photographed an empty page, which looked plausible enough to ship.
-bun run drive "$L/admin/editor/$POST" "$P/editor.png" "void 0" 1440 1000 2500 > /dev/null
+# A published post opens with nothing to save, so its header shows only the word count. One
+# character is typed at the END of the document (out of the frame) and Update pressed, which is
+# what puts "Saved at HH:MM" in the header. The "Changes saved" toast is hidden: it would sit in
+# the corner of the plate. It writes to the throwaway database only.
+bun run drive "$L/admin/editor/$POST" "$P/editor.png" "$(cat <<'JS'
+setTimeout(function(){
+var p=document.querySelector('.ProseMirror'); p.focus();
+var r=document.createRange(); r.selectNodeContents(p); r.collapse(false);
+var s=getSelection(); s.removeAllRanges(); s.addRange(r);
+document.execCommand('insertText',false,'.');
+setTimeout(function(){
+var b=[].slice.call(document.querySelectorAll('button')).find(function(x){return x.textContent.trim()==='Update'});
+if(b) b.click();
+setTimeout(function(){
+document.querySelectorAll('*').forEach(function(e){if(e.scrollTop>0) e.scrollTop=0});
+getSelection().removeAllRanges(); document.activeElement.blur();
+document.querySelectorAll('div').forEach(function(e){if(e.textContent.length<60&&/Changes saved/.test(e.textContent)&&getComputedStyle(e).position==='fixed')e.style.display='none'});
+},1200)},500)},2500)
+JS
+)" 1440 1000 6000 > /dev/null
 bun run drive "$L/admin/settings" "$P/appearance.png" \
   "(function(){var b=[].slice.call(document.querySelectorAll('button')).find(function(x){return x.textContent.trim()==='Appearance'}); if(b) b.click()})()" \
   1440 1000 2200 > /dev/null
@@ -200,7 +226,7 @@ bun scripts/compose-demo.ts docs/demo-setup.jpg   "$P/claim.png::full" "$P/setup
 bun scripts/compose-demo.ts docs/demo.jpg         "$P/front.png:the front page"   "$P/post.png:a post"
 bun scripts/compose-demo.ts docs/demo-reading.jpg "$P/book.png:book mode:full"    "$P/dark.png:the dark theme"
 bun scripts/compose-demo.ts docs/demo-mobile.jpg  "$P/m-list.png:the post list:phone" \
-  "$P/m-post.png:a post:phone" "$P/m-book.png:book mode:phone" "$P/m-search.png:instant search:phone"
+  "$P/m-post.png:a post:phone" "$P/m-book.png:book mode:phone" "$P/m-menu.png:the menu:phone"
 bun scripts/compose-demo.ts docs/demo-code.jpg    "$P/maths.png:mathematics" "$P/code.png:code" "$P/pen.png:the pen"
 bun scripts/compose-demo.ts docs/demo-admin.jpg   "$P/editor.png:the editor"      "$P/appearance.png:appearance"
 COLS=2 bun scripts/compose-demo.ts docs/demo-looks.jpg "$P/look-plain.png:plain paper" \
