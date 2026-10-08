@@ -29,7 +29,7 @@ export function wireShortcutSheet(): () => void {
     if (on instanceof HTMLElement
       && (on.tagName === 'INPUT' || on.tagName === 'TEXTAREA' || on.isContentEditable)) return
     e.preventDefault()
-    show(scrim.hidden)
+    show(scrim.hidden !== false)
   }
   document.addEventListener('keydown', onKey)
   // `mousedown` on the scrim only: a press that started INSIDE the sheet and ended outside it
