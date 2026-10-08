@@ -24,6 +24,15 @@ import it from '@/locales/help/it'
 import ru from '@/locales/help/ru'
 import { escapeHtml } from '@/utils'
 import { A, CODE, LINKS, P, UL } from '@/admin-shared/kit'
+import { TAP } from '@/admin-shared/scale'
+
+/**
+ * A link that stands on its own line (a list item): `inline-block` so the matching negative
+ * margin works and the 24px hit box costs no height. Links INSIDE a sentence (`dress` below)
+ * stay plain `A`: padding on an inline link overlaps the lines above and below it, and WCAG 2.5.8
+ * exempts a link in running text from the 24px minimum.
+ */
+const LINK = `inline-block ${TAP} ${A}`
 import { TAB_IDS } from '@/admin-shared/settings-tabs'
 
 export const REPO = 'https://github.com/joiha-steven/quireink'
@@ -50,7 +59,7 @@ const TAB_WORDS: Record<string, [keyof AdminStrings, keyof AdminStrings]> = {
 function tabList(t: AdminStrings): string {
   return `<ul class="${UL} mt-2">` + TAB_IDS.map((tab) => {
     const [name, hint] = TAB_WORDS[tab] ?? ['tabBlog', 'tabBlogHint']
-    return `<li><a href="/admin/settings?tab=${tab}" class="${A}">${escapeHtml(String(t[name]))}</a>`
+    return `<li><a href="/admin/settings?tab=${tab}" class="${LINK}">${escapeHtml(String(t[name]))}</a>`
       + ` — ${escapeHtml(String(t[hint]))}</li>`
   }).join('') + `</ul>`
 }

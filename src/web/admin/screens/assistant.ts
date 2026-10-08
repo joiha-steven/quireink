@@ -90,16 +90,19 @@ function contextMeter(w: AssistantWords, context: number): string {
  * The outer box carries the `hidden`, and it has no display class on it — a `hidden` attribute
  * on an element that also says `flex` loses the tie and shows anyway (`docs/admin-one-dom.md`).
  */
+/** The chip stays 22px as drawn; a pseudo-element makes it a 24px target (`hit-24`, utilities.css). */
+const HIT = 'hit-24'
+
 function emptyBlock(t: AdminStrings, configured: boolean, open: boolean): string {
   const tabbed = (s: string) => s.replace('{tab}', t.tabServer)
   const chips = configured
     ? `<div class="flex flex-wrap justify-center gap-2">`
       + [t.assistantEg1, t.assistantEg2, t.assistantEg3].map((eg) =>
-        `<button type="button" data-ai-eg class="${CHIP} transition hover:border-neutral-400`
+        `<button type="button" data-ai-eg class="${CHIP} ${HIT} transition hover:border-neutral-400`
         + ` hover:text-neutral-900 dark:hover:border-neutral-500 dark:hover:text-neutral-100">`
         + `${escapeHtml(eg)}</button>`).join('')
       + `</div>`
-    : `<a href="${AI_SETTINGS}" class="${CHIP} transition hover:border-neutral-400`
+    : `<a href="${AI_SETTINGS}" class="${CHIP} ${HIT} transition hover:border-neutral-400`
       + ` hover:text-neutral-900 dark:hover:border-neutral-500 dark:hover:text-neutral-100">`
       + `${escapeHtml(tabbed(t.assistantOpenAi))}</a>`
 
@@ -120,6 +123,7 @@ function composer(t: AdminStrings, configured: boolean): string {
   return `<div class="border-t border-neutral-100 p-4 dark:border-neutral-800">`
     + `<div class="mx-auto flex max-w-3xl items-end gap-2">`
     + `<textarea class="${CONTROL} w-full resize-none" rows="1" data-ai-box`
+    + ` aria-label="${escapeAttr(t.assistantPlaceholder)}"`
     + ` placeholder="${escapeAttr(t.assistantPlaceholder)}"${off}></textarea>`
     + `<button type="button" data-ai-send class="${buttonClass('primary')}" disabled>`
     + `${escapeHtml(t.assistantSend)}</button>`
@@ -141,7 +145,9 @@ export async function assistantScreen(settings: SiteSettings, query: URLSearchPa
     + `<button type="button" data-ai-log-toggle aria-pressed="true"`
     + ` class="${SHEET_TOOL} ml-auto hidden min-[1600px]:inline-flex">`
     + `${escapeHtml(t.assistantDidThis)}</button>`
-    + `<a href="/admin/assistant" class="${SHEET_TOOL} ml-auto min-[1600px]:ml-0">`
+    // Hidden from `xl`, where the conversations column carries the same link in its own
+    // header: two "New conversation" on one screen is one too many.
+    + `<a href="/admin/assistant" class="${SHEET_TOOL} ml-auto xl:hidden">`
     + `${escapeHtml(t.assistantNew)}</a>`,
   )
 

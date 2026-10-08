@@ -17,6 +17,7 @@ import { collapseBlob } from '@/media/blob'
 import { checkUpload, readCapped, uploadLimits } from '@/media/limits'
 import { getSettings, saveSettings } from '@/content/settings'
 import { SETTING_PATHS, getAt, isSettingPath, patchAt, typeOfPath } from '@/content/settings-path'
+import { refusalText, refusedSetting } from '@/content/settings-refuse'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { safeFetch, BlockedUrlError } from '@/server/safe-fetch'
@@ -242,6 +243,11 @@ function registerSettingsTools(server: ToolHost): void {
         Object.assign(patch, patchAt(args.path, args.value))
       }
       if (Object.keys(patch).length === 0) return asError('Nothing to update')
+      // The admin's Save refuses an address or a repository name that does not read, because the
+      // merge would store `''` over it (or keep the old one) and report success. This door promises
+      // the same sanitising, so it refuses the same values (`content/settings-refuse.ts`).
+      const refused = refusedSetting(patch as Partial<SiteSettings>)
+      if (refused) return asError(refusalText(refused))
 
       const before = await getSettings()
       const next = await saveSettings(patch as Partial<SiteSettings>)

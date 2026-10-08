@@ -19,8 +19,8 @@
 // capability; this is a string, and hiding it only hides where the door would be.
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteSettings } from '@/types'
-import { escapeHtml } from '@/utils'
-import { buttonClass } from '@/admin-shared/kit'
+import { escapeAttr, escapeHtml } from '@/utils'
+import { SHEET_TOOL, buttonClass } from '@/admin-shared/kit'
 import { META } from '@/admin-shared/scale'
 import { connectionCard, panelList } from '@/web/admin/fields-box'
 import { settingRow, switchRow } from '@/web/admin/fields'
@@ -29,13 +29,58 @@ import { settingRow, switchRow } from '@/web/admin/fields'
 const COPY_BOX = 'flex min-h-9 min-w-0 flex-1 items-center truncate rounded-lg border'
   + ' border-neutral-300 px-3 text-xs dark:border-neutral-700'
 
-export function apiCard(t: AdminStrings, s: SiteSettings, base: string): string {
+/**
+ * WHAT A MACHINE DOOR SHOWS WHEN THE BLOG DOES NOT KNOW ITS OWN ADDRESS.
+ *
+ * Both cards printed `/api/mcp` and `/api/v1` with nothing in front, and a copy key beside them:
+ * a relative path no client can be pointed at, handed out as if it were the answer. With no site
+ * address and no `SITE_URL` the page cannot know the host the outside world uses (the admin may
+ * be reached through a proxy under another name), so it says where the answer is set instead,
+ * and the key goes to that field's tab. `data-needs-address` is the tour's hook for this state.
+ */
+export function needsAddress(t: AdminStrings, label: string): string {
+  // `META`, not the row's note: notes hide with "Hide explanations", and this sentence is the
+  // answer in place of the address, not an explanation of it.
+  return settingRow({
+    label,
+    control: `<p class="${META}">${escapeHtml(t.machineNeedsAddress)}</p>`
+      + `<button type="button" data-settings-goto="blog" data-needs-address class="${SHEET_TOOL}">`
+      + `${escapeHtml(t.seoCanonical)} →</button>`,
+  })
+}
+
+/**
+ * The address row, DRAWN IN BOTH FACES: the copyable address, and the note that stands in for it.
+ *
+ * ⚠️ BOTH, because the answer changes without a page load. The owner sets the Site address on the
+ * Blog tab and presses Save, and this tab is already in the page (all seven panels are, ADR 0054):
+ * drawn in one face only, the note went on saying "set the site address first" over an address
+ * that had just been set, until a reload. `lib/settings-save.ts` (`paintAddresses`) picks the face
+ * after every save from the record the save answered with, falling back to `SITE_URL`, which only
+ * the server knows and so rides here as `data-fallback`.
+ */
+export function machineAddress(t: AdminStrings, a: {
+  label: string; note: string; path: string; address: string; fallback: string
+  control: (address: string) => string
+}): string {
+  const known = a.address !== ''
+  return `<div data-machine-address data-path="${escapeAttr(a.path)}" data-fallback="${escapeAttr(a.fallback)}">`
+    + `<div data-machine-known${known ? '' : ' hidden'}>`
+    + settingRow({ label: a.label, note: a.note, control: a.control(a.address) }) + `</div>`
+    + `<div data-machine-unknown${known ? ' hidden' : ''}>${needsAddress(t, a.label)}</div></div>`
+}
+
+/**
+ * `base` is the absolute address, or `''` when the blog's own address is not known; `fallback` is
+ * `SITE_URL`'s origin, for the island when a save empties the setting.
+ */
+export function apiCard(t: AdminStrings, s: SiteSettings, base: string, fallback = ''): string {
   const live = s.api.enabled
-  const address = settingRow({
-    label: t.apiUrlLabel, note: t.apiUrlHint,
-    control: `<div class="flex items-center gap-2">`
+  const address = machineAddress(t, {
+    label: t.apiUrlLabel, note: t.apiUrlHint, path: '/api/v1', address: base, fallback,
+    control: (shown) => `<div class="flex items-center gap-2">`
       + `<code class="${COPY_BOX} bg-neutral-50 dark:bg-neutral-900" data-api-url>`
-      + `${escapeHtml(base)}</code>`
+      + `${escapeHtml(shown)}</code>`
       + `<button type="button" data-api-copy class="${buttonClass('secondary', 'sm')}">`
       + `${escapeHtml(t.mcpCopy)}</button></div>`,
   })

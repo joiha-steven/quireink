@@ -142,9 +142,12 @@ export function cloudCard(t: AdminStrings, s: SiteSettings): string {
       + `<div class="flex flex-wrap items-center gap-3">`
       + `<button type="button" data-cf-check class="${buttonClass('secondary', 'sm')}">${escapeHtml(t.cfCheck)}</button>`
       + `<p class="${LINE}" data-cf-answer aria-live="polite" hidden></p></div>`
-      + `<label class="flex items-center gap-2 ${LINE}" data-cf-paid-row hidden>`
-      + `<input type="checkbox" data-cf-confirm-paid> ${escapeHtml(t.cfConfirmPaid)}</label>`
-      + `<label class="flex items-start gap-2 ${LINE}"><input type="checkbox" class="mt-1" data-cf-self-update>`
+      // THE WHOLE LINE IS THE TARGET, at least 32px tall: the native box is 13px, and on a phone
+      // that was the only thing a thumb could hit (measured 2026-10-08). A `<label>` passes its
+      // click to the box, so the words and the space around them now tick it too.
+      + `<label class="flex min-h-8 cursor-pointer items-center gap-2 ${LINE}" data-cf-paid-row hidden>`
+      + `<input type="checkbox" class="cursor-pointer" data-cf-confirm-paid> ${escapeHtml(t.cfConfirmPaid)}</label>`
+      + `<label class="flex min-h-8 cursor-pointer items-start gap-2 py-0.5 ${LINE}"><input type="checkbox" class="mt-1 cursor-pointer" data-cf-self-update>`
       + `<span>${escapeHtml(t.cfSelfUpdate)}<span class="block ${NOTE_TEXT}">${escapeHtml(t.cfSelfUpdateNote)}</span></span></label>`
       + settingRow({
         label: t.cfCurrentLabel, note: t.cfCurrentNote,

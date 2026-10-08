@@ -95,7 +95,7 @@ function snippetBox(t: AdminStrings, f: {
   return `<div class="space-y-2">`
     + `<p class="text-xs font-medium text-neutral-700 dark:text-neutral-300">${escapeHtml(f.label)}</p>`
     + `<div class="flex overflow-hidden rounded-md border border-neutral-300 focus-within:border-neutral-400 dark:border-neutral-700">`
-    + `<div aria-hidden="true" data-snippet-gutter class="max-h-64 shrink-0 select-none overflow-hidden border-r border-neutral-200 bg-neutral-50 px-2 py-2 text-right font-mono text-xs leading-5 text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600">`
+    + `<div aria-hidden="true" data-snippet-gutter class="max-h-64 shrink-0 select-none overflow-hidden border-r border-neutral-200 bg-neutral-50 px-2 py-2 text-right font-mono text-xs leading-5 text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">`
     + `${numbers}</div>`
     + `<textarea rows="6" spellcheck="false" data-snippet-editor data-k="${escapeAttr(f.k)}"`
     + ` aria-label="${escapeAttr(f.label)}" placeholder="${escapeAttr(f.placeholder)}"`

@@ -34,6 +34,14 @@ const TILE_OFF = 'border-neutral-300 text-neutral-700 hover:border-neutral-500'
 export const tileClass = (on: boolean, cls: string): string =>
   `${TILE_BASE} ${cls} ${on ? TILE_ON : TILE_OFF}`
 
+/**
+ * Both faces of a tile as `data-on` / `data-off`, which is what the island's `pressKey` swaps.
+ * Without them a click moved `aria-pressed` and nothing else: the old tile stayed sunken and
+ * the new one showed only its focus outline, so nobody could tell what they had picked.
+ */
+export const tileFaces = (cls: string): string =>
+  ` data-on="${escapeAttr(tileClass(true, cls))}" data-off="${escapeAttr(tileClass(false, cls))}"`
+
 // --- The four drawings -----------------------------------------------------------------------
 // 160 × 96, filled in currentColor: the headline strong, the running lines faint. What separates the four at this size is the same few marks the setup
 // step draws: a gutter of numbers, a masthead over columns, a sheet of dotted paper.
@@ -81,9 +89,9 @@ export function lookPicker(t: AdminStrings, s: SiteSettings): string {
   ]
   const tiles = options.map(([v, name, hint]) =>
     `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${v === s.look}"`
-    + ` class="${tileClass(v === s.look, 'flex flex-col p-3 text-left')}">${art(v)}`
+    + `${tileFaces('flex flex-col p-3 text-left')} class="${tileClass(v === s.look, 'flex flex-col p-3 text-left')}">${art(v)}`
     + `<span class="block text-sm font-semibold leading-tight">${escapeHtml(name)}</span>`
-    + `<span class="mt-1 block text-xs font-normal text-neutral-500 dark:text-neutral-400">${escapeHtml(hint)}</span>`
+    + `<span class="mt-1 block text-xs font-normal text-neutral-600 dark:text-neutral-300">${escapeHtml(hint)}</span>`
     + `</button>`).join('')
   return settingRow({
     note: t.lookDesc,

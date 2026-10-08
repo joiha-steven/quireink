@@ -44,7 +44,8 @@ function head(t: SettingText, forId = ''): string {
   if (!t.label && !t.note && !t.noteHtml) return ''
   const words = escapeHtml(t.label ?? '')
   const badge = t.badge
-    ? `<code class="rounded-md bg-neutral-100 px-1.5 py-0.5 text-xs font-normal text-neutral-500`
+    // `neutral-600` on the `neutral-100` chip: `neutral-500` measured 4.35:1 there (2026-10-08).
+    ? `<code class="rounded-md bg-neutral-100 px-1.5 py-0.5 text-xs font-normal text-neutral-600`
       + ` dark:bg-neutral-800 dark:text-neutral-400">${escapeHtml(t.badge)}</code>`
     : ''
   let name = ''

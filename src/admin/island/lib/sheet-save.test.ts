@@ -9,7 +9,7 @@
 // somebody remembered to check is the same list again, one layer up.
 import { describe, expect, it } from 'bun:test'
 import { emptyDraft, type SheetDraft } from '@/admin-shared/sheet-wire'
-import { payloadOf, statusForSave } from './sheet-save'
+import { payloadOf, previewPlan, statusForSave } from './sheet-save'
 
 const TZ = 'Asia/Ho_Chi_Minh'
 const draft = (over: Partial<SheetDraft> = {}): SheetDraft => ({ ...emptyDraft(), ...over })
@@ -76,5 +76,16 @@ describe('a slug nobody typed', () => {
   })
   it('is not, once the writer typed one or a save pinned it', () => {
     expect(payloadOf('post', draft({ title: 'T', slug: 'mine' }), 'x', TZ).slugDerived).toBeUndefined()
+  })
+})
+
+describe('what Preview saves first', () => {
+  it('saves a draft with Published ticked AS A DRAFT, never published', () => {
+    expect(previewPlan('draft', 'published')).toEqual({ save: 'draft' })
+    expect(previewPlan('draft', 'draft')).toEqual({ save: 'draft' })
+  })
+  it('saves nothing on a live piece: it is previewed from a snapshot', () => {
+    expect(previewPlan('published', 'published')).toEqual({ snapshot: true })
+    expect(previewPlan('published', 'draft')).toEqual({ snapshot: true })
   })
 })

@@ -108,6 +108,37 @@
   whose link colour is the text colour, and are now underlined. On "Start from a backup", the
   archive picker's button matches the card and the note about encrypted backups sits under the
   two fields it explains. A test now fails on any submit button on these screens without a class.
+- **A Site address the blog cannot keep is refused, next to the field.** "not a url" used to save
+  with "Settings saved" and leave the field empty, wiping an address already set; the Author link
+  and the source repository did the same. Settings, the setup screen and the MCP `update_settings`
+  tool now refuse it and say why, and the sentence stays until the value is edited.
+- **MCP opens without a reload.** Switching it on and saving shows the token controls at once, the
+  MCP and Content API addresses are absolute (or say the Site address is missing) and follow a new
+  address as soon as it is saved, the token table no longer clips its dates, and its action reads
+  Revoke.
+- **The editor tells the truth about a post.** The header shows a scheduled post's publish date
+  rather than the time it was saved, follows what is saved rather than what is ticked (no "View
+  post" on an unsaved draft), and the status reads Scheduled for a future date. A published or
+  scheduled post's main key reads Update. Preview on a draft with Published ticked saved it as
+  published; it now saves a draft.
+- **A discarded local copy can be brought back.** The notice for words kept on this device is a
+  real notice with Restore first, and Discard offers Undo, including when the copy offered was the
+  server's and a save or an autosave has run since.
+- **Images can be uploaded from the editor.** The picker has an Upload key, an empty state that
+  says what to do, and says so when the library could not be loaded instead of calling it empty.
+  The slash menu no longer draws its hint over the last row and keeps clear of a phone's keyboard.
+- **Appearance shows what was picked.** The look and font tiles kept the old tile pressed after a
+  click. A font pick that resets the type table now says so, and "System font" is called Site font,
+  which is what it sets: everything on the public site except the article text.
+- **A newsletter is never pre-selected twice.** Send no longer ticks a post already sent, counts
+  the people who received it rather than the sends, links its mail warning to the setting, and the
+  consent line survives a reload.
+- **Smaller things across the admin:** a Scheduled filter on the Write list (scheduled posts and
+  notes no longer count as Published); library tile keys visible on touch tablets; row ticks,
+  sign-in links and small links with a 24px target; grey small print, code line numbers and badges
+  at 4.5:1 or better; a refused sign-in or claim password says so under the field; the recovery
+  codes step explains Continue and can copy the codes; analytics names what its trend compares
+  against; the log names posts by title; the upload-too-large message says where the limit is set.
 
 ## 2026-10-03 · Quire Ink 2.2.17
 

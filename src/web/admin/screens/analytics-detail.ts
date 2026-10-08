@@ -29,8 +29,8 @@ const DEPTH_LABELS = ['0–25%', '26–50%', '51–75%', '76–100%']
 function tiles(t: AdminStrings, lang: SiteLang, d: PageSummary): string {
   const n = (x: number): string => formatCount(x, lang)
   return `<div class="grid grid-cols-2 gap-4 lg:grid-cols-5">`
-    + statCard({ label: t.analyticsViews, value: n(d.totalViews), after: trendMark(d.totalViews, d.prevViews) })
-    + statCard({ label: t.analyticsVisitors, value: n(d.uniqueVisitors), after: trendMark(d.uniqueVisitors, d.prevVisitors) })
+    + statCard({ label: t.analyticsViews, value: n(d.totalViews), after: trendMark(d.totalViews, d.prevViews, t, lang) })
+    + statCard({ label: t.analyticsVisitors, value: n(d.uniqueVisitors), after: trendMark(d.uniqueVisitors, d.prevVisitors, t, lang) })
     + statCard({ label: t.analyticsAvgTime, value: formatDuration(d.avgDwellMs) })
     + statCard({ label: t.analyticsAvgDepth, value: `${d.avgReadDepth}%` })
     // The glance share NEVER travels without the count it was taken over. A leave sample exists
@@ -53,7 +53,7 @@ export async function analyticsDetailScreen(settings: SiteSettings, path: string
 
   const back = `<span class="flex flex-col gap-1">`
     + `<a href="/admin/analytics?range=${escapeAttr(at)}"`
-    + ` class="text-xs font-medium text-neutral-500 hover:text-neutral-600 dark:text-neutral-400 dark:hover:text-neutral-300">`
+    + ` class="-my-2 self-start py-2 text-xs font-medium text-neutral-500 hover:text-neutral-600 dark:text-neutral-400 dark:hover:text-neutral-300">`
     + `← ${escapeHtml(t.analyticsAllPages)}</a>`
     + `<span class="truncate">${escapeHtml(title)}</span></span>`
 
@@ -95,7 +95,7 @@ export async function analyticsDetailScreen(settings: SiteSettings, path: string
         ? list(t.analyticsDepthDist, t.analyticsUnitSamples, detail.depthBuckets.map((b) =>
           ({ key: String(b.bucket), label: DEPTH_LABELS[b.bucket] ?? `${b.bucket}`, value: b.samples })))
         : '')
-    : emptyState({ title: t.analyticsNoData })
+    : emptyState({ title: t.analyticsNoData, description: t.analyticsNoDataHint })
 
   return `<div data-screen="analytics" data-analytics-detail="${escapeAttr(detail.path)}"`
     + ` data-lang="${escapeAttr(lang)}"><div class="space-y-6">`

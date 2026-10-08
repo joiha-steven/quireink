@@ -18,7 +18,7 @@ import { APP_VERSION } from '@/version'
 import {
   A, CODE, P, SHEET, TABLE_FRAME, TABLE_SCROLL, THEAD, TROW,
 } from '@/admin-shared/kit'
-import { SECTION } from '@/admin-shared/scale'
+import { SECTION, TAP } from '@/admin-shared/scale'
 import { chordSpellings } from '@/web/admin/rail-rows'
 import { BUILTIN, SHORTCUTS } from '@/admin-shared/keys'
 import { firstRunSteps } from '@/admin-shared/first-run'
@@ -106,7 +106,7 @@ function firstRun(t: ReturnType<typeof adminT>): string {
       // inside a span, and the admin's reading face is applied to `p` — as a span the body
       // rendered in the chrome font while the line above it rendered in the reading one.
       + `<div class="min-w-0">`
-      + `<a href="${escapeAttr(s.href)}" class="text-sm font-medium underline-offset-2 hover:underline text-neutral-900 dark:text-neutral-100">${escapeHtml(s.label)}</a>`
+      + `<a href="${escapeAttr(s.href)}" class="inline-block ${TAP} text-sm font-medium underline-offset-2 hover:underline text-neutral-900 dark:text-neutral-100">${escapeHtml(s.label)}</a>`
       + `<p class="mt-0.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">${escapeHtml(s.body)}</p>`
       + `</div></li>`).join('')
     + `</ol>`

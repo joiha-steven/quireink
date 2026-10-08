@@ -431,6 +431,17 @@
   .mx-auto {
     margin-inline: auto;
   }
+  .hit-24 {
+    position: relative;
+  }
+  .hit-24::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: max(100%, 24px);
+    translate: 0 -50%;
+  }
   .-my-2 {
     margin-block: calc(var(--spacing) * -2);
   }
@@ -944,6 +955,9 @@
   }
   .min-w-0 {
     min-width: 0px;
+  }
+  .min-w-6 {
+    min-width: calc(var(--spacing) * 6);
   }
   .min-w-8 {
     min-width: calc(var(--spacing) * 8);
@@ -2937,6 +2951,9 @@
     }
     .xl\:flex {
       display: flex;
+    }
+    .xl\:hidden {
+      display: none;
     }
     .xl\:max-h-\[calc\(100dvh-1\.5rem\)\] {
       max-height: calc(100dvh - 1.5rem);

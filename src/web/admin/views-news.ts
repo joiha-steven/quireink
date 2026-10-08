@@ -12,15 +12,47 @@ import { getPublicPosts } from '@/content/posts'
 import { statsByPost, statsByEmail } from '@/news/newsletter-log'
 import { getMailStatus } from '@/news/mail'
 import { listSubscribers } from '@/news/subscribers'
+import { all } from '@/store/query'
+
+/**
+ * WHO each post reached, as DISTINCT addresses, written as small integers (an index into the
+ * addresses met on the way) so the page can take the union across several ticked posts without
+ * shipping the addresses themselves. `stats.sent` cannot answer this: it counts rows, so a
+ * deliberate resend to the same 18 reads 36, and a digest credits each of its posts with the
+ * same 18 again.
+ */
+function reachedByPost(): Map<string, number[]> {
+  const seen = new Map<string, number>()
+  const sets = new Map<string, Set<number>>()
+  try {
+    for (const r of all<{ email: string; post_slug: string }>(
+      `select email, post_slug from newsletter_sends
+        where kind = 'broadcast' and ok = 1 and post_slug is not null`,
+    )) {
+      let i = seen.get(r.email)
+      if (i === undefined) { i = seen.size; seen.set(r.email, i) }
+      for (const slug of r.post_slug.split(',')) {
+        const set = sets.get(slug) ?? new Set<number>()
+        set.add(i)
+        sets.set(slug, set)
+      }
+    }
+  } catch (error) {
+    console.error(`[ERROR] views-news.reachedByPost: ${(error as Error).message}`)
+  }
+  return new Map([...sets].map(([slug, set]) => [slug, [...set]]))
+}
 
 /** The published posts a broadcast can carry, each with what it has already been sent to. */
 export async function newsletterView() {
   const [posts, stats, mail] = await Promise.all([
     getPublicPosts(), statsByPost(), getMailStatus(),
   ])
+  const reached = reachedByPost()
   return {
     posts: posts.map((p) => ({
       slug: p.slug, title: p.title, date: p.date, stats: stats.get(p.slug) ?? null,
+      reached: reached.get(p.slug) ?? [],
     })),
     mailConfigured: mail.configured,
   }

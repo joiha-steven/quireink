@@ -13,6 +13,7 @@
 // Nothing here is a form. Every control is `type="button"`, because `ui/Button` emits a button
 // with no type and HTML's default is submit — and two of the buttons on this screen delete
 // things in batches.
+import { limitWords } from '@/admin-shared/upload-words'
 import type { SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
@@ -47,7 +48,7 @@ function words(t: AdminStrings): string {
     noUndo: t.askNoUndo, yes: t.askDeleteForever, no: t.askCancel,
     trashed: t.movedToTrash, deleteFailed: t.deleteFailed, iconInUse: t.iconInUse, noMatch: t.deleteNoMatch,
     copied: t.copiedUrl, uploaded: t.uploaded, uploadFailed: t.uploadFailed,
-    badType: t.unsupportedType, tooLarge: t.uploadTooLarge, noRoom: t.uploadNoRoom,
+    badType: t.unsupportedType, ...limitWords(t),
     checkFailed: t.checkUnusedFailed,
     found: t.unusedFound, none: t.unusedNone,
     describing: t.aiDescribeAllStarted, noVision: t.aiCannotSeeImages,

@@ -13,8 +13,12 @@ that file first; this one only adds what is true here.
 
 - The chrome is the SHEET'S OWN top rows (the Writing Desk mock's `sheettop`): the action
   line — back link + save state + word count on the left, quiet Markdown/Attributes text
-  controls and the Preview/View/Save/Publish buttons on the right — is the card's first row, and
-  the toolbar sticks directly under it. One piece: a floating band over a crack of page
+  controls and the Preview/View/Save/main-key buttons on the right — is the card's first row, and
+  the toolbar sticks directly under it. The main key says what a press would do: **Publish** on
+  a draft, **Schedule** when the date chosen is ahead, and **Update** on a piece the server
+  already holds as published or scheduled (2026-10-08), enabled only once something changed. A
+  greyed "Publish" on a live post read as a key that was not available at all. The word and the
+  enabled state come from `admin-shared/sheet-state.ts`. One piece: a floating band over a crack of page
   between it and the paper was rejected as looking off (2026-08-17). Never shadowed.
   The global sidebar shows again since the two-pane write screen; the write pane (the list
   column) sits beside the sheet from 1640px up, pinned at the same top as the sheet's chrome.
@@ -26,7 +30,11 @@ that file first; this one only adds what is true here.
   rows above `lg` in the long-label locales (Russian at 1920: 56px → 100px). Vietnamese and
   English stay on one row at 1640, which is where the write pane arrives beside the sheet.
 - The title lives ON the sheet (`screens/sheet.ts`), in the reading face, with the meta line
-  (status · last touched) under it. It aligns with the public reading column, wraps
+  (status · date) under it. **The meta line, the View key and Analytics read what is SAVED**,
+  never the form (2026-10-08): ticking Published on an unsaved draft turned the line to
+  "Published" and raised a View key onto a 404. A scheduled piece is dated by its PUBLISH date
+  (the site's wall clock, as the Attributes panel says it); anything else by its last touch. The
+  status radio names its second choice Scheduled while the date is ahead, as the Write list does. It aligns with the public reading column, wraps
   naturally, and uses content-driven height so a long one is never clipped.
 - **The toolbar is BACK, by the owner's verdict after writing on the bare version**
   (2026-08-17 — "/" alone is fine in the Markdown view, but the normal view wants a
@@ -35,8 +43,11 @@ that file first; this one only adds what is true here.
   scrolling — and when it wraps its lines range LEFT, on the same edge the action line
   starts from, rather than each line centring itself. The Markdown source view has NO
   toolbar — raw text needs no formatting buttons. The called controls remain beside it: a
-  selection raises the bubble, `/` on an empty line raises the insert menu (which prints
-  each block's Markdown shortcut beside its row). The closing line under the writing says
+  selection raises the bubble, `/` on an empty line raises the insert menu (placed by
+  `components/slash-place.ts`: whole under the caret's line or over it, inside the VISIBLE
+  viewport so a phone's keyboard does not hide it, scrolling only when neither side holds it,
+  and never masked — the admin's `scroll-fade` let the sheet's hint line print through the last
+  rows; it prints each block's Markdown shortcut beside its row). The closing line under the writing says
   the two gestures once.
 - **The table's tools get their own line**, under the strip and ranged left, and only while
   the cursor is in a table. They used to join the end of the main run, and because that run
@@ -118,6 +129,12 @@ that file first; this one only adds what is true here.
   has no row to hang a snapshot on, so localStorage stays its only copy until the first save,
   and on the way back in it is REOPENED into the editor rather than offered above an empty
   page: it is the only copy there is, so there is nothing for it to be restored over.
+  **The offer is a NOTICE under the action line** (2026-10-08): the sentence at the bar's own
+  size, Restore as the kit's small primary key and Discard as a ghost beside it. It was a 12px
+  line with two 12px words, and reopening a draft walked past it. Discard asks nothing and its
+  toast carries **Undo**, as the trash's does; the copy on offer is read into memory at the
+  click — the server's by a fetch started then — because the next autosave writes the screen
+  over both keys, and a save while the toast is up does not drop it (`island/lib/sheet-safety.ts`).
   ⚠️ **The key follows the PIECE, not the screen** — `quire:draft:post:new` until the piece has
   a row, then its own slug. Fixed at the value it had when the editor mounted (until
   2026-09-07), everything typed after a new post's first save went on being written under
@@ -225,5 +242,12 @@ that file first; this one only adds what is true here.
   700ms past the last keystroke before it resumes, 1.2s ease-in-out, and never all the way
   to zero. A blink means "the cursor is here and nothing is happening", and during a burst of
   typing something plainly is.
+- **The picture picker uploads** (2026-10-08). Image, Gallery and the picture fields ask
+  `island/lib/media-picker.ts`, which used to show a title and Close over an empty library, so a
+  first picture meant leaving the piece for Library. It now draws the library's empty state with
+  an upload key, and an upload key beside Close otherwise, through the library's own
+  `upload-client.ts` and its refusals (the size limit names both sizes). One picture asked for is
+  the picture uploaded; a gallery gets its uploads as ticked tiles. A list the server refuses
+  (an expired session) is the load-failed toast, never the empty state.
 - Autosave, revisions, preview tokens, media picking, taxonomy and publish behaviour are
   unchanged by any visual pass.

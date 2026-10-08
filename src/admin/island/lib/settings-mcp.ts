@@ -91,7 +91,7 @@ async function revoke(screen: HTMLElement, id: string, name: string, w: ListWord
         request: {
           title: (w.askTokenTitle ?? '').replace('{name}', name),
           body: w.askTokenBody ?? '',
-          confirmLabel: w.yes ?? '', cancelLabel: w.no ?? '', danger: true,
+          confirmLabel: w.mcpRevoke ?? '', cancelLabel: w.no ?? '', danger: true,
         },
         respond: (answer: string) => resolve(answer === 'confirm'),
       },
@@ -101,7 +101,7 @@ async function revoke(screen: HTMLElement, id: string, name: string, w: ListWord
   if (!heard) return
   const res = await fetch(`/api/mcp/tokens/${id}`, { method: 'DELETE' }).catch(() => null)
   if (!res?.ok) { say(w.deleteFailed ?? '', 'error'); return }
-  say(w.mcpTokenDeleted ?? '')
+  say(w.mcpTokenRevoked ?? '')
   // The once-only box goes too: after a revoke it went on showing a plaintext token for a
   // grant that no longer exists, possibly the one just revoked (2026-09-30).
   const box = screen.querySelector<HTMLElement>('[data-mcp-created]')

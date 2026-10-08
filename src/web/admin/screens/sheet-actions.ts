@@ -12,6 +12,7 @@
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { buttonClass, OVERLAY } from '@/admin-shared/kit'
+import type { MainWord } from '@/admin-shared/sheet-state'
 
 /** Quiet text control, shared by everything on the bar that is not Preview/Publish. */
 const QUIET = 'px-2 py-1.5 text-sm text-neutral-500 hover:text-neutral-900'
@@ -41,10 +42,14 @@ export type SheetLinks = {
   /** Preview is a post's alone: the other two kinds have no preview route. */
   canPreview: boolean
   previewNow: boolean
-  /** `Publish` or `Schedule`, both shipped so the island can swap without a round trip. */
+  /** `Publish`, `Schedule` and `Update`, all shipped so the island can swap without a round trip. */
   publish: string
   schedule: string
-  scheduled: boolean
+  update: string
+  /** Which of the three the main key says first (`sheet-state.ts`). */
+  main: MainWord
+  /** Whether it can be pressed before anything changes: a live piece has nothing to update yet. */
+  mainReady: boolean
   /** Whether the server holds the piece as published: Save says "Save" rather than "Save draft". */
   published: boolean
 }
@@ -141,28 +146,36 @@ export function sheetActions(t: AdminStrings, links: SheetLinks): string {
     + `<button type="button" data-sheet-save${chord('save')} title="${escapeAttr(saveWord)}"`
     + ` data-say-draft="${escapeAttr(t.saveDraft)}" data-say-save="${escapeAttr(t.save)}"`
     + ` disabled class="${escapeAttr(buttonClass('secondary'))}">${escapeHtml(saveWord)}</button>`
+    // "Update" on a piece already out or queued, enabled once something changed: greyed
+    // "Publish" on a live post read as a key that was not available at all.
     + `<button type="button" data-sheet-publish`
     + ` data-say-publish="${escapeAttr(links.publish)}" data-say-schedule="${escapeAttr(links.schedule)}"`
-    + ` class="${escapeAttr(buttonClass())}">`
-    + `${escapeHtml(links.scheduled ? links.schedule : links.publish)}</button>`
+    + ` data-say-update="${escapeAttr(links.update)}"`
+    + `${links.mainReady ? '' : ' disabled'} class="${escapeAttr(buttonClass())}">`
+    + `${escapeHtml(links[links.main])}</button>`
     + `</div></div>`
 
-    // The recovered-work line, on a STRIP of its own under the controls. Folded into the control
-    // row it was a `basis-full` child of the left group, so the moment it appeared the one-row
-    // bar broke into three and the buttons dropped a line because a notice arrived. GREY, not
-    // amber, and the verbs are not underlined: nothing here has gone wrong — a draft was found
-    // and the owner may take it or leave it — and a warning colour made the editor open looking
-    // like it had a problem. Restore stays the darker of the two, because it is the one that
-    // rescues somebody's words.
-    + `<div data-sheet-found hidden class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 border-t`
-    + ` border-neutral-200 bg-neutral-50 px-4 py-1.5 text-xs text-neutral-700 dark:border-neutral-800`
-    + ` dark:bg-neutral-900/60 dark:text-neutral-300">`
+    // The recovered-work NOTICE, on a strip of its own under the controls. Folded into the
+    // control row it was a `basis-full` child of the left group, so the moment it appeared the
+    // one-row bar broke into three and the buttons dropped a line because a notice arrived.
+    //
+    // GREY, not amber: nothing here has gone wrong — a copy was found and the owner may take it
+    // or leave it — and a warning colour made the editor open looking like it had a problem.
+    // But it is a NOTICE, not small print: it was a 12px sentence with two 12px words in it,
+    // and reopening a draft walked straight past it. Now the sentence is the bar's own size and
+    // the two answers are the kit's small keys (`ButtonSize` `sm` names this strip as their
+    // use): Restore the primary one, because it is the one that rescues somebody's words, and
+    // Discard a ghost beside it, undoable from its toast (`island/sheet.ts`).
+    + `<div data-sheet-found hidden role="status" class="flex flex-wrap items-center justify-between`
+    + ` gap-x-3 gap-y-2 border-t border-neutral-200 bg-neutral-50 px-4 py-2 text-sm text-neutral-800`
+    + ` dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-200">`
+    + `<span class="flex min-w-0 items-center gap-2">`
     + `<span aria-hidden="true" class="h-2 w-2 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-500"></span>`
-    + `<span><span data-say-found></span> &middot; `
-    + `<button type="button" data-sheet-restore class="font-medium text-neutral-900`
-    + ` hover:text-neutral-600 dark:text-white dark:hover:text-neutral-300">`
-    + `${escapeHtml(t.localDraftRestore)}</button> &middot; `
-    + `<button type="button" data-sheet-discard class="hover:text-neutral-900 dark:hover:text-white">`
-    + `${escapeHtml(t.localDraftDiscard)}</button></span></div>`
+    + `<span data-say-found></span></span>`
+    + `<span class="flex shrink-0 items-center gap-1.5">`
+    + `<button type="button" data-sheet-discard class="${escapeAttr(buttonClass('ghost', 'sm'))}">`
+    + `${escapeHtml(t.localDraftDiscard)}</button>`
+    + `<button type="button" data-sheet-restore class="${escapeAttr(buttonClass('primary', 'sm'))}">`
+    + `${escapeHtml(t.localDraftRestore)}</button></span></div>`
     + `</div>`
 }

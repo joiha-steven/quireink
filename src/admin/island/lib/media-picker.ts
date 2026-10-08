@@ -13,6 +13,8 @@
 import type { MediaItem } from '@/types'
 import { formatBytes } from '@/i18n/format'
 import { OVERLAY, buttonClass } from '@/admin-shared/kit'
+import { NOTE_TEXT } from '@/admin-shared/scale'
+import { refusalWords, uploadImages } from '@/admin/upload-client'
 import { mediaTileMark, type MediaWords } from '@/admin-shared/media-marks'
 import { elOf } from './mark-dom'
 import { wireGrid } from './media-grid'
@@ -22,6 +24,13 @@ import { composing } from '@/admin/components/composing'
 export type PickWords = MediaWords & {
   title: string; titleMulti: string; hintMulti: string; add: string; close: string
   loadFailed: string
+  /**
+   * AN ASKER THAT NAMES THESE GETS AN UPLOAD KEY AND AN EMPTY STATE. A first-time writer on
+   * an empty library got a title and Close, and had to leave the piece for Library to put a
+   * picture in it. The upload is the library's own (`upload-client.ts`), refusals and all.
+   */
+  upload?: string; uploading?: string; empty?: string; emptyHint?: string
+  badType?: string; tooLarge?: string; noRoom?: string; uploadFailed?: string
 }
 
 export type PickRequest = {
@@ -32,6 +41,8 @@ export type PickRequest = {
 }
 
 const GRID = 'grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-cols-4'
+/** What the library's own well accepts (`screens/media-images.ts`): the formats it can vary. */
+const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/avif,image/svg+xml,image/gif'
 
 let open: HTMLElement | null = null
 
@@ -50,9 +61,11 @@ export async function openPicker(req: PickRequest): Promise<void> {
   panel.setAttribute('aria-label', multi ? req.words.titleMulti : req.words.title)
 
   const head = document.createElement('div')
-  head.className = 'mb-4 flex items-center justify-between'
+  // `gap-3`: with the upload key in it the head's two ends met on a phone (title 37-144, key
+  // from 144), and a long title wraps rather than shoving the keys off the panel.
+  head.className = 'mb-4 flex items-center justify-between gap-3'
   const title = document.createElement('h2')
-  title.className = 'text-lg font-bold'
+  title.className = 'min-w-0 text-lg font-bold'
   title.textContent = multi ? req.words.titleMulti : req.words.title
   const keys = document.createElement('div')
   keys.className = 'flex items-center gap-2'
@@ -67,6 +80,51 @@ export async function openPicker(req: PickRequest): Promise<void> {
   keys.append(add, shutKey)
   head.append(title, keys)
 
+  // ---- the upload key, and the empty state it is the answer to -------------------------------
+
+  const w = req.words
+  const file = document.createElement('input')
+  file.type = 'file'
+  file.accept = IMAGE_ACCEPT
+  file.multiple = multi
+  file.hidden = true
+  const uploadKeys: HTMLButtonElement[] = []
+  const uploadKey = (variant: 'primary' | 'secondary'): HTMLButtonElement => {
+    const key = document.createElement('button')
+    key.type = 'button'
+    key.className = buttonClass(variant)
+    key.textContent = w.upload ?? ''
+    key.addEventListener('click', () => file.click())
+    uploadKeys.push(key)
+    return key
+  }
+  const headUpload = w.upload ? uploadKey('secondary') : null
+  if (headUpload) keys.prepend(headUpload)
+
+  // The library's empty state in this panel's own shape (`web/admin/kit.ts` `emptyState`):
+  // what the state is, why it does not matter, and the one thing to do about it.
+  const empty = document.createElement('div')
+  empty.className = 'flex flex-col items-center justify-center px-6 py-16 text-center'
+  empty.hidden = true
+  if (w.empty) {
+    const said = document.createElement('p')
+    said.className = 'text-sm font-medium text-neutral-700 dark:text-neutral-300'
+    said.textContent = w.empty
+    empty.append(said)
+    if (w.emptyHint && w.upload) {
+      const why = document.createElement('p')
+      why.className = `${NOTE_TEXT} mt-1.5 max-w-sm`
+      why.textContent = w.emptyHint
+      empty.append(why)
+    }
+    if (w.upload) {
+      const row = document.createElement('div')
+      row.className = 'mt-4'
+      row.append(uploadKey('primary'))
+      empty.append(row)
+    }
+  }
+
   const hint = document.createElement('p')
   hint.className = 'mb-3 text-sm leading-6 text-neutral-500 dark:text-neutral-400'
   hint.textContent = req.words.hintMulti
@@ -76,9 +134,9 @@ export async function openPicker(req: PickRequest): Promise<void> {
   body.className = 'overflow-y-auto'
   const grid = document.createElement('div')
   grid.className = GRID
-  body.append(grid)
+  body.append(empty, grid)
 
-  panel.append(head, hint, body)
+  panel.append(head, hint, body, file)
   scrim.append(panel)
   document.body.append(scrim)
   open = scrim
@@ -115,25 +173,69 @@ export async function openPicker(req: PickRequest): Promise<void> {
 
   // ---- the pictures ----------------------------------------------------------------------
 
+  const tile = (m: MediaItem): Node => elOf(mediaTileMark(m, req.words, {
+    mode: 'picker',
+    tickable: multi,
+    sizeLabel: formatBytes(m.size),
+    title: m.filename,
+  }))
+
+  // ⚠️ A REFUSAL IS A FAILURE, NOT AN EMPTY LIBRARY. A `success: false` (a session that expired,
+  // a 500) used to read as no pictures at all, and the empty state then offered an upload to a
+  // writer whose library was full and whose session was gone.
   try {
     const res = await fetch('/api/media')
     const json = await res.json() as { success?: boolean; data?: MediaItem[] }
-    const items = json.data ?? []
-    for (const m of items) {
-      grid.append(elOf(mediaTileMark(m, req.words, {
-        mode: 'picker',
-        tickable: multi,
-        sizeLabel: formatBytes(m.size),
-        title: m.filename,
-      })))
-    }
+    if (!res.ok || !json.success || !Array.isArray(json.data)) throw new Error('media list refused')
+    for (const m of json.data) grid.append(tile(m))
   } catch {
     say(req.words.loadFailed, 'error')
     finish(null)
     return
   }
 
+  /** Nothing to choose from: say so, and keep the head's key out of the way of the big one. */
+  const sayEmpty = (): void => {
+    const none = grid.childElementCount === 0
+    empty.hidden = !none || !w.empty
+    if (headUpload) headUpload.hidden = none && Boolean(w.empty)
+  }
+  sayEmpty()
+
   const wired = wireGrid(grid)
+
+  /**
+   * UPLOAD, AND THEN THE ANSWER. One picture asked for is the picture uploaded — the writer
+   * chose it by choosing the file. Several asked for come back as tiles already ticked, so the
+   * gallery's Add key is one press away and the rest of the library is still on offer.
+   */
+  const busy = (on: boolean): void => {
+    for (const key of uploadKeys) {
+      key.disabled = on
+      key.textContent = (on ? w.uploading : w.upload) ?? ''
+    }
+    panel.setAttribute('aria-busy', String(on))
+  }
+  file.addEventListener('change', () => {
+    const files = [...(file.files ?? [])]
+    file.value = ''
+    if (files.length === 0) return
+    busy(true)
+    void uploadImages(multi ? files : files.slice(0, 1))
+      .then((items) => {
+        const first = items[0]
+        if (!multi && first) { finish({ url: first.url, alt: first.alt || undefined }); return }
+        for (const m of [...items].reverse()) grid.prepend(tile(m))
+        for (const m of items) wired.pick(m.url, false)
+        sayEmpty()
+      })
+      .catch((err: unknown) => {
+        say(refusalWords(err, {
+          badType: w.badType, tooLarge: w.tooLarge, noRoom: w.noRoom, failed: w.uploadFailed,
+        }), 'error')
+      })
+      .finally(() => { if (!answered) busy(false) })
+  })
   if (multi) {
     wired.onChange(() => {
       const n = wired.picked().length
@@ -149,7 +251,7 @@ export async function openPicker(req: PickRequest): Promise<void> {
     const hit = (e.target as HTMLElement).closest<HTMLElement>('[data-open]')
     if (!hit?.dataset.open) return
     if (multi) { wired.pick(hit.dataset.open, false); return }
-    const tile = hit.closest<HTMLElement>('[data-media]')
-    finish({ url: hit.dataset.open, alt: tile?.dataset.alt })
+    const chosen = hit.closest<HTMLElement>('[data-media]')
+    finish({ url: hit.dataset.open, alt: chosen?.dataset.alt })
   })
 }

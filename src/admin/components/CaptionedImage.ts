@@ -78,7 +78,12 @@ const className = {
   matInk: 'border border-neutral-900 bg-neutral-900 dark:border-neutral-100 dark:bg-neutral-100',
   // The caption. Still editable with captions switched off: it is the alt text, so it keeps
   // working for screen readers and for search, it just does not print under the photo.
-  caption: 'mt-1.5 w-full border-0 bg-transparent text-center text-sm outline-none'
+  //
+  // ⚠️ 24px TALL, AND THE GAP ABOVE PAID FOR IT: the field was 22px under a 6px gap, below the
+  // smallest hit a pointer is owed. Padding rather than a min-height, because the text's line
+  // is 20 to 22px depending on the admin's input rule: 2px of padding a side and 2px less
+  // margin keep the words where they were and the figure's foot within 2px of where it was.
+  caption: 'mt-1 py-0.5 w-full border-0 bg-transparent text-center text-sm outline-none'
     + ' placeholder:text-neutral-300 dark:placeholder:text-neutral-600',
   captionOn: 'text-neutral-500 dark:text-neutral-400',
   captionOff: 'text-neutral-300 dark:text-neutral-600',
@@ -110,6 +115,8 @@ export class ImageView {
     this.cap = el('input', { className: className.caption, type: 'text' })
     this.cap.contentEditable = 'false'
     this.cap.placeholder = words.caption
+    // Named, not only placeholdered: the placeholder leaves with the first letter typed.
+    this.cap.setAttribute('aria-label', words.caption)
     this.cap.addEventListener('input', () => this.attrs({ alt: this.cap.value }))
     // Typing in the caption is typing in a field, not in the document: without this every
     // keystroke also reaches ProseMirror, which reads it as an edit at the node's position.

@@ -13,7 +13,7 @@ import type { SiteLang } from '@/types'
 import { escapeAttr, escapeHtml, formatDateTimeShort } from '@/utils'
 import { formatCount } from '@/i18n/format'
 import { ICONS } from '@/icons'
-import { UTIL } from '@/admin-shared/scale'
+import { TAP, UTIL } from '@/admin-shared/scale'
 import { FEED_LIST, FEED_MARK, FEED_ROW, inkFor, markFor } from '@/admin-shared/activity-mark'
 import { ago } from '@/admin-shared/when'
 import { logSentence } from '@/admin-shared/log-sentence'
@@ -27,7 +27,7 @@ export type DashboardData = {
   sources: { referrers: { label: string; visitors: number }[]; countries: { label: string; visitors: number }[] }
 }
 
-const VIEW_ALL = 'text-xs text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200'
+const VIEW_ALL = `${TAP} text-xs text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200`
 const QUIET = 'text-sm text-neutral-500 dark:text-neutral-400'
 const ROW_LINK = '-mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
 
@@ -219,7 +219,7 @@ function activityCard(t: AdminStrings, lang: SiteLang, entries: ActivityEntry[],
     }).join('') + `</ul>`
   return card({
     title: escapeHtml(t.recentActivity),
-    actions: link('/admin/log', 'text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white', t.recentViewAll),
+    actions: link('/admin/log', `${TAP} text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white`, t.recentViewAll),
     body,
   })
 }

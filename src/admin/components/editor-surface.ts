@@ -57,7 +57,7 @@ export function writingSurface(
         const { $from, empty } = view.state.selection
         if (!empty || $from.parent.type.name !== 'paragraph' || $from.parent.content.size !== 0) return false
         const caret = view.coordsAtPos(from)
-        setSlash({ left: caret.left, top: caret.top, from })
+        setSlash({ left: caret.left, top: caret.top, bottom: caret.bottom, from })
         return false
       },
       // While the menu is open it has the first say on arrows, Enter, Tab and Escape.

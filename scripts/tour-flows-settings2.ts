@@ -174,9 +174,10 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
       // Shut, before anything is pressed. This is the install default and the point of it.
       const before = await fetch('/api/v1/posts')
       if (before.status !== 404) return 'the API answered ' + before.status + ' with the setting off'
-      // The address is readable either way, and it is the one the SERVER printed.
-      const shown = card.querySelector('[data-api-url]')
-      if (!shown || !shown.textContent.trim().endsWith('/api/v1')) return 'the card does not show its address'
+      // The address the SERVER printed, absolute; or, with no site address, a note pointing at it.
+      const shown = card.querySelector('[data-machine-known]:not([hidden]) [data-api-url]'), said = shown ? shown.textContent.trim() : ''
+      const absolute = /^https?:/.test(said) && said.endsWith('/api/v1')
+      if (shown ? !absolute : !card.querySelector('[data-machine-unknown]:not([hidden]) [data-needs-address]')) return 'the card shows no address, nor why'
 
       sw.click(); await sleep(150)
       if (save.disabled) return 'the Save key stayed disabled after the switch moved'

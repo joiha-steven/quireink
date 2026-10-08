@@ -252,7 +252,9 @@ const BUDGET: Record<string, number> = {
   // warning and the one-time-code paste, and nothing else.
   // 3,200 since ADR 0071 (3,031 measured), for the passkey: the conditional request on load, the button, and the
   // four byte strings carried to the server as base64url. Still a script on one page.
-  'login.js': 3_200,
+  // 4,300 on 2026-10-08 for the recovery-codes step: Continue waits for the box and says why, and
+  // Copy with its selection fallback. The step runs once per install, on this page only.
+  'login.js': 4_300,
   // /setup/restore only, on a blog nobody has claimed: the parts, a retry, the resume, the load.
   // 2,420 measured at first landing (2026-10-03).
   'setup-restore.js': 2_600,

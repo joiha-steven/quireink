@@ -874,6 +874,36 @@ input[type='color']::-moz-color-swatch {
 .seg-off { color: #656565; }
 .dark .seg-off { color: var(--color-neutral-400, #a3a3a3); }
 
+/* LIGHT-MODE SMALL PRINT. `text-neutral-500` (#737373) measures 4.39:1 on the paper canvas
+   (#f7f6f4) at 12-13px, which is where the kit note (`kit-note`), the meta lines and the
+   quiet links all sit. One step darker, to #6b6b6b (5.0:1 on paper, 5.3:1 on a white card),
+   is the smallest move that clears 4.5 and is done HERE rather than at each call site so
+   every use is fixed at once. It lives INSIDE `@layer utilities`, after the utility it adjusts:
+   an unlayered rule would beat every layered utility and flatten `hover:text-*` on the same
+   element. `:where()` keeps it at one class, so it wins over `.text-neutral-500` by order and
+   loses to a hover or `dark:` variant at (0,2,0). Dark needs nothing: neutral-400 on #0f0f0f
+   is above 7:1. */
+@layer utilities {
+  :where(html:not(.dark)) .text-neutral-500 { color: #6b6b6b; }
+}
+
+/* A ROW CHECKBOX is drawn 16px and must be hit at 24px on a phone or any coarse pointer.
+   The input itself carries an invisible ring of 5px (past the 1px border) on every side, so the drawn box, the row
+   and the tick on top of it do not move. */
+@media (max-width: 48rem), (pointer: coarse) {
+  .kit-tick { position: relative; }
+  .kit-tick::before { content: ''; position: absolute; inset: -5px; }
+}
+
+/* BELOW lg THE SHELL IS A COLUMN, so a short page (the trash, an empty list) still fills the
+   glass: the canvas takes what the rail leaves, and the paper colour reaches the bottom edge
+   instead of stopping where the content does and showing the page ground under it. From lg
+   the shell is already a locked flex row. */
+@media (max-width: 63.999rem) {
+  .admin-shell { display: flex; flex-direction: column; min-height: 100dvh; }
+  .admin-shell > .admin-canvas { flex: 1 1 auto; }
+}
+
 [data-explanations='off'] .admin-note:not(.tab-hint) { display: none; }
 /* And the HOLE it leaves. Tailwind's `space-y-*` is `& > :not([hidden]) ~ :not([hidden])`,
    and an element with `display: none` still matches `:not([hidden])` — so a card whose first
@@ -1251,7 +1281,8 @@ input[type='color']::-moz-color-swatch {
      row is wide enough to carry the key anyway. Found 2026-09-16 while redrawing the trash rows,
      which nearly copied the pattern. */
   .group:hover .group-hover\:opacity-100,
-  [class~='opacity-0'][class*='group-hover:opacity-100'] {
+  [class~='opacity-0'][class*='group-hover:opacity-100'],
+  [class~='sm:opacity-0'][class*='group-hover:opacity-100'] {
     opacity: 1;
   }
 

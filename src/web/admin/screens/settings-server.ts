@@ -24,6 +24,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteSettings } from '@/types'
 import type { IntegrationStatus } from '@/store/integration-keys'
 import type { Redirect } from '@/server/redirects'
+import { resolveSiteUrl, siteUrlIsUnset } from '@/content/settings'
 import { importCard, redirectsCard, siteCard } from '@/web/admin/screens/settings-server-code'
 import { aiCard, cloudflareCard, offsiteCard } from '@/web/admin/screens/settings-server-keys'
 import { mcpCard } from '@/web/admin/screens/settings-server-mcp'
@@ -45,11 +46,9 @@ export type ServerTabView = {
   /** Every manual redirect, newest first — the one list on this tab the server can read. */
   redirects: Redirect[]
   /**
-   * The address this request arrived on, for the MCP endpoint when `siteUrl` is blank.
-   *
-   * With no site address set the server derives one from the environment, which no page can
-   * read; React fell back to `window.location.origin` for that reason. The server has the same
-   * answer from the request itself, and it is reachable by definition.
+   * The ActivityPub card's fallback host. It is `settings.siteUrl || ''` (`settings.ts`), NOT the
+   * address the request arrived on, so it adds nothing when the setting is blank; the two
+   * machine doors read the setting and `SITE_URL` directly instead (`serverTab`).
    */
   origin: string
   /** How many servers follow this blog (ADR 0059). A count, never a list — see `ap-routes.ts`. */
@@ -68,8 +67,14 @@ export type ServerTabView = {
  * back.
  */
 export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView): string {
-  const origin = (s.siteUrl || view.origin).replace(/\/+$/, '')
-  const endpoint = `${origin}/api/mcp`
+  // The address the outside world uses: the setting, then `SITE_URL`. With neither, the two
+  // machine doors print a note instead of a relative path (`machineAddress`), never
+  // `localhost:3000`, which is `resolveSiteUrl`'s last resort for feeds and nobody's address for a
+  // client. `fallback` is the `SITE_URL` half alone, for the island when a save empties the setting.
+  const bare = { ...s, siteUrl: '' }
+  const fallback = siteUrlIsUnset(bare) ? '' : resolveSiteUrl(bare).replace(/\/+$/, '')
+  const origin = s.siteUrl.replace(/\/+$/, '') || fallback
+  const endpoint = origin ? `${origin}/api/mcp` : ''
   return `<div class="${GRID}">`
     + `<div class="${COL}">`
     + siteCard(t, s)
@@ -84,9 +89,9 @@ export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView)
     // Moving off this server altogether (G5.3), beside the card about running it. Empty on Cloudflare.
     + cloudCard(t, s)
     + aiCard(t, s, view.integrations)
-    + mcpCard(t, s, endpoint)
+    + mcpCard(t, s, endpoint, fallback)
     // Under MCP: the two machine doors read as a pair, and this is the smaller one.
-    + apiCard(t, s, `${origin}/api/v1`)
+    + apiCard(t, s, origin ? `${origin}/api/v1` : '', fallback)
     + backupsCard(t, s)
     // The snapshot that leaves the machine (ADR 0035): a copy beside the data does not survive
     // the disk. It sits under the backups it ships.

@@ -132,7 +132,7 @@ export function colourField(f: { k: string; value: string; label?: string }): st
     + `<input type="color" data-k-echo="${escapeAttr(f.k)}" value="${escapeAttr(hex)}"`
     + (f.label ? ` aria-label="${escapeAttr(f.label)}"` : ' aria-hidden="true" tabindex="-1"')
     + ` class="absolute inset-0 h-full w-full cursor-pointer rounded-full opacity-0"></span>`
-    + `<span aria-hidden="true" class="font-mono text-xs text-neutral-400 dark:text-neutral-500">#</span>`
+    + `<span aria-hidden="true" class="font-mono text-xs text-neutral-600 dark:text-neutral-400">#</span>`
     + `<input type="text" data-k="${escapeAttr(f.k)}" value="${escapeAttr(hex.slice(1))}"`
     + (f.label ? ` aria-label="${escapeAttr(f.label)}"` : '')
     + ` class="${COLOUR_HEX}"></span>`

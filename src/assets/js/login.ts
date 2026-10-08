@@ -110,6 +110,59 @@ function setupLanguage(): void {
 }
 
 /**
+ * The recovery-codes step: Continue waits for the box, and says so; Copy puts the codes on the
+ * clipboard.
+ *
+ * Both are conveniences over a form that already works without script (the checkbox is `required`),
+ * so the button is only disabled here, and the line that says why appears with it. Copy is shipped
+ * hidden and shown only when this runs, so a blocked script never leaves a button that does nothing.
+ * Where the clipboard API is refused (an http address, a locked-down browser) the codes are
+ * SELECTED instead, which leaves the last step to the person's own copy shortcut.
+ */
+function recoveryCodes(): void {
+  const box = document.querySelector<HTMLInputElement>('input[name="saved"]')
+  const go = document.querySelector<HTMLButtonElement>('[data-needs-saved]')
+  const why = document.querySelector<HTMLElement>('[data-needs-saved-why]')
+  if (box !== null && go !== null) {
+    const sync = (): void => {
+      go.disabled = !box.checked
+      if (why === null) return
+      why.hidden = box.checked
+      if (box.checked) go.removeAttribute('aria-describedby')
+      else go.setAttribute('aria-describedby', why.id)
+    }
+    box.addEventListener('change', sync)
+    sync()
+  }
+
+  const copy = document.querySelector<HTMLButtonElement>('[data-copy-codes]')
+  const list = document.querySelector<HTMLElement>('.login-codes')
+  if (copy === null || list === null) return
+  copy.hidden = false
+  const label = copy.textContent ?? ''
+  const status = document.querySelector<HTMLElement>('[data-copy-status]')
+  const select = (): void => {
+    if (status !== null) status.textContent = copy.dataset.select ?? ''
+    const range = document.createRange()
+    range.selectNodeContents(list)
+    const selection = window.getSelection()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+  }
+  copy.addEventListener('click', () => {
+    const text = [...list.querySelectorAll('code')].map((c) => c.textContent ?? '').join('\n')
+    const done = (): void => {
+      const said = copy.dataset.done ?? label
+      copy.textContent = said
+      if (status !== null) status.textContent = said
+      window.setTimeout(() => { copy.textContent = label; if (status !== null) status.textContent = '' }, 2000)
+    }
+    if (navigator.clipboard === undefined) { select(); return }
+    navigator.clipboard.writeText(text).then(done, select)
+  })
+}
+
+/**
  * `__Host-` cookies need a secure context, so on plain HTTP sign-in cannot finish. The
  * browser is the only thing that knows; the server sees plain HTTP behind every TLS proxy
  * too. `http://localhost` counts as secure, so a local trial is not warned at.
@@ -121,4 +174,5 @@ capsLock()
 otpPaste()
 timezone()
 setupLanguage()
+recoveryCodes()
 passkeySignIn()

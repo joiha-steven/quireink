@@ -77,11 +77,11 @@ function band(t: AdminStrings, lang: SiteLang, d: AnalyticsSummary, window: Wind
     : '—'
 
   return numBand([
-    { n: n(d.totalViews), label: t.analyticsViews, after: comparable ? trendMark(d.totalViews, d.prevViews) : '' },
+    { n: n(d.totalViews), label: t.analyticsViews, after: comparable ? trendMark(d.totalViews, d.prevViews, t, lang) : '' },
     {
       n: n(d.uniqueVisitors),
       label: t.analyticsVisitors,
-      after: comparable ? trendMark(d.uniqueVisitors, d.prevVisitors) : '',
+      after: comparable ? trendMark(d.uniqueVisitors, d.prevVisitors, t, lang) : '',
       sub: split,
     },
     { n: formatDuration(d.avgDwellMs), label: t.analyticsAvgTime },
@@ -212,7 +212,7 @@ export async function analyticsScreen(settings: SiteSettings, query: URLSearchPa
       // The index is handed what the table above just drew, so it can open on the rest.
       + pieceIndex(t, lang, pieces, titles, range, new Set(summary.topPages.map((p) => p.path)))
       + columns(t, lang, summary)
-    : `<div class="flex flex-1 items-center justify-center p-10">${emptyState({ title: t.analyticsNoData })}</div>`
+    : `<div class="flex flex-1 items-center justify-center p-10">${emptyState({ title: t.analyticsNoData, description: t.analyticsNoDataHint })}</div>`
 
   return `<div data-screen="analytics" data-lang="${escapeAttr(lang)}">`
     + pageHeader({ title: t.analyticsTitle })

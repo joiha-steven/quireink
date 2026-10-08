@@ -122,7 +122,11 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
   cursor:pointer;transition:box-shadow var(--dur-fast), transform var(--dur-fast);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(0,0,0,.2),
     0 1px 2px rgba(0,0,0,.28)}
-.login-submit:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(0,0,0,.22),
+/* Waiting on the box above it (the recovery-codes step): visibly off, with the reason printed
+   under it by the island. */
+.login-submit:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.login-why{margin-top:.5rem;text-align:center}
+.login-submit:not(:disabled):hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(0,0,0,.22),
     0 2px 4px rgba(0,0,0,.3)}
 /* Landing is instant and only the release is sprung, like every press in this product. */
 .login-submit:active{transform:translateY(1px);transition-duration:0s;
@@ -161,6 +165,10 @@ html[data-motion=off] .login-passkey-button:active{transform:none}
   border:1px solid color-mix(in srgb, var(--c-accent) 35%, var(--c-rule));border-radius:8px;
   background:color-mix(in srgb, var(--c-accent) 6%, var(--c-bg))}
 
+/* The error that belongs to a field sits right under it, closer than the banner's air. */
+.login-error-field{margin:.5rem 0 0}
+.login-form input[aria-invalid=true]{border-color:var(--c-accent)}
+
 /* The same box as an error, in the meta ink rather than the accent: it is not a refusal of
    what was just typed, it is the reason the next step will not work. The hidden attribute is set on the
    server and removed by the island only when the browser says the context is not secure. */
@@ -183,10 +191,20 @@ html[data-motion=off] .login-passkey-button:active{transform:none}
    the link it always looked like. */
 .login-alt form{display:inline}
 .login-link{border:0;background:none;padding:0;font:inherit;color:var(--c-link);cursor:pointer}
+.login-codes-tools{display:flex;justify-content:center;align-items:center;gap:1.25rem}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
 /* A button that has to read as a way out rather than as the answer. It is a real <button>
    because it POSTs — a link cannot — but it must not look like the submit above it, or the
    screen offers two equal doors and the safe one stops being obvious. */
 .login-linkish{background:none;border:0;padding:0;font:inherit;color:var(--c-link);cursor:pointer}
+/* A 24px hit area on every small way-out, on a phone or any coarse pointer, without moving the
+   line: padding makes the box taller and an equal negative margin takes the height back. The mode
+   switch measured 22.5px and "Start from a backup" 17px. */
+@media (max-width:48rem),(pointer:coarse){
+  .login-link,.login-linkish{display:inline-block;padding-block:.3125rem;margin-block:-.3125rem}
+  .login-alt a{display:inline-block;padding-block:.3125rem;margin-block:-.3125rem}
+}
 
 /* First run, step two: two drawings of a front page, side by side.
    Bars and blocks rather than screenshots. The difference between a list and a composed

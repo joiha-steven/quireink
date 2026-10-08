@@ -222,7 +222,8 @@ if (root) {
     if (el.closest('[data-trash-empty]')) {
       const kind = current()
       // The tab by name: "everything in it goes" did not say it meant only this tab's things.
-      const tab = strip?.querySelector('[aria-pressed="true"]')?.textContent?.trim() ?? ''
+      // Without its count: the tab reads "Posts (1)" and the sentence is about the kind, not the number.
+      const tab = (strip?.querySelector('[aria-pressed="true"]')?.textContent ?? '').replace(/\s*\([^)]*\)\s*$/, '').trim()
       if (!await ask(words.emptyTitle, words.emptyBody.replace('{tab}', tab))) return
       let r: Answer | null = await act(kind, 'empty')
       if (!r.ok && r.error?.startsWith('in_use')) r = await settleInUse(r, kind, 'empty')

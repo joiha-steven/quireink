@@ -120,7 +120,7 @@ const depth = (pct?: number | null): string => (pct == null ? '—' : `${pct}%`)
 
 const NUM = 'w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300'
 const NUM_QUIET = 'w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-500 dark:text-neutral-400'
-const TITLE_CELL = 'block truncate text-neutral-700 hover:underline dark:text-neutral-200'
+const TITLE_CELL = '-my-2 block truncate py-2 text-neutral-700 hover:underline dark:text-neutral-200'
 
 /**
  * TOP PAGES, twice: a table from 640px up and a list of cards below it.

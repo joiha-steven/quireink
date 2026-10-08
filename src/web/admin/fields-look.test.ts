@@ -65,3 +65,23 @@ describe('a card title with a lamp', () => {
     expect(html).not.toContain('mt-[7px]')
   })
 })
+
+describe('a tile picker', () => {
+  it('carries both faces on every tile, so the island can move the sunken look with aria-pressed', async () => {
+    // The island's `pressKey` swaps `className` for `data-on` / `data-off`. A tile without them
+    // moved `aria-pressed` and nothing visible: the old tile stayed sunken, the new one showed
+    // only its focus outline.
+    const { lookPicker } = await import('./screens/settings-appearance-look')
+    const { adminT } = await import('@/i18n/admin-i18n')
+    const { DEFAULT_SETTINGS } = await import('@/content/settings')
+    const html = lookPicker(adminT('en'), DEFAULT_SETTINGS)
+    const tiles = html.match(/<button [^>]*data-choice=[^>]*>/g) ?? []
+    expect(tiles.length).toBe(4)
+    for (const t of tiles) {
+      expect(t).toContain('data-on="')
+      expect(t).toContain('data-off="')
+      expect(t.match(/data-on="([^"]*)"/)![1]).toContain('shadow-[inset')
+      expect(t.match(/data-off="([^"]*)"/)![1]).not.toContain('shadow-[inset')
+    }
+  })
+})

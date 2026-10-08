@@ -153,3 +153,19 @@ describe('the panel itself', () => {
     expect(html).not.toContain('aria-modal')
   })
 })
+
+// The Write list calls a published post with a date ahead "Scheduled"; the panel's radio said
+// "Published" about the same piece. The value stays `published` — only its name follows the date.
+describe('the status choice on a scheduled piece', () => {
+  const out = (html: string): string => html.slice(html.indexOf('data-status-out'), html.indexOf('</span>', html.indexOf('data-status-out')))
+  it('names the published radio Scheduled while the date is ahead', () => {
+    const html = draw('post', { status: 'published', date: '2999-01-01T09:00' })
+    expect(out(html)).toEndWith(`>${t.scheduled}`)
+    expect(html).toContain('value="published" data-k="status"')
+  })
+  it('names it Published once the date has passed, and ships both words for the island', () => {
+    const html = draw('post', { status: 'published', date: '2020-01-01T09:00' })
+    expect(out(html)).toEndWith(`>${t.statusPublished}`)
+    expect(out(html)).toContain(`data-say-later="${t.scheduled}"`)
+  })
+})

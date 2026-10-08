@@ -26,16 +26,26 @@ import { EMPTY_SLOT } from '@/admin-shared/slot'
 import { formatTyped, typedShape } from '@/admin-shared/date-typing'
 import { settingRow } from '@/web/admin/fields'
 
-/** DRAFT or PUBLISHED, as a pair of radios rather than a switch: neither is the "off" one. */
-export function statusPair(t: AdminStrings, status: PostStatus): string {
-  const one = (value: PostStatus, text: string): string =>
+/**
+ * DRAFT or PUBLISHED, as a pair of radios rather than a switch: neither is the "off" one.
+ *
+ * The second one reads SCHEDULED while the date is ahead — it is the same choice (the value
+ * stays `published`), but the Write list calls such a piece Scheduled and the panel called it
+ * Published, which is two names for one state on two screens. Both words are drawn; the island
+ * swaps them as the date moves (`island/sheet.ts`).
+ */
+export function statusPair(t: AdminStrings, status: PostStatus, ahead = false): string {
+  const one = (value: PostStatus, text: string, extra = ''): string =>
     `<label class="flex items-center gap-1.5"><input type="radio" name="status" value="${value}"`
     + ` data-k="status" class="${CHECK}"${status === value ? ' checked' : ''}>`
-    + `${escapeHtml(text)}</label>`
+    + `<span${extra}>${escapeHtml(text)}</span></label>`
   return settingRow({
     label: t.status,
     control: `<div class="flex gap-4 text-sm">`
-      + one('draft', t.statusDraft) + one('published', t.statusPublished)
+      + one('draft', t.statusDraft)
+      + one('published', ahead ? t.scheduled : t.statusPublished,
+        ` data-status-out data-say-now="${escapeAttr(t.statusPublished)}"`
+        + ` data-say-later="${escapeAttr(t.scheduled)}"`)
       + `</div>`,
   })
 }

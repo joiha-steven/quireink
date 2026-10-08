@@ -233,7 +233,10 @@ function wirePane(screen: HTMLElement): () => void {
   const kept = read()
   if (kept.q && search) { search.value = kept.q }
   if (kept.kind && kept.kind !== 'all') setKind(kept.kind)
-  if (kept.state && kept.state !== 'all') setState(kept.state)
+  // A restored filter whose chip is no longer drawn (the last scheduled post went out) would
+  // hide rows with nothing left on screen to clear it.
+  if (kept.state && kept.state !== 'all'
+    && pane.querySelector(`[data-write-status="${kept.state}"]`)) setState(kept.state)
   if (kept.sort === 'created' && sortKey) sortKey.click()
   if (kept.q && search) search.dispatchEvent(new Event('input', { bubbles: true }))
   // AFTER the filters, because the scroll height depends on how many rows are showing.

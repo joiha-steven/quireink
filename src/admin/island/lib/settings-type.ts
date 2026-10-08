@@ -28,10 +28,24 @@ function repaint(screen: HTMLElement, role: string): void {
   if (spacing) sample.style.letterSpacing = `${spacing}em`
 }
 
+/** The type table's figures, in document order, to tell whether a pick moved any of them. */
+const figures = (screen: HTMLElement): string =>
+  [...screen.querySelectorAll<HTMLInputElement>('input[data-k^="typography.roles."]')].map((i) => i.value).join('|')
+
 export function wireType(screen: HTMLElement): void {
+  const said = (): HTMLElement | null => screen.querySelector<HTMLElement>('[data-font-applied]')
+  /** The line is a live region that stays in the page: clearing it and refilling it later is
+   *  what makes a screen reader announce every pick, not only the first. */
+  const clearSaid = (): void => { const el = said(); if (el) { el.textContent = ''; el.hidden = true } }
+  let resetting = false
+  // Any later edit of the table, or a save, makes the sentence stale.
+  window.addEventListener('quire:toast', (e) => {
+    if ((e as CustomEvent<{ kind?: string }>).detail?.kind !== 'error') clearSaid()
+  })
   screen.addEventListener('input', (e) => {
     const el = e.target
     if (!(el instanceof HTMLInputElement)) return
+    if (!resetting && el.dataset.k?.startsWith('typography.roles.')) clearSaid()
 
     // The slider moved: write its value into the box that saves, and let that box tell the form.
     const dragged = el.dataset.typeSlider
@@ -93,6 +107,17 @@ export function wireType(screen: HTMLElement): void {
     const track = tile?.closest<HTMLElement>('[data-choice-track][data-k="fontPreset"]')
     if (!tile || !track) return
     // After `pickChoice` has moved `aria-pressed`, which runs on the same click.
-    queueMicrotask(() => screen.querySelector<HTMLElement>('[data-reset-type]')?.click())
+    const line = said()
+    const words = line?.dataset.words ?? ''
+    const before = figures(screen)
+    if (line) line.textContent = ''
+    queueMicrotask(() => {
+      resetting = true
+      screen.querySelector<HTMLElement>('[data-reset-type]')?.click()
+      resetting = false
+      if (!line || figures(screen) === before) { clearSaid(); return }
+      line.hidden = false
+      queueMicrotask(() => { line.textContent = words })
+    })
   })
 }

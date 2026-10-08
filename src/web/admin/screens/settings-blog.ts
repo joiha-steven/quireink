@@ -177,9 +177,13 @@ export function blogTab(t: AdminStrings, s: SiteSettings): string {
     // to rather than opening a card of its own.
     + panelCard({
       title: t.cardAddress,
+      // `type="url"`, so the line under it says why on blur, the way a number below its floor
+      // does. The save refuses one that does not read (`content/settings-refuse.ts`): it used to
+      // store `''` over whatever address was there and say "Settings saved".
       body: textField({
-        k: 'siteUrl', label: t.seoCanonical, note: t.seoCanonicalHint,
+        k: 'siteUrl', label: t.seoCanonical, note: t.seoCanonicalHint, type: 'url',
         value: s.siteUrl, placeholder: 'https://example.com',
+        attrs: 'autocomplete="url" spellcheck="false" autocapitalize="none"',
       }),
     })
     + `</div><div class="${COL}">`

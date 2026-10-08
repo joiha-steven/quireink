@@ -57,6 +57,11 @@ export type Safety = {
   restore: () => Promise<Snapshot | null>
   /** Take the offer down and keep the copy: a second trip through the screen finds it too. */
   dismiss: () => void
+  /**
+   * Put a dismissed offer back, exactly as it was: the toast's Undo. False when there was
+   * nothing to put back.
+   */
+  undismiss: () => boolean
   /** The server has the piece itself now — drop both copies. */
   clear: () => void
   destroy: () => void
@@ -68,18 +73,38 @@ export function wireSafety(hooks: SafetyHooks): Safety {
   let keptAt: number | null = snapshotAt(key)
   let sentAt: number | null = null
   let dismissed = false
+  /**
+   * THE OFFER A DISCARD TOOK DOWN, held for its Undo — the WORDS, not a pointer to them. Both
+   * copies are read at the moment of the discard: the next tick of a dirty sheet writes the
+   * CURRENT text over the device key and over the server's autosave alike, so an Undo that
+   * re-read either would offer back the words already on screen instead of the ones that were
+   * thrown away. The server's is held as the fetch's promise, started on the click. A save does
+   * not drop it (`clear`): the Undo in the toast must still mean what it says.
+   */
+  type Held = { offer: NonNullable<Offer>; snap: Promise<Snapshot | null> }
+  let held: Held | null = null
+  let parked: Held | null = null
   // What the server already holds, compared rather than hashed: the strings are kilobytes and
   // comparing two kilobyte strings is not the expensive part of anything here. It is what makes
   // a tab left open on an untouched post silent, rather than writing the same kilobyte forever.
   let sent: string | null = null
 
-  const offerNow = (): Offer => pickOffer({
+  const offerNow = (): Offer => (parked && !dismissed ? parked.offer : pickOffer({
     localAt: keptAt,
     serverAt: hooks.serverAt,
     rowSavedAt: hooks.rowSavedAt,
     dismissed,
-  })
+  }))
   const tell = (): void => hooks.onOffer(offerNow())
+  /** The offered copy's words, taken now. A server copy that cannot be fetched holds null. */
+  const holdCopy = (offer: NonNullable<Offer>): Promise<Snapshot | null> => {
+    if (offer.from === 'server' && slug) {
+      const got = fetchSnapshot<Snapshot>(hooks.kind, slug)
+      void got.catch(() => null)
+      return got
+    }
+    return Promise.resolve(readSnapshot<Snapshot>(key)?.data ?? null)
+  }
 
   /** The device copy. Cheap, synchronous, and the only one a piece with no row can have. */
   const keep = (snap: Snapshot = hooks.take()): boolean => {
@@ -185,6 +210,18 @@ export function wireSafety(hooks: SafetyHooks): Safety {
     restore: async () => {
       const offer = offerNow()
       if (!offer) return null
+      if (parked) {
+        // Only on success: a held fetch that failed leaves the offer up rather than lose it.
+        const got = await parked.snap
+        if (!got) return null
+        parked = null
+        held = null
+        dismissed = true
+        dropSnapshot(key)
+        keptAt = null
+        tell()
+        return got
+      }
       if (offer.from === 'server' && slug) {
         const got = await fetchSnapshot<Snapshot>(hooks.kind, slug)
         // Only on success: clearing the device copy after a failed fetch would throw away the
@@ -204,10 +241,27 @@ export function wireSafety(hooks: SafetyHooks): Safety {
       return snap?.data ?? null
     },
 
-    dismiss: () => { dismissed = true; tell() },
+    dismiss: () => {
+      const offer = offerNow()
+      // A second Discard of an offer an Undo put back keeps the ORIGINAL words, not a re-read.
+      held = parked ?? (offer ? { offer, snap: holdCopy(offer) } : null)
+      parked = null
+      dismissed = true
+      tell()
+    },
+
+    undismiss: () => {
+      if (!held) return false
+      parked = held
+      held = null
+      dismissed = false
+      tell()
+      return true
+    },
 
     clear: () => {
       dismissed = true
+      parked = null
       dropSnapshot(key)
       keptAt = null
       sent = null

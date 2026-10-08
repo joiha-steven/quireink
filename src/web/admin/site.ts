@@ -13,6 +13,7 @@ import { reorderSeries, updateSeries } from '@/content/series'
 import { getSettings, saveSettings } from '@/content/settings'
 import { describeSettingsSave, isDeskOnly } from '@/content/settings-diff'
 import { sanitizeListPath } from '@/content/settings-sanitize'
+import { refusedSetting } from '@/content/settings-refuse'
 import { slugTaken } from '@/content/slugs'
 import {
   restorePost, purgePost, emptyPostsTrash, updateTerm, type TermKind,
@@ -158,6 +159,11 @@ export function siteRoutes() {
     if ('title' in input && (typeof input.title !== 'string' || input.title.trim() === '')) {
       return fail(c, 'title_required', 400)
     }
+    // The same for an address or a repository name that does not read: the merge would store `''`
+    // or keep the old value, and the screen said "Settings saved" over either. `field_<why>: <key>`
+    // is what the screen reads to put the sentence under the right field.
+    const refused = refusedSetting(input)
+    if (refused) return fail(c, `field_${refused.why}: ${refused.k}`, 400)
     // Read BEFORE the write, so the log can say what moved, and so the guard below can ask
     // what the settings will BE rather than what this payload happens to mention. One
     // extra read on a route that is pressed by hand a few times an hour.

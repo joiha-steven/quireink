@@ -34,7 +34,7 @@
 import type { SiteLook, SiteSettings } from '@/types'
 import { adminT } from '@/i18n/admin-i18n'
 import { SITE_LANGS } from '@/locales/langs'
-import { loginShell, setupStep } from '@/web/login-page'
+import { fieldError, invalidAttrs, loginShell, setupStep } from '@/web/login-page'
 import { escapeAttr, escapeHtml } from '@/utils'
 
 /**
@@ -48,7 +48,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
  */
 export function siteStepScreen(
   settings: SiteSettings,
-  opts: { address: string },
+  opts: { address: string; addressError?: string },
 ): string {
   const s = adminT(settings.language)
   const langs = SITE_LANGS.map(({ value, label }) =>
@@ -65,7 +65,7 @@ ${setupStep(settings, s, 4)}
 <select id="language" name="language" data-setup-lang>${langs}</select>
 
 <label for="title">${escapeHtml(s.siteStepName)}</label>
-<input id="title" name="title" type="text" required autofocus
+<input id="title" name="title" type="text" required${opts.addressError === undefined ? ' autofocus' : ''}
        value="${escapeAttr(settings.title)}">
 
 <label for="timezone">${escapeHtml(s.siteStepTz)}</label>
@@ -75,7 +75,8 @@ ${setupStep(settings, s, 4)}
 
 <label for="siteUrl">${escapeHtml(s.siteStepAddress)}</label>
 <input id="siteUrl" name="siteUrl" type="url" autocapitalize="none" spellcheck="false"
-       value="${escapeAttr(settings.siteUrl || opts.address)}">
+       value="${escapeAttr(settings.siteUrl || opts.address)}"${opts.addressError === undefined ? '' : ' autofocus'}${invalidAttrs('siteUrl', opts.addressError)}>
+${fieldError('siteUrl', opts.addressError)}
 <p class="login-hint">${escapeHtml(s.siteStepAddressHint)}</p>
 
 <button type="submit" class="login-submit">${escapeHtml(s.authContinue)}</button>

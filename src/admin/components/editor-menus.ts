@@ -8,6 +8,7 @@
 // subset, and that is deliberate here where it was not for the node views: the five pens are
 // named by a COMPUTED key (`ink` + the ink's name), so a fixed list of fields could not reach
 // them. The type is erased at compile time and nothing extra ships.
+import { placeSlashMenu } from './slash-place'
 import type { Editor } from '@/admin/editor/editor'
 import { bubblePlugin, BUBBLE_KEY } from '@/admin/editor/bubble'
 import { NodeSelection } from 'prosemirror-state'
@@ -43,8 +44,8 @@ const className = {
   swatchOn: 'ring-2 ring-neutral-400 dark:ring-neutral-300',
   swatchOff: 'hover:bg-neutral-100 dark:hover:bg-neutral-700',
   ink: 'block h-3.5 w-3.5 rounded-[2px]',
-  // The slash menu.
-  menu: 'scroll-fade fixed z-40 max-h-[360px] w-64 overflow-y-auto rounded-lg border'
+  // The slash menu. ⚠️ No `scroll-fade` and no fixed height: `slash-place.ts` says why.
+  menu: 'fixed z-40 w-64 overflow-y-auto rounded-lg border'
     + ' border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800',
   row: 'flex w-full items-baseline justify-between gap-4 rounded-md px-3 py-1.5 text-left text-sm'
     + ' text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-700',
@@ -258,7 +259,7 @@ export type SlashHooks = {
 }
 
 /** Where the "/" went: the point to draw the menu at and the position of the character. */
-export type SlashAt = { left: number; top: number; from: number }
+export type SlashAt = { left: number; top: number; from: number; /** The caret line's foot. */ bottom?: number }
 
 /** The open menu: take it down, or offer it a key (true = the menu used it). */
 export type SlashMenu = { close: () => void; key: (key: string) => boolean }
@@ -281,9 +282,7 @@ export type SlashMenu = { close: () => void; key: (key: string) => boolean }
 export function openSlashMenu({ editor, t, at, onClose, onPickImage, onPickGallery }: SlashHooks): SlashMenu {
   const box = el('div', { className: className.menu, role: 'menu', 'aria-label': t.tbInsert })
   box.addEventListener('mousedown', hold)
-  // Keep the menu on screen when "/" is typed near the bottom edge.
-  box.style.left = `${Math.min(at.left, window.innerWidth - 280)}px`
-  box.style.top = `${Math.min(at.top + 24, window.innerHeight - 380)}px`
+  const place = (): void => placeSlashMenu(box, at)
 
   const chain = () => editor.chain().focus()
   type Row = { button: HTMLButtonElement; words: string; act: () => void }
@@ -365,6 +364,7 @@ export function openSlashMenu({ editor, t, at, onClose, onPickImage, onPickGalle
     divider.hidden = q !== ''
     active = Math.min(active, shown.length - 1)
     paint()
+    place()
   }
   editor.on('transaction', follow)
 
@@ -376,6 +376,7 @@ export function openSlashMenu({ editor, t, at, onClose, onPickImage, onPickGalle
   document.addEventListener('mousedown', away)
   document.addEventListener('scroll', scrolled, true)
   document.body.appendChild(box)
+  place()
 
   return {
     close: () => {

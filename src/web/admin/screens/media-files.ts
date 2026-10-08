@@ -47,13 +47,13 @@ function fileRow(t: AdminStrings, lang: SiteLang, f: FileItem, managed: boolean)
     : (f.inUse === false ? `<span class="${BADGE}">${escapeHtml(t.iconsUnused)}</span>` : '')
       + `<button type="button" data-copy="${escapeAttr(f.url)}" class="${TAP} ${QUIET}">`
       + `${escapeHtml(t.copyUrl)}</button>`
-      + `<a href="${escapeAttr(f.url)}" download="${escapeAttr(f.filename)}" class="${QUIET}">`
+      + `<a href="${escapeAttr(f.url)}" download="${escapeAttr(f.filename)}" class="${TAP} ${QUIET}">`
       + `${escapeHtml(t.download)}</a>`
   return `<li class="flex items-center gap-3 bg-white p-3 dark:bg-neutral-900"`
     + ` data-file="${escapeAttr(f.url)}">`
     + (managed ? '' : tickBox(f, ''))
     + `<span class="flex h-9 w-12 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-xs`
-    + ` font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">${escapeHtml(fileKind(f))}</span>`
+    + ` font-bold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">${escapeHtml(fileKind(f))}</span>`
     + `<div class="min-w-0 flex-1">`
     + `<p class="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200"`
     + ` title="${escapeAttr(f.filename)}">${escapeHtml(f.filename)}</p>`

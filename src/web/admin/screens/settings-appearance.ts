@@ -34,7 +34,7 @@ import { choice } from '@/web/admin/fields-pick'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
 import { palettes } from '@/web/admin/screens/settings-appearance-theme'
 import { typeResetKey, typeScale } from '@/web/admin/screens/settings-appearance-type'
-import { lookPicker, tileClass } from '@/web/admin/screens/settings-appearance-look'
+import { lookPicker, tileClass, tileFaces } from '@/web/admin/screens/settings-appearance-look'
 
 /** What this tab needs that is not a setting: the six palettes it offers to edit. */
 export type AppearanceTabView = {
@@ -89,7 +89,7 @@ function shape(t: AdminStrings, s: SiteSettings): string {
  * `aria-pressed` carry it and the island's `pickChoice` moves it with no new code.
  */
 const tile = (v: string, on: boolean, cls: string, style: string, body: string): string =>
-  `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${on}"`
+  `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${on}"${tileFaces(cls)}`
   + ` class="${tileClass(on, cls)}" style="font-family:${escapeAttr(style)}">${body}</button>`
 
 /**
@@ -127,7 +127,11 @@ function fonts(t: AdminStrings, s: SiteSettings): string {
     `<div class="grid grid-cols-2 gap-2" data-choice-track`
     + ` data-k="${escapeAttr(k)}" data-was="${escapeAttr(was)}">${body}</div>`
   return `<div class="${SETTING_GAP}">`
-    + settingRow({ note: t.fontPresetHint, control: grid(reading, 'fontPreset', s.fontPreset) })
+    + settingRow({ note: t.fontPresetHint, control: grid(reading, 'fontPreset', s.fontPreset)
+        // Picking a face also rewrites the type table below; the island reveals this line when
+        // it does, so the second change is said where the click happened.
+        + `<p class="${NOTE_TEXT} mt-2" data-font-applied data-words="${escapeAttr(t.fontPresetApplied)}"`
+        + ` role="status" hidden></p>` })
     + `<div class="border-t border-neutral-200 pt-5 dark:border-neutral-800">`
     + settingRow({
       label: t.chromeFontLabel, note: t.chromeFontHint,
@@ -164,7 +168,7 @@ function fontUpload(t: AdminStrings, s: SiteSettings): string {
       + `<span class="flex items-center gap-2">`
       + `<span class="text-xs text-neutral-500 dark:text-neutral-400" data-font-state="on"`
       + `${has ? '' : ' hidden'}>${escapeHtml(t.fontUploaded)}</span>`
-      + `<span class="text-xs text-neutral-500 dark:text-neutral-600" data-font-state="off"`
+      + `<span class="text-xs text-neutral-600 dark:text-neutral-400" data-font-state="off"`
       + `${has ? ' hidden' : ''}>—</span>`
       + `<button type="button" data-font-pick="${w}" class="${buttonClass('secondary', 'sm')}"`
       + ` data-off="${escapeAttr(t.fontChoose)}" data-on="${escapeAttr(t.fontReplace)}"`
@@ -196,7 +200,7 @@ const nameKey = (n: { name: string; note: string }): string =>
   // ⚠️ `text-xs`, NOT `text-[0.6875rem]`. 11px left this admin on 2026-09-07 and `check:admin-kit`
   // fails a file that hand-types it — but the guard matches `text-[11px]`, and the same size
   // spelled in rem walked straight past it. Three sites were still at 11px because of that.
-  + ` class="rounded border border-neutral-200 bg-white px-1.5 py-0.5 font-mono text-xs`
+  + ` class="rounded border border-neutral-200 bg-white px-1.5 py-1 font-mono text-xs`
   + ` text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 dark:border-neutral-700`
   + ` dark:bg-neutral-950 dark:text-neutral-300 dark:hover:text-white">`
   + `${escapeHtml(n.name)}</button>`
@@ -205,7 +209,7 @@ const nameKey = (n: { name: string; note: string }): string =>
  *  one notch lighter than `UTIL`, on a size the scale calls a contrast limit rather than a taste. */
 const nameGroup = (title: string, keys: string): string =>
   `<div><h4 class="mb-1 ${UTIL}">${escapeHtml(title)}</h4>`
-  + `<div class="flex flex-wrap gap-1">${keys}</div></div>`
+  + `<div class="flex flex-wrap gap-1.5">${keys}</div></div>`
 
 /**
  * THE BOX WHERE THIS PRODUCT STOPS HAVING ANSWERS AND HANDS YOU THE PEN.
@@ -245,8 +249,8 @@ function cssEditor(t: AdminStrings, s: SiteSettings): string {
   const depth = braceBalance(value)
   const STATUS = 'text-xs tabular-nums'
   const GUTTER = 'max-h-80 shrink-0 select-none overflow-hidden border-r border-neutral-200'
-    + ' bg-neutral-50 px-2 py-2 text-right font-mono text-xs leading-5 text-neutral-400'
-    + ' dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-600'
+    + ' bg-neutral-50 px-2 py-2 text-right font-mono text-xs leading-5 text-neutral-500'
+    + ' dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400'
   const AREA = 'max-h-80 min-h-40 w-full resize-y bg-white px-3 py-2 font-mono text-xs leading-5'
     + ' text-neutral-900 placeholder:text-neutral-400 focus:outline-none dark:bg-neutral-950'
     + ' dark:text-neutral-100 dark:placeholder:text-neutral-600'

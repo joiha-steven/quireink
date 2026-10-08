@@ -65,14 +65,14 @@ export type WriteItem = {
 const stamp = (iso?: string): number => (iso ? new Date(iso).getTime() : 0)
 
 /**
- * Whether a post has been given a publication date in the future.
+ * Whether a post or note (the two the scheduler publishes) has been given a publication date in the future.
  *
  * It is not a fourth status: a scheduled post's `status` IS `published`, which is why asking
  * for Drafts does not show it. The lamp pulses instead, which is the only place the difference
  * is said out loud.
  */
 export const isQueued = (it: WriteItem, now: number): boolean =>
-  it.kind === 'post' && it.status === 'published' && it.created > now
+  (it.kind === 'post' || it.kind === 'note') && it.status === 'published' && it.created > now
 
 /** The stream, sorted. `sort` decides which of the two dates is the key; both are descending. */
 export function writeItems(

@@ -27,6 +27,63 @@ import { emptyState, pageHeader, select, sheet, sheetTop } from '@/web/admin/kit
 import { logView } from '@/web/admin/views'
 import type { SiteLang, SiteSettings } from '@/types'
 import { plural } from '@/i18n/plural'
+import { all } from '@/store/query'
+
+/** The three families whose log detail is a title, or the slug when there was none to write. */
+const TITLED = { post: 'posts', page: 'pages', note: 'notes' } as const
+
+/** What a slug names NOW: the title, and when that piece came to exist. */
+export type Holder = { title: string; created: number }
+
+/**
+ * ⚠️ THE STORED ROW IS NEVER TOUCHED. A piece saved without a title logs its slug, and
+ * `post.delete` and `post.restore` log the slug always, so the ledger printed
+ * `Wrote 'the-golden-canon-…'` where the editor shows a title. At read time such a detail
+ * prints the title instead, but only when that is certainly the same piece:
+ *
+ * - the row must be NEWER than the piece now holding the slug. A slug is reused once its old
+ *   holder is purged, and an older row `Moved 'foo' to the trash` is about the one that is
+ *   gone, not about whatever took the name since;
+ * - a create or update row stores the title when there is one, so its detail is only a slug
+ *   when no piece is titled exactly that (`ambiguous`), or a title equal to another piece's
+ *   slug would be swapped for that piece's title.
+ *
+ * Anything unsure keeps the stored text. The slug stays searchable (`was`).
+ */
+export type NamedEntry = ActivityEntry & { was?: string }
+
+export function namedDetails(
+  entries: ActivityEntry[], holders: Map<string, Holder>, ambiguous: Set<string> = new Set(),
+): NamedEntry[] {
+  return entries.map((e) => {
+    const [family, verb] = e.action.split('.')
+    const held = holders.get(`${family}:${e.detail}`)
+    if (!held) return e
+    if (Date.parse(e.at) < held.created - 2000) return e
+    if ((verb === 'create' || verb === 'update') && ambiguous.has(`${family}:${e.detail}`)) return e
+    return { ...e, detail: held.title, was: e.detail }
+  })
+}
+
+/** `family:slug` to its current holder, for the slugs these entries name; and which of those texts are also a title. */
+export function titlesFor(entries: ActivityEntry[]): { holders: Map<string, Holder>; ambiguous: Set<string> } {
+  const holders = new Map<string, Holder>()
+  const ambiguous = new Set<string>()
+  for (const [family, table] of Object.entries(TITLED)) {
+    const slugs = [...new Set(entries.filter((e) => e.action.startsWith(`${family}.`) && e.detail).map((e) => e.detail))]
+    if (slugs.length === 0) continue
+    const marks = slugs.map(() => '?').join(',')
+    // Table names come from the closed set above; every value is bound.
+    for (const r of all<{ slug: string; title: string; created_at: number }>(
+      `select slug, title, created_at from ${table} where title != '' and slug in (${marks})`, ...slugs)) {
+      holders.set(`${family}:${r.slug}`, { title: r.title, created: r.created_at })
+    }
+    for (const r of all<{ title: string }>(`select distinct title from ${table} where title in (${marks})`, ...slugs)) {
+      ambiguous.add(`${family}:${r.title}`)
+    }
+  }
+  return { holders, ambiguous }
+}
 
 /**
  * How many rows stand on screen before "show more". A rendering decision, not a round trip.
@@ -56,12 +113,12 @@ const rowGlyph = (action: string): string =>
  * `data-find` is the folded haystack — sentence, detail and code, accents stripped — so a
  * keystroke is one `includes` per row rather than a fold of two hundred strings.
  */
-function row(t: AdminStrings, lang: SiteLang, e: ActivityEntry, i: number): string {
+function row(t: AdminStrings, lang: SiteLang, e: NamedEntry, i: number): string {
   // PAST THE FIRST PAGE IT ARRIVES HIDDEN, so the first paint is one page and not two hundred
   // rows. The island owns it from there: a filter changes WHICH rows, so the count cannot be
   // baked into the markup beyond this first answer.
   const sentence = logSentence(t, e.action, e.detail)
-  const find = fold(`${sentence} ${e.detail} ${e.action}`)
+  const find = fold(`${sentence} ${e.detail} ${e.was ?? ''} ${e.action}`)
   // THE WHOLE SENTENCE, which the row truncates. It held `auth.login — via totp`, the machine's
   // words, in the one place a hovering owner reads. The code is still in `data-find`, so
   // somebody debugging an install can type `auth.login` into the filter and get the rows.
@@ -81,7 +138,10 @@ function row(t: AdminStrings, lang: SiteLang, e: ActivityEntry, i: number): stri
 export async function logScreen(settings: SiteSettings): Promise<string> {
   const t = adminT(settings.language)
   const lang = settings.language
-  const { entries, enabled } = await logView()
+  const view = await logView()
+  const { enabled } = view
+  const { holders, ambiguous } = titlesFor(view.entries)
+  const entries = namedDetails(view.entries, holders, ambiguous)
 
   const kindOptions: [string, string][] = [
     ['all', t.logKindAll],
@@ -119,7 +179,7 @@ export async function logScreen(settings: SiteSettings): Promise<string> {
   const body = entries.length === 0
     ? emptyState({ title: t.logEmpty, description: t.logEmptyHint, glyph: 'blankPage' })
     : `${emptyState({ title: t.logNoMatch, glyph: 'lens', hidden: true, attrs: 'data-log-nomatch' })}`
-      + `<ul data-log-list class="admin-stagger">${entries.map((e: ActivityEntry, i: number) => row(t, lang, e, i)).join('')}</ul>`
+      + `<ul data-log-list class="admin-stagger">${entries.map((e: NamedEntry, i: number) => row(t, lang, e, i)).join('')}</ul>`
       + `<div data-log-more class="px-5 py-3"${entries.length > PAGE ? '' : ' hidden'}>`
       + `<button type="button" class="${SHEET_TOOL}">${escapeHtml(t.logShowMore.replace('{n}', String(PAGE)))}</button></div>`
 

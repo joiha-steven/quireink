@@ -52,14 +52,21 @@ export function wireFieldChecks(root: HTMLElement, w: CheckWords): void {
     else el.removeAttribute('aria-invalid')
   }
 
+  // ⚠️ A SERVER'S REFUSAL OUTLIVES THE BLUR. The save refuses some values the browser calls valid
+  // (`ftp://…` in a `type="url"` box), and `settings-save.ts` writes that sentence here and marks
+  // the box `data-refused`. Settling on blur would read `validity.valid` and wipe it the moment
+  // focus moved; only an EDIT, which may have fixed it, lets the browser's verdict back in.
   const looked = (e: Event): void => {
     const el = e.target
-    if (el instanceof HTMLInputElement && el.dataset.k) settle(el)
+    if (el instanceof HTMLInputElement && el.dataset.k && el.dataset.refused === undefined) settle(el)
   }
   root.addEventListener('blur', looked, true)
   // And on the way back to valid, so a corrected field stops complaining before it is left.
   root.addEventListener('input', (e) => {
     const el = e.target
-    if (el instanceof HTMLInputElement && el.dataset.k && el.validity.valid) settle(el)
+    if (!(el instanceof HTMLInputElement) || !el.dataset.k) return
+    const wasRefused = el.dataset.refused !== undefined
+    delete el.dataset.refused
+    if (el.validity.valid || wasRefused) settle(el)
   })
 }

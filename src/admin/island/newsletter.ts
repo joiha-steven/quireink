@@ -94,7 +94,19 @@ if (root) {
   let asked = ''
 
   const slugs = (): string[] => postBoxes.filter((b) => b.checked).map((b) => b.value)
-  const priorSent = (): number => postBoxes.filter((b) => b.checked && b.dataset.sent).length
+  const sentOf = (b: HTMLInputElement): number => Number(b.dataset.sent) || 0
+  const priorSent = (): number => postBoxes.filter((b) => b.checked && sentOf(b) > 0).length
+  /** Addresses the ticked posts already reached: what the consent line counts. */
+  const priorAddresses = (): number => {
+    const union = new Set<string>()
+    let floor = 0
+    for (const b of postBoxes) {
+      if (!b.checked || sentOf(b) === 0) continue
+      floor = Math.max(floor, sentOf(b))
+      for (const i of (b.dataset.reached ?? '').split(',')) if (i) union.add(i)
+    }
+    return Math.max(union.size, floor)
+  }
 
   function paint(): void {
     const many = slugs().length
@@ -132,7 +144,7 @@ if (root) {
   }
 
   /** An armed latch is armed for ONE exact selection; changing anything stands it down. */
-  function changed(): void {
+  function changed(andPreview = true): void {
     disarm()
     const prior = priorSent()
     const many = slugs().length
@@ -142,9 +154,9 @@ if (root) {
       hintMany.textContent = (words.digest ?? '').replace('{n}', n(many))
     }
     if (consent) consent.hidden = prior === 0
-    if (consentLine) consentLine.textContent = (words.already ?? '').replace('{n}', n(prior))
+    if (consentLine) consentLine.textContent = plural(words.already ?? '', priorAddresses(), lang, n(priorAddresses()))
     paint()
-    void preview()
+    if (andPreview) void preview()
   }
 
   async function preview(): Promise<void> {
@@ -181,6 +193,22 @@ if (root) {
     paint()
   }
 
+  /** What the server now says each post reached, read from a fresh draw of this screen. */
+  async function refreshReached(): Promise<void> {
+    try {
+      const html = await (await fetch('/admin/newsletter?tab=send')).text()
+      const fresh = new DOMParser().parseFromString(html, 'text/html')
+      for (const b of postBoxes) {
+        const f = [...fresh.querySelectorAll<HTMLInputElement>('[data-nl-post]')].find((x) => x.value === b.value)
+        if (!f) continue
+        b.dataset.sent = f.dataset.sent ?? ''
+        b.dataset.reached = f.dataset.reached ?? ''
+      }
+    } catch {
+      for (const b of postBoxes) if (b.checked && !b.dataset.sent) b.dataset.sent = '1'
+    }
+  }
+
   /** How far the run has got. The request that started it answered before the mail went out. */
   async function watch(): Promise<void> {
     for (;;) {
@@ -200,7 +228,7 @@ if (root) {
     }
   }
 
-  for (const b of postBoxes) b.addEventListener('change', changed)
+  for (const b of postBoxes) b.addEventListener('change', () => changed())
   resend?.addEventListener('change', () => { disarm(); paint() })
 
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && armed > 0) disarm() })
@@ -229,9 +257,9 @@ if (root) {
           say(body?.error?.startsWith('smtp_') ? words.noSmtp ?? '' : `${words.sendFailed ?? ''}: ${body?.error ?? ''}`, 'error')
           return
         }
-        for (const b of postBoxes) if (b.checked) b.dataset.sent = '1'
         if (resend) resend.checked = false
         await watch()
+        await refreshReached()
       } catch {
         say(words.sendFailed ?? '', 'error')
       } finally {
@@ -267,6 +295,8 @@ if (root) {
   // The server drew the button's resting state; this derives it again from the boxes, so the
   // two can never disagree about whether a already-sent post is ticked. No fetch: the preview
   // is only worth asking for on the tab that shows it.
-  paint()
+  // A browser that restores form state on reload brings ticks back that the server did not
+  // draw, so the consent block is derived here from the boxes exactly as a tick would.
+  changed(false)
   if (screen.dataset.nlTab === 'send') void preview()
 }

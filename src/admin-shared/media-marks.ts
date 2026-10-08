@@ -42,6 +42,10 @@ export type MediaWords = {
  *
  * `tap-touch` gives a finger 44px without moving the key or covering the picture. Measured
  * 2026-09-07: these three were 28 × 28 on a phone.
+ *
+ * The keys sit 8px from the tray's edge, not 6: the 44px touch box reaches 8px past a 28px key,
+ * and the tray clips what leaves it, so at 6px the outer 2px of the box was cut off (and the
+ * tile's scroll width read 2px over its client width).
  */
 const KEY = 'tap-touch grid h-7 w-7 place-items-center rounded-md bg-white/95 text-neutral-600'
   + ' backdrop-blur-[2px] transition'
@@ -151,13 +155,13 @@ export function mediaTileMark(row: MediaRow, w: MediaWords, s: TileState): Mark 
   // The size, where it costs the NAME nothing. Beside the name it took a third of a 190px
   // caption and cut `gutenberg-bible-epistle.jpg` to `gutenberg-bible-ep…`, which is the half
   // of the line that is actually looked for.
-  inside.push(leaf('span', `${CHIP} bottom-1.5 right-1.5 tabular-nums transition-opacity ${ON_HOVER}`, s.sizeLabel))
+  inside.push(leaf('span', `${CHIP} bottom-1.5 right-2 tabular-nums transition-opacity ${ON_HOVER}`, s.sizeLabel))
 
   if (s.mode === 'page') {
     // Three keys, not three words. The labels did not fit on one line on a 390px phone, so the
     // row wrapped and the band grew a second storey. A 28px key is the same target at every
     // width and carries no line to break.
-    inside.push(el('div', `absolute right-1.5 top-1.5 z-10 flex gap-1 transition-opacity duration-150 ${ON_HOVER}`, [
+    inside.push(el('div', `absolute right-2 top-2 z-10 flex gap-1 transition-opacity duration-150 ${ON_HOVER}`, [
       el('button', KEY, [glyph('copy')], { type: 'button', 'data-copy': row.url, title: w.copyUrl, 'aria-label': w.copyUrl }),
       el('a', KEY, [glyph('download')], { href: row.url, download: row.filename, title: w.download, 'aria-label': w.download }),
       el('button', `${KEY} hover:text-[var(--pen-red)]`, [glyph('trash')],

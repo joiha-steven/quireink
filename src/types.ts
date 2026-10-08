@@ -177,7 +177,7 @@ export type SiteSettings = {
   showDescription: boolean
   fontPreset: string // built-in font choice id (lib/themes FONT_PRESETS); '' -> Inter
   look: SiteLook // which dialect the PUBLIC site is dressed in ('Looks like' in the admin). 'plain' adds nothing; the other three each ship as their own stylesheet (src/web/look-*.css.ts) and are linked only when chosen, so a blog pays for the look it wears and for nothing else. Public site only; the admin has its own scale. Replaced the `ideChrome` boolean on 2026-09-13 and reads it as 'code' when migrating
-  chromeFont: string // system-chrome font (lib/themes CHROME_FONTS): 'inter' | 'reading' (follow the reading font) | 'plex-mono' (IBM Plex Mono). Drives --font-sans (header/footer/rail/meta/admin); leaves the article body alone
+  chromeFont: string // system-chrome font (lib/themes CHROME_FONTS): 'inter' | 'reading' (follow the reading font) | 'plex-mono' (IBM Plex Mono). Drives --font-sans, the public body face (everything outside .prose/.reading-font: header, footer, rail, meta, comments, search, forms); leaves the article text alone. Never reaches the admin
   faviconUrl: string // browser-tab icon; '' = the bundled default favicon
   appIconUrl: string // PWA / home-screen app icon (square); '' = favicon, else bundled default
   autosaveSeconds: number // how often the editor stashes a local snapshot while you type, in seconds. NOT a server autosave — see admin/components/useLocalDraft.ts, which rejects one on the grounds that it cannot help when the network is what dropped and would push half-finished edits onto a published post. The floor is 15s: at a long interval the flush on hide is what actually keeps work safe, and that one is not optional

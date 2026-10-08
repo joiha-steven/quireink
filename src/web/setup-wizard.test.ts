@@ -88,6 +88,22 @@ describe('the four questions after the account', () => {
     expect(saved.siteUrl).toBe('https://quiet.example')
   })
 
+  // `type="url"` lets `ftp://…` through, and the save stored `''` for it and moved on (2026-10-08).
+  it('asks the site step again, with the reason under the field, for an address it cannot keep', async () => {
+    const cookie = await session()
+    const res = await asOwner('/setup/site', {
+      title: 'A Quiet Press', timezone: 'UTC', siteUrl: 'ftp://quiet.example',
+    })(cookie)
+    expect(res.status).toBe(400)
+    const page = await res.text()
+    expect(page).toContain('id="siteUrl"')
+    expect(page).toContain('value="ftp://quiet.example"')
+    expect(page).toContain('aria-invalid="true"')
+    expect(page).toContain('login-error-field')
+    expect(page).toContain('value="A Quiet Press"')
+    expect((await getSettings()).title).not.toBe('A Quiet Press')
+  })
+
   it('saves the face and moves on to the reader', async () => {
     const res = await asOwner('/setup/face', { mode: 'front' })(await session())
     expect(res.headers.get('location')).toBe('/setup/reader')

@@ -336,3 +336,38 @@ describe('the site title', () => {
     expect((await getSettings()).title).toBe('Kept title')
   })
 })
+
+// "Settings saved" over a Site address that was then stored as `''` — wiping the one already
+// there — and the same through the author link and the repository name (2026-10-08).
+describe('a free-text setting the save cannot keep', () => {
+  it('is refused by name, and what was stored stays', async () => {
+    await put('/api/settings', { siteUrl: 'https://kept.example', author: { url: 'https://kept.example/me' } })
+    for (const [body, error] of [
+      [{ siteUrl: 'not a url' }, 'field_url: siteUrl'],
+      [{ author: { url: 'my site' } }, 'field_url: author.url'],
+      [{ sourceRepo: 'nobody' }, 'field_invalid: sourceRepo'],
+    ] as const) {
+      const res = await put('/api/settings', body)
+      expect(res.status).toBe(400)
+      expect(await res.json()).toEqual({ success: false, error })
+    }
+    const { getSettings } = await import('@/content/settings')
+    const now = await getSettings()
+    expect(now.siteUrl).toBe('https://kept.example')
+    expect(now.author.url).toBe('https://kept.example/me')
+  })
+
+  it('refuses the WHOLE save, so nothing beside the bad field lands either', async () => {
+    await put('/api/settings', { title: 'Before' })
+    expect((await put('/api/settings', { title: 'After', siteUrl: 'nope' })).status).toBe(400)
+    const { getSettings } = await import('@/content/settings')
+    expect((await getSettings()).title).toBe('Before')
+  })
+
+  it('still clears on an empty answer, and keeps an address as its origin', async () => {
+    expect((await put('/api/settings', { siteUrl: '' })).status).toBe(200)
+    const res = await put('/api/settings', { siteUrl: 'https://example.org/blog/' })
+    expect(res.status).toBe(200)
+    expect(((await res.json()) as { data: { siteUrl: string } }).data.siteUrl).toBe('https://example.org')
+  })
+})

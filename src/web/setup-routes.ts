@@ -24,11 +24,13 @@ import {
   MIN_CODE_LENGTH,
 } from '@/server/setup-token'
 import { qrSvg } from '@/render/qr'
-import { claimScreen, claimedScreen, enrolScreen, unclaimedScreen, fillTemplate } from '@/web/login-page'
+import { enrolScreen, fillTemplate } from '@/web/login-page'
+import { claimScreen, claimedScreen, unclaimedScreen } from '@/web/setup-claim-page'
 import { rememberEnrolmentSecret, enrolmentSkippable } from '@/web/enrol-routes'
 import { fail, json } from '@/web/api'
 import { ownerRouter, type OwnerRouter } from '@/web/guard'
 import { saveSettings } from '@/content/settings'
+import { refusedSetting } from '@/content/settings-refuse'
 import { isSiteLang } from '@/locales/langs'
 import { siteStepScreen, faceStepScreen, readerStepScreen, lookStepScreen } from '@/web/setup-page'
 import { APP_VERSION } from '@/version'
@@ -153,7 +155,7 @@ export async function handleSetupClaim(c: Context): Promise<Response> {
       ? fillTemplate(s.setupPwShort, { n: MIN_LENGTH })
       : problem === 'too-common' ? s.setupPwCommon : s.setupPwName
     if (!wantsHtml) return fail(c, message, 400)
-    return html(claimScreen(settings, { token, username, email, error: message }), 400)
+    return html(claimScreen(settings, { token, username, email, error: message, errorAtPassword: true }), 400)
   }
 
   // Now it is a real claim, so the choice is written down. The screen this hands over to is
@@ -301,14 +303,24 @@ export function setupWizardRoutes(): OwnerRouter {
     const get = (k: string): string =>
       typeof form[k] === 'string' ? (form[k] as string).trim() : ''
     const language = get('language')
-    await saveSettings({
+    const answer = {
       title: get('title') || undefined,
       // The sanitizer keeps the current value for anything it does not recognise, so a
       // hand-typed zone that is not a real IANA name cannot wedge the site.
       timezone: get('timezone'),
       siteUrl: get('siteUrl'),
       ...(isSiteLang(language) ? { language } : {}),
-    })
+    }
+    // An address the browser lets through (`ftp://…`) that the save would store as `''`: asked
+    // again with the reason under the field, the Settings rule (`content/settings-refuse.ts`).
+    if (refusedSetting(answer)) {
+      const settings = await getSettings()
+      const typed = { ...settings, ...answer, title: answer.title ?? settings.title }
+      return html(siteStepScreen(typed, {
+        address: answer.siteUrl, addressError: adminT(typed.language).fieldUrl,
+      }), 400)
+    }
+    await saveSettings(answer)
     return c.redirect('/setup/face', 303)
   })
 

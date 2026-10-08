@@ -319,7 +319,7 @@ export function fontPresetCss(id: string): string {
 }
 
 // System-chrome font (Admin → Appearance). Independent of the reading font: it drives
-// --font-sans (header/footer/rail/dates/meta/admin) and leaves --font-reading (the
+// --font-sans (the public body face: header/footer/rail/dates/meta/comments/search/forms, not the admin) and leaves --font-reading (the
 // article body) alone. `sans` is the CSS font-family it points --font-sans at, or null
 // for the Inter default (no override — globals' baseline stands):
 //   inter     -> Inter (default)

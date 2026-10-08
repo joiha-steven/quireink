@@ -23,6 +23,7 @@ import { PANEL, connectionCard, loadFailure, panelList } from '@/web/admin/field
 import { settingRow, switchRow } from '@/web/admin/fields'
 import { checkField } from '@/web/admin/fields-pick'
 import { gate } from '@/web/admin/fields-pic'
+import { machineAddress } from '@/web/admin/screens/settings-server-api'
 
 /** The box a copyable value sits in: `min-h-9` matches the key beside it, `min-w-0` is what
  *  lets a long URL truncate instead of shoving the key off the row. */
@@ -30,9 +31,16 @@ const COPY_BOX = 'flex min-h-9 min-w-0 flex-1 items-center truncate rounded-lg b
   + ' border-neutral-300 px-3 text-xs dark:border-neutral-700'
 
 const TH = 'px-3 py-2 font-medium'
-/** Four of the five columns fold away under `sm`: a name and a way to revoke it are what a
- *  phone has room for, and they are what somebody on one came to do. */
-const TD_WIDE = 'hidden whitespace-nowrap px-3 py-2 text-neutral-500 sm:table-cell dark:text-neutral-400'
+/**
+ * ⚠️ TWO COLUMNS, NOT FIVE. The token, with its three dates on a line under the name, and the key
+ * that revokes it. Five columns came to 590px in a card 425px wide at 1280 and 505px at 1440, so
+ * the table scrolled sideways and the sticky Revoke cell sat on top of the Expires column
+ * ("4/6/27 - 11:…", measured 2026-10-08); on a phone the dates folded away altogether. A line of
+ * dates WRAPS where a column cannot, so every width shows all of it and nothing scrolls.
+ */
+const META_LINE = 'mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums text-neutral-500 dark:text-neutral-400'
+/** One labelled date: the label and its value never part, the line breaks between dates. */
+const META_ITEM = 'whitespace-nowrap'
 
 /**
  * ONE TOKEN, as the `<template>` the island clones — never a row built out of a string in
@@ -49,7 +57,7 @@ const TD_WIDE = 'hidden whitespace-nowrap px-3 py-2 text-neutral-500 sm:table-ce
  * `data-mcp-made`, away from the box that shows a just-minted token.
  */
 function tokenRow(t: AdminStrings): string {
-  const badge = `<span class="ml-2 whitespace-nowrap rounded border border-neutral-300 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400" data-mcp-scope hidden>`
+  const badge = `<span class="whitespace-nowrap rounded border border-neutral-300 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400" data-mcp-scope hidden>`
     + `<span data-mcp-badge-read hidden>${escapeHtml(t.mcpReadOnly)}</span>`
     + `<span data-mcp-badge-code hidden>${escapeHtml(t.mcpCustomCode)}</span></span>`
   // ⚠️ THE ROW IS WRAPPED IN A TABLE SKELETON INSIDE THE TEMPLATE, and the island reads
@@ -60,21 +68,26 @@ function tokenRow(t: AdminStrings): string {
   // green against an empty clone. The skeleton costs 30 bytes and cannot be got wrong anywhere.
   return `<template data-mcp-row><table><tbody>`
     + `<tr class="border-b border-neutral-100 last:border-0 dark:border-neutral-800" data-mcp-token-row>`
-    + `<td class="px-3 py-2"><span class="font-medium" data-mcp-name></span>`
-    + `<code class="ml-2 text-xs text-neutral-500 dark:text-neutral-400" data-mcp-prefix></code>`
-    + `${badge}</td>`
-    + `<td class="${TD_WIDE}" data-mcp-made></td>`
-    + `<td class="${TD_WIDE}"><span data-mcp-used></span>`
-    + `<span data-mcp-never hidden>${escapeHtml(t.mcpNeverUsed)}</span></td>`
-    + `<td class="hidden whitespace-nowrap px-3 py-2 sm:table-cell">`
+    + `<td class="min-w-0 px-3 py-2 align-top">`
+    // A wrapping row, so the name, the prefix and the badge may each take a line of their own:
+    // inline and touching, the three were one unbreakable 185px run on a phone.
+    + `<div class="flex flex-wrap items-center gap-x-2 gap-y-1">`
+    + `<span class="min-w-0 break-words font-medium" data-mcp-name></span>`
+    + `<code class="text-xs text-neutral-500 dark:text-neutral-400" data-mcp-prefix></code>`
+    + `${badge}</div>`
+    + `<div class="${META_LINE}">`
+    + `<span class="${META_ITEM}">${escapeHtml(t.mcpColCreated)} <span data-mcp-made></span></span>`
+    + `<span class="${META_ITEM}">${escapeHtml(t.mcpColLastUsed)} <span data-mcp-used></span>`
+    + `<span data-mcp-never hidden>${escapeHtml(t.mcpNeverUsed)}</span></span>`
+    + `<span class="${META_ITEM}">${escapeHtml(t.mcpColExpires)} `
     + `<span class="font-medium text-neutral-900 dark:text-white" data-mcp-expired hidden>`
     + `${escapeHtml(t.mcpExpired)}</span>`
-    + `<span class="text-neutral-500 dark:text-neutral-400" data-mcp-expires></span></td>`
-    // STUCK TO THE RIGHT EDGE of the scroller: the table is wider than the card at 1440, and
-    // the only way to revoke a token sat past the edge, cut to "Delet" on a phone (2026-09-30).
-    + `<td class="sticky right-0 bg-white px-3 py-2 text-right dark:bg-neutral-900">`
-    + `<button type="button" data-mcp-delete class="rounded-lg px-2.5 py-1 text-xs text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white">`
-    + `${escapeHtml(t.delete)}</button></td></tr></tbody></table></template>`
+    + `<span data-mcp-expires></span></span></div></td>`
+    // The way to revoke, at the right edge of a table that no longer scrolls, so it needs no
+    // sticky cell to stay reachable (it was cut to "Delet" on a phone, 2026-09-30).
+    + `<td class="w-px whitespace-nowrap px-3 py-2 text-right align-top">`
+    + `<button type="button" data-mcp-delete class="min-h-8 rounded-lg px-2.5 py-1 text-xs text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white">`
+    + `${escapeHtml(t.mcpRevoke)}</button></td></tr></tbody></table></template>`
 }
 
 /**
@@ -123,10 +136,7 @@ function tokens(t: AdminStrings): string {
     + `<button type="button" data-mcp-close class="${buttonClass('ghost', 'sm')}">`
     + `${escapeHtml(t.close)}</button></div></div>`
   const head = `<tr><th class="${TH}">${escapeHtml(t.mcpColName)}</th>`
-    + `<th class="hidden ${TH} sm:table-cell">${escapeHtml(t.mcpColCreated)}</th>`
-    + `<th class="hidden ${TH} sm:table-cell">${escapeHtml(t.mcpColLastUsed)}</th>`
-    + `<th class="hidden ${TH} sm:table-cell">${escapeHtml(t.mcpColExpires)}</th>`
-    + `<th class="sticky right-0 bg-neutral-50 px-3 py-2 dark:bg-neutral-900"></th></tr>`
+    + `<th class="${TH}"></th></tr>`
   // The empty line and the table are mutually exclusive, so they share ONE box: a stack that
   // hides one of a pair hands the other a margin it never had (`docs/admin-one-dom.md`, trap 5).
   const table = `<div>`
@@ -163,13 +173,15 @@ function tokens(t: AdminStrings): string {
  * and the address keeps the `border-t` React drew on it. `.panel-list .switch-row.p-4` is a
  * DESCENDANT rule, so the row inside the wrapper still gets its 16px back.
  */
-export function mcpCard(t: AdminStrings, s: SiteSettings, endpoint: string): string {
+export function mcpCard(t: AdminStrings, s: SiteSettings, endpoint: string, fallback = ''): string {
   const live = s.mcp.enabled
-  const url = settingRow({
-    label: t.mcpUrlLabel, note: t.mcpUrlHint,
-    control: `<div class="flex items-center gap-2">`
+  // `endpoint` is `''` when the blog does not know its own address: say where it is set rather
+  // than hand out a relative path (`machineAddress`, beside the API card that shares it).
+  const url = machineAddress(t, {
+    label: t.mcpUrlLabel, note: t.mcpUrlHint, path: '/api/mcp', address: endpoint, fallback,
+    control: (shown) => `<div class="flex items-center gap-2">`
       + `<code class="${COPY_BOX} bg-neutral-50 dark:bg-neutral-900" data-mcp-url>`
-      + `${escapeHtml(endpoint)}</code>`
+      + `${escapeHtml(shown)}</code>`
       + `<button type="button" data-mcp-copy class="${buttonClass('secondary', 'sm')}">`
       + `${escapeHtml(t.mcpCopy)}</button></div>`,
   })

@@ -34,6 +34,10 @@ type Post = Letter['posts'][number]
 const PICK_ROW = 'flex cursor-pointer items-start gap-3 border-b border-neutral-100 px-3.5 py-2.5'
   + ' last:border-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/40'
 
+// 24px on a touch screen, where the native 13px box was the whole target; the row's label
+// carries the rest of the hit area (`PICK_ROW`), so a tap anywhere on the row ticks it.
+const PICK_BOX = `${CHECK} h-6 w-6 shrink-0 lg:h-4 lg:w-4`
+
 /**
  * One post in the picker. `data-sent` is what already left the server for this slug, read from
  * the send LOG rather than from `posts.broadcast_at`: the log is what the server's own consent
@@ -41,9 +45,13 @@ const PICK_ROW = 'flex cursor-pointer items-start gap-3 border-b border-neutral-
  */
 function pick(t: AdminStrings, lang: SiteLang, p: Post, first: boolean, timezone: string): string {
   const done = (p.stats?.sent ?? 0) > 0
+  const reached = p.reached ?? []
+  // `data-reached` lists WHICH distinct addresses already got it (small integers) and `data-sent`
+  // how many; the consent line takes the union across the ticked posts, so a resend or a digest
+  // is not counted twice.
   return `<label class="${PICK_ROW}">`
-    + `<input type="checkbox" data-nl-post value="${escapeAttr(p.slug)}" data-sent="${done ? '1' : ''}"`
-    + `${first ? ' checked' : ''} class="mt-1 ${CHECK}">`
+    + `<input type="checkbox" data-nl-post value="${escapeAttr(p.slug)}" data-sent="${done ? String(Math.max(1, reached.length)) : ''}" data-reached="${reached.join(',')}" autocomplete="off"`
+    + `${first ? ' checked' : ''} class="${PICK_BOX}">`
     + `<span class="min-w-0 flex-1">`
     // The post's NAME, which for a short post is its first words: the title alone left an
     // untitled post as a bare date in this list (2026-09-30).
@@ -72,23 +80,23 @@ export function sendPanel(t: AdminStrings, lang: SiteLang, posts: Post[], open: 
     + `<span data-nl-hint-many hidden></span></p>`
 
   /**
-   * ⚠️ THE FIRST POST IS TICKED, AND IT MAY ALREADY HAVE GONE OUT.
+   * ⚠️ NEVER PRE-TICK A POST THAT ALREADY WENT OUT. The newest UNSENT post is ticked, or none
+   * when every post has been sent: the screen used to open on a ticked, already-sent post with
+   * the consent block asking "send it again?", which made the default answer the one that
+   * mails the same people twice.
    *
-   * The server draws the state the screen is actually IN, not a resting state the island
-   * corrects a frame later: if the newest post has successful sends behind it, the consent
-   * block is open and the button is locked in the first response. Drawn the other way round,
-   * the owner met a live Send button for a post the server would then refuse — an error toast
-   * where the screen should have been asking a question.
+   * The server still draws the state the screen is actually IN, not a resting state the island
+   * corrects a frame later: with nothing ticked the button is off in the first response. Drawn
+   * the other way round, the owner met a live Send button the server would then refuse.
    */
-  const priorSent = posts[0] && (posts[0].stats?.sent ?? 0) > 0 ? 1 : 0
-  const consent = `<div data-nl-consent class="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm dark:border-neutral-800 dark:bg-neutral-900"${priorSent ? '' : ' hidden'}>`
-    + `<p class="text-neutral-600 dark:text-neutral-400" data-nl-consent-line>`
-    + `${priorSent ? escapeHtml(t.nlAlreadySent.replace('{n}', String(priorSent))) : ''}</p>`
-    + `<label class="mt-2 flex items-center gap-2 text-neutral-700 dark:text-neutral-300">`
-    + `<input type="checkbox" data-nl-resend class="${CHECK}">${escapeHtml(t.nlResendConfirm)}</label></div>`
+  const ticked = posts.findIndex((p) => (p.stats?.sent ?? 0) === 0)
+  const consent = `<div data-nl-consent class="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm dark:border-neutral-800 dark:bg-neutral-900" hidden>`
+    + `<p class="text-neutral-600 dark:text-neutral-400" data-nl-consent-line></p>`
+    + `<label class="mt-2 flex cursor-pointer items-center gap-2 text-neutral-700 dark:text-neutral-300">`
+    + `<input type="checkbox" data-nl-resend autocomplete="off" class="${PICK_BOX}">${escapeHtml(t.nlResendConfirm)}</label></div>`
 
   const button = `<span data-nl-latch class="inline-flex">`
-    + `<button type="button" data-nl-send class="${buttonClass('primary')}"${priorSent ? ' disabled' : ''}>`
+    + `<button type="button" data-nl-send class="${buttonClass('primary')}"${ticked < 0 ? ' disabled' : ''}>`
     + `<span data-nl-send-lamp aria-hidden="true" class="h-2 w-2 shrink-0 animate-pulse rounded-full bg-amber-500 motion-reduce:animate-none" hidden></span>`
     + `<span data-nl-send-label>${escapeHtml(t.nlSendButton)}</span></button></span>`
 
@@ -96,7 +104,7 @@ export function sendPanel(t: AdminStrings, lang: SiteLang, posts: Post[], open: 
     title: escapeHtml(t.nlPickPost),
     body: `<div class="space-y-4">`
       + `<div class="scroll-fade max-h-80 overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-800">`
-      + posts.map((p, i) => pick(t, lang, p, i === 0, timezone)).join('')
+      + posts.map((p, i) => pick(t, lang, p, i === ticked, timezone)).join('')
       + `</div>${hints}${consent}${button}</div>`,
   })
 

@@ -53,8 +53,12 @@ function title(t: AdminStrings, piece: SheetPiece): string {
   // The title is part of the WRITING SURFACE, not part of the form: it is the headline, set in
   // the reading face, inside the sheet. No `tracking-tight` — that was the sans's -0.025em on a
   // serif that publishes at -0.01em.
+  //
+  // NAMED, not only placeholdered: a placeholder is a hint that leaves with the first letter,
+  // and audits read a field named by nothing else as unnamed. The same words, said twice.
+  const name = escapeAttr(piece.kind === 'page' ? t.titlePlaceholderPage : piece.kind === 'note' ? t.titlePlaceholderNote : t.titlePlaceholder)
   return `<div class="px-4 pt-6">`
-    + `<textarea data-sheet-title rows="1" placeholder="${escapeAttr(piece.kind === 'page' ? t.titlePlaceholderPage : piece.kind === 'note' ? t.titlePlaceholderNote : t.titlePlaceholder)}"`
+    + `<textarea data-sheet-title rows="1" aria-label="${name}" placeholder="${name}"`
     + ` class="${escapeAttr(READING)} write-surface min-h-12 w-full resize-none overflow-hidden`
     + ` bg-transparent text-3xl font-semibold leading-tight [field-sizing:content]`
     + ` placeholder:italic placeholder:font-normal placeholder:text-neutral-300`

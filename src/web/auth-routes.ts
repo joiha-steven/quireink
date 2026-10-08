@@ -117,6 +117,7 @@ export async function handleLogin(c: Context): Promise<Response> {
     if (!wantsHtml) return fail(c, s.authBadCredentials, 401)
     return html(passwordScreen(settings, {
       error: s.authBadCredentials,
+      errorAtPassword: true,
       username: values.username,
       next: values.next || undefined,
       passkeys: offersPasskey(c, settings),

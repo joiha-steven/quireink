@@ -8,6 +8,7 @@
 //
 // So the sheet's payload is described HERE, imported by both ends, and a disagreement becomes a
 // compile error rather than a blank field.
+import { limitWords } from '@/admin-shared/upload-words'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { KeyFeedback, PostStatus, SiteLang } from '@/types'
 
@@ -120,7 +121,7 @@ export const emptyDraft = (): SheetDraft => ({
 export const SHEET_WORD_KEYS = [
   'askCancel', 'attributes', 'captionPlaceholder', 'close', 'copyUrl', 'dateCalendar',
   'dateMonthNext', 'dateMonthPrev', 'dateNow', 'dateTime', 'dateTomorrow', 'delete', 'download',
-  'draftRestored', 'edFocus', 'edReadMinutes', 'edWords', 'editorPlaceholder', 'findCount',
+  'draftDiscarded', 'draftRestored', 'edFocus', 'edReadMinutes', 'edWords', 'editorPlaceholder', 'findCount',
   'findFind', 'findMatchCase', 'findNext', 'findNoMatch', 'findPrevious', 'findReplace',
   'findReplaceAll', 'findReplaceWith', 'findReplacedN', 'galleryAdd', 'galleryPickHint', 'galleryPickTitle',
   'hideAttributes', 'imageUploadFailed', 'imgAlignCenter', 'imgAlignLeft', 'imgAlignRight',
@@ -129,7 +130,8 @@ export const SHEET_WORD_KEYS = [
   'imgSizeColumn', 'imgSizeWide', 'inkBlue', 'inkGreen', 'inkOrange', 'inkPink', 'inkYellow',
   'keptLocallyPrefix', 'keptOnServerPrefix', 'kindNote', 'kindPage', 'loadMediaFailed',
   'localDraftDiscard', 'localDraftFound', 'localDraftRestore', 'mathPlaceholder', 'mediaTitle',
-  'moreActions', 'navWrite', 'needTitle', 'needTitleNote', 'previewDraft', 'promptLink', 'publish', 'published',
+  'moreActions', 'navWrite', 'needTitle', 'needTitleNote', 'noMedia', 'pickEmptyHint', 'pickUpload',
+  'pickUploading', 'previewDraft', 'promptLink', 'publish', 'published',
   'removeAria', 'restore', 'revisionLoaded', 'save', 'saveDraft', 'saveFailed', 'savedAtPrefix',
   'savedChanges', 'savedDraft', 'saving', 'schedule', 'scheduled', 'scheduledForPrefix', 'serverDraftFound',
   'slashHint', 'slugTaken', 'staleSave', 'statusDraft', 'statusPublished', 'tbBold', 'tbCodeBlock',
@@ -138,10 +140,12 @@ export const SHEET_WORD_KEYS = [
   'tbMarkdown', 'tbMath', 'tbMathInline', 'tbParagraph', 'tbQuote', 'tbRing', 'tbRowAdd',
   'tbRowDel', 'tbStrike', 'tbTable', 'tbTableDelete', 'tbTask', 'tbUnderline',
   'titlePlaceholder', 'trashFailed', 'trashHomePage', 'trashedOne', 'undo', 'unsaved',
-  'unsupportedType', 'untitled', 'unusedBadge', 'uploadNoRoom', 'uploadTooLarge',
+  'unsupportedType', 'untitled', 'unusedBadge', 'update', 'uploadNoRoom', 'uploadTooLarge',
 ] as const
 
 export type SheetWords = Pick<AdminStrings, (typeof SHEET_WORD_KEYS)[number]>
 
-export const sheetWords = (t: AdminStrings): SheetWords =>
-  Object.fromEntries(SHEET_WORD_KEYS.map((k) => [k, t[k]])) as SheetWords
+export const sheetWords = (t: AdminStrings): SheetWords => ({
+  ...(Object.fromEntries(SHEET_WORD_KEYS.map((k) => [k, t[k]])) as SheetWords),
+  uploadTooLarge: limitWords(t).tooLarge, uploadNoRoom: limitWords(t).noRoom,
+})

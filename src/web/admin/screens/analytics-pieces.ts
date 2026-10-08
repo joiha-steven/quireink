@@ -93,7 +93,7 @@ export function pieceIndex(t: AdminStrings, lang: SiteLang, pieces: PieceStat[],
     + ` class="${TROW}"${shows[i] ? '' : ' hidden'}>`
     + `<td class="w-full max-w-0 px-4 py-2.5">`
     + `<a href="${escapeAttr(detailHref(r.path, range))}" data-piece-row`
-    + ` class="block truncate text-neutral-700 hover:underline dark:text-neutral-200"`
+    + ` class="-my-2 block truncate py-2 text-neutral-700 hover:underline dark:text-neutral-200"`
     + ` title="${escapeAttr(r.path)}">${escapeHtml(r.title)}</a></td>`
     + `<td class="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300">${n(r.views)}</td>`
     + `<td class="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-500 dark:text-neutral-400">${n(r.visitors)}</td>`

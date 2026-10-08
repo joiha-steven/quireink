@@ -16,6 +16,7 @@
 // and holding the focus chord flickered the chrome in and out.
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import type { Offer } from '@/admin-shared/draft-keep'
+import type { MainWord } from '@/admin-shared/sheet-state'
 import { countWords, readMinutes } from '@/admin-shared/word-count'
 import { plural } from '@/i18n/plural'
 import type { SiteLang } from '@/types'
@@ -59,8 +60,11 @@ export type Bar = {
   /** The assembled save line (`draft-keep.ts`), and whether a save is in flight. */
   setStatus: (line: string, saving: boolean) => void
   setDirty: (dirty: boolean) => void
-  /** Published, and whether its date is still ahead: the Publish key's two words. */
-  setState: (published: boolean, scheduled: boolean) => void
+  /**
+   * The main key's word (`sheet-state.ts`), and whether it waits for a change: a piece already
+   * out or queued has nothing to update until something moved.
+   */
+  setMain: (word: MainWord, waitsForChange: boolean) => void
   /** Where the piece can be read as a reader sees it, or null while there is nothing to read. */
   setLive: (href: string | null) => void
   /** A piece with a row can be previewed; one that has never been saved cannot. */
@@ -93,7 +97,7 @@ export function wireBar(root: HTMLElement, hooks: BarHooks): Bar {
 
   let dirty = false
   let saving = false
-  let published = false
+  let waits = false
   let statusLine = ''
   let words = 0
 
@@ -124,7 +128,7 @@ export function wireBar(root: HTMLElement, hooks: BarHooks): Bar {
 
   const sayKeys = (): void => {
     if (save) save.disabled = saving || !dirty
-    if (publish) publish.disabled = saving || (!dirty && published)
+    if (publish) publish.disabled = saving || (!dirty && waits)
   }
 
   // ---- the controls -------------------------------------------------------------------
@@ -202,10 +206,11 @@ export function wireBar(root: HTMLElement, hooks: BarHooks): Bar {
   return {
     setStatus: (line, inFlight) => { statusLine = line; saving = inFlight; sayLine(); sayKeys() },
     setDirty: (next) => { dirty = next; sayKeys() },
-    setState: (isPublished, scheduled) => {
-      published = isPublished
+    setMain: (word, waitsForChange) => {
+      waits = waitsForChange
       if (publish) {
-        const say = scheduled ? publish.dataset.saySchedule : publish.dataset.sayPublish
+        const say = word === 'update' ? publish.dataset.sayUpdate
+          : word === 'schedule' ? publish.dataset.saySchedule : publish.dataset.sayPublish
         publish.textContent = say ?? publish.textContent
       }
       sayKeys()

@@ -15,6 +15,7 @@
 // ⚠️ NO SECRET IS EVER IN THE PAGE. `getIntegrationStatus()` turns every stored credential into
 // a boolean; a credential field ships EMPTY with a placeholder saying one is stored, because
 // sending the dots back would store the dots.
+import { limitWords } from '@/admin-shared/upload-words'
 import type { SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
@@ -65,7 +66,7 @@ function words(t: AdminStrings): string {
     copyUrl: t.copyUrl, download: t.download, delete: t.delete, unusedBadge: t.unusedBadge,
     // An icon goes straight to the files store, and says so when it lands.
     uploaded: t.uploaded, uploadFailed: t.uploadFailed, loading: t.loading,
-    badType: t.unsupportedType, tooLarge: t.uploadTooLarge, noRoom: t.uploadNoRoom,
+    badType: t.unsupportedType, ...limitWords(t),
     // The three lists, and the two of them that delete.
     //
     // ⚠️ `removed`, NOT `movedToTrash`. A snapshot and a redirect are both deleted outright —
@@ -87,8 +88,9 @@ function words(t: AdminStrings): string {
     // 2026-09-15, so none of these had a reader either.
     mcpGenerate: t.mcpGenerate, mcpNamePrompt: t.mcpNamePrompt,
     mcpLimit: t.mcpLimitReached, mcpCreateFailed: t.mcpCreateFailed,
-    mcpTokenDeleted: t.mcpTokenDeleted, mcpUrlCopied: t.mcpUrlCopied, mcpCopied: t.mcpCopied,
-    askTokenTitle: t.askDeleteTokenTitle, askTokenBody: t.askDeleteTokenBody,
+    mcpTokenRevoked: t.mcpTokenRevoked, mcpUrlCopied: t.mcpUrlCopied, mcpCopied: t.mcpCopied,
+    // REVOKE, not "Delete forever": the grant stops working, which is what the key does.
+    askTokenTitle: t.askRevokeTokenTitle, askTokenBody: t.askDeleteTokenBody, mcpRevoke: t.mcpRevoke,
     // Clearing the cache from this tab. The rail's footer key and the palette already said
     // these two; the copy on this screen said nothing at all.
     cacheCleared: t.cacheCleared, cacheFailed: t.clearCacheFailed,

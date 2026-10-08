@@ -15,18 +15,19 @@
 import { redrawColumn } from './content'
 import type { PostRevision } from '@/types'
 import {
-  draftKey, emptyDraft, LIVE_PATH, SHEET_PATH,
+  draftKey, emptyDraft, SHEET_PATH,
   type SheetData, type SheetDraft, type SheetWords,
 } from '@/admin-shared/sheet-wire'
 import { saveStatusLine } from '@/admin-shared/draft-keep'
 import { formatDateTimeShort, formatTime } from '@/admin-shared/when'
 import { formatWallClock } from '@/i18n/format'
 import { isScheduled, titleSlug } from '@/utils'
+import { ahead, mainWord, standing, type Standing } from '@/admin-shared/sheet-state'
 import { withLiveIdentity } from '@/admin/components/restore-identity'
 import { askForLink } from './lib/ask-link'
 import { say } from './lib/media-bridge'
 import { readSnapshot, sendSnapshot } from './lib/sheet-keep'
-import { nameEnough, payloadOf, savePiece, statusForSave, worthSaving } from './lib/sheet-save'
+import { nameEnough, payloadOf, previewPlan, savePiece, statusForSave, worthSaving } from './lib/sheet-save'
 import { mountPaper } from './lib/sheet-paper'
 import { wireTitle } from './lib/sheet-title'
 import { wireBar } from './lib/sheet-bar'
@@ -34,6 +35,7 @@ import { wireFields, askForPicture } from './lib/sheet-fields'
 import { wirePanel } from './lib/sheet-open'
 import { wireSafety, type Snapshot } from './lib/sheet-safety'
 import { wireHistory } from './lib/sheet-history'
+import { sayStanding } from './lib/sheet-standing'
 import { moveToTrash, openPreview, uploadInline } from './lib/sheet-errands'
 
 type Payload = SheetData & { words: SheetWords }
@@ -66,6 +68,8 @@ function boot(root: HTMLElement, data: Payload): void {
   let slugTyped = Boolean(draft.slug)
   // The status THE SERVER HOLDS (`statusForSave`), and when it last saved the row (`stale.ts`).
   let savedStatus: SheetDraft['status'] = slug ? draft.status : 'draft'
+  // …and its date: the header and the main key read these two, never the form (`sheet-state.ts`).
+  let savedDate = slug ? draft.date : ''
   let baseSavedAt = data.rowSavedAt
 
   /**
@@ -124,43 +128,32 @@ function boot(root: HTMLElement, data: Payload): void {
   // A page has no date at all, so it is never scheduled — `isScheduled` says so on its own.
   const scheduled = (): boolean => isScheduled(draft.status, draft.date)
   // What Publish WOULD do: a future date schedules, whatever the status (was "Publish" till 09-30).
-  const future = (): boolean => isScheduled('published', draft.date)
+  const future = (): boolean => ahead(draft.date)
+  const held = (): Standing => (slug ? standing(savedStatus, savedDate) : 'draft') // what the SERVER holds
 
   function sayState(): void {
+    const st = held()
     sheetBar.setStatus(
       saveStatusLine(t, saving, savedAt, dirty, safety.keptAt, formatTime, safety.sentAt),
       saving,
     )
     sheetBar.setDirty(dirty)
-    sheetBar.setState(draft.status === 'published', future())
     at('[data-panel-publish]')?.replaceChildren(future() ? t.schedule : t.publish)
     sheetBar.setSaveWord(savedStatus === 'published')
-    const live = draft.status === 'published' && slug !== '' && !scheduled()
-    sheetBar.setLive(live ? LIVE_PATH[kind](slug) : null)
     sheetBar.setPreviewable(kind === 'post' && slug !== '')
     if (trashBlock) trashBlock.hidden = slug === ''
     if (past) past.hidden = slug === ''
-    if (stats) {
-      stats.hidden = !live
-      if (live) stats.href = `/admin/analytics?path=${encodeURIComponent(`/${slug}`)}`
-    }
     if (dateNote) {
       dateNote.textContent = scheduled()
         ? `${t.scheduledForPrefix} ${formatWallClock(draft.date, lang)}`
         : ''
       dateNote.hidden = !scheduled()
     }
-    // The line under the title: what this is, what state it is in, when it was last touched.
-    // It is REWRITTEN rather than left as drawn, because a Publish that left it reading "Draft"
-    // is the screen disagreeing with itself about the thing the writer just did.
-    if (metaLine) {
-      const state = scheduled()
-        ? t.scheduled
-        : draft.status === 'published' ? t.statusPublished : t.statusDraft
-      const head = kind === 'post' ? state : `${kind === 'page' ? t.kindPage : t.kindNote} · ${state}`
-      metaLine.textContent = [head, savedAt ? formatDateTimeShort(savedAt, lang) : touchedAt]
-        .filter(Boolean).join(' · ')
-    }
+    // The header, the main key and the live link, from what the SERVER holds.
+    sayStanding({ bar: sheetBar, metaLine, statusOut: at('[data-status-out]'), stats }, t, lang, {
+      kind, slug, st, savedDate, chosen: draft.status, chosenAhead: future(),
+      touched: savedAt ? formatDateTimeShort(savedAt, lang) : touchedAt,
+    })
   }
 
   /**
@@ -217,19 +210,20 @@ function boot(root: HTMLElement, data: Payload): void {
         sheetBar.setAttrs(true)
         return
       }
-      void saveAs('published', future() ? t.scheduled : t.published)
+      const updating = mainWord(held(), draft.status, future()) === 'update'
+      void saveAs('published', updating ? t.savedChanges : future() ? t.scheduled : t.published)
     },
-    // ⚠️ A LIVE PIECE IS PREVIEWED FROM ITS SNAPSHOT (`web/preview.ts`), NEVER SAVED FIRST:
-    // saving put the half-typed sentence on the public page.
+    // ⚠️ A LIVE PIECE IS PREVIEWED FROM ITS SNAPSHOT, never saved first (`previewPlan`).
     onPreview: () => void openPreview(t, () => {
       if (!dirty) return Promise.resolve(true)
-      if (savedStatus !== 'published') return enqueue()
-      return sendSnapshot(kind, slug, JSON.stringify({ ...draft, content: body() }))
+      const plan = previewPlan(savedStatus, draft.status)
+      return 'save' in plan ? enqueue(plan.save) : sendSnapshot(kind, slug, JSON.stringify({ ...draft, content: body() }))
     }, () => slug),
     onToggleMd: () => { paper.toggleRaw(); sheetBar.setMd(paper.raw) },
     onToggleAttrs: () => { panel.toggle(); sheetBar.setAttrs(panel.open) },
     onRestore: () => void restoreSnapshot(),
-    onDiscard: () => safety.dismiss(),
+    // UNDOABLE, NOT ASKED: the toast carries the way back, as the trash's does.
+    onDiscard: () => { safety.dismiss(); say(t.draftDiscarded, undefined, { label: t.undo, run: () => void safety.undismiss() }) },
   })
 
   const safety = wireSafety({
@@ -262,6 +256,8 @@ function boot(root: HTMLElement, data: Payload): void {
   async function persist(status?: SheetDraft['status']): Promise<boolean> {
     const text = body()
     const sent = JSON.stringify(draft)
+    const sentStatus = status ?? draft.status
+    const sentDate = draft.date
     if (!worthSaving(kind, draft, text)) return false
     saving = true
     sayState()
@@ -273,6 +269,8 @@ function boot(root: HTMLElement, data: Payload): void {
       }
       slug = res.slug
       baseSavedAt = res.savedAt ?? baseSavedAt
+      savedStatus = sentStatus
+      savedDate = sentDate
       safety.retarget(res.slug)
       savedAt = new Date().toISOString()
       slugTyped = true

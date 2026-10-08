@@ -201,7 +201,7 @@ function row(
   // reveals it when the foot of the list comes into view (`admin-shared/write.ts`). Still ONE
   // mechanism — `hidden` on the row — which is the rule this comment was written for.
   const facts = ` data-piece="${escapeAttr(key)}" data-piece-kind="${escapeAttr(it.kind)}"`
-    + ` data-piece-state="${it.status === 'published' ? 'published' : 'draft'}"`
+    + ` data-piece-state="${isQueued(it, now) ? 'scheduled' : it.status === 'published' ? 'published' : 'draft'}"`
     + ` data-piece-needs="${escapeAttr(needsOf(it))}"`
     // The sort keys travel with the row, because sorting is moving these nodes and not asking
     // the server again. Folded title and terms travel too, so the island's search does not fold
@@ -222,7 +222,7 @@ function row(
  * down at the moment somebody goes to pick from the list, so the rows they were looking at move
  * under the pointer.
  */
-function head(t: AdminStrings, needs: WriteNeeds): string {
+function head(t: AdminStrings, needs: WriteNeeds, anyQueued: boolean): string {
   const search = `<input type="search" data-write-search class="${CONTROL_SM} w-full"`
     + ` placeholder="${escapeAttr(t.filterPlaceholder)}" aria-label="${escapeAttr(t.filterPlaceholder)}">`
 
@@ -245,32 +245,29 @@ function head(t: AdminStrings, needs: WriteNeeds): string {
     attrs: 'data-write-kinds',
   })
 
-  // Two lamps and a sort key on one line, which is what the six-segment strip became: four
-  // words 24px apart do not fit a 288px column, and "drafts" and "of posts" are two questions.
-  // ⚠️ BOTH LAMPS SHIP GREY, and lighting one is what "pressed" looks like. A lamp is a state
-  // and these two are QUESTIONS — amber beside "Drafts" on arrival reads as a warning about
-  // drafts rather than as a filter waiting to be asked for. Both hues ship drawn and the island
-  // shows one, because a lamp's colour is a class and nothing in an island builds markup.
-  // ⚠️ THE ATTRIBUTE GOES ON THE LAMP, not on a wrapper around it. A lamp is an inline-block,
-  // so a plain span holding one takes a LINE BOX — 16px of it at this type size, for an 8px
-  // mark — and the row grew by 8. The same fault cost every settings card 7px of header height
-  // in the step before this one; there the fix was `flex` on the wrapper, here it is not having
-  // a wrapper at all.
+  // The state lamps on one line (the sort key rides the tools row); "drafts" and "of posts" are two questions.
+  // ⚠️ THE LAMPS SHIP GREY and lighting one is "pressed": they are QUESTIONS, and amber on
+  // arrival reads as a warning. Both hues are drawn and the island shows one (it builds no markup).
+  // ⚠️ THE ATTRIBUTE GOES ON THE LAMP, not on a wrapper: a lamp is an inline-block, so a plain
+  // span holding one takes a 16px line box for an 8px mark and the row grew by 8.
   const statusLamp = (state: 'attention' | 'good'): string =>
     lamp({ state: 'off', attrs: 'data-lamp-off' })
     + lamp({ state, attrs: 'data-lamp-on hidden' })
+  // Scheduled (`isQueued`) leaves "Published"; its chip exists only while something is scheduled.
+  const states: ReadonlyArray<readonly [string, string, 'attention' | 'good']> = [
+    ['draft', t.scopeDrafts, 'attention'],
+    ...(anyQueued ? [['scheduled', t.scheduled, 'attention'] as const] : []),
+    ['published', t.scopePublished, 'good'],
+  ]
   const statusLine = `<div class="flex items-center justify-between gap-3 text-xs">`
     + `<span class="flex gap-3">`
-    + ([['draft', t.scopeDrafts, 'attention'], ['published', t.scopePublished, 'good']] as const)
+    + states
       .map(([value, label, state]) =>
         `<button type="button" data-write-status="${escapeAttr(value)}" aria-pressed="false"`
         + ` class="${SHEET_TOOL} inline-flex items-center gap-1.5">`
         + statusLamp(state)
         + `<span>${escapeHtml(label)}</span></button>`).join('')
     + `</span>`
-    + `<button type="button" data-write-sort="updated" class="${SHEET_TOOL}"`
-    + ` data-word-updated="${escapeAttr(`↓ ${t.sortUpdated}`)}"`
-    + ` data-word-created="${escapeAttr(`↓ ${t.sortCreated}`)}">${escapeHtml(`↓ ${t.sortUpdated}`)}</button>`
     + `</div>`
 
   // THE DASHBOARD'S FILTER, arriving in the ADDRESS — and it has to be dismissable. A filter you
@@ -289,10 +286,13 @@ function head(t: AdminStrings, needs: WriteNeeds): string {
 
   const tools = `<div class="flex items-center justify-between gap-2 text-xs">`
     // Not picking: the three ways into the list's own furniture.
-    + `<span data-write-tools class="flex items-center gap-3">`
+    + `<span data-write-tools class="flex w-full flex-wrap items-center gap-x-3 gap-y-4">`
     + `<button type="button" data-write-select class="${SHEET_TOOL}">${escapeHtml(t.selectPieces)}</button>`
     + `<button type="button" data-write-drawer="taxonomy" class="${SHEET_TOOL}">${escapeHtml(t.tabTaxonomy)}</button>`
     + `<button type="button" data-write-drawer="series" class="${SHEET_TOOL}">${escapeHtml(t.tabSeries)}</button>`
+    + `<button type="button" data-write-sort="updated" class="${SHEET_TOOL} ml-auto"`
+    + ` data-word-updated="${escapeAttr(`↓ ${t.sortUpdated}`)}"`
+    + ` data-word-created="${escapeAttr(`↓ ${t.sortCreated}`)}">${escapeHtml(`↓ ${t.sortUpdated}`)}</button>`
     + `</span>`
     // Picking: two rows, because five controls do not fit on one 320px line in any language
     // that is not English. Leaving and selecting on top, the three verbs under them, wrapping
@@ -381,7 +381,7 @@ export function writePane(opts: {
     // holds the clamp (`[data-write-fit]`). Beside the editor it stays `w-80`; see there why.
     + ` data-write-fit="${alone ? 'alone' : 'beside'}"`
     + ` class="${alone ? PANE_ALONE : PANE_BESIDE} ${PANE}">`
-    + head(t, needs) + list + `</aside>`
+    + head(t, needs, items.some((it) => isQueued(it, now))) + list + `</aside>`
 }
 
 /** What the island has to be able to say, in whichever language the blog is written in. */

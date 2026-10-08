@@ -15,6 +15,7 @@ import type { PostStatus, SiteLang } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { buttonClass, OVERLAY_LIFT } from '@/admin-shared/kit'
 import { textArea, textField } from '@/web/admin/fields'
+import { ahead } from '@/admin-shared/sheet-state'
 import { chipField, fieldNote, pickField, pictureField, statusPair, typedDate } from './sheet-fields'
 import { pick } from '@/web/admin/fields-pick'
 import { SITE_LANGS } from '@/locales/langs'
@@ -98,7 +99,7 @@ function common(t: AdminStrings, lang: SiteLang, piece: PanelPiece): string {
     k: 'date', label: piece.zone ? `${t.publishDate} (${piece.zone})` : t.publishDate,
     value: piece.date, lang, t, note: piece.scheduledNote,
   })
-  return slug + date + statusPair(t, piece.status)
+  return slug + date + statusPair(t, piece.status, ahead(piece.date))
 }
 
 function postFields(t: AdminStrings, piece: PanelPiece, lists: PanelLists): string {

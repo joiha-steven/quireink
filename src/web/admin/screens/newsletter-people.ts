@@ -164,6 +164,9 @@ export function peoplePanel(
         { key: 'unsubscribed', label: titled(t.nlUnsub, lang) },
       ],
       value: 'all',
+      // Dense: four keys, the last of them "Unsubscribed", ran 13px past a 375px phone's
+      // column and were clipped with no cue that the strip scrolled.
+      dense: true,
       attrs: 'data-sub-scope',
     })
     // EVERY MATCH, on every page (2026-09-30): the export takes ticked rows only, and 500

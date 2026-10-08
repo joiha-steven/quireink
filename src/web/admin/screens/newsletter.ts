@@ -22,6 +22,8 @@ import { newsletterView, subscribersView } from '@/web/admin/views-news'
 import { peoplePanel } from '@/web/admin/screens/newsletter-people'
 import { sendPanel, testPanel } from '@/web/admin/screens/newsletter-send'
 
+const LINK = 'font-medium text-neutral-900 underline underline-offset-2 dark:text-white'
+
 const TABS = ['people', 'send', 'test'] as const
 type Tab = (typeof TABS)[number]
 
@@ -69,7 +71,8 @@ export async function newsletterScreen(settings: SiteSettings, query: URLSearchP
   // one substitution the server can make here, because which tab it names never changes.
   const warning = letter.mailConfigured ? '' : `<p class="border-b border-neutral-100 bg-neutral-50 px-5 py-2.5`
     + ` text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-400">`
-    + `${escapeHtml(t.nlNoSmtpWarning.replace('{tab}', t.tabPeople))}</p>`
+    // The section's name is a link to it: "fill it in under …" used to end in plain text.
+    + `${escapeHtml(t.nlNoSmtpWarning).replace('{tab}', `<a href="/admin/settings?tab=people" class="${LINK}">${escapeHtml(t.tabPeople)}</a>`)}</p>`
 
   const link = `<a href="/admin/settings?tab=people" class="${SHEET_TOOL_ON_CANVAS}">`
     + `${escapeHtml(t.nlSmtpSettingsLink)} →</a>`

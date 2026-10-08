@@ -14,6 +14,7 @@
 // bar list with a proportional ground is this screen's, exactly as `sparkline` is the
 // dashboard's.
 import type { SiteLang } from '@/types'
+import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { DailyPoint } from '@/analytics/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount } from '@/i18n/format'
@@ -21,12 +22,23 @@ import { CARD } from '@/admin-shared/kit'
 import { trendOf } from '@/admin-shared/analytics'
 import { formatDateShort } from '@/admin-shared/when'
 
-/** The trend arrow that sits inside a figure. Empty when an arrow would be a lie — see `trendOf`. */
-export function trendMark(cur: number, prev?: number): string {
-  const t = trendOf(cur, prev)
-  if (!t) return ''
-  return `<span class="ml-2 align-middle text-xs font-medium text-neutral-500 dark:text-neutral-400">`
-    + `${t.up ? '▲' : '▼'} ${escapeHtml(t.label)}</span>`
+/**
+ * The trend arrow that sits inside a figure. Empty when an arrow would be a lie — see `trendOf`.
+ *
+ * It names what it compares against: "▲ ×44" alone was a multiplier with no baseline. The
+ * figure from the previous window of the same length is printed beside it, and the sentence
+ * that says what that window is rides in the tooltip and for a screen reader.
+ */
+export function trendMark(cur: number, prev: number | undefined, t: AdminStrings, lang: SiteLang): string {
+  const trend = trendOf(cur, prev)
+  if (!trend) return ''
+  const before = formatCount(prev ?? 0, lang)
+  const hint = t.analyticsVsPrevHint.replace('{n}', before)
+  // Two short lines, each unbreakable: in a 150px cell the one-line form wrapped to three.
+  return `<span class="ml-2 inline-block whitespace-nowrap align-middle text-xs font-medium leading-tight text-neutral-500 dark:text-neutral-400" title="${escapeAttr(hint)}">`
+    + `${trend.up ? '▲' : '▼'} ${escapeHtml(trend.label)}`
+    + `<span class="block font-normal">${escapeHtml(t.analyticsVsPrev.replace('{n}', before))}</span>`
+    + `<span class="sr-only"> ${escapeHtml(hint)}</span></span>`
 }
 
 export type BarRow = { key: string; label: string; value: number; href?: string }

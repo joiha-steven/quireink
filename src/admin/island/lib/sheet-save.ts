@@ -26,6 +26,18 @@ export function statusForSave(
   return saved === 'published' ? chosen : 'draft'
 }
 
+/**
+ * What Preview does with changes not yet saved: a LIVE piece is previewed from a snapshot and
+ * never saved (saving put a half-typed sentence on the public page); anything else is saved
+ * first, with the status a plain Save would write. A ticked "Published" box on a draft is the
+ * Publish key's question — Preview saving with the form's status published the draft.
+ */
+export function previewPlan(
+  saved: SheetDraft['status'], chosen: SheetDraft['status'],
+): { save: SheetDraft['status'] } | { snapshot: true } {
+  return saved === 'published' ? { snapshot: true } : { save: statusForSave(saved, chosen) }
+}
+
 /** What a kind sends. The keys a kind does not have are left out rather than sent empty. */
 export function payloadOf(
   kind: SheetKind, draft: SheetDraft, content: string, timezone: string,

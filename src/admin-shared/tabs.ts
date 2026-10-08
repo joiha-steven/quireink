@@ -148,7 +148,7 @@ export const tabItemClass = (
   size === 'lg'
     // `-mb-px` so the item's own 2px border sits ON the track's hairline rather than under it.
     // Dense is the write pane's size: 13px and a shorter stem, whole words never broken.
-    ? `-mb-px border-b-2 font-medium transition ${dense ? 'whitespace-nowrap pb-1.5 text-[0.8125rem]' : 'pb-2.5 text-sm'} ${
+    ? `-mb-px border-b-2 font-medium transition ${dense ? 'min-w-6 whitespace-nowrap pb-1.5 text-[0.8125rem]' : 'pb-2.5 text-sm'} ${
         active
           // A marker stroke under the label, not a wash behind it: an underlined strip is
           // already a quiet control and a lime block in it would be the loudest thing on the

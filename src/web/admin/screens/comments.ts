@@ -37,7 +37,7 @@ const META = 'flex items-baseline gap-x-2 text-xs text-neutral-500 dark:text-neu
 const WHO = 'truncate font-medium text-neutral-700 dark:text-neutral-300'
 const BADGE = 'shrink-0 rounded-full border border-neutral-200 px-1.5 text-xs tabular-nums'
   + ' text-neutral-500 dark:border-neutral-700 dark:text-neutral-400'
-const TITLE_LINK = 'min-w-0 flex-1 truncate text-sm font-semibold text-neutral-900 hover:underline dark:text-white'
+const TITLE_LINK = '-my-2 min-w-0 flex-1 truncate py-2 text-sm font-semibold text-neutral-900 hover:underline dark:text-white'
 // neutral-500, not 400: the address read 2.58:1 at 12px on the card (FIXLIST 7.7).
 const FORENSICS = 'mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutral-500 dark:text-neutral-400'
 

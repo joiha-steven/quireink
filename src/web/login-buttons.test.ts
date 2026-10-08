@@ -7,7 +7,7 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const SCREENS = ['login-page.ts', 'setup-page.ts', 'setup-restore.ts']
+const SCREENS = ['login-page.ts', 'setup-page.ts', 'setup-claim-page.ts', 'setup-restore.ts']
 
 describe('every submit button on the sign-in and setup screens', () => {
   for (const file of SCREENS) {

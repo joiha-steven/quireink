@@ -22,6 +22,7 @@ freshDatabase(DIR)
 const app = createApp()
 let token = ''
 let readToken = ''
+let adminToken = ''
 
 beforeEach(async () => {
   for (const t of ['sessions', 'users', 'mcp_tokens', 'activity_log', 'settings', 'server_secrets']) {
@@ -32,7 +33,7 @@ beforeEach(async () => {
   const user = await createUser({ username: 'hung', email: 'owner@example.com', password: 'wandering violet cassette' })
   const cookie = `${COOKIE_NAME}=${createSession(user.id).token}`
   await saveSettings({ mcp: { enabled: true } })
-  const mint = async (scope?: 'read') => {
+  const mint = async (scope?: 'read' | 'admin') => {
     const res = await app.request('/api/mcp/tokens', {
       method: 'POST',
       headers: { cookie, 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' },
@@ -42,6 +43,7 @@ beforeEach(async () => {
   }
   token = await mint()
   readToken = await mint('read')
+  adminToken = await mint('admin')
 })
 
 afterAll(() => dropDatabase(DIR))
@@ -109,6 +111,25 @@ describe('changing one by path', () => {
     const out = await call('update_settings', { path: 'features.search', value: 'yes' })
     expect(out.isError).toBe(true)
     expect((await getSettings()).features.search).toBe(true)
+  })
+
+  // The admin's Save refuses these; this door said "sanitised exactly as the admin's own Save
+  // does" and stored `''` over a working address instead (2026-10-08).
+  it('refuses an address or a repository name the save would throw away, and keeps the old one', async () => {
+    await saveSettings({ siteUrl: 'https://kept.example', author: { ...(await getSettings()).author, url: 'https://kept.example/me' } })
+    // `siteUrl` needs the custom-code grant at all (`mcp/guarded-paths.ts`), so it is asked with
+    // one: the refusal under test is the value's, not the token's.
+    for (const [path, value] of [['siteUrl', 'ftp://x'], ['author.url', 'my site'], ['sourceRepo', 'nobody']] as const) {
+      const out = await call('update_settings', { path, value }, () => adminToken)
+      expect(out.isError).toBe(true)
+      expect(out.text).toContain(`${path} must be`)
+    }
+    const now = await getSettings()
+    expect(now.siteUrl).toBe('https://kept.example')
+    expect(now.author.url).toBe('https://kept.example/me')
+    // And an empty answer is still an answer.
+    expect((await call('update_settings', { path: 'siteUrl', value: '' }, () => adminToken)).isError).toBe(false)
+    expect((await getSettings()).siteUrl).toBe('')
   })
 
   it('refuses a path with no value', async () => {

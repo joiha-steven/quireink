@@ -357,7 +357,8 @@ export type AdminStrings = {
   askRemoveTermBody: string
   askClearLogTitle: string
   askClearLogBody: string
-  askDeleteTokenTitle: string
+  askRevokeTokenTitle: string
+  mcpRevoke: string
   askDeleteTokenBody: string
   askDeleteBackupTitle: string
   askDeleteBackupBody: string
@@ -437,6 +438,11 @@ export type AdminStrings = {
   draftRestored: string
   localDraftRestore: string
   localDraftDiscard: string
+  update: string
+  draftDiscarded: string
+  pickUpload: string
+  pickUploading: string
+  pickEmptyHint: string
   // toolbar
   promptLink: string
   /** The one control that replaced six heading buttons and four block buttons. */
@@ -1034,6 +1040,7 @@ export type AdminStrings = {
   // custom font (per weight)
   cardFont: string
   fontPresetHint: string
+  fontPresetApplied: string
   chromeFontLabel: string
   chromeFontReading: string
   chromeFontHint: string
@@ -1364,6 +1371,9 @@ export type AdminStrings = {
   analyticsByWeekday: string
   analyticsByYear: string
   analyticsNoData: string
+  analyticsNoDataHint: string
+  analyticsVsPrev: string
+  analyticsVsPrevHint: string
   analyticsPrivacyNote: string
   // activity log (Admin → Log) + feature toggle
   navLog: string
@@ -1410,7 +1420,6 @@ export type AdminStrings = {
   trashTitle: string
   trashHint: string
   trashEmpty: string
-  trashEmptyHint: string
   trashSearch: string
   colDeletedAt: string
   restored: string
@@ -1537,6 +1546,7 @@ export type AdminStrings = {
   apiEnableDesc: string
   apiUrlLabel: string
   apiUrlHint: string
+  machineNeedsAddress: string
   apiUrlCopied: string
   apiReadOnly: string
   mcpEnable: string
@@ -1559,7 +1569,7 @@ export type AdminStrings = {
   mcpExpired: string
   mcpRefresh: string
   mcpNeverUsed: string
-  mcpTokenDeleted: string
+  mcpTokenRevoked: string
   mcpLimitReached: string
   mcpCreateFailed: string
   mcpReadOnly: string
@@ -1755,6 +1765,10 @@ export type AdminStrings = {
   authCodesHint: string
   authCodesDownload: string
   authCodesSaved: string
+  authCodesCopy: string
+  authCodesCopied: string
+  authCodesTickFirst: string
+  authCodesSelected: string
   authDone: string
   // ----- first run: claiming an install that has no owner yet -------------------
   // The only step that used to need a terminal. `setupWhereToLook` names both ways of

@@ -173,7 +173,9 @@ const panel = (t: AdminStrings, kind: Kind, open: Kind, rows: string, pagerHtml 
       // read down the left and then down the right: a single deleted post sat in the left half
       // of an empty sheet with its divider stopping mid-card, and a long list read out of order.
       + `<ul>${rows}</ul>`
-    : `<div class="p-8">${emptyState({ title: t.trashEmpty, description: t.trashEmptyHint, glyph: 'emptyBox' })}</div>`)
+    // ONE sentence of explanation: the foot of the sheet already says what the trash keeps and
+    // that emptying it cannot be undone, so the empty state adds only its title.
+    : `<div class="p-8">${emptyState({ title: t.trashEmpty, glyph: 'emptyBox' })}</div>`)
   + pagerHtml
   + `</div>`
 

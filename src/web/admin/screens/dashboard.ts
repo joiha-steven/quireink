@@ -35,7 +35,7 @@ const NAME_HREF = '/admin/settings?tab=blog'
 
 const RING = 'h-11 w-11 shrink-0 rounded-full border border-neutral-200 dark:border-neutral-700'
 const CHIP = buttonClass('secondary', 'md', 'max-w-full font-normal text-neutral-700 dark:text-neutral-200')
-const VIEW_ALL = 'text-xs text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+const VIEW_ALL = `${TAP} text-xs text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white`
 
 /**
  * The portrait, or an INVITATION to set one.
@@ -81,7 +81,7 @@ function greeting(t: AdminStrings, settings: SiteSettings, author: { name: strin
     + `<div class="flex min-w-0 items-center gap-3">${portrait(t, author)}`
     + `<div class="min-w-0"><h1 class="line-clamp-2 ${TITLE}">${lines}</h1>`
     + `<p class="${META_ON_CANVAS} mt-0.5">${escapeHtml(when)}`
-    + (named ? '' : ` · <a href="${escapeAttr(NAME_HREF)}" class="underline underline-offset-2 hover:text-neutral-900 dark:hover:text-white">${escapeHtml(t.greetSetName)}</a>`)
+    + (named ? '' : ` · <a href="${escapeAttr(NAME_HREF)}" class="${TAP} underline underline-offset-2 hover:text-neutral-900 dark:hover:text-white">${escapeHtml(t.greetSetName)}</a>`)
     + `</p></div></div>`
     + `<div class="flex items-center gap-3"><a href="/admin/editor" class="${buttonClass()}">${escapeHtml(t.newPost)}</a></div>`
     + `</div>`
@@ -108,7 +108,7 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
         // to do next, and a finished step is no longer one.
         ? `<span aria-hidden="true" data-step-done class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--pen)] text-xs font-bold text-neutral-950">✓</span>`
         : `<span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-xs font-medium tabular-nums text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">${i + 1}</span>`)
-      + `<div class="min-w-0"><a href="${escapeAttr(s.href)}" class="text-sm font-medium underline-offset-2 hover:underline ${flags[i] ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-900 dark:text-neutral-100'}">${escapeHtml(s.label)}</a>`
+      + `<div class="min-w-0"><a href="${escapeAttr(s.href)}" class="inline-block ${TAP} text-sm font-medium underline-offset-2 hover:underline ${flags[i] ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-900 dark:text-neutral-100'}">${escapeHtml(s.label)}</a>`
       + `<p class="mt-0.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">${escapeHtml(s.body)}</p></div></li>`).join('')
     + `</ol>`
   // THE COUNT IS THE HEADLINE, on the card's own title row where a state belongs: it is what
@@ -136,7 +136,7 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
     })
     + `</div>`
   const reopen = `<p class="mb-5"${done ? '' : ' hidden'}><button type="button" data-first-run-reopen`
-    + ` class="text-sm text-neutral-500 underline-offset-2 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-white">`
+    + ` class="${TAP} text-sm text-neutral-500 underline-offset-2 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-white">`
     + `${escapeHtml(t.firstRunReopen)}</button></p>`
   return band + reopen
 }
@@ -192,7 +192,7 @@ function systemLine(t: AdminStrings, settings: SiteSettings, d: Awaited<ReturnTy
   const said = behind ? t.updateAvailable.replace('{v}', update.release.latest)
     : update.state === 'current' ? t.updateCurrent : ''
   const build = `<a href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer"`
-    + ` class="${META_ON_CANVAS} hover:text-neutral-900 dark:hover:text-white">${dot}`
+    + ` class="${TAP} ${META_ON_CANVAS} hover:text-neutral-900 dark:hover:text-white">${dot}`
     + `quire<span class="font-bold">INK</span> v${escapeHtml(version)}`
     + (commit ? `<span class="tabular-nums"> (${escapeHtml(commit.slice(0, 7))})</span>` : '')
     // The DOT alone said this, and only to somebody who knew amber meant behind: a colour is a
@@ -213,7 +213,7 @@ function systemLine(t: AdminStrings, settings: SiteSettings, d: Awaited<ReturnTy
     + build
     + (system.dbReachable ? '' : `<span class="ml-1.5 font-medium text-[var(--ink-danger)]">· offline</span>`)
     + `</span>`
-    + (system.siteHref ? `<a href="${escapeAttr(system.siteHref)}" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-900 dark:hover:text-white">${escapeHtml(t.viewSite)} ↗</a>` : '')
+    + (system.siteHref ? `<a href="${escapeAttr(system.siteHref)}" target="_blank" rel="noopener noreferrer" class="${TAP} hover:text-neutral-900 dark:hover:text-white">${escapeHtml(t.viewSite)} ↗</a>` : '')
     + `</div>`
 }
 

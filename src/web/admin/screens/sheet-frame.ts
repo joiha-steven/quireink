@@ -16,6 +16,7 @@ import { escapeAttr, escapeHtml, isScheduled, isoToZonedInput } from '@/utils'
 import { formatDateTimeShort } from '@/admin-shared/when'
 import { formatWallClock } from '@/i18n/format'
 import { buttonClass } from '@/admin-shared/kit'
+import { ahead, mainReady, mainWord, metaLineOf, standing } from '@/admin-shared/sheet-state'
 import { NOTE_TEXT } from '@/admin-shared/scale'
 import {
   emptyDraft, LIVE_PATH, sheetWords,
@@ -95,15 +96,10 @@ function draftOf(kind: SheetKind, row: Loaded['row'], timezone: string): SheetDr
   }
 }
 
-/** `Page · Draft · 15/9/26 - 13:14`: what this is, what state it is in, when it was touched. */
+/** The line under the title, from what the server holds (`sheet-state.ts`). */
 function metaLine(kind: SheetKind, t: AdminStrings, lang: SiteLang, draft: SheetDraft, touched: string): string {
-  const state = isScheduled(draft.status, draft.date)
-    ? t.scheduled
-    : draft.status === 'published' ? t.statusPublished : t.statusDraft
-  // A post says only its state: it is the default kind, and the write column beside it
-  // already says which of the three is open.
-  const head = kind === 'post' ? state : `${kind === 'page' ? t.kindPage : t.kindNote} · ${state}`
-  return [head, touched ? formatDateTimeShort(touched, lang) : ''].filter(Boolean).join(' · ')
+  const st = standing(draft.status, draft.date)
+  return metaLineOf(kind, t, st, draft.date, touched ? formatDateTimeShort(touched, lang) : '', lang)
 }
 
 /**
@@ -174,6 +170,7 @@ export async function writingFrame(
   const saved = Boolean(row)
   const scheduled = isScheduled(draft.status, draft.date)
   const live = draft.status === 'published' && saved && !(kind === 'post' && scheduled)
+  const savedStanding = saved ? standing(draft.status, draft.date) : 'draft'
 
   const data: SheetData = {
     kind,
@@ -248,7 +245,10 @@ export async function writingFrame(
       previewNow: kind === 'post' && saved,
       publish: t.publish,
       schedule: t.schedule,
-      scheduled,
+      update: t.update,
+      // What the server holds decides "Update"; the date decides publish or schedule.
+      main: mainWord(savedStanding, draft.status, ahead(draft.date)),
+      mainReady: mainReady(savedStanding, false, false),
       published: saved && draft.status === 'published',
     },
     contentWidth: settings.contentWidth,

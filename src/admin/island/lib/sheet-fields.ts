@@ -31,6 +31,11 @@ export function askForPicture(t: SheetWords, multi = false): Promise<Picked> {
           title: t.mediaTitle, titleMulti: t.galleryPickTitle, hintMulti: t.galleryPickHint,
           add: t.galleryAdd, close: t.close, loadFailed: t.loadMediaFailed,
           copyUrl: t.copyUrl, download: t.download, delete: t.delete, unusedBadge: t.unusedBadge,
+          // The picker's own upload and empty state (`media-picker.ts`), with the refusals the
+          // editor's paste already says.
+          upload: t.pickUpload, uploading: t.pickUploading, empty: t.noMedia, emptyHint: t.pickEmptyHint,
+          badType: t.unsupportedType, tooLarge: t.uploadTooLarge, noRoom: t.uploadNoRoom,
+          uploadFailed: t.imageUploadFailed,
         },
         respond: resolve,
       },
