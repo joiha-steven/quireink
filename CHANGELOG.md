@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## 2026-10-09 · Quire Ink 2.2.19
+
+A fix release, one day after 2.2.18, for a fault a writer reported on GitHub (issue 70). Nothing
+is added, no setting changes, and upgrading is the usual pull and restart.
+
+### Fixed
+
+- **Typing in the Markdown view no longer throws the page back to the top.** In Firefox, once a
+  piece was long enough to scroll and you had scrolled down it, every key you typed in the
+  Markdown view scrolled the page up again. The box re-measures itself on each change so all of
+  the text stays reachable, and for that one measurement it shrank to its minimum height, taking
+  the page with it: on an 82,000-character draft the page had 48px left to scroll under a writer
+  parked at 19,254px, and Firefox gave the difference up for good. The box now keeps its height
+  while it is measured, at no extra cost per key. Chrome and the writing view were never
+  affected. The tour now types into a long piece scrolled halfway down and fails if the page
+  shrinks under it.
+- **Two code-scanning findings closed**, both in the project's own tooling rather than anything a
+  blog serves: a test helper now strips tags until none is left, and the typing benchmark checks a
+  browser reply before acting on it.
+
 ## 2026-10-08 · Quire Ink 2.2.18
 
 Five days after 2.2.17: **sign in with a passkey**, beside the password and the code and never in
