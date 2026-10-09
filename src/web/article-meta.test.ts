@@ -36,7 +36,14 @@ function phoneLines(html: string): string[] {
   const hideWords = facts.replace(/<span class="meta-book">[\s\S]*?<\/button><\/span>/, '').replace(/<span class="meta-words">[\s\S]*?<\/span><\/span>/, '')
   // Each .meta-by is a block of its own on a phone, and its .meta-sep is hidden.
   const parts = hideWords.replace(/<span class="meta-sep">[\s\S]*?<\/span>/, '').split('<span class="meta-by">')
-  return parts.map((p) => p.replace(/<[^>]+>/g, '').replace(/ /g, ' ').replace(/\s+/g, ' ').trim())
+  return parts.map((p) => untag(p).replace(/ /g, ' ').replace(/\s+/g, ' ').trim())
+}
+
+/** Tags out until none is left, not in one pass, so two halves cannot close into a new one. */
+function untag(s: string): string {
+  let out = s
+  for (let before = ''; before !== out;) { before = out; out = out.replace(/<[^>]+>/g, '') }
+  return out
 }
 
 describe('the meta line on a phone', () => {

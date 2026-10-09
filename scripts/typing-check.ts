@@ -64,7 +64,10 @@ async function open(autoplay: boolean): Promise<Page> {
     const msg = JSON.parse(String(e.data)) as { id?: number; method?: string; result?: Record<string, unknown> }
     // A dirty sheet asks before it is left; the answer is always "leave".
     if (msg.method === 'Page.javascriptDialogOpening') socket.send(JSON.stringify({ id: id++, method: 'Page.handleJavaScriptDialog', params: { accept: true } }))
-    if (msg.id !== undefined) pending.get(msg.id)?.(msg.result ?? {})
+    if (msg.id === undefined) return
+    // `id` comes off the wire: resolved to a value and checked before it is called (drive.ts).
+    const resolve = pending.get(msg.id)
+    if (typeof resolve === 'function') { pending.delete(msg.id); resolve(msg.result ?? {}) }
   })
   const send: Send = (method, params = {}) => new Promise((resolve) => {
     const n = id++
