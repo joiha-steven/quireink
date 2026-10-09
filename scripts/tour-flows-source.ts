@@ -90,8 +90,39 @@ export function registerSourceFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWi
 
       if (clipped() > 1) return done('after a paste, ' + clipped() + 'px of the piece is unreachable below the box')
       if (box.clientHeight <= before) return done('the box did not grow for the pasted text')
+
+      // THE PAGE HOLDS STILL UNDER A KEYSTROKE, scrolled halfway down the piece (issue 70). The
+      // re-measure collapses the box to read its scrollHeight; if the page shrank with it,
+      // Firefox clamps the scroll offset on that layout and never gives it back, so every key
+      // typed below the first screen threw the writer to the top. Chrome defers the clamp past
+      // the frame and so never shows it — which is why this reads the page's height AT THE
+      // MOMENT OF THE MEASURE, through the box's own scrollHeight, rather than the scroll offset
+      // afterwards: that question has the same answer in every engine.
+      // The scroller is the canvas at this width and the window on a phone.
+      let scroller = box.parentElement
+      while (scroller && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement
+      scroller = scroller || document.scrollingElement
+      scroller.scrollTop = Math.round(scroller.scrollHeight / 2)
+      await sleep(60)
+      const parked = scroller.scrollTop
+      if (parked < 1000) return done('could not scroll the piece down to type in it (' + parked + 'px)')
+      const own = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollHeight').get
+      let room = Infinity
+      Object.defineProperty(box, 'scrollHeight', {
+        configurable: true,
+        get() { room = Math.min(room, scroller.scrollHeight - scroller.clientHeight); return own.call(this) },
+      })
+      const at = Math.round(box.value.length / 2)
+      box.setSelectionRange(at, at)
+      box.setRangeText('a', at, at, 'end')
+      box.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: 'a' }))
+      delete box.scrollHeight
+      await sleep(30)
+      if (room === Infinity) return done('the keystroke never re-measured the box')
+      if (room < parked) return done('a keystroke shrank the page to ' + room + 'px of scroll under a reader at ' + parked + 'px: Firefox jumps up')
+      if (Math.abs(scroller.scrollTop - parked) > 1) return done('typing scrolled the page from ' + parked + 'px to ' + scroller.scrollTop + 'px')
       return done('ok ' + box.value.length + ' chars, box ' + box.clientHeight + 'px, nothing clipped, '
-        + Math.round(cost * 10) / 10 + 'ms for the keystroke')
+        + Math.round(cost * 10) / 10 + 'ms for the keystroke, page held at ' + parked + 'px while typing')
     })()`, 2000)
   })
 }

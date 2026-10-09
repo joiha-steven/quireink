@@ -268,14 +268,23 @@ export function mountSource(
    * already cost. Measured in the browser on an 82,000-character document: the whole keystroke
    * is 9.1 ms, of which this is **1.1 ms** and `paint()` above — which rewrites
    * `mirror.innerHTML` and has always run on this path — is 4.1 ms.
+   *
+   * ⚠️ THE HOLD KEEPS ITS HEIGHT WHILE THE BOX IS MEASURED. `height: auto` collapses the box to
+   * its `min-h-[60vh]` for the one layout `scrollHeight` forces, and the page collapses with it;
+   * Firefox clamps the scroll offset on that layout and does not give it back when the height
+   * returns, so until 2026-10-09 every key typed below the first screen threw the writer to the
+   * top (issue 70). Chrome defers the clamp past the frame and never showed it. `previous` is the
+   * height this function last wrote, so pinning the hold to it costs no extra layout.
    */
   const fit = (): void => {
     const previous = area.style.height
+    hold.style.minHeight = previous
     area.style.height = 'auto'
     const wanted = area.scrollHeight
     // 0 means the box is not laid out — the slot above it is still `hidden`. Writing that back
     // would collapse it, and `reveal()` would then measure a box with no height to report.
     area.style.height = wanted > 0 ? `${wanted}px` : previous
+    hold.style.minHeight = ''
   }
 
   area.addEventListener('input', () => {
