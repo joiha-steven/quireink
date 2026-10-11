@@ -234,6 +234,68 @@ async function readEntry(
   return bytes
 }
 
+/** One record of the central directory, read without touching the entry's bytes. */
+type DirectoryRecord = {
+  name: string
+  head: { local: number; packed: number; unpacked: number; method: number; crc: number }
+  /** The Unix file type in the external attributes says symbolic link (a Unix writer only). */
+  isSymlink: boolean
+}
+
+/** S_IFMT and S_IFLNK: the top bits of a Unix mode, which a Unix zip keeps in the high half of the external attributes. */
+const S_IFMT = 0o170000
+const S_IFLNK = 0o120000
+const UNIX_HOST = 3
+
+/** Every record of the central directory, in order. Zip64 sizes are resolved, nothing is inflated. */
+async function* directoryOf(read: ZipReader, size: number): AsyncGenerator<DirectoryRecord> {
+  const { offset, length, count } = await readEnd(read, size)
+  // The whole directory in one read: a few hundred bytes an entry, never the entries themselves.
+  const dir = await read(offset, offset + length)
+  let at = 0
+  for (let i = 0; i < count; i++) {
+    if (at + 46 > dir.length || u32(dir, at) !== CENTRAL) {
+      throw new ZipError('not_a_zip', `entry ${i + 1} of ${count} is not a directory record`)
+    }
+    const nameLen = u16(dir, at + 28)
+    const extraLen = u16(dir, at + 30)
+    const commentLen = u16(dir, at + 32)
+    const name = entryName(dir.subarray(at + 46, at + 46 + nameLen))
+    const head = {
+      local: u32(dir, at + 42),
+      packed: u32(dir, at + 20),
+      unpacked: u32(dir, at + 24),
+      method: u16(dir, at + 10),
+      crc: u32(dir, at + 16),
+    }
+    if (head.local === OVERFLOWED || head.packed === OVERFLOWED || head.unpacked === OVERFLOWED) {
+      readZip64Extra(dir, at + 46 + nameLen, extraLen, head)
+    }
+    const mode = u32(dir, at + 38) >>> 16
+    const isSymlink = (dir[at + 5] === UNIX_HOST) && (mode & S_IFMT) === S_IFLNK
+    yield { name, head, isSymlink }
+    at += 46 + nameLen + extraLen + commentLen
+  }
+}
+
+/** What the directory says of one entry: its name, the size it declares, and whether it is a link. */
+export type ZipListing = { name: string; size: number; isSymlink: boolean }
+
+/**
+ * The archive's table of contents, directory entries included, and NOTHING inflated: what a
+ * caller checks before it decides to read a single entry (the theme installer, ADR 0072). The
+ * sizes are the archive's word, not a measurement: an entry may inflate to more than it declares,
+ * which is why `unzip` still caps what it inflates.
+ */
+export async function listZip(archive: Uint8Array): Promise<ZipListing[]> {
+  const out: ZipListing[] = []
+  const read: ZipReader = async (start, end) => archive.subarray(start, end)
+  for await (const record of directoryOf(read, archive.length)) {
+    out.push({ name: record.name, size: record.head.unpacked, isSymlink: record.isSymlink })
+  }
+  return out
+}
+
 /**
  * Every entry the archive holds, or only the ones `keep` says yes to.
  *
@@ -250,39 +312,14 @@ export async function unzipFrom(
   limit: number = MAX_ENTRY_BYTES,
   total: number = MAX_TOTAL_BYTES,
 ): Promise<ZipEntry[]> {
-  const { offset, length, count } = await readEnd(read, size)
-  // The whole directory in one read: a few hundred bytes an entry, never the entries themselves.
-  const dir = await read(offset, offset + length)
   const out: ZipEntry[] = []
   let inflated = 0
-
-  let at = 0
-  for (let i = 0; i < count; i++) {
-    if (at + 46 > dir.length || u32(dir, at) !== CENTRAL) {
-      throw new ZipError('not_a_zip', `entry ${i + 1} of ${count} is not a directory record`)
-    }
-    const nameLen = u16(dir, at + 28)
-    const extraLen = u16(dir, at + 30)
-    const commentLen = u16(dir, at + 32)
-    const name = entryName(dir.subarray(at + 46, at + 46 + nameLen))
-
-    if (!name.endsWith('/') && keep(name)) {
-      const head = {
-        local: u32(dir, at + 42),
-        packed: u32(dir, at + 20),
-        unpacked: u32(dir, at + 24),
-        method: u16(dir, at + 10),
-        crc: u32(dir, at + 16),
-      }
-      if (head.local === OVERFLOWED || head.packed === OVERFLOWED || head.unpacked === OVERFLOWED) {
-        readZip64Extra(dir, at + 46 + nameLen, extraLen, head)
-      }
-      // The entry is capped at what is still left of the total, so the sum cannot pass it.
-      const bytes = await readEntry(read, size, name, head, Math.max(1, Math.min(limit, total - inflated)))
-      inflated += bytes.byteLength
-      out.push({ name, bytes })
-    }
-    at += 46 + nameLen + extraLen + commentLen
+  for await (const { name, head } of directoryOf(read, size)) {
+    if (name.endsWith('/') || !keep(name)) continue
+    // The entry is capped at what is still left of the total, so the sum cannot pass it.
+    const bytes = await readEntry(read, size, name, head, Math.max(1, Math.min(limit, total - inflated)))
+    inflated += bytes.byteLength
+    out.push({ name, bytes })
   }
   return out
 }

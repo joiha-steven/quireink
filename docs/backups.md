@@ -104,7 +104,7 @@ The archive (`quire-<stamp>.tar.gz`, `.enc` when sealed) is a gzipped tar in the
     content/schema.sql       the SQL that recreates quire.db's shape
     content/<table>.jsonl    one JSON array per row, in the manifest's column order
     analytics/…              the same for analytics.db
-    uploads/…                the blob store, file for file
+    uploads/…                the blob store, file for file: installed themes' files too (`themes/<hash>/…`)
 
 Every table is carried, found in the database itself rather than listed by hand, except the two
 render caches (below) and the full-text indexes, which the triggers rebuild as the rows go back

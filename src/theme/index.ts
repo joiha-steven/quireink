@@ -6,6 +6,8 @@
 //   checkThemeFiles(entries)                         the zip's paths, sizes, SVG content
 //   checkThemeManifest(json, opts)                   theme.json
 //   checkThemeCss(css, contract, packageFiles)       theme.css, decoded by decodeThemeText
+//
+// `readThemePackage` runs all three over a zip, in the order that keeps a hostile one cheap.
 
 export { checkThemeCss } from '@/theme/check-css'
 export { checkThemeManifest, PALETTE_MIN_CONTRAST, PALETTE_TEXT_ROLES } from '@/theme/check-manifest'
@@ -15,6 +17,8 @@ export { checkThemeFiles, SCREENSHOT_SIZE } from '@/theme/check-files'
 export { decodeThemeText } from '@/theme/file-content'
 export type { ThemeFileEntry } from '@/theme/check-files'
 export { THEME_LIMITS } from '@/theme/types'
+export { packageHash, readThemePackage, themeFileType } from '@/theme/read-package'
+export type { PackageOptions, PackageResult, ThemePackage, ThemePackageFile } from '@/theme/read-package'
 export type {
   ThemeContract, ThemeFont, ThemeFontFace, ThemeManifest, ThemePalette, ThemePaletteColors,
   ThemeRule, ThemeSurface, Violation,

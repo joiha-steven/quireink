@@ -498,3 +498,21 @@ create table if not exists passkeys (
   last_used_at integer
 );
 create index if not exists passkeys_user_idx on passkeys (user_id);
+
+-- migration: 024-themes
+-- Themes installed from a zip (ADR 0072, T2). A new table with nothing to carry over, copied
+-- verbatim from `schema.sql`, where the columns are explained. It is NOT in `SKIPPED_TABLES`: a
+-- backup carries the rows, and the files ride with the uploads because they sit in the same blob
+-- store (`themes/<hash>/…`), so a blog moved between Bun and Cloudflare keeps its themes.
+create table if not exists themes (
+  id           integer primary key autoincrement,
+  theme_id     text not null,
+  version      text not null,
+  hash         text not null,
+  manifest     text not null,
+  files        text not null,
+  installed_at integer not null,
+  deleted_at   integer
+);
+create unique index if not exists themes_live_version_idx on themes (theme_id, version) where deleted_at is null;
+create index if not exists themes_hash_idx on themes (hash);

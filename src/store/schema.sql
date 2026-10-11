@@ -683,3 +683,24 @@ create table if not exists ap_queue (
 );
 create index if not exists ap_queue_next_idx on ap_queue (next_at);
 
+
+-- ADR 0072: themes installed from a zip. One row per VERSION of a theme: installing 1.1.0 of an id
+-- that has 1.0.0 keeps both, and the id's current version is its newest live row (`installed_at`,
+-- then `id`). Soft-deleted like every row (Invariant 6): a rollback deletes the current row, a
+-- removal deletes them all. The files live in the blob store under `themes/<hash>/<path>`, where
+-- `hash` is the SHA-256 of the package's files (`theme/read-package.ts`), so a key never changes
+-- meaning; a deleted row still names its hash, and `/themes/<hash>/…` keeps serving it to a page
+-- some cache still holds. `manifest` is theme.json as the checker returned it, `files` the
+-- package as `[{path, size, type}]`. Unique per (theme_id, version) among the live rows only.
+create table if not exists themes (
+  id           integer primary key autoincrement,
+  theme_id     text not null,
+  version      text not null,
+  hash         text not null,
+  manifest     text not null,
+  files        text not null,
+  installed_at integer not null,
+  deleted_at   integer
+);
+create unique index if not exists themes_live_version_idx on themes (theme_id, version) where deleted_at is null;
+create index if not exists themes_hash_idx on themes (hash);

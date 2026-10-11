@@ -13,6 +13,7 @@ import type { MiddlewareHandler } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { MAX_BODY_BYTES as PEN_BODY_BYTES } from '@/server/reader-marks'
 import { fail } from '@/web/api'
+import { THEME_LIMITS } from '@/theme'
 
 const MB = 1024 * 1024
 
@@ -46,6 +47,17 @@ const SMALL = [
   '/api/auth/*', '/api/setup/*', '/api/mcp/register', '/api/mcp/token', '/api/mcp/authorize',
   '/webmention', '/ap/inbox',
 ]
+
+/**
+ * A theme zip (ADR 0072): 5 MB at most, and the multipart framing around it. Owner-only, but a
+ * package is small by definition, so a larger body is refused before it is read at all.
+ */
+export const THEME_BODY_BYTES = THEME_LIMITS.zipBytes + 64 * 1024
+
+/** Register before the routes, like `capPublicBodies`. */
+export function capThemeUploads(app: { use: (path: string, h: MiddlewareHandler) => unknown }): void {
+  app.use('/api/themes', capped(THEME_BODY_BYTES))
+}
 
 /** Register before any route, so the cap is met before a handler reads the body. */
 export function capPublicBodies(app: { use: (path: string, h: MiddlewareHandler) => unknown }): void {

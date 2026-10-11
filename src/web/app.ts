@@ -23,6 +23,7 @@ import { renderArticle } from '@/web/article'
 import { handleOg } from '@/web/og'
 import { handleTrack } from '@/web/track'
 import { handleUpload } from '@/web/uploads'
+import { handleThemeFile } from '@/web/theme-files'
 import { handleMarkdown, wantsMarkdown } from '@/web/markdown'
 import { handleManifest } from '@/web/manifest'
 import { handlePreview } from '@/web/preview'
@@ -33,7 +34,7 @@ import { userRedirects } from '@/web/redirects'
 import { cacheHeaders } from '@/web/cache-headers'
 import { securityHeaders } from '@/web/security-headers'
 import { updatePing } from '@/web/update-ping'
-import { capPublicBodies } from '@/web/body-cap'
+import { capPublicBodies, capThemeUploads } from '@/web/body-cap'
 import { compression } from '@/runtime/impl/compress'
 import { errorHandler, notFoundHandler, requestLogger } from '@/web/api'
 import { contentRoutes } from '@/web/admin/content'
@@ -54,6 +55,7 @@ import { assistantRoutes } from '@/web/admin/assistant'
 import { mcpAdminRoutes, mcpOAuthRoutes } from '@/web/admin/mcp'
 import { viewRoutes } from '@/web/admin/views'
 import { backupRoutes } from '@/web/admin/backup'
+import { themeRoutes } from '@/web/admin/themes'
 import { cloudflareMoveRoutes } from '@/web/admin/cloudflare-move'
 import { cloudflareUpdateRoutes } from '@/web/admin/cloudflare-update'
 import { handleMcp } from '@/web/admin/mcp-transport'
@@ -154,6 +156,7 @@ export function createApp(): Hono {
 
   // A stranger's body is kilobytes; see `web/body-cap.ts` for the two layers.
   capPublicBodies(app)
+  capThemeUploads(app)
 
   // `/` is the post list, or a page the owner chose. Resolved per request rather than when
   // the routes are built, because the mode is a setting: see `web/home-mode.ts`.
@@ -288,6 +291,7 @@ export function createApp(): Hono {
   app.route('/', mcpOAuthRoutes())
   app.route('/', viewRoutes().routes)
   app.route('/', backupRoutes().routes)
+  app.route('/', themeRoutes().routes)
   app.route('/', cloudflareMoveRoutes().routes)
   app.route('/', cloudflareUpdateRoutes().routes)
 
@@ -328,6 +332,9 @@ export function createApp(): Hono {
   // cached forever, because upload names are content-stable.
 
   app.get('/uploads/*', handleUpload)
+  // An installed theme's files, by the hash of its package (ADR 0072). Two segments at least, so
+  // the name `themes` stays free for a post or a page.
+  app.get('/themes/:hash/*', handleThemeFile)
 
   // The icon, the fonts, the bundles and the service worker: everything this BUILD produced
   // rather than the owner. See `web/asset-routes.ts` for why they travel together.
