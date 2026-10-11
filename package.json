@@ -55,6 +55,7 @@
     "shot": "bun scripts/shot.ts",
     "drive": "bun scripts/drive.ts",
     "tour": "scripts/ops/tour.sh",
+    "theme:matrix": "bun scripts/theme-matrix.ts",
     "restore-check": "bun scripts/restore-check.ts",
     "check:motion": "bun scripts/checks/motion-drift.ts"
   },
