@@ -144,8 +144,8 @@ So the two halves are split at exactly that seam:
 | Static rules (`PUBLIC_CSS`), with the DEFAULT column's rail geometry scoped to `:where(html:not([data-col]))` | `<link rel="stylesheet" href="/assets/site.‹hash›.css">` | one request, `immutable` for a year; the hash changes when the bytes do |
 | Settings (fonts, `--shell-w`, palette, type roles, custom CSS; rail geometry only for a non-default column, which `renderDocument` marks with `data-col` on `<html>` so the sheet's copy stands down) | inline `<style>`, immediately AFTER the link | ~1.7 KB gzipped per page |
 
-The order is the load-bearing part: the inline block is allowed to WIN, so it has to come
-second, exactly where it sat when the two were one string.
+The order is the load-bearing part: the inline block is allowed to WIN, so it comes second; and
+since ADR 0072 it wins whatever the selectors weigh ([cascade layers](conventions/looks.md#who-wins-cascade-layers)).
 
 ### The pen rides in two more sheets, and only boards the pages that used it
 

@@ -32,6 +32,23 @@ const SETTLE = `(async () => {
   return { look: document.documentElement.dataset.look ?? 'plain', broken: [...document.images].filter((i) => i.naturalWidth === 0).map((i) => i.currentSrc || i.src) };
 })()`
 
+/**
+ * Opens book mode the way a reader does, by pressing the button that shows at this width, and
+ * answers 'ok' once the book's text is laid out. Book mode is a surface of its own: its own
+ * sheets, its own line grid, and the theme's rules still reach into it, so a change to the
+ * cascade can move it while every page around it stays put (ADR 0072).
+ */
+export const OPEN_BOOK = `(async () => {
+  const all = [...document.querySelectorAll('[data-book-open]')];
+  const button = all.find((b) => b.checkVisibility()) ?? all[0];
+  if (!button) return 'no button opens book mode';
+  button.click();
+  for (let i = 0; i < 50 && !document.querySelector('.book-flow'); i++) await new Promise((ok) => setTimeout(ok, 100));
+  if (!document.querySelector('.book-flow')) return 'book mode did not open';
+  await new Promise((ok) => setTimeout(ok, 1000));
+  return 'ok';
+})()`
+
 export type Shot = { png: Buffer; status: number; broken: string[]; height: number; look: string }
 
 /** A protocol command that gets no answer in this long is a hung browser, not a slow page. */
@@ -150,7 +167,8 @@ export class Browser {
     })
   }
 
-  async shoot(url: string): Promise<Shot> {
+  /** Load `url`, settle it, run `then` (an expression answering 'ok') if given, settle again, shoot. */
+  async shoot(url: string, then?: string): Promise<Shot> {
     const loaded = this.event('Page.loadEventFired', 30000)
     this.statuses.delete(url)
     await this.send('Page.navigate', { url })
@@ -162,6 +180,13 @@ export class Browser {
     const value = (settled.result as { value?: { broken: string[]; look: string } } | undefined)?.value
     // A beat for island scripts that run after load.
     await Bun.sleep(250)
+    if (then) {
+      const done = await this.send('Runtime.evaluate', { expression: then, awaitPromise: true, returnByValue: true })
+      const answer = (done.result as { value?: unknown } | undefined)?.value
+      if (answer !== 'ok') throw new Error(`${url}: ${JSON.stringify(answer ?? done.exceptionDetails).slice(0, 300)}`)
+      await this.send('Runtime.evaluate', { expression: SETTLE, awaitPromise: true, returnByValue: true })
+      await Bun.sleep(250)
+    }
     const metrics = await this.send('Page.getLayoutMetrics') as { cssContentSize: { width: number; height: number } }
     const width = Math.ceil(metrics.cssContentSize.width)
     const height = Math.ceil(metrics.cssContentSize.height)

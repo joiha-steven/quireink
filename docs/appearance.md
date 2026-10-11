@@ -142,6 +142,21 @@ These follow your other settings and the active look, and have no switch of thei
 everything else — so it wins. It is not filtered: any rule you can write in a stylesheet
 works here. It never touches the admin, so you cannot lock yourself out with it.
 
+**It wins over the base stylesheet and the theme whatever your selectors weigh.** Both
+stylesheets sit in CSS cascade layers (`base`, then `theme`), and your CSS and the settings
+above are in none, which beats every layer. So `.post-meta{letter-spacing:.1em}` overrides the
+Newspaper's `html[data-look=paper] .post-meta` even though the theme's selector is heavier, and
+a rule of yours now also wins where a heavier rule of the base stylesheet used to beat it; you
+do not need to copy a selector to win. Against the settings themselves the ordinary rules
+apply: your CSS comes after them and wins a tie.
+
+This needs a browser from 2022 or later: Chrome and Edge 99, Safari 15.4, Firefox 97. An older
+one does not understand cascade layers and draws the public pages without their stylesheet.
+
+Do not write `@layer` yourself. A rule you put in a layer, any layer, loses to every unlayered
+rule, which includes the settings; and `@layer base{…}` or `@layer theme{…}` puts your rule
+among the base or theme rules, where it loses to everything after it.
+
 The box counts its lines, indents on Tab, and shows the byte count — this text travels inside
 every public page on every request, so it is worth seeing. It also tells you when a brace is
 unclosed, which is the usual reason a stylesheet does nothing at all: braces inside comments
@@ -302,8 +317,12 @@ because it usually means a knob is missing.
   assembled per request from your settings), but a change to *markup* — which custom CSS
   cannot make — would not. This is why the design is driven by variables and attributes
   rather than by classes baked into stored pages.
-- **`!important` is almost never needed.** Your CSS is already last. If a rule is not taking,
-  the usual cause is specificity inside your own selector, not the design fighting you.
+- **`!important` is almost never needed.** Your CSS is already last and already beats the
+  theme. If a rule is not taking, the usual cause is specificity against a setting, not the
+  design fighting you. The few `!important` rules of the base stylesheet (the `hidden`
+  attribute, reduced motion, the print palette, the code block's ground) are kept outside the
+  layers, so an `!important` of yours meets them exactly as it always did: by weight, and yours
+  wins a tie because it comes later.
 
 ## When it is not CSS you need: your own code
 

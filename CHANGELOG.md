@@ -4,6 +4,14 @@
 
 ### Changed
 
+- **Custom CSS now wins over the theme and the base stylesheet whatever its selectors weigh.**
+  Both stylesheets sit in CSS cascade layers and your CSS does not, so `.post-meta` overrides
+  the Newspaper's `html[data-look=paper] .post-meta` without copying it. A rule of yours that
+  used to lose to a heavier rule of the theme or the base stylesheet now takes effect; nothing
+  else changes, and your `!important` meets the base's as it always did. See
+  [Appearance](docs/appearance.md).
+- **The public pages need a browser from 2022 or later** (Chrome and Edge 99, Safari 15.4,
+  Firefox 97), for CSS cascade layers. An older one draws them without their stylesheet.
 - **Custom CSS can rely on far more of the page.** The names a stylesheet may target and expect
   to survive an update grow from 16 selectors and 23 variables to 102 selectors, 47 variables
   and 5 attributes, each marked as belonging to the blog pages, the composed front page or both.

@@ -21,6 +21,7 @@ import type { InkSettings } from '@/types'
 import { BUILTIN_THEMES, type SiteTheme, type ThemeSheet } from '@/content/themes-builtin'
 import { minifyCss } from '@/web/css-min'
 import { SERVED_CSS } from '@/web/served-css'
+import { BASE_HOLDS_CSS, inLayer, LAYER_ORDER } from '@/web/css-layers'
 
 /** Bundles by logical name. Adding one is an import and a line. */
 const BUNDLES: Record<string, string> = {
@@ -55,8 +56,16 @@ for (const [name, source] of Object.entries(BUNDLES)) {
  * Minified once on the way to being hashed (`served-css.ts`, which says why that file is its
  * own module). Stripping the comments is worth about 14 KB compressed per cold visit, which is
  * more than the entire JavaScript budget for a page. The prose stays in the .ts file.
+ *
+ * Served whole inside `@layer base`, after the statement that fixes the order of the page's two
+ * layers, so a theme and the owner's custom CSS win over it whatever its selectors weigh
+ * (`web/css-layers.ts`). Followed by the few base rules that keep their weight against a theme,
+ * in the theme layer and ahead of any theme's sheet (`BASE_HOLDS_CSS`), and last by the sheet's
+ * own `!important` declarations, outside every layer, where they weigh what they did before
+ * (`web/css-important.ts`).
  */
-const PUBLIC_CSS_SERVED = SERVED_CSS.site
+const PUBLIC_CSS_SERVED = LAYER_ORDER + inLayer('base', SERVED_CSS.site) + inLayer('theme', BASE_HOLDS_CSS)
+  + SERVED_CSS['site-important']
 
 export const PUBLIC_SHEET = `/assets/site.${hashOf(PUBLIC_CSS_SERVED)}.css`
 BY_PATH.set(PUBLIC_SHEET, PUBLIC_CSS_SERVED)
@@ -204,12 +213,18 @@ export function penSheets(inks: InkSettings): { marks: string; lines: string } {
  * `plain` has no sheet at all, which is what makes it free.
  */
 // Every sheet a built-in theme names, from the registry, so no list of themes is kept here.
+// Each goes out inside `@layer theme` (`web/css-layers.ts`): over the base sheet, under the
+// owner's settings and custom CSS whatever its selectors weigh. The layer is the engine's, put on
+// at serving, so the theme's own bytes (what the checker reads) carry none.
 const THEME_SHEETS = new Map<ThemeSheet, string>()
+const THEME_CSS_SERVED = new Map<ThemeSheet, string>()
 for (const { sheet } of BUILTIN_THEMES) {
   if (!sheet) continue
-  const path = `/assets/${sheet}.${hashOf(SERVED_CSS[sheet])}.css`
+  const body = inLayer('theme', SERVED_CSS[sheet])
+  const path = `/assets/${sheet}.${hashOf(body)}.css`
   THEME_SHEETS.set(sheet, path)
-  BY_PATH.set(path, SERVED_CSS[sheet])
+  THEME_CSS_SERVED.set(sheet, body)
+  BY_PATH.set(path, body)
 }
 
 /**
@@ -290,7 +305,7 @@ function staleSheet(path: string): string | null {
   if (name === 'site') return PUBLIC_CSS_SERVED
   if (name === 'pen-marks') return PEN_MARKS_CSS_SERVED
   if (name === 'pen-lines') return PEN_LINES_CSS_SERVED
-  return SERVED_CSS[name as ThemeSheet]
+  return THEME_CSS_SERVED.get(name as ThemeSheet) ?? null
 }
 
 /** The bundle served at a request path, or null when nothing matches. */

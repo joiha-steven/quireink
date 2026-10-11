@@ -10,11 +10,12 @@ import type { GallerySettings, FigureSettings, SiteSettings, FeatureSettings, In
 import { fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss, shapeToCss, tableToCss } from '@/content/settings'
-import { DEFAULT_RAIL_WIDTH, railThemeCss, singleRailCss } from '@/render/rail-css'
+import { DEFAULT_RAIL_WIDTH, railHoldCss, railThemeCss, singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, monoTracking } from '@/render/font-faces'
 import { resolveTheme, type SiteTheme } from '@/content/themes-builtin'
 import { t } from '@/i18n/i18n'
 import { LISTS_PLAIN_CSS } from '@/pen/lists.css'
+import { inLayer } from '@/web/css-layers'
 
 /**
  * The site-wide gallery default, as the two variables `public.css.ts` reads. Emitted only when
@@ -115,8 +116,15 @@ export function labelVarsCss(lang: SiteLang): string {
  * The part of the sheet that depends on the OWNER'S SETTINGS, inlined into the page.
  *
  * Order is load-bearing: the fonts first, then the reading column, then the palette and
- * typography, then the owner's custom font and CSS. Each later layer is allowed to win, and
+ * typography, then the owner's custom font and CSS. Each later part is allowed to win, and
  * a fresh install with nothing configured still gets a complete sheet.
+ *
+ * Unlayered, so all of it wins over the base and theme sheets whatever their selectors weigh
+ * (ADR 0072, `web/css-layers.ts`). The geometry is not the owner's to style and is wrapped in
+ * place in the layer of what it extends, which keeps each piece in the cascade position it had:
+ * the reading column, the rail of a moved column and the page's own geometry (`extra`) in
+ * `base`; the theme's rail rules and the chrome font's tracking correction in `theme`. Nothing
+ * is moved, so inside each tier the order is the one it always was.
  *
  * The static half is no longer here. It is `PUBLIC_SHEET`, linked immediately before this
  * block so the cascade reads exactly as it did when the two were one string — see
@@ -168,7 +176,11 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     + `--font-display:${theme.display ? theme.display.stack : 'var(--font-reading)'}}`,
     // The reading column, from the owner's setting. A two-rail listing narrows it by
     // overriding this later in the sheet, which is why it is a variable and not baked in.
-    `:root{--shell-w:${settings.contentWidth}px}`,
+    //
+    // In `base`, with the page geometry below that overrides it: the front page and a two-rail
+    // listing restate `--shell-w` there, and must still win. No theme can set it (the checker
+    // refuses an engine variable), and custom CSS beats every layer, so nothing else moves.
+    inLayer('base', `:root{--shell-w:${settings.contentWidth}px}`),
     // Injected at runtime, not written by hand, because a media query cannot read a CSS
     // variable and the breakpoint is COMPUTED from the reading column: the rail only moves
     // into the gutter when there is room for it on BOTH sides, so the column stays centred.
@@ -177,10 +189,12 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // sheet, right after `RAIL_CSS`, where it is cached immutably instead of being re-sent
     // with every page: 1,046 compressed bytes a view. A site that has changed the width still
     // gets its own copy here, after the sheet, so it overrides the precomputed one.
-    settings.contentWidth === DEFAULT_RAIL_WIDTH ? '' : singleRailCss(settings.contentWidth),
+    settings.contentWidth === DEFAULT_RAIL_WIDTH ? ''
+      : inLayer('base', singleRailCss(settings.contentWidth)) + inLayer('theme', railHoldCss(settings.contentWidth)),
     // The theme's rules for the rail band, which only exist inside queries computed from the
-    // column; nothing for a theme that has none (`content/themes-builtin.ts`).
-    railThemeCss(settings.contentWidth, theme.rail),
+    // column; nothing for a theme that has none (`content/themes-builtin.ts`). In the theme's
+    // layer, beside the sheet it belongs to.
+    inLayer('theme', railThemeCss(settings.contentWidth, theme.rail)),
     // The site default for galleries. In CSS on purpose: rendered Markdown is cached under
     // a hash of its input, so a default that changed the MARKUP would leave every body that
     // was already rendered serving the old shape until something unrelated evicted it.
@@ -190,8 +204,10 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     penGesturesCss(settings.features),
     selectionCss(settings.inks),
     // Page-specific geometry: the listing's second rail, the feed's gutter timeline. It
-    // comes BEFORE the owner's own settings, so custom CSS still has the last word.
-    extra,
+    // comes BEFORE the owner's own settings, so custom CSS still has the last word. In `base`,
+    // the layer of the sheet it extends: the code theme's rail rules above outweigh some of
+    // these and have to keep winning.
+    inLayer('base', extra),
     fontPresetCss(settings.fontPreset),
     // Straight after the preset it overrides, and before the owner's own CSS can have the
     // last word. `:lang(zh|ja|ko)` swaps ONLY the CJK tail of the reading stack, so a Han
@@ -220,7 +236,11 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // Keyed on `data-chrome-font`, which `renderDocument` puts on <html>. It has to come
     // after the chrome font is resolved and before the owner's own CSS can override it, and
     // it emits only the one block this page's own attributes can match.
-    monoTracking(settings.chromeFont, theme),
+    //
+    // In the THEME layer, after the theme's sheet, which is the place it had: a correction of the
+    // chrome face that a theme refines, weight against weight. The notebook's site title states
+    // its own tracking in a heavier rule and kept it; unlayered, the correction would take it.
+    inLayer('theme', monoTracking(settings.chromeFont, theme)),
     settings.customCss,
   ].filter(Boolean).join('\n')
 }

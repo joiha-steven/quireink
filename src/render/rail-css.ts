@@ -61,6 +61,20 @@ export function singleRailCss(colWidth: number, opts: { scoped?: boolean } = {})
 }
 
 /**
+ * The one rail rule that keeps the weight it had against a theme (ADR 0072, `web/css-layers.ts`):
+ * above the breakpoint a short post's empty header is not drawn. The newspaper's
+ * `article > header{display:grid}` is lighter and lost to it while the two shared one cascade;
+ * with the theme in a layer over the base it would win and draw the header. Said in the theme
+ * layer as `revert-layer`, under the same query and selector, it hands `display` back to the base
+ * exactly where the base rule applies, and a theme rule heavier than it still wins, as before.
+ */
+export function railHoldCss(colWidth: number, opts: { scoped?: boolean } = {}): string {
+  const css = `@media (min-width:${breakpoint(colWidth)}px){`
+    + 'article > header[data-untitled]:not(:has(.post-langs)){display:revert-layer}}'
+  return opts.scoped ? scopeToDefaultWidth(css) : css
+}
+
+/**
  * The attribute `<html>` carries when the owner has moved the reading column off
  * `DEFAULT_RAIL_WIDTH`. The hashed sheet's precomputed rail geometry is written for the default
  * column only and is scoped to `html:not([data-col])`; a site with its own column gets its own

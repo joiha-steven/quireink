@@ -33,7 +33,98 @@ async function wearing(t: Pick<Tour, 'expect' | 'atWidth'>, look: string, path: 
   }
 }
 
+/** One PUT of a few settings through the app's own settings route, from a page the owner is on. */
+const put = (settings: Record<string, unknown>): string => `(async () => {
+  const r = await fetch('/api/settings', { method: 'PUT', credentials: 'same-origin',
+    headers: { 'content-type': 'application/json' }, body: ${JSON.stringify(JSON.stringify(settings))} })
+  return r.ok ? 'ok' : 'the settings route refused ' + ${JSON.stringify(Object.keys(settings).join(', '))} + ': ' + r.status
+})()`
+
+/**
+ * The piece's meta line under the newspaper: its tracking as a fraction of its own size, and its
+ * display. The newspaper gives `.post-meta` .02em through
+ * `html[data-look=paper] :is(.post-meta,…,.t-small.text-meta,…)` (0,3,1) and `display:contents`
+ * through `html[data-look=paper] .post-meta`; the base gives it `.t-small`'s tracking, 0.
+ */
+const META_LINE = `(() => {
+  const meta = document.querySelector('article .post-meta')
+  if (!meta) return 'no meta line on the piece'
+  const cs = getComputedStyle(meta)
+  const ratio = parseFloat(cs.letterSpacing) / parseFloat(cs.fontSize)
+  return 'ok ' + (Math.round(ratio * 1000) / 1000) + ' ' + cs.display
+})()`
+
 export function registerLookFlows({ flow, expect, atWidth }: Tour): void {
+  // ADR 0072, decision 3: the owner's custom CSS wins over the theme whatever its selectors
+  // weigh, because the theme's sheet is in a cascade layer and the custom CSS is not
+  // (`web/css-layers.ts`). The bar is a bare `.post-meta` (0,1,0) against the newspaper's
+  // (0,3,1), which won on specificity before the layers.
+  // And the other half still holds: the theme beats the base sheet, and a property the custom
+  // CSS does not name stays the theme's.
+  flow('custom CSS wins over the theme whatever its specificity, and the theme still beats the base', async () => {
+    const was = await expect('/admin/settings?tab=appearance', `(() => {
+      const ed = document.querySelector('[data-css-editor]')
+      return ed ? 'css:' + ed.value : 'no custom CSS editor on the appearance tab'
+    })()`)
+    if (!was.startsWith('css:')) return was
+    const saved = was.slice('css:'.length)
+    try {
+      const set = await expect('/admin', put({ look: 'paper', customCss: '' }))
+      if (set !== 'ok') return set
+      const plain = await atWidth(1440, '/a-type-scale-you-can-defend', META_LINE)
+      if (plain !== 'ok 0.02 contents') return 'without custom CSS the newspaper meta line reads ' + plain + ', expected the theme\'s 0.02 contents'
+      const css = await expect('/admin', put({ customCss: '.post-meta{letter-spacing:.3em}' }))
+      if (css !== 'ok') return css
+      const custom = await atWidth(1440, '/a-type-scale-you-can-defend', META_LINE)
+      if (custom !== 'ok 0.3 contents') return 'with .post-meta{letter-spacing:.3em} the meta line reads ' + custom + ', expected 0.3 contents'
+      return 'ok theme over base (0.02), custom CSS over theme (0.3), display left to the theme'
+    } finally {
+      await expect('/admin', put({ look: 'code', customCss: saved }))
+    }
+  })
+
+  // `!important` runs the layers backwards, so the base sheet's own `!important`s are served
+  // outside every layer (`web/css-important.ts`) and weigh what they did before: an owner's
+  // `!important` beats them by weight and order, and they still beat any normal declaration, the
+  // owner's or a theme's. The base says `.prose pre.shiki{background:…!important}` and
+  // `.dark .shiki span{color:…!important}`.
+  flow("custom CSS's !important beats the base sheet's, which still beats a normal declaration", async () => {
+    const was = await expect('/admin/settings?tab=appearance', `(() => {
+      const ed = document.querySelector('[data-css-editor]')
+      return ed ? 'css:' + ed.value : 'no custom CSS editor on the appearance tab'
+    })()`)
+    if (!was.startsWith('css:')) return was
+    const saved = was.slice('css:'.length)
+    const code = `(() => {
+      const pre = document.querySelector('.prose pre.shiki')
+      const span = pre && pre.querySelector('span[style]')
+      if (!pre || !span) return 'no highlighted code block on the piece'
+      const theme = document.createElement('style')
+      theme.textContent = '@layer theme{.prose pre.shiki{background:rgb(9,9,9)}}'
+      document.head.append(theme)
+      document.documentElement.classList.add('dark')
+      const out = 'ok ' + getComputedStyle(pre).backgroundColor + ' ' + getComputedStyle(span).color
+      document.documentElement.classList.remove('dark')
+      theme.remove()
+      return out
+    })()`
+    try {
+      const plain = await expect('/admin', put({ customCss: '.prose pre.shiki{background:rgb(7,8,9)}' }))
+      if (plain !== 'ok') return plain
+      const lost = await atWidth(1440, '/what-a-subsetter-removes', code)
+      if (!lost.startsWith('ok ')) return lost
+      if (lost.includes('rgb(7, 8, 9)') || lost.includes('rgb(9, 9, 9)')) return 'a normal declaration beat the base !important: ' + lost
+      const strong = await expect('/admin', put({ customCss: '.prose pre.shiki{background:rgb(1,2,3)!important}.dark .shiki span{color:rgb(4,5,6)!important}' }))
+      if (strong !== 'ok') return strong
+      const won = await atWidth(1440, '/what-a-subsetter-removes', code)
+      if (won !== 'ok rgb(1, 2, 3) rgb(4, 5, 6)') return "the owner's !important lost to the base's: " + won
+      return 'ok base !important over normal (' + lost.slice(3) + '), owner !important over base'
+    } finally {
+      await expect('/admin', put({ customCss: saved }))
+    }
+  })
+
+
   // The headline speaks the chrome's monospace; the paragraph under it stays in the book face.
   flow('the source-code look sets headlines in its monospace and leaves the text a book', () =>
     atWidth(1440, '/a-type-scale-you-can-defend', `(() => {

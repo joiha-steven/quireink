@@ -118,7 +118,8 @@ describe('the switches', () => {
     // variable, so the cascade is the one it was.
     await wear({ theme: 'notes' })
     const page = await get('/a-post')
-    expect(page).toMatch(/look-notes\.[0-9a-f]+\.css"><style data-meta-ink>html\[data-theme="notes"\]\{--meta-deepened:/)
+    // In the theme's layer, as the sheet is (`web/css-layers.ts`).
+    expect(page).toMatch(/look-notes\.[0-9a-f]+\.css"><style data-meta-ink>@layer theme\{html\[data-theme="notes"\]\{--meta-deepened:/)
     expect(page.indexOf('data-meta-ink')).toBeLessThan(page.indexOf('<style>'))
     // The sign-in pages wear no theme, so they keep the palette's own ink.
     const { loginShell } = await import('@/web/login-page')

@@ -17,6 +17,7 @@ import { resolveAppIcon, getDefaultTheme } from '@/content/settings'
 import { penStyleFor, themeSheet } from '@/web/assets'
 import { resolveTheme } from '@/content/themes-builtin'
 import { deepenMetaInkCss } from '@/web/layout-styles'
+import { inLayer } from '@/web/css-layers'
 import { CUSTOM_COL_ATTR, DEFAULT_RAIL_WIDTH } from '@/render/rail-css'
 
 // The settings half of the sheet lives in `layout-styles.ts` now, and is re-exported here for
@@ -160,7 +161,9 @@ export function renderDocument(
     `<meta name="twitter:card" content="${head.image ? 'summary_large_image' : 'summary'}">`,
   ].filter(Boolean).join('')
   // Before the inline block, because that block is allowed to win: it carries the palette,
-  // the type scale and the owner's own CSS, all of which override the sheet.
+  // the type scale and the owner's own CSS, all of which override the sheet. Since ADR 0072 it
+  // wins whatever the selectors weigh: the two linked sheets are served inside `@layer base` and
+  // `@layer theme` and the inline block is unlayered (`web/css-layers.ts`).
   //
   // The pen follows the same rule, and only boards the pages that used it — and since ADR 0070
   // only the strokes they used: `penStyleFor` reads the assembled body for the elements the
@@ -174,8 +177,10 @@ export function renderDocument(
   // ink. `data-pen-ink` names the block for a test or a person reading the source; nothing
   // selects on it.
   const ink = head.stylesheet ? penStyleFor(body, settings.inks) : ''
-  // The theme's meta-ink switch rides straight behind its sheet (`deepenMetaInkCss` says why).
-  const deepen = deepenMetaInkCss(theme)
+  // The theme's meta-ink switch rides straight behind its sheet (`deepenMetaInkCss` says why),
+  // and in the theme's layer with it: it is the theme's rule, so the owner's settings and custom
+  // CSS win over it as they win over the sheet.
+  const deepen = inLayer('theme', deepenMetaInkCss(theme))
   const sheet = head.stylesheet
     ? [head.stylesheet, themeSheet(theme)]
         .filter(Boolean)

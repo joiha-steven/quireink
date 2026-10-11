@@ -33,7 +33,7 @@
 //    cannot change what a later shot's "most viewed" row shows.
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve, sep } from 'node:path'
-import { Browser } from './theme-matrix-browser'
+import { Browser, OPEN_BOOK } from './theme-matrix-browser'
 import { compareDirs } from './theme-matrix-compare'
 
 const CLOCK_ISO = '2026-07-30T17:00:00.000Z'
@@ -42,7 +42,7 @@ const WIDTHS = [375, 768, 1440] as const
 const SCHEMES = ['light', 'dark'] as const
 
 /** A page, and the home-page settings it needs. `front` pages only exist when the home is composed. */
-type Page = { id: string; path: string; home: 'list' | 'front-image' | 'front-text' }
+type Page = { id: string; path: string; home: 'list' | 'front-image' | 'front-text'; then?: 'book' }
 const PAGES: Page[] = [
   { id: 'home-list', path: '/', home: 'list' },
   { id: 'front-image', path: '/', home: 'front-image' },
@@ -56,6 +56,9 @@ const PAGES: Page[] = [
   { id: 'search', path: '/search?q=kerning', home: 'list' },
   { id: 'notes', path: '/notes', home: 'list' },
   { id: 'not-found', path: '/no-such-page-in-the-matrix', home: 'list' },
+  // Book mode open on the post that carries every block: the spread at 768 and 1440, the scrolled
+  // reader at 375. Its own surface, which the pages around it say nothing about.
+  { id: 'post-book', path: '/matrix-every-block', home: 'list', then: 'book' },
 ]
 
 const args = process.argv.slice(2)
@@ -193,7 +196,7 @@ async function capture(outArg: string, port: number): Promise<number> {
             for (const width of WIDTHS) {
               for (const scheme of SCHEMES) {
                 await browser.setup(width, scheme)
-                const shot = await browser.shoot(base + page.path)
+                const shot = await browser.shoot(base + page.path, page.then === 'book' ? OPEN_BOOK : undefined)
                 const expected = page.id === 'not-found' ? 404 : 200
                 const name = `${look}__${page.id}__${width}__${scheme}.png`
                 if (shot.look !== look) throw new Error(`${name}: the page says look "${shot.look}", the cell is "${look}"`)

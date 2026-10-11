@@ -35,6 +35,12 @@ what runs.
   they are a registry entry and the checker never reads them. A theme from a zip has no way
   to do that yet. They are held to the value rules on their own (no colour, size or family
   written by hand, no `!important`).
+- **The sheet is served in `@layer theme`** (`web/css-layers.ts`, ADR 0072 decision 3): it wins
+  over the base sheet and loses to the owner's settings and custom CSS whatever the selectors
+  weigh. The prefix still matters inside the layer, against the theme's own rules and against
+  the few base rules that keep their weight against a theme (`BASE_HOLDS_CSS`, restated in the
+  theme layer ahead of the sheet). A base rule a theme must not override joins that list; the
+  sheet never copies a base value to win back what the layer took.
 - **The owner's chrome font reaches every theme.** A sheet never sets `body` (or anything
   else that stands for the chrome) in a face of its own. Each of the three did through
   2.2.19, which left the chrome-font control drawing nothing on them; a settings row from
@@ -47,6 +53,58 @@ what runs.
   settings block from `locales/` as `--l-figure` and `--l-table`, which the sheet reads.
 - **The admin never changes.** A look is what a reader sees. Support questions that begin
   "where is that button" must have one answer.
+
+## Who wins: cascade layers
+
+Order alone let a heavier selector win from an earlier sheet: a theme's
+`html[data-look=paper] .post-meta` beat the owner's `.post-meta` in the Custom CSS box. Since
+2026-10-11 the tiers are cascade layers, so the order holds whatever the selectors weigh
+([ADR 0072](../decisions/0072-a-theme-is-a-checked-skin-over-the-one-markup.md), decision 3;
+`src/web/css-layers.ts`, which says why each piece sits where it does):
+
+| Tier | What | How |
+|---|---|---|
+| `@layer base` | `site.css`; the inline geometry: the reading column (`--shell-w`, from the owner's width), the rail of a moved column, a page's own (`extra`: the front page's wider column, the listing's second rail, the feed's timeline) | `site.css` opens with `@layer base,theme;`, so the order is fixed before any block is met; the inline pieces are wrapped in place |
+| `@layer theme` | the base rules that keep their weight against a theme (`BASE_HOLDS_CSS`, at the end of `site.css`); the theme's sheet; the theme's inline rail rules (`railThemeCss`); the notebook's deepened meta ink (`<style data-meta-ink>`); the chrome font's tracking correction (`monoTracking`) | the theme's sheet is wrapped as served (`web/assets.ts`), so its own bytes, and what the checker reads, carry no layer |
+| unlayered | the base sheet's own `!important` declarations, served after its layers; the owner's settings, the pen (inline and the reader pen's two sheets), and the custom CSS, last | beats every layer; inside it, specificity then order, exactly as before |
+
+Inside a tier nothing changed, and nothing was reordered. Between tiers the winner changes only
+where a lower tier outweighed a higher one, so every such declaration was listed by a probe run
+in the browser (every rule against every element, hover and focus counted as on, a logical
+property counted as its physical twin) over the matrix pages, an untitled post, book mode open
+at 375, 768 and 1440 in both schemes, a touch screen, print, every page in the seeded site's
+sitemap, and five settings profiles including a moved column. What it found, and what holds
+each (after them, every run listed nothing, and the matrix, book mode included, was identical
+shot for shot for the default settings and three profiles off it):
+
+- **Six base rules outweighed a built-in theme's**: the comment thread's heading, the book's
+  heading leading and the untitled post's hidden header above the rail breakpoint (Newspaper),
+  the book's half line of padding round a heading, paged and scrolled (Newspaper and
+  Notebook), the text-only front page's lead headline (Source code), the pressed current chip
+  (Notebook). Each is restated in the theme layer with `revert-layer`, ahead of any
+  theme's sheet (`BASE_HOLDS_CSS`; the rail one is `railHoldCss`, computed from the column), so
+  against any theme it weighs what it weighed before.
+- **The page's geometry** is in `base` whole, the column setting included: unlayered, `extra`
+  beat the code theme's rail marker; in `base` alone, the front page's `--shell-w` lost to the
+  column setting.
+- **The chrome font's tracking correction** is in `theme`, after the sheet: unlayered, it beat
+  the Notebook's own tracking of the site title. Custom CSS now beats it outright.
+
+`!important` runs the layers backwards, so an `!important` in the base layer would beat every
+`!important` outside it, the owner's included. The base sheet's `!important`s are therefore
+served after its layers, outside every one, under the same selector and inside the same
+`@media`/`@supports` (`web/css-important.ts`, split at build), and weigh what they did before.
+
+The sign-in pages link neither sheet. Their inline block still has layered pieces that match
+there (the column width on `:root`, the tracking correction on `body`), and nothing unlayered
+there sets the same properties, so they draw as before: measured in the browser, every computed
+property of every element of `/login` the same as at the commit before the layers.
+
+**Browser floor.** The public pages now need Chrome and Edge 99, Safari 15.4, Firefox 97
+(early 2022) for `@layer` and `revert-layer`. A browser older than that drops every `@layer`
+block, which is the whole base and theme sheet, and draws the page unstyled. That is below the
+`color-mix()` (Chrome 111, Safari 16.2, Firefox 113) the palette already needed, so no reader
+who saw the page correctly before loses it.
 
 ## Which dialect may touch the reading column
 

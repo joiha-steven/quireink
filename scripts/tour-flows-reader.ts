@@ -1,6 +1,7 @@
 // Flows for the reader's side, from the 2026-09-30 sweep (phase 5 of the fix list). One flow
 // per fault, named for what must hold.
 import type { Tour } from './tour'
+import { UNLAYER } from './tour-unlayer'
 
 /** A function `select()` that selects a run of plain words and waits for the pen bar. */
 const SELECT_PLAIN = `
@@ -335,7 +336,8 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
   // the sheet, applied, and the geometry measured with it.
   flow('reader: the copy key sits above the code on a touch screen, not on it', () => expect('/what-a-subsetter-removes', `
     (async () => {
-      const rules = [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules] } catch { return [] } })
+      ${UNLAYER}
+      const rules = [...document.styleSheets].flatMap((sh) => { try { return unlayer(sh.cssRules).map((x) => x.rule) } catch { return [] } })
       const touch = rules.filter((r) => r.media && /hover:\\s*none/.test(r.conditionText || r.media.mediaText))
         .flatMap((r) => [...r.cssRules]).find((r) => r.selectorText === '.prose pre' && r.style.paddingTop)
       if (!touch) return 'no touch-screen band for the copy key in the sheet'
@@ -368,11 +370,14 @@ export function registerReaderFlows({ flow, expect, atWidth }: Tour): void {
   // and what they make is measured: the element's box, or its ::before where that is the hit area.
   flow('reader: the keys on a post are 44px for a finger', () => atWidth(390, '/what-a-subsetter-removes', `
     (async () => {
-      const rules = [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules] } catch { return [] } })
-      const coarse = rules.filter((r) => r.media && /pointer:\\s*coarse/.test(r.conditionText || r.media.mediaText))
+      ${UNLAYER}
+      const rules = [...document.styleSheets].flatMap((sh) => { try { return unlayer(sh.cssRules) } catch { return [] } })
+      const coarse = rules.filter(({ rule: r }) => r.media && /pointer:\\s*coarse/.test(r.conditionText || r.media.mediaText))
       if (!coarse.length) return 'no coarse-pointer rules in the sheet'
+      // Back into the layer each came from, so the lifted rules weigh what the real ones do.
       const lifted = document.createElement('style')
-      lifted.textContent = coarse.flatMap((r) => [...r.cssRules].map((x) => x.cssText)).join('\\n')
+      lifted.textContent = coarse.map(({ rule: r, layer }) => (layer ? '@layer ' + layer + '{' : '')
+        + [...r.cssRules].map((x) => x.cssText).join('\\n') + (layer ? '}' : '')).join('\\n')
       document.head.append(lifted)
       for (let i = 0; i < 20 && !document.querySelector('.code-copy'); i++) await new Promise((r) => setTimeout(r, 100))
       const tall = (el, pseudo) => {

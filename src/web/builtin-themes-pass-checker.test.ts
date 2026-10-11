@@ -1,7 +1,8 @@
 // The built-in themes pass the checker a stranger's theme must pass (ADR 0072, decision 6).
 //
-// Run on the bytes a reader is sent (`SERVED_CSS`, minified) rather than on the commented
-// source, and against the real contract, so what is checked is what is served and what is
+// Run on the bytes a reader is sent (`SERVED_CSS`, minified; the engine wraps them in
+// `@layer theme` as it serves them, `web/css-layers.ts`) rather than on the commented source, and
+// against the real contract, so what is checked is what is served and what is
 // promised. A built-in sheet that needs something the checker refuses is a gap in the standard,
 // and the answer is to fix the standard, never to exempt the sheet.
 import { describe, expect, it } from 'bun:test'

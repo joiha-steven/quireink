@@ -19,9 +19,17 @@ import { LOOK_PAPER_CSS } from '@/web/look-paper.css'
 import { LOOK_NOTES_CSS } from '@/web/look-notes.css'
 import { INK_HIGHLIGHT_CSS, INK_LINES_CSS } from '@/pen/ink.css'
 import { minifyCss } from '@/web/css-min'
+import { splitImportant } from '@/web/css-important'
+
+// The base sheet in two: its normal declarations, which `web/assets.ts` serves inside
+// `@layer base`, and its `!important` ones, served after it outside every layer so they weigh
+// what they did before the layers (`web/css-important.ts`). Split here, once, for the same reason
+// the minifying is: the Worker gets the finished strings.
+const SITE = splitImportant(minifyCss(PUBLIC_CSS))
 
 export const SERVED_CSS = {
-  site: minifyCss(PUBLIC_CSS),
+  site: SITE.normal,
+  'site-important': SITE.important,
   'pen-marks': minifyCss(INK_HIGHLIGHT_CSS),
   'pen-lines': minifyCss(INK_LINES_CSS),
   'look-code': minifyCss(LOOK_CODE_CSS),
