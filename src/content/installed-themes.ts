@@ -16,7 +16,7 @@
 
 import { readThemePackage, type PackageOptions, type ThemeManifest, type Violation } from '@/theme'
 import { themeContract } from '@/content/theme-contract'
-import { BUILTIN_THEMES, DEFAULT_THEME_ID } from '@/content/themes-builtin'
+import { BUILTIN_THEMES, DEFAULT_THEME_ID, OWNABLE_SETTINGS } from '@/content/themes-builtin'
 import { CHROME_FONTS, FONT_PRESETS, THEME_PRESETS } from '@/content/themes'
 import { getSettings, saveSettings } from '@/content/settings'
 import { uploadFile } from '@/media/blob'
@@ -46,6 +46,7 @@ function packageOptions(): PackageOptions {
     reservedIds: new Set(BUILTIN_THEMES.map((t) => t.id)),
     reservedPaletteIds: new Set(THEME_PRESETS.map((p) => p.id)),
     reservedFontIds: new Set([...FONT_PRESETS.map((f) => f.id), ...CHROME_FONTS.map((f) => f.id)]),
+    ownableSettings: new Set(OWNABLE_SETTINGS),
     contract: themeContract(),
   }
 }

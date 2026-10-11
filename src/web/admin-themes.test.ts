@@ -81,6 +81,11 @@ describe('installing', () => {
     })
   })
 
+  it('accepts a package that takes over the settings a theme may own', async () => {
+    const out = await installed(themeZip({ 'theme.json': { ...MANIFEST, ownsSettings: ['table.head', 'table.grid'] } }))
+    expect(out.id).toBe('broadsheet')
+  })
+
   it('the same package again does nothing, however it was zipped', async () => {
     const first = await installed(themeZip())
     const again = await installed(testZip(themeFiles().reverse().map((e) => ({ ...e, deflate: false }))))
