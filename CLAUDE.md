@@ -69,7 +69,7 @@ history is never needed to fix or understand code.
 |---|---|
 | Routing, middleware, what a request does | `src/web/app.ts`, `src/web/guard.ts`, `src/web/cache-headers.ts` |
 | Cache, or content not updating | `src/server/cache.ts` (in-process), `src/web/cache-headers.ts` (shared), `src/server/edge-cache.ts` |
-| A page's HTML | `src/web/{layout,chrome,article,listing}.ts`, `src/web/*.css.ts` |
+| A page's HTML · a theme refused or let through | `src/web/{layout,chrome,article,listing}.ts`, `src/web/*.css.ts` · `src/theme/` (the install-time checker, ADR 0072; door at `src/theme/index.ts`) |
 | Markdown → HTML, the editor's document, the excerpt · highlighting, footnotes · the pen | `src/md/` (the engine, ADR 0052; one import out, held by `src/md/boundary.test.ts`) · `src/render/` · `src/pen/` (self-contained, door at `src/pen/index.ts`) |
 | Island JS: search, theme, comments, subscribe, book mode | `src/assets/js/` |
 | Admin screens, the editor | `src/web/admin/` (the markup the server draws), `src/admin/` (the browser half: `island/` and the editor), `src/admin-shared/` (what both sides read) |
