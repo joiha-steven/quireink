@@ -4,6 +4,11 @@
 
 ### Changed
 
+- **On the Newspaper theme, the table settings it overrides are hidden.** Header row, Lines and
+  Line weight did nothing there because the theme rules tables like a printed paper, so the admin
+  now shows a line saying so instead of the controls, and brings them back on any other theme.
+  Your saved choices are kept. An Inverted header no longer sets paper-coloured words on the
+  Newspaper's paper-coloured page. See [Appearance](docs/appearance.md).
 - **Custom CSS now wins over the theme and the base stylesheet whatever its selectors weigh.**
   Both stylesheets sit in CSS cascade layers and your CSS does not, so `.post-meta` overrides
   the Newspaper's `html[data-look=paper] .post-meta` without copying it. A rule of yours that

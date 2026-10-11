@@ -379,6 +379,7 @@ const ja = {
   // the product that does not reproduce the previous rendering.
   cardTable: '表',
   tableHint: '記事内のすべての表の描き方。ブログ全体でひとそろいです。Markdown にはこれらを書き表す文法がないため、貼り付けた表はそのまま他所へ貼り出せる表のままになります。',
+  themeOwnsSetting: '{theme}では{parts}をテーマ自身が描きます。保存した設定は別のテーマにすると元に戻ります。',
   tableHead: '見出し行',
   tableHeadHint: '最上段の行を、その下のデータとどう見分けるか。',
   tableHeadPlain: 'そのまま',

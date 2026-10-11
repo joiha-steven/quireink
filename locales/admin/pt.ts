@@ -380,6 +380,7 @@ const pt = {
   // the product that does not reproduce the previous rendering.
   cardTable: 'Tabelas',
   tableHint: 'Como cada tabela de um artigo é desenhada. Um único conjunto para todo o blog: o Markdown não sabe dizer nada disto, por isso uma tabela colada aqui continua sendo uma tabela que dá para colar em outro lugar.',
+  themeOwnsSetting: '{theme} desenha {parts} por conta própria. Suas escolhas salvas voltam com outro tema.',
   tableHead: 'Linha de cabeçalho',
   tableHeadHint: 'Como a primeira linha se distingue dos dados embaixo.',
   tableHeadPlain: 'Simples',

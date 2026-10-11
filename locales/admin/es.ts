@@ -379,6 +379,7 @@ const es = {
   // the product that does not reproduce the previous rendering.
   cardTable: 'Tablas',
   tableHint: 'Cómo se dibuja cada tabla de un artículo. Un solo ajuste para todo el blog: Markdown no sabe expresar nada de esto, así que una tabla que pegas aquí sigue siendo una tabla que puedes pegar en otro sitio.',
+  themeOwnsSetting: '{theme} dibuja {parts} por sí mismo. Tus ajustes guardados vuelven con otro tema.',
   tableHead: 'Fila de encabezado',
   tableHeadHint: 'Cómo se distingue la primera fila de los datos que tiene debajo.',
   tableHeadPlain: 'Sencilla',

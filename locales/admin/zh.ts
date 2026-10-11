@@ -379,6 +379,7 @@ const zh = {
   // the product that does not reproduce the previous rendering.
   cardTable: '表格',
   tableHint: '文章里每张表格的画法。整个博客共用一套：Markdown 无法表达这里的任何一项，所以粘贴进来的表格仍然是能粘贴出去的表格。',
+  themeOwnsSetting: '{theme}主题自行绘制{parts}。换成其他主题后，你已保存的设置会重新生效。',
   tableHead: '表头行',
   tableHeadHint: '最上面一行如何与下方数据区分开。',
   tableHeadPlain: '不作处理',

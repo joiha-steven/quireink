@@ -379,6 +379,7 @@ const en = {
   // the product that does not reproduce the previous rendering.
   cardTable: 'Tables',
   tableHint: 'How every table in an article is drawn. One set for the whole blog: Markdown has no way to say any of this, so a table you paste in is still a table you can paste out.',
+  themeOwnsSetting: '{theme} draws {parts} itself. Your saved choices come back on another theme.',
   tableHead: 'Header row',
   tableHeadHint: 'How the top row is told apart from the data under it.',
   tableHeadPlain: 'Plain',

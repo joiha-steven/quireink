@@ -17,7 +17,8 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { FeatureSettings, SiteSettings } from '@/types'
 import { contrastRatio } from '@/pen/derive'
 import { PEN_AUX_LIGHT, PEN_LIGHT } from '@/pen/pigments'
-import { escapeHtml } from '@/utils'
+import { escapeAttr, escapeHtml } from '@/utils'
+import type { OwnableSetting } from '@/content/themes-builtin'
 import { SHEET_TOOL } from '@/admin-shared/kit'
 import { NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { group, panelCard, settingRow, switchRow, textField } from '@/web/admin/fields'
@@ -177,6 +178,20 @@ function gallery(t: AdminStrings, s: SiteSettings): string {
 }
 
 /**
+ * A control a theme may take over (`ownsSettings` in `content/themes-builtin.ts`), drawn with the
+ * line that stands in for it. The island hides the label and control of every key the chosen
+ * theme owns and shows ONE line, at the first of them, naming the theme and all of them
+ * (`applyOwned`), so the server draws the pieces and no theme is named in the browser.
+ */
+function ownable(t: AdminStrings, key: OwnableSetting, label: string, control: string): string {
+  return `<div data-ownable="${escapeAttr(key)}" data-label="${escapeAttr(label)}">${control}</div>`
+    // `tab-hint` exempts the line from "hide explanations" (`admin.css`): with the control gone,
+    // the sentence is the only thing that says why the row has nothing to press.
+    + `<div data-owned-note="${escapeAttr(key)}" data-template="${escapeAttr(t.themeOwnsSetting)}" hidden`
+    + ` class="${NOTE_TEXT} tab-hint"></div>`
+}
+
+/**
  * How tables are drawn.
  *
  * One set for the whole blog, and that is the design. GFM has no syntax for a tinted header or a
@@ -189,22 +204,22 @@ function table(t: AdminStrings, s: SiteSettings): string {
   const a = s.table
   return `<div class="${SETTING_GAP}">`
     + `<p class="${NOTE_TEXT}">${escapeHtml(t.tableHint)}</p>`
-    + choice({
+    + ownable(t, 'table.head', t.tableHead, choice({
       k: 'table.head', label: t.tableHead, note: t.tableHeadHint, value: a.head,
       options: [
         ['plain', t.tableHeadPlain], ['tint', t.tableHeadTint],
         ['rule', t.tableHeadRule], ['ink', t.tableHeadInk],
       ],
-    })
-    + choice({
+    }))
+    + ownable(t, 'table.grid', t.tableGrid, choice({
       k: 'table.grid', label: t.tableGrid, note: t.tableGridHint, value: a.grid,
       options: [['all', t.tableGridAll], ['rows', t.tableGridRows], ['none', t.tableGridNone]],
-    })
-    + choice({
+    }))
+    + ownable(t, 'table.ruleWeight', t.tableRuleWeight, choice({
       k: 'table.ruleWeight', label: t.tableRuleWeight, note: t.tableRuleWeightHint,
       value: a.ruleWeight,
       options: [['hairline', t.tableHairline], ['bold', t.tableThick]],
-    })
+    }))
     + choice({
       k: 'table.firstColumn', label: t.tableFirstCol, note: t.tableFirstColHint,
       value: a.firstColumn,

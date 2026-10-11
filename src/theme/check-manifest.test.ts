@@ -220,3 +220,26 @@ describe('A6: text the admin shows, and suggestions that exist', () => {
     expect(failures(withField('suggests', { chromeFont: 3 }))).toEqual(['suggests.chromeFont'])
   })
 })
+
+describe('A6: ownsSettings', () => {
+  const owning = { ...OPTS, ownableSettings: new Set(['table.head', 'table.grid', 'table.ruleWeight']) }
+  const run = (raw: unknown, opts: Parameters<typeof checkThemeManifest>[1] = owning) => {
+    const r = checkThemeManifest(raw, opts)
+    return r.ok ? r.manifest.ownsSettings : r.violations.map((v) => v.subject)
+  }
+
+  it('accepts keys from the ownable list, each once', () => {
+    expect(run({ ...MINIMAL, ownsSettings: ['table.head', 'table.grid'] })).toEqual(['table.head', 'table.grid'])
+  })
+
+  it('refuses a key off the list, a repeat, a non-string and a list too long', () => {
+    expect(run({ ...MINIMAL, ownsSettings: ['table.head', 'customCss', 'table.head', 3] }))
+      .toEqual(['ownsSettings[1]', 'ownsSettings[2]', 'ownsSettings[3]'])
+    expect(run({ ...MINIMAL, ownsSettings: 'table.head' })).toEqual(['ownsSettings'])
+    expect(run({ ...MINIMAL, ownsSettings: Array.from({ length: 17 }, () => 'table.head') })).toEqual(['ownsSettings'])
+  })
+
+  it('refuses every key when the caller names no ownable list', () => {
+    expect(run({ ...MINIMAL, ownsSettings: ['table.head'] }, OPTS)).toEqual(['ownsSettings[0]'])
+  })
+})

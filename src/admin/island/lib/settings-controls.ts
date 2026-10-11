@@ -243,8 +243,53 @@ export function applyLiveGates(card: HTMLElement): void {
   }
 }
 
+/**
+ * THE CONTROLS THE CHOSEN THEME DRAWS ITSELF.
+ *
+ * The pressed theme tile lists in `data-owns` the settings keys the theme decides (JSON, from
+ * `ownsSettings` in `content/themes-builtin.ts`) and its name in `data-name`. A control marked
+ * `data-ownable="<key>"` (with its label in `data-label`) is hidden whole while its key is
+ * listed. For each group of keys (the part before the dot) ONE line shows, at the first hidden
+ * control: its `data-template` with the theme's name and the hidden controls' labels, joined
+ * the way the page's language joins a list. Nothing about a field is touched, so its value
+ * still reads as saved and the control is back as soon as another tile is pressed. A tile that
+ * is not pressed (a theme from a later build) owns nothing.
+ */
+function applyOwned(root: HTMLElement): void {
+  const tile = root.querySelector<HTMLElement>('[data-choice-track][data-k="theme"] [aria-pressed="true"]')
+  let owned: string[] = []
+  try {
+    const parsed: unknown = JSON.parse(tile?.dataset.owns || '[]')
+    if (Array.isArray(parsed)) owned = parsed.filter((k): k is string => typeof k === 'string')
+  } catch {
+    console.error('settings: a theme tile carries data-owns that is not JSON', tile?.dataset.owns)
+  }
+  const groups = new Map<string, HTMLElement[]>()
+  for (const box of root.querySelectorAll<HTMLElement>('[data-ownable]')) {
+    const key = box.dataset.ownable ?? ''
+    box.hidden = owned.includes(key)
+    if (!box.hidden) continue
+    const group = key.split('.')[0] ?? ''
+    groups.set(group, [...(groups.get(group) ?? []), box])
+  }
+  for (const line of root.querySelectorAll<HTMLElement>('[data-owned-note]')) line.hidden = true
+  const lang = document.documentElement.lang || 'en'
+  for (const boxes of groups.values()) {
+    const line = root.querySelector<HTMLElement>(`[data-owned-note="${CSS.escape(boxes[0]?.dataset.ownable ?? '')}"]`)
+    if (!line) continue
+    // No quotation marks around the names: their shape differs per language and the template is
+    // where language lives, so a mark added here would be English quotes in German or Japanese.
+    const names = boxes.map((b) => b.dataset.label ?? '')
+    let parts = names.join(', ')
+    try { parts = new Intl.ListFormat(lang, { style: 'long', type: 'conjunction' }).format(names) } catch { /* a tag the engine lacks: the plain list above */ }
+    line.textContent = (line.dataset.template ?? '').replace('{theme}', tile?.dataset.name ?? '').replace('{parts}', parts)
+    line.hidden = false
+  }
+}
+
 export function applyGates(root: HTMLElement): void {
   const valueOf = (key: string): string => answerIn(root, key)
+  applyOwned(root)
 
   for (const box of root.querySelectorAll<HTMLElement>('[data-gate]')) {
     box.hidden = valueOf(box.dataset.gate ?? '') !== '1'

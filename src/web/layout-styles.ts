@@ -230,7 +230,7 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // Anywhere after the palette: every ground it emits is MIXED from `--c-rule` and
     // `--c-bg`, so the table follows whichever of the six palettes is on without a second
     // declaration and without naming a colour (`prose.css.ts` holds the selectors).
-    tableToCss(settings.table),
+    tableToCss(settings.table, theme.ownsSettings),
     typographyToCss(settings.typography),
     fontToCss(settings.customFont),
     // Keyed on `data-chrome-font`, which `renderDocument` puts on <html>. It has to come

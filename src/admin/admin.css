@@ -866,7 +866,9 @@ input[type='color']::-moz-color-swatch {
    `.admin-note` rides on `NOTE_TEXT` in `scale.ts` — see the note there for why it is on the
    token rather than on two dozen call sites, and why `NOTE_ALERT` is deliberately left out
    of it. `.tab-hint` is exempt because it is the one line that says what a TAB is for, which
-   is wayfinding rather than explanation: hiding it would leave eight unlabelled boxes. */
+   is wayfinding rather than explanation: hiding it would leave eight unlabelled boxes. The line
+   that stands in for a table control the chosen theme draws itself (`ownable` in
+   `settings-post.ts`) is exempt for the same reason: hidden, a bare label would sit there. */
 /* THE UNCHOSEN LABEL ON A CARVED SEGMENT TRACK, which has to satisfy two numbers at once and
    sits between two Tailwind steps.
 

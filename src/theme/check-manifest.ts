@@ -78,6 +78,11 @@ export type ManifestOptions = {
   /** Font ids taken by the built-in reading and chrome fonts, which share the font pickers. */
   reservedFontIds: ReadonlySet<string>
   packageFiles: ReadonlySet<string>
+  /**
+   * Settings keys a theme may own (`ownsSettings`). Absent, no key may be owned: a caller that
+   * has not said which controls the admin can hide cannot let a theme hide one.
+   */
+  ownableSettings?: ReadonlySet<string>
 }
 
 export function checkThemeManifest(
@@ -90,7 +95,7 @@ export function checkThemeManifest(
     return { ok: false, violations: r.violations }
   }
   r.only(raw, ['api', 'id', 'name', 'version', 'author', 'homepage', 'license', 'description',
-    'layout', 'palettes', 'fonts', 'suggests'], '')
+    'layout', 'palettes', 'fonts', 'suggests', 'ownsSettings'], '')
 
   const api = raw.api
   if (typeof api !== 'number' || !Number.isInteger(api) || !opts.supportedApi.includes(api)) r.fail('api')
@@ -109,6 +114,7 @@ export function checkThemeManifest(
   const palettes = raw.palettes === undefined ? undefined : readPalettes(raw.palettes, r, opts.reservedPaletteIds)
   const fonts = raw.fonts === undefined ? undefined : readFonts(raw.fonts, r, opts)
   const suggests = raw.suggests === undefined ? undefined : readSuggests(raw.suggests, r, opts, palettes ?? [], fonts ?? [])
+  const ownsSettings = raw.ownsSettings === undefined ? undefined : readOwnsSettings(raw.ownsSettings, r, opts)
 
   if (r.violations.length > 0 || typeof api !== 'number' || id === undefined || name === undefined ||
     version === undefined || author === undefined || license === undefined) {
@@ -121,7 +127,23 @@ export function checkThemeManifest(
   if (palettes !== undefined) manifest.palettes = palettes
   if (fonts !== undefined) manifest.fonts = fonts
   if (suggests !== undefined) manifest.suggests = suggests
+  if (ownsSettings !== undefined) manifest.ownsSettings = ownsSettings
   return { ok: true, manifest }
+}
+
+/** Each key once, each from the engine's ownable list. */
+function readOwnsSettings(v: unknown, r: Reader, opts: ManifestOptions): string[] | undefined {
+  const list = r.list(v, 'ownsSettings', 16)
+  if (!list) return undefined
+  const out: string[] = []
+  let ok = true
+  list.forEach((key, i) => {
+    if (typeof key !== 'string' || !(opts.ownableSettings?.has(key) ?? false) || out.includes(key)) {
+      r.fail(`ownsSettings[${i}]`)
+      ok = false
+    } else out.push(key)
+  })
+  return ok ? out : undefined
 }
 
 function readHomepage(v: unknown, r: Reader): string | undefined {

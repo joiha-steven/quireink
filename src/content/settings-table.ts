@@ -124,13 +124,27 @@ const PAD_SCALE: Record<TableSettings['padding'], string> = {
 }
 
 /**
+ * The settings with the knobs a theme owns put back to their defaults, which is what the page
+ * is drawn from. `owned` holds admin keys (`table.head`); the saved row is not touched.
+ */
+function withoutOwned(saved: TableSettings, owned: readonly string[]): TableSettings {
+  const out: TableSettings = { ...saved }
+  for (const key of owned) {
+    const field = key.startsWith('table.') ? key.slice('table.'.length) : ''
+    if (field in DEFAULT_TABLE) Object.assign(out, { [field]: DEFAULT_TABLE[field as keyof TableSettings] })
+  }
+  return out
+}
+
+/**
  * The table variables, for `:root`.
  *
  * Emitted as numbers-and-lengths rather than as finished declarations so `web/prose.css.ts`
  * keeps every selector. A stylesheet that reads its values from variables can be cached and
  * shipped once; one assembled per site cannot.
  */
-export function tableToCss(t: TableSettings): string {
+export function tableToCss(saved: TableSettings, owned: readonly string[] = []): string {
+  const t = withoutOwned(saved, owned)
   const head = HEAD_LOOK[t.head]
   const lines = GRID_LINES[t.grid]
   const rule = RULE_PX[t.ruleWeight]

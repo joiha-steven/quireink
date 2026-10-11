@@ -66,13 +66,22 @@ pasting Markdown in, so they stay plain GFM.
 
 | Knob | Choices |
 |---|---|
-| **Header row** | **Tinted** (default) · Plain · Ruled — no ground, a heavier line beneath · Inverted — the ink and the paper swapped |
-| **Lines** | **Around every cell** (default) · Between rows only · None. A table of numbers reads well boxed; a table of sentences drowns in it |
-| **Line weight** | **Hairline** (default) · Thick |
+| **Header row** | **Tinted** (default) · Plain · Ruled — no ground, a heavier line beneath · Inverted — the ink and the paper swapped. **Held by the Newspaper theme** |
+| **Lines** | **Around every cell** (default) · Between rows only · None. A table of numbers reads well boxed; a table of sentences drowns in it. **Held by the Newspaper theme** |
+| **Line weight** | **Hairline** (default) · Thick. **Held by the Newspaper theme** |
 | **Banded rows** | **Off** (default) · On — a faint tint on every other row. It earns its place on a long table, not on four |
 | **First column** | **Same as the rest** (default) · Emphasised — for a table whose left column names the row and the rest answers it |
 | **Cell padding** | Compact · **Normal** (default) · Relaxed |
 | **On a narrow screen** | **Squeeze to fit** (default) · Scroll sideways |
+
+**Held by the Newspaper theme.** Newspaper rules its tables the way a printed paper does (a heavy
+line over the head, a line under it, one under the body, nothing between cells, no tint), so
+Header row, Lines and Line weight cannot do anything there. While Newspaper is the chosen theme,
+including before you save, those three controls are replaced by a line saying the theme draws
+that part itself. Your saved choices are kept and come back when you pick another theme; on
+Newspaper they are not applied to the page, so an Inverted header cannot paint paper-coloured
+words on a paper-coloured page. Banded rows, First column, Cell padding and On a narrow screen
+work on every theme.
 
 **What "Scroll sideways" is for.** A table of sentences keeps compressing its columns until
 they are a word wide, and the sideways scroll the reading column has always had for wide

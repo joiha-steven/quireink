@@ -379,6 +379,7 @@ const fr = {
   // the product that does not reproduce the previous rendering.
   cardTable: 'Tableaux',
   tableHint: 'Comment chaque tableau d’un article est dessiné. Un seul réglage pour tout le blog : Markdown ne sait rien exprimer de tout cela, donc un tableau collé ici reste un tableau que l’on peut recoller ailleurs.',
+  themeOwnsSetting: '{theme} dessine {parts} lui-même. Vos réglages enregistrés reviennent avec un autre thème.',
   tableHead: 'Ligne d’en-tête',
   tableHeadHint: 'Comment la première ligne se distingue des données en dessous.',
   tableHeadPlain: 'Simple',

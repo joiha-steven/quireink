@@ -379,6 +379,7 @@ const vi = {
   // the product that does not reproduce the previous rendering.
   cardTable: 'Bảng',
   tableHint: 'Cách vẽ mọi bảng trong bài. Một bộ cho cả blog: Markdown không có cú pháp cho bất kỳ điều nào ở đây, nên bảng dán vào vẫn là bảng dán ra được.',
+  themeOwnsSetting: '{theme} tự vẽ {parts}. Lựa chọn đã lưu của bạn sẽ áp dụng lại khi đổi sang theme khác.',
   tableHead: 'Dòng tiêu đề',
   tableHeadHint: 'Cách phân biệt dòng trên cùng với dữ liệu bên dưới.',
   tableHeadPlain: 'Để trơn',

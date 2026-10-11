@@ -379,6 +379,7 @@ const it = {
   // the product that does not reproduce the previous rendering.
   cardTable: 'Tabelle',
   tableHint: 'Come viene disegnata ogni tabella di un articolo. Un solo assetto per tutto il blog: il Markdown non sa esprimere nulla di questo, quindi una tabella incollata qui resta una tabella che si può incollare altrove.',
+  themeOwnsSetting: '{theme} disegna da sé {parts}. Le tue impostazioni salvate tornano con un altro tema.',
   tableHead: 'Riga di intestazione',
   tableHeadHint: 'Come la prima riga si distingue dai dati sottostanti.',
   tableHeadPlain: 'Semplice',

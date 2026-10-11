@@ -379,6 +379,7 @@ const ko = {
   // the product that does not reproduce the previous rendering.
   cardTable: '표',
   tableHint: '글 속 모든 표를 그리는 방식. 블로그 전체에 한 벌입니다. 마크다운에는 이런 것을 적을 문법이 없으므로, 붙여 넣은 표는 다른 곳에 그대로 붙여 낼 수 있는 표로 남습니다.',
+  themeOwnsSetting: '{theme} 테마가 {parts}을(를) 직접 그립니다. 저장한 설정은 다른 테마로 바꾸면 다시 적용됩니다.',
   tableHead: '머리글 행',
   tableHeadHint: '맨 윗줄을 아래 데이터와 어떻게 구분할지.',
   tableHeadPlain: '그대로',

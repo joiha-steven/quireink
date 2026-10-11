@@ -60,11 +60,19 @@ const art = (tile: string): string =>
 const suggestsAttr = (suggests: SiteTheme['suggests']): string =>
   ` data-suggests="${escapeAttr(JSON.stringify(suggests.chromeFont ? { chromeFont: suggests.chromeFont } : {}))}"`
 
+/**
+ * The settings keys the theme draws itself, which the island reads to hide those controls
+ * while the tile is the pressed one (`applyOwned` in `admin/island/lib/settings-controls.ts`).
+ * Written on every tile, `[]` on one that owns none.
+ */
+const ownsAttr = (owns: readonly string[], name: string): string =>
+  ` data-owns="${escapeAttr(JSON.stringify(owns))}" data-name="${escapeAttr(name)}"`
+
 /** One tile per built-in theme, two to a row, each saying what it is and who it is for. */
 export function lookPicker(t: AdminStrings, s: SiteSettings): string {
-  const tiles = BUILTIN_THEMES.map(({ id, nameKey, hintKey, art: { tile }, suggests }) =>
+  const tiles = BUILTIN_THEMES.map(({ id, nameKey, hintKey, art: { tile }, suggests, ownsSettings }) =>
     `<button type="button" data-choice="${escapeAttr(id)}" aria-pressed="${id === s.theme}"`
-    + suggestsAttr(suggests)
+    + suggestsAttr(suggests) + ownsAttr(ownsSettings, t[nameKey])
     + `${tileFaces('flex flex-col p-3 text-left')} class="${tileClass(id === s.theme, 'flex flex-col p-3 text-left')}">${art(tile)}`
     + `<span class="block text-sm font-semibold leading-tight">${escapeHtml(t[nameKey])}</span>`
     + `<span class="mt-1 block text-xs font-normal text-neutral-600 dark:text-neutral-300">${escapeHtml(t[hintKey])}</span>`

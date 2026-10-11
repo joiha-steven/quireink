@@ -49,6 +49,16 @@ export type MenuPlace = 'rail' | 'header'
  */
 export type ChromeFace = 'setting' | 'own' | 'jetbrains-mono'
 
+
+/**
+ * The settings a theme may draw itself (`ownsSettings`), as the admin names them. Closed: each
+ * one needs a control the admin can hide (`ownable` in `web/admin/screens/settings-post.ts`) and
+ * a renderer that can draw without its saved value (`tableToCss`). An installed theme's
+ * `theme.json` is checked against the same list.
+ */
+export const OWNABLE_SETTINGS = ['table.head', 'table.grid', 'table.ruleWeight'] as const
+export type OwnableSetting = (typeof OWNABLE_SETTINGS)[number]
+
 export type SiteTheme = {
   id: BuiltinThemeId
   /** The theme's name and its one line of who it is for, as keys of the admin's strings. */
@@ -101,12 +111,20 @@ export type SiteTheme = {
    * `suggests` may. `null`: the theme drew the chrome in the setting, or did not exist then.
    */
   legacyChromeFont: string | null
+  /**
+   * Settings keys the theme decides for itself, as the admin names them (`table.head`). While
+   * the theme is the chosen one, the admin hides the control of each and says the theme draws
+   * that part, and the page is drawn without the saved value of it. The saved value is never
+   * changed: on another theme it applies again. An installed theme declares the same list in
+   * `theme.json`, from `OWNABLE_SETTINGS`. Empty: the theme leaves every knob to the owner.
+   */
+  ownsSettings: readonly OwnableSetting[]
 }
 
 const PLAIN: SiteTheme = {
   id: 'plain', nameKey: 'lookPlain', hintKey: 'lookStepPlainHint',
   sheet: null, dataLook: '', layout: { menu: 'rail', deepenMetaInk: false }, display: null, chromeFace: 'setting', rail: null,
-  art: { tile: PLAIN_TILE, card: PLAIN_CARD }, suggests: {}, legacyChromeFont: null,
+  art: { tile: PLAIN_TILE, card: PLAIN_CARD }, suggests: {}, legacyChromeFont: null, ownsSettings: [],
 }
 
 /** In the order the admin and the setup step offer them. */
@@ -118,7 +136,7 @@ export const BUILTIN_THEMES: readonly SiteTheme[] = [
     chromeFace: 'setting',
     rail: { band: LOOK_CODE_RAIL_BAND_CSS, aside: LOOK_CODE_RAIL_ASIDE_CSS },
     art: { tile: CODE_TILE, card: CODE_CARD },
-    suggests: { chromeFont: 'jetbrains-mono' }, legacyChromeFont: 'jetbrains-mono',
+    suggests: { chromeFont: 'jetbrains-mono' }, legacyChromeFont: 'jetbrains-mono', ownsSettings: [],
   },
   {
     id: 'paper', nameKey: 'lookPaper', hintKey: 'lookStepPaperHint',
@@ -134,13 +152,16 @@ export const BUILTIN_THEMES: readonly SiteTheme[] = [
     chromeFace: 'own', rail: null,
     art: { tile: PAPER_TILE, card: PAPER_CARD },
     suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter',
+    // The sheet rules its own tables like a printed page (`web/look-paper.css.ts`): borders and
+    // header ground are set there, so these three knobs have nothing to act on.
+    ownsSettings: ['table.head', 'table.grid', 'table.ruleWeight'],
   },
   {
     id: 'notes', nameKey: 'lookNotes', hintKey: 'lookStepNotesHint',
     sheet: 'look-notes', dataLook: 'notes', layout: { menu: 'rail', deepenMetaInk: true }, display: null,
     chromeFace: 'setting', rail: null,
     art: { tile: NOTES_TILE, card: NOTES_CARD },
-    suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter',
+    suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter', ownsSettings: [],
   },
 ]
 

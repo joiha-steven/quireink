@@ -6,7 +6,8 @@ admin calls the setting "Theme", and `settings.theme` holds the id (`settings.lo
 old name, is still read and written beside it). How the four differ beyond their sheets (the
 menu in the masthead, a headline face, the rail rules, the chrome tracking, and
 `deepenMetaInk`, which takes the meta ink a step toward the text ink for a page laid on a
-ground darker than the palette's background) is declared once, in `content/themes-builtin.ts`, and nothing else in the renderer names a theme
+ground darker than the palette's background, and `ownsSettings`, the controls a theme draws
+itself) is declared once, in `content/themes-builtin.ts`, and nothing else in the renderer names a theme
 (`theme-switches.test.ts`). The rest of this page predates the decision and still describes
 what runs.
 
@@ -51,8 +52,13 @@ what runs.
 - **No words in `content:`.** A CSS content string cannot be translated. The one place a
   dialect needs language — the newspaper's `Fig.` and `Table` — rides in the per-page
   settings block from `locales/` as `--l-figure` and `--l-table`, which the sheet reads.
-- **The admin never changes.** A look is what a reader sees. Support questions that begin
-  "where is that button" must have one answer.
+- **The admin never changes, with one named exception.** A look is what a reader sees. Support
+  questions that begin "where is that button" must have one answer. The exception: a theme may
+  own settings from the closed list `OWNABLE_SETTINGS` (`content/themes-builtin.ts`), and while
+  it is the chosen theme the admin hides those controls and shows one line in their place that
+  names the theme and the controls, so the answer is on the screen where the button was.
+  Newspaper owns the table's header row, lines and line weight, which its printed-page tables
+  draw themselves. The saved values are kept and apply again on another theme.
 
 ## Who wins: cascade layers
 

@@ -592,6 +592,8 @@ export type AdminStrings = {
   // of it, so the Markdown stays portable.
   cardTable: string
   tableHint: string
+  /** One line in place of the controls the chosen theme draws itself (`ownsSettings`); `{theme}` and `{parts}` are filled in by the island. */
+  themeOwnsSetting: string
   tableHead: string
   tableHeadHint: string
   tableHeadPlain: string

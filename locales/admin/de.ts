@@ -379,6 +379,7 @@ const de = {
   // the product that does not reproduce the previous rendering.
   cardTable: 'Tabellen',
   tableHint: 'Wie jede Tabelle in einem Beitrag gezeichnet wird. Ein Satz für das ganze Blog: Markdown kann nichts davon ausdrücken, also bleibt eine eingefügte Tabelle eine Tabelle, die sich weiterreichen lässt.',
+  themeOwnsSetting: '{theme} zeichnet {parts} selbst. Ihre gespeicherten Einstellungen gelten bei einem anderen Theme wieder.',
   tableHead: 'Kopfzeile',
   tableHeadHint: 'Wie sich die oberste Zeile von den Daten darunter abhebt.',
   tableHeadPlain: 'Schlicht',

@@ -82,4 +82,10 @@ export type ThemeManifest = {
   palettes?: ThemePalette[]
   fonts?: ThemeFont[]
   suggests?: { palette?: string; readingFont?: string; chromeFont?: string }
+  /**
+   * Settings keys the theme draws itself, from the engine's closed list of ownable keys
+   * (`table.head`). The admin hides those controls while the theme is chosen and the page is
+   * drawn without their saved values; the saved values are kept.
+   */
+  ownsSettings?: string[]
 }
