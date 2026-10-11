@@ -6,10 +6,12 @@
 // bug on every blog that does not wear it.
 import { describe, expect, it } from 'bun:test'
 import { LOOK_CODE_CSS } from '@/web/look-code.css'
-import { LOOK_PAPER_CSS, paperLabelCss } from '@/web/look-paper.css'
+import { LOOK_PAPER_CSS } from '@/web/look-paper.css'
 import { LOOK_NOTES_CSS } from '@/web/look-notes.css'
 import { PUBLIC_CSS } from '@/web/public.css'
-import { lookSheet } from '@/web/assets'
+import { themeSheet } from '@/web/assets'
+import { builtinTheme } from '@/content/themes-builtin'
+import { labelVarsCss } from '@/web/layout-styles'
 
 const SHEETS = { code: LOOK_CODE_CSS, paper: LOOK_PAPER_CSS, notes: LOOK_NOTES_CSS }
 
@@ -55,9 +57,9 @@ describe('every look is one attribute, one sheet, and nothing else', () => {
 
   it('ships as its own sheet, and plain ships none', () => {
     // The whole argument for the split: a blog wearing nothing pays nothing.
-    expect(lookSheet('plain')).toBe('')
+    expect(themeSheet(builtinTheme('plain'))).toBe('')
     for (const id of ['code', 'paper', 'notes'] as const) {
-      expect(lookSheet(id)).toMatch(new RegExp(`^/assets/look-${id}\\.[a-z0-9]+\\.css$`))
+      expect(themeSheet(builtinTheme(id))).toMatch(new RegExp(`^/assets/look-${id}\\.[a-z0-9]+\\.css$`))
     }
     // ...and none of it is in the sheet every blog downloads.
     expect(PUBLIC_CSS).not.toContain('data-look=')
@@ -74,10 +76,12 @@ describe('the newspaper dialect', () => {
 
   it('takes the words for its figure and table numbers from the locale', () => {
     // The one part of a dialect that needs language, and the reason it cannot live in the
-    // cached sheet: that sheet is shared by every blog on earth.
-    expect(paperLabelCss('en')).toContain('content:"Fig. " counter(fig)')
-    expect(paperLabelCss('vi')).toContain('content:"Hình " counter(fig)')
-    expect(paperLabelCss('vi')).toContain('content:"Bảng " counter(tbl)')
+    // cached sheet: that sheet is shared by every blog on earth. The engine writes the words
+    // per page as variables, in the blog's language, and the sheet only places them.
+    expect(labelVarsCss('en')).toBe(':root{--l-figure:"Fig.";--l-table:"Table"}')
+    expect(labelVarsCss('vi')).toBe(':root{--l-figure:"Hình";--l-table:"Bảng"}')
+    expect(LOOK_PAPER_CSS).toContain('figcaption::before{content:var(--l-figure) " " counter(fig) ". "')
+    expect(LOOK_PAPER_CSS).toContain('.table-scroll::before{content:var(--l-table) " " counter(tbl);')
     // ...and the sheet itself names neither.
     expect(LOOK_PAPER_CSS).not.toContain('Fig.')
   })

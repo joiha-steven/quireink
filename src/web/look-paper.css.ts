@@ -1,7 +1,5 @@
-import type { SiteLang } from '@/types'
-import { t } from '@/i18n/i18n'
-// The newspaper dialect (settings.look = 'paper'). Its own sheet, linked only when this
-// look is on (`web/assets.ts`).
+// The newspaper dialect: the built-in theme 'paper' (settings.theme). Its own sheet, linked only
+// when this theme is worn (`web/assets.ts`).
 //
 // This is the one dialect that TOUCHES THE READING COLUMN, and it does so on purpose: a
 // paper numbers its sections, numbers its figures and its tables, and prints its byline
@@ -34,15 +32,15 @@ const LOOK_PAPER_HEAD_CSS = `
    A SECOND SERIF, beside the one the words are set in, which is what a paper does: the
    Times sets headlines in Cheltenham and body in Imperial. Source Serif 4 is already in
    the tree as a reading preset, so a blog wearing this look downloads one more file and
-   every other blog downloads nothing.
+   every other blog downloads nothing. It reaches this sheet as --font-display, which the
+   engine declares from the theme's display font (content/themes-builtin.ts).
 
    AND AT REGULAR WEIGHT. Measured on the real front page: 400, leading 1.15, tracking
    +0.01em — not bold. The authority is in the face and the leading, and a bold serif at
    that size reads as a blog shouting rather than as a paper. The SIZES stay the owner's:
    this sets the two numbers a scale does not fix. */
 html[data-look=paper] :is(h1,h2,h3,.fc-title,.read-next-title){
-  font-family:'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',
-    Georgia,'Times New Roman',serif;
+  font-family:var(--font-display);
   font-weight:400;line-height:1.15;letter-spacing:.01em}
 html[data-look=paper] .post-list :is(h1,h2,h3){font-weight:400}
 /* TWO SIZES THE SCALE CANNOT HOLD, and both are the same argument: a paper's masthead and
@@ -58,8 +56,7 @@ html[data-look=paper] article > header h1{font-size:calc(var(--fs-h1) * 1.3);
    order handed it the argument. */
 html[data-look=paper] .site-bar .title{font-size:calc(var(--fs-h1) * 1.5);
   line-height:1.05;letter-spacing:-.02em;
-  font-family:'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',
-    Georgia,'Times New Roman',serif}
+  font-family:var(--font-display)}
 
 /* --- LABELS ARE A GROTESQUE, SMALL, LETTERSPACED ----------------------------
    Every kicker, section head, byline and date on a paper is set in a sans at ten or eleven
@@ -241,8 +238,7 @@ html[data-look=paper] .deck{text-align:left;max-width:88%;margin:1.5rem auto 0;
 @supports (initial-letter:3) or (-webkit-initial-letter:3){
   html[data-look=paper] article > .prose > p:first-child::first-letter{
     -webkit-initial-letter:3;initial-letter:3;margin-right:.12em;color:var(--c-heading);
-    font-family:'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',
-      Georgia,'Times New Roman',serif;font-weight:400}
+    font-family:var(--font-display);font-weight:400}
 }
 
 /* --- SECTIONS ARE NUMBERED --------------------------------------------------
@@ -265,16 +261,16 @@ html[data-look=paper] .prose h3::before{color:var(--c-meta);
 html[data-look=paper] .prose h2::before{content:counter(sec) "."}
 html[data-look=paper] .prose h3::before{content:counter(sec) "." counter(sub)}
 
-/* FIGURES AND TABLES carry a number and nothing else HERE. The word in front of it is the
-   one thing this dialect needs language for, and a content string cannot be translated, so
-   it is written per page from the locale instead - paperLabelCss, at the foot of this
-   file, overrides both of these. */
+/* FIGURES AND TABLES carry a word and a number. The word is the one thing this dialect
+   needs language for, and a content string cannot be translated in a sheet shared by every
+   blog, so the engine writes it per page as --l-figure and --l-table, in the blog's
+   language (web/layout-styles.ts), and this sheet only places it. */
 html[data-look=paper] .prose figure{counter-increment:fig}
 html[data-look=paper] figcaption{text-align:left;padding-top:.55rem}
-html[data-look=paper] figcaption::before{content:counter(fig) ". ";
+html[data-look=paper] figcaption::before{content:var(--l-figure) " " counter(fig) ". ";
   color:var(--c-heading);font-weight:var(--fw-heading,600)}
 html[data-look=paper] .prose .table-scroll{counter-increment:tbl}
-html[data-look=paper] .prose .table-scroll::before{content:counter(tbl) ".";
+html[data-look=paper] .prose .table-scroll::before{content:var(--l-table) " " counter(tbl);
   display:block;margin-bottom:.45rem;color:var(--c-heading);
   font-weight:var(--fw-heading,600);font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small)}
@@ -358,21 +354,3 @@ html[data-look=paper] .chips .chip[aria-current]{background:none;color:var(--c-h
 
 /** The dialect, in one string: everything above, then the shelf. */
 export const LOOK_PAPER_CSS = `${LOOK_PAPER_HEAD_CSS}\n${LOOK_PAPER_SHELF_CSS}`
-
-/**
- * The two words this dialect needs, and the only part of it that is not cached.
- *
- * Everything else in this sheet is punctuation, a rule or a counter, which needs no
- * language. "Fig." and "Table" do — and a CSS `content` string cannot be translated, so
- * they cannot live in the hashed sheet that is shared by every blog on earth. They ride in
- * the per-page settings block instead, which is already per-blog and already carries the
- * palette and the type scale. About 120 bytes, on the pages of one look.
- *
- * A counter and a word in one `content` string, because the number has to sit next to the
- * word: `Fig. 3.` is one label, not a word and a figure that happen to be adjacent.
- */
-export function paperLabelCss(lang: SiteLang): string {
-  const d = t(lang)
-  return `html[data-look=paper] figcaption::before{content:${JSON.stringify(d.figureLabel + ' ')} counter(fig) ". "}`
-    + `html[data-look=paper] .prose .table-scroll::before{content:${JSON.stringify(d.tableLabel + ' ')} counter(tbl)}`
-}

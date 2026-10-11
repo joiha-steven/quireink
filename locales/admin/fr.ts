@@ -1,7 +1,7 @@
 import type { AdminStrings } from '../types'
 
 const fr = {
-  navHome: 'Accueil',  themeLabel: 'Thème',
+  navHome: 'Accueil',  themeLabel: 'Clair / sombre',
   navMenu: 'Menu',
 
   themeLight: 'Clair',
@@ -723,7 +723,7 @@ const fr = {
   cardRendering: 'Rendu du texte',
   fontSmoothing: 'Lissage des polices (anti-crénelage)',
   fontSmoothingDesc: 'Adoucit les bords des lettres. Peut paraître plus fin sur Mac — désactivé, c’est le rendu par défaut du navigateur.',
-  lookLabel: 'Ressemble à',
+  lookLabel: 'Thème',
   lookDesc: 'À quoi ressemble le site publié. Uniquement le site public, jamais cette administration.',
   lookPlain: 'Papier simple',
   lookCode: 'Code source',
@@ -994,7 +994,9 @@ const fr = {
   cssShowNames: 'Voir les noms sur lesquels compter',
   cssHideNames: 'Masquer les noms',
   cssNamesNote: 'Ces noms ne seront pas renommés sans une note dans le changelog. Cliquez pour l’insérer au curseur. Ce qui n’est pas listé est interne et peut changer à toute version.',
-  cssStructure: 'Structure',
+  cssSurfaceShared: 'Commun',
+  cssSurfaceBlog: 'Blog',
+  cssSurfaceFront: 'La une',
   // activity log + system panel
   navAnalytics: 'Statistiques',
   analyticsTitle: 'Statistiques',

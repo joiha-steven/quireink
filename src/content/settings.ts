@@ -2,7 +2,8 @@
 // defaults on any failure so the header/<title> never crash. Image refs stored
 // store-relative, binaries on Blob. Validation/migration lives in settings-sanitize.ts.
 
-import type { SiteSettings, SiteLook } from '@/types'
+import type { SiteSettings } from '@/types'
+import { DEFAULT_THEME_ID, IDE_CHROME_THEME_ID, isBuiltinThemeId, isThemeId, legacyLook } from '@/content/themes-builtin'
 import { DEFAULT_INKS } from '@/pen/palette'
 import { expandBlob, setOwnOrigins } from '@/media/blob'
 import { one } from '@/store/query'
@@ -101,7 +102,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   postsPerPage: 10,
   relatedCount: 3,
   excerptLength: 50,
-  look: 'plain',
+  theme: DEFAULT_THEME_ID,
+  look: DEFAULT_THEME_ID,
   customCss: '',
   customHead: '',
   customBodyEnd: '',
@@ -162,20 +164,18 @@ function resolveChromeFont(stored: Partial<SiteSettings> & { fontChromeInter?: u
   return DEFAULT_CHROME_FONT
 }
 
-// Back-compat: the old boolean `ideChrome` becomes the `look` selector. A blog that had the
-// source-code chrome on keeps it, under its new name; every other blog lands on 'plain',
-// which is what the boolean meant. A stored `look` wins outright.
+// The theme, from whichever name the row carries it under (ADR 0072). A stored `theme` wins;
+// a row written before that field has `look`, which held the same ids; one older still has
+// the boolean `ideChrome`, and a blog that had the source-code chrome on keeps it under its
+// new name. Every other blog lands on plain, which is what the boolean meant.
 //
-// LOOKS, not themes: this is a closed list of four, and anything unrecognised - a blob
-// written by a newer build naming a dialect this one cannot draw - falls back to 'plain'
-// rather than to a half-drawn page.
-const LOOKS: readonly SiteLook[] = ['plain', 'code', 'paper', 'notes']
-const isLook = (value: unknown): value is SiteLook =>
-  typeof value === 'string' && (LOOKS as readonly string[]).includes(value)
-
-function resolveLook(stored: Partial<SiteSettings> & { ideChrome?: unknown }): SiteLook {
-  if (isLook(stored.look)) return stored.look
-  return stored.ideChrome === true ? 'code' : 'plain'
+// A theme this build does not ship - a row written by a later one that installed a theme from
+// a zip - is KEPT as written, so saving here and going back there loses nothing; only the
+// renderer draws it as plain (`resolveTheme`). A value that is not an id at all is not kept.
+function storedTheme(stored: Partial<SiteSettings> & { ideChrome?: unknown }): string {
+  if (isThemeId(stored.theme)) return stored.theme
+  if (isBuiltinThemeId(stored.look)) return stored.look
+  return stored.ideChrome === true ? IDE_CHROME_THEME_ID : DEFAULT_THEME_ID
 }
 
 // Settings merged over defaults; defaults on any error.
@@ -283,7 +283,9 @@ export async function getSettings(): Promise<SiteSettings> {
       themePreset: isPresetId(stored.themePreset) ? stored.themePreset : DEFAULT_PRESET_ID,
       fontPreset: isFontPresetId(stored.fontPreset) ? stored.fontPreset : DEFAULT_FONT_PRESET,
       chromeFont: resolveChromeFont(stored),
-      look: resolveLook(stored),
+      // `look` follows `theme`, whatever the row said, so the two can never disagree in memory.
+      theme: storedTheme(stored),
+      look: legacyLook(storedTheme(stored)),
       featured: sanitizeFeatured(stored.featured, []),
       mostViewedCount: clampNumber(stored.mostViewedCount, 0, 10, DEFAULT_SETTINGS.mostViewedCount),
       sidebarLayout: stored.sidebarLayout === 'two' ? 'two' : 'single',

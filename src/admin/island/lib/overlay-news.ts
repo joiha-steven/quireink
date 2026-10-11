@@ -21,12 +21,12 @@ export function wireWhatsNew(): void {
 
   // SAVED ON THE PRESS rather than on Done, so the choice survives a panel closed by the
   // Escape key or a reload — and so the blog is already wearing it when they go and look.
-  for (const key of scrim.querySelectorAll<HTMLButtonElement>('[data-news-look]')) {
+  for (const key of scrim.querySelectorAll<HTMLButtonElement>('[data-news-theme]')) {
     key.addEventListener('click', () => {
-      for (const other of scrim.querySelectorAll('[data-news-look]')) {
+      for (const other of scrim.querySelectorAll('[data-news-theme]')) {
         other.setAttribute('aria-pressed', String(other === key))
       }
-      void put({ look: key.dataset.newsLook })
+      void put({ theme: key.dataset.newsTheme })
     })
   }
 

@@ -11,7 +11,8 @@
 // a screen reader watches regions it already knows about, and one that arrives carrying its
 // message is a new element rather than a change to an old one.
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import type { SiteLook, SiteSettings } from '@/types'
+import type { SiteSettings } from '@/types'
+import { BUILTIN_THEMES } from '@/content/themes-builtin'
 import { APP_VERSION } from '@/version'
 import { REPO, helpText } from '@/admin-shared/help'
 import { escapeAttr, escapeHtml } from '@/utils'
@@ -253,9 +254,6 @@ function palette(t: AdminStrings): string {
 }
 
 
-/** The four dialects, in the order the Settings field and the setup step both use. */
-const LOOKS: SiteLook[] = ['plain', 'code', 'paper', 'notes']
-
 /**
  * WHAT CHANGED, ONCE, AFTER AN UPGRADE — and, for a blog that predates the question, the one
  * question this release wants an answer to.
@@ -286,9 +284,6 @@ function whatsNew(t: AdminStrings, settings: SiteSettings): string {
   // never been anything else. `setupDone` is false only on a blog with no history.
   if (settings.seenRelease === APP_VERSION || !settings.setupDone) return ''
   const askLook = settings.seenRelease === ''
-  const names: Record<SiteLook, string> = {
-    plain: t.lookPlain, code: t.lookCode, paper: t.lookPaper, notes: t.lookNotes,
-  }
   // Words and not drawings, unlike the setup step. There the four are met cold and a diagram
   // is the only way to carry them; here the blog already exists, the owner can press one and
   // go look at it, and four pictures in a panel that interrupts them is a screen rather than
@@ -297,10 +292,12 @@ function whatsNew(t: AdminStrings, settings: SiteSettings): string {
     ? `<section class="mt-5"><h3 class="${escapeAttr(UTIL)} mb-1.5">${escapeHtml(t.lookLabel)}</h3>`
       + `<p class="mb-3 text-sm leading-[1.55] text-neutral-600 dark:text-neutral-400">`
       + `${escapeHtml(t.lookStepLede)}</p><div class="flex flex-wrap gap-2">`
-      + LOOKS.map((id) =>
-        `<button type="button" data-news-look="${id}" aria-pressed="${id === settings.look}"`
+      // The built-in themes, in the registry's order: the one the Settings field and the
+      // setup step both use.
+      + BUILTIN_THEMES.map(({ id, nameKey }) =>
+        `<button type="button" data-news-theme="${id}" aria-pressed="${id === settings.theme}"`
         + ` class="news-look rounded-full border px-3 py-1.5 text-sm transition-colors">`
-        + `${escapeHtml(names[id])}</button>`).join('')
+        + `${escapeHtml(t[nameKey])}</button>`).join('')
       + `</div></section>`
     : ''
 

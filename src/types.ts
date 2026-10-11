@@ -176,7 +176,8 @@ export type SiteSettings = {
   showLogo: boolean
   showDescription: boolean
   fontPreset: string // built-in font choice id (lib/themes FONT_PRESETS); '' -> Inter
-  look: SiteLook // which dialect the PUBLIC site is dressed in ('Looks like' in the admin). 'plain' adds nothing; the other three each ship as their own stylesheet (src/web/look-*.css.ts) and are linked only when chosen, so a blog pays for the look it wears and for nothing else. Public site only; the admin has its own scale. Replaced the `ideChrome` boolean on 2026-09-13 and reads it as 'code' when migrating
+  theme: string // the id of the theme the PUBLIC site wears ('Theme' in the admin; ADR 0072). Today one of the four built-ins in `content/themes-builtin.ts`, which is also the only place that knows how they differ; an id this build does not ship is kept and drawn as plain. Read from `look` on a row written before the field existed
+  look: SiteLook // the same choice under its name before ADR 0072, kept equal to `theme` and still written, so a row read by an older build keeps the owner's choice. Nothing renders from it. It replaced the `ideChrome` boolean on 2026-09-13, which still reads as the code theme
   chromeFont: string // system-chrome font (lib/themes CHROME_FONTS): 'inter' | 'reading' (follow the reading font) | 'plex-mono' (IBM Plex Mono). Drives --font-sans, the public body face (everything outside .prose/.reading-font: header, footer, rail, meta, comments, search, forms); leaves the article text alone. Never reaches the admin
   faviconUrl: string // browser-tab icon; '' = the bundled default favicon
   appIconUrl: string // PWA / home-screen app icon (square); '' = favicon, else bundled default

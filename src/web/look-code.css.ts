@@ -1,5 +1,5 @@
-// The source-code dialect (settings.look = 'code'). One of three dialects the owner can
-// dress the site in; the other two are `look-paper.css.ts` and `look-notes.css.ts`.
+// The source-code dialect: the built-in theme 'code' (settings.theme). One of three dialects
+// the owner can dress the site in; the other two are `look-paper.css.ts` and `look-notes.css.ts`.
 //
 // IT IS ITS OWN SHEET, linked only when this look is on (`web/assets.ts`), the way the pen's
 // ink is. It used to ride inside `PUBLIC_CSS`, which charged every blog on earth for a look
@@ -10,7 +10,7 @@
 // `check:css-literal` enforces that, and this file is IN its list.
 
 export const LOOK_CODE_CSS = `
-/* --- THE SOURCE-CODE DIALECT (settings.look = code) -------------------------
+/* --- THE SOURCE-CODE DIALECT (settings.theme = code) ------------------------
    One deliberate contrast: the reading column stays analogue - a book serif, ranged
    left, no ornament - and everything AROUND it reads as source code. The two halves
    are supposed to disagree; that disagreement is the design.

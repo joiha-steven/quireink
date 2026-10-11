@@ -293,6 +293,24 @@ describe('the markup the server sends is the markup this reads', () => {
     expect(changedCount(fieldsIn(root))).toBe(0)
     expect(htmlOf).toBeDefined()
   })
+
+  it('opens clean on a theme this build does not ship, and sends no theme on Save', async () => {
+    // A later build installed it from a zip (ADR 0072). No tile is pressed; leaving the page
+    // must not ask about unsaved changes, and a Save must not write a theme back.
+    const { appearanceTab } = await import('@/web/admin/screens/settings-appearance')
+    const { adminT } = await import('@/i18n/admin-i18n')
+    const { DEFAULT_SETTINGS } = await import('@/content/settings')
+    draw(appearanceTab(adminT('en'), { ...DEFAULT_SETTINGS, theme: 'abc', look: 'plain' }, { presets: [] }))
+    const track = root.querySelector<HTMLElement>('[data-choice-track][data-k="theme"]')!
+    expect(track.querySelector('[aria-pressed="true"]')).toBeNull()
+    expect(isDirty(track)).toBe(false)
+    expect(changedCount(fieldsIn(root))).toBe(0)
+    expect(partialOf(fieldsIn(root))).toEqual({})
+    // Pressing a tile is then a change like any other.
+    const paper = track.querySelector<HTMLElement>('[data-choice="paper"]')!
+    paper.setAttribute('aria-pressed', 'true')
+    expect(partialOf(fieldsIn(root))).toEqual({ theme: 'paper' })
+  })
 })
 
 describe('a hidden field can be seen to change at all', () => {

@@ -42,7 +42,7 @@ const NAMES: Record<string, Name> = {
   'inks.selection': 'inkSelectionLight', 'inks.selectionDark': 'inkSelectionDark',
   features: 'cardPost', 'features.progressBar': 'featProgress',
 
-  look: 'lookLabel', fontPreset: 'cardFont', chromeFont: 'chromeFontLabel', customFont: 'cardFont',
+  theme: 'lookLabel', look: 'lookLabel', fontPreset: 'cardFont', chromeFont: 'chromeFontLabel', customFont: 'cardFont',
   typography: 'cardTypography', shape: 'cardShape', 'shape.density': 'shapeDensity',
   'shape.radius': 'shapeRadius', 'shape.headingWeight': 'shapeHeading', defaultScheme: 'defaultScheme',
   themePreset: 'themePreset', enabledPalettes: 'paletteShown', themes: 'navAppearance',

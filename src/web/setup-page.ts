@@ -31,7 +31,8 @@
 // LAST, and that is also where the run is finished and the release stamped: a blog that has
 // answered this has been asked, and the admin's what's-new panel must never ask it again.
 
-import type { SiteLook, SiteSettings } from '@/types'
+import type { SiteSettings } from '@/types'
+import { BUILTIN_THEMES, type BuiltinThemeId } from '@/content/themes-builtin'
 import { adminT } from '@/i18n/admin-i18n'
 import { SITE_LANGS } from '@/locales/langs'
 import { fieldError, invalidAttrs, loginShell, setupStep } from '@/web/login-page'
@@ -180,26 +181,12 @@ ${option('off', lines(false), s.penStepOff, s.penStepOffHint, !on)}
  */
 export function lookStepScreen(settings: SiteSettings): string {
   const s = adminT(settings.language)
-  const worn: SiteLook = settings.look
 
-  const lines = (n: number): string =>
-    Array.from({ length: n }, (_, i) =>
-      `<span class="face-line${i === n - 1 ? ' face-short' : ''}"></span>`).join('')
-  // A gutter of numbers beside each line: the one mark that says "editor" at this size.
-  const gutter = (n: number): string =>
-    Array.from({ length: n }, (_, i) =>
-      `<span class="face-gut"><span class="face-num"></span>`
-      + `<span class="face-line${i === n - 1 ? ' face-short' : ''}"></span></span>`).join('')
-  // A centred nameplate over a heavy rule, then columns: a masthead and nothing else.
-  const masthead = '<span class="face-plate"></span><span class="face-heavy"></span>'
-    + '<span class="face-cols"><span></span><span></span><span></span></span>'
-  // A sheet lifted off the desk, with the printing already on it.
-  const sheet = `<span class="face-sheet">${
-    Array.from({ length: 4 }, () => '<span class="face-ruled"></span>').join('')}</span>`
-
-  const option = (value: SiteLook, art: string, label: string, hint: string): string => `
+  // Each card's drawing is the theme's own (`art.card` in `content/themes-builtin.ts`), the
+  // same few marks the admin's tiles draw, in this screen's `face-*` parts.
+  const option = (value: BuiltinThemeId, art: string, label: string, hint: string): string => `
 <label class="face-choice">
-  <input type="radio" name="look" value="${escapeAttr(value)}"${value === worn ? ' checked' : ''}>
+  <input type="radio" name="theme" value="${escapeAttr(value)}"${value === settings.theme ? ' checked' : ''}>
   <span class="face-art" aria-hidden="true">${art}</span>
   <span class="face-name">${escapeHtml(label)}</span>
   <span class="face-hint">${escapeHtml(hint)}</span>
@@ -211,10 +198,7 @@ ${setupStep(settings, s, 7)}
 <p class="login-lede">${escapeHtml(s.lookStepLede)}</p>
 <form method="post" action="/setup/look" class="login-form">
 <div class="face-grid">
-${option('plain', lines(4), s.lookPlain, s.lookStepPlainHint)}
-${option('code', gutter(4), s.lookCode, s.lookStepCodeHint)}
-${option('paper', masthead, s.lookPaper, s.lookStepPaperHint)}
-${option('notes', sheet, s.lookNotes, s.lookStepNotesHint)}
+${BUILTIN_THEMES.map(({ id, nameKey, hintKey, art }) => option(id, art.card, s[nameKey], s[hintKey])).join('')}
 </div>
 <button type="submit" class="login-submit">${escapeHtml(s.setupFinish)}</button>
 </form>`)

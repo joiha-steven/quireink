@@ -1,7 +1,7 @@
 import type { AdminStrings } from '../types'
 
 const vi = {
-  navHome: 'Trang chủ',  themeLabel: 'Giao diện',
+  navHome: 'Trang chủ',  themeLabel: 'Sáng / tối',
   navMenu: 'Menu',
 
   themeLight: 'Sáng',
@@ -723,7 +723,7 @@ const vi = {
   cardRendering: 'Hiển thị chữ',
   fontSmoothing: 'Khử răng cưa (anti-aliasing)',
   fontSmoothingDesc: 'Làm mượt viền chữ. Trên Mac có thể trông mảnh/nhạt hơn - tắt thì dùng mặc định trình duyệt.',
-  lookLabel: 'Trông như',
+  lookLabel: 'Theme',
   lookDesc: 'Trang công bố trông như thế nào. Chỉ trang công bố, admin này không đổi.',
   lookPlain: 'Giấy thường',
   lookCode: 'Mã nguồn',
@@ -994,7 +994,9 @@ const vi = {
   cssShowNames: 'Xem những tên có thể dựa vào',
   cssHideNames: 'Ẩn danh sách tên',
   cssNamesNote: 'Những tên này sẽ không bị đổi mà không ghi vào changelog. Bấm một cái để chèn vào chỗ con trỏ. Thứ không có trong danh sách là nội bộ, có thể đổi ở bất kỳ bản nào.',
-  cssStructure: 'Cấu trúc',
+  cssSurfaceShared: 'Dùng chung',
+  cssSurfaceBlog: 'Blog',
+  cssSurfaceFront: 'Trang nhất',
   // activity log + system panel
   navAnalytics: 'Thống kê',
   analyticsTitle: 'Thống kê',

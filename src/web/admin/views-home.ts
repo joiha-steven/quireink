@@ -224,7 +224,7 @@ export async function dashboardView() {
       // list when it became a choice of four rather than a switch — picking one IS the
       // step this row is asking about, and a blog that had picked one still read as
       // "you have not chosen a look yet".
-      styled: settings.look !== DEFAULT_SETTINGS.look
+      styled: settings.theme !== DEFAULT_SETTINGS.theme
         || settings.themePreset !== DEFAULT_SETTINGS.themePreset
         || JSON.stringify(settings.themes) !== JSON.stringify(DEFAULT_SETTINGS.themes),
       // The host and a From address — `isMailConfigured`'s own test, so this cannot come to

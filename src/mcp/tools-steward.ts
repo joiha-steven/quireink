@@ -20,6 +20,7 @@ import type { FrontSettings } from '@/types'
 import { getSettings, saveSettings } from '@/content/settings'
 import { THEME_PRESETS } from '@/content/palettes'
 import { FONT_PRESETS, CHROME_FONTS } from '@/content/fonts'
+import { BUILTIN_THEMES } from '@/content/themes-builtin'
 import { getCategories } from '@/content/posts'
 import { getPageAnalytics } from '@/analytics/page'
 import { addComment } from '@/comments/comments'
@@ -37,26 +38,32 @@ import { asJson, asError } from '@/mcp/result'
 const paletteIds = THEME_PRESETS.map((p) => p.id) as [string, ...string[]]
 const fontIds = FONT_PRESETS.map((f) => f.id) as [string, ...string[]]
 const chromeIds = CHROME_FONTS.map((f) => f.id) as [string, ...string[]]
+const themeIds = BUILTIN_THEMES.map((t) => t.id) as [string, ...string[]]
 
 export function registerStewardTools(server: ToolHost): void {
   server.registerTool(
     'update_appearance',
     {
       description:
-        'Change the site\'s look from the curated menus: palette '
+        'Change the site\'s look from the curated menus: theme '
+        + `(${themeIds.join(', ')}), palette `
         + `(${paletteIds.join(', ')}), reading font (${fontIds.join(', ')}), chrome font, `
         + 'and what a first-time visitor opens in. Free-form colors are not accepted — '
         + 'every option here is one the owner\'s own screens offer.',
       inputSchema: {
+        theme: z.enum(themeIds).optional().describe('The theme the published site wears'),
+        // The field's name before ADR 0072, still accepted from a client that learned it then.
+        look: z.enum(themeIds).optional().describe('Old name for `theme`; `theme` wins when both are given'),
         palette: z.enum(paletteIds).optional().describe('Default palette for visitors'),
         readingFont: z.enum(fontIds).optional(),
         chromeFont: z.enum(chromeIds).optional().describe('Header/rail/meta font'),
         defaultScheme: z.enum(['system', 'light', 'dark']).optional(),
       },
     },
-    async ({ palette, readingFont, chromeFont, defaultScheme }) => {
+    async ({ theme, look, palette, readingFont, chromeFont, defaultScheme }) => {
       const current = await getSettings()
       const partial: Record<string, unknown> = {}
+      if (theme !== undefined || look !== undefined) partial.theme = theme ?? look
       if (palette !== undefined) {
         partial.themePreset = palette
         // The sanitizer enforces "enabledPalettes always includes themePreset"; adding it
@@ -73,6 +80,7 @@ export function registerStewardTools(server: ToolHost): void {
       clearCache()
       await logActivity('settings.save', 'appearance (MCP)')
       return asJson({
+        theme: saved.theme,
         palette: saved.themePreset,
         readingFont: saved.fontPreset,
         chromeFont: saved.chromeFont,

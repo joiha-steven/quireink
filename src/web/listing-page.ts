@@ -24,6 +24,7 @@ import { langAttr } from '@/content/translations'
 import { getMailStatus } from '@/news/mail'
 import { PUBLIC_SHEET, scriptTag } from '@/web/assets'
 import { postName } from '@/content/untitled'
+import { resolveTheme } from '@/content/themes-builtin'
 
 type Posts = ListingView['paged']['items']
 
@@ -126,12 +127,12 @@ export async function listingPage(
     // free, and this way the page heading still leads the document outline.
     `<div class="wrap">
 ${/* The header carries the menu only where there is no rail to hold it, which is the
-     composed front page — and on every page of the newspaper look, whose masthead IS where
-     a paper lists its sections (`look-paper-shelf.css.ts` hides the rail's copy). Every
-     other layout has a rail whenever the owner has a menu — see `renderSidebar`. */
+     composed front page — and on every page of a theme whose `layout.menu` is 'header', as
+     the newspaper's is: its masthead IS where a paper lists its sections. Every other
+     layout has a rail whenever the owner has a menu — see `renderSidebar`. */
   siteHeader(settings, {
     mailConfigured,
-    menuInHeader: noRail || settings.look === 'paper',
+    menuInHeader: noRail || resolveTheme(settings).layout.menu === 'header',
     // ONE h1 per page, and the body gets first refusal. A listing's own heading is either
     // the term's name or its lead card, and the lead card is a switch: with it off the home
     // page had no h1 at all, and neither does a deep page or an empty feed. Asked of the

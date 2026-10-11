@@ -369,8 +369,8 @@ are a scroll container behaving as one.
   (`settings-home.ts`) layout + menu + featured, footer, the composed front (only when
   `home.mode=front`), listing (with the list thumbnail); **Posts** (`settings-post.ts`) one card
   of four groups (head, body, end — with the comments switch — and reach), pictures (hero,
-  figure, gallery), tables, inks; **Appearance** `lookPicker` (**Looks like**, four drawn tiles
-  → `settings.look`, first: the coarsest decision) + shape + `palettes` (**Default appearance**,
+  figure, gallery), tables, inks; **Appearance** `lookPicker` (**Theme**, four drawn tiles
+  → `settings.theme`, first: the coarsest decision) + shape + `palettes` (**Default appearance**,
   then the grid) left, fonts / font upload / custom CSS right, type sizes full width under
   both; **Comments & mail** (`settings-people.ts`) the comments switch again, comment keys,
   newsletter SMTP; **Server & connections** `siteCard` (crawlers + custom code), Cloudflare,

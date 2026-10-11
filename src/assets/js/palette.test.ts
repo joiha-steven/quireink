@@ -158,7 +158,7 @@ describe('only one header menu is open at a time', () => {
       `<button data-theme-toggle aria-haspopup="true" aria-expanded="false"><svg></svg></button>`
       + `<button data-palettes="${OPTIONS}" data-palette-default="mono"`
       + ` aria-haspopup="true" aria-expanded="false">icon</button>`,
-      { theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'By time', palette: 'Palette' },
+      { themeLabel: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'By time', palette: 'Palette' },
     )
     theme()
     palette()
@@ -198,7 +198,7 @@ describe("the owner's default light/dark", () => {
   /** The header's theme button, plus the owner's default on <body> as chrome.ts emits it. */
   const withDefault = (scheme?: string) => {
     page('<button data-theme-toggle aria-haspopup="true" aria-expanded="false"><svg></svg></button>',
-      { theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'Time',
+      { themeLabel: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'Time',
         ...(scheme ? { defaultScheme: scheme } : {}) })
     document.documentElement.removeAttribute('data-scheme')
     document.documentElement.classList.remove('dark')
@@ -242,7 +242,7 @@ describe('the sun on the theme button is the SET\'s, not a second drawing', () =
     page(
       '<button data-theme-toggle aria-haspopup="true" aria-expanded="false">'
       + `<svg>${ICONS.theme}</svg></button>`,
-      { theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'Time' },
+      { themeLabel: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'Time' },
     )
     document.documentElement.removeAttribute('data-scheme')
     document.documentElement.classList.remove('dark')

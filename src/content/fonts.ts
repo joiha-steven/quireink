@@ -94,7 +94,7 @@ export type FontPreset = {
 // `hasCustomFont` = an owner typeface is set (see FontSettings); when true the reading
 // font is that upload, so the built-in preset is not the one painting the title.
 export function fontPreloadHrefs(
-  id: string, lang: string, hasCustomFont: boolean, chromeFont: string, look = 'plain',
+  id: string, lang: string, hasCustomFont: boolean, chromeFont: string, displaySlug: string | null = null,
 ): string[] {
   if (lang === 'ja' || lang === 'zh' || lang === 'ko' || lang === 'ru') return []
   const subsets = (slug: string): string[] => (lang === 'vi'
@@ -115,11 +115,11 @@ export function fontPreloadHrefs(
   const picked = isChromeFontId(chromeFont) ? getChromeFont(chromeFont) : null
   const chrome = picked?.preload ? picked.slug : null
   const extra = chrome && chrome !== getFontPreset(id).slug ? subsets(chrome) : []
-  // ...and the newspaper look's headline face, which on that look IS the LCP element: the
-  // title is set in it, not in the reading font (`web/look-paper.css.ts`). Without this the
-  // one piece of text the page is judged by paints in a fallback and then swaps.
-  const display = look === 'paper' && DISPLAY_SLUG !== getFontPreset(id).slug
-    ? subsets(DISPLAY_SLUG)
+  // ...and the theme's headline face (`content/themes-builtin.ts`), which on the newspaper IS
+  // the LCP element: the title is set in it, not in the reading font. Without this the one
+  // piece of text the page is judged by paints in a fallback and then swaps.
+  const display = displaySlug && displaySlug !== getFontPreset(id).slug
+    ? subsets(displaySlug)
     : []
   return [...reading, ...extra, ...display]
 }
@@ -366,7 +366,8 @@ export const CHROME_FONTS: ChromeFont[] = [
 export const DEFAULT_CHROME_FONT = 'inter'
 
 /**
- * The headline face the newspaper look sets its titles in.
+ * The headline face the newspaper theme sets its titles in (its `display` font in
+ * `content/themes-builtin.ts`).
  *
  * A second serif beside the reading one, which is what a paper actually does: the New York
  * Times sets its headlines in Cheltenham and its body in Imperial, and the two disagreeing

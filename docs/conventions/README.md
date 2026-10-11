@@ -15,7 +15,7 @@ governs the reader, the rail or the admin.
 | [layout.md](layout.md) | Header alignment, the section break, chrome reuse, the divider, the rail, the article's right gutter, tag display |
 | [colour.md](colour.md) | Theme tokens, mode × palette, the one accent |
 | [motion.md](motion.md) | The three duration tokens, the one switch that gates all motion |
-| [looks.md](looks.md) | `settings.look`: the four dialects the public site can wear, what each is allowed to touch, and what none of them may |
+| [looks.md](looks.md) | `settings.theme`: the four dialects the public site can wear, what each is allowed to touch, and what none of them may |
 | [i18n.md](i18n.md) | `locales/`, adding a language, adding a string |
 | [scripts.md](scripts.md) | What is a script and what is not |
 | [releases.md](releases.md) | Which doc a change updates, keeping instance values out, versioning, cutting a release — **and that a GitHub release publishes the Docker image, with no second step** |

@@ -231,10 +231,10 @@ export async function shellView() {
   const { aiConfigured } = await getIntegrationStatus()
   // The portrait rides along for the same reason `navOrder` does: the rail's foot draws it
   // on the first frame, and a second request for one string would show a blank ring first.
-  // `seenRelease` and `look` ride along for the what's-new panel: one comparison decides
+  // `seenRelease` and `theme` ride along for the what's-new panel: one comparison decides
   // whether it appears at all, and it must be answered before the first paint rather than
   // by a second round trip that would let the panel arrive after the page.
-  return { language: settings.language, version: VERSION, aiConfigured, navOrder: settings.navOrder, avatar: settings.author.avatarUrl, seenRelease: settings.seenRelease, look: settings.look }
+  return { language: settings.language, version: VERSION, aiConfigured, navOrder: settings.navOrder, avatar: settings.author.avatarUrl, seenRelease: settings.seenRelease, theme: settings.theme }
 }
 
 // ----- the routes -------------------------------------------------------------

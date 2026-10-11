@@ -288,7 +288,7 @@ export function theme(): void {
 
   // The rows carry the same server-translated labels as everything else, so this file holds
   // no language of its own.
-  dropdown(button, 'theme', MODES.map((m) => ({ id: m, text: label(LABEL[m]) })), () => mode, (id) => {
+  dropdown(button, 'themeLabel', MODES.map((m) => ({ id: m, text: label(LABEL[m]) })), () => mode, (id) => {
     mode = id as Mode
     try {
       localStorage.setItem(STORAGE_KEY, id)

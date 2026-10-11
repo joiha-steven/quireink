@@ -1,7 +1,7 @@
 import type { AdminStrings } from '../types'
 
 const it = {
-  navHome: 'Inizio',  themeLabel: 'Tema',
+  navHome: 'Inizio',  themeLabel: 'Chiaro / scuro',
   navMenu: 'Menu',
 
   themeLight: 'Chiaro',
@@ -723,7 +723,7 @@ const it = {
   cardRendering: 'Resa del testo',
   fontSmoothing: 'Smussatura dei caratteri (antialiasing)',
   fontSmoothingDesc: 'Ammorbidisce i bordi delle lettere. Su Mac può sembrare più sottile — spento usa il default del browser.',
-  lookLabel: 'Sembra',
+  lookLabel: 'Tema',
   lookDesc: 'Come appare il sito pubblicato. Solo il sito pubblico: questo pannello non cambia.',
   lookPlain: 'Carta semplice',
   lookCode: 'Codice sorgente',
@@ -994,7 +994,9 @@ const it = {
   cssShowNames: 'Mostra i nomi su cui contare',
   cssHideNames: 'Nascondi i nomi',
   cssNamesNote: 'Questi nomi non verranno rinominati senza una nota nel changelog. Clicca per inserirlo al cursore. Ciò che non è elencato è interno e può cambiare in qualsiasi release.',
-  cssStructure: 'Struttura',
+  cssSurfaceShared: 'Condiviso',
+  cssSurfaceBlog: 'Blog',
+  cssSurfaceFront: 'Prima pagina',
   // activity log + system panel
   navAnalytics: 'Statistiche',
   analyticsTitle: 'Statistiche',

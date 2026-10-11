@@ -1,7 +1,7 @@
 import type { AdminStrings } from '../types'
 
 const ko = {
-  navHome: '홈',  themeLabel: '테마',
+  navHome: '홈',  themeLabel: '라이트 / 다크',
   navMenu: '메뉴',
 
   themeLight: '라이트',
@@ -723,7 +723,7 @@ const ko = {
   cardRendering: '텍스트 렌더링',
   fontSmoothing: '글꼴 스무딩(안티앨리어싱)',
   fontSmoothingDesc: '글자 가장자리를 부드럽게 합니다. Mac에서는 더 얇게/연하게 보일 수 있습니다 — 끄면 브라우저 기본값.',
-  lookLabel: '보이는 모습',
+  lookLabel: '테마',
   lookDesc: '공개 사이트의 모습입니다. 공개 사이트만 바뀌고 이 관리 화면은 그대로입니다.',
   lookPlain: '흰 종이',
   lookCode: '소스 코드',
@@ -994,7 +994,9 @@ const ko = {
   cssShowNames: '사용할 수 있는 이름 보기',
   cssHideNames: '이름 숨기기',
   cssNamesNote: '이 이름들은 changelog에 기록 없이 변경되지 않습니다. 클릭하면 커서 위치에 삽입됩니다. 목록에 없는 것은 내부용이며 어떤 릴리스에서든 바뀔 수 있습니다.',
-  cssStructure: '구조',
+  cssSurfaceShared: '공통',
+  cssSurfaceBlog: '블로그',
+  cssSurfaceFront: '프런트 페이지',
   // activity log + system panel
   navAnalytics: '통계',
   analyticsTitle: '통계',

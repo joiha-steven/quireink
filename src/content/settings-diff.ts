@@ -36,6 +36,9 @@ export function changedSettingPaths(before: SiteSettings, after: SiteSettings): 
   const out: string[] = []
   const top = new Set([...Object.keys(before), ...Object.keys(after)])
   for (const key of [...top].sort()) {
+    // `look` is `theme` under its old name, written beside it for an older build to read
+    // (ADR 0072). It moves only when `theme` does, so naming it too would say one change twice.
+    if (key === 'look') continue
     const a = (before as unknown as Record<string, unknown>)[key]
     const b = (after as unknown as Record<string, unknown>)[key]
     if (same(a, b)) continue

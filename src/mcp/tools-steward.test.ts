@@ -68,6 +68,19 @@ describe('the steward tools', () => {
     expect(s.enabledPalettes).toContain('sepia')
   })
 
+  it('update_appearance sets the theme, and still takes look, its old name', async () => {
+    const { text } = await call('update_appearance', { theme: 'paper' })
+    expect(JSON.parse(text)).toMatchObject({ theme: 'paper' })
+    expect((await getSettings()).theme).toBe('paper')
+    await call('update_appearance', { look: 'notes' })
+    expect((await getSettings()).theme).toBe('notes')
+    await call('update_appearance', { theme: 'code', look: 'plain' })
+    expect((await getSettings()).theme).toBe('code')
+    const out = await call('update_appearance', { theme: 'broadsheet' })
+    expect(out.isError || out.rpcError !== '').toBe(true)
+    expect((await getSettings()).theme).toBe('code')
+  })
+
   it('refuses a color that is not on the menu — the schema IS the guard', async () => {
     const out = await call('update_appearance', { palette: '#ff0000' })
     expect(out.isError || out.rpcError !== '').toBe(true)

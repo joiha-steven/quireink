@@ -1,7 +1,7 @@
 import type { AdminStrings } from '../types'
 
 const en = {
-  navHome: 'Home',  themeLabel: 'Theme',
+  navHome: 'Home',  themeLabel: 'Light / dark',
   navMenu: 'Menu',
 
   themeLight: 'Light',
@@ -723,7 +723,7 @@ const en = {
   cardRendering: 'Text rendering',
   fontSmoothing: 'Font smoothing (anti-aliasing)',
   fontSmoothingDesc: 'Smooths text edges. Can look lighter/thinner on Mac — off uses the browser default.',
-  lookLabel: 'Looks like',
+  lookLabel: 'Theme',
   lookDesc: 'What the published site looks like. Only the public site: this admin never changes.',
   lookPlain: 'Plain paper',
   lookCode: 'Source code',
@@ -994,7 +994,9 @@ const en = {
   cssShowNames: 'Show the names you can rely on',
   cssHideNames: 'Hide the names',
   cssNamesNote: 'These names will not be renamed without a note in the changelog. Click one to write it at the cursor. Anything not listed is internal and may move in any release.',
-  cssStructure: 'Structure',
+  cssSurfaceShared: 'Shared',
+  cssSurfaceBlog: 'Blog',
+  cssSurfaceFront: 'Front page',
   // activity log + system panel
   navAnalytics: 'Analytics',
   analyticsTitle: 'Analytics',

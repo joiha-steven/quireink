@@ -1,7 +1,7 @@
 import type { AdminStrings } from '../types'
 
 const ja = {
-  navHome: 'ホーム',  themeLabel: 'テーマ',
+  navHome: 'ホーム',  themeLabel: 'ライト / ダーク',
   navMenu: 'メニュー',
 
   themeLight: 'ライト',
@@ -723,7 +723,7 @@ const ja = {
   cardRendering: '文字の表示',
   fontSmoothing: 'フォントの滑らか化（アンチエイリアス）',
   fontSmoothingDesc: '文字の輪郭を滑らかにします。Macでは細く/薄く見えることがあります。オフはブラウザー既定。',
-  lookLabel: '見た目',
+  lookLabel: 'テーマ',
   lookDesc: '公開サイトの見た目です。公開サイトのみで、この管理画面は変わりません。',
   lookPlain: '白い紙',
   lookCode: 'ソースコード',
@@ -994,7 +994,9 @@ const ja = {
   cssShowNames: '使える名前を表示',
   cssHideNames: '名前を隠す',
   cssNamesNote: 'これらの名前は changelog に記載せずに変更されません。クリックするとカーソル位置に挿入されます。記載のないものは内部用で、どのリリースでも変わり得ます。',
-  cssStructure: '構造',
+  cssSurfaceShared: '共通',
+  cssSurfaceBlog: 'ブログ',
+  cssSurfaceFront: 'フロントページ',
   // activity log + system panel
   navAnalytics: 'アクセス解析',
   analyticsTitle: 'アクセス解析',

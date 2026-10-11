@@ -1,5 +1,5 @@
-// The notebook dialect (settings.look = 'notes'). Its own sheet, linked only when this look
-// is on (`web/assets.ts`).
+// The notebook dialect: the built-in theme 'notes' (settings.theme). Its own sheet, linked only
+// when this theme is worn (`web/assets.ts`).
 //
 // The argument: a page of a working notebook lying on a desk. Everything below is either a
 // surface, a rule printed on that surface, or a mark a hand would have made.

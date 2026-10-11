@@ -219,6 +219,10 @@ html[data-motion=off] .login-passkey-button:active{transform:none}
    rather than display:none — which would take it out of the tab order and out of the
    accessibility tree with it. */
 .face-choice input{position:absolute;opacity:0;pointer-events:none}
+/* ...and SMALL. The form's field rule above gives every input width:100%, and an absolute box
+   resolves that against the page, not the card: on the theme step at 1440 the four radios ran
+   to 2183px and the page scrolled sideways by 743px with nothing to see. */
+.login-form .face-choice input{width:1px;height:1px;padding:0}
 .face-choice:has(input:checked){border-color:var(--c-accent);
   box-shadow:0 0 0 1px var(--c-accent), inset 0 2px 4px rgba(0,0,0,.10)}
 .face-choice:has(input:focus-visible){outline:2px solid var(--c-accent);outline-offset:2px}

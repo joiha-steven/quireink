@@ -338,44 +338,19 @@ export function listingRailCss(
 }
 
 /**
- * The source-code look's two corrections to the rail BAND, and only that look's.
+ * A theme's rules for the rail BAND and for the listing's right rail, wrapped in the media
+ * queries this reading column makes. `rail` is the theme registry's (`content/themes-builtin.ts`);
+ * a theme with none gets nothing.
  *
- * They lived inside `singleRailCss`, which meant every blog on earth downloaded two
- * `html[data-look=code]` rules on every page view whatever it was wearing. `looks.test.ts`
- * holds that a look ships as its own sheet and the common sheet carries none of it; it never
- * saw these, because it reads `PUBLIC_CSS` and these were inline. Moving the geometry into the
- * cached sheet on 2026-09-16 is what made the assertion reach them.
- *
- * They cannot go in `look-code.css.ts` with the rest of the dialect: both sit inside the band's
- * media query, whose upper bound is computed from the reading column, and a static sheet has no
- * width to compute it from. So they stay here, beside the band that creates them, and are asked
- * for by the one look that wants them.
+ * Inline rather than in the theme's own sheet because both queries are computed from the
+ * column, and a static sheet has no width to compute them from. They were in `singleRailCss`
+ * once, which sent every blog the source-code look's rules whatever it wore; `looks.test.ts`
+ * holds that the common sheet carries none of a theme, and only reached these after the
+ * geometry moved into the cached sheet on 2026-09-16.
  */
-export function railLookCss(colWidth: number, look: string): string {
-  if (look !== 'code') return ''
+export function railThemeCss(colWidth: number, rail: { band: string; aside: string } | null): string {
+  if (!rail) return ''
   const at = breakpoint(colWidth)
-  return `@media (min-width:60rem) and (max-width:${at - 1}px){`
-    // The band's menu heading needs the marker every other chrome label carries, and it cannot
-    // get it from `ide.css.ts` the way they do: that sheet marks `.rail h2::before`, this
-    // heading is not an h2, and its own ::before is already spoken for by the label. Without
-    // this line the menu's heading stood bare directly above a marked "// Contents": two
-    // chrome headings, one screen, two registers (measured at 1180 on 2026-09-12).
-    + `html[data-look=code] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}`
-    // AND NO LINE NUMBERS ON THE MENU HERE. In the gutter they stand in a column of their own
-    // out past the text, which is what a line number is. In this band there is no gutter: the
-    // ring lands INSIDE the 24px between two menu words, three pixels from each, and the row
-    // reads as one run-on string. The index below keeps its numbers, because there each entry
-    // is a line of its own and the number falls at the end of it.
-    + `html[data-look=code] .rail-inner > nav:not(.toc) li::before{content:none}`
-    + `}`
-    // THE LISTING'S RIGHT RAIL, mirrored. The look's rings, the overhang that keeps them from
-    // being clipped and the scrollbar's lane are all written for a rail in the LEFT gutter, so
-    // they hang off its right edge, which on the right rail is the viewport's. Here they hang off
-    // the left edge, on that rail's own divider, and the scrollbar keeps the default far side.
-    + `@media (min-width:${at}px){`
-    + `html[data-look=code] .rail-aside .rail-inner{direction:ltr;width:calc(100% + var(--rail-gap));`
-    + `margin-left:calc(-1 * var(--rail-gap));padding:0 12px 0 var(--rail-gap)}`
-    + `html[data-look=code] .rail-aside li::before{right:auto;left:-21.5px}`
-    + `html[data-look=code] .rail-aside .rail-row[aria-current]::after{right:auto;left:3px}`
-    + `}`
+  return `@media (min-width:60rem) and (max-width:${at - 1}px){${rail.band}}`
+    + `@media (min-width:${at}px){${rail.aside}}`
 }

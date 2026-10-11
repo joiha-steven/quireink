@@ -95,9 +95,9 @@ function vars(c: ThemeColors): string {
 // module, so a reader whose system is dark on the default `system` mode was shown a white
 // page for one paint on every navigation — measured: 0 `prefers-color-scheme` rules in 429.
 //
-// ⚠️ `data-scheme`, NOT `data-theme`: `<body data-theme>` already exists and holds the
-// translated word "Theme" for the island's button label. Two same-named attributes on parent
-// and child, one a sentence and one a mode, is a mix-up waiting to happen.
+// ⚠️ `data-scheme`, NOT `data-theme`: `<html data-theme>` is the id of the theme the site
+// wears (ADR 0072), and the translated word for the island's button label is
+// `<body data-theme-label>`. A mode under either name is a mix-up waiting to happen.
 //
 // The handoff is `data-scheme` on `<html>`. Nothing server-rendered sets it — the page cache
 // is keyed by URL alone (Invariant 1), so a server-rendered mode would be the first visitor's

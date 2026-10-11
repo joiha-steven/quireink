@@ -26,7 +26,7 @@ function withKey(words = WORDS): void {
     `<button data-theme-toggle data-theme-words="${words}" aria-haspopup="true"`
     + ` aria-expanded="false"><svg><circle cx="12" cy="12" r="4"/></svg>`
     + `<span class="btn-token">dark</span></button>`,
-    { theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'By time' },
+    { themeLabel: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'By time' },
   )
   document.documentElement.removeAttribute('data-scheme')
   document.documentElement.classList.remove('dark')
@@ -105,7 +105,7 @@ describe('the word on the theme key', () => {
       `<button data-theme-toggle data-theme-words="${WORDS}" aria-haspopup="true"`
       + ` aria-expanded="false"><svg><rect width="8" height="8"/></svg>`
       + `<span class="btn-token">dark</span></button>`,
-      { theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'By time' },
+      { themeLabel: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'By time' },
     )
     document.documentElement.removeAttribute('data-scheme')
     document.documentElement.classList.remove('dark')

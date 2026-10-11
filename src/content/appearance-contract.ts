@@ -85,6 +85,16 @@ export const PROMISED_VARS: { group: string; vars: Promised[] }[] = [
       { name: '--font-reading', note: 'the face of titles, standfirsts and the article body' },
       { name: '--font-sans', note: 'the face of the header, footer, rail, dates and forms' },
       { name: '--font-mono', note: 'the face of code, and only code' },
+      { name: '--font-display', note: "the theme's headline face; the reading face when it has none" },
+    ],
+  },
+  {
+    group: 'label',
+    // Words a stylesheet may print through `content:`, already in the blog's language. A
+    // content string written in a sheet cannot be translated; these are written per page.
+    vars: [
+      { name: '--l-figure', note: 'the word before a figure number, e.g. "Fig."' },
+      { name: '--l-table', note: 'the word before a table number, e.g. "Table"' },
     ],
   },
   {
@@ -231,6 +241,7 @@ export const PROMISED_SELECTORS: PromisedSelector[] = [
 export const PROMISED_ATTRIBUTES: Promised[] = [
   { name: 'data-palette', note: 'the active palette id: mono, sepia, forest, ocean, scifi or amber' },
   { name: 'data-scheme', note: 'the resolved scheme, light or dark; absent until the page script runs' },
+  { name: 'data-theme', note: 'the theme id: plain, code, paper or notes; on every page' },
   { name: 'data-look', note: 'the look: code, paper or notes; absent on the plain look' },
   { name: 'data-list', note: 'the listing layout the reader chose, list or grid' },
   { name: 'data-motion', note: 'on or off: whether animation is enabled' },

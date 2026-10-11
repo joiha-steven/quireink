@@ -1,7 +1,7 @@
 import type { AdminStrings } from '../types'
 
 const zh = {
-  navHome: '首页',  themeLabel: '主题',
+  navHome: '首页',  themeLabel: '浅色 / 深色',
   navMenu: '菜单',
 
   themeLight: '浅色',
@@ -723,7 +723,7 @@ const zh = {
   cardRendering: '文字渲染',
   fontSmoothing: '字体平滑（抗锯齿）',
   fontSmoothingDesc: '平滑文字边缘。在 Mac 上可能显得更细/更淡 — 关闭则使用浏览器默认。',
-  lookLabel: '看起来像',
+  lookLabel: '主题',
   lookDesc: '已发布站点的样子。只影响公开站点，不影响这个后台。',
   lookPlain: '素纸',
   lookCode: '源代码',
@@ -994,7 +994,9 @@ const zh = {
   cssShowNames: '显示可依赖的名称',
   cssHideNames: '隐藏名称',
   cssNamesNote: '这些名称不会在没有 changelog 说明的情况下更名。点击即可插入到光标处。未列出的属于内部实现，任何版本都可能变动。',
-  cssStructure: '结构',
+  cssSurfaceShared: '通用',
+  cssSurfaceBlog: '博客',
+  cssSurfaceFront: '首页版面',
   // activity log + system panel
   navAnalytics: '统计',
   analyticsTitle: '统计',

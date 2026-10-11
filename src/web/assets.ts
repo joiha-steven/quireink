@@ -17,7 +17,8 @@ import swJs from '@/assets/dist/sw.js' with { type: 'text' }
 import { inkHighlightCss, inkLinesCss } from '@/pen/ink.css'
 import { inkSignature, resolveInks } from '@/pen/palette'
 import { inkedElements, inkSubset, parseInk, type ParsedInk } from '@/pen/ink-subset'
-import type { InkSettings, SiteLook } from '@/types'
+import type { InkSettings } from '@/types'
+import { BUILTIN_THEMES, type SiteTheme, type ThemeSheet } from '@/content/themes-builtin'
 import { minifyCss } from '@/web/css-min'
 import { SERVED_CSS } from '@/web/served-css'
 
@@ -202,17 +203,13 @@ export function penSheets(inks: InkSettings): { marks: string; lines: string } {
  *
  * `plain` has no sheet at all, which is what makes it free.
  */
-const LOOK_CSS: Record<Exclude<SiteLook, 'plain'>, string> = {
-  code: SERVED_CSS['look-code'],
-  paper: SERVED_CSS['look-paper'],
-  notes: SERVED_CSS['look-notes'],
-}
-
-const LOOK_SHEETS = new Map<SiteLook, string>()
-for (const [name, css] of Object.entries(LOOK_CSS)) {
-  const path = `/assets/look-${name}.${hashOf(css)}.css`
-  LOOK_SHEETS.set(name as SiteLook, path)
-  BY_PATH.set(path, css)
+// Every sheet a built-in theme names, from the registry, so no list of themes is kept here.
+const THEME_SHEETS = new Map<ThemeSheet, string>()
+for (const { sheet } of BUILTIN_THEMES) {
+  if (!sheet) continue
+  const path = `/assets/${sheet}.${hashOf(SERVED_CSS[sheet])}.css`
+  THEME_SHEETS.set(sheet, path)
+  BY_PATH.set(path, SERVED_CSS[sheet])
 }
 
 /**
@@ -226,9 +223,9 @@ for (const [name, css] of Object.entries(LOOK_CSS)) {
 const SHIPPED: readonly { url: string; body: string }[] = [...BY_PATH].map(([url, body]) => ({ url, body }))
 export const shippedAssets = (): readonly { url: string; body: string }[] => SHIPPED
 
-/** The stylesheet a look needs, or '' when it needs none. */
-export function lookSheet(look: SiteLook): string {
-  return LOOK_SHEETS.get(look) ?? ''
+/** The stylesheet a theme links, or '' when it has none (`content/themes-builtin.ts`). */
+export function themeSheet(theme: Pick<SiteTheme, 'sheet'>): string {
+  return theme.sheet ? THEME_SHEETS.get(theme.sheet) ?? '' : ''
 }
 
 /**
@@ -293,7 +290,7 @@ function staleSheet(path: string): string | null {
   if (name === 'site') return PUBLIC_CSS_SERVED
   if (name === 'pen-marks') return PEN_MARKS_CSS_SERVED
   if (name === 'pen-lines') return PEN_LINES_CSS_SERVED
-  return LOOK_CSS[name!.slice('look-'.length) as Exclude<SiteLook, 'plain'>]
+  return SERVED_CSS[name as ThemeSheet]
 }
 
 /** The bundle served at a request path, or null when nothing matches. */

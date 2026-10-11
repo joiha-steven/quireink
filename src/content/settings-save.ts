@@ -4,7 +4,8 @@
 // file READS the row and answers with it, this one is the only thing that writes it.
 
 import { keepAside } from '@/runtime/impl/snapshot'
-import type { SiteSettings, SiteLook } from '@/types'
+import type { SiteSettings } from '@/types'
+import { isBuiltinThemeId, legacyLook } from '@/content/themes-builtin'
 import { DEFAULT_SETTINGS, getSettings } from '@/content/settings'
 import { collapseBlob, deleteByPathname } from '@/media/blob'
 import { renderLogo } from '@/media/files'
@@ -84,10 +85,27 @@ function rescueUnreadable(): void {
  */
 let queue: Promise<unknown> = Promise.resolve()
 
-/** The four dialects. A write naming anything else keeps the look the site already wears. */
-const LOOKS: readonly SiteLook[] = ['plain', 'code', 'paper', 'notes']
-const isLook = (value: unknown): value is SiteLook =>
-  typeof value === 'string' && (LOOKS as readonly string[]).includes(value)
+/**
+ * The theme a write asks for (ADR 0072). Only a theme this build ships can be CHOSEN: a write
+ * naming anything else changes nothing, as a write of an unknown look never did. A theme this
+ * build does not ship can only already BE in the row (a later build installed it, `isThemeId`
+ * in the registry says why), and then it is kept as it is when another field is saved.
+ *
+ * `look` is the field's name from before, and every door still takes it: an admin tab left open
+ * across an upgrade, an MCP client, a script. A write may carry BOTH, and the one that names a
+ * change wins: `{ ...getSettings(), look: 'code' }` - the whole object read back with one field
+ * edited, which scripts do - carries the stored theme unchanged beside the new look, and must
+ * not be read as "keep the theme". When both name a change, `theme` wins.
+ */
+function nextTheme(input: Partial<SiteSettings>, current: SiteSettings): string {
+  const theme = isBuiltinThemeId(input.theme) ? input.theme : null
+  const look = isBuiltinThemeId(input.look) ? input.look : null
+  if (theme !== null && theme !== current.theme) return theme
+  // Against the stored LOOK: beside a theme this build does not ship, `look` reads plain, and a
+  // round-tripped object carrying that plain must not be taken for a choice of plain.
+  if (look !== null && look !== current.look) return look
+  return current.theme
+}
 
 export function saveSettings(input: Partial<SiteSettings>): Promise<SiteSettings> {
   const mine = queue.then(() => applySave(input), () => applySave(input))
@@ -209,7 +227,10 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
     themePreset,
     fontPreset: isFontPresetId(input.fontPreset) ? input.fontPreset : current.fontPreset,
     chromeFont: isChromeFontId(input.chromeFont) ? input.chromeFont : current.chromeFont,
-    look: isLook(input.look) ? input.look : current.look,
+    // Both written: `look` is what a build from before ADR 0072 reads, so going back to one
+    // keeps the owner's choice (plain, when the theme is one that build could not draw).
+    theme: nextTheme(input, current),
+    look: legacyLook(nextTheme(input, current)),
     enabledPalettes: sanitizeEnabledPalettes(input.enabledPalettes ?? current.enabledPalettes, themePreset),
     themes: sanitizeThemes(input.themes, current.themes),
     typography: sanitizeTypography(input.typography, current.typography),

@@ -1,5 +1,5 @@
-// The source-code dialect (settings.look = 'code'): what it dresses, and what it must
-// never touch.
+// The source-code dialect, the built-in theme 'code' (settings.theme): what it dresses, and
+// what it must never touch.
 //
 // Split out of `typography.test.ts` when that file passed the 400-line cap. The cut is by
 // SUBJECT rather than by size: everything here hangs off one attribute, has its own

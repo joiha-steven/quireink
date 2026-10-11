@@ -2,7 +2,7 @@ import type { AdminStrings } from '../types'
 
 // Brazilian Portuguese on purpose — Brazil is where the writing community lives.
 const pt = {
-  navHome: 'Início',  themeLabel: 'Tema',
+  navHome: 'Início',  themeLabel: 'Claro / escuro',
   navMenu: 'Menu',
 
   themeLight: 'Claro',
@@ -724,7 +724,7 @@ const pt = {
   cardRendering: 'Renderização do texto',
   fontSmoothing: 'Suavização de fontes (antialiasing)',
   fontSmoothingDesc: 'Suaviza as bordas das letras. No Mac pode parecer mais fino — desligado usa o padrão do navegador.',
-  lookLabel: 'Parece',
+  lookLabel: 'Tema',
   lookDesc: 'Como o site publicado se parece. Apenas o site público: este painel não muda.',
   lookPlain: 'Papel liso',
   lookCode: 'Código-fonte',
@@ -995,7 +995,9 @@ const pt = {
   cssShowNames: 'Ver os nomes em que você pode confiar',
   cssHideNames: 'Ocultar os nomes',
   cssNamesNote: 'Estes nomes não serão renomeados sem uma nota no changelog. Clique para inserir no cursor. O que não está listado é interno e pode mudar em qualquer versão.',
-  cssStructure: 'Estrutura',
+  cssSurfaceShared: 'Comum',
+  cssSurfaceBlog: 'Blog',
+  cssSurfaceFront: 'Capa',
   // activity log + system panel
   navAnalytics: 'Estatísticas',
   analyticsTitle: 'Estatísticas',

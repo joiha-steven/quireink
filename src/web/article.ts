@@ -28,6 +28,7 @@ import { articleHead } from '@/web/article-head'
 import { TOC_ANCHORS } from '@/render/toc'
 import { drawerSearch, menuBlock } from '@/web/sidebar'
 import { termSlug } from '@/content/taxonomy'
+import { resolveTheme } from '@/content/themes-builtin'
 import { formatCount, formatDate, t } from '@/i18n/i18n'
 import { articleScripts } from '@/web/assets'
 import { articleLabels } from '@/web/article-labels'
@@ -375,7 +376,7 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
     // lead between them, justified with hyphens once the column is wide enough. It sits on
     // the shell rather than on .prose so the editor and the reading view can share it.
     `${progress}<div class="wrap${settings.features.bookText ? ' book-text' : ''}">
-${siteHeader(settings, { mailConfigured, menuInHeader: settings.look === 'paper' })}
+${siteHeader(settings, { mailConfigured, menuInHeader: resolveTheme(settings).layout.menu === 'header' })}
 <div class="with-rail"><main id="content">
 <article>
 ${hero}

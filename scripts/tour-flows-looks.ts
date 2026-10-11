@@ -109,7 +109,7 @@ export function registerLookFlows({ flow, expect, atWidth }: Tour): void {
   // The picker draws the four, and a click presses one without saving anything.
   flow('admin: the looks are four drawn tiles, and a click presses one', () =>
     expect('/admin/settings?tab=appearance', `(() => {
-    const track = document.querySelector('[data-choice-track][data-k=look]')
+    const track = document.querySelector('[data-choice-track][data-k=theme]')
     if (!track) return 'no look picker on the appearance tab'
     const tiles = [...track.querySelectorAll('[data-choice]')]
     if (tiles.length !== 4) return tiles.length + ' tiles'
@@ -127,4 +127,30 @@ export function registerLookFlows({ flow, expect, atWidth }: Tour): void {
     if (!one) return 'two tiles pressed at once'
     return 'ok'
   })()`))
+
+  // The first-run steps that pick a look, a face and the reader's pen draw their choices as
+  // `.face-choice` cards over a hidden radio. The form's field rule gives every input
+  // width:100%, and an absolute radio resolves that against the PAGE: at 1440 the look step's
+  // four radios ran to 2183px and the page scrolled sideways by 743px with nothing to see. The
+  // fix is one rule in `web/login.css.ts`; this is what goes red without it. Each step is only
+  // read here, so nothing needs putting back.
+  for (const [path, step] of [['/setup/look', 'look'], ['/setup/reader', 'pen'], ['/setup/face', 'face']] as const) {
+    for (const width of [1440, 375]) {
+      flow(`setup: the ${step} step does not scroll sideways at ${width}`, () => atWidth(width, path, `(() => {
+        if (!document.querySelector('.face-choice')) return 'no choice cards on ' + location.pathname
+        const doc = document.documentElement
+        const spill = doc.scrollWidth - doc.clientWidth
+        if (spill <= 1) return 'ok no sideways scroll at ' + doc.clientWidth + 'px'
+        let widest = null
+        for (const el of document.querySelectorAll('*')) {
+          const r = el.getBoundingClientRect()
+          if (r.right > doc.clientWidth + 1 && (!widest || r.right > widest.r)) {
+            widest = { r: r.right, what: el.tagName + '.' + String(el.className).split(' ').slice(0, 3).join('.') }
+          }
+        }
+        return 'scrolls sideways by ' + spill + 'px at ' + doc.clientWidth + 'px' +
+          (widest ? ' (widest: ' + widest.what + ' reaching ' + Math.round(widest.r) + 'px)' : '')
+      })()`, 600))
+    }
+  }
 }

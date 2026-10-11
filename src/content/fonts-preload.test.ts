@@ -13,8 +13,8 @@ import { describe, expect, test } from 'bun:test'
 import { CHROME_FONTS, DEFAULT_CHROME_FONT, fontPreloadHrefs } from '@/content/fonts'
 
 const READING = '/fonts/literata-latin.woff2'
-const preloads = (chromeFont: string, lang = 'en', look = 'plain'): string[] =>
-  fontPreloadHrefs('literata', lang, false, chromeFont, look)
+const preloads = (chromeFont: string, lang = 'en'): string[] =>
+  fontPreloadHrefs('literata', lang, false, chromeFont)
 
 describe('the head carries the faces whose absence would move the page', () => {
   test('a fresh install preloads the reading face and nothing else', () => {

@@ -20,6 +20,7 @@ import { t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { postName } from '@/content/untitled'
 import { isSafeHref } from '@/content/safe-href'
+import { resolveTheme } from '@/content/themes-builtin'
 import { searchBox } from '@/web/chrome'
 
 /** Curated posts shown in the "Featured" block. */
@@ -271,11 +272,11 @@ export async function renderSidebar(
   if (aside === '') {
     return { html: rail('', menuBlock(settings.menu, labels.menu) + nav, search), css: '' }
   }
-  // What the left rail shows in the GUTTER. The paper look carries the menu in its masthead and
-  // hides the rail's copy, so it does not count there. With nothing left the rail is still the
-  // drawer, but above the breakpoint it is not drawn: an empty box with a divider beside it
-  // reads as a fault.
-  const gutter = (settings.look === 'paper' ? '' : menuBlock(settings.menu, labels.menu))
+  // What the left rail shows in the GUTTER. A theme with the menu in its masthead
+  // (`layout.menu: 'header'`) hides the rail's copy, so it does not count there. With nothing
+  // left the rail is still the drawer, but above the breakpoint it is not drawn: an empty box
+  // with a divider beside it reads as a fault.
+  const gutter = (resolveTheme(settings).layout.menu === 'header' ? '' : menuBlock(settings.menu, labels.menu))
     + cats + seriesBlock + tagBlock
   return {
     html: rail(gutter === '' ? ' rail-main rail-drawer' : ' rail-main', menuBlock(settings.menu, labels.menu)

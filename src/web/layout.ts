@@ -14,7 +14,8 @@
 import type { SiteSettings, SiteLang } from '@/types'
 import { fontPreloadHrefs } from '@/content/themes'
 import { resolveAppIcon, getDefaultTheme } from '@/content/settings'
-import { penStyleFor, lookSheet } from '@/web/assets'
+import { penStyleFor, themeSheet } from '@/web/assets'
+import { resolveTheme } from '@/content/themes-builtin'
 import { CUSTOM_COL_ATTR, DEFAULT_RAIL_WIDTH } from '@/render/rail-css'
 
 // The settings half of the sheet lives in `layout-styles.ts` now, and is re-exported here for
@@ -123,8 +124,9 @@ export function renderDocument(
   const bodyAttrs = Object.entries(shell.bodyData ?? {})
     .map(([k, v]) => ` ${dataAttr(k)}="${escapeAttr(v)}"`)
     .join('')
+  const theme = resolveTheme(settings)
   const preloads = fontPreloadHrefs(settings.fontPreset, settings.language,
-    !!settings.customFont.family, settings.chromeFont, settings.look)
+    !!settings.customFont.family, settings.chromeFont, theme.display?.slug ?? null)
     .map((href) => `<link rel="preload" href="${escapeAttr(href)}" as="font" type="font/woff2" crossorigin>`)
     .join('')
   const description = head.description
@@ -172,7 +174,7 @@ export function renderDocument(
   // selects on it.
   const ink = head.stylesheet ? penStyleFor(body, settings.inks) : ''
   const sheet = head.stylesheet
-    ? [head.stylesheet, lookSheet(settings.look)]
+    ? [head.stylesheet, themeSheet(theme)]
         .filter(Boolean)
         .map((href) => `<link rel="stylesheet" href="${escapeAttr(href)}">`)
         .join('') + (ink ? `<style data-pen-ink>${ink}</style>` : '')
@@ -221,10 +223,14 @@ export function renderDocument(
   const motion = settings.motion.enabled ? 'on' : 'off'
   // The third of the same kind, and stamped here for the same reason: CSS reads it, the
   // server writes it, so the first paint is already right and no island has to run for the
-  // page to look like itself. ABSENT on 'plain', so a blog wearing no dialect carries no
+  // page to look like itself. ABSENT on plain, so a blog wearing no dialect carries no
   // attribute, links no dialect sheet, and cannot be told from one built before looks
-  // existed. Each dialect's whole ruleset hangs off this one attribute selector.
-  const look = settings.look === 'plain' ? '' : ` data-look="${escapeAttr(settings.look)}"`
+  // existed. Each built-in sheet's whole ruleset hangs off this one attribute selector.
+  const look = theme.dataLook ? ` data-look="${escapeAttr(theme.dataLook)}"` : ''
+  // `data-theme` names the theme on EVERY page, plain included (ADR 0072): what a theme's
+  // stylesheet and the engine's per-theme rules select on. It is the only `data-theme` on the
+  // page: the light/dark button's translated label rides `<body data-theme-label>` instead.
+  const themeAttr = ` data-theme="${escapeAttr(theme.id)}"`
   // The reading column is not the default one: the hashed sheet's rail geometry (written for
   // the default) stands down and the page's own inline copy takes over (`CUSTOM_COL_ATTR`).
   const col = settings.contentWidth === DEFAULT_RAIL_WIDTH ? '' : ` ${CUSTOM_COL_ATTR}="custom"`
@@ -248,7 +254,7 @@ export function renderDocument(
     escapeAttr(paper.light.bg)}">\n<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${
     escapeAttr(paper.dark.bg)}">\n`
   return `<!DOCTYPE html>
-<html lang="${escapeAttr(head.lang ?? settings.language)}" data-tz="${escapeAttr(siteZone(settings.timezone))}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${look}${fade}${col}>
+<html lang="${escapeAttr(head.lang ?? settings.language)}" data-tz="${escapeAttr(siteZone(settings.timezone))}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${themeAttr}${look}${fade}${col}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

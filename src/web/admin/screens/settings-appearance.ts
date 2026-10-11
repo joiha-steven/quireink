@@ -41,9 +41,9 @@ export type AppearanceTabView = {
   presets: ThemePreset[]
 }
 
-// --- Looks like, and shape ------------------------------------------------------------------
+// --- Theme, and shape ------------------------------------------------------------------------
 
-// "Looks like" is drawn in `settings-appearance-look.ts`: four tiles with a picture and a
+// "Theme" is drawn in `settings-appearance-look.ts`: four tiles with a picture and a
 // line each, because a name alone cannot say what a look does to the page.
 
 /**
@@ -261,7 +261,11 @@ function cssEditor(t: AdminStrings, s: SiteSettings): string {
     + ` p-3 dark:border-neutral-800 dark:bg-neutral-900" data-css-names hidden>`
     + `<p class="${NOTE_TEXT}">${escapeHtml(t.cssNamesNote)}</p>`
     + PROMISED_VARS.map((g) => nameGroup(g.group, g.vars.map(nameKey).join(''))).join('')
-    + nameGroup(t.cssStructure, PROMISED_SELECTORS.map(nameKey).join(''))
+    // Selectors by the surface they appear on, so a name the front page never draws is not
+    // offered as if it would style it.
+    + ([['shared', t.cssSurfaceShared], ['blog', t.cssSurfaceBlog], ['front', t.cssSurfaceFront]] as const)
+      .map(([surface, title]) => nameGroup(title,
+        PROMISED_SELECTORS.filter((n) => n.surface === surface).map(nameKey).join(''))).join('')
     + `</div>`
   return `<div>`
     + `<div class="flex overflow-hidden rounded-md border border-neutral-300`

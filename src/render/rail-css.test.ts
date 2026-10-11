@@ -2,8 +2,9 @@
 // under the title from 60rem to the rail breakpoint, where before there was only a drawer.
 import { describe, expect, it } from 'bun:test'
 import {
-  articleBandCss, CUSTOM_COL_ATTR, DEFAULT_RAIL_WIDTH, railLookCss, scopeToDefaultWidth, singleRailCss,
+  articleBandCss, CUSTOM_COL_ATTR, DEFAULT_RAIL_WIDTH, railThemeCss, scopeToDefaultWidth, singleRailCss,
 } from '@/render/rail-css'
+import { BUILTIN_THEMES, builtinTheme } from '@/content/themes-builtin'
 import { DEFAULT_SETTINGS } from '@/content/settings'
 import { PUBLIC_CSS } from '@/web/public.css'
 
@@ -43,7 +44,7 @@ describe('singleRailCss', () => {
     // The dialect's own version of the same marker moved out of the geometry on 2026-09-16,
     // because the geometry is cached for every blog and this rule belongs to one look.
     expect(band).not.toContain('data-look=code')
-    expect(railLookCss(672, 'code'))
+    expect(railThemeCss(672, builtinTheme('code').rail))
       .toContain('html[data-look=code] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}')
   })
 
@@ -59,21 +60,23 @@ describe('singleRailCss', () => {
     expect(band).toContain('.toc ul{display:block}')
     expect(band).toContain('.toc li{width:max-content;max-width:100%')
     // And no line numbers wedged between two menu words, where there is no gutter to hold them.
-    expect(railLookCss(672, 'code'))
+    expect(railThemeCss(672, builtinTheme('code').rail))
       .toContain('html[data-look=code] .rail-inner > nav:not(.toc) li::before{content:none}')
   })
 
   it('hands the dialect nothing to the three looks that did not ask', () => {
     // These two rules shipped to every blog on every page view until 2026-09-16, inline,
     // whatever it was wearing. `looks.test.ts` holds the same rule for the cached sheet.
-    for (const look of ['plain', 'paper', 'notes']) expect(railLookCss(672, look)).toBe('')
+    for (const theme of BUILTIN_THEMES.filter((t) => t.id !== 'code')) {
+      expect(railThemeCss(672, theme.rail)).toBe('')
+    }
   })
 
   it("keeps the band's own bound, so the dialect stops where the band stops", () => {
     // A moved column moves the breakpoint, and a look correction outside its band would sit
     // over the gutter layout instead of the row.
-    expect(railLookCss(672, 'code')).toContain('max-width:1271px')
-    expect(railLookCss(900, 'code')).toContain('max-width:1499px')
+    expect(railThemeCss(672, builtinTheme('code').rail)).toContain('max-width:1271px')
+    expect(railThemeCss(900, builtinTheme('code').rail)).toContain('max-width:1499px')
   })
 })
 

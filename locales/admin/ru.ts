@@ -1,7 +1,7 @@
 import type { AdminStrings } from '../types'
 
 const ru = {
-  navHome: 'Главная',  themeLabel: 'Тема',
+  navHome: 'Главная',  themeLabel: 'Светлая / тёмная',
   navMenu: 'Меню',
 
   themeLight: 'Светлая',
@@ -723,7 +723,7 @@ const ru = {
   cardRendering: 'Отрисовка текста',
   fontSmoothing: 'Сглаживание шрифтов (антиалиасинг)',
   fontSmoothingDesc: 'Смягчает края букв. На Mac может выглядеть тоньше — выключено значит «как решит браузер».',
-  lookLabel: 'Выглядит как',
+  lookLabel: 'Тема',
   lookDesc: 'Как выглядит опубликованный сайт. Только публичный сайт, эта панель не меняется.',
   lookPlain: 'Чистый лист',
   lookCode: 'Исходный код',
@@ -994,7 +994,9 @@ const ru = {
   cssShowNames: 'Показать имена, на которые можно опереться',
   cssHideNames: 'Скрыть имена',
   cssNamesNote: 'Эти имена не будут переименованы без записи в changelog. Нажмите, чтобы вставить в позицию курсора. Всё, чего нет в списке, — внутреннее и может измениться в любом релизе.',
-  cssStructure: 'Структура',
+  cssSurfaceShared: 'Общее',
+  cssSurfaceBlog: 'Блог',
+  cssSurfaceFront: 'Первая полоса',
   // activity log + system panel
   navAnalytics: 'Статистика',
   analyticsTitle: 'Статистика',

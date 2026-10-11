@@ -6,13 +6,14 @@
 // but the settings object, and the order inside this one is load-bearing in a way the other
 // half never has to think about.
 
-import type { GallerySettings, FigureSettings, SiteSettings, FeatureSettings, InkSettings } from '@/types'
+import type { GallerySettings, FigureSettings, SiteSettings, FeatureSettings, InkSettings, SiteLang } from '@/types'
 import { fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss, shapeToCss, tableToCss } from '@/content/settings'
-import { DEFAULT_RAIL_WIDTH, railLookCss, singleRailCss } from '@/render/rail-css'
+import { DEFAULT_RAIL_WIDTH, railThemeCss, singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, monoTracking } from '@/render/font-faces'
-import { paperLabelCss } from '@/web/look-paper.css'
+import { resolveTheme } from '@/content/themes-builtin'
+import { t } from '@/i18n/i18n'
 import { LISTS_PLAIN_CSS } from '@/pen/lists.css'
 
 /**
@@ -89,6 +90,28 @@ function figureCss(f: FigureSettings): string {
 }
 
 /**
+ * A CSS string literal, safe inside a `<style>` element: quote and backslash escaped, every
+ * control character and `<` written as a hex escape (so no `</style>` can be spelled).
+ */
+const cssString = (value: string): string =>
+  `"${value.replace(/[\\"]/g, (c) => `\\${c}`).replace(/[\u0000-\u001f\u007f<]/g,
+    (c) => `\\${c.charCodeAt(0).toString(16)} `)}"`
+
+/**
+ * The words a theme may print through `content:`, in the blog's language, for EVERY theme.
+ *
+ * A content string in a theme's sheet cannot be translated, and that sheet is one hashed file
+ * shared by every blog, so the engine hands the words over as variables instead: the sheet
+ * writes `content:var(--l-figure) " " counter(fig)` and gets "Fig." here and "Hình" there.
+ * Declared whatever the theme, so a theme the engine has never heard of can number its figures
+ * the same way. About 40 bytes a page.
+ */
+export function labelVarsCss(lang: SiteLang): string {
+  const d = t(lang)
+  return `:root{--l-figure:${cssString(d.figureLabel)};--l-table:${cssString(d.tableLabel)}}`
+}
+
+/**
  * The part of the sheet that depends on the OWNER'S SETTINGS, inlined into the page.
  *
  * Order is load-bearing: the fonts first, then the reading column, then the palette and
@@ -100,17 +123,21 @@ function figureCss(f: FigureSettings): string {
  * `web/assets.ts` for why it was split.
  */
 export function pageStyles(settings: SiteSettings, extra = ''): string {
+  const theme = resolveTheme(settings)
   return [
     // FIRST: a family has to be declared before anything can ask for it by name.
-    fontFaceCss(settings.fontPreset, settings.chromeFont, settings.look),
+    fontFaceCss(settings.fontPreset, settings.chromeFont, theme),
     // The chrome face, and the reading face's fallback until a preset repoints it. Inter
     // is the universal base, exactly as in the frozen tree. --font-mono is the third and
     // last handle: code, and only code. It is a constant rather than a setting because
     // there is no code-font picker — the two mono families in CHROME_FONTS are a chrome
     // choice, which is a different question from what a fenced block is set in.
+    // --font-display is the theme's headline face, and the reading face where the theme has
+    // none: a sheet may name it on any theme and gets a face either way.
     `:root{--font-sans:'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;`
     + `--font-reading:var(--font-sans);`
-    + `--font-mono:'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace}`,
+    + `--font-mono:'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;`
+    + `--font-display:${theme.display ? theme.display.stack : 'var(--font-reading)'}}`,
     // The reading column, from the owner's setting. A two-rail listing narrows it by
     // overriding this later in the sheet, which is why it is a variable and not baked in.
     `:root{--shell-w:${settings.contentWidth}px}`,
@@ -123,8 +150,9 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // with every page: 1,046 compressed bytes a view. A site that has changed the width still
     // gets its own copy here, after the sheet, so it overrides the precomputed one.
     settings.contentWidth === DEFAULT_RAIL_WIDTH ? '' : singleRailCss(settings.contentWidth),
-    // The source-code look's two corrections to the band, and nothing for the other three.
-    railLookCss(settings.contentWidth, settings.look),
+    // The theme's rules for the rail band, which only exist inside queries computed from the
+    // column; nothing for a theme that has none (`content/themes-builtin.ts`).
+    railThemeCss(settings.contentWidth, theme.rail),
     // The site default for galleries. In CSS on purpose: rendered Markdown is cached under
     // a hash of its input, so a default that changed the MARKUP would leave every body that
     // was already rendered serving the old shape until something unrelated evicted it.
@@ -144,10 +172,8 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // language is none of the three — no selector matches, and it is ~700 bytes.
     cjkLangCss(settings.fontPreset),
     chromeFontCss(settings.chromeFont),
-    // The newspaper dialect's two translated words. Nothing when another look is on, and
-    // nothing at all when the look is plain: see `look-paper.css.ts` for why these two
-    // strings cannot ride in the dialect's own cached sheet.
-    settings.look === 'paper' ? paperLabelCss(settings.language) : '',
+    // The translated words a theme prints through `content:`, for every theme (above).
+    labelVarsCss(settings.language),
     // `enabledPalettes` third: a reader can only ever reach what the owner turned on, so a
     // blog with one palette ships one rather than all six (`content/themes.ts`).
     themesToCss(settings.themes, settings.themePreset, settings.enabledPalettes,
@@ -166,7 +192,7 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // Keyed on `data-chrome-font`, which `renderDocument` puts on <html>. It has to come
     // after the chrome font is resolved and before the owner's own CSS can override it, and
     // it emits only the one block this page's own attributes can match.
-    monoTracking(settings.chromeFont, settings.look),
+    monoTracking(settings.chromeFont, theme),
     settings.customCss,
   ].filter(Boolean).join('\n')
 }

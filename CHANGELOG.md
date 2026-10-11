@@ -9,6 +9,23 @@
   and 5 attributes, each marked as belonging to the blog pages, the composed front page or both.
   The front page had no promised names at all before. [Appearance](docs/appearance.md) lists
   them, and the build fails if one stops being drawn or drops out of that page.
+- **"Looks like" is now called Theme**, in the Appearance tab and in the setup step, in every
+  language. Nothing a reader sees changes: each of the four reading designs was shot in 288 page,
+  width and scheme combinations before and after, and every shot is identical. The admin's light
+  and dark switch is now labelled "Light / dark", so the two controls no longer share a name.
+- **New names for custom CSS:** `html[data-theme]` carries the theme's id on every page, plain
+  included, and `--font-display`, `--l-figure` and `--l-table` (the figure and table labels in
+  the blog's language) are available to every theme, not only Newspaper. `data-look` is
+  unchanged. The light and dark button's label moved from `body[data-theme]` to
+  `body[data-theme-label]`.
+- **The Custom CSS box groups its class names** into the ones on every page, the blog pages and
+  the front page.
+
+### Fixed
+
+- **The setup steps that pick a theme, a pen or a typeface no longer scroll sideways.** A hidden
+  radio took the full width of the page, which pushed it 743px wider than the window on a
+  desktop and 56px on a phone. The tour now fails if any of those steps scrolls sideways.
 
 ## 2026-10-09 · Quire Ink 2.2.19
 

@@ -12,7 +12,10 @@
 // strings. Only the faces a page can actually use are emitted: the reading preset and the
 // chrome font, six declarations, rather than every family the binary happens to carry.
 
-import { DISPLAY_SLUG, getChromeFont, getFontPreset } from '@/content/themes'
+import { getChromeFont, getFontPreset } from '@/content/themes'
+import { builtinTheme, DEFAULT_THEME_ID, type SiteTheme } from '@/content/themes-builtin'
+
+const PLAIN = builtinTheme(DEFAULT_THEME_ID)
 
 /**
  * The unicode ranges each subset covers, and the files are built to match them by
@@ -169,13 +172,13 @@ const declare = (f: Face): string => {
  * fetches the file; a post with code gets the face it asked for instead of whatever
  * `ui-monospace` happens to be on that machine.
  */
-export function fontFaceCss(fontPreset: string, chromeFont: string, look = 'plain'): string {
+export function fontFaceCss(fontPreset: string, chromeFont: string, theme: SiteTheme = PLAIN): string {
   const wanted = new Set<string>(['inter', 'jetbrains-mono', getFontPreset(fontPreset).slug])
   // 'reading' follows the reading font and 'inter' is already in; neither adds a family.
   if (getChromeFont(chromeFont).sans && chromeFont !== 'reading') wanted.add(chromeFont)
-  // The newspaper look sets its headlines in a second serif. Declared only on that look, so
-  // a blog wearing any other one never learns the family exists.
-  if (look === 'paper') wanted.add(DISPLAY_SLUG)
+  // A theme's headline face (the newspaper's second serif). Declared only while that theme is
+  // worn, so a blog wearing any other one never learns the family exists.
+  if (theme.display) wanted.add(theme.display.slug)
   return [...wanted].flatMap((id) => FACES[id] ?? []).map(declare).join('')
 }
 
@@ -244,45 +247,52 @@ const CHROME_TRACKED = [
 const track = (id: string, em: string, only: readonly string[] = CHROME_TRACKED): string =>
   `${only.map((s) => `html[data-chrome-font="${id}"] ${s}`).join(',')}{letter-spacing:${em}}`
 
-/**
- * ...and the source-code LOOK sets the chrome in JetBrains Mono whatever the chrome-font
- * setting says (`web/look-code.css.ts`), so it needs the same correction keyed on the look
- * rather than on the font. Without it a blog wearing that dialect on the Inter default read
- * loose at zero tracking, which is the exact fault this block exists to fix. Last, so it
- * wins over a plex-mono setting whose face is no longer the one being drawn.
- */
-const trackLook = CHROME_TRACKED.map((s) => `html[data-look=code] ${s}`).join(',')
+/** How far each mono chrome face is pulled in. JetBrains runs wider than Plex. */
+const MONO_TRACK: Record<string, string> = { 'plex-mono': '-0.04em', 'jetbrains-mono': '-0.05em' }
 
 /**
- * Looks that do not draw the chrome in the chrome font. The newspaper sets `body` in the
- * reading face and the notebook in Inter, so nearly every surface in CHROME_TRACKED renders
+ * ...and a theme whose `chromeFace` is a mono sets the chrome in it whatever the chrome-font
+ * setting says (the source-code look, `web/look-code.css.ts`), so it needs the same correction
+ * keyed on the THEME rather than on the font. Without it a blog wearing that theme on the Inter
+ * default read loose at zero tracking, which is the exact fault this block exists to fix. Last,
+ * so it wins over a plex-mono setting whose face is no longer the one being drawn. Inline and
+ * not in the theme's sheet for that reason: the sheet is linked before this block, and the
+ * chrome-font rules it has to beat carry the same specificity.
+ */
+const trackTheme = (theme: SiteTheme): string =>
+  `${CHROME_TRACKED.map((s) => `html[data-theme="${theme.id}"] ${s}`).join(',')}`
+  + `{letter-spacing:${MONO_TRACK[theme.chromeFace] ?? '0'}}`
+
+/**
+ * Themes that do not draw the chrome in the chrome font (`chromeFace: 'own'`). The newspaper
+ * sets `body` in the reading face and the notebook in Inter, so nearly every surface in CHROME_TRACKED renders
  * in a proportional face there and -0.05em on it runs the words together (measured
  * 2026-10-08, look=paper under JetBrains Mono: the series box's Literata link at -0.76px).
  * Those looks change `body`, NOT `--font-sans`, which the chrome font still points at the
  * mono, so whatever names `font-family:var(--font-sans)` itself is still mono there and keeps
  * its correction: today that is the copy button on a code block. (The site name is not one of
  * them: both looks set it by `.site-bar .title`, so it takes the look's face even when the
- * name is wrapped in an h1.) The code look is absent on purpose: it forces JetBrains Mono and
- * has its own block below.
+ * name is wrapped in an h1.) A theme whose chromeFace is a mono is not one of these: it forces
+ * that face and has its own block below.
  */
-const LOOKS_OFF_THE_CHROME_FONT = new Set(['paper', 'notes'])
-const STILL_MONO_IN_THOSE_LOOKS = ['.code-copy'] as const
+const STILL_MONO_IN_THOSE_THEMES = ['.code-copy'] as const
 
-const fontTrack = (id: string, em: string, look: string): string =>
-  LOOKS_OFF_THE_CHROME_FONT.has(look) ? track(id, em, STILL_MONO_IN_THOSE_LOOKS) : track(id, em)
+const fontTrack = (id: string, theme: SiteTheme): string =>
+  theme.chromeFace === 'own'
+    ? track(id, MONO_TRACK[id]!, STILL_MONO_IN_THOSE_THEMES)
+    : track(id, MONO_TRACK[id]!)
 
 /**
  * The correction this page actually needs, and nothing else.
  *
  * All three blocks used to ship on every page view, and at most one of them can ever match:
  * the two font blocks are keyed on a `data-chrome-font` the server writes itself, and the
- * third on a `data-look` it also writes. On a default install (Inter, plain) all three were
+ * third on a `data-theme` it also writes. On a default install (Inter, plain) all three were
  * dead. Measured 2026-09-16, per page view: 909 raw / 102 compressed for plex-mono, 999 / 98
  * for jetbrains-mono, 657 / 89 for the look. HTML is refetched for every page a reader has
  * not already seen, so this is per view rather than once per deploy.
  */
-export const monoTracking = (chromeFont: string, look: string): string =>
-  (chromeFont === 'plex-mono' ? fontTrack('plex-mono', '-0.04em', look) : '')
-  + (chromeFont === 'jetbrains-mono' ? fontTrack('jetbrains-mono', '-0.05em', look) : '')
+export const monoTracking = (chromeFont: string, theme: SiteTheme = PLAIN): string =>
+  (Object.hasOwn(MONO_TRACK, chromeFont) ? fontTrack(chromeFont, theme) : '')
   // Last, so it wins over a plex-mono setting whose face is no longer the one being drawn.
-  + (look === 'code' ? `${trackLook}{letter-spacing:-0.05em}` : '')
+  + (Object.hasOwn(MONO_TRACK, theme.chromeFace) ? trackTheme(theme) : '')

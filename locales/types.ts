@@ -949,7 +949,10 @@ export type AdminStrings = {
   cssShowNames: string
   cssHideNames: string
   cssNamesNote: string
-  cssStructure: string
+  /** The Custom CSS box's groups of selectors, by the surface they appear on. */
+  cssSurfaceShared: string
+  cssSurfaceBlog: string
+  cssSurfaceFront: string
   saveSettings: string
   /** A card that owns its own keys: its button, and the seven things its lamp can mean. */
   save: string

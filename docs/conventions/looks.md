@@ -1,14 +1,17 @@
-# Looks — four dialects, one setting (`settings.look`)
+# Looks — four dialects, one setting (`settings.theme`)
 
 The public site can be dressed in one of four dialects: **plain** (no sheet at all),
-**code**, **paper** and **notes**. The admin calls the setting "Looks like" and never
-"theme": a theme store would multiply the surface every guard and every tour flow has to
-cover, and each dialect here has to earn its place by reaching a group of writers who would
-otherwise not use this software. Four is the ceiling.
+**code**, **paper** and **notes**. Since ADR 0072 they are the four built-in themes, the
+admin calls the setting "Theme", and `settings.theme` holds the id (`settings.look`, the
+old name, is still read and written beside it). How the four differ beyond their sheets (the
+menu in the masthead, a headline face, the rail rules and the chrome tracking) is declared
+once, in `content/themes-builtin.ts`, and nothing else in the renderer names a theme
+(`theme-switches.test.ts`). The rest of this page predates the decision and still describes
+what runs.
 
 ## What every dialect must obey
 
-- **Its own sheet, linked only when it is worn** (`web/assets.ts`, `lookSheet`). `plain`
+- **Its own sheet, linked only when it is worn** (`web/assets.ts`, `themeSheet`). `plain`
   links nothing, so a blog wearing no dialect is byte-for-byte what it was before looks
   existed. The source-code sheet used to ride inside `PUBLIC_CSS` and charged every blog on
   earth 20 KB for a look that was off by default.
@@ -17,7 +20,7 @@ otherwise not use this software. Four is the ceiling.
 - **Colour from theme tokens only.** No hex, ever.
 - **No words in `content:`.** A CSS content string cannot be translated. The one place a
   dialect needs language — the newspaper's `Fig.` and `Table` — rides in the per-page
-  settings block from `locales/`, not in the cached sheet.
+  settings block from `locales/` as `--l-figure` and `--l-table`, which the sheet reads.
 - **The admin never changes.** A look is what a reader sees. Support questions that begin
   "where is that button" must have one answer.
 
@@ -45,7 +48,7 @@ justify), and for nothing else. The paper pattern is on the SHEET, not behind pa
 ## code — the source-code dialect (HARD RULES)
 
 The furniture around the article reads as source code; the reading column stays analogue.
-The contrast is the point. Chosen in Admin → Settings → Appearance → Looks like, and
+The contrast is the point. Chosen in Admin → Settings → Appearance → Theme, and
 server-rendered as `<html data-look="code">` so the first paint is right and no island runs.
 
 - **The monospace belongs to this look**, set on `body` and never on `--font-sans` (a blog

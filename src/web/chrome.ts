@@ -323,7 +323,8 @@ export function chromeLabels(settings: SiteSettings): Record<string, string> {
     lightboxClose: s.lightboxClose,
     gridView: s.gridView,
     listView: s.listView,
-    theme: s.theme,
+    // `themeLabel`, i.e. `<body data-theme-label>`: `data-theme` is the theme's id on <html>.
+    themeLabel: s.theme,
     // NOT a label: the owner's default light/dark, which `assets/js/theme.ts` falls back to
     // when the reader has never chosen. It travels with the labels because it is the same
     // journey — server-rendered onto <body>, read off `dataset` — and a second mechanism

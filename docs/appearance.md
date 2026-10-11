@@ -36,7 +36,7 @@ not cover.
 | **Archive** | Home & menu → Post list | `/archive`: every post you have published, grouped by year, and the list of years in the rail. **On by default.** If you already publish a page or a post at `/archive`, yours keeps the URL and this stays off until you move it |
 | **Author** | Blog → Author | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |
 | Motion | Account → This admin | Every transition, entrance and smooth scroll, on the site, the sign-in page and the admin alike. A reader's own reduced-motion preference wins either way ([conventions/motion.md](conventions/motion.md)) |
-| Looks like | Appearance → Looks like | Which of four dialects the published site wears: **Plain paper** (nothing added), **Source code**, **Newspaper** or **Notebook**. Asked once, as the last step of setup, and one click either way here afterwards. Only the published site: this admin never changes. Newspaper is the one that touches your words — it numbers headings, figures and tables, and those numbers live on the page and not in the feed, the newsletter or what a reader copies. Source code sets your headlines in its monospace and numbers the lines of a highlighted code block, which a copy does not pick up |
+| Theme | Appearance → Theme | Which of four built-in themes the published site wears: **Plain paper** (nothing added), **Source code**, **Newspaper** or **Notebook**. Asked once, as the last step of setup, and one click either way here afterwards. Only the published site: this admin never changes. Newspaper is the one that touches your words — it numbers headings, figures and tables, and those numbers live on the page and not in the feed, the newsletter or what a reader copies. Source code sets your headlines in its monospace and numbers the lines of a highlighted code block, which a copy does not pick up |
 | Footer | Home & menu → Footer | Your own line, with `{year}` and `{title}` tokens |
 | **The reader's pen** | Posts → What is on a post | Readers select words on a post and highlight, underline, ring or note them; marks live in their browser only and are drawn with the site's own pen. **On by default.** Off removes the bar and leaves the quote-copy gesture ([ADR 0043](decisions/0043-the-reader-gets-a-pen.md)) |
 | **Hand-drawn lists** | Posts → What is on a post | Bullets become ink dots and level dashes, and a numbered list counts in a handwritten numeral (Kalam, ten digits, 1.4 KB). **On by default.** Off restores the browser's disc and decimal; a list that starts past 1 and a task list keep the browser's marker either way |
@@ -187,6 +187,11 @@ attributes), with one line of explanation each; clicking one writes it where you
   --font-reading: var(--font-sans);  /* titles, standfirsts, the article body */
   --font-sans:    'Inter', system-ui, sans-serif;  /* header, footer, rail, dates, forms */
   --font-mono:    'JetBrains Mono', ui-monospace, monospace;  /* code, and only code */
+  --font-display: var(--font-reading);  /* the theme's headline face; Newspaper's is Source Serif 4 */
+
+  /* Labels — words a theme prints through content:, written per page in your blog's
+     language. Newspaper puts them in front of its figure and table numbers. */
+  --l-figure: "Fig.";  --l-table: "Table";
 
   /* Type — nine roles (h1 h2 h3 h4 h5 body small caption code); each has a size, a line
      height and a letter spacing. These are the defaults; the Text sizes card sets them. */
@@ -275,12 +280,13 @@ bands, and each band holds items:
 
 ### The attributes that are safe to select on
 
-Written on `<html>`, so a rule can change with the palette, the scheme or the look:
+Written on `<html>`, so a rule can change with the palette, the scheme or the theme:
 
 | Attribute | Values |
 |---|---|
 | `data-palette` | The palette id: `mono`, `sepia`, `forest`, `ocean`, `scifi`, `amber`; only present when the blog offers two or more palettes |
 | `data-scheme` | `light` or `dark`, once the page script has resolved it (`:root[data-scheme="dark"]`) |
+| `data-theme` | The theme: `plain`, `code`, `paper` or `notes`; on every page, plain included |
 | `data-look` | `code`, `paper` or `notes`; absent on the plain look |
 | `data-list` | `list` or `grid`, the layout the reader picked on a listing |
 | `data-motion` | `on` or `off`, whether animation is enabled |

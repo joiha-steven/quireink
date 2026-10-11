@@ -8,13 +8,14 @@ import { typographyToCss } from '@/content/settings'
 import { DEFAULT_TYPOGRAPHY, TYPE_ROLES, getFontPreset } from '@/content/themes'
 import { PUBLIC_CSS } from '@/web/public.css'
 import { monoTracking } from '@/render/font-faces'
+import { builtinTheme } from '@/content/themes-builtin'
 import { LOOK_PAPER_CSS } from '@/web/look-paper.css'
 import { LOOK_NOTES_CSS } from '@/web/look-notes.css'
 
 // The three blocks together, which is what `MONO_TRACKING` used to be and what these
 // assertions are about: WHICH selectors the correction may and may not name. Which of the
 // three a given page actually gets is `monoTracking`'s own question, asserted below.
-const MONO_TRACKING = monoTracking('plex-mono', 'code') + monoTracking('jetbrains-mono', 'plain')
+const MONO_TRACKING = monoTracking('plex-mono', builtinTheme('code')) + monoTracking('jetbrains-mono', builtinTheme('plain'))
 
 const DIR = './.tmp/test-typography'
 freshDatabase(DIR)
@@ -327,24 +328,24 @@ describe('a page carries only the tracking it can match', () => {
   it('a default install carries none of it', () => {
     // Inter and the plain look: all three blocks are keyed on attributes this page does not
     // have. They shipped anyway until 2026-09-16, 289 compressed bytes on every page view.
-    expect(monoTracking('inter', 'plain')).toBe('')
-    expect(monoTracking('reading', 'plain')).toBe('')
+    expect(monoTracking('inter', builtinTheme('plain'))).toBe('')
+    expect(monoTracking('reading', builtinTheme('plain'))).toBe('')
   })
 
   it('a mono chrome font carries its own block and not the other one', () => {
-    const plex = monoTracking('plex-mono', 'plain')
+    const plex = monoTracking('plex-mono', builtinTheme('plain'))
     expect(plex).toContain('html[data-chrome-font="plex-mono"]')
     expect(plex).not.toContain('jetbrains-mono')
-    expect(plex).not.toContain('data-look=code')
+    expect(plex).not.toContain('data-theme="code"')
 
-    const jb = monoTracking('jetbrains-mono', 'plain')
+    const jb = monoTracking('jetbrains-mono', builtinTheme('plain'))
     expect(jb).toContain('html[data-chrome-font="jetbrains-mono"]')
     expect(jb).not.toContain('plex-mono')
   })
 
   it('the source-code look carries the look block whatever the font is', () => {
-    expect(monoTracking('inter', 'code')).toContain('html[data-look=code]')
-    expect(monoTracking('inter', 'code')).not.toContain('data-chrome-font')
+    expect(monoTracking('inter', builtinTheme('code'))).toContain('html[data-theme="code"]')
+    expect(monoTracking('inter', builtinTheme('code'))).not.toContain('data-chrome-font')
   })
 
   it('the newspaper and the notebook correct only what is still mono there', () => {
@@ -353,14 +354,14 @@ describe('a page carries only the tracking it can match', () => {
     // var(--font-sans) itself, which is still the mono, so it keeps the correction.
     for (const look of ['paper', 'notes']) {
       for (const font of ['plex-mono', 'jetbrains-mono']) {
-        const css = monoTracking(font, look)
+        const css = monoTracking(font, builtinTheme(look))
         expect(css).toContain(`html[data-chrome-font="${font}"] .code-copy{letter-spacing:`)
         expect(css).not.toContain('aside.series')
         expect(css).not.toContain('header.site')
         expect(css).not.toContain('body')
       }
     }
-    expect(monoTracking('jetbrains-mono', 'plain')).toContain('aside.series')
+    expect(monoTracking('jetbrains-mono', builtinTheme('plain'))).toContain('aside.series')
   })
 
   it('sets the site name by `.site-bar .title` in both looks, so an h1-wrapped name is not mono', () => {
@@ -377,7 +378,7 @@ describe('a page carries only the tracking it can match', () => {
   })
 
   it('the look block comes LAST, so it wins over a font it is no longer drawing', () => {
-    const both = monoTracking('plex-mono', 'code')
-    expect(both.indexOf('data-look=code')).toBeGreaterThan(both.indexOf('data-chrome-font'))
+    const both = monoTracking('plex-mono', builtinTheme('code'))
+    expect(both.indexOf('data-theme="code"')).toBeGreaterThan(both.indexOf('data-chrome-font'))
   })
 })
