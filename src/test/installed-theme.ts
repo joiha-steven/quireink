@@ -95,7 +95,10 @@ export function themeBlog(dir: string) {
     return { status: res.status, html: await res.text() }
   }
 
-  return { app, asOwner, install, save, page }
+  /** The owner's session cookie, as a `cookie` header value, for a test that sends more than it. */
+  const sessionCookie = (): string => cookie
+
+  return { app, asOwner, install, save, page, sessionCookie }
 }
 
 export const htmlTag = (html: string): string => /<html[^>]*>/.exec(html)?.[0] ?? ''

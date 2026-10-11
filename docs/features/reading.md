@@ -302,7 +302,7 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
 - **HTML network-first, `/assets/<hash>.*` and `/fonts/*` cache-first.** Online the reader
   always gets what the server just rendered; the immutable URLs cannot serve a stale answer
   because a deploy changes them. Forty pages, kept by COUNT — `Cache.put` reports no size
-  without reading the body.
+  without reading the body. **Never a page marked `private`** (`sw-keep.ts`): a theme preview.
 - **The uninstall is the load-bearing half.** `data-sw` is absent from `<body>` when the
   feature is off, and `offline.ts` reads that absence as "unregister and drop every `quire-*`
   cache". It runs from `core.js`, on every public page, because the switch can only take

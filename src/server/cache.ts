@@ -11,6 +11,7 @@
 // See docs/02-structure.md, "Caching: the biggest simplification".
 
 import { readEnv } from '@/env'
+import { currentThemePreview } from '@/server/theme-preview-scope'
 
 /**
  * How much rendered HTML this process will hold, in characters of key plus body.
@@ -102,6 +103,7 @@ class PageCache {
    * 85,000. A reader who asks for it still gets it cached, through `set`.
    */
   offer(key: string, html: string): boolean {
+    if (currentThemePreview() !== null) return false
     const previous = this.#pages.get(key)
     const cost = key.length + html.length - (previous === undefined ? 0 : key.length + previous.length)
     if (this.#chars + cost > budgetChars()) return false
@@ -114,6 +116,9 @@ class PageCache {
   }
 
   get(key: string): string | undefined {
+    // A theme preview is the owner's page alone: it is neither served from here nor kept here,
+    // whoever the caller is (`server/theme-preview-scope.ts`).
+    if (currentThemePreview() !== null) return undefined
     const html = this.#pages.get(key)
     // Untouched on a miss: `delete` on an absent key is a no-op, but re-inserting `undefined`
     // would put a key in the Map that has no page behind it.
@@ -125,6 +130,7 @@ class PageCache {
   }
 
   set(key: string, html: string): void {
+    if (currentThemePreview() !== null) return
     // `PAGE_CACHE_MB=0` is NO CACHE, which is the plain reading of a cache size and not the
     // reading its two neighbours in `env.ts` have (`0` there is "no limit"). A cache with no
     // room is not a cache with an infinite one, and an operator on a box with nothing to spare

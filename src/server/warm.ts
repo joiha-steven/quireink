@@ -23,6 +23,7 @@ import { pageCache, onFlush } from '@/server/cache'
 import { renderArticle } from '@/web/article'
 import { renderHome } from '@/web/home-mode'
 import { purgeEdge } from '@/server/edge-cache'
+import { outsidePreview } from '@/server/theme-preview-scope'
 
 /** Wait this long after the LAST write before warming: a bulk import is one burst. */
 const DEBOUNCE_MS = 3_000
@@ -68,7 +69,14 @@ let again = false
  * first reader after every single write paid for it. It also matters more than 6ms now that
  * `/` may be a page with a body to render (ADR 0014).
  */
-export async function warmCache(): Promise<{ warmed: number; ms: number; capped: boolean }> {
+export function warmCache(): Promise<{ warmed: number; ms: number; capped: boolean }> {
+  // Outside any theme preview, always. The flush that schedules a warm may fire inside a
+  // previewed request (a link card fetched while it rendered), and its timer inherits that
+  // request's context: rendered there, every page of the warm would wear the previewed theme.
+  return outsidePreview(warmPages)
+}
+
+async function warmPages(): Promise<{ warmed: number; ms: number; capped: boolean }> {
   const t0 = performance.now()
   // Nothing to fill when the owner has switched the cache off, and filling it anyway would
   // leave a full set of pages waiting to be served the moment it comes back on.

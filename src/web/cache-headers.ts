@@ -37,7 +37,8 @@ const PRIVATE = 'private, no-store'
 
 // `setup` too (2026-09-30): the four first-run questions are owner pages drawn with the owner's
 // settings, and they went out `public, s-maxage=60` with the prerender header on.
-const OWNER_PATH = /^\/(admin|login|api|setup)(\/|$)/
+// Exported for the theme preview (`web/theme-preview.ts`), which draws none of these in a theme.
+export const OWNER_PATH = /^\/(admin|login|api|setup)(\/|$)/
 
 export function cacheHeaders(): MiddlewareHandler {
   return async (c, next) => {

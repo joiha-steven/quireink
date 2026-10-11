@@ -30,6 +30,8 @@
 
 /// <reference lib="webworker" />
 
+import { keepsOffline } from './sw-keep'
+
 declare const self: ServiceWorkerGlobalScope
 
 /**
@@ -83,15 +85,15 @@ async function trim(name: string, keep: number): Promise<void> {
 /**
  * A page: the network, and the cache as the fallback.
  *
- * Only a 200 from our own origin is stored. A 404 or a 500 kept here would be served back
- * offline as though it were the page, and a redirect (`response.redirected`) cannot be put
- * in a cache at all — `Cache.put` rejects it, and an unhandled rejection in a `fetch`
- * handler is a failed navigation.
+ * Only a 200 from our own origin is stored, and never one marked `private` or `no-store`
+ * (`sw-keep.ts`). A 404 or a 500 kept here would be served back offline as though it were the
+ * page, and a redirect (`response.redirected`) cannot be put in a cache at all — `Cache.put`
+ * rejects it, and an unhandled rejection in a `fetch` handler is a failed navigation.
  */
 async function page(request: Request): Promise<Response> {
   try {
     const fresh = await fetch(request)
-    if (fresh.ok && fresh.status === 200 && !fresh.redirected) {
+    if (keepsOffline(fresh)) {
       const copy = fresh.clone()
       const cache = await caches.open(PAGES)
       await cache.put(request, copy)

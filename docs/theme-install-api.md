@@ -17,6 +17,7 @@ same-origin request, or `401` and `403` before anything runs. Answers are the ad
 | `GET /api/themes` | — | one entry per theme id: `{ id, current, previous, active, reviewed: false, readable }`, `current` with the version, hash, install time and the manifest's name, author, description, license, homepage, api and screenshot URL; `previous` newest first. `readable: false` when the current manifest does not read (a backup puts rows back unchecked): then `current` has the row's own columns, the id as the name, the other manifest fields empty and `screenshot: ''` |
 | `DELETE /api/themes/<id>` | — | `{ id, removed }`, the number of versions. A blog wearing the theme goes back to `plain` |
 | `POST /api/themes/<id>/rollback` | — | `{ id, current, removed }`: the current version removed, the one before it current again |
+| `GET /api/themes/<id>/preview` | — | `303` to `/?theme-preview=<id>` with the preview cookie set; an id the site cannot draw clears the cookie and goes back to the Look card with the reason ([below](#previewing-one)) |
 
 Refusals: `400 no_file`; `413 file_too_large` past 5 MB (the body cap answers before the handler
 past 5 MB and 64 KB of framing); `404 not_found` for an id with no live version; `409
@@ -97,6 +98,40 @@ the theme until the next flush. A row is read as if it could be anything because
 back unchecked, and these values end up inside CSS the engine writes. Ids reach HTML through
 `escapeAttr`; in CSS only after that check.
 
+## Previewing one
+
+The owner can look at any theme the site can draw, built in or installed, before choosing it
+([`src/web/theme-preview.ts`](../src/web/theme-preview.ts)). Nothing is saved and nothing is logged.
+
+- **Preview** on a tile is a link to `GET /api/themes/<id>/preview` in a new tab. That route is on the
+  owner's gated router; it sets `__Host-quire_theme_preview=<id>` (`HttpOnly; Secure; SameSite=Lax;
+  Path=/; Max-Age=3600`) and sends the tab to `/?theme-preview=<id>`. An id the site cannot draw
+  (removed meanwhile, never installed, unreadable) clears the cookie and sends the tab to the Look
+  card with `?preview-refused=<id>&why=missing|unreadable`, where the card says which in words.
+- **On every public GET or HEAD carrying the cookie** (never the admin, sign-in, setup or `/api/`), the
+  page is drawn in the previewed theme only when the request has the owner's session AND the id is a
+  built-in one or an installed one whose current version reads. Otherwise the cookie is ignored and
+  the answer is the reader's page, byte for byte: no bar, no header, nothing that names it.
+- The previewed page is the reader's page drawn by the same renderers in a request-scoped preview
+  ([`src/server/theme-preview-scope.ts`](../src/server/theme-preview-scope.ts)), where `resolveTheme`
+  answers the previewed theme, plus a bar at the top in the admin's words in the site's language:
+  "Previewing &lt;name&gt;", **Choose this theme** and **Leave preview**. The bar is in the flow above
+  the page, so it covers nothing, and coloured only with the page's tokens.
+- It goes out `private, no-store`, `Vary: Cookie`, `X-Robots-Tag: noindex, nofollow`, with a robots
+  meta saying the same and no `speculation-rules`. A file named by its hash (`immutable`) keeps its
+  own headers.
+- **The page cache neither serves nor stores a previewed page**: `PageCache` refuses both while a
+  preview scope is open, whoever calls it, and the warm renders outside any scope, so a flush started
+  inside a previewed request (a link card fetched while it rendered) cannot fill the cache with it.
+  The purge fetches no page.
+- **Leave preview** is `GET /theme-preview/leave?to=<path>`: public, so a session that ran out can
+  still leave; it clears the cookie and goes back to the page it was pressed on, without the
+  `theme-preview` parameter (a path on this site only, anything else goes to `/`; characters a
+  header cannot carry are percent-encoded). **Choose this theme** leaves the same way and lands on
+  `/admin/settings?tab=appearance&pick-theme=<id>`, where the island presses that tile as a click
+  would and takes the parameter out of the address; Save stores it. A theme removed meanwhile is
+  not pressed, and the card says so.
+
 ## In the admin
 
 Settings → Appearance → **Theme** lists every installed theme as a tile after the four built in,
@@ -113,6 +148,8 @@ island [`src/admin/island/lib/settings-themes.ts`](../src/admin/island/lib/setti
   words from `themeRules` in `locales/admin/`, then the code, `file:line:col` and the subject), too
   large (`413`), no answer (a network failure), or the status of any other error. The key is busy
   while the file travels and one install runs at a time.
+- **Preview** sits under every built-in tile and every readable installed one (never on an
+  unreadable one), a link opening the site in a new tab wearing that theme ([above](#previewing-one)).
 - **Roll back to &lt;version&gt;** appears only on a theme with an earlier live version; **Remove**
   asks first, saying a blog wearing it goes back to Plain.
 - After an install, a rollback or a removal the picker is drawn again by the server
@@ -154,5 +191,13 @@ island [`src/admin/island/lib/settings-themes.ts`](../src/admin/island/lib/setti
   so like an uploaded font they swap in rather than compete with the sheet ([performance.md](performance.md)).
   A title set in a theme's display or reading face paints first in the fallback.
 - **A theme palette's name is the author's, in one language**; the built-in names are translated.
+- **A preview draws the theme over the saved settings as they are.** What pressing the tile would
+  move (a built-in theme's suggested chrome font) moves only when it is chosen, and a stored palette
+  or font of another installed theme is drawn as the default, as it would be once this one is chosen.
+- **A preview is one browser's, by cookie.** Every tab of that browser shows it until Leave, Choose
+  this theme, or an hour; another browser signed in as the owner does not. Behind a CDN that keeps
+  HTML whatever the cookies say, pages after the first may come from the edge without the preview
+  ([delivery.md](delivery.md#a-theme-preview-passes-both-layers-by)).
+- **Offline reading never keeps a preview**: the service worker stores no page marked `private` ([reading.md](features/reading.md)).
 - **When a theme's palette is the stored default but not on offer**, the engine's default (Mono)
   is drawn and joins the reader's menu for as long as that lasts; the stored list is not changed.

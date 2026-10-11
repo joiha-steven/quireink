@@ -115,6 +115,7 @@ const dataAttr = (key: string) => `data-${key.replace(/[A-Z]/g, (c) => `-${c.toL
 
 import { escapeAttr, escapeHtml } from '@/utils'
 import { siteZone } from '@/i18n/format'
+import { themePreviewBar } from '@/web/theme-preview-bar'
 
 
 export function renderDocument(
@@ -138,7 +139,9 @@ export function renderDocument(
     ? `<meta name="description" content="${escapeAttr(head.description)}">`
     : ''
   const canonical = head.canonical ? `<link rel="canonical" href="${escapeAttr(head.canonical)}">` : ''
-  const robots = head.robots ? `<meta name="robots" content="${escapeAttr(head.robots)}">` : ''
+  // The owner's theme preview, on no page a reader gets (`web/theme-preview-bar.ts`): never indexed.
+  const preview = themePreviewBar(settings)
+  const robots = preview ? preview.robots : head.robots ? `<meta name="robots" content="${escapeAttr(head.robots)}">` : ''
   // Not escaped, and it does not need to be: `schema.ts` emits JSON with every `<` replaced
   // by its unicode escape, so nothing in it can close this element. Escaping it as HTML
   // here would corrupt the JSON instead, which is the mistake this comment exists to stop.
@@ -274,11 +277,11 @@ export function renderDocument(
 ${themeColor}<meta name="generator" content="Quire Ink ${escapeAttr(VERSION)}">
 <title>${escapeHtml(head.title)}</title>
 ${description}${canonical}${robots}${icon}${manifest}${feed}${standards}${og}${sheet}${preloads}${jsonLd}
-<style>${styles}</style>
+<style>${styles}</style>${preview?.style ?? ''}
 ${head.extra ?? ''}${shell.customHead ?? ''}
 </head>
 <body${bodyAttrs}>
-${body}
+${preview?.bar ?? ''}${body}
 ${shell.scripts ?? ''}${shell.customBodyEnd ?? ''}</body>
 </html>
 `

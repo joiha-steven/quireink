@@ -1,6 +1,6 @@
 // THEMES INSTALLED FROM A ZIP, driven from the Look card the owner uses (ADR 0072, T2c): a small
 // valid package is installed through the card's own file input, listed with the Unreviewed badge,
-// chosen and saved with the screen's Save key, worn by the public home page, removed through the
+// previewed (the owner sees it with the bar, a reader does not) and left, chosen and saved with the screen's Save key, worn by the public home page, removed through the
 // product's own confirm, and the site is Plain again. A refused package shows its findings.
 //
 // The zips are built here, in the tour's process, by the installer tests' own helper
@@ -68,6 +68,24 @@ export function registerThemeFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
         for (let i = 0; i < 30 && !(image.complete && image.naturalWidth > 0); i++) await sleep(100)
         if (image.hidden || image.naturalWidth !== 1200) return 'the screenshot did not paint on the tile (' + image.naturalWidth + ')'
 
+        // Previewed before it is chosen: the tile's Preview link, followed as the new tab follows it,
+        // draws the site in the theme with the bar for the owner, while a request with no cookies
+        // at all (a reader) still gets the fixture's theme. Leave ends it.
+        const look = cell.querySelector('[data-theme-preview-key]')
+        if (!look || look.getAttribute('target') !== '_blank') return 'the installed tile has no Preview key opening a new tab'
+        const opened = await fetch(look.href, { credentials: 'same-origin' })
+        const seen = new DOMParser().parseFromString(await opened.text(), 'text/html')
+        if (!opened.url.includes('/?theme-preview=${ID}')) return 'Preview did not land on the home page: ' + opened.url
+        if (seen.documentElement.dataset.theme !== '${ID}') return 'the preview is not drawn as the theme: ' + seen.documentElement.dataset.theme
+        const bar = seen.querySelector('[data-theme-preview="${ID}"]')
+        if (!bar || !bar.textContent.includes('Tour sheet')) return 'the preview has no bar naming the theme'
+        if (opened.headers.get('cache-control') !== 'private, no-store') return 'the preview may be cached: ' + opened.headers.get('cache-control')
+        const reader = await (await fetch('/', { credentials: 'omit' })).text()
+        if (reader.includes('theme-preview') || !reader.includes('data-theme="code"')) return 'a reader saw the preview'
+        await fetch(bar.querySelector('[data-theme-preview-leave]').getAttribute('href'), { credentials: 'same-origin' })
+        const left = await (await fetch('/', { credentials: 'same-origin' })).text()
+        if (left.includes('theme-preview') || !left.includes('data-theme="code"')) return 'Leave preview did not end it'
+
         // Chosen the way a built-in tile is: pressed, then the screen's one Save.
         cell.querySelector('[data-choice]').click()
         await sleep(150)
@@ -98,7 +116,7 @@ export function registerThemeFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
         for (let i = 0; i < 40 && after.includes('data-theme="${ID}"'); i++) { await sleep(100); after = await home() }
         if (after.includes('/themes/' + hash + '/theme.css')) return 'the public home still links the removed theme'
         if (!after.includes('data-theme="plain"')) return 'the public home is not Plain after the removal'
-        return 'ok installed, badge, chosen, worn (' + hash.slice(0, 8) + '), removed, Plain'
+        return 'ok installed, badge, previewed and left, chosen, worn (' + hash.slice(0, 8) + '), removed, Plain'
       })()`, 900)
     } finally {
       await expect('/admin', tidy)

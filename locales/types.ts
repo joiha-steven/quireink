@@ -1098,6 +1098,18 @@ export type AdminStrings = {
   themeServerError: string
   themeRollback: string
   themeRemove: string
+  // Preview (T2c): the tile's key and its spoken label, then the bar across the top of the previewed
+  // site. `{theme}` is the theme's name.
+  themePreview: string
+  themePreviewLabel: string
+  themePreviewing: string
+  themePreviewChoose: string
+  themePreviewLeave: string
+  // On the Look card: a preview refused because the theme is gone or unreadable, and a "Choose this
+  // theme" that came back for a theme no longer installed.
+  themePreviewMissing: string
+  themePreviewUnreadable: string
+  themePreviewPickGone: string
   askThemeRemoveTitle: string
   askThemeRemoveBody: string
   themeRolledBack: string

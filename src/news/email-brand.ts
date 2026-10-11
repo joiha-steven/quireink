@@ -7,7 +7,7 @@ import type { EmailBrand, EmailLogo } from '@/news/newsletter-email'
 import type { SiteSettings } from '@/types'
 import { getDefaultTheme } from '@/content/themes'
 import { resolveSiteUrl } from '@/content/settings'
-import { resolveTheme } from '@/content/chosen-theme'
+import { savedTheme } from '@/content/chosen-theme'
 import { drawnPalettes } from '@/content/theme-choices'
 
 // Formats every mail client renders. Deliberately NOT webp: Outlook on Windows uses
@@ -40,7 +40,7 @@ export function emailLogo(settings: SiteSettings, base: string): EmailLogo | nul
 export function emailBrand(settings: SiteSettings): EmailBrand {
   const base = resolveSiteUrl(settings)
   // The default palette as the site draws it, an installed theme's included (ADR 0072).
-  const palettes = drawnPalettes(settings, resolveTheme(settings))
+  const palettes = drawnPalettes(settings, savedTheme(settings))
   return {
     title: settings.title,
     base,

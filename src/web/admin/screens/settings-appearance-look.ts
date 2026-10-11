@@ -20,7 +20,7 @@ import { BUILTIN_THEMES, isBuiltinThemeId, type SiteTheme } from '@/content/them
 import { escapeAttr, escapeHtml } from '@/utils'
 import { settingRow } from '@/web/admin/fields'
 import {
-  brokenWarning, installControl, installedTile, NO_INSTALLED, themeWords, type InstalledView,
+  brokenWarning, installControl, installedTile, NO_INSTALLED, previewKey, themeWords, type InstalledView,
 } from '@/web/admin/screens/settings-appearance-installed'
 
 /**
@@ -81,13 +81,16 @@ const TILE_LAYOUT = 'flex flex-col p-3 text-left'
  * for a fresh draw after an install, a rollback or a removal, keeping the owner's unsaved pick.
  */
 export function lookPicker(t: AdminStrings, s: SiteSettings, view: InstalledView = NO_INSTALLED): string {
+  // Each built-in key in the same two-row cell an installed one has (`installedTile`), its Preview
+  // key in the second row, so the keys of a row are one height whichever kinds share it.
   const builtins = BUILTIN_THEMES.map(({ id, nameKey, hintKey, art: { tile }, suggests, ownsSettings }) =>
-    `<button type="button" data-choice="${escapeAttr(id)}" aria-pressed="${id === s.theme}"`
+    `<div class="row-span-2 grid min-w-0 grid-rows-subgrid">`
+    + `<button type="button" data-choice="${escapeAttr(id)}" aria-pressed="${id === s.theme}"`
     + suggestsAttr(suggests) + ownsAttr(ownsSettings, t[nameKey])
     + `${tileFaces(TILE_LAYOUT)} class="${tileClass(id === s.theme, TILE_LAYOUT)}">${art(tile)}`
     + `<span class="block text-sm font-semibold leading-tight">${escapeHtml(t[nameKey])}</span>`
     + `<span class="mt-1 block text-xs font-normal text-neutral-600 dark:text-neutral-300">${escapeHtml(t[hintKey])}</span>`
-    + `</button>`).join('')
+    + `</button><div class="flex flex-wrap gap-2 self-start">${previewKey(t, id, t[nameKey])}</div></div>`).join('')
   const installed = view.installed.map((theme) => {
     const on = theme.id === s.theme
     return installedTile(t, theme, on, { cls: tileClass(on, TILE_LAYOUT), faces: tileFaces(TILE_LAYOUT) })

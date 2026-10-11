@@ -91,6 +91,20 @@ export async function themeRendersHere(): Promise<void> {
   const worn = await home()
   if (!worn.includes(link(v1)) || !worn.includes(' data-theme="broadsheet"')) throw new Error('the chosen theme is not on the page')
 
+  // A preview (T2c) inside the object: the owner sees Newspaper with the bar and nothing a cache may
+  // keep; the same cookie without the session is the reader's page; and the page cache still holds
+  // the reader's page after it, because the scope the preview renders in is the request's own.
+  const enter = await app.request('/api/themes/paper/preview', { headers })
+  const previewCookie = (enter.headers.get('set-cookie') ?? '').split(';')[0] ?? ''
+  if (enter.status !== 303 || !previewCookie.endsWith('=paper')) throw new Error(`Preview answered ${enter.status} ${previewCookie}`)
+  const seen = await app.request('/a-post', { headers: { cookie: `${headers.cookie}; ${previewCookie}` } })
+  const seenHtml = await seen.text()
+  if (!seenHtml.includes(' data-theme="paper"') || !seenHtml.includes('data-theme-preview="paper"') || seen.headers.get('cache-control') !== 'private, no-store') {
+    throw new Error(`the owner's preview is not Newspaper with the bar, private: ${seen.headers.get('cache-control')}`)
+  }
+  const stranger = await (await app.request('/a-post', { headers: { cookie: previewCookie } })).text()
+  if (stranger.includes('theme-preview') || stranger !== worn) throw new Error('a reader carrying the preview cookie was not given the reader\'s page')
+
   const v2 = await install(themeZip({ 'theme.json': { ...MANIFEST, version: '1.1.0' } }))
   const next = await home()
   if (!next.includes(link(v2)) || next.includes(link(v1))) throw new Error('the page still links the version before')

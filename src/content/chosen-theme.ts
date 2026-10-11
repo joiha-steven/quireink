@@ -9,7 +9,7 @@
 //
 // ONE SMALL QUERY, THEN NONE. Every page asks `resolveTheme` several times (the header, the rail,
 // the sheet, the document), synchronously, from settings it already holds. The current version is
-// read once, through the partial index on live versions, and kept here with the theme id it
+// read once, through the partial index on live versions, and kept here by the theme id it
 // answers. It is forgotten on every flush of the page cache (`server/cache.ts`, Invariant 1), and
 // installing, rolling back and removing a theme are writes through the owner's gate, which flushes:
 // so the next render after any of them reads the row again. The three also forget it themselves
@@ -32,6 +32,7 @@ import type { ThemeFont, ThemeFontFace, ThemePalette, ThemePaletteColors } from 
 import { one } from '@/store/query'
 import { liveOnly } from '@/store/db'
 import { onFlush } from '@/server/cache'
+import { currentThemePreview } from '@/server/theme-preview-scope'
 import { RESERVED_FONT_IDS, RESERVED_PALETTE_IDS, RESERVED_THEME_IDS } from '@/content/theme-reserved'
 
 type CurrentRow = { hash: string; manifest: string }
@@ -156,32 +157,57 @@ function load(themeId: string): SiteTheme | null {
   }
 }
 
-/** The last answer, with the id it answers for. `theme: null` is kept too: a broken theme warns once. */
-let kept: { id: string; theme: SiteTheme | null } | null = null
+/**
+ * The answers so far, by id. `null` is kept too: a broken theme warns once until the next flush.
+ *
+ * BY ID, NOT ONE ENTRY. While the owner previews one installed theme and readers are drawn in
+ * another (`server/theme-preview-scope.ts`), a single kept answer flipped on every interleaved
+ * request: a query and a parse each time, and a broken theme's warning on each flip. Held small:
+ * an id gets here only as the stored theme or one the signed-in owner previews, and a flush empties it.
+ */
+const kept = new Map<string, SiteTheme | null>()
+const KEPT_MAX = 16
 
 /** The installed theme by id, or null when no live version reads. Built-in ids are not looked up. */
 export function installedTheme(themeId: string): SiteTheme | null {
   if (isBuiltinThemeId(themeId) || !isThemeId(themeId)) return null
-  if (kept?.id === themeId) return kept.theme
+  if (kept.has(themeId)) return kept.get(themeId) ?? null
   const theme = load(themeId)
-  kept = { id: themeId, theme }
+  if (kept.size >= KEPT_MAX) kept.clear()
+  kept.set(themeId, theme)
   return theme
 }
 
-/** Drop what is kept, so the next render reads the row again. */
+/** Drop what is kept, so the next render reads the rows again. */
 export function forgetInstalledTheme(): void {
-  kept = null
+  kept.clear()
 }
 
 onFlush(forgetInstalledTheme)
 
 /**
- * The theme the public site is wearing. A built-in id is that theme; a live installed one is
- * plain with its package; anything else (removed, never installed here, unreadable) is plain,
- * never a half-drawn page.
+ * The theme `settings.theme` names. A built-in id is that theme; a live installed one is plain
+ * with its package; anything else (removed, never installed here, unreadable) is plain, never a
+ * half-drawn page. What a settings save and the newsletter read: the stored choice, never a preview.
  */
-export function resolveTheme(settings: { theme: string }): SiteTheme {
+export function savedTheme(settings: { theme: string }): SiteTheme {
   return isBuiltinThemeId(settings.theme)
     ? builtinTheme(settings.theme)
     : installedTheme(settings.theme) ?? builtinTheme(DEFAULT_THEME_ID)
+}
+
+/** Whether the owner may preview `themeId`: a built-in id, or an installed one whose current version reads. */
+export function isPreviewableTheme(themeId: unknown): themeId is string {
+  return isBuiltinThemeId(themeId) || (isThemeId(themeId) && installedTheme(themeId) !== null)
+}
+
+/**
+ * The theme the page being drawn wears: the saved one, or the one the owner is previewing in
+ * this request (`server/theme-preview-scope.ts`, opened only by `web/theme-preview.ts` after it
+ * has checked the owner and the id). Every renderer asks here, so a preview needs no argument
+ * threaded through them; a request with no preview open reads exactly `savedTheme`.
+ */
+export function resolveTheme(settings: { theme: string }): SiteTheme {
+  const preview = currentThemePreview()
+  return savedTheme(preview && isPreviewableTheme(preview.themeId) ? { theme: preview.themeId } : settings)
 }

@@ -87,6 +87,25 @@ describe('the installed tiles', () => {
     expect(cell(html, 'ledger')).toContain('data-theme-remove="ledger"')
   })
 
+  it('offers Preview on every built-in and every readable installed tile, opening a new tab, and not on an unreadable one', () => {
+    const broken: InstalledTheme = { ...theme('ruin', { name: 'ruin', screenshot: '' }), readable: false }
+    const html = lookPicker(t, DEFAULT_SETTINGS, { installed: [BROADSHEET, LEDGER, broken], health: OK })
+    const keys = [...html.matchAll(/<a href="([^"]+)"[^>]*data-theme-preview-key="([^"]+)" aria-label="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
+      .map(([, href, id, label, text]) => ({ href, id, label, text }))
+    expect(keys.map((k) => k.id)).toEqual([...BUILTIN_THEMES.map((b) => b.id), 'broadsheet', 'ledger'])
+    for (const k of keys) {
+      expect(k.href).toBe(`/api/themes/${k.id}/preview`)
+      expect(k.text).toBe(t.themePreview)
+    }
+    expect(keys.find((k) => k.id === 'paper')?.label).toBe(t.themePreviewLabel.replace('{theme}', t.lookPaper))
+    expect(keys.find((k) => k.id === 'broadsheet')?.label).toBe('Preview Broadsheet in a new tab')
+    expect(html.match(/data-theme-preview-key="[^"]+" [^>]*/g)?.length).toBe(keys.length)
+    expect(cell(html, 'broadsheet')).toMatch(/<a href="\/api\/themes\/broadsheet\/preview" target="_blank" rel="noopener"/)
+    expect(cell(html, 'ruin')).not.toContain('data-theme-preview-key')
+    // Previewing is not choosing: no key is a preview link and no preview link is a key.
+    expect(html).not.toMatch(/data-choice="[^"]+"[^>]*data-theme-preview-key/)
+  })
+
   it('draws no installed tile and the install control when nothing is installed', () => {
     const html = lookPicker(t, DEFAULT_SETTINGS, { installed: [], health: OK })
     expect(html).not.toContain('data-theme-cell')

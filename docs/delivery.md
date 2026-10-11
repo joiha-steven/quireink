@@ -151,6 +151,29 @@ Nothing about Invariant 1 changes: when the cache is on, a write still empties a
 The switch decides whether there is a cache at all, not how it is invalidated. Pinned by
 `src/web/app.test.ts` ("switched off in Settings").
 
+### A theme preview passes both layers by
+
+The owner may look at a theme before choosing it ([theme-install-api.md](theme-install-api.md#previewing-one)).
+That page is the owner's alone, at the same URL a reader asks for, so it must reach neither cache:
+
+- **The page cache** neither serves nor stores anything while a preview is open for the request.
+  The refusal is in `PageCache` itself (`server/cache.ts`), not in the routes, so every caller is
+  covered, and the warm renders outside any preview (`server/warm.ts`) because a timer started
+  inside a previewed request inherits its context.
+- **The shared cache** gets `private, no-store` and `Vary: Cookie` on every previewed answer, set
+  before `cacheHeaders`, which leaves alone a response that has already said what it wants. The
+  first page lands on `/?theme-preview=<id>`, a URL no reader's page is kept under.
+- The purge and the warm fetch no page, so neither can carry a preview to the edge.
+
+Pinned by `src/web/theme-preview-cache.test.ts`: normal, preview, normal on one path gives the
+same normal page twice, and the cache holds only that.
+
+**Behind a CDN that keeps HTML for everyone regardless of cookies**, the pages after the first
+may come from the edge's copy, which is the reader's page with no bar: the preview is then
+visible only on pages the edge does not hold. Bypassing the cache on the
+`__Host-quire_theme_preview` cookie fixes that, and is not needed on Cloudflare Workers, where the
+blog answers every request itself.
+
 ### `/sw.js` and the edge
 
 The service worker ([ADR 0039](decisions/0039-the-blog-reads-without-the-network.md)) is the

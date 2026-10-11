@@ -19,13 +19,15 @@
 // is replaced after each write.
 import { ask, owned, say } from './media-bridge'
 import { pressKey } from './press-key'
+import { isThemeId } from '@/content/themes-builtin'
 import { applyGates } from './settings-controls'
 
 type Violation = { rule: string; file: string; line: number; col: number; subject: string }
 
 type ThemeWords = Partial<Record<
   'fallback' | 'installedOk' | 'unchanged' | 'refusedHead' | 'tooBig' | 'network' | 'serverError'
-  | 'rolledBack' | 'removed' | 'failed' | 'reload' | 'askTitle' | 'askBody' | 'yes' | 'no', string>>
+  | 'rolledBack' | 'removed' | 'failed' | 'reload' | 'askTitle' | 'askBody' | 'yes' | 'no'
+  | 'previewMissing' | 'previewUnreadable' | 'pickGone', string>>
   & { rules?: Record<string, string> }
 
 /** The screen this card is drawn on, fetched again after a write to redraw the picker. */
@@ -200,6 +202,51 @@ async function act(
   }
 }
 
+/** The name the card shows for `id`: its tile's, or the id when no tile carries it any more. */
+const nameOn = (screen: HTMLElement, id: string): string =>
+  [...screen.querySelectorAll<HTMLElement>('[data-theme-cell] [data-name]')].find((el) =>
+    el.closest('[data-theme-cell]')?.getAttribute('data-theme-cell') === id)?.dataset.name ?? id
+
+/** The address without `names`, put back in place so a reload does not act on them again. */
+function dropParams(url: URL, ...names: string[]): void {
+  for (const name of names) url.searchParams.delete(name)
+  history.replaceState(history.state, '', url)
+}
+
+/**
+ * Arriving from a preview: "Choose this theme" on its bar (`?pick-theme=<id>`) presses that tile as
+ * the owner's own click would, so its suggestions move and Save counts it, and nothing is stored
+ * until Save. A Preview the server refused (`?preview-refused=<id>&why=`, `web/theme-preview.ts`)
+ * says why on the card. Either way the parameters leave the address.
+ */
+export function arriveFromPreview(screen: HTMLElement): void {
+  const url = new URL(location.href)
+  const w = wordsOf(pickerIn(screen))
+  // Only an id is ever said on the card: the address is anyone's to write, and a link carrying
+  // `?preview-refused=Your session expired…` must not put a stranger's sentence in the alert.
+  const refused = url.searchParams.get('preview-refused')
+  if (refused !== null) {
+    const why = url.searchParams.get('why') === 'unreadable' ? w.previewUnreadable : w.previewMissing
+    dropParams(url, 'preview-refused', 'why')
+    if (isThemeId(refused)) answer(screen, 'data-theme-error', fill(why, { theme: nameOn(screen, refused) }))
+  }
+  const id = url.searchParams.get('pick-theme')
+  if (id === null) return
+  dropParams(url, 'pick-theme')
+  if (!isThemeId(id)) return
+  const keys = [...screen.querySelectorAll<HTMLElement>('[data-choice-track][data-k="theme"] [data-choice]')]
+  const key = keys.find((k) => k.dataset.choice === id)
+  if (!key) {
+    // Removed in another tab while the preview was open: the stored choice stays, and the card says so.
+    console.warn(`settings: the previewed theme ${id} is not on the Look card any more`)
+    answer(screen, 'data-theme-error', fill(w.pickGone, { theme: id }))
+    return
+  }
+  if (key.getAttribute('aria-pressed') !== 'true') key.click()
+  key.scrollIntoView?.({ block: 'center' })
+  key.focus()
+}
+
 export function wireThemes(screen: HTMLElement): void {
   if (!pickerIn(screen)) return
   let busy = false
@@ -229,6 +276,8 @@ export function wireThemes(screen: HTMLElement): void {
       pickerIn(screen)?.removeAttribute('aria-busy')
     })
   })
+
+  arriveFromPreview(screen)
 
   screen.addEventListener('click', (e) => {
     const target = e.target as HTMLElement

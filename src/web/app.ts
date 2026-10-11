@@ -32,6 +32,8 @@ import { handleSearchPage } from '@/web/search-page'
 import { canonicalPath } from '@/web/canonical-path'
 import { userRedirects } from '@/web/redirects'
 import { cacheHeaders } from '@/web/cache-headers'
+import { handlePreviewLeave, themePreview } from '@/web/theme-preview'
+import { LEAVE_PATH } from '@/web/theme-preview-paths'
 import { securityHeaders } from '@/web/security-headers'
 import { updatePing } from '@/web/update-ping'
 import { capPublicBodies, capThemeUploads } from '@/web/body-cap'
@@ -131,6 +133,11 @@ export function createApp(): Hono {
   // Nothing here ever sent content-encoding, so every page and every asset left the origin
   // uncompressed. Outermost of the three, so it sees the finished body of every route.
   app.use('*', compression())
+
+  // The owner's look at a theme before choosing it (ADR 0072): drawn in a scope the page cache
+  // will not touch, and sent `private, no-store` before `cacheHeaders` above sees it. Inside the
+  // three above so the bar it adds is compressed and tagged like any page. See `web/theme-preview.ts`.
+  app.use('*', themePreview())
 
   // A trailing slash is the same page, not a miss. See `web/canonical-path.ts`.
   //
@@ -321,6 +328,8 @@ export function createApp(): Hono {
   // shadow it, and kept off that route so the public page has no token branch at all.
 
   app.get('/preview/:slug', handlePreview)
+  // Leaving a theme preview: two segments, so it shadows no slug.
+  app.get(LEAVE_PATH, handlePreviewLeave)
 
   // ----- the Open Graph card --------------------------------------------------
   // Everything it needs is in the query string, so it reads no settings and no database.

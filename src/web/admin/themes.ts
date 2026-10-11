@@ -18,6 +18,7 @@ import { installTheme, listInstalledThemes, removeTheme, rollbackTheme } from '@
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
 import { ownerRouter, param } from '@/web/guard'
+import { handlePreviewEnter } from '@/web/theme-preview'
 
 /** The `:id` of the path, or null when it cannot be a theme id. */
 const idOf = (c: Context): string | null => {
@@ -46,6 +47,10 @@ export function themeRoutes() {
   })
 
   router.get('/api/themes', async () => json(await listInstalledThemes()))
+
+  // Preview, from a tile: a GET, so it writes nothing, flushes nothing and logs no activity. It
+  // sets the preview cookie and sends the new tab to the home page (`web/theme-preview.ts`).
+  router.get('/api/themes/:id/preview', (c) => handlePreviewEnter(param(c, 'id')))
 
   router.delete('/api/themes/:id', async (c) => {
     const id = idOf(c)

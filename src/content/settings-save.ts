@@ -14,7 +14,7 @@ import { dataDir } from '@/store/db'
 import { isSiteLang } from '@/locales/langs'
 import { sanitizeNavOrder } from '@/content/nav-order'
 import { isPresetId, isFontPresetId, isChromeFontId, isScheme } from '@/content/themes'
-import { isLiveInstalledTheme, resolveTheme } from '@/content/chosen-theme'
+import { isLiveInstalledTheme, savedTheme } from '@/content/chosen-theme'
 import { isThemePalette, themeFont } from '@/content/theme-choices'
 import {
   sanitizeMenu, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures,
@@ -179,7 +179,7 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
   // An installed theme's palettes and fonts are choices while it is the theme this write leaves
   // chosen (`content/theme-choices.ts`). Anything else is ignored and the stored value stays.
   const theme = nextTheme(input, current)
-  const wearing = resolveTheme({ theme })
+  const wearing = savedTheme({ theme })
   const themePreset = isPresetId(input.themePreset) || isThemePalette(wearing, input.themePreset)
     ? input.themePreset : current.themePreset
 

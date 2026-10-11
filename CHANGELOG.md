@@ -22,6 +22,13 @@
   it and the defaults are drawn, with your choices kept for when you come back. A new version or a
   rollback shows on the next page load. A theme that is removed or damaged is drawn as Plain paper,
   never as a broken page. See [Installing a theme](docs/theme-install-api.md#wearing-one).
+- **Preview a theme before choosing it.** Every theme tile on Settings → Appearance → Theme, built
+  in or installed, has a Preview key that opens your site in a new tab wearing that theme, for you
+  alone, with nothing saved. Browse posts and pages in that tab as long as you like; a thin bar at
+  the top names the theme and offers Leave preview, or Choose this theme, which takes you back to
+  the card with the tile pressed, ready for you to Save. Readers keep seeing your chosen theme the
+  whole time, and a preview is never cached, indexed or written to the activity log. It ends itself
+  after an hour. See [Installing a theme](docs/theme-install-api.md#previewing-one).
 
 ### Changed
 

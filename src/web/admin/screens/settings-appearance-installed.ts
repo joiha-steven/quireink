@@ -67,6 +67,17 @@ export const fill = (template: string, values: Record<string, string>): string =
   template.replace(/\{(\w+)\}/g, (whole, key: string) => values[key] ?? whole)
 
 /**
+ * Preview: the site in a new tab wearing `id`, for the owner alone, with nothing saved
+ * (`web/theme-preview.ts`). A link and not a button, because what it does is open a page: the
+ * browser's own new-tab handling, and no island. On every tile the site can draw, built-in or
+ * installed; never on one whose manifest does not read.
+ */
+export const previewKey = (t: AdminStrings, id: string, name: string): string =>
+  `<a href="/api/themes/${escapeAttr(encodeURIComponent(id))}/preview" target="_blank" rel="noopener"`
+  + ` data-theme-preview-key="${escapeAttr(id)}" aria-label="${escapeAttr(fill(t.themePreviewLabel, { theme: name }))}"`
+  + ` class="${buttonClass('secondary', 'sm')}">${escapeHtml(t.themePreview)}</a>`
+
+/**
  * One installed theme: its key, then the keys that act on the package. `tile` is the built-in
  * tiles' own class pair (`tileClass`/`tileFaces`), handed in so both kinds wear one skin.
  */
@@ -99,7 +110,7 @@ export function installedTile(
   // the first and its own keys in the second, so the two keys in a row are one height even when
   // one of them has a Rollback key that wraps under its Remove (measured at 375: 242 against 282).
   return `<div class="row-span-2 grid min-w-0 grid-rows-subgrid" data-theme-cell="${escapeAttr(id)}">${key}`
-    + `<div class="flex flex-wrap gap-2 self-start">${rollback}`
+    + `<div class="flex flex-wrap gap-2 self-start">${theme.readable ? previewKey(t, id, current.name) : ''}${rollback}`
     + `<button type="button" data-theme-remove="${escapeAttr(id)}" data-name="${escapeAttr(current.name)}"`
     + ` class="${buttonClass('danger', 'sm')}">${escapeHtml(t.themeRemove)}</button></div>`
     + `</div>`
@@ -155,6 +166,7 @@ export function themeWords(t: AdminStrings): string {
     tooBig: t.themeTooBig, network: t.themeNetwork, serverError: t.themeServerError,
     rolledBack: t.themeRolledBack, removed: t.themeRemoved, failed: t.themeActionFailed,
     askTitle: t.askThemeRemoveTitle, askBody: t.askThemeRemoveBody, yes: t.themeRemove, no: t.askCancel,
+    previewMissing: t.themePreviewMissing, previewUnreadable: t.themePreviewUnreadable, pickGone: t.themePreviewPickGone,
     rules: t.themeRules,
   }))
 }
