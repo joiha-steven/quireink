@@ -189,7 +189,7 @@ function readByIslands(): Map<string, string> {
   // (`data-turnstile`, `data-tz`) and would be reported against a directory that was never
   // asked about it. `scripts/` steers by markers it does not own either.
   for (const file of islands) {
-    if (!file.startsWith('src/admin')) continue
+    if (!file.replaceAll('\\', '/').startsWith('src/admin')) continue
     const text = bare(readFileSync(file, 'utf8'))
     for (const hit of text.matchAll(/\[(data-[a-z0-9-]+)[\]=]|getAttribute\(\s*['"`](data-[a-z0-9-]+)/g)) {
       const name = hit[1] ?? hit[2] ?? ''

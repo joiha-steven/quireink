@@ -11,8 +11,11 @@
 // `src/admin/dist/*.js` is proof the boundary broke no matter which import let it through.
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const DIST = new URL('../../src/admin/dist', import.meta.url).pathname
+// `fileURLToPath`, not `URL.pathname`, for the reason in scripts/build-admin.ts: on Windows the
+// latter is "/C:/..." and the dist directory never exists.
+const DIST = fileURLToPath(new URL('../../src/admin/dist', import.meta.url))
 
 // Each canary is a string that exists ONLY on the server side of the boundary.
 const CANARIES = [

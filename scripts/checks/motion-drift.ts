@@ -57,7 +57,7 @@ const FILL_MODE = /animation-fill-mode\s*:\s*(?!none)([a-z-]+)/
 
 const drift: string[] = []
 for (const file of files) {
-  const rel = file.slice(ROOT.length + 1)
+  const rel = file.slice(ROOT.length + 1).replaceAll('\\', '/')
   if (ENGINE.includes(rel)) continue
   // ⚠️ COMMENTS OUT FIRST. The first run of this check reported `0ms` from a sentence that
   // happened to follow the word "animation" two lines above it, which is the shape of a guard

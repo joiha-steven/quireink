@@ -45,7 +45,7 @@ for (const dir of ['locales', 'locales/admin']) {
 }
 
 for (const file of files) {
-  const lang = file.slice(file.lastIndexOf('/') + 1, -3)
+  const lang = file.slice(Math.max(file.lastIndexOf('/'), file.lastIndexOf('\\')) + 1, -3)
   const [open, close] = QUOTES[lang as keyof typeof QUOTES] ?? DEFAULT_QUOTES
   const src = readFileSync(file, 'utf8')
   for (const m of src.matchAll(LINE)) {
