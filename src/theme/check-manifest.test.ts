@@ -97,6 +97,18 @@ describe('A6: theme.json', () => {
     expect(failures(withField('layout', { menu: 'rail', footer: 'x' }))).toEqual(['layout.footer'])
   })
 
+  it('takes deepenMetaInk as a boolean only, and leaves it out when the theme does', () => {
+    for (const on of [true, false]) {
+      const r = checkThemeManifest(withField('layout', { deepenMetaInk: on }), OPTS)
+      expect(r.ok && r.manifest.layout).toEqual({ deepenMetaInk: on })
+    }
+    const menuOnly = checkThemeManifest(withField('layout', { menu: 'rail' }), OPTS)
+    expect(menuOnly.ok && menuOnly.manifest.layout).toEqual({ menu: 'rail' })
+    for (const bad of ['true', 1, null, {}]) {
+      expect(failures(withField('layout', { deepenMetaInk: bad }))).toEqual(['layout.deepenMetaInk'])
+    }
+  })
+
   it('refuses unknown keys at every level, __proto__ included', () => {
     expect(failures({ ...FULL, extra: 1 })).toEqual(['extra'])
     expect(failures(JSON.parse('{"api":1,"id":"a","name":"A","version":"1.0.0","author":"a","license":"MIT","__proto__":{"x":1}}')))

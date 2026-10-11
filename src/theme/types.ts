@@ -73,7 +73,12 @@ export type ThemeManifest = {
   homepage?: string
   license: string
   description?: string
-  layout?: { menu?: 'rail' | 'header' }
+  /**
+   * Layout switches from the engine's own list. `deepenMetaInk`: the theme lays the page on a
+   * ground darker than the palette's background, so the engine takes the meta ink a step toward
+   * the text ink for everything on the page (default false).
+   */
+  layout?: { menu?: 'rail' | 'header'; deepenMetaInk?: boolean }
   palettes?: ThemePalette[]
   fonts?: ThemeFont[]
   suggests?: { palette?: string; readingFont?: string; chromeFont?: string }

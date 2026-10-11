@@ -16,6 +16,7 @@ import { fontPreloadHrefs } from '@/content/themes'
 import { resolveAppIcon, getDefaultTheme } from '@/content/settings'
 import { penStyleFor, themeSheet } from '@/web/assets'
 import { resolveTheme } from '@/content/themes-builtin'
+import { deepenMetaInkCss } from '@/web/layout-styles'
 import { CUSTOM_COL_ATTR, DEFAULT_RAIL_WIDTH } from '@/render/rail-css'
 
 // The settings half of the sheet lives in `layout-styles.ts` now, and is re-exported here for
@@ -173,11 +174,14 @@ export function renderDocument(
   // ink. `data-pen-ink` names the block for a test or a person reading the source; nothing
   // selects on it.
   const ink = head.stylesheet ? penStyleFor(body, settings.inks) : ''
+  // The theme's meta-ink switch rides straight behind its sheet (`deepenMetaInkCss` says why).
+  const deepen = deepenMetaInkCss(theme)
   const sheet = head.stylesheet
     ? [head.stylesheet, themeSheet(theme)]
         .filter(Boolean)
         .map((href) => `<link rel="stylesheet" href="${escapeAttr(href)}">`)
-        .join('') + (ink ? `<style data-pen-ink>${ink}</style>` : '')
+        .join('') + (deepen ? `<style data-meta-ink>${deepen}</style>` : '')
+        + (ink ? `<style data-pen-ink>${ink}</style>` : '')
     : ''
   // `rel="icon"` stays conditional ON PURPOSE, and an audit that wants it unconditional is
   // asking for bytes that buy nothing: `/favicon.ico` is the path a browser asks for when

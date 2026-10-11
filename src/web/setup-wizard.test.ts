@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/test/sqlite'
 import { createApp } from '@/web/app'
-import { getSettings } from '@/content/settings'
+import { getSettings, saveSettings } from '@/content/settings'
 import { APP_VERSION } from '@/version'
 import { resetEnrolment } from '@/web/enrol-routes'
 import { resetLimits } from '@/server/rate-limit'
@@ -141,6 +141,30 @@ describe('the four questions after the account', () => {
     const done = await getSettings()
     expect(done.setupDone).toBe(true)
     expect(done.seenRelease).toBe(APP_VERSION)
+  })
+
+  it("sets the chrome font the chosen theme suggests, since no step has asked for one", async () => {
+    const cookie = await session()
+    await asOwner('/setup/look', { theme: 'code' })(cookie)
+    expect((await getSettings()).chromeFont).toBe('jetbrains-mono')
+  })
+
+  it('keeps the chrome font of a blog whose setup is finished, when the step is visited again', async () => {
+    const cookie = await session()
+    await asOwner('/setup/look', { theme: 'code' })(cookie)
+    await saveSettings({ chromeFont: 'plex-mono' })
+    await asOwner('/setup/look', { theme: 'code' })(cookie)
+    await asOwner('/setup/look', { look: 'notes' })(cookie)
+    expect(await getSettings()).toMatchObject({ theme: 'notes', chromeFont: 'plex-mono' })
+  })
+
+  it('leaves the chrome font alone for plain, an unknown theme, or no answer', async () => {
+    const cookie = await session()
+    await saveSettings({ chromeFont: 'plex-mono' })
+    for (const form of [{ theme: 'plain' }, { theme: 'broadsheet' }, { theme: '<x>' }, {}] as Record<string, string>[]) {
+      await asOwner('/setup/look', form)(cookie)
+      expect({ form, chromeFont: (await getSettings()).chromeFont }).toEqual({ form, chromeFont: 'plex-mono' })
+    }
   })
 
   it('keeps the dialect it had when the form carried no answer at all', async () => {

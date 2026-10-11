@@ -7,6 +7,13 @@
 // comparison with this dialect's name. Their own file because the sheet sits at the 400-line
 // ceiling.
 //
+// ⚠️ THE ONE THING A BUILT-IN THEME DOES THAT A THEME FROM A ZIP CANNOT YET. These rules are a
+// registry entry, not part of the sheet, so the theme checker (`theme/`, ADR 0072) never reads
+// them; a theme.json has no field that hands rules to the rail's computed queries. Until it
+// does, they are held to the checker's value rules by a test of their own
+// (`web/builtin-themes-pass-checker.test.ts`): no colour, size or family written by hand, no
+// `!important`. Anything more that a built-in needs here is a switch the standard lacks.
+//
 // NO BACKTICKS anywhere below: each is one template literal and a backtick ends it.
 // `check:css-literal` enforces that for the first.
 

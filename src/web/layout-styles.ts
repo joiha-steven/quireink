@@ -12,7 +12,7 @@ import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss, shapeToCss, tableToCss } from '@/content/settings'
 import { DEFAULT_RAIL_WIDTH, railThemeCss, singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, monoTracking } from '@/render/font-faces'
-import { resolveTheme } from '@/content/themes-builtin'
+import { resolveTheme, type SiteTheme } from '@/content/themes-builtin'
 import { t } from '@/i18n/i18n'
 import { LISTS_PLAIN_CSS } from '@/pen/lists.css'
 
@@ -122,6 +122,34 @@ export function labelVarsCss(lang: SiteLang): string {
  * block so the cascade reads exactly as it did when the two were one string — see
  * `web/assets.ts` for why it was split.
  */
+/**
+ * The meta ink, a step toward the text ink, for a theme whose page lies on a ground darker than
+ * the palette's background (`layout.deepenMetaInk`, `content/themes-builtin.ts`).
+ *
+ * The palette's `--c-meta` is chosen against `--c-bg`. The notebook puts a desk under the page
+ * that is the page darkened, and the tagline, the footer and the dates down the rail stand on
+ * it: mono's #6d6c6c measured 4.47:1 there, under the 4.5 AA asks at that size. 94% of the meta
+ * ink into the text ink lands it at 4.60:1, and every palette moves by the same slice, derived
+ * from its own two tokens.
+ *
+ * TWO DECLARATIONS, because a custom property that names itself is a cycle and not a reference
+ * to its parent: `--c-meta` mixed from `var(--c-meta)` on the body made it invalid for
+ * everything under it (shipped that way 2026-09-14 to 09-23). The mix is taken on the root,
+ * where `--c-meta` is the palette's own, and handed to the body under the engine's name.
+ *
+ * The engine's and not the theme sheet's: a theme may not set an engine variable (V1, ADR
+ * 0072). Written by `renderDocument` straight after the theme's sheet, where the rule sat when
+ * the sheet carried it, so the cascade is unchanged; and only where that sheet is linked, so the
+ * sign-in pages, which wear no theme, keep the palette's own ink. The owner's custom CSS still
+ * comes after it and has the last word.
+ */
+export function deepenMetaInkCss(theme: SiteTheme): string {
+  if (!theme.layout.deepenMetaInk) return ''
+  const root = `html[data-theme="${theme.id}"]`
+  return `${root}{--meta-deepened:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}`
+    + `${root} body{--c-meta:var(--meta-deepened)}`
+}
+
 export function pageStyles(settings: SiteSettings, extra = ''): string {
   const theme = resolveTheme(settings)
   return [

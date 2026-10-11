@@ -324,20 +324,18 @@ html[data-look=code] .toc li:has(.rail-sub)::before{content:counter(h2) "." coun
 }
 
 /* --- THE WINDOW'S TWO EDGES, AND THE FACE THE CHROME SPEAKS IN --------------
-   What this dialect drew before 2026-09-13 was a set of MARKS on the ordinary page, and on
-   a blog whose chrome font was the default it was nearly indistinguishable from the plain
-   look - because the default chrome font WAS the monospace, so the plain page was already
-   speaking in code. The default moved to the neutral face (content/fonts.ts) and the
-   monospace moved here, where it belongs.
+   THE CHROME SPEAKS IN THE OWNER'S CHROME FONT, and this sheet does not name it. It set
+   body in --font-mono through 2.2.19, which left the chrome-font control drawing nothing on
+   a blog wearing this theme; a theme may not override an owner's setting (ADR 0072), so
+   the monospace is now what the theme SUGGESTS (content/themes-builtin.ts) and a blog that
+   wore this theme before then reads its chrome font as JetBrains Mono, the face it was
+   drawn in (content/settings.ts). The headlines and the code keep --font-mono below: those
+   are this dialect's marks, not its chrome.
 
    NO FILLED SURFACES. A tinted sidebar was drawn and rejected, then tinted bars top and
    foot, rejected too: this dialect dresses the chrome, and a filled panel turns a piece of
    furniture into a second surface arguing with the words. Two rules running the full width
    of the glass are what a window has that a page does not.
-
-   font-family on body, NEVER on --font-sans: a blog whose reading font follows the chrome
-   font has --font-reading: var(--font-sans), so moving that variable would set the ARTICLE
-   in monospace, which is the one thing this dialect must never do.
 
    NO RULE UNDER THE HEADER AND NONE OVER THE FOOTER since 2026-09-14. They were two
    hairlines the width of the window, and with them went the three rules that existed only to
@@ -347,18 +345,11 @@ html[data-look=code] .toc li:has(.rail-sub)::before{content:counter(h2) "." coun
    removing the stretch moves nothing. The header keeps its 28px of air and the footer takes
    the 3rem the rest of the product gives it (public.css.ts) — it was .6rem here, which put
    the copyright line nine pixels off the bottom edge of the page with nothing under it. */
-html[data-look=code] body{font-family:var(--font-mono)}
-/* THE NAME ON THE HEADER TOO. It carries --font-sans of its own, which the chrome font
-   setting fills in — and since that default moved to Inter, the one word this dialect is
-   introduced by was the one word in the header not speaking it: an Inter wordmark over a
-   monospace strapline, monospace menu and bracketed monospace controls. The notebook's own
-   name rule exists for the mirror image of this (look-notes.css.ts). */
-html[data-look=code] .site-bar .title{font-family:var(--font-mono)}
 
 /* --- THE HEADLINES ARE SET IN THE MONOSPACE, BOLD ---------------------------
    Since 2026-09-23 the contrast moved one step inward: every headline - the piece's title,
    each title in a feed or on the front, the section heads inside a piece - now speaks the
-   chrome's face, and only the running text stays in the book serif. With the headlines in
+   monospace, and only the running text stays in the book serif. With the headlines in
    the serif the dialect read as the plain page with a monospace frame; a heading is a
    label for what follows, which is exactly the kind of word this dialect already sets in
    code. What stays analogue is still everything a reader reads for more than a line: the

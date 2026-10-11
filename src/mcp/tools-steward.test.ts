@@ -81,6 +81,23 @@ describe('the steward tools', () => {
     expect((await getSettings()).theme).toBe('code')
   })
 
+  it("update_appearance leaves the chrome font alone when only the theme changes, and says so", async () => {
+    await saveSettings({ chromeFont: 'plex-mono' })
+    await call('update_appearance', { theme: 'code' })
+    expect((await getSettings()).chromeFont).toBe('plex-mono')
+    await call('update_appearance', { theme: 'notes', chromeFont: 'inter' })
+    expect((await getSettings()).chromeFont).toBe('inter')
+    const res = await app.request('/api/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}`, 'sec-fetch-site': 'none' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }),
+    })
+    const tools = (await res.json() as { result: { tools: { name: string; description: string }[] } }).result.tools
+    const description = tools.find((t) => t.name === 'update_appearance')!.description
+    expect(description).toContain('Changing the theme leaves the chrome font as it is')
+    expect(description).toContain('code: jetbrains-mono')
+  })
+
   it('refuses a color that is not on the menu — the schema IS the guard', async () => {
     const out = await call('update_appearance', { palette: '#ff0000' })
     expect(out.isError || out.rpcError !== '').toBe(true)

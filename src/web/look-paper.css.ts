@@ -62,7 +62,12 @@ html[data-look=paper] .site-bar .title{font-size:calc(var(--fs-h1) * 1.5);
    Every kicker, section head, byline and date on a paper is set in a sans at ten or eleven
    pixels with the letters opened up, and that single habit is most of what separates a
    newspaper from a website. Uppercase by TEXT-TRANSFORM, never by typing capitals: the feed,
-   the search result and the screen reader all still receive the word as it was written. */
+   the search result and the screen reader all still receive the word as it was written.
+   THE SANS IS THE OWNER'S CHROME FONT. These named Inter by hand through 2.2.19, which is a
+   setting a theme may not override (ADR 0072), so on this theme the chrome-font control sets
+   the labels and the rest of the chrome stays in the reading face (below). A blog that wore
+   this theme before then reads its chrome font as Inter, the face it was drawn in
+   (content/settings.ts), and Inter is what the theme suggests. */
 /* The shelf's own headings are labels, not headlines: "Contents" over a list of sections is
    the same kind of word as "Featured" over a row of cards. */
 html[data-look=paper] :is(.front-label,.fc-cat,.read-next-label,.rail h2),
@@ -71,23 +76,23 @@ html[data-look=paper] :is(.front-label,.fc-cat,.read-next-label,.rail h2),
    working. The shelf's invented heading sat in that list for one build and was the only
    label on the page still in sentence case, with nothing anywhere saying why. */
 html[data-look=paper] article .rail-inner > nav:not(.toc)::before{
-  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-family:var(--font-sans);
   text-transform:uppercase;letter-spacing:.08em;font-weight:600}
 html[data-look=paper] :is(.post-meta,.fc-meta,.t-small.text-meta,.post-taxo){
-  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-family:var(--font-sans);
   letter-spacing:.02em}
 /* A LIST ROW'S KICKER is the same kind of word as the front page's .fc-cat above: a section
    label over a headline, set the way a paper sets one. The facts line under the standfirst
    takes the rule above. */
 html[data-look=paper] .card-kick{
-  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-family:var(--font-sans);
   text-transform:uppercase;letter-spacing:.07em;font-weight:600}
 
 /* --- THE CHROME IS SET IN THE READING FACE ----------------------------------
-   A paper has no monospace on it anywhere, and this is the move that changes the most:
+   This is the move that changes the most:
    rail, meta, panel and footer stop being a second voice. The file is on the page
-   either way, so it costs nothing to load. On body, never on --font-sans: see the
-   note in look-code.css.ts for what moving that variable does to the article. */
+   either way, so it costs nothing to load. On body, never on --font-sans: that variable is
+   the owner's chrome font, which the labels above are set in. */
 html[data-look=paper] body{font-family:var(--font-reading)}
 
 /* --- THE MASTHEAD -----------------------------------------------------------
@@ -214,8 +219,7 @@ html[data-look=paper] .post-facts{grid-row:4;justify-self:center;margin-top:1.1r
 html[data-look=paper] .post-cat::after{content:none}
 /* The section is a KICKER: the same small letterspaced capitals the front page puts over a
    card, so a piece opens the way its own summary on the front page did. */
-html[data-look=paper] .post-cat{font-family:'Inter','Inter Fallback',system-ui,-apple-system,
-    'Segoe UI',sans-serif;
+html[data-look=paper] .post-cat{font-family:var(--font-sans);
   text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--c-heading);
   text-decoration:none}
 html[data-look=paper] article > header .mt-2{margin-top:.5rem}
@@ -276,13 +280,17 @@ html[data-look=paper] .prose .table-scroll::before{content:var(--l-table) " " co
   letter-spacing:var(--ls-small)}
 
 /* TABLES, ruled the way a paper rules them: a line over the head, a line under it, a line
-   under the body, and nothing vertical. The variables are the owner's table knobs
-   (content/settings-table.ts); this dialect answers them for the length of the look. */
-html[data-look=paper] .prose table{--tbl-rule-x:0;--tbl-rule-y:0;--tbl-head-bg:transparent;
-  --tbl-head-rule:1px;border-top:2px solid var(--c-heading);
+   under the body, and nothing vertical, and no tint on the head. Those are four of the
+   owner's table knobs (content/settings-table.ts), answered here for the length of the look
+   by setting the borders and the ground themselves: the knobs' variables are the engine's,
+   and a theme may read them but not set them (ADR 0072). Banding, padding, the first column
+   and the phone floor stay the owner's. */
+html[data-look=paper] .prose table{border-top:2px solid var(--c-heading);
   border-bottom:2px solid var(--c-heading);font-size:var(--fs-small);
   line-height:var(--lh-small);letter-spacing:var(--ls-small)}
-html[data-look=paper] .prose th{border-bottom-color:var(--c-heading)}
+html[data-look=paper] .prose :is(th,td){border-width:0}
+html[data-look=paper] .prose th{border-bottom-width:1px;background:transparent;
+  border-bottom-color:var(--c-heading)}
 
 /* NOTES at the foot: the short rule a printed page uses, not a full-width one. */
 html[data-look=paper] hr.fn-rule{width:8rem;margin-left:0;border-top-color:var(--c-heading)}

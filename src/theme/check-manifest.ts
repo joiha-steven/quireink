@@ -137,10 +137,24 @@ function readHomepage(v: unknown, r: Reader): string | undefined {
 
 function readLayout(v: unknown, r: Reader): ThemeManifest['layout'] {
   if (!isObj(v)) return void r.fail('layout')
-  r.only(v, ['menu'], 'layout')
-  if (v.menu === undefined) return {}
-  if (v.menu !== 'rail' && v.menu !== 'header') return void r.fail('layout.menu')
-  return { menu: v.menu }
+  r.only(v, ['menu', 'deepenMetaInk'], 'layout')
+  const out: NonNullable<ThemeManifest['layout']> = {}
+  let ok = true
+  if (v.menu !== undefined) {
+    if (v.menu === 'rail' || v.menu === 'header') out.menu = v.menu
+    else {
+      r.fail('layout.menu')
+      ok = false
+    }
+  }
+  if (v.deepenMetaInk !== undefined) {
+    if (typeof v.deepenMetaInk === 'boolean') out.deepenMetaInk = v.deepenMetaInk
+    else {
+      r.fail('layout.deepenMetaInk')
+      ok = false
+    }
+  }
+  return ok ? out : undefined
 }
 
 function readColours(v: unknown, r: Reader, path: string): ThemePaletteColors | undefined {

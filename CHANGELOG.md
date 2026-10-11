@@ -15,14 +15,30 @@
   and dark switch is now labelled "Light / dark", so the two controls no longer share a name.
 - **New names for custom CSS:** `html[data-theme]` carries the theme's id on every page, plain
   included, and `--font-display`, `--l-figure` and `--l-table` (the figure and table labels in
-  the blog's language) are available to every theme, not only Newspaper. `data-look` is
+  the blog's language) are available to every theme, not only Newspaper. `--rail-gap`, the gap
+  between the sidebar and the reading column, is promised too. `data-look` is
   unchanged. The light and dark button's label moved from `body[data-theme]` to
   `body[data-theme-label]`.
+- **Picking a theme offers the site font it is drawn for.** In the Appearance tab, pressing
+  Source code sets the site font to JetBrains Mono on the form, and Newspaper or Notebook to
+  Inter, unsaved, so it can be changed before saving; a font picked by hand in the same edit is
+  kept. The setup step sets it outright, since nothing has asked for a font by then. The MCP
+  `update_appearance` tool changes the font only when it is sent, and its description now says
+  which font each theme is drawn for.
 - **The Custom CSS box groups its class names** into the ones on every page, the blog pages and
   the front page.
 
 ### Fixed
 
+- **The site font now applies on the Source code, Newspaper and Notebook themes.** Each of their
+  stylesheets set the header, menu, sidebar and footer in a face of its own, so the setting
+  changed nothing there. A blog that already wore one of them keeps its header, menu, sidebar and
+  footer as they were: its site font is now read as the face the theme was drawing (JetBrains
+  Mono for Source code, Inter for Newspaper and Notebook), and the admin shows that face. The few
+  pieces that always followed the setting (the copy button on a code block, link cards, the pen's
+  toolbar) now follow that face too, so on such a blog they can change to match the chrome
+  around them. On Newspaper the setting sets
+  the labels (sections, dates, kickers) and the rest of the chrome stays in the reading face.
 - **The setup steps that pick a theme, a pen or a typeface no longer scroll sideways.** A hidden
   radio took the full width of the page, which pushed it 743px wider than the window on a
   desktop and 56px on a phone. The tour now fails if any of those steps scrolls sideways.

@@ -8,14 +8,17 @@ import { typographyToCss } from '@/content/settings'
 import { DEFAULT_TYPOGRAPHY, TYPE_ROLES, getFontPreset } from '@/content/themes'
 import { PUBLIC_CSS } from '@/web/public.css'
 import { monoTracking } from '@/render/font-faces'
-import { builtinTheme } from '@/content/themes-builtin'
+import { builtinTheme, type SiteTheme } from '@/content/themes-builtin'
 import { LOOK_PAPER_CSS } from '@/web/look-paper.css'
 import { LOOK_NOTES_CSS } from '@/web/look-notes.css'
 
 // The three blocks together, which is what `MONO_TRACKING` used to be and what these
 // assertions are about: WHICH selectors the correction may and may not name. Which of the
 // three a given page actually gets is `monoTracking`'s own question, asserted below.
-const MONO_TRACKING = monoTracking('plex-mono', builtinTheme('code')) + monoTracking('jetbrains-mono', builtinTheme('plain'))
+// FORCED_MONO forces JetBrains Mono on the chrome whatever the setting says: no built-in theme
+// does since ADR 0072, but the switch is still the engine's, so it is exercised here.
+const FORCED_MONO: SiteTheme = { ...builtinTheme('code'), chromeFace: 'jetbrains-mono' }
+const MONO_TRACKING = monoTracking('plex-mono', FORCED_MONO) + monoTracking('jetbrains-mono', builtinTheme('plain'))
 
 const DIR = './.tmp/test-typography'
 freshDatabase(DIR)
@@ -343,26 +346,37 @@ describe('a page carries only the tracking it can match', () => {
     expect(jb).not.toContain('plex-mono')
   })
 
-  it('the source-code look carries the look block whatever the font is', () => {
-    expect(monoTracking('inter', builtinTheme('code'))).toContain('html[data-theme="code"]')
-    expect(monoTracking('inter', builtinTheme('code'))).not.toContain('data-chrome-font')
+  it('a theme that forces a mono chrome carries its block whatever the font is', () => {
+    expect(monoTracking('inter', FORCED_MONO)).toContain('html[data-theme="code"]')
+    expect(monoTracking('inter', FORCED_MONO)).not.toContain('data-chrome-font')
   })
 
-  it('the newspaper and the notebook correct only what is still mono there', () => {
-    // look=paper puts body in the reading face and look=notes in Inter, so the chrome rules
-    // must not carry -0.05em (Literata 15.2px measured at -0.76px). `.code-copy` names
-    // var(--font-sans) itself, which is still the mono, so it keeps the correction.
-    for (const look of ['paper', 'notes']) {
-      for (const font of ['plex-mono', 'jetbrains-mono']) {
-        const css = monoTracking(font, builtinTheme(look))
-        expect(css).toContain(`html[data-chrome-font="${font}"] .code-copy{letter-spacing:`)
-        expect(css).not.toContain('aside.series')
-        expect(css).not.toContain('header.site')
-        expect(css).not.toContain('body')
-      }
+  it('the source-code and notebook themes track the chrome font the owner chose, as plain does', () => {
+    // Both set the chrome in the chrome font since ADR 0072, so the correction follows the
+    // setting: none on a proportional face, the font's own block on a mono one.
+    for (const look of ['code', 'notes']) {
+      expect(monoTracking('inter', builtinTheme(look))).toBe('')
+      expect(monoTracking('reading', builtinTheme(look))).toBe('')
+      const jb = monoTracking('jetbrains-mono', builtinTheme(look))
+      expect(jb).toContain('html[data-chrome-font="jetbrains-mono"] aside.series')
+      expect(jb).not.toContain('data-theme=')
+    }
+  })
+
+  it('the newspaper corrects only what is still mono there', () => {
+    // It sets body in the reading face, so the chrome rules must not carry -0.05em (Literata
+    // 15.2px measured at -0.76px). `.code-copy` names var(--font-sans) itself, which is the
+    // mono, so it keeps the correction.
+    for (const font of ['plex-mono', 'jetbrains-mono']) {
+      const css = monoTracking(font, builtinTheme('paper'))
+      expect(css).toContain(`html[data-chrome-font="${font}"] .code-copy{letter-spacing:`)
+      expect(css).not.toContain('aside.series')
+      expect(css).not.toContain('header.site')
+      expect(css).not.toContain('body')
     }
     expect(monoTracking('jetbrains-mono', builtinTheme('plain'))).toContain('aside.series')
   })
+
 
   it('sets the site name by `.site-bar .title` in both looks, so an h1-wrapped name is not mono', () => {
     // `> .title` missed the name when a listing wraps it in <h1 class="site-h1">: it kept
@@ -378,7 +392,7 @@ describe('a page carries only the tracking it can match', () => {
   })
 
   it('the look block comes LAST, so it wins over a font it is no longer drawing', () => {
-    const both = monoTracking('plex-mono', builtinTheme('code'))
+    const both = monoTracking('plex-mono', FORCED_MONO)
     expect(both.indexOf('data-theme="code"')).toBeGreaterThan(both.indexOf('data-chrome-font'))
   })
 })

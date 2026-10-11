@@ -33,6 +33,7 @@ import { refusedSetting } from '@/content/settings-refuse'
 import { isSiteLang } from '@/locales/langs'
 import { siteStepScreen, faceStepScreen, readerStepScreen, lookStepScreen } from '@/web/setup-page'
 import { APP_VERSION } from '@/version'
+import { builtinTheme, isBuiltinThemeId } from '@/content/themes-builtin'
 import { backupLoading, holdingForClaim } from '@/server/load-backup'
 
 const html = (body: string, status = 200): Response =>
@@ -352,6 +353,13 @@ export function setupWizardRoutes(): OwnerRouter {
     const form = await c.req.parseBody().catch(() => ({})) as Record<string, unknown>
     // `theme`, or `look` from a setup page served before the field was renamed (ADR 0072).
     const theme = form.theme ?? form.look
+    // AND THE FACE THE THEME IS DRAWN FOR, on a first run only. Nobody has chosen a chrome font
+    // yet then (no step asks), so the theme's suggestion is the answer rather than the install
+    // default: a blog that picks Source code here gets its monospace chrome. The step stays
+    // reachable after setup, and by then the font in the settings may be one the owner chose,
+    // so a finished blog keeps it. The admin offers the same suggestion and lets them refuse it.
+    const firstRun = !(await getSettings()).setupDone
+    const suggested = firstRun && isBuiltinThemeId(theme) ? builtinTheme(theme).suggests.chromeFont : undefined
     // THE LAST QUESTION, so this is where the run is finished. Written here rather than at
     // each step: a setup somebody abandoned halfway is one they should be offered again.
     //
@@ -366,6 +374,7 @@ export function setupWizardRoutes(): OwnerRouter {
       // submit from a browser that lost the radios lands on the default rather than on a
       // dialect nobody chose.
       ...(typeof theme === 'string' ? { theme } : {}),
+      ...(suggested ? { chromeFont: suggested } : {}),
     })
     // Into the editor, not the dashboard. The last thing setup should do is hand somebody a
     // control panel; the first post is the reason they installed this.

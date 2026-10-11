@@ -77,6 +77,7 @@ export const PROMISED_VARS: { group: string; vars: Promised[] }[] = [
     vars: [
       { name: '--shell-w', note: 'the reading column' },
       { name: '--sp', note: 'the spacing unit every gap is a multiple of' },
+      { name: '--rail-gap', note: 'the gap between the sidebar and the reading column, where a sidebar stands beside it' },
     ],
   },
   {

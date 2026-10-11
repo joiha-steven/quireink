@@ -4,8 +4,9 @@ The public site can be dressed in one of four dialects: **plain** (no sheet at a
 **code**, **paper** and **notes**. Since ADR 0072 they are the four built-in themes, the
 admin calls the setting "Theme", and `settings.theme` holds the id (`settings.look`, the
 old name, is still read and written beside it). How the four differ beyond their sheets (the
-menu in the masthead, a headline face, the rail rules and the chrome tracking) is declared
-once, in `content/themes-builtin.ts`, and nothing else in the renderer names a theme
+menu in the masthead, a headline face, the rail rules, the chrome tracking, and
+`deepenMetaInk`, which takes the meta ink a step toward the text ink for a page laid on a
+ground darker than the palette's background) is declared once, in `content/themes-builtin.ts`, and nothing else in the renderer names a theme
 (`theme-switches.test.ts`). The rest of this page predates the decision and still describes
 what runs.
 
@@ -17,6 +18,29 @@ what runs.
   earth 20 KB for a look that was off by default.
 - **One attribute selector, `html[data-look=<id>]`, on every rule.** Switching away leaves
   no trace: the attribute goes and the sheet stops being linked. Tested.
+- **The rules a theme from a zip must pass, and nothing looser.** Each sheet, minified as it is
+  served, goes through the install-time checker in [`src/theme/`](../../src/theme/index.ts)
+  ([ADR 0072](../decisions/0072-a-theme-is-a-checked-skin-over-the-one-markup.md)) against the
+  real appearance contract, and must come back with nothing to report
+  (`web/builtin-themes-pass-checker.test.ts`). In short: colours only from the palette's
+  variables or derived from them, sizes only from the type variables, `font-family` only
+  `var(--font-reading)`, `var(--font-sans)`, `var(--font-mono)`, `var(--font-display)` or
+  `inherit`, no `!important`, classes, ids and `data-*` only from the contract, rules for
+  both the blog pages and the front page, no words in `content:`, and every custom property
+  the sheet sets named `--t-*`, so no theme writes over a variable the engine or the owner
+  sets. A built-in that needs something the checker refuses has found a gap in the standard;
+  the standard is fixed, the sheet is not exempted.
+- **One exception, and it is not in a sheet:** the source-code theme's rail rules
+  (`web/look-code-rail.css.ts`) sit inside media queries computed from the column width, so
+  they are a registry entry and the checker never reads them. A theme from a zip has no way
+  to do that yet. They are held to the value rules on their own (no colour, size or family
+  written by hand, no `!important`).
+- **The owner's chrome font reaches every theme.** A sheet never sets `body` (or anything
+  else that stands for the chrome) in a face of its own. Each of the three did through
+  2.2.19, which left the chrome-font control drawing nothing on them; a settings row from
+  then reads the chrome font as the face its theme drew (`legacyChromeFont` in
+  `content/themes-builtin.ts`, read in `content/settings.ts`), so a blog that was already
+  running looks the same, and a theme's preferred face is what it `suggests`.
 - **Colour from theme tokens only.** No hex, ever.
 - **No words in `content:`.** A CSS content string cannot be translated. The one place a
   dialect needs language — the newspaper's `Fig.` and `Table` — rides in the per-page
@@ -51,11 +75,12 @@ The furniture around the article reads as source code; the reading column stays 
 The contrast is the point. Chosen in Admin → Settings → Appearance → Theme, and
 server-rendered as `<html data-look="code">` so the first paint is right and no island runs.
 
-- **The monospace belongs to this look**, set on `body` and never on `--font-sans` (a blog
-  whose reading font FOLLOWS the chrome font has `--font-reading: var(--font-sans)`, so
-  moving that variable would set the article in monospace). Until 2026-09-13 the product's
-  DEFAULT chrome font was JetBrains Mono, which meant an untouched blog already read as
-  technical and left this dialect with almost nothing to say; the default is Inter now.
+- **The chrome speaks in the owner's chrome font; the headlines and the code in the
+  monospace.** The sheet set `body` in `--font-mono` through 2.2.19, which overrode the
+  chrome-font setting; the monospace is now what this theme suggests, and a blog that wore it
+  before reads its chrome font as JetBrains Mono, so it looks as it did. Until 2026-09-13
+  the product's DEFAULT chrome font was JetBrains Mono, which meant an untouched blog already
+  read as technical and left this dialect with almost nothing to say; the default is Inter now.
 - **No filled surfaces, and since 2026-09-14 no bars either.** A tinted sidebar was drawn and
   rejected, then tinted bars top and foot, rejected too: this dialect dresses the chrome, and
   a filled panel turns furniture into a second surface arguing with the words. What was left
@@ -155,8 +180,12 @@ palette's.
   or the band is cut into the underline's tiles). In Mono the accent is near-black, so the
   band is grey; every other palette colours it.
 - **Ragged right, whatever the book-typography switch says.**
-- **The quiet ink is stepped down through a SECOND NAME** (`--c-meta-desk` on the root, handed
-  to the body as `--c-meta`). It was `--c-meta` mixed from `var(--c-meta)` on the body, which
+- **The quiet ink is stepped down by the ENGINE, through a SECOND NAME.** The theme asks with
+  the layout switch `deepenMetaInk` (`content/themes-builtin.ts`; a theme.json may declare
+  the same), and `deepenMetaInkCss` (`web/layout-styles.ts`) mixes `--meta-deepened` on the
+  root and hands it to the body as `--c-meta`, written straight behind the theme's sheet. It
+  was in this sheet until the checker barred a theme from setting an engine variable (V1);
+  restating the colour per selector instead would have reached names outside the contract. It was `--c-meta` mixed from `var(--c-meta)` on the body, which
   is a cycle: the property went invalid and every quiet line fell back to the full text ink
   from 2026-09-14 to 09-23, hiding the hand-drawn series box and the section ticks with it.
 

@@ -17,7 +17,7 @@ not cover.
 | Logo | Blog → Logo and icons | An image mark instead of the site name. In practice this is the first thing a reader tells two blogs apart by; it is resized for you and never served at its original weight |
 | Palette | Appearance → Appearance | Six built-in palettes, and every one of the seven colours in each is editable in both light and dark |
 | Reading font | Appearance → Font | The face your articles are set in: four built-in faces, or upload your own (`.woff2`, up to four weights). Picking a built-in face also loads its recommended text sizes into the type table, and the screen says so. Fonts are served from your own server — nothing is fetched from Google |
-| Chrome font (labelled "Site font") | Appearance → Font | The face of everything on the public site except the article text (header, menu, footer, dates, comments, search, forms), separately from the one your words are set in. It never changes the admin |
+| Chrome font (labelled "Site font") | Appearance → Font | The face of everything on the public site except the article text (header, menu, footer, dates, comments, search, forms), separately from the one your words are set in. It holds on every theme; on Newspaper the masthead, menu, sidebar and footer are set in the reading face, and this font sets the labels (sections, dates, kickers). Picking a theme offers the font it is drawn for on the form, unsaved; a font you picked yourself in the same edit is kept. It never changes the admin |
 | Type scale | Appearance → Text sizes | Nine roles, each with size, line height and letter spacing |
 | **Density** | Appearance → Shape | How much air between everything. `normal` is the design as drawn |
 | **Corner radius** | Appearance → Shape | Square, soft, or round. Avatars and pills keep their own shape |
@@ -182,6 +182,7 @@ attributes), with one line of explanation each; clicking one writes it where you
   /* Measure */
   --shell-w:      672px; /* the reading column (Content width sets this) */
   --sp:           1rem;  /* the spacing unit every gap is a multiple of */
+  --rail-gap:     40px;  /* the gap between the sidebar and the reading column, where a sidebar stands beside it */
 
   /* Fonts — the faces behind every role below */
   --font-reading: var(--font-sans);  /* titles, standfirsts, the article body */

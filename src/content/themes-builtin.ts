@@ -44,7 +44,8 @@ export type MenuPlace = 'rail' | 'header'
  *   own             the theme sets `body` in faces of its own; only what still names
  *                   `var(--font-sans)` is drawn in the chrome font, so only that is corrected
  *   jetbrains-mono  the theme sets the chrome in JetBrains Mono whatever the setting says, so
- *                   that face's correction applies under the theme regardless
+ *                   that face's correction applies under the theme regardless. No built-in
+ *                   theme does since the source-code one gave the chrome back to the setting.
  */
 export type ChromeFace = 'setting' | 'own' | 'jetbrains-mono'
 
@@ -60,7 +61,13 @@ export type SiteTheme = {
    * off and which custom CSS in the wild selects on. '' writes no attribute, as on plain.
    */
   dataLook: '' | Exclude<BuiltinThemeId, 'plain'>
-  layout: { menu: MenuPlace }
+  /**
+   * `deepenMetaInk`: the theme lays the page on a ground darker than the palette's background
+   * (the notebook's desk), where the palette's meta ink falls under AA, so the engine takes it
+   * a step toward the text ink for the whole page (`web/layout-styles.ts`, `deepenMetaInkCss`).
+   * The same switch a theme.json may declare, because a sheet may not set `--c-meta` itself.
+   */
+  layout: { menu: MenuPlace; deepenMetaInk: boolean }
   /**
    * The headline face, read through `--font-display`. Declared and preloaded only on a blog
    * wearing the theme; without one, `--font-display` is the reading face.
@@ -72,16 +79,34 @@ export type SiteTheme = {
    * column and so cannot sit in a static sheet (`render/rail-css.ts`, `railThemeCss`). `band`
    * is the width where the rail is a band over the page, `aside` the width where the listing's
    * second rail stands in the right gutter.
+   *
+   * The one field a theme from a zip has no equivalent of, and the one piece of a built-in
+   * theme's CSS the checker does not read (`web/look-code-rail.css.ts` says how it is held).
    */
   rail: { band: string; aside: string } | null
   /** What stands for the theme where the owner picks one (`content/themes-builtin-art.ts`). */
   art: { tile: string; card: string }
+  /**
+   * The settings the theme is drawn for, offered to the owner when the theme is switched on
+   * and never written over a choice already saved. The same field a theme's `theme.json`
+   * carries (THEMES.md section 2). Ids are the engine's (`content/fonts.ts`, `content/themes.ts`).
+   */
+  suggests: { palette?: string; readingFont?: string; chromeFont?: string }
+  /**
+   * The chrome font a blog wearing this theme was DRAWN in through 2.2.19, whatever its
+   * setting said: each of the three sheets set `body` in a face of its own, which is what left
+   * the chrome-font control dead on them. A settings row from then (one with no `theme` key)
+   * reads this as its chrome font, so the fix changes nothing on a blog that is already
+   * running (`content/settings.ts`). History, not a preference: it never changes, where
+   * `suggests` may. `null`: the theme drew the chrome in the setting, or did not exist then.
+   */
+  legacyChromeFont: string | null
 }
 
 const PLAIN: SiteTheme = {
   id: 'plain', nameKey: 'lookPlain', hintKey: 'lookStepPlainHint',
-  sheet: null, dataLook: '', layout: { menu: 'rail' }, display: null, chromeFace: 'setting', rail: null,
-  art: { tile: PLAIN_TILE, card: PLAIN_CARD },
+  sheet: null, dataLook: '', layout: { menu: 'rail', deepenMetaInk: false }, display: null, chromeFace: 'setting', rail: null,
+  art: { tile: PLAIN_TILE, card: PLAIN_CARD }, suggests: {}, legacyChromeFont: null,
 }
 
 /** In the order the admin and the setup step offer them. */
@@ -89,28 +114,33 @@ export const BUILTIN_THEMES: readonly SiteTheme[] = [
   PLAIN,
   {
     id: 'code', nameKey: 'lookCode', hintKey: 'lookStepCodeHint',
-    sheet: 'look-code', dataLook: 'code', layout: { menu: 'rail' }, display: null,
-    chromeFace: 'jetbrains-mono',
+    sheet: 'look-code', dataLook: 'code', layout: { menu: 'rail', deepenMetaInk: false }, display: null,
+    chromeFace: 'setting',
     rail: { band: LOOK_CODE_RAIL_BAND_CSS, aside: LOOK_CODE_RAIL_ASIDE_CSS },
     art: { tile: CODE_TILE, card: CODE_CARD },
+    suggests: { chromeFont: 'jetbrains-mono' }, legacyChromeFont: 'jetbrains-mono',
   },
   {
     id: 'paper', nameKey: 'lookPaper', hintKey: 'lookStepPaperHint',
-    sheet: 'look-paper', dataLook: 'paper', layout: { menu: 'header' },
+    sheet: 'look-paper', dataLook: 'paper', layout: { menu: 'header', deepenMetaInk: false },
     // The stack the newspaper's sheet named by hand before `--font-display` existed, to the
     // character, so its headlines resolve to the same faces they always did.
     display: {
       slug: DISPLAY_SLUG,
       stack: "'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',Georgia,'Times New Roman',serif",
     },
+    // `own`: the sheet sets the chrome in the reading face, and only its labels (kickers,
+    // dates, section heads) in the chrome font.
     chromeFace: 'own', rail: null,
     art: { tile: PAPER_TILE, card: PAPER_CARD },
+    suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter',
   },
   {
     id: 'notes', nameKey: 'lookNotes', hintKey: 'lookStepNotesHint',
-    sheet: 'look-notes', dataLook: 'notes', layout: { menu: 'rail' }, display: null,
-    chromeFace: 'own', rail: null,
+    sheet: 'look-notes', dataLook: 'notes', layout: { menu: 'rail', deepenMetaInk: true }, display: null,
+    chromeFace: 'setting', rail: null,
     art: { tile: NOTES_TILE, card: NOTES_CARD },
+    suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter',
   },
 ]
 

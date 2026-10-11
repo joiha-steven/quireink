@@ -10,7 +10,8 @@
 //   · the SEGMENTED CHOICE, which is a row of buttons carrying `aria-pressed`;
 //   · the COLOUR, which is two inputs over one value and has to keep them in step;
 //   · the SLIDER's readout;
-//   · the GATE and the CURTAIN, which show a row that depends on another row's answer.
+//   · the GATE and the CURTAIN, which show a row that depends on another row's answer;
+//   · a THEME's suggestion, which moves another choice on the same form when a theme is picked.
 //
 // Every one of them ships drawn in the state the server could see. Nothing here builds a row.
 import { KNOB_OFF, KNOB_ON, SWITCH_OFF, SWITCH_ON } from '@/admin-shared/controls'
@@ -64,6 +65,9 @@ export function wireControls(root: HTMLElement, moved: OnMove): void {
       const value = seg.dataset.choice ?? ''
       pickChoice(track, value)
       mirror(root, track, (twin) => pickChoice(twin, value))
+      // The owner's own hand, which a theme's suggestion never moves until the next save.
+      markPicked(root, track, 'owner')
+      if (seg.hasAttribute('data-suggests')) applySuggests(root, seg.dataset.suggests ?? '')
       applyGates(root)
       moved()
     }
@@ -118,6 +122,49 @@ function pickChoice(track: HTMLElement, value: string): void {
   // and a strip drawn with nothing pressed never changed class at all (2026-09-30).
   for (const b of track.querySelectorAll<HTMLElement>('[data-choice]')) pressKey(b, b.dataset.choice === value)
   track.dataset.value = value
+}
+
+const markPicked = (root: HTMLElement, track: HTMLElement, by: 'owner' | 'theme'): void => {
+  track.dataset.pickedBy = by
+  mirror(root, track, (twin) => { twin.dataset.pickedBy = by })
+}
+
+/**
+ * A THEME'S SUGGESTION, moved onto the form when its tile is pressed.
+ *
+ * The tile carries `data-suggests`, a JSON object of setting key to value (`chromeFont` today,
+ * from `suggests` in `content/themes-builtin.ts`), so this knows nothing about any theme. Each
+ * named choice is moved ON SCREEN, unsaved, where the owner can see it and press another; the
+ * one Save then sends both. A choice the owner pressed themselves since the last save is theirs
+ * and is left alone. A choice a previous tile moved, which this tile does not name, goes back
+ * to what is saved, so trying a theme and leaving it leaves nothing behind.
+ */
+function applySuggests(root: HTMLElement, raw: string): void {
+  let wanted: Record<string, unknown> = {}
+  try {
+    const parsed: unknown = JSON.parse(raw || '{}')
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) wanted = parsed as Record<string, unknown>
+  } catch {
+    // Markup the server wrote; one that does not parse suggests nothing rather than half of it.
+    console.error('settings: a theme tile carries data-suggests that is not JSON', raw)
+  }
+  for (const track of root.querySelectorAll<HTMLElement>('[data-choice-track][data-picked-by="theme"]')) {
+    if (!Object.hasOwn(wanted, track.dataset.k ?? '')) {
+      const saved = track.dataset.was ?? ''
+      pickChoice(track, saved)
+      mirror(root, track, (twin) => { pickChoice(twin, saved); delete twin.dataset.pickedBy })
+      delete track.dataset.pickedBy
+    }
+  }
+  for (const [key, value] of Object.entries(wanted)) {
+    if (typeof value !== 'string') continue
+    const track = root.querySelector<HTMLElement>(`[data-choice-track][data-k="${CSS.escape(key)}"]`)
+    if (!track || track.dataset.pickedBy === 'owner') continue
+    if (!track.querySelector(`[data-choice="${CSS.escape(value)}"]`)) continue
+    pickChoice(track, value)
+    mirror(root, track, (twin) => pickChoice(twin, value))
+    markPicked(root, track, 'theme')
+  }
 }
 
 /** What a segmented choice currently holds, for the form's diff. */

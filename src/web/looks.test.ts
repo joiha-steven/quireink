@@ -11,7 +11,7 @@ import { LOOK_NOTES_CSS } from '@/web/look-notes.css'
 import { PUBLIC_CSS } from '@/web/public.css'
 import { themeSheet } from '@/web/assets'
 import { builtinTheme } from '@/content/themes-builtin'
-import { labelVarsCss } from '@/web/layout-styles'
+import { deepenMetaInkCss, labelVarsCss } from '@/web/layout-styles'
 
 const SHEETS = { code: LOOK_CODE_CSS, paper: LOOK_PAPER_CSS, notes: LOOK_NOTES_CSS }
 
@@ -228,18 +228,28 @@ describe('the notebook dialect', () => {
     // 2026-09-23, on the belief that the var() read the parent's value. It reads its own:
     // a custom property that names itself is a cycle, the cycle makes it invalid, and every
     // quiet line on the site fell back to the full text ink for nine days.
-    expect(LOOK_NOTES_CSS)
-      .toContain('html[data-look=notes]{--c-meta-desk:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}')
-    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] body{--c-meta:var(--c-meta-desk)}')
-    expect(LOOK_NOTES_CSS).not.toMatch(/--c-meta:[^;}]*var\(--c-meta\)/)
+    // The step is the engine's since ADR 0072 (a theme may not set --c-meta), asked for by the
+    // notebook's `layout.deepenMetaInk` and written behind its sheet (web/layout-styles.ts).
+    const css = deepenMetaInkCss(builtinTheme('notes'))
+    expect(css).toContain('html[data-theme="notes"]{--meta-deepened:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}')
+    expect(css).toContain('html[data-theme="notes"] body{--c-meta:var(--meta-deepened)}')
+    expect(css).not.toMatch(/--c-meta:[^;}]*var\(--c-meta\)/)
+    expect(LOOK_NOTES_CSS).not.toContain('--c-meta:')
+    for (const id of ['plain', 'code', 'paper']) expect(deepenMetaInkCss(builtinTheme(id))).toBe('')
+  })
+
+  it("keeps its name, set in the reading face, out of a mono chrome font's tracking", () => {
+    // The tracking block (render/font-faces.ts) names `header.site .title` at (0,3,2); the
+    // notebook restates the name's own role past it, or it would pull a serif in by -0.05em.
+    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] header.site .site-bar .title{letter-spacing:var(--ls-h4)}')
   })
 
   it('grows the sheet outward by exactly what it pads', () => {
     // So the first line of the piece stays on the line the shelf and the card start on, and
     // not one word of the column moves when the dialect is switched. The extra pixel is the
     // border: without it the headline sat one pixel low.
-    expect(LOOK_NOTES_CSS).toContain('padding:var(--sheet-inset)')
-    expect(LOOK_NOTES_CSS).toContain('margin:calc(-1px - var(--sheet-inset)) calc(-1 * var(--sheet-inset)) 0')
+    expect(LOOK_NOTES_CSS).toContain('padding:var(--t-sheet-inset)')
+    expect(LOOK_NOTES_CSS).toContain('margin:calc(-1px - var(--t-sheet-inset)) calc(-1 * var(--t-sheet-inset)) 0')
   })
 
   it('prints a dot grid on every sheet, not a rule under every line', () => {
@@ -248,17 +258,17 @@ describe('the notebook dialect', () => {
     // it read as a form. Dots carry no line for text to sit on or miss, so they need no
     // per-paragraph drawing - and they reach the listing and the composed front by being on
     // the sheet itself, which is the gap the ruling once shipped with.
-    expect(LOOK_NOTES_CSS).toContain('background-image:radial-gradient(circle,var(--dot)')
+    expect(LOOK_NOTES_CSS).toContain('background-image:radial-gradient(circle,var(--t-dot)')
     expect(LOOK_NOTES_CSS).not.toContain('background-size:100% var(--step)')
     // Derived from the palette, never typed.
-    expect(LOOK_NOTES_CSS).toContain('--dot:color-mix(in srgb,var(--c-meta)')
+    expect(LOOK_NOTES_CSS).toContain('--t-dot:color-mix(in srgb,var(--c-meta)')
   })
 
   it('puts a page under all THREE layouts, not just the two that are named article', () => {
     // The composed front page's container is `div.front` — neither the piece nor a feed, so
     // it matched neither name and the layout most visitors arrive on had no paper under it
     // at all: three ruled sections and a row of pictures lying straight on the desk.
-    const sheet = /html\[data-look=notes] main > article,[\s\S]*?padding:var\(--sheet-inset\)/.exec(
+    const sheet = /html\[data-look=notes] main > article,[\s\S]*?padding:var\(--t-sheet-inset\)/.exec(
       LOOK_NOTES_CSS,
     )?.[0] ?? LOOK_NOTES_CSS
     expect(sheet).toContain('html[data-look=notes] main > .front')
@@ -276,7 +286,7 @@ describe('the notebook dialect', () => {
     // Behind @supports, because a custom property swallows a value it cannot use and fails
     // only when something reads it — here, with the body left carrying no background at all.
     expect(LOOK_NOTES_CSS).toContain('@supports (color:oklch(from red l c h)){')
-    expect(LOOK_NOTES_CSS).toContain('--desk:color-mix(in srgb,var(--c-text) 7%,var(--c-bg))')
+    expect(LOOK_NOTES_CSS).toContain('--t-desk:color-mix(in srgb,var(--c-text) 7%,var(--c-bg))')
   })
 
   it('brings no ink of its own, and no second FACE either', () => {

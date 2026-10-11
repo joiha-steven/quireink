@@ -117,7 +117,7 @@ html[data-look=paper] aside.series{border:0;border-radius:0;padding:0 0 .55rem;
   border-top:2px solid var(--c-heading);border-bottom:1px solid var(--c-rule)}
 html[data-look=paper] aside.series .series-head{margin:0 0 .4rem;padding:.3rem 0;
   line-height:1.25;color:var(--c-heading);border-bottom:1px solid var(--c-rule);
-  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-family:var(--font-sans);
   text-transform:uppercase;letter-spacing:.08em;font-weight:600}
 html[data-look=paper] aside.series .series-head a{color:inherit;text-decoration:none}
 /* The indicator is the part of the head that must not drop to a line of its own: it keeps one

@@ -3,7 +3,7 @@
 // store-relative, binaries on Blob. Validation/migration lives in settings-sanitize.ts.
 
 import type { SiteSettings } from '@/types'
-import { DEFAULT_THEME_ID, IDE_CHROME_THEME_ID, isBuiltinThemeId, isThemeId, legacyLook } from '@/content/themes-builtin'
+import { DEFAULT_THEME_ID, IDE_CHROME_THEME_ID, builtinTheme, isBuiltinThemeId, isThemeId, legacyLook } from '@/content/themes-builtin'
 import { DEFAULT_INKS } from '@/pen/palette'
 import { expandBlob, setOwnOrigins } from '@/media/blob'
 import { one } from '@/store/query'
@@ -158,7 +158,16 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 // Back-compat: the old boolean `fontChromeInter` (true = Inter chrome, false = chrome
 // follows the reading font) migrates to the `chromeFont` selector. A stored `chromeFont`
 // id wins; a legacy `false` maps to 'reading'; anything else to the Inter default.
-function resolveChromeFont(stored: Partial<SiteSettings> & { fontChromeInter?: unknown }): string {
+//
+// BEFORE ALL OF THAT, a row from before themes (no `theme` key: written by 2.2.19 or older)
+// wearing a theme that set the chrome in a face of its own reads that face, because that is
+// what its readers saw: the three built-in sheets each set `body` in a face of their own and
+// the stored choice drew nothing. Read here and never written back by a migration, so the row
+// is untouched until the owner's next save, which writes `theme` beside the face the admin
+// showed them (`content/themes-builtin.ts`, `legacyChromeFont`).
+function resolveChromeFont(stored: Partial<SiteSettings> & { fontChromeInter?: unknown; ideChrome?: unknown }): string {
+  const drawnBeforeThemes = isThemeId(stored.theme) ? null : builtinTheme(storedTheme(stored)).legacyChromeFont
+  if (drawnBeforeThemes !== null) return drawnBeforeThemes
   if (isChromeFontId(stored.chromeFont)) return stored.chromeFont
   if (stored.fontChromeInter === false) return 'reading'
   return DEFAULT_CHROME_FONT

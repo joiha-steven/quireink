@@ -104,10 +104,28 @@ describe('the switches', () => {
     expect(menuInHeader(await get('/a-post'))).toBe(false)
   })
 
-  it("keys the mono chrome's tracking on the theme that forces it", async () => {
-    await wear({ theme: 'code' })
-    expect(inlineStyle(await get('/'))).toContain('html[data-theme="code"] body')
-    await wear({ theme: 'plain' })
+  it("keys the mono chrome's tracking on the chrome font, the source-code theme included", async () => {
+    // That theme forced its chrome into the monospace through 2.2.19 and carried a tracking
+    // block of its own; it draws the owner's chrome font now, so the font's block is the one.
+    await wear({ theme: 'code', chromeFont: 'jetbrains-mono' })
+    expect(inlineStyle(await get('/'))).toContain('html[data-chrome-font="jetbrains-mono"] body')
     expect(inlineStyle(await get('/'))).not.toContain('data-theme=')
+    await wear({ theme: 'code', chromeFont: 'inter' })
+    expect(inlineStyle(await get('/'))).not.toContain('letter-spacing:-0.05em')
+  })
+  it("deepens the meta ink straight behind the sheet of a theme that asks, and nowhere else", async () => {
+    // Where the notebook's own sheet carried it until a theme was barred from setting an engine
+    // variable, so the cascade is the one it was.
+    await wear({ theme: 'notes' })
+    const page = await get('/a-post')
+    expect(page).toMatch(/look-notes\.[0-9a-f]+\.css"><style data-meta-ink>html\[data-theme="notes"\]\{--meta-deepened:/)
+    expect(page.indexOf('data-meta-ink')).toBeLessThan(page.indexOf('<style>'))
+    // The sign-in pages wear no theme, so they keep the palette's own ink.
+    const { loginShell } = await import('@/web/login-page')
+    expect(loginShell(await getSettings(), 'Sign in', '<p>x</p>')).not.toContain('--meta-deepened')
+    for (const theme of ['plain', 'code', 'paper']) {
+      await wear({ theme })
+      expect(await get('/a-post')).not.toContain('data-meta-ink')
+    }
   })
 })

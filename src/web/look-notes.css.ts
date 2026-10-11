@@ -16,15 +16,15 @@
 // `check:css-literal` enforces that, and this file is IN its list.
 
 export const LOOK_NOTES_CSS = `
-/* --- THE CHROME IS THE NEUTRAL FACE -----------------------------------------
-   Three dialects, three faces: the source-code one keeps the monospace, the paper one takes
-   the reading face, this one takes the sans. On body and never on --font-sans, for the
-   reason look-code.css.ts gives. */
-html[data-look=notes] body{font-family:'Inter','Inter Fallback',system-ui,-apple-system,
-  'Segoe UI',sans-serif}
+/* --- THE CHROME IS THE OWNER'S CHROME FONT ----------------------------------
+   This sheet set body in Inter by name through 2.2.19, which left the chrome-font control
+   drawing nothing on a blog wearing it; a theme may not override an owner's setting (ADR
+   0072). Inter is now what the theme suggests (content/themes-builtin.ts), and a blog that
+   wore it before then reads its chrome font as Inter, the face it was drawn in
+   (content/settings.ts). */
 /* THE NAME ON THE COVER IS THE ONE THING WRITTEN, so it takes the reading face - the
    closest thing this product has to the owner's own hand - while everything else in the
-   chrome stays the neutral sans. It carried --font-sans, which on a blog whose chrome font
+   chrome stays in the chrome font. It carried --font-sans, which on a blog whose chrome font
    is a monospace set the notebook's own name in code.
    AND NO SECOND FACE IS DOWNLOADED FOR IT. The newspaper earns one because a paper really
    does cut its headlines from a second serif; a notebook has exactly one hand in it. The
@@ -32,18 +32,22 @@ html[data-look=notes] body{font-family:'Inter','Inter Fallback',system-ui,-apple
    carries no Vietnamese - on a blog in this product's own first language it would fall back
    to a system face on every accented word, which is worse than not trying. */
 html[data-look=notes] .site-bar .title{font-family:var(--font-reading)}
+/* ...and none of the monospace's tracking. A mono chrome font pulls the chrome in by
+   -0.05em (render/font-faces.ts), the name included, and on a reading face that runs the
+   letters together. Its own role's tracking, restated past the specificity of that block. */
+html[data-look=notes] header.site .site-bar .title{letter-spacing:var(--ls-h4)}
 
 /* --- THE DESK, AND THE PAGE ON IT -------------------------------------------
    The desk is a TONE darker than the page and nothing else. A dotted desk was drawn first
    and dropped once the page itself was ruled: two patterns on one screen is a texture
    competition, and what makes a sheet look like a sheet is simply that the thing under it
    is not the same colour. */
-/* The desk is DERIVED rather than typed, and that is not shyness about one more hex: --desk
+/* The desk is DERIVED rather than typed, and that is not shyness about one more hex: --t-desk
    is this dialect's own name, not one of the seven a palette declares, so a literal here
    would be a colour the reader's light/dark switch cannot move. Seven percent rather than
    four: against cream the old four read as the same cream, and the sheet stopped being a
    sheet. */
-html[data-look=notes]{--desk:color-mix(in srgb,var(--c-text) 7%,var(--c-bg));--sheet-inset:20px}
+html[data-look=notes]{--t-desk:color-mix(in srgb,var(--c-text) 7%,var(--c-bg));--t-sheet-inset:20px}
 /* THE DESK IS THE PAGE, DARKENED - and mixing the ink into the paper only does that in
    daylight. At night the ink is the pale one, so the same mix lifted the desk ABOVE the
    page and the sheet read as a hole cut in the board rather than as paper lying on it.
@@ -55,29 +59,17 @@ html[data-look=notes]{--desk:color-mix(in srgb,var(--c-text) 7%,var(--c-bg));--s
    when the body would be left with no background at all; the mix above is what any engine
    that cannot read this keeps. */
 @supports (color:oklch(from red l c h)){
-  html[data-look=notes]{--desk:oklch(from var(--c-bg) calc(l * .955) c h)}
-  html[data-look=notes].dark{--desk:oklch(from var(--c-bg) calc(l * .72) c h)}
+  html[data-look=notes]{--t-desk:oklch(from var(--c-bg) calc(l * .955) c h)}
+  html[data-look=notes].dark{--t-desk:oklch(from var(--c-bg) calc(l * .72) c h)}
   @media (prefers-color-scheme:dark){
-    html[data-look=notes]:not([data-scheme=light]){--desk:oklch(from var(--c-bg) calc(l * .72) c h)}
+    html[data-look=notes]:not([data-scheme=light]){--t-desk:oklch(from var(--c-bg) calc(l * .72) c h)}
   }
 }
-html[data-look=notes] body{background-color:var(--desk)}
-/* THE CHROME STANDS ON THE DESK, AND THE QUIET INK WAS MEASURED AGAINST THE PAGE. The desk
-   is the page darkened, so every line that does not sit on the sheet -- the tagline, the
-   pager count, the footer, the dates down the rail -- loses part of the difference it was
-   given: #6d6c6c on the mono desk measures 4.47:1 where AA asks 4.5 at this size, and every
-   palette loses the same slice. Stepped down on the BODY, where --c-meta still resolves to
-   whatever :root inherited, so this is a nudge away from the palette's own choice rather
-   than a second colour to keep in sync. 94% lands mono at 4.60:1; the sheet keeps the ink it
-   had, being lighter than the desk and already clear of the line. */
-/* AND THROUGH A SECOND NAME, because a custom property that names itself is a cycle, not
-   a reference to its parent: a --c-meta mixed from var(--c-meta) on the body made --c-meta
-   INVALID for everything under it, and every quiet line on the site - the rail, the dates,
-   the panel - fell back to the full text ink. Shipped that way from 2026-09-14 to 09-23;
-   measured, the rail's links were rgb(48,48,47) where the palette asks #6d6c6c. The mix is
-   taken on the root, where --c-meta is the palette's own, and handed down under a new name. */
-html[data-look=notes]{--c-meta-desk:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}
-html[data-look=notes] body{--c-meta:var(--c-meta-desk)}
+html[data-look=notes] body{background-color:var(--t-desk)}
+/* THE CHROME STANDS ON THE DESK, AND THE QUIET INK WAS MEASURED AGAINST THE PAGE, so on
+   the desk it falls under AA. The step toward the text ink that fixes it is the engine's,
+   asked for by this theme's deepenMetaInk switch (content/themes-builtin.ts) and written in
+   web/layout-styles.ts, because a theme may not set --c-meta itself. */
 
 /* ONE INSET ON ALL FOUR SIDES, and the sheet grows OUTWARD by exactly what it pads, so the
    first line of the piece stays on the line the shelf and the card start on and not one
@@ -91,7 +83,7 @@ html[data-look=notes] body{--c-meta:var(--c-meta-desk)}
    main > article, NOT article: a listing's rows are <article> elements too, so the bare
    selector drew a bordered card round every entry on the front page and printed a hairline
    above and below each one. The piece is the direct child of main; the rows never are. */
-@media (max-width:46rem){html[data-look=notes]{--sheet-inset:12px}}
+@media (max-width:46rem){html[data-look=notes]{--t-sheet-inset:12px}}
 /* AND div.front, which is the composed front page's own container. It is neither the piece
    nor a feed, so it matched neither name, and the one layout a visitor is most likely to
    arrive on had no page under it at all: three sections and a row of pictures lying
@@ -107,8 +99,8 @@ html[data-look=notes] main > article,
 html[data-look=notes] main > .front,
 html[data-look=notes] main > #comments,
 html[data-look=notes] .post-list{background:var(--c-bg);
-  padding:var(--sheet-inset);
-  margin:calc(-1px - var(--sheet-inset)) calc(-1 * var(--sheet-inset)) 0;
+  padding:var(--t-sheet-inset);
+  margin:calc(-1px - var(--t-sheet-inset)) calc(-1 * var(--t-sheet-inset)) 0;
   box-shadow:0 1px 2px color-mix(in srgb,var(--c-text) 14%,transparent),
     0 8px 24px color-mix(in srgb,var(--c-text) 9%,transparent)}
 /* A 1px rule with a radius is the language of an app panel; a page lying on a desk is told
@@ -117,7 +109,7 @@ html[data-look=notes] .post-list{background:var(--c-bg);
    so the piece's first line lands on the line the shelf starts on, and on a sheet that
    follows another it would only close the gap between the two to 19px. A desk with two
    pages on it shows some desk between them. */
-html[data-look=notes] main > #comments{margin-top:calc(var(--sheet-inset) * 1.75)}
+html[data-look=notes] main > #comments{margin-top:calc(var(--t-sheet-inset) * 1.75)}
 
 /* Below 46rem the only side space is the page's own padding, 25px, and a 20px sheet left
    FOUR pixels of desk showing at each edge, which is not a margin, it is a near miss. */
@@ -125,7 +117,7 @@ html[data-look=notes] main > #comments{margin-top:calc(var(--sheet-inset) * 1.75
 /* THE FEED'S YEAR MARKER and its per-row tick carry a --c-bg mask so the spine breaks
    around them rather than running through. On a desk that is no longer the page's colour,
    that mask printed as a white card floating beside the feed. */
-html[data-look=notes] .tl-year-tag,html[data-look=notes] .tl-mark{background:var(--desk)}
+html[data-look=notes] .tl-year-tag,html[data-look=notes] .tl-mark{background:var(--t-desk)}
 
 /* ONE LINE, NOT TWO. The rail and the panel each hang a hairline in the gutter beside the
    column; with the page drawn as a sheet those hairlines run 20px outside the sheet's own
@@ -152,8 +144,8 @@ html[data-look=notes] main > article,
 html[data-look=notes] main > .front,
 html[data-look=notes] main > #comments,
 html[data-look=notes] .post-list{
-  --dot:color-mix(in srgb,var(--c-meta) 32%,var(--c-bg));
-  background-image:radial-gradient(circle,var(--dot) 0 1.1px,transparent 1.5px);
+  --t-dot:color-mix(in srgb,var(--c-meta) 32%,var(--c-bg));
+  background-image:radial-gradient(circle,var(--t-dot) 0 1.1px,transparent 1.5px);
   background-size:22px 22px;background-position:11px 11px}
 
 /* --- THE MARKS A HAND WOULD MAKE --------------------------------------------

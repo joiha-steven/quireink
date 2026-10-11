@@ -252,7 +252,8 @@ const MONO_TRACK: Record<string, string> = { 'plex-mono': '-0.04em', 'jetbrains-
 
 /**
  * ...and a theme whose `chromeFace` is a mono sets the chrome in it whatever the chrome-font
- * setting says (the source-code look, `web/look-code.css.ts`), so it needs the same correction
+ * setting says (the source-code look did through 2.2.19; no built-in theme does since it gave
+ * the chrome back to the setting, ADR 0072), so it needs the same correction
  * keyed on the THEME rather than on the font. Without it a blog wearing that theme on the Inter
  * default read loose at zero tracking, which is the exact fault this block exists to fix. Last,
  * so it wins over a plex-mono setting whose face is no longer the one being drawn. Inline and
@@ -265,14 +266,16 @@ const trackTheme = (theme: SiteTheme): string =>
 
 /**
  * Themes that do not draw the chrome in the chrome font (`chromeFace: 'own'`). The newspaper
- * sets `body` in the reading face and the notebook in Inter, so nearly every surface in CHROME_TRACKED renders
+ * sets `body` in the reading face, so nearly every surface in CHROME_TRACKED renders
  * in a proportional face there and -0.05em on it runs the words together (measured
  * 2026-10-08, look=paper under JetBrains Mono: the series box's Literata link at -0.76px).
- * Those looks change `body`, NOT `--font-sans`, which the chrome font still points at the
+ * Such a look changes `body`, NOT `--font-sans`, which the chrome font still points at the
  * mono, so whatever names `font-family:var(--font-sans)` itself is still mono there and keeps
- * its correction: today that is the copy button on a code block. (The site name is not one of
- * them: both looks set it by `.site-bar .title`, so it takes the look's face even when the
- * name is wrapped in an h1.) A theme whose chromeFace is a mono is not one of these: it forces
+ * its correction: today that is the copy button on a code block. (The newspaper's labels name
+ * it too, but each states its own letter-spacing, opened up on purpose, which no correction
+ * should pull back in. The site name is not one of them: the look sets it by `.site-bar
+ * .title`, so it takes the look's face even when the name is wrapped in an h1.) A theme whose
+ * chromeFace is a mono is not one of these: it forces
  * that face and has its own block below.
  */
 const STILL_MONO_IN_THOSE_THEMES = ['.code-copy'] as const

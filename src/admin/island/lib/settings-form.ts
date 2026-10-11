@@ -169,7 +169,12 @@ export function settle(fields: Field[]): void {
     if (!el.dataset.k) continue
     // Anything that answers with `data-was` is settled by moving it — the two controls that are
     // not form elements, and every hidden input.
-    if (el.dataset.was !== undefined) { el.dataset.was = now(el); continue }
+    if (el.dataset.was !== undefined) {
+      el.dataset.was = now(el)
+      // Who moved a choice is a question about the unsaved edit, and there is none now.
+      delete el.dataset.pickedBy
+      continue
+    }
     if (el instanceof HTMLSelectElement) {
       for (const o of el.options) o.toggleAttribute('selected', o.value === el.value)
       continue

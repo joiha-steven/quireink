@@ -39,6 +39,11 @@ const paletteIds = THEME_PRESETS.map((p) => p.id) as [string, ...string[]]
 const fontIds = FONT_PRESETS.map((f) => f.id) as [string, ...string[]]
 const chromeIds = CHROME_FONTS.map((f) => f.id) as [string, ...string[]]
 const themeIds = BUILTIN_THEMES.map((t) => t.id) as [string, ...string[]]
+// What each theme is drawn for, said in the description: a theme switched here never moves the
+// chrome font by itself (the agent decides, as the owner does on the admin form, where the same
+// suggestion is offered and can be refused), so the agent has to know what to send with it.
+const themeSuggestions = BUILTIN_THEMES.filter((t) => t.suggests.chromeFont)
+  .map((t) => `${t.id}: ${t.suggests.chromeFont}`).join(', ')
 
 export function registerStewardTools(server: ToolHost): void {
   server.registerTool(
@@ -49,7 +54,9 @@ export function registerStewardTools(server: ToolHost): void {
         + `(${themeIds.join(', ')}), palette `
         + `(${paletteIds.join(', ')}), reading font (${fontIds.join(', ')}), chrome font, `
         + 'and what a first-time visitor opens in. Free-form colors are not accepted — '
-        + 'every option here is one the owner\'s own screens offer.',
+        + 'every option here is one the owner\'s own screens offer. Changing the theme leaves '
+        + 'the chrome font as it is; send chromeFont with it to give the theme the face it is '
+        + `drawn for (${themeSuggestions}).`,
       inputSchema: {
         theme: z.enum(themeIds).optional().describe('The theme the published site wears'),
         // The field's name before ADR 0072, still accepted from a client that learned it then.
