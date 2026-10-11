@@ -11,6 +11,7 @@
 import type { AdminStrings } from '@/locales/types'
 import type { IconName } from '@/icons'
 import { settingsDetail } from '@/admin-shared/setting-names'
+import { builtinTheme, isBuiltinThemeId } from '@/content/themes-builtin'
 
 /**
  * The KIND an action belongs to, which is what the filter offers.
@@ -47,6 +48,8 @@ export const KIND_OF: Record<string, LogKind> = {
   // heading is for: who is out there. Not `system`, where a machine door would file itself.
   ap: 'people',
   settings: 'settings', redirect: 'settings',
+  // Installing, rolling back, removing and choosing a theme all answer "what does my site look like".
+  theme: 'settings',
   // `export` is the Markdown bundle, beside the backup it sits next to in the admin.
   cache: 'system', backup: 'system', mcp: 'system', export: 'system', cloudflare: 'system',
   security: 'security', auth: 'security',
@@ -77,12 +80,18 @@ export const glyphOf = (action: string): IconName => GLYPH[kindOf(action)]
  */
 export function logSentence(t: AdminStrings, action: string, raw: string): string {
   const pattern = t.logActions[action]
-  // A settings save stores the paths it touched; the owner reads the names on the screen.
-  const detail = action === 'settings.save' && raw ? settingsDetail(t, raw) : raw
+  // A settings save stores the paths it touched; the owner reads the names on the screen. A
+  // built-in theme is stored as its id and named here, in the reader's language
+  // (`content/theme-choice-log.ts`); an installed one already carries its name.
+  const detail = action === 'settings.save' && raw ? settingsDetail(t, raw)
+    : action === 'theme.choose' && isBuiltinThemeId(raw) ? `${t[builtinTheme(raw).nameKey]} (${raw})`
+    : raw
   if (!pattern) return detail ? `${action} — ${detail}` : action
   // A detail can be long (a settings diff, an error message); the row truncates, and the
   // full text stays in the row's `title`.
-  if (detail) return pattern.replace('{t}', detail)
+  // A function, not the string: a theme's name comes from its zip, and `$&` or `$'` in a
+  // replacement string are substitution patterns, not text.
+  if (detail) return pattern.replace('{t}', () => detail)
   /**
    * ⚠️ NO OBJECT MEANS NO PUNCTUATION FOR ONE. Rows written before the log recorded a detail
    * — and `settings.save` when nothing named itself — reached this with an empty string, and

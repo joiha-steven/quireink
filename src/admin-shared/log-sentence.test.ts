@@ -67,6 +67,10 @@ describe('the log speaks', () => {
     expect(kindOf('sprocket.create')).toBe('system')
   })
 
+  it("prints a theme's name as written, even one carrying a replacement pattern", () => {
+    expect(logSentence(adminT('en'), 'theme.choose', "Ev$'il$& (evil)")).toContain("Ev$'il$& (evil)")
+  })
+
   it('files an unknown action rather than printing nothing', () => {
     const t = adminT('en')
     expect(logSentence(t, 'not.a.real.action', 'x')).toContain('not.a.real.action')

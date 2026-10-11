@@ -32,6 +32,7 @@ import { getRedirects, saveRedirect, deleteRedirect, RedirectInputError } from '
 import { purgeEdge } from '@/server/edge-cache'
 import { clearCache } from '@/server/cache'
 import { clearActivity, getActivity, logActivity, type ActivityAction } from '@/server/activity'
+import { logThemeChoice } from '@/content/theme-choice-log'
 import { fail, json } from '@/web/api'
 import { ownerRouter, param } from '@/web/guard'
 import { siteZone } from '@/analytics/types'
@@ -200,6 +201,8 @@ export function siteRoutes() {
     // A save that changed nothing still goes in — see `settings-diff.ts` for why that is a
     // fact worth reading.
     if (!isDeskOnly(before, next)) void logActivity('settings.save', describeSettingsSave(before, next))
+    // A theme chosen is also its own line, naming the theme: `settings.save` names only the field.
+    void logThemeChoice(before, next)
     // `zone`: what an empty timezone MEANS here, so the page can move `<html data-tz>` without
     // knowing the operator's environment.
     return json({ ...next, zone: siteZone(next.timezone) })

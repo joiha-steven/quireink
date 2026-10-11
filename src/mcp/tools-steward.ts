@@ -22,6 +22,7 @@ import { THEME_PRESETS } from '@/content/palettes'
 import { FONT_PRESETS, CHROME_FONTS } from '@/content/fonts'
 import { BUILTIN_THEMES, isBuiltinThemeId } from '@/content/themes-builtin'
 import { isLiveInstalledTheme } from '@/content/chosen-theme'
+import { logThemeChoice } from '@/content/theme-choice-log'
 import { getCategories } from '@/content/posts'
 import { getPageAnalytics } from '@/analytics/page'
 import { addComment } from '@/comments/comments'
@@ -95,6 +96,8 @@ export function registerStewardTools(server: ToolHost): void {
       const saved = await saveSettings(partial)
       clearCache()
       await logActivity('settings.save', 'appearance (MCP)')
+      // The same line the settings screen writes when the theme moves (`content/theme-choice-log.ts`).
+      await logThemeChoice(current, saved)
       return asJson({
         theme: saved.theme,
         palette: saved.themePreset,

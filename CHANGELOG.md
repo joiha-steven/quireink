@@ -4,9 +4,19 @@
 
 ### Added
 
-- **A theme installed from a zip is drawn on your published site once you choose it.** There is
-  no screen for it yet: a theme is installed through the owner's API, and chosen there or from an
-  MCP client, by its id. Your pages then wear the plain theme with the installed theme's stylesheet, layout
+- **Install, choose, roll back and remove themes from Settings → Appearance → Theme.** Installed
+  themes appear as tiles after the four built in, with their screenshot, version, author and an
+  Unreviewed badge, and are chosen and saved like any other tile. Install from a file sends a
+  theme's zip and says what happened: installed, already installed, or, when the check refuses
+  it, one line for each problem with the file and line it is on. A theme with an earlier version
+  installed offers Roll back; Remove asks first and puts a blog wearing it back on Plain paper. If
+  the chosen theme cannot be drawn, the card says the site is showing Plain paper and why; a theme
+  whose theme.json cannot be read (from a restored backup, say) is listed with a note and its Remove
+  key instead of breaking the Settings screen.
+  Installing, rolling back, removing and choosing a theme are written to the activity log. See
+  [Installing a theme](docs/theme-install-api.md#in-the-admin).
+- **A theme installed from a zip is drawn on your published site once you choose it.** It can also
+  be installed through the owner's API, and chosen from an MCP client, by its id. Your pages then wear the plain theme with the installed theme's stylesheet, layout
   switches, fonts and palettes on top. Its fonts and palettes become choices for the reading font,
   the site font and the default palette while that theme is chosen; choose another theme or remove
   it and the defaults are drawn, with your choices kept for when you come back. A new version or a

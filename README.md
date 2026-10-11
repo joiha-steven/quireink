@@ -40,7 +40,7 @@ Colour, type, the shape of the front page and the menu are all settings in the a
 ## Highlights
 
 - **A real editor over Markdown**, with tables, footnotes, callouts, maths, galleries and video. It saves as you type, keeps versions, and schedules.
-- **Four looks, six palettes, four reading fonts**, light and dark, and a book mode that sets a post in two columns like paper.
+- **Four built-in looks and any theme you install from a zip, six palettes, four reading fonts**, light and dark, and a book mode that sets a post in two columns like paper.
 - **A pen for you and for your readers**: highlight in five inks, underline, ring a word — drawn by hand, never the same stroke twice.
 - **Sign in with a passkey** (fingerprint, face or device PIN) beside the password and the code, never in place of them.
 - **Analytics without cookies**, per post and per site, and a newsletter on your own mail server.

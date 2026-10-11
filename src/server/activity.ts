@@ -19,6 +19,9 @@ export type ActivityAction =
   | 'media.upload' | 'media.delete'
   | 'file.add' | 'file.delete' | 'icon.upload' | 'font.upload'
   | 'settings.save' | 'taxonomy.update' | 'series.update' | 'cache.clear'
+  // Themes installed from a zip (ADR 0072): the owner's routes in `web/admin/themes.ts`, and the
+  // choice itself, which is a settings save that moved `theme` (`web/admin/site.ts`).
+  | 'theme.install' | 'theme.rollback' | 'theme.remove' | 'theme.choose'
   // Trash (soft delete): restore / permanent purge per kind, plus empty-trash.
   | 'post.restore' | 'post.purge' | 'page.restore' | 'page.purge'
   | 'media.restore' | 'media.purge' | 'file.restore' | 'file.purge'

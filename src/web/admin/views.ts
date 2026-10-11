@@ -38,6 +38,8 @@ import { getPost } from '@/content/posts'
 import { getAllSeriesNames } from '@/content/series'
 import { searchEverything } from '@/content/search-owner'
 import { getSettings } from '@/content/settings'
+import { listInstalledThemes } from '@/content/installed-themes'
+import { chosenThemeHealth } from '@/content/theme-health'
 import { THEME_PRESETS } from '@/content/themes'
 import { getTrashedMedia } from '@/media/media'
 import { getTrashedFiles } from '@/media/files'
@@ -178,13 +180,17 @@ export async function commentsView() {
  * nothing here touches `users`, `recovery_codes`, `sessions` or `mcp_tokens`.
  */
 export async function settingsView() {
-  const [settings, commentEnv, integrations, posts, pages, categories] = await Promise.all([
+  const [settings, commentEnv, integrations, posts, pages, categories, installed] = await Promise.all([
     getSettings(), getCommentEnv(), getIntegrationStatus(), getPublicPosts(), getPublicPages(),
-    getCategories(),
+    getCategories(), listInstalledThemes(),
   ])
   return {
     settings,
     presets: THEME_PRESETS,
+    // The themes installed from a zip, and whether the chosen theme is what the site draws: the
+    // Look card shows both (ADR 0072, T2c).
+    installed,
+    health: await chosenThemeHealth(settings),
     commentEnv,
     integrations,
     // Published posts only: the Featured picker cannot offer a draft.

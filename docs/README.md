@@ -57,7 +57,7 @@ copies of a rule means one is wrong within a month
 | [admin-conversion.md](admin-conversion.md) | The log of ADR 0054's step 5: what each piece of the editor cost to take off React, and what it found |
 | [admin-no-framework.md](admin-no-framework.md) | ADR 0054's steps 6 and 7: React out, then the wrapper around ProseMirror. What each found, and what the editor weighs now |
 | [appearance.md](appearance.md) | For the OWNER: every knob that changes how the site looks, the CSS variables and class names custom CSS may target, and what cannot be changed |
-| [theme-install-api.md](theme-install-api.md) | Installing a theme from a zip over HTTP: the owner's routes, what an install checks and stores, and `/themes/<hash>/…` |
+| [theme-install-api.md](theme-install-api.md) | Installing a theme from a zip: the owner's routes, the Look card that drives them, what an install checks and stores, and `/themes/<hash>/…` |
 | [homepage.md](homepage.md) | What `/` serves: the post list, a page, or a composed front page |
 | [seo-pwa.md](seo-pwa.md) | Sitemap, feeds, OG, region, PWA |
 | [agent-ready.md](agent-ready.md) | Markdown negotiation, `.well-known` discovery, the three shipped skills, Content-Signal |

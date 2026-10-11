@@ -30,6 +30,7 @@ import { wireSave, type SaveWords } from './lib/settings-save'
 import { wireSecurity } from './lib/settings-security'
 import { wireSound } from './lib/settings-sound'
 import { wireTheme } from './lib/settings-theme'
+import { wireThemes } from './lib/settings-themes'
 import { wireType } from './lib/settings-type'
 import { composing, onTyped } from '@/admin/components/composing'
 
@@ -59,6 +60,9 @@ if (root) {
   wireCode(screen)
   wireType(screen)
   wireTheme(screen)
+  // The themes installed from a zip: install, roll back, remove (ADR 0072). Choosing one is the
+  // theme track's, above.
+  wireThemes(screen)
   wireLists(screen, words)
   wireMail(screen, words)
   // The importer and the key-sound previews, both of which were drawn and wired to nothing

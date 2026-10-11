@@ -3,11 +3,12 @@
 > For the person who owns a blog, not the person who builds one. Everything here is done
 > from Settings or from one CSS box; nothing needs a checkout.
 
-Quire Ink ships **one design**, worn in four built-in themes. A theme can also be installed from
-a zip, checked by the engine first ([ADR 0072](decisions/0072-a-theme-is-a-checked-skin-over-the-one-markup.md));
-there is no screen for that yet, only the owner's API ([theme-install-api.md](theme-install-api.md)),
-and there is no gallery: a gallery is a promise to keep every theme working forever, and the ones
-that stop being maintained are the ones people are running. What this page maps is the set of
+Quire Ink ships **one design**, worn in four built-in themes, and as many more as you install from
+a zip, each checked by the engine first ([ADR 0072](decisions/0072-a-theme-is-a-checked-skin-over-the-one-markup.md)):
+Appearance → Theme → Install from a file, or the owner's API ([theme-install-api.md](theme-install-api.md)).
+There is no gallery: a gallery is a promise to keep every theme working forever, and the ones
+that stop being maintained are the ones people are running. A theme from a zip is marked
+Unreviewed, because nothing but the engine's checks has looked at it. What this page maps is the set of
 knobs, ending with the escape hatch for anything they do not cover.
 
 ## The knobs, roughly in the order they change a first impression
@@ -37,7 +38,7 @@ knobs, ending with the escape hatch for anything they do not cover.
 | **Archive** | Home & menu → Post list | `/archive`: every post you have published, grouped by year, and the list of years in the rail. **On by default.** If you already publish a page or a post at `/archive`, yours keeps the URL and this stays off until you move it |
 | **Author** | Blog → Author | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |
 | Motion | Account → This admin | Every transition, entrance and smooth scroll, on the site, the sign-in page and the admin alike. A reader's own reduced-motion preference wins either way ([conventions/motion.md](conventions/motion.md)) |
-| Theme | Appearance → Theme | Which of four built-in themes the published site wears: **Plain paper** (nothing added), **Source code**, **Newspaper** or **Notebook**. Asked once, as the last step of setup, and one click either way here afterwards. Only the published site: this admin never changes. Newspaper is the one that touches your words — it numbers headings, figures and tables, and those numbers live on the page and not in the feed, the newsletter or what a reader copies. Source code sets your headlines in its monospace and numbers the lines of a highlighted code block, which a copy does not pick up |
+| Theme | Appearance → Theme | Which theme the published site wears: one of the four built in, **Plain paper** (nothing added), **Source code**, **Newspaper** or **Notebook**, or one installed from a zip, whose tile shows its screenshot, version, author and an Unreviewed badge, with Roll back (when an earlier version is installed) and Remove under it; removing the theme the blog wears puts it back on Plain paper, and when the chosen theme cannot be drawn the card says the site is showing Plain paper and why. Asked once, as the last step of setup, and one click either way here afterwards. Only the published site: this admin never changes. Newspaper is the one that touches your words — it numbers headings, figures and tables, and those numbers live on the page and not in the feed, the newsletter or what a reader copies. Source code sets your headlines in its monospace and numbers the lines of a highlighted code block, which a copy does not pick up |
 | Footer | Home & menu → Footer | Your own line, with `{year}` and `{title}` tokens |
 | **The reader's pen** | Posts → What is on a post | Readers select words on a post and highlight, underline, ring or note them; marks live in their browser only and are drawn with the site's own pen. **On by default.** Off removes the bar and leaves the quote-copy gesture ([ADR 0043](decisions/0043-the-reader-gets-a-pen.md)) |
 | **Hand-drawn lists** | Posts → What is on a post | Bullets become ink dots and level dashes, and a numbered list counts in a handwritten numeral (Kalam, ten digits, 1.4 KB). **On by default.** Off restores the browser's disc and decimal; a list that starts past 1 and a task list keep the browser's marker either way |

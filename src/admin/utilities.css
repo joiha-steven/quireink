@@ -1111,6 +1111,15 @@
   .grid-cols-7 {
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
+  /* An installed theme's cell on the Look card: its key and the keys under it take two rows of
+     the theme grid, so two keys side by side are one height whatever their names and the rows of
+     keys under them wrap to (settings-appearance-installed.ts). */
+  .row-span-2 {
+    grid-row: span 2 / span 2;
+  }
+  .grid-rows-subgrid {
+    grid-template-rows: subgrid;
+  }
   .flex-col {
     flex-direction: column;
   }
@@ -1607,6 +1616,9 @@
   }
   .object-cover {
     object-fit: cover;
+  }
+  .object-top {
+    object-position: top;
   }
   .p-0\.5 {
     padding: calc(var(--spacing) * 0.5);

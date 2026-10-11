@@ -4,8 +4,8 @@
 > and the public route that serves their files. The routes are
 > [`src/web/admin/themes.ts`](../src/web/admin/themes.ts) and [`src/web/theme-files.ts`](../src/web/theme-files.ts);
 > the store is [`src/content/installed-themes.ts`](../src/content/installed-themes.ts) and the
-> checking [`src/theme/read-package.ts`](../src/theme/read-package.ts). There is no admin screen for
-> them yet; once chosen, the public site wears one ([below](#wearing-one)).
+> checking [`src/theme/read-package.ts`](../src/theme/read-package.ts). The admin drives them from
+> the Look card ([below](#in-the-admin)); once chosen, the public site wears one ([below](#wearing-one)).
 
 Every `/api/themes` route is on the owner-gated router: a session cookie, and for a write a
 same-origin request, or `401` and `403` before anything runs. Answers are the admin's envelope,
@@ -14,7 +14,7 @@ same-origin request, or `401` and `403` before anything runs. Answers are the ad
 | Request | Body | Answer |
 |:--|:--|:--|
 | `POST /api/themes` | multipart form, the zip as `file` | `{ id, version, hash, changed }`. `changed: false` when this exact package was already installed as that version |
-| `GET /api/themes` | — | one entry per theme id: `{ id, current, previous, active, reviewed: false }`, `current` with the version, hash, install time and the manifest's name, author, description, license, homepage, api and screenshot URL; `previous` newest first |
+| `GET /api/themes` | — | one entry per theme id: `{ id, current, previous, active, reviewed: false, readable }`, `current` with the version, hash, install time and the manifest's name, author, description, license, homepage, api and screenshot URL; `previous` newest first. `readable: false` when the current manifest does not read (a backup puts rows back unchecked): then `current` has the row's own columns, the id as the name, the other manifest fields empty and `screenshot: ''` |
 | `DELETE /api/themes/<id>` | — | `{ id, removed }`, the number of versions. A blog wearing the theme goes back to `plain` |
 | `POST /api/themes/<id>/rollback` | — | `{ id, current, removed }`: the current version removed, the one before it current again |
 
@@ -97,6 +97,45 @@ the theme until the next flush. A row is read as if it could be anything because
 back unchecked, and these values end up inside CSS the engine writes. Ids reach HTML through
 `escapeAttr`; in CSS only after that check.
 
+## In the admin
+
+Settings → Appearance → **Theme** lists every installed theme as a tile after the four built in,
+in the same grid and the same track (`src/web/admin/screens/settings-appearance-installed.ts`, the
+island [`src/admin/island/lib/settings-themes.ts`](../src/admin/island/lib/settings-themes.ts)).
+
+- **Choosing one is choosing a built-in.** The tile is a key in the `theme` choice track, so it is
+  pressed, counted and stored by the sheet's one Save as a built-in tile is; nothing new on the
+  wire. The tile shows the screenshot (`current.screenshot`, cropped from the top over a neutral
+  drawing that shows if the file does not load), the manifest's name, the version and author, and
+  an **Unreviewed** badge on every one.
+- **Install from a file** sends the zip to `POST /api/themes` and says what came back under the key:
+  installed, already installed (nothing changed), refused with one line per finding (the rule in
+  words from `themeRules` in `locales/admin/`, then the code, `file:line:col` and the subject), too
+  large (`413`), no answer (a network failure), or the status of any other error. The key is busy
+  while the file travels and one install runs at a time.
+- **Roll back to &lt;version&gt;** appears only on a theme with an earlier live version; **Remove**
+  asks first, saying a blog wearing it goes back to Plain.
+- After an install, a rollback or a removal the picker is drawn again by the server
+  (`/admin/settings?tab=appearance`, read and swapped in place): the rest of the form keeps its
+  unsaved edits, and an unsaved pick of a theme still on offer stays pressed.
+- **A warning** sits at the top of the card when the stored theme is not what the site draws:
+  no live version of it (`missing`), a manifest the renderer refuses (`unreadable`), or its
+  `theme.css` gone from the blob store (`sheet_missing`). The check is
+  [`src/content/theme-health.ts`](../src/content/theme-health.ts), run when the screen is drawn.
+- **A theme whose manifest does not read** is listed as a dashed tile with its id, a line saying it
+  cannot be read, and its Remove key (and Rollback, when an earlier version exists); it is not a
+  key of the theme track, so it cannot be chosen. One such row used to take the whole Settings
+  screen down with a 500.
+- **A screenshot that does not decode** is hidden by the island, so the drawing under it shows.
+- After a redraw, focus lands on the theme just installed or rolled back, or on the pressed tile
+  after a removal; the install answers sit outside the redrawn part, in a live region that stays.
+- **The activity log** records `theme.install` (id and version; an install that changed nothing is
+  not recorded), `theme.rollback` (id, the version left and the one current again), `theme.remove`
+  and `theme.choose`, written by both the settings save and the MCP tool `update_appearance` when
+  `theme` moved ([`src/content/theme-choice-log.ts`](../src/content/theme-choice-log.ts)): an
+  installed theme as `Name (id)`, a built-in one as its id, named on the log screen in the
+  reader's language.
+
 ## Limits
 
 - **Files no row names are not cleaned up.** An install that failed after writing its files, and
@@ -105,8 +144,10 @@ back unchecked, and these values end up inside CSS the engine writes. Ids reach 
   written once per hash.
 - **A backup is trusted as it is.** Loading one puts its theme rows and files back without
   checking them again, as it puts back the owner's custom CSS: the archive is the owner's own.
-- **Nothing is written to the activity log yet**; the request log has a line for each install,
-  refusal, rollback and removal.
+- **A refused install is not in the activity log**, since it changed nothing; the request log has a
+  line for each install, refusal, rollback and removal.
+- **The admin hides no control for an installed theme's `ownsSettings` yet**: its tile carries an
+  empty list, so the controls stay on screen while the page draws without their values.
 - **No picker shows a theme's fonts and palettes yet**, and the MCP tool's palette and font menus
   are the built-in ones; a theme is chosen by id and its choices are set by id.
 - **A theme's fonts are never preloaded.** They are whole woff2 files, not the engine's subsets,

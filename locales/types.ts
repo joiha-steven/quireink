@@ -1,6 +1,8 @@
 // Shape contracts for UI string dictionaries.
 // Add a key here → TS will require it in every locale file.
 
+import type { ThemeRule as ThemeRuleCode } from '@/theme/types'
+
 export type Dict = {
   emptyPosts: string
   // The composed front page's row labels. ADR 0014.
@@ -1079,6 +1081,35 @@ export type AdminStrings = {
   lookCode: string
   lookPaper: string
   lookNotes: string
+  // Themes installed from a zip (ADR 0072, T2c): the Look card's installed tiles, the install
+  // control and what it answers, Rollback and Remove, and the warning when the chosen theme is
+  // not the one the site draws. `{fallback}` is `lookPlain` (the theme a broken or removed one falls back to), `{theme}` the theme's name or id.
+  themeUnreviewed: string
+  themeUnreviewedHint: string
+  themeVersionBy: string
+  themeInstall: string
+  themeInstallNote: string
+  themeInstalling: string
+  themeInstalledOk: string
+  themeUnchanged: string
+  themeRefusedHead: string
+  themeTooBig: string
+  themeNetwork: string
+  themeServerError: string
+  themeRollback: string
+  themeRemove: string
+  askThemeRemoveTitle: string
+  askThemeRemoveBody: string
+  themeRolledBack: string
+  themeRemoved: string
+  themeActionFailed: string
+  themeBrokenMissing: string
+  themeBrokenUnreadable: string
+  themeBrokenSheet: string
+  themeUnreadableTile: string
+  themeReloadToSee: string
+  /** One line per rule code of the theme checker (`theme/types.ts`), and `other` for a code this build does not know. */
+  themeRules: Record<ThemeRuleCode | 'other', string>
   motionLabel: string
   motionDesc: string
   keyFeedbackLabel: string

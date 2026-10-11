@@ -1,7 +1,8 @@
-# Looks — four dialects, one setting (`settings.theme`)
+# Looks — four built-in dialects, one setting (`settings.theme`)
 
-The public site can be dressed in one of four dialects: **plain** (no sheet at all),
-**code**, **paper** and **notes**. Since ADR 0072 they are the four built-in themes, the
+The engine ships four dialects: **plain** (no sheet at all), **code**, **paper** and
+**notes**, and an owner may install more from a zip, each checked against the same rules
+([theme-install-api.md](../theme-install-api.md)). Since ADR 0072 the four are the built-in themes, the
 admin calls the setting "Theme", and `settings.theme` holds the id (`settings.look`, the
 old name, is still read and written beside it). How the four differ beyond their sheets (the
 menu in the masthead, a headline face, the rail rules, the chrome tracking, and

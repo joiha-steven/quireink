@@ -20,6 +20,7 @@ import { registerEvenFlows } from './tour-flows-even'
 import { registerWiredFlows } from './tour-flows-wired'
 import { registerBackupFlows } from './tour-flows-backup'
 import { registerCloudFlows } from './tour-flows-cloud'
+import { registerThemeFlows } from './tour-flows-themes'
 import { registerNewsFlows } from './tour-flows-news'
 import { registerStatsFlows } from './tour-flows-stats'
 import { registerShellFlows } from './tour-flows-shell'
@@ -335,6 +336,8 @@ export function registerFlows({ flow, expect, atWidth, passkeyHost }: PasskeyTou
   registerEvenFlows({ flow, atWidth })
   registerBackupFlows({ flow, expect, atWidth })
   registerCloudFlows({ flow, expect })
+  // After the backup flows, so the snapshot they build and restore is the fixture's own.
+  registerThemeFlows({ flow, expect })
   registerNewsFlows({ flow, expect, atWidth })
   registerStatsFlows({ flow, expect, atWidth })
   registerShellFlows({ flow, expect, atWidth })

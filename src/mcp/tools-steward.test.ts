@@ -96,6 +96,17 @@ describe('the steward tools', () => {
     expect((await getSettings()).theme).toBe('code')
   })
 
+  it('update_appearance writes the same theme.choose line the settings screen does, naming the theme', async () => {
+    expect((await installTheme(themeZip())).ok).toBe(true)
+    await saveSettings({ theme: 'code' })
+    db().run('delete from activity_log')
+    await call('update_appearance', { theme: 'broadsheet' })
+    await call('update_appearance', { theme: 'broadsheet' })
+    await call('update_appearance', { theme: 'paper' })
+    const lines = db().query(`select detail from activity_log where action = 'theme.choose' order by id`).all() as { detail: string }[]
+    expect(lines.map((l) => l.detail)).toEqual(['Broadsheet (broadsheet)', 'paper'])
+  })
+
   it("update_appearance leaves the chrome font alone when only the theme changes, and says so", async () => {
     await saveSettings({ chromeFont: 'plex-mono' })
     await call('update_appearance', { theme: 'code' })

@@ -35,16 +35,22 @@ import { COL, GRID } from '@/web/admin/screens/settings-shell'
 import { palettes } from '@/web/admin/screens/settings-appearance-theme'
 import { typeResetKey, typeScale } from '@/web/admin/screens/settings-appearance-type'
 import { lookPicker, tileClass, tileFaces } from '@/web/admin/screens/settings-appearance-look'
+import type { InstalledView } from '@/web/admin/screens/settings-appearance-installed'
 
-/** What this tab needs that is not a setting: the six palettes it offers to edit. */
+/**
+ * What this tab needs that is not a setting: the six palettes it offers to edit, and the themes
+ * installed from a zip with whether the chosen one draws (both optional, for the tests that draw
+ * the tab without a database).
+ */
 export type AppearanceTabView = {
   presets: ThemePreset[]
-}
+} & Partial<InstalledView>
 
 // --- Theme, and shape ------------------------------------------------------------------------
 
 // "Theme" is drawn in `settings-appearance-look.ts`: four tiles with a picture and a
-// line each, because a name alone cannot say what a look does to the page.
+// line each, because a name alone cannot say what a look does to the page, and one more per
+// theme installed from a zip (`settings-appearance-installed.ts`).
 
 /**
  * Density, corners and headline weight — the three knobs that change SHAPE rather than colour.
@@ -314,7 +320,10 @@ function cssEditor(t: AdminStrings, s: SiteSettings): string {
 export function appearanceTab(t: AdminStrings, s: SiteSettings, view: AppearanceTabView): string {
   return `<div class="space-y-5"><div class="${GRID}">`
     + `<div class="${COL}">`
-    + panelCard({ title: t.lookLabel, body: lookPicker(t, s) })
+    + panelCard({
+      title: t.lookLabel,
+      body: lookPicker(t, s, { installed: view.installed ?? [], health: view.health ?? { ok: true } }),
+    })
     // ⚠️ ONE NOTE, NOT A TINTED CALLOUT AND A PARAGRAPH. `themeAdminNote` shipped in a grey
     // rounded box above a card that then carried plain notes under every row — the second note
     // style `fields.ts` names as the drift it exists to stop. It is the card's own sentence, so

@@ -19,7 +19,7 @@
 // Nothing deletes theme files: a removed or rolled-back version is a soft-deleted row whose
 // files stay, for the pages still holding its URL.
 
-import { readThemePackage, type PackageOptions, type ThemeManifest, type Violation } from '@/theme'
+import { readThemePackage, type PackageOptions, type Violation } from '@/theme'
 import { themeContract } from '@/content/theme-contract'
 import { DEFAULT_THEME_ID, OWNABLE_SETTINGS } from '@/content/themes-builtin'
 import { RESERVED_FONT_IDS, RESERVED_PALETTE_IDS, RESERVED_THEME_IDS } from '@/content/theme-reserved'
@@ -158,6 +158,12 @@ export type InstalledTheme = {
   active: boolean
   /** Nothing has looked at a zip's theme but the checker (ADR 0072). */
   reviewed: false
+  /**
+   * False when the current version's manifest does not read (a backup puts rows back unchecked).
+   * Then `current` holds only the row's own columns: the name is the id, the other manifest fields
+   * are empty and `screenshot` is `''`. Such a theme can be removed, never chosen.
+   */
+  readable: boolean
 }
 
 const NEWEST_FIRST = 'installed_at desc, id desc'
@@ -171,6 +177,27 @@ const liveRowsOf = (themeId: string): Row[] =>
 
 const versionOf = (r: Row): InstalledVersion => ({ version: r.version, hash: r.hash, installedAt: r.installed_at })
 
+type Details = Pick<InstalledTheme['current'], 'name' | 'author' | 'description' | 'license' | 'homepage' | 'api'>
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+const optional = (v: unknown): string | null | false => (v === undefined || v === null ? null : typeof v === 'string' ? v : false)
+
+/**
+ * What the list shows of a manifest, or null when it does not read. A row is read as if it could
+ * be anything (a backup puts rows back unchecked): one row that threw here took the whole
+ * Settings screen down with a 500, and with it the Remove key that would have cleaned it up.
+ */
+function details(json: string): Details | null {
+  let m: unknown
+  try { m = JSON.parse(json) } catch { return null }
+  if (!isObj(m)) return null
+  const { name, author, license, api } = m
+  const description = optional(m.description)
+  const homepage = optional(m.homepage)
+  if (typeof name !== 'string' || name === '' || typeof author !== 'string' || typeof license !== 'string'
+    || typeof api !== 'number' || description === false || homepage === false) return null
+  return { name, author, description, license, homepage, api }
+}
+
 /** Every installed theme, by id, each with its current version first. */
 export async function listInstalledThemes(): Promise<InstalledTheme[]> {
   const chosen = (await getSettings()).theme
@@ -181,20 +208,27 @@ export async function listInstalledThemes(): Promise<InstalledTheme[]> {
   const byId = new Map<string, Row[]>()
   for (const r of rows) byId.set(r.theme_id, [...(byId.get(r.theme_id) ?? []), r])
   return [...byId].map(([id, [head, ...rest]]) => {
-    // Written by `installTheme` from the checker's own output, so its shape is known.
-    const m = JSON.parse(head!.manifest) as ThemeManifest
+    const read = details(head!.manifest)
+    if (!read) console.warn(`[WARN] theme ${id}: the current version's manifest does not read; listed as unreadable`)
+    const shown = read ?? { name: id, author: '', description: null, license: '', homepage: null, api: 0 }
     return {
       id,
       current: {
-        ...versionOf(head!),
-        name: m.name, author: m.author, description: m.description ?? null, license: m.license,
-        homepage: m.homepage ?? null, api: m.api, screenshot: `/themes/${head!.hash}/screenshot.webp`,
+        ...versionOf(head!), ...shown,
+        screenshot: read && isThemeHash(head!.hash) ? `/themes/${head!.hash}/screenshot.webp` : '',
       },
       previous: rest.map(versionOf),
       active: chosen === id,
       reviewed: false,
+      readable: read !== null,
     }
   })
+}
+
+/** The manifest name of the current version of `themeId`, or null when none is live or it does not read. */
+export function installedThemeName(themeId: string): string | null {
+  const [head] = liveRowsOf(themeId)
+  return head ? details(head.manifest)?.name ?? null : null
 }
 
 /**

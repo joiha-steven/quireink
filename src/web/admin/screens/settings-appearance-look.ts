@@ -19,6 +19,9 @@ import type { SiteSettings } from '@/types'
 import { BUILTIN_THEMES, isBuiltinThemeId, type SiteTheme } from '@/content/themes-builtin'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { settingRow } from '@/web/admin/fields'
+import {
+  brokenWarning, installControl, installedTile, NO_INSTALLED, themeWords, type InstalledView,
+} from '@/web/admin/screens/settings-appearance-installed'
 
 /**
  * A key pressed into the card, wearing its own specimen. A solid ink tile can show neither
@@ -68,20 +71,38 @@ const suggestsAttr = (suggests: SiteTheme['suggests']): string =>
 const ownsAttr = (owns: readonly string[], name: string): string =>
   ` data-owns="${escapeAttr(JSON.stringify(owns))}" data-name="${escapeAttr(name)}"`
 
-/** One tile per built-in theme, two to a row, each saying what it is and who it is for. */
-export function lookPicker(t: AdminStrings, s: SiteSettings): string {
-  const tiles = BUILTIN_THEMES.map(({ id, nameKey, hintKey, art: { tile }, suggests, ownsSettings }) =>
+const TILE_LAYOUT = 'flex flex-col p-3 text-left'
+
+/**
+ * One tile per built-in theme, two to a row, each saying what it is and who it is for; then one
+ * per installed theme in the same grid (`settings-appearance-installed.ts`), the install key, and
+ * a warning when the chosen theme is not what the site draws. The whole picker is one
+ * `data-look-picker` box; its `data-look-list` (the warning and the tiles) is what the island swaps
+ * for a fresh draw after an install, a rollback or a removal, keeping the owner's unsaved pick.
+ */
+export function lookPicker(t: AdminStrings, s: SiteSettings, view: InstalledView = NO_INSTALLED): string {
+  const builtins = BUILTIN_THEMES.map(({ id, nameKey, hintKey, art: { tile }, suggests, ownsSettings }) =>
     `<button type="button" data-choice="${escapeAttr(id)}" aria-pressed="${id === s.theme}"`
     + suggestsAttr(suggests) + ownsAttr(ownsSettings, t[nameKey])
-    + `${tileFaces('flex flex-col p-3 text-left')} class="${tileClass(id === s.theme, 'flex flex-col p-3 text-left')}">${art(tile)}`
+    + `${tileFaces(TILE_LAYOUT)} class="${tileClass(id === s.theme, TILE_LAYOUT)}">${art(tile)}`
     + `<span class="block text-sm font-semibold leading-tight">${escapeHtml(t[nameKey])}</span>`
     + `<span class="mt-1 block text-xs font-normal text-neutral-600 dark:text-neutral-300">${escapeHtml(t[hintKey])}</span>`
     + `</button>`).join('')
-  return settingRow({
-    note: t.lookDesc,
-    control: `<div class="grid grid-cols-2 gap-2" data-choice-track data-k="theme"`
-      // '' when the stored theme is not one of these tiles (kept from a later build): then no
-      // tile is pressed, and a baseline of the id would read as an unsaved change on opening.
-      + ` data-was="${escapeAttr(isBuiltinThemeId(s.theme) ? s.theme : '')}">${tiles}</div>`,
+  const installed = view.installed.map((theme) => {
+    const on = theme.id === s.theme
+    return installedTile(t, theme, on, { cls: tileClass(on, TILE_LAYOUT), faces: tileFaces(TILE_LAYOUT) })
   })
+  const onOffer = isBuiltinThemeId(s.theme) || view.installed.some((theme) => theme.id === s.theme && theme.readable)
+  // `data-look-list` is the part the island swaps after a write; the install control stays, so
+  // its live region is in the page before a sentence is put in it and the sentence is read out.
+  return `<div data-look-picker data-theme-words="${themeWords(t)}"><div data-look-list>${brokenWarning(t, view)}`
+    + settingRow({
+      note: t.lookDesc,
+      control: `<div class="grid grid-cols-2 gap-2" data-choice-track data-k="theme"`
+        // '' when the stored theme is not one of these tiles (removed, or kept from a later
+        // build): then no tile is pressed, and a baseline of the id would read as an unsaved
+        // change on opening.
+        + ` data-was="${escapeAttr(onOffer ? s.theme : '')}">${builtins}${installed.join('')}</div>`,
+    })
+    + `</div>` + installControl(t) + `</div>`
 }
