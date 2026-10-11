@@ -762,6 +762,10 @@ const es = {
   themeBrokenSheet: 'Ahora el sitio se dibuja como {fallback}: falta en el almacenamiento la hoja de estilo de {theme}. Vuelve a instalar el tema.',
   themeUnreadableTile: 'Su theme.json no se puede leer, así que no se puede elegir. Quítalo y vuelve a instalarlo desde su archivo.',
   themeReloadToSee: 'Hecho, pero la lista no se pudo volver a dibujar. Recarga la página para verla.',
+  themeOfferFrom: 'de {theme}',
+  themeSuggestUse: 'Usar la paleta y las tipografías que sugiere este tema',
+  themePaletteFromTheme: 'Los colores de {palette} vienen de {theme} y no se editan aquí. Si es visible para los visitantes, está en su menú de paletas solo mientras {theme} sea el tema elegido.',
+  themeFontUnloaded: 'Esta tipografía no se pudo cargar, así que no se muestra el ejemplo.',
   themeRules: {
     C1: 'La hoja escribe un color. Los colores solo vienen de las paletas.',
     T1: 'La hoja escribe un tamaño de letra. Los tamaños solo vienen de la escala tipográfica.',

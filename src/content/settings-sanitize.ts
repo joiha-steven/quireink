@@ -87,16 +87,22 @@ export function sanitizeThemes(input: unknown, base: Record<string, ThemeSetting
 // the default — which hides the switcher (one option). Invariant for `enabledPalettes`.
 //
 // `defaultId: null` says the default is NOT a built-in palette (an installed theme's, ADR 0072),
-// so nothing is added on its behalf: the list holds the owner's built-ins alone, and the page
-// adds the theme's palette, or the engine's default when that palette is not on offer, as it
-// draws (`content/theme-choices.ts`, `drawnPalettes`). Adding Mono here instead put a palette
-// the owner never chose into the reader's menu.
-export function sanitizeEnabledPalettes(input: unknown, defaultId: string | null): string[] {
+// so nothing is added on its behalf: the page adds the theme's palette, or the engine's default
+// when that palette is not on offer, as it draws (`content/theme-choices.ts`, `drawnPalettes`).
+// Adding Mono here instead put a palette the owner never chose into the reader's menu.
+//
+// `extra` lets through ids that are not built-in palettes, after them and in the order given:
+// an installed theme's palettes (ADR 0072). Which ones is the caller's question
+// (`enabledPalettesFor` in `content/theme-choices.ts` on a write, any well-formed id on a read).
+export function sanitizeEnabledPalettes(input: unknown, defaultId: string | null,
+  extra: (id: string) => boolean = () => false): string[] {
   const def = defaultId === null ? null : isPresetId(defaultId) ? defaultId : DEFAULT_PRESET_ID
   if (!Array.isArray(input)) return THEME_PRESETS.map((p) => p.id)
-  const want = new Set(input.filter((x): x is string => typeof x === 'string'))
+  const given = input.filter((x): x is string => typeof x === 'string')
+  const want = new Set(given)
   if (def !== null) want.add(def)
-  return THEME_PRESETS.map((p) => p.id).filter((id) => want.has(id))
+  const added = [...new Set(given.filter((id) => !isPresetId(id) && extra(id)))]
+  return [...THEME_PRESETS.map((p) => p.id).filter((id) => want.has(id)), ...added]
 }
 
 export function sanitizeSeo(input: unknown, fallback: SeoSettings): SeoSettings {

@@ -14,7 +14,7 @@ same-origin request, or `401` and `403` before anything runs. Answers are the ad
 | Request | Body | Answer |
 |:--|:--|:--|
 | `POST /api/themes` | multipart form, the zip as `file` | `{ id, version, hash, changed }`. `changed: false` when this exact package was already installed as that version |
-| `GET /api/themes` | — | one entry per theme id: `{ id, current, previous, active, reviewed: false, readable }`, `current` with the version, hash, install time and the manifest's name, author, description, license, homepage, api and screenshot URL; `previous` newest first. `readable: false` when the current manifest does not read (a backup puts rows back unchecked): then `current` has the row's own columns, the id as the name, the other manifest fields empty and `screenshot: ''` |
+| `GET /api/themes` | — | one entry per theme id: `{ id, current, previous, active, reviewed: false, readable, ownsSettings }`, `current` with the version, hash, install time and the manifest's name, author, description, license, homepage, api and screenshot URL; `previous` newest first. `readable: false` when the current manifest does not read (a backup puts rows back unchecked): then `current` has the row's own columns, the id as the name, the other manifest fields empty and `screenshot: ''`. `ownsSettings` is the settings the theme draws itself, as a page wearing it reads them: only keys in `OWNABLE_SETTINGS`, and `[]` when the page could not draw the manifest |
 | `DELETE /api/themes/<id>` | — | `{ id, removed }`, the number of versions. A blog wearing the theme goes back to `plain` |
 | `POST /api/themes/<id>/rollback` | — | `{ id, current, removed }`: the current version removed, the one before it current again |
 | `GET /api/themes/<id>/preview` | — | `303` to `/?theme-preview=<id>` with the preview cookie set; an id the site cannot draw clears the cookie and goes back to the Look card with the reason ([below](#previewing-one)) |
@@ -77,12 +77,14 @@ The page is drawn as **plain**, every field of it, plus what the current version
   chrome-font setting, while the theme is chosen; each falls back to the default stack for a missing
   glyph; on a Chinese, Japanese or Korean page the reading font leads that language's CJK stack.
   A palette is a value of the default palette (`themePreset`), written into the same `--c-*`
-  variables a built-in one is, the newsletter included, and offered in the reader's palette menu
-  by its own name beside the built-ins the owner turned on. Chosen alone, there is no menu: no
-  built-in palette is added to the stored list on its behalf.
+  variables a built-in one is, the newsletter included. The reader's palette menu lists, by their
+  own names, the default and every palette the owner turned on (`enabledPalettes`), the theme's
+  as well as the built-in ones, in stored order. A write may name a theme's palette there only
+  when the theme it leaves chosen has it (`enabledPalettesFor`, shared with MCP). Chosen alone,
+  there is no menu: no built-in palette is added to the stored list on its behalf.
 - A stored font or palette id that is not on offer (the theme removed, another chosen) is drawn as
   the default and **kept** in the row, as an unknown theme id is: choose the theme again and they
-  come back.
+  come back. So are a theme's ids in `enabledPalettes`: kept by every save, not drawn.
 
 **When it changes.** The current version is read with one query on the live-version index the first
 time a page asks after a flush of the page cache, and kept until the next one. Install, rollback and
@@ -155,6 +157,32 @@ island [`src/admin/island/lib/settings-themes.ts`](../src/admin/island/lib/setti
 - After an install, a rollback or a removal the picker is drawn again by the server
   (`/admin/settings?tab=appearance`, read and swapped in place): the rest of the form keeps its
   unsaved edits, and an unsaved pick of a theme still on offer stays pressed.
+- **The pickers offer what a theme adds while its tile is pressed**, saved or not
+  ([`settings-appearance-offers.ts`](../src/web/admin/screens/settings-appearance-offers.ts), the
+  island [`settings-offers.ts`](../src/admin/island/lib/settings-offers.ts)). Every installed theme's
+  palettes and reading and chrome fonts are drawn into the palette cards and the two font grids,
+  after the built-in ones, marked `data-theme-option="<id>"` and "from <name>", hidden unless their
+  theme is the pressed tile. A palette card shows its own colours and opens a note in place of a
+  colour table; its "Shown to visitors" tick works as a built-in card's. A font tile is set in
+  `'theme-<hash>-<font id>'` (its `@font-face` rules ride in the redrawn part of the card) over a
+  generic family, so two themes naming a font alike never draw each other's file; when the browser
+  cannot load the face, the tile drops its sample and says so. Every lookup is scoped to the cards
+  and keys on offer, so ids two themes share stay apart. Pressing another tile hides them; a pick
+  of one goes back to the stored value when that is on offer, else to the default the page would
+  draw, and comes back if the theme is pressed again before anything else is picked. A stored id
+  that is not on offer is drawn pressed as the default, so the screen opens clean and the id stays
+  stored; pressing its theme presses it again. While the pressed tile is not the saved theme, the
+  save sends the palette, both fonts and the reader's palettes as shown (`data-k-force`), changed
+  or not, so the row never keeps a value the form does not show. The Save key counts what moved.
+  Picking a theme reading font leaves the type table alone.
+- **The settings it draws itself** (`ownsSettings`) ride on its tile as `data-owns`, and the
+  controls are hidden with the line naming it while it is pressed, as for Newspaper.
+- **Use this theme’s suggested palette and fonts** shows under the tiles while the pressed theme,
+  built in or installed, suggests a palette or font that is on offer and differs from the pick
+  (`data-suggested` on every tile). It presses them as the owner would, unsaved. Pressing an
+  installed tile moves nothing by itself; a built-in tile still moves its chrome font as before.
+- **The admin's own document** draws the editor in the reading face and palette the site draws, a
+  theme's included, and never a theme's chrome font.
 - **A warning** sits at the top of the card when the stored theme is not what the site draws:
   no live version of it (`missing`), a manifest the renderer refuses (`unreadable`), or its
   `theme.css` gone from the blob store (`sheet_missing`). The check is
@@ -183,10 +211,13 @@ island [`src/admin/island/lib/settings-themes.ts`](../src/admin/island/lib/setti
   checking them again, as it puts back the owner's custom CSS: the archive is the owner's own.
 - **A refused install is not in the activity log**, since it changed nothing; the request log has a
   line for each install, refusal, rollback and removal.
-- **The admin hides no control for an installed theme's `ownsSettings` yet**: its tile carries an
-  empty list, so the controls stay on screen while the page draws without their values.
-- **No picker shows a theme's fonts and palettes yet**, and the MCP tool's palette and font menus
-  are the built-in ones; a theme is chosen by id and its choices are set by id.
+- **A theme's palettes reach the reader's menu only while it is chosen.** Its ids stay in the
+  stored list under another theme, unseen, and the Appearance screen shows their ticks only with
+  its tile. Removing the theme leaves them there too; they are drawn only for a theme that has
+  them, so they do nothing, and only unticking them under that theme takes them out.
+- **The MCP tool's description lists the built-in palettes and fonts only.** It takes the chosen
+  installed theme's ids too, checked by the rule the settings route uses
+  (`content/theme-choices.ts`), and refuses anything else, but an agent has to know them.
 - **A theme's fonts are never preloaded.** They are whole woff2 files, not the engine's subsets,
   so like an uploaded font they swap in rather than compete with the sheet ([performance.md](performance.md)).
   A title set in a theme's display or reading face paints first in the fallback.

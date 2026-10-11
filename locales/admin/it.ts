@@ -762,6 +762,10 @@ const it = {
   themeBrokenSheet: 'Ora il sito è disegnato come {fallback}: il foglio di stile di {theme} manca dall’archivio. Installa di nuovo il tema.',
   themeUnreadableTile: 'Il suo theme.json non si può leggere, quindi non si può scegliere. Rimuovilo, poi installalo di nuovo dal suo file.',
   themeReloadToSee: 'Fatto, ma l’elenco non si è potuto ridisegnare. Ricarica la pagina per vederlo.',
+  themeOfferFrom: 'da {theme}',
+  themeSuggestUse: 'Usa la palette e i caratteri suggeriti da questo tema',
+  themePaletteFromTheme: 'I colori di {palette} vengono da {theme} e non si modificano qui. Se offerta ai visitatori, è nel loro menu delle palette solo finché {theme} è il tema scelto.',
+  themeFontUnloaded: 'Questo carattere non si è caricato, quindi non viene mostrato alcun esempio.',
   themeRules: {
     C1: 'Il foglio scrive un colore. I colori vengono solo dalle palette.',
     T1: 'Il foglio scrive una dimensione del carattere. Le dimensioni vengono solo dalla scala tipografica.',

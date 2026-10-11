@@ -762,6 +762,10 @@ const fr = {
   themeBrokenSheet: 'Le site est dessiné en {fallback} en ce moment : la feuille de style de {theme} manque dans le stockage. Réinstallez le thème.',
   themeUnreadableTile: 'Son theme.json est illisible, il ne peut donc pas être choisi. Retirez-le, puis réinstallez-le depuis son fichier.',
   themeReloadToSee: 'C’est fait, mais la liste n’a pas pu être redessinée. Rechargez la page pour la voir.',
+  themeOfferFrom: 'de {theme}',
+  themeSuggestUse: 'Utiliser la palette et les polices suggérées par ce thème',
+  themePaletteFromTheme: 'Les couleurs de {palette} viennent de {theme} et ne se modifient pas ici. Proposée aux visiteurs, elle figure dans leur menu de palettes seulement tant que {theme} est le thème choisi.',
+  themeFontUnloaded: 'Cette police n’a pas pu être chargée, aucun aperçu n’est donc affiché.',
   themeRules: {
     C1: 'La feuille écrit une couleur. Les couleurs ne viennent que des palettes.',
     T1: 'La feuille écrit une taille de police. Les tailles ne viennent que de l’échelle typographique.',

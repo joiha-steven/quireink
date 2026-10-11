@@ -17,6 +17,7 @@ import {
   DEFAULT_CHROME_FONT, DEFAULT_FONT_PRESET, DEFAULT_PRESET_ID, getFontPreset, isChromeFontId,
   isFontPresetId, isPresetId,
 } from '@/content/themes'
+import { sanitizeEnabledPalettes } from '@/content/settings-sanitize'
 
 type Role = ThemeFont['role']
 
@@ -27,6 +28,40 @@ export const themeFont = (theme: SiteTheme, role: Role, id: unknown): ThemeFont 
 /** Whether `id` is one of the chosen theme's palettes. */
 export const isThemePalette = (theme: SiteTheme, id: unknown): id is string =>
   theme.package?.palettes.some((p) => p.id === id) ?? false
+
+/*
+ * WHAT A WRITE MAY CHOOSE, asked by every door that writes these three settings: the settings
+ * route and the setup step (`content/settings-save.ts`) and the MCP tool `update_appearance`
+ * (`mcp/tools-steward.ts`). A built-in id always, and one of `theme`'s own while `theme` is the
+ * theme the same write leaves chosen. One answer for all of them, so the agent cannot be offered
+ * a menu the owner's screen does not have, nor refused one it does.
+ */
+
+/** Whether `id` may be the default palette (`themePreset`) under `theme`. */
+export const isPaletteChoice = (theme: SiteTheme, id: unknown): id is string =>
+  isPresetId(id) || isThemePalette(theme, id)
+
+/**
+ * The palettes a reader may switch between (`enabledPalettes`) after a write that leaves `theme`
+ * chosen: the built-in ones asked for (with a built-in default always among them), then those of
+ * `theme`'s own palettes asked for, in the order asked; then, kept as they were, the ids the
+ * stored list holds of themes not chosen now, which come back with their theme.
+ */
+export function enabledPalettesFor(
+  input: unknown, stored: readonly string[], defaultId: string | null, theme: SiteTheme,
+): string[] {
+  const asked = sanitizeEnabledPalettes(input, defaultId, (id) => isThemePalette(theme, id))
+  const kept = stored.filter((id) => !isPresetId(id) && !isThemePalette(theme, id) && !asked.includes(id))
+  return [...asked, ...kept]
+}
+
+/** Whether `id` may be the reading font (`fontPreset`) under `theme`. */
+export const isReadingFontChoice = (theme: SiteTheme, id: unknown): id is string =>
+  isFontPresetId(id) || themeFont(theme, 'reading', id) !== null
+
+/** Whether `id` may be the chrome font (`chromeFont`) under `theme`. */
+export const isChromeFontChoice = (theme: SiteTheme, id: unknown): id is string =>
+  isChromeFontId(id) || themeFont(theme, 'chrome', id) !== null
 
 export type DrawnFonts = {
   /**
@@ -108,9 +143,10 @@ export function drawnPalettes(
   for (const p of own) themes[p.id] = { light: { ...p.light }, dark: { ...p.dark } }
   const chosen = isThemePalette(theme, settings.themePreset)
   const themePreset = chosen || isPresetId(settings.themePreset) ? settings.themePreset : DEFAULT_PRESET_ID
-  // A built-in default is always in the stored list already, so a built-in blog's list is untouched.
-  const enabledPalettes = settings.enabledPalettes.includes(themePreset)
-    ? settings.enabledPalettes
-    : [themePreset, ...settings.enabledPalettes]
+  // The stored list as offered: built-in palettes and the drawn theme's, in their stored order;
+  // another theme's ids stay in the row and are not drawn. A built-in default is always in the
+  // stored list already, so a built-in blog's list is untouched.
+  const offered = settings.enabledPalettes.filter((id) => isPresetId(id) || isThemePalette(theme, id))
+  const enabledPalettes = offered.includes(themePreset) ? offered : [themePreset, ...offered]
   return { themePreset, enabledPalettes, themes, names: Object.fromEntries(own.map((p) => [p.id, p.name])) }
 }

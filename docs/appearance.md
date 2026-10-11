@@ -17,9 +17,9 @@ knobs, ending with the escape hatch for anything they do not cover.
 |---|---|---|
 | Homepage mode | Home & menu → Front page | A list of posts, a single page you wrote, or a composed front page. This is the single largest visual difference between two Quire Ink blogs ([homepage.md](homepage.md)) |
 | Logo | Blog → Logo and icons | An image mark instead of the site name. In practice this is the first thing a reader tells two blogs apart by; it is resized for you and never served at its original weight |
-| Palette | Appearance → Appearance | Six built-in palettes, and every one of the seven colours in each is editable in both light and dark |
-| Reading font | Appearance → Font | The face your articles are set in: four built-in faces, or upload your own (`.woff2`, up to four weights). Picking a built-in face also loads its recommended text sizes into the type table, and the screen says so. Fonts are served from your own server — nothing is fetched from Google |
-| Chrome font (labelled "Site font") | Appearance → Font | The face of everything on the public site except the article text (header, menu, footer, dates, comments, search, forms), separately from the one your words are set in. It holds on every theme; on Newspaper the masthead, menu, sidebar and footer are set in the reading face, and this font sets the labels (sections, dates, kickers). Picking a theme offers the font it is drawn for on the form, unsaved; a font you picked yourself in the same edit is kept. It never changes the admin |
+| Palette | Appearance → Appearance | Six built-in palettes, and every one of the seven colours in each is editable in both light and dark. While an installed theme's tile is pressed, its own palettes join the cards, in their own colours and marked "from" the theme; one can be made the default, its colours are the theme's and are not edited here, and its tick puts it in the reader's palette menu while that theme is chosen ([below](#a-themes-own-choices)) |
+| Reading font | Appearance → Font | The face your articles are set in: four built-in faces, or upload your own (`.woff2`, up to four weights). Picking a built-in face also loads its recommended text sizes into the type table, and the screen says so. An installed theme's reading fonts join the tiles while its tile is pressed, and picking one leaves the type table as it is. Fonts are served from your own server — nothing is fetched from Google |
+| Chrome font (labelled "Site font") | Appearance → Font | The face of everything on the public site except the article text (header, menu, footer, dates, comments, search, forms), separately from the one your words are set in. It holds on every theme; on Newspaper the masthead, menu, sidebar and footer are set in the reading face, and this font sets the labels (sections, dates, kickers). Picking a built-in theme offers the font it is drawn for on the form, unsaved; a font you picked yourself in the same edit is kept. An installed theme's site fonts join the tiles while its tile is pressed. It never changes the admin |
 | Type scale | Appearance → Text sizes | Nine roles, each with size, line height and letter spacing |
 | **Density** | Appearance → Shape | How much air between everything. `normal` is the design as drawn |
 | **Corner radius** | Appearance → Shape | Square, soft, or round. Avatars and pills keep their own shape |
@@ -85,6 +85,9 @@ Newspaper they are not applied to the page, so an Inverted header cannot paint p
 words on a paper-coloured page. Banded rows, First column, Cell padding and On a narrow screen
 work on every theme.
 
+**Held by an installed theme.** A theme from a zip that draws them itself (`ownsSettings`) hides
+them the same way while its tile is pressed, with the same line naming it.
+
 **What "Scroll sideways" is for.** A table of sentences keeps compressing its columns until
 they are a word wide, and the sideways scroll the reading column has always had for wide
 tables never engages, because a table that can shrink never overflows. Measured on a phone at
@@ -98,6 +101,15 @@ colour stirred into your page colour, so it darkens the paper in a light theme a
 it in a dark one, in all six palettes, from one declaration. Measured on the default
 palette: page and header are 13 steps of grey apart in light mode and 12 in dark, which is a
 band you can see without being told it is there.
+
+### A theme's own choices
+
+An installed theme's palettes and reading and site fonts are choices only while it is the chosen
+theme, so they join the pickers, marked "from" the theme, only while its tile is pressed. Press
+another tile and they go, and a pick of one goes back to your saved choice, or else to the default
+the site would draw. A theme palette you show to visitors is in their menu while its theme is chosen.
+**Use this theme’s suggested palette and fonts** sets all three to what the pressed theme suggests,
+unsaved. Details: [Installing a theme](theme-install-api.md#in-the-admin).
 
 ### About the picture settings
 

@@ -13,11 +13,11 @@ import { one, run } from '@/store/query'
 import { dataDir } from '@/store/db'
 import { isSiteLang } from '@/locales/langs'
 import { sanitizeNavOrder } from '@/content/nav-order'
-import { isPresetId, isFontPresetId, isChromeFontId, isScheme } from '@/content/themes'
+import { isPresetId, isScheme } from '@/content/themes'
 import { isLiveInstalledTheme, savedTheme } from '@/content/chosen-theme'
-import { isThemePalette, themeFont } from '@/content/theme-choices'
+import { enabledPalettesFor, isChromeFontChoice, isPaletteChoice, isReadingFontChoice } from '@/content/theme-choices'
 import {
-  sanitizeMenu, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures,
+  sanitizeMenu, sanitizeThemes, sanitizeSeo, sanitizeFeatures,
   sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeApi, sanitizeActivityPub, sanitizeMotion, sanitizeCache,
   sanitizeDashboard, sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeSnippet,
   sanitizeUrl, clampNumber, sanitizeFeatured, sanitizeTimezone, sanitizeAi, sanitizeInks,
@@ -100,7 +100,7 @@ let queue: Promise<unknown> = Promise.resolve()
  * edited, which scripts do - carries the stored theme unchanged beside the new look, and must
  * not be read as "keep the theme". When both name a change, `theme` wins.
  */
-function nextTheme(input: Partial<SiteSettings>, current: SiteSettings): string {
+export function nextTheme(input: Partial<SiteSettings>, current: SiteSettings): string {
   const theme = isBuiltinThemeId(input.theme) || isLiveInstalledTheme(input.theme) ? input.theme : null
   const look = isBuiltinThemeId(input.look) ? input.look : null
   if (theme !== null && theme !== current.theme) return theme
@@ -180,8 +180,7 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
   // chosen (`content/theme-choices.ts`). Anything else is ignored and the stored value stays.
   const theme = nextTheme(input, current)
   const wearing = savedTheme({ theme })
-  const themePreset = isPresetId(input.themePreset) || isThemePalette(wearing, input.themePreset)
-    ? input.themePreset : current.themePreset
+  const themePreset = isPaletteChoice(wearing, input.themePreset) ? input.themePreset : current.themePreset
 
   const next: SiteSettings = {
     language: isSiteLang(input.language) ? input.language : current.language,
@@ -234,17 +233,16 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
     sidebarLayout: input.sidebarLayout === 'two' || input.sidebarLayout === 'single' ? input.sidebarLayout : current.sidebarLayout,
     defaultScheme: isScheme(input.defaultScheme) ? input.defaultScheme : current.defaultScheme,
     themePreset,
-    fontPreset: isFontPresetId(input.fontPreset) ? input.fontPreset
-      : themeFont(wearing, 'reading', input.fontPreset)?.id ?? current.fontPreset,
-    chromeFont: isChromeFontId(input.chromeFont) ? input.chromeFont
-      : themeFont(wearing, 'chrome', input.chromeFont)?.id ?? current.chromeFont,
+    fontPreset: isReadingFontChoice(wearing, input.fontPreset) ? input.fontPreset : current.fontPreset,
+    chromeFont: isChromeFontChoice(wearing, input.chromeFont) ? input.chromeFont : current.chromeFont,
     // Both written: `look` is what a build from before ADR 0072 reads, so going back to one
     // keeps the owner's choice (plain, when the theme is one that build could not draw).
     theme,
     look: legacyLook(theme),
-    // A theme's palette as the default adds nothing to the stored list (`sanitizeEnabledPalettes`).
-    enabledPalettes: sanitizeEnabledPalettes(input.enabledPalettes ?? current.enabledPalettes,
-      isPresetId(themePreset) ? themePreset : null),
+    // A theme's palette as the default adds nothing to the stored list (`sanitizeEnabledPalettes`);
+    // the chosen theme's palettes may be in it, and another theme's already there stay.
+    enabledPalettes: enabledPalettesFor(input.enabledPalettes ?? current.enabledPalettes, current.enabledPalettes,
+      isPresetId(themePreset) ? themePreset : null, wearing),
     themes: sanitizeThemes(input.themes, current.themes),
     typography: sanitizeTypography(input.typography, current.typography),
     customFont: sanitizeFont(input.customFont, current.customFont),

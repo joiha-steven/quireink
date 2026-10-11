@@ -1120,6 +1120,14 @@ export type AdminStrings = {
   themeBrokenSheet: string
   themeUnreadableTile: string
   themeReloadToSee: string
+  /** Under a palette or font an installed theme adds to a picker: `{theme}` is its name. */
+  themeOfferFrom: string
+  /** The one action that moves the pickers to what the pressed theme suggests, unsaved. */
+  themeSuggestUse: string
+  /** In place of the colour table, for a palette an installed theme adds: `{palette}`, `{theme}`. */
+  themePaletteFromTheme: string
+  /** On a font tile whose face the browser could not load. */
+  themeFontUnloaded: string
   /** One line per rule code of the theme checker (`theme/types.ts`), and `other` for a code this build does not know. */
   themeRules: Record<ThemeRuleCode | 'other', string>
   motionLabel: string

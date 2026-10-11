@@ -179,8 +179,12 @@ describe('the admin does not wear the site\'s chrome font either', () => {
   it('still emits the reading font, because the editor is WYSIWYG', () => {
     // The line the editor depends on. Drop it and the owner writes in Inter and publishes in
     // the site's face — which is the whole reason the editor was carved out of the one-face
-    // rule rather than swept into it.
-    expect(readFileSync('src/web/admin/spa.ts', 'utf8')).toContain('fontPresetCss(settings.fontPreset)')
+    // rule rather than swept into it. The face as the site DRAWS it: the stored preset, or an
+    // installed theme's reading font while that theme is chosen (`content/theme-choices.ts`).
+    const spa = readFileSync('src/web/admin/spa.ts', 'utf8')
+    expect(spa).toContain('fontPresetCss(fonts.readingPreset)')
+    // ...and of a theme's fonts, the reading one only: its chrome font is the site's chrome.
+    expect(spa).toContain('themeFontVarsCss({ ...fonts, chrome: null })')
   })
 
   it('does not reach for font-size-adjust to even two faces up', () => {

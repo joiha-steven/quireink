@@ -762,6 +762,10 @@ const en = {
   themeBrokenSheet: 'The site is drawn as {fallback} right now: the stylesheet of {theme} is missing from storage. Install the theme again.',
   themeUnreadableTile: 'Its theme.json cannot be read, so it cannot be chosen. Remove it, then install it again from its file.',
   themeReloadToSee: 'Done, but the list could not be redrawn. Reload the page to see it.',
+  themeOfferFrom: 'from {theme}',
+  themeSuggestUse: 'Use this theme’s suggested palette and fonts',
+  themePaletteFromTheme: 'The colors of {palette} come from {theme} and are not edited here. Shown to visitors, it is in their palette menu only while {theme} is the chosen theme.',
+  themeFontUnloaded: 'This font did not load, so no sample is shown.',
   themeRules: {
     C1: 'A colour is written into the sheet. Colours come only from palettes.',
     T1: 'A font size is written into the sheet. Sizes come only from the type scale.',

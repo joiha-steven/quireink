@@ -5,7 +5,7 @@
 import { describe, expect, it, beforeAll, afterAll, beforeEach, spyOn } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { wireControls } from '@/admin/island/lib/settings-controls'
-import { fieldsIn, partialOf, settle } from '@/admin/island/lib/settings-form'
+import { changedCount, fieldsIn, partialOf, settle } from '@/admin/island/lib/settings-form'
 import { lookPicker } from '@/web/admin/screens/settings-appearance-look'
 import { adminT } from '@/i18n/admin-i18n'
 import { DEFAULT_SETTINGS } from '@/content/settings'
@@ -70,6 +70,8 @@ describe('a theme tile and the chrome font', () => {
     press('theme', 'code')
     press('theme', 'notes')
     expect(chrome()).toBe('inter')
+    expect(changedCount(fieldsIn(root))).toBe(1)
+    // Between two built-in themes only what moved is sent; the chrome font is back on the saved one.
     expect(partial()).toEqual({ theme: 'notes' })
   })
 

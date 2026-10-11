@@ -21,6 +21,7 @@ import { ask, owned, say } from './media-bridge'
 import { pressKey } from './press-key'
 import { isThemeId } from '@/content/themes-builtin'
 import { applyGates } from './settings-controls'
+import { swapOffers } from './settings-offers'
 
 type Violation = { rule: string; file: string; line: number; col: number; subject: string }
 
@@ -83,9 +84,8 @@ function hideBroken(root: ParentNode): void {
 export async function refresh(screen: HTMLElement, focusId = ''): Promise<boolean> {
   const asked = ++redraws
   const res = await fetch(SCREEN_URL).catch(() => null)
-  const fresh = res?.ok
-    ? new DOMParser().parseFromString(await res.text(), 'text/html').querySelector('[data-look-list]')
-    : null
+  const doc = res?.ok ? new DOMParser().parseFromString(await res.text(), 'text/html') : null
+  const fresh = doc?.querySelector('[data-look-list]') ?? null
   // A later redraw was asked for while this one was out: its answer is the newer list, so an
   // older answer arriving after it must not be swapped in over it.
   if (asked !== redraws) return true
@@ -103,6 +103,8 @@ export async function refresh(screen: HTMLElement, focusId = ''): Promise<boolea
   const next = box.querySelector<HTMLElement>('[data-choice-track][data-k="theme"]')
   const keys = [...(next?.querySelectorAll<HTMLElement>('[data-choice]') ?? [])]
   if (pick !== was && keys.some((k) => k.dataset.choice === pick)) for (const k of keys) pressKey(k, k.dataset.choice === pick)
+  // The palettes and fonts the themes add to the pickers, outside this box, drawn again with it.
+  if (doc) swapOffers(screen, doc)
   hideBroken(box)
   applyGates(screen)
   // The Save key counts again: the baseline may have moved (a removed theme puts the blog on plain).

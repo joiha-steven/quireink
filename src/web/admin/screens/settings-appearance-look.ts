@@ -18,6 +18,8 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteSettings } from '@/types'
 import { BUILTIN_THEMES, isBuiltinThemeId, type SiteTheme } from '@/content/themes-builtin'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { buttonClass } from '@/admin-shared/kit'
+import { offerFaces, suggestKey } from '@/web/admin/screens/settings-appearance-offers'
 import { settingRow } from '@/web/admin/fields'
 import {
   brokenWarning, installControl, installedTile, NO_INSTALLED, previewKey, themeWords, type InstalledView,
@@ -62,6 +64,9 @@ const art = (tile: string): string =>
  */
 const suggestsAttr = (suggests: SiteTheme['suggests']): string =>
   ` data-suggests="${escapeAttr(JSON.stringify(suggests.chromeFont ? { chromeFont: suggests.chromeFont } : {}))}"`
+  // Everything the theme suggests, which the one "use the suggestions" key moves on request
+  // (`suggestKey`, `admin/island/lib/settings-offers.ts`); an installed tile carries the same.
+  + ` data-suggested="${escapeAttr(JSON.stringify(suggests))}"`
 
 /**
  * The settings keys the theme draws itself, which the island reads to hide those controls
@@ -93,7 +98,8 @@ export function lookPicker(t: AdminStrings, s: SiteSettings, view: InstalledView
     + `</button><div class="flex flex-wrap gap-2 self-start">${previewKey(t, id, t[nameKey])}</div></div>`).join('')
   const installed = view.installed.map((theme) => {
     const on = theme.id === s.theme
-    return installedTile(t, theme, on, { cls: tileClass(on, TILE_LAYOUT), faces: tileFaces(TILE_LAYOUT) })
+    const offer = view.offers?.find((o) => o.id === theme.id)
+    return installedTile(t, theme, on, { cls: tileClass(on, TILE_LAYOUT), faces: tileFaces(TILE_LAYOUT) }, offer)
   })
   const onOffer = isBuiltinThemeId(s.theme) || view.installed.some((theme) => theme.id === s.theme && theme.readable)
   // `data-look-list` is the part the island swaps after a write; the install control stays, so
@@ -107,5 +113,7 @@ export function lookPicker(t: AdminStrings, s: SiteSettings, view: InstalledView
         // change on opening.
         + ` data-was="${escapeAttr(onOffer ? s.theme : '')}">${builtins}${installed.join('')}</div>`,
     })
-    + `</div>` + installControl(t) + `</div>`
+    // The faces of the fonts the installed themes add to the pickers, redrawn with the tiles.
+    + offerFaces(view.offers ?? [])
+    + `</div>` + suggestKey(t, buttonClass('secondary', 'sm')) + installControl(t) + `</div>`
 }

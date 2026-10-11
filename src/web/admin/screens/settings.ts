@@ -135,7 +135,7 @@ function panels(t: AdminStrings, s: SiteSettings, view: View, extra: Extra, open
       posts: view.posts, pages: view.pages, categories: view.categories,
     }), open)
     + panel('post', t, postTab(t, s), open)
-    + panel('appearance', t, appearanceTab(t, s, { presets: view.presets, installed: view.installed, health: view.health }), open)
+    + panel('appearance', t, appearanceTab(t, s, { presets: view.presets, installed: view.installed, offers: view.offers, health: view.health }), open)
     + panel('people', t, peopleTab(t, s, { commentEnv: view.commentEnv }), open)
     + panel('server', t, serverTab(t, s, {
       integrations: view.integrations, update: view.update,

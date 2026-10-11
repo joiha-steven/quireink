@@ -30,6 +30,7 @@ const BROADSHEET: InstalledTheme = {
   active: false,
   reviewed: false,
   readable: true,
+  ownsSettings: [],
 }
 
 /** The screen as the server draws it: the picker and one other field with its own unsaved state. */

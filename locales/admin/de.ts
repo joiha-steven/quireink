@@ -762,6 +762,10 @@ const de = {
   themeBrokenSheet: 'Die Seite wird gerade als {fallback} dargestellt: Das Stylesheet von {theme} fehlt im Speicher. Installieren Sie das Theme erneut.',
   themeUnreadableTile: 'Seine theme.json ist nicht lesbar, daher kann es nicht gewählt werden. Entfernen Sie es und installieren Sie es erneut aus seiner Datei.',
   themeReloadToSee: 'Erledigt, aber die Liste konnte nicht neu gezeichnet werden. Laden Sie die Seite neu, um sie zu sehen.',
+  themeOfferFrom: 'aus {theme}',
+  themeSuggestUse: 'Vorgeschlagenes Farbschema und Schriften dieses Themes verwenden',
+  themePaletteFromTheme: 'Die Farben von {palette} stammen aus {theme} und werden hier nicht bearbeitet. Ist es für Besucher sichtbar, steht es in deren Menü nur, solange {theme} als Theme gewählt ist.',
+  themeFontUnloaded: 'Diese Schrift wurde nicht geladen, daher wird keine Schriftprobe gezeigt.',
   themeRules: {
     C1: 'Im Stylesheet steht eine Farbe. Farben kommen nur aus Paletten.',
     T1: 'Im Stylesheet steht eine Schriftgröße. Größen kommen nur aus der Typo-Skala.',

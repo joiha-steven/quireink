@@ -21,14 +21,15 @@
 
 import { readThemePackage, type PackageOptions, type Violation } from '@/theme'
 import { themeContract } from '@/content/theme-contract'
-import { DEFAULT_THEME_ID, OWNABLE_SETTINGS } from '@/content/themes-builtin'
+import { DEFAULT_THEME_ID, OWNABLE_SETTINGS, type OwnableSetting, type SiteTheme } from '@/content/themes-builtin'
+import type { ThemeFont, ThemePalette } from '@/theme'
 import { RESERVED_FONT_IDS, RESERVED_PALETTE_IDS, RESERVED_THEME_IDS } from '@/content/theme-reserved'
 import { getSettings, saveSettings } from '@/content/settings'
 import { uploadFile } from '@/media/blob'
 import { themeBlobPath } from '@/media/theme-blobs'
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs } from '@/store/db'
-import { forgetInstalledTheme } from '@/content/chosen-theme'
+import { forgetInstalledTheme, themeFromRow } from '@/content/chosen-theme'
 
 /** The theme API versions this build reads (ADR 0072, decision 2). */
 export const SUPPORTED_THEME_API: readonly number[] = [1]
@@ -164,6 +165,28 @@ export type InstalledTheme = {
    * are empty and `screenshot` is `''`. Such a theme can be removed, never chosen.
    */
   readable: boolean
+  /**
+   * The settings the theme draws itself, as a page wearing it is drawn (`content/chosen-theme.ts`):
+   * only keys in `OWNABLE_SETTINGS`, and none when the renderer cannot read the manifest.
+   */
+  ownsSettings: OwnableSetting[]
+}
+
+/**
+ * What choosing an installed theme adds to the Appearance pickers (ADR 0072): its palettes and its
+ * reading and chrome fonts, which are choices only while it is the chosen theme
+ * (`content/theme-choices.ts`), and what it suggests. Read through the renderer's own reading of
+ * the manifest, so the admin offers exactly what a page would draw. The admin's, not the API's.
+ */
+export type ThemeOffer = {
+  id: string
+  name: string
+  /** The package's hash: its font files are under `/themes/<hash>/`. */
+  hash: string
+  palettes: readonly ThemePalette[]
+  /** The reading and chrome fonts; a display font is no setting's value. */
+  fonts: readonly ThemeFont[]
+  suggests: SiteTheme['suggests']
 }
 
 const NEWEST_FIRST = 'installed_at desc, id desc'
@@ -200,6 +223,11 @@ function details(json: string): Details | null {
 
 /** Every installed theme, by id, each with its current version first. */
 export async function listInstalledThemes(): Promise<InstalledTheme[]> {
+  return (await listInstalledThemesWithOffers()).installed
+}
+
+/** The list, and what each theme that a page could draw offers the pickers. */
+export async function listInstalledThemesWithOffers(): Promise<{ installed: InstalledTheme[]; offers: ThemeOffer[] }> {
   const chosen = (await getSettings()).theme
   const rows = all<Row>(
     `select id, theme_id, version, hash, manifest, installed_at from themes
@@ -207,10 +235,20 @@ export async function listInstalledThemes(): Promise<InstalledTheme[]> {
   )
   const byId = new Map<string, Row[]>()
   for (const r of rows) byId.set(r.theme_id, [...(byId.get(r.theme_id) ?? []), r])
-  return [...byId].map(([id, [head, ...rest]]) => {
+  const offers: ThemeOffer[] = []
+  const installed = [...byId].map(([id, [head, ...rest]]): InstalledTheme => {
     const read = details(head!.manifest)
     if (!read) console.warn(`[WARN] theme ${id}: the current version's manifest does not read; listed as unreadable`)
     const shown = read ?? { name: id, author: '', description: null, license: '', homepage: null, api: 0 }
+    // Not warned here: the renderer warns when it draws, and the Look card says so (`theme-health.ts`).
+    const drawn = read ? themeFromRow(id, head!) : null
+    const theme = drawn && 'theme' in drawn ? drawn.theme : null
+    if (theme?.package) {
+      offers.push({
+        id, name: shown.name, hash: theme.package.hash, palettes: theme.package.palettes,
+        fonts: theme.package.fonts.filter((f) => f.role !== 'display'), suggests: theme.suggests,
+      })
+    }
     return {
       id,
       current: {
@@ -221,8 +259,10 @@ export async function listInstalledThemes(): Promise<InstalledTheme[]> {
       active: chosen === id,
       reviewed: false,
       readable: read !== null,
+      ownsSettings: theme ? [...theme.ownsSettings] : [],
     }
   })
+  return { installed, offers }
 }
 
 /** The manifest name of the current version of `themeId`, or null when none is live or it does not read. */

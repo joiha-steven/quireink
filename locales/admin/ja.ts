@@ -762,6 +762,10 @@ const ja = {
   themeBrokenSheet: 'サイトは現在{fallback}で表示されています。{theme} のスタイルシートがストレージにありません。テーマをもう一度インストールしてください。',
   themeUnreadableTile: 'theme.json が読み取れないため選択できません。削除してから、ファイルからもう一度インストールしてください。',
   themeReloadToSee: '完了しましたが、一覧を描き直せませんでした。ページを再読み込みすると表示されます。',
+  themeOfferFrom: '{theme} のもの',
+  themeSuggestUse: 'このテーマのおすすめのカラーとフォントを使う',
+  themePaletteFromTheme: '{palette} の色は {theme} のもので、ここでは編集しません。訪問者に表示すると、{theme} が選択中のテーマである間だけ、訪問者のカラーメニューに表示されます。',
+  themeFontUnloaded: 'このフォントを読み込めなかったため、見本は表示されません。',
   themeRules: {
     C1: 'シートに色が直接書かれています。色はパレットからのみ指定できます。',
     T1: 'シートに文字サイズが直接書かれています。サイズはタイプスケールからのみ指定できます。',

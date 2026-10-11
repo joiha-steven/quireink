@@ -18,10 +18,14 @@ import type { ThemePreset } from '@/content/themes'
 import { SCHEMES } from '@/content/themes'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { SHEET_TOOL } from '@/admin-shared/kit'
-import { META, SETTING_GAP } from '@/admin-shared/scale'
+import { META, NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { hiddenField, settingRow } from '@/web/admin/fields'
 import { INSET } from '@/web/admin/fields-box'
 import { checkField, colourField, pick } from '@/web/admin/fields-pick'
+import type { ThemeOffer } from '@/content/installed-themes'
+import type { ThemePalette } from '@/theme'
+import { fill } from '@/web/admin/screens/settings-appearance-installed'
+import { drawnPalette, fromLine, optionAttrs } from '@/web/admin/screens/settings-appearance-offers'
 
 /** The colour cell's width, so a column of them lines up with the head above it. */
 const CELL = 'w-[8.25rem]'
@@ -88,13 +92,28 @@ const CARD_OFF = `${CARD_BASE} border-neutral-200 bg-white hover:border-neutral-
 const NAME_ON = 'text-xs font-semibold text-neutral-900 dark:text-white'
 const NAME_OFF = 'text-xs font-medium text-neutral-500 dark:text-neutral-400'
 
-/** One palette: the miniature page, its name, and whether it is the default. */
-function presetCard(t: AdminStrings, p: ThemePreset, s: SiteSettings): string {
-  const theme: ThemeSettings = s.themes[p.id] ?? p.theme
-  const editing = p.id === s.themePreset
-  const isDefault = p.id === s.themePreset
-  const shown = s.enabledPalettes.includes(p.id)
-  const name = t.paletteNames[p.id] ?? p.name
+/**
+ * A card's subject: a built-in palette, with the owner's edits, or one an installed theme adds
+ * (`offer`), whose colours are the theme's.
+ */
+type Card = { id: string; name: string; theme: ThemeSettings; offer?: ThemeOffer }
+
+/**
+ * One palette: the miniature page, its name, and whether it is the default.
+ *
+ * A THEME'S PALETTE is the same key in the same grid, with two differences. It says which theme it
+ * comes from. And it stretches to its row (`data-card-extra`, kept by the island when it repaints
+ * the key), so a name that wraps does not leave the ticks beside it a line apart. Its tick is the
+ * stored list's answer for its id whichever theme is stored, so pressing its theme brings back
+ * what was chosen for it; it is the default only under its own theme, since two themes may name a
+ * palette alike.
+ */
+function presetCard(t: AdminStrings, card: Card, s: SiteSettings, drawn: string): string {
+  const { id, name, theme, offer } = card
+  const own = !offer || offer.id === s.theme
+  const editing = own && id === drawn
+  const isDefault = own && id === drawn
+  const shown = s.enabledPalettes.includes(id) || isDefault
   // BOTH NAME FACES SHIP, one hidden, in the span that holds them: the island repaints the
   // button it pressed and not the words inside it, and a name that stayed grey under a sunken
   // card is the one part of the state that would not have moved.
@@ -114,18 +133,23 @@ function presetCard(t: AdminStrings, p: ThemePreset, s: SiteSettings): string {
     + ` data-card-tick>`
     + checkField({
       label: t.paletteShown, on: shown,
-      attrs: `data-palette-shown="${escapeAttr(p.id)}"${isDefault ? ' disabled' : ''}`,
+      // `data-shown-saved`: in the saved list itself, not only pressed for being the default; the
+      // island puts this back on the tick when the default moves away (`makeDefaultPalette`).
+      attrs: `data-palette-shown="${escapeAttr(id)}"${s.enabledPalettes.includes(id) ? ' data-shown-saved' : ''}${isDefault ? ' disabled' : ''}`,
     }) + `</div>`
+  const extra = offer ? ' flex-1' : ''
   // `data-palette-hidden` records the dash as a FACT the island can read back. The class alone
   // would have to be parsed out of a className the island also rewrites, and a face copied off a
   // sibling card would spread one palette's visibility to all six.
-  return `<div class="group" data-palette-card="${escapeAttr(p.id)}"`
-    + ` data-palette-hidden="${shown ? '0' : '1'}">`
-    + `<button type="button" data-palette-pick="${escapeAttr(p.id)}" aria-pressed="${editing}"`
-    + ` class="${editing ? CARD_ON : CARD_OFF}${shown ? '' : ' border-dashed'}">`
+  return `<div class="group${offer ? ' flex flex-col' : ''}" data-palette-card="${escapeAttr(id)}"`
+    + ` data-palette-hidden="${shown ? '0' : '1'}"${offer ? optionAttrs(offer, s) : ''}>`
+    + `<button type="button" data-palette-pick="${escapeAttr(id)}" aria-pressed="${editing}"`
+    + `${offer ? ` data-card-extra="${extra.trim()}"` : ''}`
+    + ` class="${editing ? CARD_ON : CARD_OFF}${shown ? '' : ' border-dashed'}${extra}">`
     + `<div class="flex h-14 overflow-hidden rounded-lg">`
     + miniMode(theme.light) + miniMode(theme.dark) + `</div>`
     + `<div class="mt-2 flex min-h-5 items-center justify-between gap-1 px-0.5">${label}${pill}</div>`
+    + (offer ? `<span class="block px-0.5">${fromLine(t, offer)}</span>` : '')
     + `</button>${tick}</div>`
 }
 
@@ -162,9 +186,9 @@ function colourPair(t: AdminStrings, id: string, key: keyof ThemeColors, label: 
  * halves are defined together, and restoring one of them on its own is not a thing anyone came
  * here to do. `SHEET_TOOL` rather than React's own four-class copy of the same key.
  */
-function colourTable(t: AdminStrings, p: ThemePreset, s: SiteSettings): string {
+function colourTable(t: AdminStrings, p: ThemePreset, s: SiteSettings, drawn: string): string {
   const theme: ThemeSettings = s.themes[p.id] ?? p.theme
-  const open = p.id === s.themePreset
+  const open = p.id === drawn
   const head = `<div class="flex items-center justify-between gap-3">`
     + `<h3 class="text-sm font-bold">${escapeHtml(t.paletteNames[p.id] ?? p.name)}</h3>`
     + `<button type="button" data-reset-palette="${escapeAttr(p.id)}" class="${SHEET_TOOL} shrink-0">`
@@ -180,24 +204,49 @@ function colourTable(t: AdminStrings, p: ThemePreset, s: SiteSettings): string {
     + `</div>`
 }
 
+/**
+ * In place of a colour table, for a palette an installed theme adds: its colours are the theme's
+ * (`drawnPalettes` writes them over anything stored under its id), so there is nothing to edit.
+ * Opened with its card, as a table is.
+ */
+const offerNote = (t: AdminStrings, offer: ThemeOffer, p: ThemePalette, open: boolean): string =>
+  `<p class="${INSET} ${NOTE_TEXT}" data-palette-table="${escapeAttr(p.id)}" data-theme-palette-note="${escapeAttr(offer.id)}"`
+  + `${open ? '' : ' hidden'}>${escapeHtml(fill(t.themePaletteFromTheme, { palette: p.name, theme: offer.name }))}</p>`
+
 /** The palette card, as the tab's `panelCard` body. */
-export function palettes(t: AdminStrings, s: SiteSettings, presets: ThemePreset[]): string {
+export function palettes(t: AdminStrings, s: SiteSettings, presets: ThemePreset[], offers: readonly ThemeOffer[] = []): string {
+  // The default as the page draws it: a stored theme palette whose theme is not the chosen one is
+  // drawn as the engine's default, and that is what is pressed and what the field starts from.
+  const drawn = drawnPalette(s, offers)
+  const builtin = presets.map((p): Card => ({ id: p.id, name: t.paletteNames[p.id] ?? p.name, theme: s.themes[p.id] ?? p.theme }))
+  const added = offers.flatMap((o) => o.palettes.map((p): Card => ({ id: p.id, name: p.name, theme: { light: p.light, dark: p.dark }, offer: o })))
   // ⚠️ `enabledPalettes` IS A LIST AND NO CONTROL HOLDS A LIST. The ticks above are the
   // interface; this input is the value, and `settings-form.ts` has to learn `data-k-list`
   // (split on spaces) before it saves — until then `typed()` sends the STRING, and
   // `sanitizeEnabledPalettes` reads a non-array as "all six on".
+  //
+  // The value is the list as the island writes it from the ticks on offer (`tellEnabled`): the
+  // built-in palettes shown, then the stored theme's own, the default among them. Another theme's
+  // ids the row keeps are not in it, and a save leaves them where they are (`enabledPalettesFor`).
+  const shownIds = [
+    ...presets.map((p) => p.id).filter((id) => s.enabledPalettes.includes(id)),
+    ...(offers.find((o) => o.id === s.theme)?.palettes ?? []).map((p) => p.id)
+      .filter((id) => s.enabledPalettes.includes(id) || id === drawn),
+  ].join(' ')
   const enabled = `<input type="hidden" data-k="enabledPalettes" data-k-list`
-    + ` value="${escapeAttr(s.enabledPalettes.join(' '))}" data-was="${escapeAttr(s.enabledPalettes.join(' '))}">`
+    + ` value="${escapeAttr(shownIds)}" data-was="${escapeAttr(shownIds)}">`
   // The default palette has no visible control either: the key below is what moves it, and the
   // island writes the id here. It ships hidden because the card that opens editing IS the
   // default at first paint, and the key only has something to say once they differ.
   const setDefault = `<div class="mt-3" data-palette-setdefault hidden>`
-    + hiddenField('themePreset', s.themePreset)
+    // `data-stored`: the row's own value, when it is a theme's palette drawn as the default for
+    // now; pressing that theme brings it back (`settings-offers.ts`).
+    + hiddenField('themePreset', drawn, `data-stored="${escapeAttr(s.themePreset)}"`)
     + `<button type="button" data-palette-make-default class="${SHEET_TOOL}">`
     + `${escapeHtml(t.themeSetDefault)}</button></div>`
   const grid = `<div class="grid grid-cols-2 gap-3 sm:grid-cols-3" data-palette-track`
     + ` data-card-on="${escapeAttr(CARD_ON)}" data-card-off="${escapeAttr(CARD_OFF)}">`
-    + presets.map((p) => presetCard(t, p, s)).join('') + `</div>`
+    + [...builtin, ...added].map((c) => presetCard(t, c, s, drawn)).join('') + `</div>`
   return `<div class="${SETTING_GAP}">`
     // Light or dark comes BEFORE which palette, because it is the coarser question: a visitor
     // meets one of two pages, and the palette only tints whichever they got. 'System' stays the
@@ -218,6 +267,7 @@ export function palettes(t: AdminStrings, s: SiteSettings, presets: ThemePreset[
     // ALL SIX TABLES, in one wrapper. The wrapper is the trap-5 fix: it is never hidden, so
     // the `space-y-5` above it has one child here whichever palette is open.
     + `<div data-palette-tables>`
-    + presets.map((p) => colourTable(t, p, s)).join('')
+    + presets.map((p) => colourTable(t, p, s, drawn)).join('')
+    + offers.flatMap((o) => o.palettes.map((p) => offerNote(t, o, p, o.id === s.theme && p.id === drawn))).join('')
     + `</div></div>`
 }

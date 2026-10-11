@@ -762,6 +762,10 @@ const zh = {
   themeBrokenSheet: '网站目前按{fallback}显示：存储中缺少 {theme} 的样式表。请重新安装该主题。',
   themeUnreadableTile: '无法读取它的 theme.json，因此不能选择。请移除它，然后从它的文件重新安装。',
   themeReloadToSee: '已完成，但列表没能重新绘制。请刷新页面查看。',
+  themeOfferFrom: '来自 {theme}',
+  themeSuggestUse: '使用此主题建议的配色方案和字体',
+  themePaletteFromTheme: '{palette} 的颜色来自 {theme}，不在这里编辑。设为对访客显示后，只有在 {theme} 是所选主题时，它才会出现在访客的配色菜单中。',
+  themeFontUnloaded: '此字体未能加载，因此不显示示例。',
   themeRules: {
     C1: '样式表里直接写了颜色。颜色只能来自调色板。',
     T1: '样式表里直接写了字号。字号只能来自字号比例。',

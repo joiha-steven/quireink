@@ -15,6 +15,7 @@ import { addComment, getCommentTree } from '@/comments/comments'
 import { payload } from '@/test/api'
 import { installTheme, removeTheme } from '@/content/installed-themes'
 import { themeZip } from '@/theme/test-zip'
+import { RICH } from '@/test/installed-theme'
 
 const DIR = './.tmp/test-mcp-steward'
 // ⚠️ ITS OWN UPLOADS TREE, because `create_snapshot` below builds a REAL archive and
@@ -124,10 +125,35 @@ describe('the steward tools', () => {
     expect(description).toContain('code: jetbrains-mono')
   })
 
-  it('refuses a color that is not on the menu — the schema IS the guard', async () => {
+  it('refuses a color that is not on the menu', async () => {
     const out = await call('update_appearance', { palette: '#ff0000' })
     expect(out.isError || out.rpcError !== '').toBe(true)
     expect((await getSettings()).themePreset).not.toBe('#ff0000')
+  })
+
+  it("update_appearance takes the chosen installed theme's palette and fonts, as the settings route does", async () => {
+    expect((await installTheme(themeZip({ 'theme.json': RICH }))).ok).toBe(true)
+    // Chosen in the same call: the theme the call leaves chosen is the one whose menu counts.
+    const { text, isError } = await call('update_appearance', { theme: 'broadsheet', palette: 'newsprint', readingFont: 'body-serif', chromeFont: 'ui-face' })
+    expect(isError).toBe(false)
+    expect(JSON.parse(text)).toMatchObject({ theme: 'broadsheet', palette: 'newsprint', readingFont: 'body-serif', chromeFont: 'ui-face' })
+    expect(await getSettings()).toMatchObject({ theme: 'broadsheet', themePreset: 'newsprint', fontPreset: 'body-serif', chromeFont: 'ui-face' })
+    // A theme palette joins the reader's list as a built-in one does, by the same rule.
+    expect((await getSettings()).enabledPalettes).toContain('newsprint')
+    // Built-in ones still go through while the theme is worn.
+    expect((await call('update_appearance', { palette: 'sepia', readingFont: 'literata' })).isError).toBe(false)
+  })
+
+  it("update_appearance refuses a theme's palette or font while another theme is chosen, and changes nothing", async () => {
+    expect((await installTheme(themeZip({ 'theme.json': RICH }))).ok).toBe(true)
+    await saveSettings({ theme: 'code', themePreset: 'sepia', fontPreset: 'literata', chromeFont: 'inter' })
+    for (const args of [{ palette: 'newsprint' }, { readingFont: 'body-serif' }, { chromeFont: 'ui-face' },
+      { theme: 'paper', palette: 'newsprint' }, { readingFont: 'headline' }, { palette: 'ui-face' }]) {
+      const out = await call('update_appearance', args)
+      expect(out.isError).toBe(true)
+      expect(out.text).toContain('Not on the menu')
+    }
+    expect(await getSettings()).toMatchObject({ theme: 'code', themePreset: 'sepia', fontPreset: 'literata', chromeFont: 'inter' })
   })
 
   it('compose_homepage pins a lead, replaces strips, and flags an empty category', async () => {

@@ -1,7 +1,9 @@
 // THEMES INSTALLED FROM A ZIP, driven from the Look card the owner uses (ADR 0072, T2c): a small
 // valid package is installed through the card's own file input, listed with the Unreviewed badge,
-// previewed (the owner sees it with the bar, a reader does not) and left, chosen and saved with the screen's Save key, worn by the public home page, removed through the
-// product's own confirm, and the site is Plain again. A refused package shows its findings.
+// previewed (the owner sees it with the bar, a reader does not) and left, chosen, one of its
+// palettes picked from the palette picker, saved with the screen's Save key, worn by the public
+// home page in that palette, removed through the product's own confirm, and the site is Plain
+// again. A refused package shows its findings.
 //
 // The zips are built here, in the tour's process, by the installer tests' own helper
 // (`src/theme/test-zip.ts`), and handed to the page as base64: the page puts them in the file
@@ -19,7 +21,39 @@ const ID = 'tour-sheet'
 // A real 1200 by 900 WebP (3.5 KB), so the tile is proven to show a screenshot that decodes: the
 // test helper's own screenshot is only a header the checker reads, and no browser can draw it.
 const SHOT = new Uint8Array(readFileSync('scripts/tour-fixtures/theme-screenshot.webp'))
-const GOOD = Buffer.from(themeZip({ 'theme.json': { ...MANIFEST, id: ID, name: 'Tour sheet' }, 'screenshot.webp': SHOT })).toString('base64')
+/** A palette that clears the checker's contrast floor, on a page colour of its own. */
+const palette = (id: string, name: string, bg: string, darkBg: string) => ({
+  id, name,
+  light: { bg, text: '#222222', heading: '#111111', meta: '#555555', link: '#1a4d8f', rule: '#e0d8c0', accent: '#1a4d8f' },
+  dark: { bg: darkBg, text: '#e8e8e8', heading: '#ffffff', meta: '#a0a0a0', link: '#8fb8ff', rule: '#2a3440', accent: '#8fb8ff' },
+})
+const PICKED = palette('tour-paper', 'Tour paper', '#fff8e7', '#101820')
+const face = (file: string) => [{ file, weight: 400, style: 'normal' }]
+/**
+ * Three palettes, one with the longest name the checker allows (40), and three fonts in real woff2
+ * files from the engine's own set, so the pickers draw the theme's options in faces that load.
+ */
+export const TOUR_THEME = {
+  ...MANIFEST, id: ID, name: 'Tour sheet',
+  palettes: [PICKED, palette('tour-sky', 'Sky', '#eef4fa', '#0f1a24'),
+    palette('tour-long', 'A palette whose name runs to forty chars', '#f5f0fa', '#1a1020')],
+  fonts: [
+    { id: 'tour-serif', name: 'Tour Serif', role: 'reading', faces: face('fonts/serif.woff2') },
+    { id: 'tour-sans', name: 'Tour Sans', role: 'reading', faces: face('fonts/sans.woff2') },
+    { id: 'tour-mono', name: 'Tour Mono', role: 'chrome', faces: face('fonts/mono.woff2') },
+  ],
+  suggests: { palette: 'tour-paper', readingFont: 'tour-serif', chromeFont: 'tour-mono' },
+}
+const fontFile = (name: string) => new Uint8Array(readFileSync(`src/assets/static/fonts/${name}`))
+/** The tour's package: the manifest above, a screenshot that decodes and fonts that load. */
+export const tourThemeZip = (): Uint8Array => themeZip({
+  'theme.json': TOUR_THEME, 'screenshot.webp': SHOT, 'fonts/body.woff2': null,
+  'fonts/serif.woff2': fontFile('literata-latin.woff2'), 'fonts/sans.woff2': fontFile('sourcesans-latin.woff2'),
+  'fonts/mono.woff2': fontFile('plexmono-400-latin.woff2'),
+})
+const GOOD = Buffer.from(tourThemeZip()).toString('base64')
+/** "#rrggbb" as `getComputedStyle` writes it. */
+const rgb = (hex: string) => `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`
 // A colour written straight into the sheet (C1), and no front-page rule at all (S2).
 const BAD = Buffer.from(themeZip({ 'theme.json': { ...MANIFEST, id: 'tour-refused' }, 'theme.css': '.prose{color:red}' })).toString('base64')
 
@@ -42,18 +76,22 @@ const upload = (b64: string, name: string): string => `
   if (!answered) return 'the card said nothing after a file was chosen'
 `
 
-/** The fixture's theme back on, and the tour's theme gone, whatever the flow did. */
+/**
+ * The fixture's theme and palette back on, and the tour's theme gone, whatever the flow did. The
+ * palette is the seed's (it sets none, so the default): a theme palette left stored would be kept
+ * and drawn as the default anyway, but a later flow should find the row it always found.
+ */
 const tidy = `(async () => {
   await fetch('/api/themes/${ID}', { method: 'DELETE', credentials: 'same-origin' })
   const r = await fetch('/api/settings', { method: 'PUT', credentials: 'same-origin',
-    headers: { 'content-type': 'application/json' }, body: JSON.stringify({ theme: 'code' }) })
+    headers: { 'content-type': 'application/json' }, body: JSON.stringify({ theme: 'code', themePreset: 'mono' }) })
   return r.ok ? 'ok' : 'could not put the fixture theme back: ' + r.status
 })()`
 
 export function registerThemeFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
   flow('a theme installed from a zip is listed unreviewed, chosen, worn, removed, and the site is Plain again', async () => {
     try {
-      return await expect('/admin/settings?tab=appearance', `(async () => {
+      const chosen = await expect('/admin/settings?tab=appearance', `(async () => {
         ${upload(GOOD, 'tour-sheet.zip')}
         const cell = document.querySelector('[data-theme-cell="${ID}"]')
         if (!cell) return 'the installed theme is not listed: ' + answered.textContent
@@ -86,9 +124,17 @@ export function registerThemeFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
         const left = await (await fetch('/', { credentials: 'same-origin' })).text()
         if (left.includes('theme-preview') || !left.includes('data-theme="code"')) return 'Leave preview did not end it'
 
-        // Chosen the way a built-in tile is: pressed, then the screen's one Save.
+        // Chosen the way a built-in tile is: pressed, then the screen's one Save. Its palette is
+        // picked first, from the palette picker, which offers it only while the tile is pressed.
         cell.querySelector('[data-choice]').click()
         await sleep(150)
+        const card = document.querySelector('[data-palette-card="${PICKED.id}"]')
+        if (!card || card.hidden) return 'the pressed theme did not offer its palette in the palette picker'
+        if (!card.textContent.includes('Tour sheet')) return 'the theme palette does not say which theme it comes from'
+        card.querySelector('[data-palette-pick]').click()
+        await sleep(100)
+        document.querySelector('[data-palette-make-default]').click()
+        await sleep(100)
         const save = document.querySelector('[data-settings-save]')
         if (!save || save.disabled) return 'pressing the installed tile did not arm Save'
         save.click()
@@ -98,7 +144,25 @@ export function registerThemeFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
         for (let i = 0; i < 40 && !worn.includes('data-theme="${ID}"'); i++) { await sleep(100); worn = await home() }
         if (!worn.includes('/themes/' + hash + '/theme.css')) return 'the public home does not link the theme sheet'
         if (!worn.includes('data-theme="${ID}"')) return 'the public home is not drawn as the theme'
+        return 'ok ' + hash
+      })()`, 900)
+      if (!chosen.startsWith('ok ')) return chosen
+      const hash = chosen.slice(3)
 
+      // The page a reader gets, drawn: its ground is the picked palette's, light or dark as it
+      // opens. On the page itself, since the site will not be framed.
+      const ground = await expect('/', `(() => {
+        const ground = getComputedStyle(document.body).backgroundColor
+        const want = document.documentElement.classList.contains('dark') ? '${rgb(PICKED.dark.bg)}' : '${rgb(PICKED.light.bg)}'
+        return ground === want ? 'ok ' + ground : 'the public page ground is ' + ground + ', not the picked palette (' + want + ')'
+      })()`)
+      if (!ground.startsWith('ok ')) return ground
+
+      const removed = await expect('/admin/settings?tab=appearance', `(async () => {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+        const cell = document.querySelector('[data-theme-cell="${ID}"]')
+        if (!cell) return 'the installed theme is not listed after the save'
+        const home = () => fetch('/', { credentials: 'same-origin' }).then((r) => r.text())
         // Removed through the product's own question.
         cell.querySelector('[data-theme-remove]').click()
         let yes = null
@@ -112,12 +176,14 @@ export function registerThemeFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
         if (document.querySelector('[data-theme-cell="${ID}"]')) return 'the removed theme is still listed'
         const plainKey = document.querySelector('[data-choice-track][data-k="theme"] [data-choice="plain"]')
         if (!plainKey || plainKey.getAttribute('aria-pressed') !== 'true') return 'Plain is not the chosen tile after removing the worn theme'
-        let after = worn
+        let after = await home()
         for (let i = 0; i < 40 && after.includes('data-theme="${ID}"'); i++) { await sleep(100); after = await home() }
-        if (after.includes('/themes/' + hash + '/theme.css')) return 'the public home still links the removed theme'
+        if (after.includes('/themes/${hash}/theme.css')) return 'the public home still links the removed theme'
         if (!after.includes('data-theme="plain"')) return 'the public home is not Plain after the removal'
-        return 'ok installed, badge, previewed and left, chosen, worn (' + hash.slice(0, 8) + '), removed, Plain'
+        return 'ok'
       })()`, 900)
+      if (removed !== 'ok') return removed
+      return 'ok installed, badge, previewed and left, chosen, palette picked and worn (' + ground.slice(3) + ', ' + hash.slice(0, 8) + '), removed, Plain'
     } finally {
       await expect('/admin', tidy)
     }

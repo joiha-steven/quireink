@@ -22,7 +22,9 @@ import { notFoundScreen } from '@/web/admin/screens/not-found'
 import { screenFor } from '@/web/admin/screens'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeHtml } from '@/utils'
-import { allFontFaceCss } from '@/render/font-faces'
+import { allFontFaceCss, packageFaces } from '@/render/font-faces'
+import { resolveTheme } from '@/content/chosen-theme'
+import { drawnFonts, drawnPalettes, themeFontVarsCss } from '@/content/theme-choices'
 import { fontPresetCss, themesToCss } from '@/content/themes'
 import { typographyToCss, fontToCss, tableToCss } from '@/content/settings'
 import { siteZone } from '@/analytics/types'
@@ -182,6 +184,13 @@ const PRELOADS = bootChunks(RAIL_ENTRY_NAME)
  * public page and has no business restyling the tool.
  */
 function adminStyles(settings: SiteSettings): string {
+  // What the public page draws, which is what the editor has to show: a reading font or palette
+  // an installed theme adds is a stored id no built-in table knows, and `fontPresetCss` alone
+  // read such an id as its first preset, so the editor showed Inter while the site showed the
+  // theme's face (`content/theme-choices.ts`).
+  const theme = resolveTheme(settings)
+  const fonts = drawnFonts(settings, theme)
+  const palettes = drawnPalettes(settings, theme)
   return [
     // EVERY family, not just the active two: the Appearance font picker paints each
     // tile in the font it offers. See allFontFaceCss.
@@ -193,14 +202,18 @@ function adminStyles(settings: SiteSettings): string {
     // No `enabledPalettes` here, deliberately: the public sheet ships only what a reader can
     // reach, and the admin has to render whatever the owner is EDITING — including a palette
     // they have turned off, which is exactly when they are looking at it.
-    themesToCss(settings.themes, settings.themePreset),
+    themesToCss(palettes.themes, palettes.themePreset),
     typographyToCss(settings.typography),
     // The editor is a `.prose` surface, so a table drawn there has to be the table that will
     // be published. Without this block it falls back to `prose.css.ts`'s own defaults and an
     // owner who chose an inverted header would write against a tinted one — the same
     // WYSIWYG mismatch `admin-design.md` records for the reading face.
     tableToCss(settings.table),
-    fontPresetCss(settings.fontPreset),
+    fontPresetCss(fonts.readingPreset),
+    // The theme's faces and its reading font when that is the choice, after the preset it
+    // overrides; never its chrome font, for the reason above. Before the uploaded font, which wins.
+    fonts.reading ? packageFaces(theme.package) : '',
+    themeFontVarsCss({ ...fonts, chrome: null }),
     fontToCss(settings.customFont),
   ].filter(Boolean).join('\n')
 }

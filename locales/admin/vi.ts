@@ -762,6 +762,10 @@ const vi = {
   themeBrokenSheet: 'Trang đang hiện theo {fallback}: thiếu tệp kiểu (stylesheet) của {theme} trong kho lưu trữ. Hãy cài lại theme.',
   themeUnreadableTile: 'Không đọc được theme.json của theme này nên không chọn được. Hãy gỡ rồi cài lại từ tệp của nó.',
   themeReloadToSee: 'Đã xong, nhưng danh sách chưa vẽ lại được. Hãy tải lại trang để xem.',
+  themeOfferFrom: 'của {theme}',
+  themeSuggestUse: 'Dùng bảng màu và phông chữ mà theme này gợi ý',
+  themePaletteFromTheme: 'Màu của {palette} do {theme} quy định, không sửa ở đây. Nếu bật hiện cho khách, bảng màu này chỉ có trong menu của khách khi {theme} đang là giao diện được chọn.',
+  themeFontUnloaded: 'Phông chữ này không tải được nên không có chữ mẫu.',
   themeRules: {
     C1: 'Tệp kiểu ghi thẳng một màu. Màu chỉ được lấy từ bảng màu.',
     T1: 'Tệp kiểu ghi thẳng cỡ chữ. Cỡ chữ chỉ được lấy từ thang chữ.',

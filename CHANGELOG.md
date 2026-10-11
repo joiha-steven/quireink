@@ -29,6 +29,29 @@
   the card with the tile pressed, ready for you to Save. Readers keep seeing your chosen theme the
   whole time, and a preview is never cached, indexed or written to the activity log. It ends itself
   after an hour. See [Installing a theme](docs/theme-install-api.md#previewing-one).
+- **A theme's palettes and fonts are on the Appearance pickers while its tile is pressed.** Press
+  an installed theme and its palettes join the palette cards, in their own colours, and its
+  reading and site fonts join the font tiles, each set in its own face and marked "from" the
+  theme; press another tile and they go, and a palette or font you had picked from them goes
+  back to your saved one (or to the default when that is not on offer either). A font that does
+  not load says so on its tile instead of showing another face. A theme palette ticked "Shown to
+  visitors" is in the reader's palette menu, by its own name, while that theme is chosen; under
+  another theme the tick is kept and the palette is not offered. Two installed themes may name a
+  palette or a font alike without the screen mixing them up. One key, "Use this theme’s
+  suggested palette and fonts", sets the three pickers to what the pressed theme (built in or
+  installed) suggests, unsaved, and shows only when that would change something. The settings an
+  installed theme draws itself are hidden while it is pressed, as Newspaper's table settings are.
+  The MCP tool `update_appearance` takes the chosen theme's palette and font ids by the same rule
+  as the settings screen and refuses any other.
+
+### Fixed
+
+- **The editor showed Inter when the reading font was an installed theme's.** The admin now sets
+  the editor in the face and palette the published site draws.
+- **Choosing a theme again could save other palette and fonts than the ones on screen.** When the
+  palette and fonts of an installed theme were still stored from an earlier time, pressing its
+  tile showed the defaults but the save kept the stored ones. Pressing the tile now shows them,
+  and a save that changes the theme sends the palette and fonts exactly as shown.
 
 ### Changed
 

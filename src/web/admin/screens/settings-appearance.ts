@@ -36,6 +36,10 @@ import { palettes } from '@/web/admin/screens/settings-appearance-theme'
 import { typeResetKey, typeScale } from '@/web/admin/screens/settings-appearance-type'
 import { lookPicker, tileClass, tileFaces } from '@/web/admin/screens/settings-appearance-look'
 import type { InstalledView } from '@/web/admin/screens/settings-appearance-installed'
+import type { ThemeOffer } from '@/content/installed-themes'
+import {
+  drawnFont, fromLine, offerFamily, offerFonts, offerStack, optionAttrs, unloadedLine,
+} from '@/web/admin/screens/settings-appearance-offers'
 
 /**
  * What this tab needs that is not a setting: the six palettes it offers to edit, and the themes
@@ -94,8 +98,8 @@ function shape(t: AdminStrings, s: SiteSettings): string {
  * skin is different and the PROTOCOL is the same, so `data-choice-track` / `data-choice` /
  * `aria-pressed` carry it and the island's `pickChoice` moves it with no new code.
  */
-const tile = (v: string, on: boolean, cls: string, style: string, body: string): string =>
-  `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${on}"${tileFaces(cls)}`
+const tile = (v: string, on: boolean, cls: string, style: string, body: string, attrs = ''): string =>
+  `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${on}"${tileFaces(cls)}${attrs}`
   + ` class="${tileClass(on, cls)}" style="font-family:${escapeAttr(style)}">${body}</button>`
 
 /**
@@ -118,22 +122,43 @@ const tile = (v: string, on: boolean, cls: string, style: string, body: string):
  * chrome row, matching the reading grid: it was three, and `CHROME_FONTS` grew to four when
  * JetBrains Mono was added, so the fourth choice sat alone on a second row at half the width.
  */
-function fonts(t: AdminStrings, s: SiteSettings): string {
-  const reading = FONT_PRESETS.map((f) => tile(f.id, f.id === s.fontPreset, 'px-3 py-2 text-left',
+function fonts(t: AdminStrings, s: SiteSettings, offers: readonly ThemeOffer[]): string {
+  // What the page draws, which is what is pressed: a stored theme font not on offer is drawn as
+  // the default (`settings-appearance-offers.ts`).
+  const readingNow = drawnFont(s, offers, 'reading')
+  const chromeNow = drawnFont(s, offers, 'chrome')
+  const reading = FONT_PRESETS.map((f) => tile(f.id, f.id === readingNow, 'px-3 py-2 text-left',
     f.stack,
     `<span class="block text-base leading-tight">${escapeHtml(f.name)}</span>`
     // ONE shade for the second line, where React had two. `pickChoice` repaints the BUTTON it
     // pressed and not the words inside it, and a second pair of hidden spans per tile to carry
     // one step of grey is four nodes for something the sunken tile already says.
     + `<span class="block text-xs text-neutral-600 dark:text-neutral-300">Aa · 1793</span>`)).join('')
-  const chrome = CHROME_FONTS.map((f) => tile(f.id, f.id === s.chromeFont,
+    // An installed theme's reading fonts, after the built-in ones, in the same skin; shown while
+    // that theme's tile is pressed. The sample is the face's own; `data-theme-face` is what the
+    // island asks the browser to load, and when it cannot, the sample gives way to a line that
+    // says so rather than a fallback face passing for the theme's.
+    + offerFonts(offers, 'reading').map(([o, f]) => tile(f.id, o.id === s.theme && f.id === readingNow,
+      'px-3 py-2 text-left', offerStack(o, f),
+      `<span class="block text-base leading-tight break-words">${escapeHtml(f.name)}</span>`
+      + `<span class="block text-xs text-neutral-600 dark:text-neutral-300" data-theme-face-sample>Aa · 1793</span>`
+      + unloadedLine(t) + fromLine(t, o),
+      `${optionAttrs(o, s)} data-theme-face="${escapeAttr(offerFamily(o, f))}"`)).join('')
+  const chrome = CHROME_FONTS.map((f) => tile(f.id, f.id === chromeNow,
     'px-2 py-2 text-center text-sm', f.sans ?? `'Inter'`,
     escapeHtml(f.id === 'reading' ? t.chromeFontReading : f.name))).join('')
-  const grid = (body: string, k: string, was: string): string =>
+    + offerFonts(offers, 'chrome').map(([o, f]) => tile(f.id, o.id === s.theme && f.id === chromeNow,
+      'px-2 py-2 text-center text-sm', offerStack(o, f),
+      `<span class="block break-words">${escapeHtml(f.name)}</span>`
+      + unloadedLine(t) + fromLine(t, o),
+      `${optionAttrs(o, s)} data-theme-face="${escapeAttr(offerFamily(o, f))}"`)).join('')
+  // `data-stored`: the row's own value, which differs from `data-was` when it is a theme's font
+  // drawn as the default for now; pressing that theme brings it back (`settings-offers.ts`).
+  const grid = (body: string, k: string, was: string, stored: string): string =>
     `<div class="grid grid-cols-2 gap-2" data-choice-track`
-    + ` data-k="${escapeAttr(k)}" data-was="${escapeAttr(was)}">${body}</div>`
+    + ` data-k="${escapeAttr(k)}" data-was="${escapeAttr(was)}" data-stored="${escapeAttr(stored)}">${body}</div>`
   return `<div class="${SETTING_GAP}">`
-    + settingRow({ note: t.fontPresetHint, control: grid(reading, 'fontPreset', s.fontPreset)
+    + settingRow({ note: t.fontPresetHint, control: grid(reading, 'fontPreset', readingNow, s.fontPreset)
         // Picking a face also rewrites the type table below; the island reveals this line when
         // it does, so the second change is said where the click happened.
         + `<p class="${NOTE_TEXT} mt-2" data-font-applied data-words="${escapeAttr(t.fontPresetApplied)}"`
@@ -141,7 +166,7 @@ function fonts(t: AdminStrings, s: SiteSettings): string {
     + `<div class="border-t border-neutral-200 pt-5 dark:border-neutral-800">`
     + settingRow({
       label: t.chromeFontLabel, note: t.chromeFontHint,
-      control: grid(chrome, 'chromeFont', s.chromeFont),
+      control: grid(chrome, 'chromeFont', chromeNow, s.chromeFont),
     })
     + `</div></div>`
 }
@@ -322,7 +347,7 @@ export function appearanceTab(t: AdminStrings, s: SiteSettings, view: Appearance
     + `<div class="${COL}">`
     + panelCard({
       title: t.lookLabel,
-      body: lookPicker(t, s, { installed: view.installed ?? [], health: view.health ?? { ok: true } }),
+      body: lookPicker(t, s, { installed: view.installed ?? [], offers: view.offers ?? [], health: view.health ?? { ok: true } }),
     })
     // ⚠️ ONE NOTE, NOT A TINTED CALLOUT AND A PARAGRAPH. `themeAdminNote` shipped in a grey
     // rounded box above a card that then carried plain notes under every row — the second note
@@ -331,12 +356,12 @@ export function appearanceTab(t: AdminStrings, s: SiteSettings, view: Appearance
     + panelCard({
       title: t.navAppearance,
       body: `<p class="${NOTE_TEXT} mb-4">${escapeHtml(t.themeAdminNote)}</p>`
-        + palettes(t, s, view.presets),
+        + palettes(t, s, view.presets, view.offers ?? []),
     })
     + `</div><div class="${COL}">`
     + panelCard({
       title: t.cardFont,
-      body: fonts(t, s)
+      body: fonts(t, s, view.offers ?? [])
         // The same step every other ruled division in a card takes (`group` in fields.ts):
         // 24 above the rule, 20 below it. At mt-4/pt-4 this one sat 16/16, which is the only
         // division on the settings screens that did.

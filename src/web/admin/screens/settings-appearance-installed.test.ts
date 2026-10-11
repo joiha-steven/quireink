@@ -26,6 +26,7 @@ const theme = (id: string, over: Partial<InstalledTheme['current']> = {}, previo
   active: false,
   reviewed: false,
   readable: true,
+  ownsSettings: [],
 })
 
 const BROADSHEET = theme('broadsheet', {}, [{ version: '1.0.0', hash: HASH_B, installedAt: 0 }])

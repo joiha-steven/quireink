@@ -21,7 +21,9 @@ import { getSettings, saveSettings } from '@/content/settings'
 import { THEME_PRESETS } from '@/content/palettes'
 import { FONT_PRESETS, CHROME_FONTS } from '@/content/fonts'
 import { BUILTIN_THEMES, isBuiltinThemeId } from '@/content/themes-builtin'
-import { isLiveInstalledTheme } from '@/content/chosen-theme'
+import { isLiveInstalledTheme, savedTheme } from '@/content/chosen-theme'
+import { isChromeFontChoice, isPaletteChoice, isReadingFontChoice } from '@/content/theme-choices'
+import { nextTheme } from '@/content/settings-save'
 import { logThemeChoice } from '@/content/theme-choice-log'
 import { getCategories } from '@/content/posts'
 import { getPageAnalytics } from '@/analytics/page'
@@ -37,9 +39,9 @@ import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { asJson, asError } from '@/mcp/result'
 
-const paletteIds = THEME_PRESETS.map((p) => p.id) as [string, ...string[]]
-const fontIds = FONT_PRESETS.map((f) => f.id) as [string, ...string[]]
-const chromeIds = CHROME_FONTS.map((f) => f.id) as [string, ...string[]]
+const paletteIds = THEME_PRESETS.map((p) => p.id)
+const fontIds = FONT_PRESETS.map((f) => f.id)
+const chromeIds = CHROME_FONTS.map((f) => f.id)
 const themeIds = BUILTIN_THEMES.map((t) => t.id) as [string, ...string[]]
 // What each theme is drawn for, said in the description: a theme switched here never moves the
 // chrome font by itself (the agent decides, as the owner does on the admin form, where the same
@@ -54,8 +56,10 @@ export function registerStewardTools(server: ToolHost): void {
       description:
         'Change the site\'s look from the curated menus: theme '
         + `(${themeIds.join(', ')}, or the id of a theme installed from a zip), palette `
-        + `(${paletteIds.join(', ')}), reading font (${fontIds.join(', ')}), chrome font, `
-        + 'and what a first-time visitor opens in. Free-form colors are not accepted — '
+        + `(${paletteIds.join(', ')}), reading font (${fontIds.join(', ')}), chrome font `
+        + `(${chromeIds.join(', ')}), and what a first-time visitor opens in. While a theme installed `
+        + 'from a zip is the one this call leaves chosen, its own palettes and its reading and chrome '
+        + 'fonts are on the menu too, by id. Free-form colors are not accepted — '
         + 'every option here is one the owner\'s own screens offer. Changing the theme leaves '
         + 'the chrome font as it is; send chromeFont with it to give the theme the face it is '
         + `drawn for (${themeSuggestions}).`,
@@ -66,9 +70,12 @@ export function registerStewardTools(server: ToolHost): void {
           .describe('The theme the published site wears: a built-in id or the id of an installed theme'),
         // The field's name before ADR 0072, still accepted from a client that learned it then.
         look: z.enum(themeIds).optional().describe('Old name for `theme`; `theme` wins when both are given'),
-        palette: z.enum(paletteIds).optional().describe('Default palette for visitors'),
-        readingFont: z.enum(fontIds).optional(),
-        chromeFont: z.enum(chromeIds).optional().describe('Header/rail/meta font'),
+        // Strings rather than the built-in menus, for the reason `theme` is one: the installed
+        // theme's own ids are on offer too. Each is checked below by the same rule the settings
+        // route uses (`content/theme-choices.ts`), and anything else is refused.
+        palette: z.string().max(40).optional().describe('Default palette for visitors: a built-in id or one of the chosen installed theme’s'),
+        readingFont: z.string().max(40).optional().describe('A built-in reading font or one of the chosen installed theme’s'),
+        chromeFont: z.string().max(40).optional().describe('Header/rail/meta font: a built-in one or one of the chosen installed theme’s'),
         defaultScheme: z.enum(['system', 'light', 'dark']).optional(),
       },
     },
@@ -81,10 +88,22 @@ export function registerStewardTools(server: ToolHost): void {
       }
       const partial: Record<string, unknown> = {}
       if (theme !== undefined || look !== undefined) partial.theme = theme ?? look
+      // The theme this call leaves chosen, decided as the save will decide it, and what it offers.
+      const wearing = savedTheme({ theme: nextTheme({ theme, look: isBuiltinThemeId(look) ? look : undefined }, current) })
+      const offMenu = [
+        palette !== undefined && !isPaletteChoice(wearing, palette) ? `palette "${palette}"` : '',
+        readingFont !== undefined && !isReadingFontChoice(wearing, readingFont) ? `reading font "${readingFont}"` : '',
+        chromeFont !== undefined && !isChromeFontChoice(wearing, chromeFont) ? `chrome font "${chromeFont}"` : '',
+      ].filter(Boolean)
+      // Refused, not ignored, for the reason an unknown theme is.
+      if (offMenu.length > 0) {
+        return asError(`Not on the menu of the theme "${wearing.id}": ${offMenu.join(', ')}`)
+      }
       if (palette !== undefined) {
         partial.themePreset = palette
         // The sanitizer enforces "enabledPalettes always includes themePreset"; adding it
-        // here as well keeps the visitor's switcher offering what the agent just chose.
+        // here as well keeps the visitor's switcher offering what the agent just chose. A theme's
+        // palette goes in the same way, checked by the same rule (`enabledPalettesFor`).
         if (!current.enabledPalettes.includes(palette)) {
           partial.enabledPalettes = [...current.enabledPalettes, palette]
         }

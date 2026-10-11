@@ -195,10 +195,13 @@ export function fontFaceCss(fontPreset: string | null, chromeFont: string, theme
  * nothing: a declaration is not a download. The hash is checked hex and the file a checked
  * `fonts/<name>.woff2` (`content/chosen-theme.ts`), so neither can leave the quotes.
  */
-function packageFaces(pkg: InstalledPackage | null): string {
+export function packageFaces(
+  pkg: Pick<InstalledPackage, 'hash' | 'fonts'> | null,
+  family: (font: InstalledPackage['fonts'][number]) => string = themeFamily,
+): string {
   if (!pkg) return ''
   return pkg.fonts.flatMap((font) => font.faces.map((face) =>
-    `@font-face{font-family:${themeFamily(font)};font-style:${face.style};font-weight:${face.weight};`
+    `@font-face{font-family:${family(font)};font-style:${face.style};font-weight:${face.weight};`
     + `font-display:swap;src:url('/themes/${pkg.hash}/${face.file}') format('woff2')}`)).join('')
 }
 

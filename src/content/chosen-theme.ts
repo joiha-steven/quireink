@@ -35,7 +35,7 @@ import { onFlush } from '@/server/cache'
 import { currentThemePreview } from '@/server/theme-preview-scope'
 import { RESERVED_FONT_IDS, RESERVED_PALETTE_IDS, RESERVED_THEME_IDS } from '@/content/theme-reserved'
 
-type CurrentRow = { hash: string; manifest: string }
+export type CurrentRow = { hash: string; manifest: string }
 
 /** The current version of a theme: the newest live row, as the admin's list orders them. */
 const currentRow = (themeId: string): CurrentRow | null =>
@@ -138,23 +138,40 @@ function readManifest(json: string, themeId: string, base: SiteTheme): Drawn {
   }
 }
 
-/** The installed theme `themeId` as the page draws it, or null (and one warning) when it cannot be. */
-function load(themeId: string): SiteTheme | null {
+/**
+ * The installed theme `themeId` drawn from one of its rows, or why it cannot be. Reads nothing and
+ * says nothing: the renderer warns (`load`), and the admin's list reads every theme's current row
+ * through here so that what it offers is exactly what a page would draw
+ * (`content/installed-themes.ts`).
+ */
+export function themeFromRow(themeId: string, row: CurrentRow): { theme: SiteTheme } | { why: string } {
   const base = builtinTheme(DEFAULT_THEME_ID)
   try {
-    const row = currentRow(themeId)
-    if (!row) {
-      console.warn(`[WARN] theme ${themeId}: no live version is installed; the site is drawn as the default theme`)
-      return null
-    }
     if (!HASH.test(row.hash)) throw new Unreadable('hash')
     const { fonts, palettes, ...drawn } = readManifest(row.manifest, themeId, base)
-    return { ...base, ...drawn, id: themeId, package: { hash: row.hash, fonts, palettes } }
+    return { theme: { ...base, ...drawn, id: themeId, package: { hash: row.hash, fonts, palettes } } }
   } catch (error) {
-    const why = error instanceof Unreadable ? `the field ${error.message} does not read` : (error as Error).message
-    console.warn(`[WARN] theme ${themeId}: the current version's manifest is unreadable (${why}); the site is drawn as the default theme`)
+    return { why: error instanceof Unreadable ? `the field ${error.message} does not read` : (error as Error).message }
+  }
+}
+
+/** The installed theme `themeId` as the page draws it, or null (and one warning) when it cannot be. */
+function load(themeId: string): SiteTheme | null {
+  let row: CurrentRow | null
+  try {
+    row = currentRow(themeId)
+  } catch (error) {
+    console.warn(`[WARN] theme ${themeId}: the current version could not be read (${(error as Error).message}); the site is drawn as the default theme`)
     return null
   }
+  if (!row) {
+    console.warn(`[WARN] theme ${themeId}: no live version is installed; the site is drawn as the default theme`)
+    return null
+  }
+  const read = themeFromRow(themeId, row)
+  if ('theme' in read) return read.theme
+  console.warn(`[WARN] theme ${themeId}: the current version's manifest is unreadable (${read.why}); the site is drawn as the default theme`)
+  return null
 }
 
 /**

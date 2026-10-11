@@ -763,6 +763,10 @@ const pt = {
   themeBrokenSheet: 'O site está sendo desenhado como {fallback}: a folha de estilo de {theme} falta no armazenamento. Instale o tema de novo.',
   themeUnreadableTile: 'O theme.json dele não pode ser lido, por isso não pode ser escolhido. Remova-o e instale-o de novo a partir do arquivo.',
   themeReloadToSee: 'Feito, mas a lista não pôde ser redesenhada. Recarregue a página para vê-la.',
+  themeOfferFrom: 'de {theme}',
+  themeSuggestUse: 'Usar a paleta e as fontes sugeridas por este tema',
+  themePaletteFromTheme: 'As cores de {palette} vêm de {theme} e não são editadas aqui. Oferecida aos visitantes, ela aparece no menu de paletas deles apenas enquanto {theme} for o tema escolhido.',
+  themeFontUnloaded: 'Esta fonte não carregou, então nenhuma amostra é mostrada.',
   themeRules: {
     C1: 'A folha escreve uma cor. As cores vêm só das paletas.',
     T1: 'A folha escreve um tamanho de letra. Os tamanhos vêm só da escala tipográfica.',

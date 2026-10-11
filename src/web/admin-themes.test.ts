@@ -81,9 +81,22 @@ describe('installing', () => {
     })
   })
 
-  it('accepts a package that takes over the settings a theme may own', async () => {
+  it('accepts a package that takes over the settings a theme may own, and lists them', async () => {
     const out = await installed(themeZip({ 'theme.json': { ...MANIFEST, ownsSettings: ['table.head', 'table.grid'] } }))
     expect(out.id).toBe('broadsheet')
+    expect((await list())[0]!.ownsSettings).toEqual(['table.head', 'table.grid'])
+  })
+
+  it('lists only the settings this build can let a theme own, and none for a manifest the page cannot draw', async () => {
+    await installed(themeZip())
+    expect((await list())[0]!.ownsSettings).toEqual([])
+    // A backup puts rows back unchecked: a key a later build allows is dropped, as the page drops it.
+    db().run(`update themes set manifest = ?`, [JSON.stringify({ ...MANIFEST, ownsSettings: ['table.head', 'table.futureKnob'] })])
+    expect((await list())[0]!.ownsSettings).toEqual(['table.head'])
+    // A manifest the list reads but the renderer refuses (a colour the checker would not pass) owns nothing.
+    db().run(`update themes set manifest = ?`, [JSON.stringify({ ...MANIFEST, ownsSettings: ['table.head'],
+      palettes: [{ id: 'bad', name: 'Bad', light: { bg: 'red' }, dark: {} }] })])
+    expect((await list())[0]!).toMatchObject({ readable: true, ownsSettings: [] })
   })
 
   it('the same package again does nothing, however it was zipped', async () => {

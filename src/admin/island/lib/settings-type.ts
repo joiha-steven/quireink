@@ -106,6 +106,9 @@ export function wireType(screen: HTMLElement): void {
     const tile = (e.target as HTMLElement).closest<HTMLElement>('[data-choice]')
     const track = tile?.closest<HTMLElement>('[data-choice-track][data-k="fontPreset"]')
     if (!tile || !track) return
+    // An installed theme's font comes with no tuned numbers of its own, and the reset below would
+    // load the first built-in face's in its place: the owner's sizes stay as they are.
+    if (tile.hasAttribute('data-theme-option')) return
     // After `pickChoice` has moved `aria-pressed`, which runs on the same click.
     const line = said()
     const words = line?.dataset.words ?? ''

@@ -15,16 +15,19 @@
 // The island is `admin/island/lib/settings-themes.ts`; its words ride on the picker as
 // `data-theme-words`, because the settings screen's own dictionary is for its Save key.
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import type { InstalledTheme } from '@/content/installed-themes'
+import type { InstalledTheme, ThemeOffer } from '@/content/installed-themes'
 import type { ThemeHealth } from '@/content/theme-health'
 import { buttonClass } from '@/admin-shared/kit'
 import { NOTE, NOTE_ALERT } from '@/admin-shared/scale'
 import { escapeAttr, escapeHtml } from '@/utils'
 
-/** What the Look card needs that is not a setting. */
-export type InstalledView = { installed: readonly InstalledTheme[]; health: ThemeHealth }
+/**
+ * What the Look card needs that is not a setting: the installed themes, what each that a page could
+ * draw adds to the pickers (`settings-appearance-offers.ts`), and whether the chosen one draws.
+ */
+export type InstalledView = { installed: readonly InstalledTheme[]; offers?: readonly ThemeOffer[]; health: ThemeHealth }
 
-export const NO_INSTALLED: InstalledView = { installed: [], health: { ok: true } }
+export const NO_INSTALLED: InstalledView = { installed: [], offers: [], health: { ok: true } }
 
 /**
  * A theme whose manifest does not read: the tile's shape and padding, a dashed edge (the admin's
@@ -83,7 +86,7 @@ export const previewKey = (t: AdminStrings, id: string, name: string): string =>
  */
 export function installedTile(
   t: AdminStrings, theme: InstalledTheme, on: boolean,
-  skin: { cls: string; faces: string },
+  skin: { cls: string; faces: string }, offer?: ThemeOffer,
 ): string {
   const { id, current } = theme
   const before = theme.previous[0]
@@ -96,9 +99,12 @@ export function installedTile(
   // it, so it cannot be chosen, and the one thing left to do with it is Remove.
   const key = theme.readable
     ? `<button type="button" data-choice="${escapeAttr(id)}" aria-pressed="${on}"`
-      // An installed theme suggests no built-in chrome font, so pressing it puts back one a
-      // built-in tile moved; the settings it owns are drawn by part 2 of T2c with its pickers.
-      + ` data-suggests="{}" data-owns="[]" data-name="${escapeAttr(current.name)}"`
+      // Pressing it moves nothing by itself (`data-suggests` is empty, so a chrome font a built-in
+      // tile moved goes back): what it suggests waits behind one key the owner presses
+      // (`data-suggested`, `admin/island/lib/settings-offers.ts`). The settings it draws itself are
+      // hidden while it is pressed, exactly as the Newspaper's are (`applyOwned`).
+      + ` data-suggests="{}" data-suggested="${escapeAttr(JSON.stringify(offer?.suggests ?? {}))}"`
+      + ` data-owns="${escapeAttr(JSON.stringify(theme.ownsSettings))}" data-name="${escapeAttr(current.name)}"`
       + `${skin.faces} class="${skin.cls}">${picture(current.screenshot)}${name}`
       + `<span class="mt-1 block text-xs font-normal text-neutral-600 break-words dark:text-neutral-300">`
       + `${escapeHtml(fill(t.themeVersionBy, { version: current.version, author: current.author }))}</span>`

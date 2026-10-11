@@ -16,6 +16,7 @@
 // Every one of them ships drawn in the state the server could see. Nothing here builds a row.
 import { KNOB_OFF, KNOB_ON, SWITCH_OFF, SWITCH_ON } from '@/admin-shared/controls'
 import { pressKey } from './press-key'
+import { applyThemeOffers } from './settings-offers'
 
 /** What a control reports when it moves, so the form can recount without knowing what moved. */
 export type OnMove = () => void
@@ -290,6 +291,8 @@ function applyOwned(root: HTMLElement): void {
 export function applyGates(root: HTMLElement): void {
   const valueOf = (key: string): string => answerIn(root, key)
   applyOwned(root)
+  // What an installed theme adds to the palette and font pickers, shown with its tile.
+  applyThemeOffers(root)
 
   for (const box of root.querySelectorAll<HTMLElement>('[data-gate]')) {
     box.hidden = valueOf(box.dataset.gate ?? '') !== '1'

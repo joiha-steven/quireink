@@ -762,6 +762,10 @@ const ko = {
   themeBrokenSheet: '지금 사이트는 {fallback}(으)로 그려집니다. {theme}의 스타일시트가 저장소에 없습니다. 테마를 다시 설치하세요.',
   themeUnreadableTile: 'theme.json을 읽을 수 없어 고를 수 없습니다. 제거한 뒤 파일에서 다시 설치하세요.',
   themeReloadToSee: '완료했지만 목록을 다시 그리지 못했습니다. 페이지를 새로 고치면 보입니다.',
+  themeOfferFrom: '{theme} 제공',
+  themeSuggestUse: '이 테마가 제안하는 색상과 글꼴 사용',
+  themePaletteFromTheme: '{palette}의 색은 {theme}에서 정한 것이라 여기서는 편집하지 않습니다. 방문자에게 표시하면 {theme}이(가) 선택된 테마인 동안에만 방문자의 색상 메뉴에 나타납니다.',
+  themeFontUnloaded: '이 글꼴을 불러오지 못해 견본을 표시하지 않습니다.',
   themeRules: {
     C1: '시트에 색이 직접 적혀 있습니다. 색은 팔레트에서만 옵니다.',
     T1: '시트에 글자 크기가 직접 적혀 있습니다. 크기는 타입 스케일에서만 옵니다.',

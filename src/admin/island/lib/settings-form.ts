@@ -114,7 +114,10 @@ export function partialOf(fields: Field[]): Record<string, unknown> {
   const out: Record<string, unknown> = {}
   for (const el of fields) {
     const path = el.dataset.k
-    if (!path || !isDirty(el)) continue
+    // `data-k-force`: sent as shown even when it equals the baseline, because the server would
+    // otherwise keep a stored value other than the one on screen (a theme's palette or font, drawn
+    // as the default while another theme was chosen: `settings-offers.ts`). Not counted as a change.
+    if (!path || !(isDirty(el) || el.hasAttribute('data-k-force'))) continue
     const value = typed(el)
     if (value === undefined) continue
     place(out, path.split('.'), value)
@@ -170,6 +173,10 @@ export function settle(fields: Field[]): void {
     // Anything that answers with `data-was` is settled by moving it — the two controls that are
     // not form elements, and every hidden input.
     if (el.dataset.was !== undefined) {
+      // What was sent is what the row holds now (`data-stored`, where the baseline is the drawn
+      // value and the row may hold another); what was not sent, the row kept.
+      if (el.dataset.stored !== undefined && (isDirty(el) || el.hasAttribute('data-k-force'))) el.dataset.stored = now(el)
+      el.removeAttribute('data-k-force')
       el.dataset.was = now(el)
       // Who moved a choice is a question about the unsaved edit, and there is none now.
       delete el.dataset.pickedBy

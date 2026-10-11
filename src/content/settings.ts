@@ -309,8 +309,11 @@ export async function getSettings(): Promise<SiteSettings> {
       mostViewedCount: clampNumber(stored.mostViewedCount, 0, 10, DEFAULT_SETTINGS.mostViewedCount),
       sidebarLayout: stored.sidebarLayout === 'two' ? 'two' : 'single',
       // A kept theme palette id adds nothing (`sanitizeEnabledPalettes`); a missing one is the default.
+      // An installed theme's palettes in the list are kept whatever theme is chosen, as its other
+      // choices are, and drawn only while it is (`drawnPalettes`).
       enabledPalettes: sanitizeEnabledPalettes(stored.enabledPalettes,
-        isPresetId(stored.themePreset) ? stored.themePreset : isThemeId(stored.themePreset) ? null : DEFAULT_PRESET_ID),
+        isPresetId(stored.themePreset) ? stored.themePreset : isThemeId(stored.themePreset) ? null : DEFAULT_PRESET_ID,
+        isThemeId),
       themes: sanitizeThemes(stored.themes, migrateThemes(stored as Record<string, unknown>)),
       typography: sanitizeTypography(stored.typography, INSTALL_TYPOGRAPHY),
       customFont: (() => {

@@ -27,6 +27,7 @@ const BROADSHEET: InstalledTheme = {
   active: false,
   reviewed: false,
   readable: true,
+  ownsSettings: [],
 }
 
 let screen: HTMLElement
