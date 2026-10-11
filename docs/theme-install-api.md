@@ -51,3 +51,18 @@ file the store no longer has answers `404` and says so in the log.
 
 Theme files are never deleted. A removed or rolled-back version is a soft-deleted row whose files
 stay, and the backup carries both ([backups.md](backups.md#what-it-copies)).
+
+They are not uploads: `/uploads/themes/…` answers `404` however the path is spelled
+([`src/media/theme-blobs.ts`](../src/media/theme-blobs.ts)), and the Markdown export leaves them out,
+since they are the theme author's files and not the owner's writing.
+
+## Limits
+
+- **Files no row names are not cleaned up.** An install that failed after writing its files, and
+  every version removed or rolled back, leaves its files in the store, counted in the storage
+  figure and carried by every backup. They are small (a package is at most 10 MB expanded) and
+  written once per hash.
+- **A backup is trusted as it is.** Loading one puts its theme rows and files back without
+  checking them again, as it puts back the owner's custom CSS: the archive is the owner's own.
+- **Nothing is written to the activity log yet**; the request log has a line for each install,
+  refusal, rollback and removal.

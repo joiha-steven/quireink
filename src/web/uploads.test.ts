@@ -13,6 +13,7 @@
 import { describe, it, expect, afterAll } from 'bun:test'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createApp } from '@/web/app'
+import { isThemeBlobPath } from '@/media/theme-blobs'
 import { freshDatabase, dropDatabase } from '@/test/db'
 
 const DIR = './.tmp/test-uploads-route'
@@ -30,6 +31,10 @@ writeFileSync(`${STORE}/media/photo.webp`, Buffer.from([0x52, 0x49, 0x46, 0x46])
 // `media/mime.ts`, so it serves as octet-stream — the test is that it DOWNLOADS either way.
 writeFileSync(`${STORE}/files/page.html`, '<script>1</script>')
 writeFileSync(`${STORE}/files/notes.zip`, 'PK')
+// An installed theme's sheet, where the installer keeps it (`media/theme-blobs.ts`).
+const THEME = `themes/${'a'.repeat(64)}`
+mkdirSync(`${STORE}/${THEME}`, { recursive: true })
+writeFileSync(`${STORE}/${THEME}/theme.css`, '.prose{color:var(--c-text)}')
 
 const app = createApp()
 const get = (path: string) => app.fetch(new Request(`http://localhost${path}`))
@@ -111,6 +116,29 @@ describe('GET /uploads/*', () => {
     for (const path of ['/uploads/../../etc/passwd', '/uploads/media/../../../etc/passwd']) {
       const res = await get(path)
       expect(res.status).not.toBe(200)
+    }
+  })
+})
+
+describe('GET /uploads/* and an installed theme', () => {
+  it("answers 404 for a theme's files however the path is spelled, and still serves an upload", async () => {
+    for (const path of [
+      `/uploads/${THEME}/theme.css`, `/uploads/Themes/${'a'.repeat(64)}/theme.css`,
+      `/uploads/media/../${THEME}/theme.css`, `/uploads/media/%2e%2e/${THEME}/theme.css`,
+      `/uploads/./${THEME}/theme.css`, `/uploads/media%2f..%2f${THEME.replace('/', '%2f')}%2ftheme.css`,
+    ]) {
+      expect([path, (await get(path)).status]).toEqual([path, 404])
+    }
+    // The counter-test: the same route still serves what the owner uploaded.
+    expect((await get('/uploads/media/photo.webp')).status).toBe(200)
+  })
+
+  it('reads a path as the store would before deciding', () => {
+    for (const p of ['themes/x/a.css', 'Themes/x', './themes/x', 'media/../themes/x', 'media\\..\\themes\\x', 'themes%2Fx', '/themes/x', '../themes']) {
+      expect([p, isThemeBlobPath(p)]).toEqual([p, true])
+    }
+    for (const p of ['media/themes/x.webp', 'files/themes.zip', 'themes-gallery.webp', 'media/x.webp']) {
+      expect([p, isThemeBlobPath(p)]).toEqual([p, false])
     }
   })
 })

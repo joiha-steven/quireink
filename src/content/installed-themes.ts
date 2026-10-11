@@ -20,6 +20,7 @@ import { BUILTIN_THEMES, DEFAULT_THEME_ID } from '@/content/themes-builtin'
 import { CHROME_FONTS, FONT_PRESETS, THEME_PRESETS } from '@/content/themes'
 import { getSettings, saveSettings } from '@/content/settings'
 import { uploadFile } from '@/media/blob'
+import { themeBlobPath } from '@/media/theme-blobs'
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs } from '@/store/db'
 
@@ -29,8 +30,7 @@ export const SUPPORTED_THEME_API: readonly number[] = [1]
 /** One file as the row lists it. */
 export type InstalledFile = { path: string; size: number; type: string }
 
-/** Where a file of an installed package sits in the blob store. */
-export const themeBlobPath = (hash: string, path: string): string => `themes/${hash}/${path}`
+export { themeBlobPath }
 
 /** The SHA-256 hex a package is keyed by: nothing else may name a theme directory. */
 export const isThemeHash = (value: string): boolean => /^[0-9a-f]{64}$/.test(value)

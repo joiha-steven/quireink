@@ -20,7 +20,7 @@ import {
 } from '@/server/export-md'
 import { isQuireInk, parseFrontMatter, parseQuireInk } from '@/import/quireink'
 import { unzip } from '@/import/unzip'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -247,6 +247,31 @@ describe('the archive', () => {
       expect(parsed.skipped).toBe(0)
     } finally {
       rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('the uploads in the archive', () => {
+  it("carries the owner's files and not an installed theme's", async () => {
+    const store = mkdtempSync(join(tmpdir(), 'quire-export-store-'))
+    const before = process.env.STORAGE_LOCAL_DIR
+    process.env.STORAGE_LOCAL_DIR = store
+    try {
+      mkdirSync(join(store, 'media'), { recursive: true })
+      writeFileSync(join(store, 'media', 'photo.webp'), 'RIFF')
+      const theme = join(store, 'themes', 'a'.repeat(64), 'fonts')
+      mkdirSync(theme, { recursive: true })
+      writeFileSync(join(theme, '..', 'theme.css'), '.prose{}')
+      writeFileSync(join(theme, 'body.woff2'), 'wOF2')
+      const zip = new Uint8Array(await new Response(buildExportZip()).arrayBuffer())
+      const names = (await unzip(zip)).map((e) => e.name)
+      // The counter-test first: the store WAS read, so an absent theme is a skip, not an empty store.
+      expect(names).toContain('uploads/media/photo.webp')
+      expect(names.filter((n) => n.startsWith('uploads/themes/'))).toEqual([])
+    } finally {
+      if (before === undefined) delete process.env.STORAGE_LOCAL_DIR
+      else process.env.STORAGE_LOCAL_DIR = before
+      rmSync(store, { recursive: true, force: true })
     }
   })
 })

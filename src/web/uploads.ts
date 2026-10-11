@@ -13,6 +13,7 @@ import type { Context } from 'hono'
 import { statSize, stream } from '@/runtime/impl/blob'
 import { mimeOf } from '@/media/mime'
 import { parseRange } from '@/media/http-range'
+import { isThemeBlobPath } from '@/media/theme-blobs'
 
 // Names are content-stable: unique on upload, and a regenerated variant is identical. So
 // caching one forever is safe, and it is the whole reason media never needs a cache bust.
@@ -72,6 +73,10 @@ function headersFor(type: string, extra: Record<string, string>): Record<string,
 
 export async function handleUpload(c: Context): Promise<Response> {
   const pathname = c.req.path.replace(/^\/uploads\//, '')
+  // An installed theme's files are not uploads. They are served at `/themes/<hash>/…`, with the
+  // headers and the layer a theme's sheet needs, and only the files the package listed; here
+  // they would be any file under the directory, raw. Answered as a file that is not there.
+  if (isThemeBlobPath(pathname)) return c.text('Not found', 404)
 
   let size: number
   try {

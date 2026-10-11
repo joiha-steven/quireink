@@ -21,6 +21,7 @@ import { getPageIndex, getPage } from '@/content/pages'
 import { getNoteIndex, getNote } from '@/content/notes'
 import { getSettings } from '@/content/settings'
 import { ZipWriter } from '@/import/zip-write'
+import { isThemeBlobPath } from '@/media/theme-blobs'
 
 export type YamlValue = string | number | boolean | string[]
 
@@ -202,7 +203,9 @@ export function buildExportZip(): ReadableStream<Uint8Array> {
       const blob = await import('@/runtime/impl/blob')
       for (const item of await blob.list()) {
         const name = `uploads/${item.pathname}`
-        if (!safeName(name) || /\.[0-9a-f]{12}\.part$/.test(item.pathname)) continue
+        // An installed theme's files are the theme author's, not the owner's writing, and the
+        // backup carries them already (`media/theme-blobs.ts`).
+        if (!safeName(name) || /\.[0-9a-f]{12}\.part$/.test(item.pathname) || isThemeBlobPath(item.pathname)) continue
         await zip.addFile(name, { size: item.size, stream: () => blob.stream(item.pathname) as ReadableStream<Uint8Array> })
       }
       zip.finish()
