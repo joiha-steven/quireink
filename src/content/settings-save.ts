@@ -14,6 +14,8 @@ import { dataDir } from '@/store/db'
 import { isSiteLang } from '@/locales/langs'
 import { sanitizeNavOrder } from '@/content/nav-order'
 import { isPresetId, isFontPresetId, isChromeFontId, isScheme } from '@/content/themes'
+import { isLiveInstalledTheme, resolveTheme } from '@/content/chosen-theme'
+import { isThemePalette, themeFont } from '@/content/theme-choices'
 import {
   sanitizeMenu, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures,
   sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeApi, sanitizeActivityPub, sanitizeMotion, sanitizeCache,
@@ -86,10 +88,11 @@ function rescueUnreadable(): void {
 let queue: Promise<unknown> = Promise.resolve()
 
 /**
- * The theme a write asks for (ADR 0072). Only a theme this build ships can be CHOSEN: a write
- * naming anything else changes nothing, as a write of an unknown look never did. A theme this
- * build does not ship can only already BE in the row (a later build installed it, `isThemeId`
- * in the registry says why), and then it is kept as it is when another field is saved.
+ * The theme a write asks for (ADR 0072). A theme this build ships, or one installed from a zip
+ * with a live version, can be CHOSEN: a write naming anything else changes nothing, as a write of
+ * an unknown look never did. A theme that is neither can only already BE in the row (removed
+ * since, or installed by a later build: `isThemeId` in the registry says why), and then it is
+ * kept as it is when another field is saved.
  *
  * `look` is the field's name from before, and every door still takes it: an admin tab left open
  * across an upgrade, an MCP client, a script. A write may carry BOTH, and the one that names a
@@ -98,7 +101,7 @@ let queue: Promise<unknown> = Promise.resolve()
  * not be read as "keep the theme". When both name a change, `theme` wins.
  */
 function nextTheme(input: Partial<SiteSettings>, current: SiteSettings): string {
-  const theme = isBuiltinThemeId(input.theme) ? input.theme : null
+  const theme = isBuiltinThemeId(input.theme) || isLiveInstalledTheme(input.theme) ? input.theme : null
   const look = isBuiltinThemeId(input.look) ? input.look : null
   if (theme !== null && theme !== current.theme) return theme
   // Against the stored LOOK: beside a theme this build does not ship, `look` reads plain, and a
@@ -172,7 +175,13 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
 
   // The (possibly new) default palette — used both as `themePreset` and as the
   // always-included member of `enabledPalettes`.
-  const themePreset = isPresetId(input.themePreset) ? input.themePreset : current.themePreset
+  //
+  // An installed theme's palettes and fonts are choices while it is the theme this write leaves
+  // chosen (`content/theme-choices.ts`). Anything else is ignored and the stored value stays.
+  const theme = nextTheme(input, current)
+  const wearing = resolveTheme({ theme })
+  const themePreset = isPresetId(input.themePreset) || isThemePalette(wearing, input.themePreset)
+    ? input.themePreset : current.themePreset
 
   const next: SiteSettings = {
     language: isSiteLang(input.language) ? input.language : current.language,
@@ -225,13 +234,17 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
     sidebarLayout: input.sidebarLayout === 'two' || input.sidebarLayout === 'single' ? input.sidebarLayout : current.sidebarLayout,
     defaultScheme: isScheme(input.defaultScheme) ? input.defaultScheme : current.defaultScheme,
     themePreset,
-    fontPreset: isFontPresetId(input.fontPreset) ? input.fontPreset : current.fontPreset,
-    chromeFont: isChromeFontId(input.chromeFont) ? input.chromeFont : current.chromeFont,
+    fontPreset: isFontPresetId(input.fontPreset) ? input.fontPreset
+      : themeFont(wearing, 'reading', input.fontPreset)?.id ?? current.fontPreset,
+    chromeFont: isChromeFontId(input.chromeFont) ? input.chromeFont
+      : themeFont(wearing, 'chrome', input.chromeFont)?.id ?? current.chromeFont,
     // Both written: `look` is what a build from before ADR 0072 reads, so going back to one
     // keeps the owner's choice (plain, when the theme is one that build could not draw).
-    theme: nextTheme(input, current),
-    look: legacyLook(nextTheme(input, current)),
-    enabledPalettes: sanitizeEnabledPalettes(input.enabledPalettes ?? current.enabledPalettes, themePreset),
+    theme,
+    look: legacyLook(theme),
+    // A theme's palette as the default adds nothing to the stored list (`sanitizeEnabledPalettes`).
+    enabledPalettes: sanitizeEnabledPalettes(input.enabledPalettes ?? current.enabledPalettes,
+      isPresetId(themePreset) ? themePreset : null),
     themes: sanitizeThemes(input.themes, current.themes),
     typography: sanitizeTypography(input.typography, current.typography),
     customFont: sanitizeFont(input.customFont, current.customFont),

@@ -12,6 +12,10 @@ import { installTheme, rollbackTheme } from '@/content/installed-themes'
 import { handleThemeFile } from '@/web/theme-files'
 import { list } from '@/runtime/cf/blob'
 import { CSS, FONT, MANIFEST, testZip, themeFiles, themeZip } from '@/theme/test-zip'
+import { createApp } from '@/web/app'
+import { createUser } from '@/auth/users'
+import { COOKIE_NAME, createSession } from '@/auth/sessions'
+import { savePost } from '@/content/posts'
 
 export async function themeInstallsHere(): Promise<void> {
   openDatabases('./data')
@@ -48,4 +52,51 @@ export async function themeInstallsHere(): Promise<void> {
   const svg = await app.request(`/themes/${v1.hash}/images/grain.svg`)
   if (!(svg.headers.get('content-security-policy') ?? '').includes('sandbox')) throw new Error('the SVG went out without its sandbox')
   if ((await app.request(`/themes/${v1.hash}/planted.css`)).status !== 404) throw new Error('a path the package did not list was answered')
+}
+
+/**
+ * The page a reader gets, through the whole app in the Durable Object (T2b): the owner installs the
+ * theme and chooses it through the gated routes, the next render links its sheet and names it; a
+ * second version is linked on the render after it; removed, the page is plain and still a 200. What
+ * this asks of workerd and not of Bun: that the version the renderer keeps is forgotten by the
+ * gate's flush inside the object, as it is in the Bun process.
+ */
+export async function themeRendersHere(): Promise<void> {
+  openDatabases('./data')
+  const app = createApp()
+  const user = await createUser({ username: 'owner', email: 'o@example.com', password: 'wandering violet cassette' })
+  const headers = { cookie: `${COOKIE_NAME}=${createSession(user.id).token}`, 'sec-fetch-site': 'same-origin' }
+  await savePost({ title: 'A post', slug: 'a-post', status: 'published', date: '2025-06-01T12:00:00.000Z', content: 'Words.' })
+  const install = async (zip: Uint8Array): Promise<string> => {
+    const form = new FormData()
+    form.append('file', new File([zip], 'theme.zip', { type: 'application/zip' }), 'theme.zip')
+    const res = await app.request('/api/themes', { method: 'POST', headers, body: form })
+    const out = await res.json() as { data?: { hash?: string } }
+    if (res.status !== 200 || !out.data?.hash) throw new Error(`the install answered ${res.status}: ${JSON.stringify(out)}`)
+    return out.data.hash
+  }
+  const home = async (): Promise<string> => {
+    const res = await app.request('/a-post')
+    if (res.status !== 200) throw new Error(`the post answered ${res.status}`)
+    return res.text()
+  }
+  const link = (hash: string) => `<link rel="stylesheet" href="/themes/${hash}/theme.css">`
+
+  const v1 = await install(themeZip())
+  if ((await home()).includes('/themes/')) throw new Error('a theme nobody chose was linked')
+  const chose = await app.request('/api/settings', {
+    method: 'PUT', headers: { ...headers, 'content-type': 'application/json' }, body: JSON.stringify({ theme: 'broadsheet' }),
+  })
+  if (chose.status !== 200) throw new Error(`choosing the theme answered ${chose.status}`)
+  const worn = await home()
+  if (!worn.includes(link(v1)) || !worn.includes(' data-theme="broadsheet"')) throw new Error('the chosen theme is not on the page')
+
+  const v2 = await install(themeZip({ 'theme.json': { ...MANIFEST, version: '1.1.0' } }))
+  const next = await home()
+  if (!next.includes(link(v2)) || next.includes(link(v1))) throw new Error('the page still links the version before')
+
+  const removed = await app.request('/api/themes/broadsheet', { method: 'DELETE', headers })
+  if (removed.status !== 200) throw new Error(`the removal answered ${removed.status}`)
+  const plain = await home()
+  if (plain.includes('/themes/') || !plain.includes(' data-theme="plain"')) throw new Error('the page is not plain after the removal')
 }

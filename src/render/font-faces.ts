@@ -13,7 +13,8 @@
 // chrome font, six declarations, rather than every family the binary happens to carry.
 
 import { getChromeFont, getFontPreset } from '@/content/themes'
-import { builtinTheme, DEFAULT_THEME_ID, type SiteTheme } from '@/content/themes-builtin'
+import { builtinTheme, DEFAULT_THEME_ID, type InstalledPackage, type SiteTheme } from '@/content/themes-builtin'
+import { themeFamily } from '@/content/theme-choices'
 
 const PLAIN = builtinTheme(DEFAULT_THEME_ID)
 
@@ -172,14 +173,33 @@ const declare = (f: Face): string => {
  * fetches the file; a post with code gets the face it asked for instead of whatever
  * `ui-monospace` happens to be on that machine.
  */
-export function fontFaceCss(fontPreset: string, chromeFont: string, theme: SiteTheme = PLAIN): string {
-  const wanted = new Set<string>(['inter', 'jetbrains-mono', getFontPreset(fontPreset).slug])
+export function fontFaceCss(fontPreset: string | null, chromeFont: string, theme: SiteTheme = PLAIN): string {
+  const wanted = new Set<string>(['inter', 'jetbrains-mono'])
+  // `null`: the reading face is the installed theme's own, declared below, and a built-in family
+  // declared beside it would be fetched for the fallback paint while the theme's file loads.
+  if (fontPreset !== null) wanted.add(getFontPreset(fontPreset).slug)
   // 'reading' follows the reading font and 'inter' is already in; neither adds a family.
   if (getChromeFont(chromeFont).sans && chromeFont !== 'reading') wanted.add(chromeFont)
   // A theme's headline face (the newspaper's second serif). Declared only while that theme is
   // worn, so a blog wearing any other one never learns the family exists.
   if (theme.display) wanted.add(theme.display.slug)
-  return [...wanted].flatMap((id) => FACES[id] ?? []).map(declare).join('')
+  return [...wanted].flatMap((id) => FACES[id] ?? []).map(declare).join('') + packageFaces(theme.package)
+}
+
+/**
+ * Every face of every font an installed theme declares, from its own directory. One file per
+ * face and no `unicode-range`: the package ships whole woff2 files, not the engine's subsets, so
+ * a face covers what its file covers. `swap` as everywhere else, and no preload: like an uploaded
+ * font, a whole file is too large to put in front of the render-blocking sheet
+ * (docs/performance.md). Declared whether or not the page sets a glyph in it, which costs
+ * nothing: a declaration is not a download. The hash is checked hex and the file a checked
+ * `fonts/<name>.woff2` (`content/chosen-theme.ts`), so neither can leave the quotes.
+ */
+function packageFaces(pkg: InstalledPackage | null): string {
+  if (!pkg) return ''
+  return pkg.fonts.flatMap((font) => font.faces.map((face) =>
+    `@font-face{font-family:${themeFamily(font)};font-style:${face.style};font-weight:${face.weight};`
+    + `font-display:swap;src:url('/themes/${pkg.hash}/${face.file}') format('woff2')}`)).join('')
 }
 
 /**

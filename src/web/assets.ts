@@ -238,8 +238,13 @@ for (const { sheet } of BUILTIN_THEMES) {
 const SHIPPED: readonly { url: string; body: string }[] = [...BY_PATH].map(([url, body]) => ({ url, body }))
 export const shippedAssets = (): readonly { url: string; body: string }[] => SHIPPED
 
-/** The stylesheet a theme links, or '' when it has none (`content/themes-builtin.ts`). */
-export function themeSheet(theme: Pick<SiteTheme, 'sheet'>): string {
+/**
+ * The stylesheet a theme links, or '' when it has none (`content/themes-builtin.ts`). An installed
+ * theme's is its package's `theme.css`, under the hash that names the package, so the URL changes
+ * with every version and can be cached for a year (`web/theme-files.ts`).
+ */
+export function themeSheet(theme: Pick<SiteTheme, 'sheet' | 'package'>): string {
+  if (theme.package) return `/themes/${theme.package.hash}/theme.css`
   return theme.sheet ? THEME_SHEETS.get(theme.sheet) ?? '' : ''
 }
 

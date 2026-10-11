@@ -8,6 +8,8 @@
 
 import type { Context } from 'hono'
 import { getSettings, resolveAppIcon, getDefaultTheme } from '@/content/settings'
+import { resolveTheme } from '@/content/chosen-theme'
+import { drawnPalettes } from '@/content/theme-choices'
 
 /**
  * Best-effort MIME from the icon's extension. Harmless to get wrong, but most installers
@@ -27,7 +29,9 @@ export async function handleManifest(_c: Context): Promise<Response> {
   const settings = await getSettings()
   const icon = resolveAppIcon(settings)
   const type = iconType(icon)
-  const bg = getDefaultTheme(settings.themes, settings.themePreset).light.bg
+  // The default palette as the page draws it, an installed theme's included.
+  const palettes = drawnPalettes(settings, resolveTheme(settings))
+  const bg = getDefaultTheme(palettes.themes, palettes.themePreset).light.bg
 
   const manifest = {
     name: settings.title,

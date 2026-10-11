@@ -13,6 +13,7 @@
 // (`content/settings.ts`, `content/settings-save.ts`).
 
 import type { SiteLook } from '@/types'
+import type { ThemeFont, ThemePalette } from '@/theme'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { DISPLAY_SLUG } from '@/content/fonts'
 import { LOOK_CODE_RAIL_ASIDE_CSS, LOOK_CODE_RAIL_BAND_CSS } from '@/web/look-code-rail.css'
@@ -59,8 +60,20 @@ export type ChromeFace = 'setting' | 'own' | 'jetbrains-mono'
 export const OWNABLE_SETTINGS = ['table.head', 'table.grid', 'table.ruleWeight'] as const
 export type OwnableSetting = (typeof OWNABLE_SETTINGS)[number]
 
+/**
+ * What an installed theme brings beyond plain's fields (`content/chosen-theme.ts` reads it from
+ * the current version's row): the package's hash, which names its sheet and font files under
+ * `/themes/<hash>/`, and the fonts and palettes its `theme.json` declares.
+ */
+export type InstalledPackage = {
+  hash: string
+  fonts: readonly ThemeFont[]
+  palettes: readonly ThemePalette[]
+}
+
 export type SiteTheme = {
-  id: BuiltinThemeId
+  /** A built-in id, or the id of a theme installed from a zip. */
+  id: string
   /** The theme's name and its one line of who it is for, as keys of the admin's strings. */
   nameKey: AdminText
   hintKey: AdminText
@@ -119,16 +132,21 @@ export type SiteTheme = {
    * `theme.json`, from `OWNABLE_SETTINGS`. Empty: the theme leaves every knob to the owner.
    */
   ownsSettings: readonly OwnableSetting[]
+  /** `null` on a built-in theme; an installed one's package (`InstalledPackage`). */
+  package: InstalledPackage | null
 }
 
-const PLAIN: SiteTheme = {
+/** A theme this build ships. */
+export type BuiltinTheme = SiteTheme & { id: BuiltinThemeId }
+
+const PLAIN: BuiltinTheme = {
   id: 'plain', nameKey: 'lookPlain', hintKey: 'lookStepPlainHint',
   sheet: null, dataLook: '', layout: { menu: 'rail', deepenMetaInk: false }, display: null, chromeFace: 'setting', rail: null,
-  art: { tile: PLAIN_TILE, card: PLAIN_CARD }, suggests: {}, legacyChromeFont: null, ownsSettings: [],
+  art: { tile: PLAIN_TILE, card: PLAIN_CARD }, suggests: {}, legacyChromeFont: null, ownsSettings: [], package: null,
 }
 
 /** In the order the admin and the setup step offer them. */
-export const BUILTIN_THEMES: readonly SiteTheme[] = [
+export const BUILTIN_THEMES: readonly BuiltinTheme[] = [
   PLAIN,
   {
     id: 'code', nameKey: 'lookCode', hintKey: 'lookStepCodeHint',
@@ -136,7 +154,7 @@ export const BUILTIN_THEMES: readonly SiteTheme[] = [
     chromeFace: 'setting',
     rail: { band: LOOK_CODE_RAIL_BAND_CSS, aside: LOOK_CODE_RAIL_ASIDE_CSS },
     art: { tile: CODE_TILE, card: CODE_CARD },
-    suggests: { chromeFont: 'jetbrains-mono' }, legacyChromeFont: 'jetbrains-mono', ownsSettings: [],
+    suggests: { chromeFont: 'jetbrains-mono' }, legacyChromeFont: 'jetbrains-mono', ownsSettings: [], package: null,
   },
   {
     id: 'paper', nameKey: 'lookPaper', hintKey: 'lookStepPaperHint',
@@ -154,14 +172,14 @@ export const BUILTIN_THEMES: readonly SiteTheme[] = [
     suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter',
     // The sheet rules its own tables like a printed page (`web/look-paper.css.ts`): borders and
     // header ground are set there, so these three knobs have nothing to act on.
-    ownsSettings: ['table.head', 'table.grid', 'table.ruleWeight'],
+    ownsSettings: ['table.head', 'table.grid', 'table.ruleWeight'], package: null,
   },
   {
     id: 'notes', nameKey: 'lookNotes', hintKey: 'lookStepNotesHint',
     sheet: 'look-notes', dataLook: 'notes', layout: { menu: 'rail', deepenMetaInk: true }, display: null,
     chromeFace: 'setting', rail: null,
     art: { tile: NOTES_TILE, card: NOTES_CARD },
-    suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter', ownsSettings: [],
+    suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter', ownsSettings: [], package: null,
   },
 ]
 
@@ -180,28 +198,21 @@ export const isBuiltinThemeId = (value: unknown): value is BuiltinThemeId =>
 export const legacyLook = (id: string): BuiltinThemeId => (isBuiltinThemeId(id) ? id : DEFAULT_THEME_ID)
 
 /** The theme by id, and plain for an id this build does not ship. */
-export function builtinTheme(id: string): SiteTheme {
+export function builtinTheme(id: string): BuiltinTheme {
   return BUILTIN_THEMES.find((theme) => theme.id === id) ?? PLAIN
 }
 
 /**
  * The shape of ANY theme id, built in or not: lowercase letters and digits in runs joined by
- * single hyphens, at most 40 characters.
+ * single hyphens, at most 40 characters. The theme checker holds an installed theme's id, and
+ * the ids of its fonts and palettes, to the same shape (`theme/check-manifest.ts`).
  *
- * Wider than the four on purpose. A blog that installs a theme from a zip on a later build and
- * then comes back to this one must not lose the choice at the next save, so an id of this shape
- * already in the row is read and written back as it is (`content/settings.ts`) and only the
- * renderer falls back, through `resolveTheme`. A WRITE cannot choose one: only a built-in theme
- * can be chosen here (`content/settings-save.ts`). Anything not of this shape (a quote, a space,
- * an object) is not an id and is never kept.
+ * Wider than the four on purpose. A row may name a theme this build cannot draw: one installed
+ * from a zip and since removed, or one a later build installed. It is read and written back as it
+ * is (`content/settings.ts`), so a save never loses the choice, and only the renderer falls back
+ * to plain (`content/chosen-theme.ts`, `resolveTheme`). A WRITE can choose only a built-in theme
+ * or a live installed one (`content/settings-save.ts`). Anything not of this shape (a quote, a
+ * space, an object) is not an id and is never kept.
  */
 export const isThemeId = (value: unknown): value is string =>
   typeof value === 'string' && value.length <= 40 && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(value)
-
-/**
- * The theme the public site is wearing. Anything unrecognised (a row written by a newer build
- * naming a theme this one cannot draw) is drawn as plain, rather than as a half-drawn page.
- */
-export function resolveTheme(settings: { theme: string }): SiteTheme {
-  return builtinTheme(settings.theme)
-}

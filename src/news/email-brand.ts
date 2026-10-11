@@ -7,6 +7,8 @@ import type { EmailBrand, EmailLogo } from '@/news/newsletter-email'
 import type { SiteSettings } from '@/types'
 import { getDefaultTheme } from '@/content/themes'
 import { resolveSiteUrl } from '@/content/settings'
+import { resolveTheme } from '@/content/chosen-theme'
+import { drawnPalettes } from '@/content/theme-choices'
 
 // Formats every mail client renders. Deliberately NOT webp: Outlook on Windows uses
 // the Word engine and shows nothing for it, and SVG is stripped almost everywhere —
@@ -37,10 +39,12 @@ export function emailLogo(settings: SiteSettings, base: string): EmailLogo | nul
 
 export function emailBrand(settings: SiteSettings): EmailBrand {
   const base = resolveSiteUrl(settings)
+  // The default palette as the site draws it, an installed theme's included (ADR 0072).
+  const palettes = drawnPalettes(settings, resolveTheme(settings))
   return {
     title: settings.title,
     base,
-    theme: getDefaultTheme(settings.themes, settings.themePreset).light,
+    theme: getDefaultTheme(palettes.themes, palettes.themePreset).light,
     logo: emailLogo(settings, base),
   }
 }

@@ -20,7 +20,7 @@ import { t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { postName } from '@/content/untitled'
 import { isSafeHref } from '@/content/safe-href'
-import { resolveTheme } from '@/content/themes-builtin'
+import { resolveTheme } from '@/content/chosen-theme'
 import { searchBox } from '@/web/chrome'
 
 /** Curated posts shown in the "Featured" block. */

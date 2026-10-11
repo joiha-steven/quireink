@@ -19,6 +19,8 @@ import { SW_PATH } from '@/web/assets'
 import { ICONS } from '@/icons'
 import { isSafeHref } from '@/content/safe-href'
 import { DEFAULT_SETTINGS } from '@/content/settings'
+import { resolveTheme } from '@/content/chosen-theme'
+import { drawnPalettes } from '@/content/theme-choices'
 
 /**
  * Inline SVG rather than an icon font: no extra request, and it inherits `currentColor`.
@@ -192,11 +194,16 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   // because `enabledPalettes` keeps the picker's display order, in which the default is not
   // necessarily first. Both are the SAME for every reader, so they are safe in a cached page —
   // unlike the reader's own choice, which is why that one lives in `localStorage`.
-  if (settings.enabledPalettes.length > 1) {
-    const options = settings.enabledPalettes
-      .map((id) => `${id}:${s.paletteNames[id] ?? id}`).join('|')
+  //
+  // As DRAWN (`content/theme-choices.ts`): an installed theme's palette chosen as the default is
+  // offered by its own name, and one no longer on offer is not offered at all.
+  const palettes = drawnPalettes(settings, resolveTheme(settings))
+  if (palettes.enabledPalettes.length > 1) {
+    const options = palettes.enabledPalettes
+      // A theme's palette name is its author's text: a `|` in it would split the list here.
+      .map((id) => `${id}:${s.paletteNames[id] ?? palettes.names[id]?.replaceAll('|', '/') ?? id}`).join('|')
     actions.push(`<button type="button" class="icon-btn" data-palettes="${escapeAttr(options)}"
- data-palette-default="${escapeAttr(settings.themePreset)}"
+ data-palette-default="${escapeAttr(palettes.themePreset)}"
  aria-label="${escapeAttr(s.palette)}" title="${escapeAttr(s.palette)}"
  aria-haspopup="true" aria-expanded="false">${ICON.palette}${token(s.shortPalette)}</button>`)
   }

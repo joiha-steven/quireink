@@ -85,11 +85,17 @@ export function sanitizeThemes(input: unknown, base: Record<string, ThemeSetting
 // ALWAYS include the default (it must stay selectable). A non-array (missing field,
 // e.g. legacy settings) means "all on"; an empty/garbage array collapses to just
 // the default — which hides the switcher (one option). Invariant for `enabledPalettes`.
-export function sanitizeEnabledPalettes(input: unknown, defaultId: string): string[] {
-  const def = isPresetId(defaultId) ? defaultId : DEFAULT_PRESET_ID
+//
+// `defaultId: null` says the default is NOT a built-in palette (an installed theme's, ADR 0072),
+// so nothing is added on its behalf: the list holds the owner's built-ins alone, and the page
+// adds the theme's palette, or the engine's default when that palette is not on offer, as it
+// draws (`content/theme-choices.ts`, `drawnPalettes`). Adding Mono here instead put a palette
+// the owner never chose into the reader's menu.
+export function sanitizeEnabledPalettes(input: unknown, defaultId: string | null): string[] {
+  const def = defaultId === null ? null : isPresetId(defaultId) ? defaultId : DEFAULT_PRESET_ID
   if (!Array.isArray(input)) return THEME_PRESETS.map((p) => p.id)
   const want = new Set(input.filter((x): x is string => typeof x === 'string'))
-  want.add(def)
+  if (def !== null) want.add(def)
   return THEME_PRESETS.map((p) => p.id).filter((id) => want.has(id))
 }
 

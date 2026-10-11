@@ -20,7 +20,8 @@ import type { FrontSettings } from '@/types'
 import { getSettings, saveSettings } from '@/content/settings'
 import { THEME_PRESETS } from '@/content/palettes'
 import { FONT_PRESETS, CHROME_FONTS } from '@/content/fonts'
-import { BUILTIN_THEMES } from '@/content/themes-builtin'
+import { BUILTIN_THEMES, isBuiltinThemeId } from '@/content/themes-builtin'
+import { isLiveInstalledTheme } from '@/content/chosen-theme'
 import { getCategories } from '@/content/posts'
 import { getPageAnalytics } from '@/analytics/page'
 import { addComment } from '@/comments/comments'
@@ -51,14 +52,17 @@ export function registerStewardTools(server: ToolHost): void {
     {
       description:
         'Change the site\'s look from the curated menus: theme '
-        + `(${themeIds.join(', ')}), palette `
+        + `(${themeIds.join(', ')}, or the id of a theme installed from a zip), palette `
         + `(${paletteIds.join(', ')}), reading font (${fontIds.join(', ')}), chrome font, `
         + 'and what a first-time visitor opens in. Free-form colors are not accepted — '
         + 'every option here is one the owner\'s own screens offer. Changing the theme leaves '
         + 'the chrome font as it is; send chromeFont with it to give the theme the face it is '
         + `drawn for (${themeSuggestions}).`,
       inputSchema: {
-        theme: z.enum(themeIds).optional().describe('The theme the published site wears'),
+        // A string rather than the four: a theme installed from a zip is chosen here too, and which
+        // ones are installed is the table's answer, asked below, not the schema's.
+        theme: z.string().max(40).optional()
+          .describe('The theme the published site wears: a built-in id or the id of an installed theme'),
         // The field's name before ADR 0072, still accepted from a client that learned it then.
         look: z.enum(themeIds).optional().describe('Old name for `theme`; `theme` wins when both are given'),
         palette: z.enum(paletteIds).optional().describe('Default palette for visitors'),
@@ -69,6 +73,11 @@ export function registerStewardTools(server: ToolHost): void {
     },
     async ({ theme, look, palette, readingFont, chromeFont, defaultScheme }) => {
       const current = await getSettings()
+      // Refused rather than ignored, as an id outside the old enum was: the agent has no eyes, and
+      // a save that silently kept the old theme would read to it as done.
+      if (theme !== undefined && !isBuiltinThemeId(theme) && !isLiveInstalledTheme(theme)) {
+        return asError(`No theme with the id "${theme}" is built in or installed`)
+      }
       const partial: Record<string, unknown> = {}
       if (theme !== undefined || look !== undefined) partial.theme = theme ?? look
       if (palette !== undefined) {

@@ -13,6 +13,8 @@ import { getSettings, saveSettings } from '@/content/settings'
 import { savePost } from '@/content/posts'
 import { addComment, getCommentTree } from '@/comments/comments'
 import { payload } from '@/test/api'
+import { installTheme, removeTheme } from '@/content/installed-themes'
+import { themeZip } from '@/theme/test-zip'
 
 const DIR = './.tmp/test-mcp-steward'
 // ⚠️ ITS OWN UPLOADS TREE, because `create_snapshot` below builds a REAL archive and
@@ -28,7 +30,7 @@ let token = ''
 
 beforeEach(async () => {
   for (const t of ['sessions', 'users', 'mcp_tokens', 'activity_log', 'settings',
-                   'server_secrets', 'posts', 'comments']) {
+                   'server_secrets', 'posts', 'comments', 'themes']) {
     db().run(`delete from ${t}`)
   }
   resetSecretCache()
@@ -78,6 +80,19 @@ describe('the steward tools', () => {
     expect((await getSettings()).theme).toBe('code')
     const out = await call('update_appearance', { theme: 'broadsheet' })
     expect(out.isError || out.rpcError !== '').toBe(true)
+    expect((await getSettings()).theme).toBe('code')
+  })
+
+  it('update_appearance chooses a theme installed from a zip, and refuses it once it is removed', async () => {
+    expect((await installTheme(themeZip())).ok).toBe(true)
+    const { text } = await call('update_appearance', { theme: 'broadsheet' })
+    expect(JSON.parse(text)).toMatchObject({ theme: 'broadsheet' })
+    expect((await getSettings()).theme).toBe('broadsheet')
+    await call('update_appearance', { theme: 'code' })
+    await removeTheme('broadsheet')
+    const out = await call('update_appearance', { theme: 'broadsheet' })
+    expect(out.isError).toBe(true)
+    expect(out.text).toContain('broadsheet')
     expect((await getSettings()).theme).toBe('code')
   })
 

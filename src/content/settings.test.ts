@@ -65,12 +65,24 @@ describe('getSettings', () => {
     expect(s.faviconUrl).toBe('/uploads/files/fav.ico')
   })
 
-  it('clamps out-of-range numbers and rejects an unknown theme preset', async () => {
-    write({ relatedCount: 999, excerptLength: 1, themePreset: 'not-a-preset' })
+  it('clamps out-of-range numbers and rejects a theme preset that is not an id', async () => {
+    write({ relatedCount: 999, excerptLength: 1, themePreset: 'Not a preset!' })
     const s = await getSettings()
     expect(s.relatedCount).toBe(12)
     expect(s.excerptLength).toBe(10)
     expect(s.themePreset).toBe(DEFAULT_SETTINGS.themePreset)
+  })
+
+  it("keeps a palette or font id an installed theme may have offered, which the renderer draws as the default", async () => {
+    // The id of a palette or font of a theme installed from a zip: kept whether or not that theme
+    // is still installed, so a save never loses it (`content/theme-choices.ts` draws the default).
+    write({ themePreset: 'not-a-preset', fontPreset: 'body-serif', chromeFont: 'ui-face' })
+    expect(await getSettings()).toMatchObject({ themePreset: 'not-a-preset', fontPreset: 'body-serif', chromeFont: 'ui-face' })
+    db().run('delete from settings')
+    write({ themePreset: 42, fontPreset: "bad'id", chromeFont: 'Has Space' })
+    expect(await getSettings()).toMatchObject({
+      themePreset: DEFAULT_SETTINGS.themePreset, fontPreset: DEFAULT_SETTINGS.fontPreset, chromeFont: DEFAULT_SETTINGS.chromeFont,
+    })
   })
 })
 

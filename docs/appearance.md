@@ -3,11 +3,12 @@
 > For the person who owns a blog, not the person who builds one. Everything here is done
 > from Settings or from one CSS box; nothing needs a checkout.
 
-Quire Ink ships **one design**. There are no themes to install, which is a deliberate
-trade — a theme gallery is a promise to keep every theme working forever, and the ones
-that stop being maintained are the ones people are running. What replaces it is a set of
-knobs, and this page is the map of them, ending with the escape hatch for anything they do
-not cover.
+Quire Ink ships **one design**, worn in four built-in themes. A theme can also be installed from
+a zip, checked by the engine first ([ADR 0072](decisions/0072-a-theme-is-a-checked-skin-over-the-one-markup.md));
+there is no screen for that yet, only the owner's API ([theme-install-api.md](theme-install-api.md)),
+and there is no gallery: a gallery is a promise to keep every theme working forever, and the ones
+that stop being maintained are the ones people are running. What this page maps is the set of
+knobs, ending with the escape hatch for anything they do not cover.
 
 ## The knobs, roughly in the order they change a first impression
 
@@ -309,9 +310,9 @@ Written on `<html>`, so a rule can change with the palette, the scheme or the th
 
 | Attribute | Values |
 |---|---|
-| `data-palette` | The palette id: `mono`, `sepia`, `forest`, `ocean`, `scifi`, `amber`; only present when the blog offers two or more palettes |
+| `data-palette` | The palette id: `mono`, `sepia`, `forest`, `ocean`, `scifi`, `amber`, or the id of an installed theme's palette; only present when the blog offers two or more palettes |
 | `data-scheme` | `light` or `dark`, once the page script has resolved it (`:root[data-scheme="dark"]`) |
-| `data-theme` | The theme: `plain`, `code`, `paper` or `notes`; on every page, plain included |
+| `data-theme` | The theme: `plain`, `code`, `paper`, `notes`, or the id of a theme installed from a zip; on every page, plain included |
 | `data-look` | `code`, `paper` or `notes`; absent on the plain look |
 | `data-list` | `list` or `grid`, the layout the reader picked on a listing |
 | `data-motion` | `on` or `off`, whether animation is enabled |

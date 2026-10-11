@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added
+
+- **A theme installed from a zip is drawn on your published site once you choose it.** There is
+  no screen for it yet: a theme is installed through the owner's API, and chosen there or from an
+  MCP client, by its id. Your pages then wear the plain theme with the installed theme's stylesheet, layout
+  switches, fonts and palettes on top. Its fonts and palettes become choices for the reading font,
+  the site font and the default palette while that theme is chosen; choose another theme or remove
+  it and the defaults are drawn, with your choices kept for when you come back. A new version or a
+  rollback shows on the next page load. A theme that is removed or damaged is drawn as Plain paper,
+  never as a broken page. See [Installing a theme](docs/theme-install-api.md#wearing-one).
+
 ### Changed
 
 - **On the Newspaper theme, the table settings it overrides are hidden.** Header row, Lines and

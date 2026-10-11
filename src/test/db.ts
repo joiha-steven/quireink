@@ -13,6 +13,7 @@ import { rmSync } from 'node:fs'
 import { openDatabases, closeDatabases } from '@/store/db'
 import { resetAnalyticsCaches } from '@/analytics/memo'
 import { resetSettingsCache } from '@/content/settings'
+import { forgetInstalledTheme } from '@/content/chosen-theme'
 
 export function freshDatabase(dir: string): void {
   rmSync(dir, { recursive: true, force: true })
@@ -22,6 +23,7 @@ export function freshDatabase(dir: string): void {
   // sidebar would otherwise read the previous file's totals.
   resetAnalyticsCaches()
   resetSettingsCache()
+  forgetInstalledTheme()
 }
 
 export function dropDatabase(dir: string): void {

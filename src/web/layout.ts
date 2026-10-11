@@ -15,7 +15,8 @@ import type { SiteSettings, SiteLang } from '@/types'
 import { fontPreloadHrefs } from '@/content/themes'
 import { resolveAppIcon, getDefaultTheme } from '@/content/settings'
 import { penStyleFor, themeSheet } from '@/web/assets'
-import { resolveTheme } from '@/content/themes-builtin'
+import { resolveTheme } from '@/content/chosen-theme'
+import { drawnFonts, drawnPalettes } from '@/content/theme-choices'
 import { deepenMetaInkCss } from '@/web/layout-styles'
 import { inLayer } from '@/web/css-layers'
 import { CUSTOM_COL_ATTR, DEFAULT_RAIL_WIDTH } from '@/render/rail-css'
@@ -127,8 +128,10 @@ export function renderDocument(
     .map(([k, v]) => ` ${dataAttr(k)}="${escapeAttr(v)}"`)
     .join('')
   const theme = resolveTheme(settings)
-  const preloads = fontPreloadHrefs(settings.fontPreset, settings.language,
-    !!settings.customFont.family, settings.chromeFont, theme.display?.slug ?? null)
+  const fonts = drawnFonts(settings, theme)
+  // A theme's own reading font is preloaded as an uploaded one is: not at all (`fontFaceCss`).
+  const preloads = fontPreloadHrefs(fonts.readingPreset, settings.language,
+    !!settings.customFont.family || fonts.reading !== null, fonts.chromeFont, theme.display?.slug ?? null)
     .map((href) => `<link rel="preload" href="${escapeAttr(href)}" as="font" type="font/woff2" crossorigin>`)
     .join('')
   const description = head.description
@@ -258,12 +261,13 @@ export function renderDocument(
    * default is dark met the reader with a white bar over a black page. The phone book reader
    * already did this for the length of a read; this is the same answer for every other page.
    */
-  const paper = getDefaultTheme(settings.themes, settings.themePreset)
+  const palettes = drawnPalettes(settings, theme)
+  const paper = getDefaultTheme(palettes.themes, palettes.themePreset)
   const themeColor = `<meta name="theme-color" media="(prefers-color-scheme: light)" content="${
     escapeAttr(paper.light.bg)}">\n<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${
     escapeAttr(paper.dark.bg)}">\n`
   return `<!DOCTYPE html>
-<html lang="${escapeAttr(head.lang ?? settings.language)}" data-tz="${escapeAttr(siteZone(settings.timezone))}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${themeAttr}${look}${fade}${col}>
+<html lang="${escapeAttr(head.lang ?? settings.language)}" data-tz="${escapeAttr(siteZone(settings.timezone))}" data-motion="${motion}" data-chrome-font="${escapeAttr(fonts.chromeFont)}"${themeAttr}${look}${fade}${col}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

@@ -24,7 +24,7 @@ import { langAttr } from '@/content/translations'
 import { getMailStatus } from '@/news/mail'
 import { PUBLIC_SHEET, scriptTag } from '@/web/assets'
 import { postName } from '@/content/untitled'
-import { resolveTheme } from '@/content/themes-builtin'
+import { resolveTheme } from '@/content/chosen-theme'
 
 type Posts = ListingView['paged']['items']
 

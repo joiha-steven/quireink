@@ -46,6 +46,12 @@ describe('sanitizeEnabledPalettes', () => {
   it('falls back to the built-in default when the given default is invalid', () => {
     expect(sanitizeEnabledPalettes(['ocean'], 'not-a-preset')).toContain('mono')
   })
+
+  it("adds nothing for a default that is an installed theme's palette (null)", () => {
+    expect(sanitizeEnabledPalettes(['sepia'], null)).toEqual(['sepia'])
+    expect(sanitizeEnabledPalettes([], null)).toEqual([])
+    expect(sanitizeEnabledPalettes(undefined, null)).toEqual(ALL_PALETTE_IDS)
+  })
 })
 
 // `accent` shipped after the palettes did. A settings row saved before it has no

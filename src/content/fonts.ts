@@ -204,7 +204,7 @@ const CJK_BY_LANG: Record<string, CjkTail> = { zh: CJK_ZH, ja: CJK_JA, ko: CJK_K
  * The Latin head is unchanged — it is `stack` with its own tail swapped — so a mixed line
  * still sets its Latin words in the reading face.
  */
-export function cjkLangCss(presetId: string): string {
+export function cjkLangCss(presetId: string, lead: string | null = null): string {
   const { stack } = getFontPreset(presetId)
   // Which half the preset is, read off the stack it already carries rather than taken as an
   // argument or as a new `serif: boolean` field. A caller cannot get this wrong if it is
@@ -214,7 +214,9 @@ export function cjkLangCss(presetId: string): string {
   if (!head) return ''
   const generic = serif ? 'serif' : 'sans-serif'
   return Object.entries(CJK_BY_LANG)
-    .map(([lang, tail]) => `:lang(${lang}){--font-reading:${head}, ${serif ? tail.serif : tail.sans}, ${generic}}`)
+    // `lead`: an installed theme's reading family. These match every element, not only the root,
+    // so a family named on `:root` alone would be replaced under it.
+    .map(([lang, tail]) => `:lang(${lang}){--font-reading:${lead ? `${lead}, ` : ''}${head}, ${serif ? tail.serif : tail.sans}, ${generic}}`)
     .join('')
 }
 

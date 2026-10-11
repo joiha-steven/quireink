@@ -1,6 +1,11 @@
 // Themes installed from a zip (ADR 0072, T2): the `themes` table and the files beside it in the
 // blob store. The checking is `theme/read-package.ts`; this stores what passed it, lists it, takes
-// it back a version or removes it. Nothing here draws a page with an installed theme yet.
+// it back a version or removes it. Drawing a page with one is `content/chosen-theme.ts`.
+//
+// WHAT A READER SEES CHANGES ON THE NEXT RENDER. Each of install, rollback and removal is a write
+// through the owner's gate, which empties the page cache and purges the edge as a settings save
+// does (Invariant 1); each also drops the current version the renderer keeps
+// (`forgetInstalledTheme`), so a caller that reaches it without the gate sees the change too.
 //
 // WHERE THE BYTES GO. Every file under `themes/<hash>/<path>` in the blob store the uploads use
 // (a directory on Bun, the R2 bucket on Cloudflare), keyed by the package's hash, so a key is
@@ -16,13 +21,14 @@
 
 import { readThemePackage, type PackageOptions, type ThemeManifest, type Violation } from '@/theme'
 import { themeContract } from '@/content/theme-contract'
-import { BUILTIN_THEMES, DEFAULT_THEME_ID, OWNABLE_SETTINGS } from '@/content/themes-builtin'
-import { CHROME_FONTS, FONT_PRESETS, THEME_PRESETS } from '@/content/themes'
+import { DEFAULT_THEME_ID, OWNABLE_SETTINGS } from '@/content/themes-builtin'
+import { RESERVED_FONT_IDS, RESERVED_PALETTE_IDS, RESERVED_THEME_IDS } from '@/content/theme-reserved'
 import { getSettings, saveSettings } from '@/content/settings'
 import { uploadFile } from '@/media/blob'
 import { themeBlobPath } from '@/media/theme-blobs'
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs } from '@/store/db'
+import { forgetInstalledTheme } from '@/content/chosen-theme'
 
 /** The theme API versions this build reads (ADR 0072, decision 2). */
 export const SUPPORTED_THEME_API: readonly number[] = [1]
@@ -43,9 +49,9 @@ export const isThemeHash = (value: string): boolean => /^[0-9a-f]{64}$/.test(val
 function packageOptions(): PackageOptions {
   return {
     supportedApi: SUPPORTED_THEME_API,
-    reservedIds: new Set(BUILTIN_THEMES.map((t) => t.id)),
-    reservedPaletteIds: new Set(THEME_PRESETS.map((p) => p.id)),
-    reservedFontIds: new Set([...FONT_PRESETS.map((f) => f.id), ...CHROME_FONTS.map((f) => f.id)]),
+    reservedIds: RESERVED_THEME_IDS,
+    reservedPaletteIds: RESERVED_PALETTE_IDS,
+    reservedFontIds: RESERVED_FONT_IDS,
     ownableSettings: new Set(OWNABLE_SETTINGS),
     contract: themeContract(),
   }
@@ -124,6 +130,7 @@ async function installNow(zip: Uint8Array): Promise<InstallResult> {
     )
     return true
   })
+  if (changed) forgetInstalledTheme()
   return done(changed)
 }
 
@@ -196,6 +203,7 @@ export async function listInstalledThemes(): Promise<InstalledTheme[]> {
  */
 export async function removeTheme(themeId: string): Promise<number> {
   const { changes } = run(`update themes set deleted_at = ? where ${liveOnly('themes')} and theme_id = ?`, nowMs(), themeId)
+  if (changes > 0) forgetInstalledTheme()
   if (changes > 0 && (await getSettings()).theme === themeId) await saveSettings({ theme: DEFAULT_THEME_ID })
   return changes
 }
@@ -211,6 +219,7 @@ export function rollbackTheme(themeId: string): RollbackResult {
     if (!head) return { ok: false, error: 'not_found' }
     if (!next) return { ok: false, error: 'no_previous' }
     run(`update themes set deleted_at = ? where id = ?`, nowMs(), head.id)
+    forgetInstalledTheme()
     return { ok: true, id: themeId, current: versionOf(next), removed: versionOf(head) }
   })
 }

@@ -12,7 +12,9 @@ import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss, shapeToCss, tableToCss } from '@/content/settings'
 import { DEFAULT_RAIL_WIDTH, railHoldCss, railThemeCss, singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, monoTracking } from '@/render/font-faces'
-import { resolveTheme, type SiteTheme } from '@/content/themes-builtin'
+import type { SiteTheme } from '@/content/themes-builtin'
+import { resolveTheme } from '@/content/chosen-theme'
+import { displayFontValue, drawnFonts, drawnPalettes, themeFamily, themeFontVarsCss } from '@/content/theme-choices'
 import { t } from '@/i18n/i18n'
 import { LISTS_PLAIN_CSS } from '@/pen/lists.css'
 import { inLayer } from '@/web/css-layers'
@@ -160,9 +162,13 @@ export function deepenMetaInkCss(theme: SiteTheme): string {
 
 export function pageStyles(settings: SiteSettings, extra = ''): string {
   const theme = resolveTheme(settings)
+  // What is DRAWN, which is what is stored unless it names a font or palette no longer on offer
+  // (an installed theme's, under another theme): then the default, and the row keeps the id.
+  const fonts = drawnFonts(settings, theme)
+  const palettes = drawnPalettes(settings, theme)
   return [
     // FIRST: a family has to be declared before anything can ask for it by name.
-    fontFaceCss(settings.fontPreset, settings.chromeFont, theme),
+    fontFaceCss(fonts.reading ? null : fonts.readingPreset, fonts.chromeFont, theme),
     // The chrome face, and the reading face's fallback until a preset repoints it. Inter
     // is the universal base, exactly as in the frozen tree. --font-mono is the third and
     // last handle: code, and only code. It is a constant rather than a setting because
@@ -173,7 +179,7 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     `:root{--font-sans:'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;`
     + `--font-reading:var(--font-sans);`
     + `--font-mono:'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;`
-    + `--font-display:${theme.display ? theme.display.stack : 'var(--font-reading)'}}`,
+    + `--font-display:${displayFontValue(theme, fonts)}}`,
     // The reading column, from the owner's setting. A two-rail listing narrows it by
     // overriding this later in the sheet, which is why it is a variable and not baked in.
     //
@@ -208,19 +214,22 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // the layer of the sheet it extends: the code theme's rail rules above outweigh some of
     // these and have to keep winning.
     inLayer('base', extra),
-    fontPresetCss(settings.fontPreset),
+    fontPresetCss(fonts.readingPreset),
     // Straight after the preset it overrides, and before the owner's own CSS can have the
     // last word. `:lang(zh|ja|ko)` swaps ONLY the CJK tail of the reading stack, so a Han
     // character is drawn in that language's letterforms instead of whichever CJK family the
     // machine happens to have installed first (`content/fonts.ts`). Inert on a site whose
     // language is none of the three — no selector matches, and it is ~700 bytes.
-    cjkLangCss(settings.fontPreset),
-    chromeFontCss(settings.chromeFont),
+    cjkLangCss(fonts.readingPreset, fonts.reading ? themeFamily(fonts.reading) : null),
+    chromeFontCss(fonts.chromeFont),
+    // An installed theme's reading or chrome font, when the owner chose it: after the engine's
+    // own rules above, so it wins them, and before the uploaded font, which still wins.
+    themeFontVarsCss(fonts),
     // The translated words a theme prints through `content:`, for every theme (above).
     labelVarsCss(settings.language),
     // `enabledPalettes` third: a reader can only ever reach what the owner turned on, so a
     // blog with one palette ships one rather than all six (`content/themes.ts`).
-    themesToCss(settings.themes, settings.themePreset, settings.enabledPalettes,
+    themesToCss(palettes.themes, palettes.themePreset, palettes.enabledPalettes,
       settings.defaultScheme),
     // BEFORE typography, because `--density` is read inside the block typography emits
     // (`settings-css.ts` says why it has to be read there and nowhere else). Radius and the
@@ -240,7 +249,7 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // In the THEME layer, after the theme's sheet, which is the place it had: a correction of the
     // chrome face that a theme refines, weight against weight. The notebook's site title states
     // its own tracking in a heavier rule and kept it; unlayered, the correction would take it.
-    inLayer('theme', monoTracking(settings.chromeFont, theme)),
+    inLayer('theme', monoTracking(fonts.chromeFont, theme)),
     settings.customCss,
   ].filter(Boolean).join('\n')
 }

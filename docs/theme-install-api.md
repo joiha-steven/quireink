@@ -5,7 +5,7 @@
 > [`src/web/admin/themes.ts`](../src/web/admin/themes.ts) and [`src/web/theme-files.ts`](../src/web/theme-files.ts);
 > the store is [`src/content/installed-themes.ts`](../src/content/installed-themes.ts) and the
 > checking [`src/theme/read-package.ts`](../src/theme/read-package.ts). There is no admin screen for
-> them yet, and an installed theme is not yet drawn on any page.
+> them yet; once chosen, the public site wears one ([below](#wearing-one)).
 
 Every `/api/themes` route is on the owner-gated router: a session cookie, and for a write a
 same-origin request, or `401` and `403` before anything runs. Answers are the admin's envelope,
@@ -56,6 +56,47 @@ They are not uploads: `/uploads/themes/…` answers `404` however the path is sp
 ([`src/media/theme-blobs.ts`](../src/media/theme-blobs.ts)), and the Markdown export leaves them out,
 since they are the theme author's files and not the owner's writing.
 
+## Wearing one
+
+A settings save (`PUT /api/settings`, the MCP tool `update_appearance`, the setup step) may set
+`theme` to a built-in id or to the id of a theme with a live version; any other id is ignored and
+the stored one stays. Choosing is resolved in [`src/content/chosen-theme.ts`](../src/content/chosen-theme.ts)
+and the choices it adds in [`src/content/theme-choices.ts`](../src/content/theme-choices.ts).
+
+The page is drawn as **plain**, every field of it, plus what the current version's `theme.json` says:
+
+- `<link rel="stylesheet" href="/themes/<hash>/theme.css">` straight after the base sheet, and
+  `data-theme="<id>"` on `<html>` (no `data-look`).
+- `layout.menu: "header"` puts the menu in the masthead as the Newspaper does; `layout.deepenMetaInk`
+  writes the same meta-ink rule the Notebook gets, behind the theme's sheet.
+- `ownsSettings`: the page is drawn without the saved value of each key; the value stays saved.
+- Every face of every declared font as `@font-face{font-family:'theme-<font id>';…;font-display:swap;
+  src:url('/themes/<hash>/<file>') format('woff2')}`. A `display` font is `--font-display`. A
+  `reading` font is a value of the reading-font setting (`fontPreset`) and a `chrome` font one of the
+  chrome-font setting, while the theme is chosen; each falls back to the default stack for a missing
+  glyph; on a Chinese, Japanese or Korean page the reading font leads that language's CJK stack.
+  A palette is a value of the default palette (`themePreset`), written into the same `--c-*`
+  variables a built-in one is, the newsletter included, and offered in the reader's palette menu
+  by its own name beside the built-ins the owner turned on. Chosen alone, there is no menu: no
+  built-in palette is added to the stored list on its behalf.
+- A stored font or palette id that is not on offer (the theme removed, another chosen) is drawn as
+  the default and **kept** in the row, as an unknown theme id is: choose the theme again and they
+  come back.
+
+**When it changes.** The current version is read with one query on the live-version index the first
+time a page asks after a flush of the page cache, and kept until the next one. Install, rollback and
+removal are writes through the owner's gate, which flushes the page cache and purges the edge as a
+settings save does (Invariant 1), and they also drop the kept version themselves; so the next render
+shows the new sheet. On Cloudflare the one Durable Object renders, writes and flushes, so the same
+holds there (`bun run test:cf` has the case).
+
+**Broken is plain.** No live row for the stored id, a manifest that is not JSON, or a value that the
+checker could not have passed (an id outside `[a-z0-9-]`, an id a built-in theme, palette or font
+already has, a colour that is not `#rrggbb`, a font file that is not `fonts/<name>.woff2`): the page is plain with a `200`, and the log has one warning naming
+the theme until the next flush. A row is read as if it could be anything because a backup puts rows
+back unchecked, and these values end up inside CSS the engine writes. Ids reach HTML through
+`escapeAttr`; in CSS only after that check.
+
 ## Limits
 
 - **Files no row names are not cleaned up.** An install that failed after writing its files, and
@@ -66,3 +107,11 @@ since they are the theme author's files and not the owner's writing.
   checking them again, as it puts back the owner's custom CSS: the archive is the owner's own.
 - **Nothing is written to the activity log yet**; the request log has a line for each install,
   refusal, rollback and removal.
+- **No picker shows a theme's fonts and palettes yet**, and the MCP tool's palette and font menus
+  are the built-in ones; a theme is chosen by id and its choices are set by id.
+- **A theme's fonts are never preloaded.** They are whole woff2 files, not the engine's subsets,
+  so like an uploaded font they swap in rather than compete with the sheet ([performance.md](performance.md)).
+  A title set in a theme's display or reading face paints first in the fallback.
+- **A theme palette's name is the author's, in one language**; the built-in names are translated.
+- **When a theme's palette is the stored default but not on offer**, the engine's default (Mono)
+  is drawn and joins the reader's menu for as long as that lasts; the stored list is not changed.

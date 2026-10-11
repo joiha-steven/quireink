@@ -168,7 +168,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 function resolveChromeFont(stored: Partial<SiteSettings> & { fontChromeInter?: unknown; ideChrome?: unknown }): string {
   const drawnBeforeThemes = isThemeId(stored.theme) ? null : builtinTheme(storedTheme(stored)).legacyChromeFont
   if (drawnBeforeThemes !== null) return drawnBeforeThemes
-  if (isChromeFontId(stored.chromeFont)) return stored.chromeFont
+  // An installed theme's chrome font is an id of the theme-id shape, kept like the theme itself
+  // (`keptChoice` below).
+  if (isChromeFontId(stored.chromeFont) || isThemeId(stored.chromeFont)) return stored.chromeFont
   if (stored.fontChromeInter === false) return 'reading'
   return DEFAULT_CHROME_FONT
 }
@@ -181,11 +183,19 @@ function resolveChromeFont(stored: Partial<SiteSettings> & { fontChromeInter?: u
 // A theme this build does not ship - a row written by a later one that installed a theme from
 // a zip - is KEPT as written, so saving here and going back there loses nothing; only the
 // renderer draws it as plain (`resolveTheme`). A value that is not an id at all is not kept.
+//
+// The fonts and palettes an installed theme adds follow the same rule (`keptChoice`): offered
+// only while that theme is chosen, kept in the row whatever is chosen, and drawn as the default
+// whenever they are not on offer (`content/theme-choices.ts`).
 function storedTheme(stored: Partial<SiteSettings> & { ideChrome?: unknown }): string {
   if (isThemeId(stored.theme)) return stored.theme
   if (isBuiltinThemeId(stored.look)) return stored.look
   return stored.ideChrome === true ? IDE_CHROME_THEME_ID : DEFAULT_THEME_ID
 }
+
+/** A built-in id, or one of the shape an installed theme's font or palette has; else null. */
+const keptChoice = (value: unknown, isBuiltin: (v: unknown) => v is string): string | null =>
+  isBuiltin(value) || isThemeId(value) ? value : null
 
 // Settings merged over defaults; defaults on any error.
 /**
@@ -289,8 +299,8 @@ export async function getSettings(): Promise<SiteSettings> {
       customHead: sanitizeSnippet(stored.customHead),
       customBodyEnd: sanitizeSnippet(stored.customBodyEnd),
       defaultScheme: isScheme(stored.defaultScheme) ? stored.defaultScheme : 'system',
-      themePreset: isPresetId(stored.themePreset) ? stored.themePreset : DEFAULT_PRESET_ID,
-      fontPreset: isFontPresetId(stored.fontPreset) ? stored.fontPreset : DEFAULT_FONT_PRESET,
+      themePreset: keptChoice(stored.themePreset, isPresetId) ?? DEFAULT_PRESET_ID,
+      fontPreset: keptChoice(stored.fontPreset, isFontPresetId) ?? DEFAULT_FONT_PRESET,
       chromeFont: resolveChromeFont(stored),
       // `look` follows `theme`, whatever the row said, so the two can never disagree in memory.
       theme: storedTheme(stored),
@@ -298,7 +308,9 @@ export async function getSettings(): Promise<SiteSettings> {
       featured: sanitizeFeatured(stored.featured, []),
       mostViewedCount: clampNumber(stored.mostViewedCount, 0, 10, DEFAULT_SETTINGS.mostViewedCount),
       sidebarLayout: stored.sidebarLayout === 'two' ? 'two' : 'single',
-      enabledPalettes: sanitizeEnabledPalettes(stored.enabledPalettes, isPresetId(stored.themePreset) ? stored.themePreset : DEFAULT_PRESET_ID),
+      // A kept theme palette id adds nothing (`sanitizeEnabledPalettes`); a missing one is the default.
+      enabledPalettes: sanitizeEnabledPalettes(stored.enabledPalettes,
+        isPresetId(stored.themePreset) ? stored.themePreset : isThemeId(stored.themePreset) ? null : DEFAULT_PRESET_ID),
       themes: sanitizeThemes(stored.themes, migrateThemes(stored as Record<string, unknown>)),
       typography: sanitizeTypography(stored.typography, INSTALL_TYPOGRAPHY),
       customFont: (() => {

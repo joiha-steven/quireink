@@ -24,7 +24,7 @@ import { PART as OFFSITE_PART, s3Client } from '@/runtime/cf/offsite'
 import { outboxResumes } from './newsletter'
 import { imagesFromTheBuffer, uploadPictureWork } from './images'
 import { passkeysVerifyHere } from './passkey'
-import { themeInstallsHere } from './themes'
+import { themeInstallsHere, themeRendersHere } from './themes'
 
 type Case = { name: string; body: () => void | Promise<void> }
 
@@ -49,6 +49,7 @@ function collect(): Case[] {
   cases.push({ name: 'offsite: a 40 MB kept archive leaves for S3 as a multipart upload, 16 MiB at a time', body: offsiteMultipart })
   cases.push({ name: 'passkey: the frozen ES256, EdDSA, RS256 and Chrome vectors verify, and a key stored in the object verifies its own signature (ADR 0071)', body: passkeysVerifyHere })
   cases.push({ name: 'theme: a zip is checked, stored in R2 and the object, installed again as a no-op, rolled back and served; a refused one writes nothing (ADR 0072)', body: themeInstallsHere })
+  cases.push({ name: 'theme: the chosen installed theme is drawn on the next render, a new version links its own sheet, and removed it is plain (ADR 0072)', body: themeRendersHere })
   return cases
 }
 

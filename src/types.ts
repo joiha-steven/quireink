@@ -224,7 +224,7 @@ export type SiteSettings = {
   sidebarLayout: 'single' | 'two' // listing sidebar: 'single' = one left rail (all blocks stacked); 'two' = discovery-left + nav-right rails with a narrower column (desktop). Mobile is one drawer either way
   defaultScheme: 'system' | 'light' | 'dark' // what a FIRST-TIME visitor opens in; 'system' follows their OS. A reader's own pick always wins over this (theme.ts)
   themePreset: string // default palette for visitors (one of THEME_PRESETS ids)
-  enabledPalettes: string[] // palettes a visitor may switch between (subset of THEME_PRESETS ids); ALWAYS includes themePreset. <2 enabled => the switcher is hidden
+  enabledPalettes: string[] // palettes a visitor may switch between (subset of THEME_PRESETS ids); ALWAYS includes themePreset when that is a built-in one (an installed theme's palette is added as the page is drawn). <2 enabled => the switcher is hidden
   themes: Record<string, ThemeSettings> // per-palette reading colors (owner-customizable); keyed by preset id
   typography: TypographySettings // type scale + reading rhythm → CSS vars (--fs-*, --lh-body, --ls-body)
   customFont: FontSettings // owner-uploaded typeface (files/); '' = bundled Inter
