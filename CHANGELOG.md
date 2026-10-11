@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Unreleased
+
+### Changed
+
+- **Custom CSS can rely on far more of the page.** The names a stylesheet may target and expect
+  to survive an update grow from 16 selectors and 23 variables to 102 selectors, 47 variables
+  and 5 attributes, each marked as belonging to the blog pages, the composed front page or both.
+  The front page had no promised names at all before. [Appearance](docs/appearance.md) lists
+  them, and the build fails if one stops being drawn or drops out of that page.
+
 ## 2026-10-09 · Quire Ink 2.2.19
 
 A fix release, one day after 2.2.18, for a fault a writer reported on GitHub (issue 70). Nothing

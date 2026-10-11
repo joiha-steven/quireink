@@ -16,7 +16,8 @@
 //      asserted, not assumed.
 import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { PROMISED_NAMES, PROMISED_SELECTORS, PROMISED_VARS } from '../../src/content/appearance-contract'
+import { TYPE_ROLES as ENGINE_ROLES } from '../../src/content/fonts'
+import { PROMISED_ATTRIBUTES, PROMISED_NAMES, PROMISED_SELECTORS, PROMISED_VARS, TYPE_ROLES } from '../../src/content/appearance-contract'
 
 const DOC = 'docs/appearance.md'
 
@@ -108,9 +109,45 @@ const TABS: Map<string, Set<string>> = (() => {
 
 const fail: string[] = []
 
+/** `header.site` and `html.dark` are written with their tag; markup and sheets only carry the bare word. */
+/**
+ * The name as a whole word. A plain `includes` let `.fc` be satisfied by `.fc-lead` and `.toc`
+ * by `.toc-end`, so a name could vanish while a longer cousin kept the check green.
+ */
+const hasWord = (text: string, word: string): boolean =>
+  new RegExp(`(?<![\\w-])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`).test(text)
+
+const bare = (selector: string): string => selector.replace(/^[a-z]+\./, '').replace(/^[.#]/, '')
+
 // --- 3, first: a guard with nothing to check is not a passing guard --------------------
-if (PROMISED_VARS.length === 0 || PROMISED_SELECTORS.length === 0) {
-  fail.push('the contract lists no variables or no selectors, which cannot be right')
+// The floors are the counts at the time of writing, so a list that quietly loses a group of
+// names fails here instead of passing with less. Raise them when names are added.
+const varTotal = PROMISED_VARS.reduce((n, g) => n + g.vars.length, 0)
+if (varTotal < 47 || PROMISED_SELECTORS.length < 100 || PROMISED_ATTRIBUTES.length < 5) {
+  fail.push(
+    `the contract has ${varTotal} variables, ${PROMISED_SELECTORS.length} selectors and `
+    + `${PROMISED_ATTRIBUTES.length} attributes; fewer than 47, 100 and 5 cannot be right`,
+  )
+}
+// The type-role list in the contract is hand-kept; the engine's is the truth.
+if (TYPE_ROLES.map(([r]) => r).join() !== ENGINE_ROLES.join()) {
+  fail.push(`the contract's type roles (${TYPE_ROLES.map(([r]) => r).join(' ')}) differ from the engine's (${ENGINE_ROLES.join(' ')})`)
+}
+// Every selector says where it is drawn, and every surface is in use: a theme API with no
+// front-page names, or none shared, has lost a group rather than found it unnecessary.
+const SURFACES = ['blog', 'front', 'shared']
+for (const s of PROMISED_SELECTORS) {
+  if (!SURFACES.includes(s.surface)) fail.push(`${s.name} has surface "${String(s.surface)}", not one of ${SURFACES.join(', ')}`)
+}
+for (const surface of SURFACES) {
+  if (!PROMISED_SELECTORS.some((s) => s.surface === surface)) fail.push(`no selector is on the "${surface}" surface`)
+}
+{
+  const seen = new Set<string>()
+  for (const n of PROMISED_NAMES) {
+    if (seen.has(n)) fail.push(`${n} is listed twice in the contract`)
+    seen.add(n)
+  }
 }
 if (!existsSync(DOC)) fail.push(`${DOC} is missing — the promise has no text`)
 
@@ -126,8 +163,8 @@ if (code.length < 10_000) {
 // sheet writes `.prose` — matching the bare word finds both and cannot miss a rename, which
 // is the only thing this is for.
 for (const name of PROMISED_NAMES) {
-  const needle = name.startsWith('--') ? name : name.replace(/^[.#]/, '').replace(/^header\.|^footer\./, '')
-  if (!code.includes(needle)) {
+  const needle = name.startsWith('--') || name.startsWith('data-') ? name : bare(name)
+  if (!hasWord(code, needle)) {
     fail.push(`${name} is promised in the contract but appears nowhere in ${SOURCE_DIRS.join(', ')}`)
   }
 }
@@ -135,7 +172,7 @@ for (const name of PROMISED_NAMES) {
 // --- 2: the doc and the module say the same thing --------------------------------------
 const doc = existsSync(DOC) ? readFileSync(DOC, 'utf8') : ''
 for (const name of PROMISED_NAMES) {
-  if (!doc.includes(name)) fail.push(`${name} is in the contract but not in ${DOC}, which is what users read`)
+  if (!hasWord(doc, name)) fail.push(`${name} is in the contract but not in ${DOC}, which is what users read`)
 }
 
 // And the other direction, so a name added to the prose alone cannot become a promise
@@ -151,6 +188,23 @@ if (from === -1 || to === -1) {
     if (!promisedVars.has(m[1]!)) {
       fail.push(`${m[1]} is offered in ${DOC} but is not in the contract, so nothing guards it`)
     }
+  }
+}
+
+// The class section the same way: a backticked class in the doc's list must be in the
+// contract. `header.site` is compared by its bare word, like the check above.
+const classFrom = doc.indexOf('### The class names that are safe to target')
+const attrFrom = doc.indexOf('### The attributes that are safe to select on')
+if (attrFrom === -1) fail.push(`${DOC} has no "The attributes that are safe to select on" section`)
+if (classFrom !== -1 && attrFrom > classFrom) {
+  const known = new Set(PROMISED_SELECTORS.map((s) => bare(s.name)))
+  for (const m of doc.slice(classFrom, attrFrom).matchAll(/`([^`]+)`/g)) {
+    for (const c of m[1]!.matchAll(/[.#][A-Za-z][\w-]*/g)) {
+      if (!known.has(bare(c[0]))) fail.push(`${c[0]} is offered in ${DOC} but is not in the contract, so nothing guards it`)
+    }
+  }
+  for (const m of doc.slice(attrFrom).split('\n## ')[0]!.matchAll(/`(data-[a-z-]+)/g)) {
+    if (!PROMISED_ATTRIBUTES.some((a) => a.name === m[1])) fail.push(`${m[1]} is offered in ${DOC} but is not in the contract, so nothing guards it`)
   }
 }
 
@@ -224,5 +278,7 @@ if (fail.length > 0) {
   process.exit(1)
 }
 
-const varCount = PROMISED_VARS.reduce((n, g) => n + g.vars.length, 0)
-console.log(`✓ check:appearance-contract: ok (${varCount} variable(s), ${PROMISED_SELECTORS.length} selector(s))`)
+console.log(
+  `✓ check:appearance-contract: ok (${varTotal} variable(s), ${PROMISED_SELECTORS.length} selector(s), `
+  + `${PROMISED_ATTRIBUTES.length} attribute(s))`,
+)

@@ -158,8 +158,8 @@ These names are part of what the software promises you. They will not be renamed
 note in the changelog. Since 2026-08-31 `check:contract` fails the build if this list and
 `src/content/appearance-contract.ts` disagree in either direction.
 
-**You do not have to come here for them.** The Custom CSS box lists every name below, with
-one line of explanation each; clicking one writes it where your cursor is.
+**You do not have to come here for them.** The Custom CSS box lists every variable and class name below (not the
+attributes), with one line of explanation each; clicking one writes it where your cursor is.
 
 ```css
 :root {
@@ -183,10 +183,22 @@ one line of explanation each; clicking one writes it where your cursor is.
   --shell-w:      672px; /* the reading column (Content width sets this) */
   --sp:           1rem;  /* the spacing unit every gap is a multiple of */
 
-  /* Type — nine roles; each has -fs- (size), -lh- (line height), -ls- (letter spacing) */
-  --fs-h1: 2rem;  --lh-h1: 1.15;  --ls-h1: -0.01em;
-  --fs-body: 1.13rem;  --lh-body: 1.7;  --ls-body: 0em;
-  /* ...and the same trio for h2, h3, h4, small, caption, code, ui */
+  /* Fonts — the faces behind every role below */
+  --font-reading: var(--font-sans);  /* titles, standfirsts, the article body */
+  --font-sans:    'Inter', system-ui, sans-serif;  /* header, footer, rail, dates, forms */
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;  /* code, and only code */
+
+  /* Type — nine roles (h1 h2 h3 h4 h5 body small caption code); each has a size, a line
+     height and a letter spacing. These are the defaults; the Text sizes card sets them. */
+  --fs-h1: 2rem;       --lh-h1: 1.2;     --ls-h1: -0.02em;
+  --fs-h2: 1.5rem;     --lh-h2: 1.27;    --ls-h2: -0.015em;
+  --fs-h3: 1.25rem;    --lh-h3: 1.35;    --ls-h3: -0.01em;
+  --fs-h4: 1.15rem;    --lh-h4: 1.45;    --ls-h4: -0.006em;
+  --fs-h5: 1rem;       --lh-h5: 1.5;     --ls-h5: 0em;
+  --fs-body: 1.125rem; --lh-body: 1.7;   --ls-body: 0em;
+  --fs-small: .9375rem; --lh-small: 1.6; --ls-small: 0em;
+  --fs-caption: .875rem; --lh-caption: 1.5; --ls-caption: .003em;
+  --fs-code: .875rem;  --lh-code: 1.6;   --ls-code: 0em;
 
   /* Motion */
   --dur-fast: .15s;  --dur-base: .2s;  --dur-slow: .5s;  --ease-out: cubic-bezier(.2,.7,.3,1);
@@ -202,23 +214,76 @@ scope it:
 
 ### The class names that are safe to target
 
-Structure that is part of the contract, in the order a page uses it:
+Structure that is part of the contract, in the order a page uses it. The last column says
+where a name is drawn: **blog** is the post, the listings, the archive and the other reading
+pages, **front** is the composed front page, **both** is furniture the two share.
 
-| Class | What it is |
+| Class | What it is | Where |
+|---|---|---|
+| `.wrap` | The page shell | both |
+| `header.site` / `footer.site` | The site header and footer | both |
+| `.site-bar` `.site-actions` | The header row, and its row of buttons | both |
+| `.site-menu` `.site-h1` `.title` `.tagline` | The menu, the title as the page heading, the title link, the line under it | both |
+| `.icon-btn` `.btn-token` | A round header button, and the key-cap label inside one | both |
+| `.overlay` | The search and sign-up panels that open over the page | both |
+| `.empty` | The message in place of an empty list | both |
+| `.rail` | The sidebar, and the drawer it becomes on a phone | both |
+| `.rail-inner` `.rail-row` `.rail-search` | The column inside the rail, one link, the search box | both |
+| `.rail-toggle` `.rail-scrim` | The phone button that opens the drawer, and the dimmed page behind it | both |
+| `.rail-lead` `.rail-sub` `.rail-count` `.rail-tags` | Rows of the article contents, the number beside a link, the tag cloud | blog |
+| `.toc` `.toc-end` | The article contents, and its last row | blog |
+| `.post-list` / `.post-list article` | The list of posts, and one row of it | blog |
+| `.card-thumb` `.card-kick` | A list row's picture, and its category line | blog |
+| `.post-hero` | The picture at the top of an article | blog |
+| `.prose` | The article body — everything you wrote lives inside this | blog |
+| `.deck` | The standfirst under a post title | blog |
+| `.post-meta` `.post-cat` `.post-facts` | The line above a title: category, date, reading time | blog |
+| `.post-info` `.info-action` `.info-updated` `.book-mode-toggle` | The article's side column, its button row and "updated" line, the book-mode button | blog |
+| `.post-taxo` `.taxo-rule` `.term-list` `.term-count` | The categories and tags after an article, the rule above them, a run of term links, the count beside one | blog |
+| `.series` `.series-bar` `.series-head` `.series-name` `.series-part` | The series box and its parts | blog |
+| `.author-box` | The author box under an article | blog |
+| `.related` / `.read-next-title` `.read-next-label` | The blocks at the end of an article | blog |
+| `.arc-jump` / `.arc-yr` | The archive's row of years, and one year's block of rows | blog |
+| `.tl-year-tag` `.tl-mark` `.pager-count` | The timeline's year and month marks, and the "page N / M" label | blog |
+| `.chips` `.chip` | The chip row of categories and series, and one link in it | blog |
+| `.file-card` `.link-card` | The cards for a linked file or page | blog |
+| `.footnotes` `.fn-rule` `.table-scroll` | The footnotes list and its rule, the frame around a wide table | blog |
+| `.shiki` `.line` | A highlighted code block (`pre.shiki`) and one line in it. This is Shiki's own markup; an upgrade keeps both names | blog |
+| `.subscribe-card` | The newsletter sign-up, which the header's mail button also opens | both |
+| `#comments` `.comment-meta` `.comment-name` | The comment tree, a comment's name-and-date line, a name | blog |
+| `.reading-font` `.t-small` `.text-meta` `.num` | Text in the reading face, the small role, the meta colour, and a count's number | both |
+| `.mt-2` | The gap under a meta line, above a title | blog |
+| `html.dark` | The root while the dark scheme is on | both |
+
+The composed front page ([ADR 0014](decisions/0014-homepage-modes.md)) is one `.front` holding
+bands, and each band holds items:
+
+| Class | What it is | Where |
+|---|---|---|
+| `.front` | The composed front page | front |
+| `.front-image` / `.front-text` | The same, when it shows pictures, or is text only | front |
+| `.front-row` | One band | front |
+| `.front-lead-row` / `.has-kicker` | The band with the lead and the headlines beside it, and the same when the lead prints a category | front |
+| `.front-head` `.front-label` `.front-more` `.front-topics` | A band's heading line, its title, its "more" link, and a row of topic links | front |
+| `.front-grid` with `.cols-1` `.cols-2` `.cols-3` | A band's grid of cards, and how many columns it has | front |
+| `.front-secondary` `.front-lines` | A stack of headlines beside the lead, and a band of headline-only rows | front |
+| `.fc` | One item, whatever its shape | front |
+| `.fc-lead` `.fc-line` | The lead item, and a headline-only item | front |
+| `.has-media` | An item that carries a picture | front |
+| `.fc-media` `.fc-text` | An item's picture and its text column | front |
+| `.fc-cat` `.fc-title` `.fc-deck` `.fc-intro` `.fc-meta` | An item's category line, headline, standfirst, the lead's longer introduction, and its date and reading time | front |
+
+### The attributes that are safe to select on
+
+Written on `<html>`, so a rule can change with the palette, the scheme or the look:
+
+| Attribute | Values |
 |---|---|
-| `.wrap` | The page shell |
-| `header.site` / `footer.site` | The site header and footer |
-| `.rail` | The sidebar, and the drawer it becomes on a phone |
-| `.post-list` / `.post-list article` | The list of posts, and one row of it |
-| `.card-thumb` | A list row's picture, when thumbnails are on |
-| `.post-hero` | The picture at the top of an article |
-| `.prose` | The article body — everything you wrote lives inside this |
-| `.deck` | The standfirst under a post title |
-| `.author-box` | The author box under an article |
-| `.related` / `.read-next-title` | The blocks at the end of an article |
-| `.arc-jump` / `.arc-yr` | The archive's row of years, and one year's block of rows |
-| `.subscribe-card` | The newsletter sign-up |
-| `#comments` | The comment tree |
+| `data-palette` | The palette id: `mono`, `sepia`, `forest`, `ocean`, `scifi`, `amber`; only present when the blog offers two or more palettes |
+| `data-scheme` | `light` or `dark`, once the page script has resolved it (`:root[data-scheme="dark"]`) |
+| `data-look` | `code`, `paper` or `notes`; absent on the plain look |
+| `data-list` | `list` or `grid`, the layout the reader picked on a listing |
+| `data-motion` | `on` or `off`, whether animation is enabled |
 
 Anything not on this list is internal. It may still work, and it may change in a release
 without a note — if you find yourself needing one of those, that is worth telling us,
