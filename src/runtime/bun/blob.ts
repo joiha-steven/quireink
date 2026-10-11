@@ -53,8 +53,12 @@ export function ensureBlobStore(): void {
 
 // Confine every pathname under the store directory — a stored ref like `media/x.webp` must never
 // escape via `..` into the rest of the container filesystem.
+//
+// No `:` anywhere: on Windows `themes::$INDEX_ALLOCATION/x` names the `themes` directory through
+// an NTFS stream, which walked past the reserved-prefix check above. No path the store writes
+// carries one.
 export function resolveSafe(pathname: string): string {
-  if (isReservedBlobPath(pathname)) throw new Error(`Invalid blob path: ${pathname}`)
+  if (pathname.includes(':') || isReservedBlobPath(pathname)) throw new Error(`Invalid blob path: ${pathname}`)
   const base = storeDir()
   const abs = path.resolve(base, pathname)
   if (abs !== base && !abs.startsWith(base + path.sep)) throw new Error(`Invalid blob path: ${pathname}`)
