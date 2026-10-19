@@ -196,6 +196,13 @@ export class Browser {
     return { png: Buffer.from(shot.data, 'base64'), status: this.statuses.get(url) ?? 0, broken: value?.broken ?? [], height, look: value?.look ?? '' }
   }
 
+  /** The value of `expression` (awaited) in the page as it stands now, as JSON gives it back. */
+  async evaluate(expression: string): Promise<unknown> {
+    const done = await this.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })
+    if (done.exceptionDetails) throw new Error(`the page script failed: ${JSON.stringify(done.exceptionDetails).slice(0, 300)}`)
+    return (done.result as { value?: unknown } | undefined)?.value
+  }
+
   async close(): Promise<void> {
     try { this.chrome.kill(); await this.chrome.exited } catch { /* already gone */ }
     try { rmSync(this.profile, { recursive: true, force: true }) } catch { /* scratch under .tmp */ }

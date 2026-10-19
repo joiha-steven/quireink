@@ -31,35 +31,18 @@
 //  - Loading. Lazy images are made eager, then `document.fonts.ready` and every image decode are awaited.
 //  - Analytics. The headless user agent is classified as a bot and never recorded, so a shot
 //    cannot change what a later shot's "most viewed" row shows.
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
-import { join, resolve, sep } from 'node:path'
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { Browser, OPEN_BOOK } from './theme-matrix-browser'
 import { compareDirs } from './theme-matrix-compare'
+import {
+  assertPortFree, checkedOut, CLOCK_ISO, CLOCK_PRELOAD, defaultBrowser, instanceEnv, MATRIX_PAGES as PAGES,
+  run, seedPristine, startServer, waitHealthy,
+} from './theme-matrix-instance'
 
-const CLOCK_ISO = '2026-07-30T17:00:00.000Z'
 const LOOKS = ['plain', 'code', 'paper', 'notes'] as const
 const WIDTHS = [375, 768, 1440] as const
 const SCHEMES = ['light', 'dark'] as const
-
-/** A page, and the home-page settings it needs. `front` pages only exist when the home is composed. */
-type Page = { id: string; path: string; home: 'list' | 'front-image' | 'front-text'; then?: 'book' }
-const PAGES: Page[] = [
-  { id: 'home-list', path: '/', home: 'list' },
-  { id: 'front-image', path: '/', home: 'front-image' },
-  { id: 'front-text', path: '/', home: 'front-text' },
-  { id: 'post-all-blocks', path: '/matrix-every-block', home: 'list' },
-  { id: 'post-series-table-footnote', path: '/thirty-six-views-ten-thousand-impressions', home: 'list' },
-  { id: 'page', path: '/colophon', home: 'list' },
-  { id: 'category', path: '/category/typography', home: 'list' },
-  { id: 'tag', path: '/tag/craft', home: 'list' },
-  { id: 'archive', path: '/archive', home: 'list' },
-  { id: 'search', path: '/search?q=kerning', home: 'list' },
-  { id: 'notes', path: '/notes', home: 'list' },
-  { id: 'not-found', path: '/no-such-page-in-the-matrix', home: 'list' },
-  // Book mode open on the post that carries every block: the spread at 768 and 1440, the scrolled
-  // reader at 375. Its own surface, which the pages around it say nothing about.
-  { id: 'post-book', path: '/matrix-every-block', home: 'list', then: 'book' },
-]
 
 const args = process.argv.slice(2)
 const flag = (name: string): string | undefined => {
@@ -70,50 +53,10 @@ const flag = (name: string): string | undefined => {
 const USAGE = 'usage:\n  bun scripts/theme-matrix.ts capture <outDir> [--port 3411] [--force] [--look-settings <file.json>]\n'
   + '  bun scripts/theme-matrix.ts compare <dirA> <dirB> [--out <diffDir>]'
 
-/** Runs a child to completion; a failure throws with its output. */
-function run(cmd: string[], env: Record<string, string>): void {
-  const p = Bun.spawnSync(cmd, { env: { ...process.env, ...env }, stdout: 'pipe', stderr: 'pipe' })
-  if (p.exitCode !== 0) {
-    throw new Error(`${cmd.join(' ')} failed (${p.exitCode})\n${p.stdout}\n${p.stderr}`)
-  }
-}
-
 function git(...gitArgs: string[]): string {
   const p = Bun.spawnSync(['git', ...gitArgs], { stdout: 'pipe', stderr: 'pipe' })
   if (p.exitCode !== 0) throw new Error(`git ${gitArgs.join(' ')} failed: ${p.stderr}`)
   return p.stdout.toString().trim()
-}
-
-/** A tour on a busy port tours somebody else's instance; refuse instead (see `scripts/ops/tour.sh`). */
-function assertPortFree(port: number): void {
-  try {
-    Bun.serve({ port, hostname: '127.0.0.1', fetch: () => new Response('') }).stop(true)
-  } catch {
-    throw new Error(`port ${port} is in use. Stop what is on it or pass --port <free port>.`)
-  }
-}
-
-/** Where a Chrome for Testing headless shell was unpacked outside the repo, when CHROME is not set. */
-function defaultBrowser(): void {
-  if (process.env.CHROME ?? process.env.CHROME_HEADLESS_SHELL) return
-  const root = process.env.LOCALAPPDATA ? join(process.env.LOCALAPPDATA, 'chrome-for-testing') : ''
-  const exe = join(root, 'chrome-headless-shell-win64', 'chrome-headless-shell.exe')
-  if (root && existsSync(exe)) process.env.CHROME = exe
-}
-
-/**
- * The output directory is emptied before a run, so it must be one nobody types by accident:
- * under `<repo>/.tmp/`, strictly below it, and without PNGs from an earlier run unless --force.
- * Paths are resolved first and compared case-insensitively, which is how Windows sees them.
- */
-function checkedOut(out: string, force: boolean): string {
-  const abs = resolve(out)
-  const root = resolve('.tmp')
-  const under = abs.toLowerCase().startsWith((root + sep).toLowerCase()) && abs.length > root.length + 1
-  if (!under) throw new Error(`refusing ${abs}: the output directory must be inside ${root}`)
-  const holdsPngs = existsSync(abs) && readdirSync(abs).some((f) => f.endsWith('.png'))
-  if (holdsPngs && !force) throw new Error(`refusing ${abs}: it already holds screenshots. Pass --force to replace them.`)
-  return abs
 }
 
 function loadLookSettings(file: string | undefined): Record<string, Record<string, unknown>> {
@@ -127,14 +70,6 @@ function loadLookSettings(file: string | undefined): Record<string, Record<strin
   return parsed as Record<string, Record<string, unknown>>
 }
 
-async function waitHealthy(base: string): Promise<void> {
-  for (let i = 0; i < 120; i++) {
-    try { if ((await fetch(`${base}/api/health`)).ok) return } catch { /* not up yet */ }
-    await Bun.sleep(250)
-  }
-  throw new Error(`the server did not answer ${base}/api/health in 30s`)
-}
-
 async function capture(outArg: string, port: number): Promise<number> {
   defaultBrowser()
   const out = checkedOut(outArg, args.includes('--force'))
@@ -144,10 +79,7 @@ async function capture(outArg: string, port: number): Promise<number> {
   // Per port, so two captures on two ports never delete each other's seeded data.
   const work = resolve(`.tmp/theme-matrix-${port}`)
   const bun = process.execPath
-  const clock = resolve('scripts/theme-matrix-clock.ts')
-  // CRON_INTERNAL=0: the in-process scheduler (`src/server/tick.ts`) would otherwise publish or
-  // purge on its own timer while shots are being taken.
-  const env = { THEME_MATRIX_NOW: CLOCK_ISO, STORAGE_LOCAL_DIR: join(work, 'uploads'), UPDATE_CHECK: '0', CRON_INTERNAL: '0' }
+  const env = instanceEnv(work)
 
   rmSync(work, { recursive: true, force: true })
   mkdirSync(work, { recursive: true })
@@ -164,13 +96,8 @@ async function capture(outArg: string, port: number): Promise<number> {
   let count = 0
   let browser: Browser | undefined
   try {
-    // The server reads the island bundles off disk; a stale build photographs the last change.
-    run([bun, 'run', 'build:assets'], {})
-    run([bun, 'run', 'build:admin'], {})
-
     const pristine = join(work, 'pristine')
-    run([bun, '--preload', clock, 'scripts/seed-showcase.ts', pristine, 'text', 'list'], { ...env, SEED_NOW: CLOCK_ISO })
-    run([bun, '--preload', clock, 'scripts/theme-matrix-setup.ts', 'fixture'], { ...env, DATA_DIR: pristine })
+    seedPristine(pristine, env)
 
     browser = await Browser.open(CLOCK_ISO)
     for (const look of LOOKS) {
@@ -182,13 +109,10 @@ async function capture(outArg: string, port: number): Promise<number> {
         rmSync(data, { recursive: true, force: true })
         cpSync(pristine, data, { recursive: true })
         const [mode, kind] = home === 'list' ? ['list', 'text'] : ['front', home.slice('front-'.length)]
-        run([bun, '--preload', clock, 'scripts/theme-matrix-setup.ts', 'cell', look, mode!, kind!],
+        run([bun, '--preload', CLOCK_PRELOAD, 'scripts/theme-matrix-setup.ts', 'cell', look, mode!, kind!],
           { ...env, DATA_DIR: data, THEME_MATRIX_OVERRIDES: JSON.stringify(overridesByLook[look] ?? {}) })
 
-        const server = Bun.spawn([bun, '--preload', clock, 'src/index.ts'], {
-          env: { ...process.env, ...env, DATA_DIR: data, PORT: String(port), SITE_URL: base },
-          stdout: Bun.file(log), stderr: Bun.file(log),
-        })
+        const server = startServer(data, port, log, env)
         let failed = false
         try {
           await waitHealthy(base)
@@ -211,8 +135,7 @@ async function capture(outArg: string, port: number): Promise<number> {
           failed = true
           throw error
         } finally {
-          server.kill()
-          await server.exited
+          await server.stop()
           // The log of a cell that went wrong is the only record of why; the work dir is deleted at the end.
           if ((failed || notes.length > notesBefore) && existsSync(log)) {
             mkdirSync(join(out, 'logs'), { recursive: true })

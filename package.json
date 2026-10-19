@@ -57,6 +57,7 @@
     "tour": "scripts/ops/tour.sh",
     "theme:check": "bun scripts/theme-check.ts",
     "theme:matrix": "bun scripts/theme-matrix.ts",
+    "theme:preview": "bun scripts/theme-preview.ts",
     "restore-check": "bun scripts/restore-check.ts",
     "check:motion": "bun scripts/checks/motion-drift.ts"
   },

@@ -9,6 +9,14 @@
   theme's id, version and file count, or one line per problem with the file, line and column and
   the same explanation the admin shows. See
   [Installing a theme](docs/theme-install-api.md#check-before-installing).
+- **See a theme on every kind of page before installing it.** `bun run theme:preview <folder or
+  zip>` checks the theme, starts a throwaway blog with sample content on your computer, wears the
+  theme and photographs the home page, the front page in both modes, posts, notes, lists, archive,
+  search and the missing page at 375, 768 and 1440 pixels wide, light and dark, in each of the
+  theme's palettes. A contact sheet groups the pictures by page, and the run reports a page wider
+  than the screen, a box past its edge, text cut off, an image that does not load and a font that
+  does not load. Nothing is installed on your own blog. See
+  [Installing a theme](docs/theme-install-api.md#preview-before-installing).
 - **Install, choose, roll back and remove themes from Settings → Appearance → Theme.** Installed
   themes appear as tiles after the four built in, with their screenshot, version, author and an
   Unreviewed badge, and are chosen and saved like any other tile. Install from a file sends a

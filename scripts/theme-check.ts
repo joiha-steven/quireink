@@ -13,11 +13,14 @@ import { join, resolve } from 'node:path'
 import { packageOptions } from '@/content/theme-package-options'
 import { ZipWriter } from '@/import/zip-write'
 import en from '@/locales/admin/en'
-import { readThemePackage, THEME_LIMITS, type PackageResult, type Violation } from '@/theme'
+import { readThemePackage, THEME_LIMITS, type PackageResult, type ThemeManifest, type Violation } from '@/theme'
 
 export const USAGE = 'usage: bun run theme:check <theme directory | theme.zip>'
 
 export type CheckOutcome = { code: 0 | 1 | 2; lines: string[] }
+
+/** The outcome, and when the theme was accepted the zip that was judged and its manifest (`theme:preview` installs it). */
+export type LoadedTheme = { outcome: CheckOutcome; accepted?: { zip: Uint8Array; manifest: ThemeManifest } }
 
 type Walked = { files: { rel: string; size: number }[]; dirs: string[]; violations: Violation[] }
 
@@ -84,7 +87,11 @@ function findingLine(v: Violation): string {
 }
 
 export async function checkThemePath(arg: string | undefined): Promise<CheckOutcome> {
-  if (arg === undefined || arg === '') return { code: 2, lines: [USAGE] }
+  return (await loadThemePath(arg)).outcome
+}
+
+export async function loadThemePath(arg: string | undefined): Promise<LoadedTheme> {
+  if (arg === undefined || arg === '') return { outcome: { code: 2, lines: [USAGE] } }
   const path = resolve(arg)
   let zip: Uint8Array
   let early: Violation[] = []
@@ -102,16 +109,16 @@ export async function checkThemePath(arg: string | undefined): Promise<CheckOutc
     }
   } catch (error) {
     const missing = (error as NodeJS.ErrnoException).code === 'ENOENT'
-    return { code: 2, lines: [`theme:check: ${missing ? 'no such file or directory' : 'cannot read'}: ${arg}${missing ? '' : ` (${(error as Error).message})`}`, USAGE] }
+    return { outcome: { code: 2, lines: [`theme:check: ${missing ? 'no such file or directory' : 'cannot read'}: ${arg}${missing ? '' : ` (${(error as Error).message})`}`, USAGE] } }
   }
   const result: PackageResult = early.length > 0 ? { ok: false, violations: early } : await readThemePackage(zip, packageOptions())
   if (result.ok) {
     const { manifest, files } = result.pkg
-    return { code: 0, lines: [`ok · ${manifest.id} ${manifest.version} · ${files.length} files`] }
+    return { outcome: { code: 0, lines: [`ok · ${manifest.id} ${manifest.version} · ${files.length} files`] }, accepted: { zip, manifest } }
   }
   const lines = result.violations.flatMap((v) => [findingLine(v), `    ${rules[v.rule] ?? rules.other}`])
   lines.push(`Refused: ${result.violations.length} finding${result.violations.length === 1 ? '' : 's'}. Nothing was installed.`)
-  return { code: 1, lines }
+  return { outcome: { code: 1, lines } }
 }
 
 if (import.meta.main) {

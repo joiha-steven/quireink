@@ -55,6 +55,42 @@ zip -r ../my-theme.zip . -x '.*' '*/.*' '__MACOSX/*'
 & "$env:SystemRoot\System32\tar.exe" -a -cf ..\my-theme.zip --exclude Thumbs.db --exclude .DS_Store (Get-ChildItem -Name)
 ```
 
+## Preview before installing
+
+`bun run theme:preview <dir|zip> [--out <dir>] [--widths 375,768,1440] [--pages <id,…>] [--port <n>] [--force]`
+([`scripts/theme-preview.ts`](../scripts/theme-preview.ts)) photographs a theme on every kind of page a
+reader reaches, on a throwaway instance, before it goes near a blog. It needs a headless Chrome, found
+as the tour finds it ([`scripts/chrome-path.ts`](../scripts/chrome-path.ts)).
+
+1. It runs `theme:check` first; a refused theme prints the findings and stops (exit 1).
+2. It seeds an instance under `.tmp/` on a free port, as `theme:matrix` does (the same seeder, fixture
+   post and pinned clock, [`scripts/theme-matrix-instance.ts`](../scripts/theme-matrix-instance.ts)),
+   plus a post with no title; installs the theme with the function `POST /api/themes` calls, and
+   chooses it through the settings writer, with the fonts it suggests (else the first of each role).
+3. Pages ([`scripts/theme-preview-plan.ts`](../scripts/theme-preview-plan.ts), `--pages` takes their
+   ids): the post list and its page 2, the front page as `image` and `text`, a post with every block,
+   a post in a series with a table and a footnote, the untitled post, book mode, a page, a category,
+   a tag, a series, the archive, search results, the notebook and one note, and the 404. Each at
+   every width, light and dark, once per palette the theme declares (the site's default when none).
+4. Every shot is measured ([`scripts/theme-preview-layout.ts`](../scripts/theme-preview-layout.ts)):
+   a page wider than the window, a box past the window's edge, text cut by `overflow: hidden`, an
+   image that did not load, a font file that did not load. What the page does on purpose is left
+   out: a wide table or code block scrolling in its own frame, `line-clamp` and ellipses, book mode's
+   other pages, the parked skip link.
+
+Shots go to `.tmp/theme-preview/<id>/`, with `REPORT.txt` and `index.html`, a contact sheet grouped
+by page with each page's findings above its shots. `--out` must be inside `.tmp/` and empty; `--force`
+replaces only a directory theme:preview made (it leaves a `.theme-preview` file in each), so it never
+empties `.tmp/theme-preview` itself or a `theme:matrix` baseline. Exit 0 with no finding, 1 when the
+theme is refused, a finding was made or the run failed, 2 for bad usage. About 70 seconds for one palette.
+
+Each run keeps its instance in its own `.tmp/theme-preview-work-*` directory, with an `owner.json`
+naming its process. The server and the browser are stopped and the directory deleted however the run
+ends, Ctrl-C included. A run killed outright skips that (on Windows, `taskkill /F` or a kill from
+another program runs no handler): its server and browser still die with it, measured with `taskkill
+/F` on the parent alone, and the next run deletes a directory whose owner process is gone. A directory
+whose owner is alive, or with no `owner.json`, is left alone.
+
 ## What an install does
 
 1. **The zip's directory is judged before anything is inflated**: the number of entries, every
