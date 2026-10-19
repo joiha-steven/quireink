@@ -13,7 +13,7 @@
 import type { MediaItem } from '@/types'
 import { formatBytes } from '@/i18n/format'
 import { OVERLAY, buttonClass } from '@/admin-shared/kit'
-import { NOTE_TEXT } from '@/admin-shared/scale'
+import { NOTE_TEXT, SECTION } from '@/admin-shared/scale'
 import { refusalWords, uploadImages } from '@/admin/upload-client'
 import { mediaTileMark, type MediaWords } from '@/admin-shared/media-marks'
 import { elOf } from './mark-dom'
@@ -65,7 +65,7 @@ export async function openPicker(req: PickRequest): Promise<void> {
   // from 144), and a long title wraps rather than shoving the keys off the panel.
   head.className = 'mb-4 flex items-center justify-between gap-3'
   const title = document.createElement('h2')
-  title.className = 'min-w-0 text-lg font-bold'
+  title.className = `min-w-0 ${SECTION}`
   title.textContent = multi ? req.words.titleMulti : req.words.title
   const keys = document.createElement('div')
   keys.className = 'flex items-center gap-2'

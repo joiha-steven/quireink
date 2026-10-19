@@ -20,7 +20,7 @@ import { PEN_AUX_LIGHT, PEN_LIGHT } from '@/pen/pigments'
 import { escapeAttr, escapeHtml } from '@/utils'
 import type { OwnableSetting } from '@/content/themes-builtin'
 import { SHEET_TOOL } from '@/admin-shared/kit'
-import { NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
+import { NOTE_SIZE, NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { group, panelCard, settingRow, switchRow, textField } from '@/web/admin/fields'
 import { panelList, reveal } from '@/web/admin/fields-box'
 import { choice, colourGrid, colourRow } from '@/web/admin/fields-pick'
@@ -295,7 +295,7 @@ function inks(t: AdminStrings, s: SiteSettings): string {
     // upright rather than italic, and without `admin-note` — hiding the explanations must not
     // hide the one sentence saying the pen is about to swallow the words under it.
     + gate(tooDark.length > 0,
-      `<p class="text-[0.8125rem] leading-[1.55] text-neutral-900 dark:text-neutral-100">`
+      `<p class="${NOTE_SIZE} leading-[1.55] text-neutral-900 dark:text-neutral-100">`
       + `${escapeHtml(t.inkTooDark)}</p>`, 'data-ink-dark')
     + settingRow({
       label: t.inkLines, note: t.inkLinesHint,

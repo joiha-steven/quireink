@@ -18,7 +18,8 @@
 import { el, leaf, type Mark } from '@/admin-shared/markup'
 import { TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP } from '@/admin-shared/kit'
 import { ICON_STROKE, type IconName } from '@/icons'
-import { formatBytes, formatDate } from '@/i18n/format'
+import { formatDateShort } from '@/admin-shared/when'
+import { formatBytes, zonedDay } from '@/i18n/format'
 import type { MediaItem, SiteLang } from '@/types'
 
 export type MediaRow = {
@@ -139,10 +140,12 @@ export type TileState = {
 }
 
 /** One tile: the picture, the selection tick, the hover actions, the caption. */
-/** The tile's hover text, one description for the server's tile and the one an island adds: the upload day is the SITE's (`zone`). */
+/**
+ * The tile's hover text, one description for the server's tile and the one an island adds: the upload day is the SITE's (`zone`), in the admin's one short date shape.
+ */
 export const tileTitle = (m: MediaItem, lang: SiteLang, zone: string): string =>
   `${m.filename}\n${m.width && m.height ? `${m.width}×${m.height} · ` : ''}`
-  + `${formatBytes(m.size)} · ${formatDate(m.uploadedAt, lang, zone)}`
+  + `${formatBytes(m.size)} · ${formatDateShort(zonedDay(m.uploadedAt, zone), lang)}`
 
 export function mediaTileMark(row: MediaRow, w: MediaWords, s: TileState): Mark {
   const inside: Mark[] = [

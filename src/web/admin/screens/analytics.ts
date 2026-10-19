@@ -78,11 +78,11 @@ function band(t: AdminStrings, lang: SiteLang, d: AnalyticsSummary, window: Wind
     : '—'
 
   return numBand([
-    { n: n(d.totalViews), label: t.analyticsViews, after: comparable ? trendMark(d.totalViews, d.prevViews, t, lang) : '' },
+    { n: n(d.totalViews), label: t.analyticsViews, after: comparable ? trendMark(d.totalViews, d.prevViews, t, lang, true) : '' },
     {
       n: n(d.uniqueVisitors),
       label: t.analyticsVisitors,
-      after: comparable ? trendMark(d.uniqueVisitors, d.prevVisitors, t, lang) : '',
+      after: comparable ? trendMark(d.uniqueVisitors, d.prevVisitors, t, lang, true) : '',
       sub: split,
     },
     { n: formatDuration(d.avgDwellMs, lang), nHtml: durationFigure(d.avgDwellMs, lang), label: t.analyticsAvgTime },

@@ -89,6 +89,13 @@ export const SECTION = 'text-base font-semibold tracking-[-0.008em] text-neutral
 export const SETTING_LABEL = component('kit-label', 'block text-sm font-medium text-neutral-800 dark:text-neutral-200')
 
 /**
+ * The NOTE step's SIZE alone: 13px. Anything else the admin sets at that step (the small
+ * button, the segmented key, a code chip, a page's lead line) takes this constant rather than
+ * re-typing the number, so the step moves in one place.
+ */
+export const NOTE_SIZE = 'text-[0.8125rem]'
+
+/**
  * The hint's TYPE, with no spacing in it. Split from `NOTE` so a hint standing alone in a
  * `space-y` stack need not re-type the list to be rid of one `mt-1` — thirty-eight screens
  * did, and twenty-five drifted to a lighter grey.
@@ -98,7 +105,7 @@ export const SETTING_LABEL = component('kit-label', 'block text-sm font-medium t
  * is **2.58:1**. Size cannot give way either — these were once the smallest text on screen,
  * which was the wrong way round. Slant costs no contrast and reads as an aside.
  */
-const NOTE_SHAPE = 'text-[0.8125rem] italic leading-[1.55]'
+const NOTE_SHAPE = `${NOTE_SIZE} italic leading-[1.55]`
 /**
  * `admin-note` is a HANDLE, not a style — it declares nothing and exists so one CSS rule in
  * `admin.css` can put every explanation on the settings screen out of sight at once.

@@ -13,7 +13,7 @@
 // style rule, it is the whole reason the directory exists — the moment one of these files
 // imports from `src/admin`, the server can no longer read it.
 
-import { TAP } from '@/admin-shared/scale'
+import { NOTE_SIZE, TAP } from '@/admin-shared/scale'
 // ⚠️ THE LONG STRINGS BELOW ARE DEFINITIONS, NOT WHAT THE PAGE CARRIES. Each primitive the
 // admin repeats by the dozen is registered as a component (`component.ts` says why), so the
 // markup wears `kit-btn kit-btn-md kit-btn-primary` and the stylesheet gives those names the
@@ -102,7 +102,7 @@ const SIZES: Record<ButtonSize, string> = {
   // 13px since 2026-09-19, beside a strip at 13 and a label at 14. ⚠️ `py-1`, never `py-1.5`:
   // at the larger padding a BORDERED variant clears `min-h-8` by itself and lands on 33.5
   // while a borderless one is held at 32 — two heights in one row (`docs/admin-design.md`).
-  sm: 'min-h-8 px-3 py-1 text-[13px]',
+  sm: `min-h-8 px-3 py-1 ${NOTE_SIZE}`,
 }
 
 /**
@@ -273,7 +273,7 @@ export const UL = `${P} space-y-2 list-disc pl-4`
 
 /** Inline literal: a syntax, a path, a setting name. One style, used everywhere here. */
 export const CODE =
-  'rounded-md bg-neutral-100 px-1.5 py-0.5 text-[0.8125rem] text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200'
+  `rounded-md bg-neutral-100 px-1.5 py-0.5 ${NOTE_SIZE} text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200`
 
 /** The row of quick links that closes a section. */
 export const LINKS = 'mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-500 dark:text-neutral-400'

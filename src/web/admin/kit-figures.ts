@@ -92,8 +92,8 @@ export function numBand(items: { n: string; nHtml?: string; label?: string; labe
   return `<div class="flex flex-wrap border-b border-neutral-100 dark:border-neutral-800">`
     + items.map((it) =>
       `<div class="min-w-32 flex-1 border-r border-neutral-100 px-5 py-4 last:border-r-0 dark:border-neutral-800">`
-      + `<span class="flex items-baseline gap-2">`
-      + `<b class="text-2xl font-semibold tracking-tight tabular-nums">${it.nHtml ?? escapeHtml(it.n)}</b>${it.after ?? ''}</span>`
+      + `<span class="flex flex-wrap items-baseline gap-x-4">`
+      + `<b class="${FIGURE}">${it.nHtml ?? escapeHtml(it.n)}</b>${it.after ?? ''}</span>`
       + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.labelHtml ?? escapeHtml(it.label ?? '')}</span>`
       + (it.sub ? `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.sub}</span>` : '')
       + `</div>`).join('')

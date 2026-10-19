@@ -119,7 +119,7 @@ describe('a media tile, server-drawn or island-added', () => {
   it('names the upload day on the same zone, whatever the process runs on', () => {
     const m = { filename: 'a.png', size: 10, uploadedAt: '2026-10-18T20:00:00.000Z' }
     // `pageZone()` is what the island passes: the same string the server was given.
-    expect(tileTitle(m as never, 'en', SITE)).toContain('October 19, 2026')
-    expect(tileTitle(m as never, 'en', 'America/Los_Angeles')).toContain('October 18, 2026')
+    expect(tileTitle(m as never, 'en', SITE)).toContain(formatDateShort('2026-10-19', 'en'))
+    expect(tileTitle(m as never, 'en', 'America/Los_Angeles')).toContain(formatDateShort('2026-10-18', 'en'))
   })
 })

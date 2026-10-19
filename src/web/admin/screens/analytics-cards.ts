@@ -158,14 +158,16 @@ export function topPages(t: AdminStrings, lang: SiteLang, pages: TopPage[], titl
       + `<td class="${NUM_QUIET}">${escapeHtml(depth(p.avgDepth))}</td></tr>`).join('')
     + `</tbody></table></div></div>`
 
+  // Each figure is as wide as its own text and never wraps: four equal cells were 71px, which
+  // broke "1 phút 55 giây" onto two lines while a short time stayed on one, so rows differed.
   // The four figures under the title, each keeping its name: a number with no column head over
   // it is a number nobody can read.
   const cards = `<ul class="border-b border-neutral-100 sm:hidden dark:border-neutral-800">`
     + pages.map((p) => `<li class="border-b border-neutral-100 px-4 py-3 last:border-b-0 dark:border-neutral-800">`
       + `<a href="${escapeAttr(detailHref(p.path, range))}" class="${TITLE_CELL} text-sm" title="${escapeAttr(p.path)}">${name(p.path)}</a>`
-      + `<dl class="mt-1.5 grid grid-cols-4 gap-2 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">`
+      + `<dl class="mt-1.5 flex justify-between gap-2 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">`
       + [n(p.views), n(p.visitors), escapeHtml(dwell(p.avgDwellMs, lang)), escapeHtml(depth(p.avgDepth))]
-        .map((v, i) => `<div><dt>${escapeHtml(head[i] ?? '')}</dt>`
+        .map((v, i) => `<div class="whitespace-nowrap"><dt>${escapeHtml(head[i] ?? '')}</dt>`
           + `<dd class="text-neutral-700 dark:text-neutral-300">${v}</dd></div>`).join('')
       + `</dl></li>`).join('')
     + `</ul>`

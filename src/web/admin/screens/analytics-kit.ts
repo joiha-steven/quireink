@@ -19,6 +19,7 @@ import type { DailyPoint } from '@/analytics/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount } from '@/i18n/format'
 import { CARD } from '@/admin-shared/kit'
+import { SECTION } from '@/admin-shared/scale'
 import { trendOf } from '@/admin-shared/analytics'
 import { formatDateShort, formatDateTimeShort } from '@/admin-shared/when'
 
@@ -28,14 +29,17 @@ import { formatDateShort, formatDateTimeShort } from '@/admin-shared/when'
  * It names what it compares against: "▲ ×44" alone was a multiplier with no baseline. The
  * figure from the previous window of the same length is printed beside it, and the sentence
  * that says what that window is rides in the tooltip and for a screen reader.
+ *
+ * `flowed`: the mark sits in a wrapping flex row that supplies the gap (`numBand`), so a mark that
+ * drops under its figure in a narrow cell lines up with it instead of being indented by a margin.
  */
-export function trendMark(cur: number, prev: number | undefined, t: AdminStrings, lang: SiteLang): string {
+export function trendMark(cur: number, prev: number | undefined, t: AdminStrings, lang: SiteLang, flowed = false): string {
   const trend = trendOf(cur, prev)
   if (!trend) return ''
   const before = formatCount(prev ?? 0, lang)
   const hint = t.analyticsVsPrevHint.replace('{n}', before)
   // Two short lines, each unbreakable: in a 150px cell the one-line form wrapped to three.
-  return `<span class="ml-2 inline-block whitespace-nowrap align-middle text-xs font-medium leading-tight text-neutral-500 dark:text-neutral-400" title="${escapeAttr(hint)}">`
+  return `<span class="${flowed ? '' : 'ml-2 '}inline-block whitespace-nowrap align-middle text-xs font-medium leading-tight text-neutral-500 dark:text-neutral-400" title="${escapeAttr(hint)}">`
     + `${trend.up ? '▲' : '▼'} ${escapeHtml(trend.label)}`
     + `<span class="block font-normal">${escapeHtml(t.analyticsVsPrev.replace('{n}', before))}</span>`
     + `<span class="sr-only"> ${escapeHtml(hint)}</span></span>`
@@ -79,7 +83,7 @@ export function barList({ title, rows, unit, empty, lang, bare = false }: {
 
   return `<div class="${bare ? 'p-5' : `${CARD} p-5`}">`
     + `<div class="mb-3 flex items-center justify-between">`
-    + `<h2 class="text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-white">${escapeHtml(title)}</h2>`
+    + `<h2 class="${SECTION}">${escapeHtml(title)}</h2>`
     + `<span class="text-xs font-medium text-neutral-500 dark:text-neutral-400">${escapeHtml(unit)}</span>`
     + `</div>${body}</div>`
 }

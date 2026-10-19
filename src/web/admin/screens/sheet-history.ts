@@ -10,6 +10,7 @@
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeHtml } from '@/utils'
 import { buttonClass, OVERLAY } from '@/admin-shared/kit'
+import { SECTION } from '@/admin-shared/scale'
 
 const QUIET_CENTRE = 'py-10 text-center text-neutral-500 dark:text-neutral-400'
 
@@ -22,7 +23,7 @@ export function historyDialog(t: AdminStrings): string {
     + ` aria-label="${escapeHtml(t.timeMachine)}"`
     + ` class="flex max-h-[85vh] w-full max-w-2xl flex-col p-5 ${OVERLAY}">`
     + `<div class="mb-1 flex items-center justify-between">`
-    + `<h2 class="text-lg font-bold">${escapeHtml(t.timeMachine)}</h2>`
+    + `<h2 class="${SECTION}">${escapeHtml(t.timeMachine)}</h2>`
     + `<button type="button" data-history-shut class="${buttonClass('ghost')}">`
     + `${escapeHtml(t.close)}</button>`
     + `</div>`
