@@ -138,7 +138,7 @@ export const SHEET_WORD_KEYS = [
   'takenDownUntil', 'tbBold', 'tbCodeBlock',
   'tbCodeInline', 'tbColAdd', 'tbColDel', 'tbDivider', 'tbGallery', 'tbHeading', 'tbHighlight',
   'tbImage', 'tbInsert', 'tbItalic', 'tbLink', 'tbLinkRemove', 'tbList', 'tbListNumbered',
-  'tbMarkdown', 'tbMath', 'tbMathInline', 'tbParagraph', 'tbQuote', 'tbRing', 'tbRowAdd',
+  'tbMarkdown', 'tbMath', 'tbMathInline', 'tbMore', 'tbParagraph', 'tbQuote', 'tbRing', 'tbRowAdd',
   'tbRowDel', 'tbStrike', 'tbTable', 'tbTableDelete', 'tbTask', 'tbUnderline',
   'titlePlaceholder', 'trashFailed', 'trashHomePage', 'trashedOne', 'undo', 'unsaved',
   'unsupportedType', 'untitled', 'unusedBadge', 'update', 'uploadNoRoom', 'uploadTooLarge',

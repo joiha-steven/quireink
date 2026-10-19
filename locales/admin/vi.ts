@@ -263,6 +263,7 @@ const vi = {
   promptLink: 'Nhập đường dẫn liên kết:',
   tbBlock: 'Kiểu đoạn',
   tbInsert: 'Chèn',
+  tbMore: 'Công cụ khác',
   tbParagraph: 'Chữ thường',
   tbList: 'Danh sách',
   tbListNumbered: 'Đánh số',

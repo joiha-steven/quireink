@@ -1,6 +1,7 @@
-// The blank bar the server draws and the bar the island builds are one shape (2026-09-30).
-// If a key is added to a cluster and not to TOOLBAR_CLUSTERS, the held place is the wrong
-// width, wraps at a different point, and the paper jumps again on a slow load.
+// The bar the island builds has the clusters TOOLBAR_CLUSTERS says (2026-09-30). The overflow
+// tests (`components/toolbar-fit.test.ts`) state what moves behind More at each measured width
+// from that list, so a key added to a cluster and not to it makes those cases describe a row
+// that is not the one on screen.
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { TOOLBAR_CLUSTERS } from '@/admin-shared/toolbar-shape'
@@ -24,8 +25,13 @@ describe('the toolbar and the place held for it', () => {
     // The held place is REPLACED, not kept beside the bar.
     expect(host.querySelector('[data-held]')).toBeNull()
     const run = host.querySelector('[class*="flex-nowrap"]')!
-    const counts = [...run.children].map((cluster) => cluster.querySelectorAll('button').length)
+    const clusters = [...run.children].filter((child) => child.hasAttribute('data-toolbar-cluster'))
+    const counts = clusters.map((cluster) => cluster.querySelectorAll('button').length)
     expect(counts).toEqual([...TOOLBAR_CLUSTERS])
+    // The run holds the clusters and the More key, and nothing else.
+    const more = run.querySelector('[data-toolbar-more]')!
+    expect(run.children.length).toBe(TOOLBAR_CLUSTERS.length + 1)
+    expect(run.lastElementChild!.contains(more)).toBe(true)
     bar.destroy()
     editor.destroy()
   })

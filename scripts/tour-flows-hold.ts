@@ -164,4 +164,52 @@ export function registerHoldFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWidt
       return done('ok table panned ' + moved + 'px, the writing held at x=' + after)
     })()`, 1700)
   })
+
+  /**
+   * THE BUTTON ROW IS ONE ROW, AND MORE REACHES WHAT IS NOT ON IT (2026-10-19).
+   *
+   * With the attributes docked at 1440 the sheet is 750px and the row needs 934: it wrapped,
+   * six keys alone on a second line. Now the clusters that do not fit go behind More, at the
+   * row's end. Measured here: every visible key on one line, More on screen, and the menu
+   * walked by keyboard the way a menu button is (ArrowDown opens on the first row, Escape
+   * hands the focus back to More and leaves the docked panel open).
+   */
+  flow('editor: the button row stays one row, and More reaches the rest by keyboard', () => atWidth(1440,
+    '/admin/editor/ligatures-and-the-three-you-can-turn-off', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      for (let i = 0; i < 60 && !document.querySelector('[data-toolbar-more]'); i++) await sleep(100)
+      const more = document.querySelector('[data-toolbar-more]')
+      if (!more) return 'no More key on the button row'
+      const attrs = document.querySelector('[data-attrs]')
+      if (!attrs) return 'no way to open the attributes'
+      attrs.click()
+      await sleep(600)
+      if (document.documentElement.dataset.adminSheet !== 'docked') return 'the attributes did not dock at 1440'
+
+      const run = more.closest('[data-toolbar-away]')
+      if (!run) return 'the strip does not say what it put away'
+      const shown = [...run.querySelectorAll('button')].filter((b) => b.checkVisibility())
+      const tops = new Set(shown.map((b) => Math.round(b.getBoundingClientRect().top)))
+      if (tops.size !== 1) return 'the row is ' + tops.size + ' lines with the attributes docked'
+      if (!more.checkVisibility()) return 'keys were put away and More is not on screen'
+      const away = Number(run.dataset.toolbarAway)
+      if (!(away > 0)) return 'nothing was put away in a 750px sheet'
+
+      more.focus()
+      more.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }))
+      const menu = document.getElementById(more.getAttribute('aria-controls') || '')
+      if (!menu || !menu.checkVisibility()) return 'ArrowDown on More opened no menu'
+      const rows = [...menu.querySelectorAll('button')]
+      if (rows.length !== away) return 'the menu lists ' + rows.length + ' of the ' + away + ' keys put away'
+      if (rows.some((r) => r.getBoundingClientRect().height < 36)) return 'a menu row is under the 36px tap size'
+      if (document.activeElement !== rows[0]) return 'the focus did not land on the first row'
+      rows[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }))
+      if (document.activeElement !== rows[1]) return 'ArrowDown did not walk to the second row'
+      rows[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+      if (menu.checkVisibility()) return 'Escape left the menu open'
+      if (document.activeElement !== more) return 'Escape did not give the focus back to More'
+      if (document.documentElement.dataset.adminSheet !== 'docked') return 'the Escape meant for the menu shut the attributes too'
+      return 'ok one row, ' + away + ' key(s) behind More, walked and closed by keyboard'
+    })()`, 1200))
 }

@@ -263,6 +263,7 @@ const ja = {
   promptLink: 'リンクのURLを入力:',
   tbBlock: '段落スタイル',
   tbInsert: '挿入',
+  tbMore: 'その他のツール',
   tbParagraph: '本文',
   tbList: 'リスト',
   tbListNumbered: '番号',

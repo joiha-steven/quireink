@@ -263,6 +263,7 @@ const zh = {
   promptLink: '输入链接地址:',
   tbBlock: '段落样式',
   tbInsert: '插入',
+  tbMore: '更多工具',
   tbParagraph: '正文',
   tbList: '列表',
   tbListNumbered: '编号',

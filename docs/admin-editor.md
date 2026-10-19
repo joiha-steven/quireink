@@ -43,9 +43,7 @@ that file first; this one only adds what is true here.
 - **The toolbar is BACK, by the owner's verdict after writing on the bare version**
   (2026-08-17 — "/" alone is fine in the Markdown view, but the normal view wants a
   toolbar, reversing ADR 0024 step 4's removal, which the mock had endorsed). It sits at the top of the sheet under the
-  action line, full-width, its groups centered, wrapping on a narrow window rather than
-  scrolling — and when it wraps its lines range LEFT, on the same edge the action line
-  starts from, rather than each line centring itself. The Markdown source view has NO
+  action line, full-width, its groups centered, and always ONE row (the rule is below). The Markdown source view has NO
   toolbar — raw text needs no formatting buttons. The called controls remain beside it: a
   selection raises the bubble, `/` on an empty line raises the insert menu (placed by
   `components/slash-place.ts`: whole under the caret's line or over it, inside the VISIBLE
@@ -58,18 +56,21 @@ that file first; this one only adds what is true here.
   `admin.css`. Modal (narrower, or the publish step at any width) the toggle sits under the scrim,
   so the footer key stays: it is the one that closes the dialog from inside. The attribute is
   the island's own, so there is one place that decides.
-- **Known gap: with Attributes open at 1440 the toolbar wraps to two rows.** The sheet is 750px
-  there and the single row needs 966 (934 of keys and gaps plus `px-4`); at 1024 with the panel
-  shut the sheet is 870 and it wraps too. The keys are already the kit's 36px, so tightening
-  cannot close a 216px gap, and scrolling one row was the phone's answer that this section
-  chose against for a desktop. Not changed.
+- **The toolbar is one row at every width; what does not fit goes behind "More"** (2026-10-19).
+  It wrapped wherever the sheet was under 966px (934 of keys and gaps plus `px-4`): 750 with
+  Attributes docked at 1440, 886 docked at 1920, 870 at 1024. Now whole clusters leave from the
+  END of the row into one ⋯ key whose menu lists them with their names and chords, and the row
+  ranges left while anything is away; a cluster splits only if not even the first fits beside More.
+  `components/toolbar-fit.ts` decides from the strip's measured width on every change of it.
+  Below `lg` the row still scrolls instead: every key stays one swipe away at 36px, where a
+  menu would hold eighteen 36px rows behind a phone's keyboard.
 - **The table's tools get their own line**, under the strip and ranged left, and only while
   the cursor is in a table. They used to join the end of the main run, and because that run
   is centred, five buttons arriving slid every button already there 62.5px to the left
   (measured at 1440, 2026-09-12) and taking the cursor out slid them back. A toolbar that
-  moves while it is being aimed at is not a toolbar. Clusters are told apart by a 12px gap
-  rather than a hairline for the same reason: a rule can end up the first mark on a wrapped
-  line, and a stray tick at the start of a row reads as damage.
+  moves while it is being aimed at is not a toolbar. Clusters are told apart by an 8px gap
+  (`gap-2`) rather than a hairline: a rule standing next to the More key, or first on the row,
+  reads as a stray tick.
 - **Find and replace is DRAWN, never applied** (2026-09-13). `Mod-f` raises a strip under the
   action line with the find field alone; `Mod-Shift-f` raises the same strip with the replace
   field open, and a chevron at its head opens that field for a hand that came in through the

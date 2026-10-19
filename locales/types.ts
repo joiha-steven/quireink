@@ -461,6 +461,8 @@ export type AdminStrings = {
   tbBlock: string
   /** The one control that replaced six insert buttons. */
   tbInsert: string
+  /** The key at the end of the editor's toolbar that lists the keys the row has no room for. */
+  tbMore: string
   tbParagraph: string
   tbList: string
   tbListNumbered: string
