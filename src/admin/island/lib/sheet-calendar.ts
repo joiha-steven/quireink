@@ -12,6 +12,7 @@
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import type { SiteLang } from '@/types'
 import { dateLocale } from '@/i18n/format'
+import { ICONS, ICON_STROKE } from '@/icons'
 import { formatTyped, parseTyped, toValue } from '@/admin-shared/date-typing'
 import { el } from '@/admin/components/node-dom'
 import { composing } from '@/admin/components/composing'
@@ -110,16 +111,16 @@ export function wireDate(
     const label = el('span', { className: className.month })
     label.textContent = new Intl.DateTimeFormat(dateLocale(lang), { month: 'long', year: 'numeric' }).format(view)
     const keys = el('div', { className: 'flex' })
-    for (const [step, name, path] of [
-      [-1, t.dateMonthPrev, 'm14 6-6 6 6 6'], [1, t.dateMonthNext, 'm10 6 6 6-6 6'],
+    for (const [step, name, body] of [
+      [-1, t.dateMonthPrev, ICONS.prev], [1, t.dateMonthNext, ICONS.next],
     ] as const) {
       const key = el('button', { className: className.nav, type: 'button', 'aria-label': name })
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
       for (const [k, v] of Object.entries({
-        viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.8',
+        viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': String(ICON_STROKE),
         'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', class: 'h-4 w-4',
       })) svg.setAttribute(k, v)
-      svg.innerHTML = `<path d="${path}"></path>`
+      svg.innerHTML = body
       key.appendChild(svg)
       key.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() + step, 1); draw() })
       keys.appendChild(key)

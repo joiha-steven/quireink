@@ -6,7 +6,7 @@
 
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { ICONS } from '@/icons'
+import { iconSvg, type IconName } from '@/icons'
 import {
   BRAND_RED, MARK_DOT, MARK_Q, MARK_VIEWBOX, WORD_DOT, WORD_INK, WORD_QUIRE, WORD_VIEWBOX,
 } from '@/brand-art'
@@ -20,14 +20,11 @@ import { GLYPH } from '@/admin-shared/scale'
  * A glyph from the shared set.
  *
  * `--admin-glyph` and not a hard 20px: the rail sets that variable to 18px on itself
- * (`.rail-glyphs` in `admin.css`) because a rail's glyph stands beside a 15px label and a 20px
+ * (`.rail-glyphs` in `admin.css`) because a rail's glyph stands beside a 14px label and a 20px
  * mark out-weighs the word it belongs to. One variable on the container beats a size at
  * twenty-one call sites.
  */
-export const glyph = (name: keyof typeof ICONS): string =>
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"'
-  + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="${GLYPH}">`
-  + `${ICONS[name]}</svg>`
+export const glyph = (name: IconName): string => iconSvg(name, GLYPH)
 
 /**
  * The wordmark, BOTH of it.
@@ -97,7 +94,7 @@ export function renderRow(row: RailRow, path: string): string {
 
   if (id === 'more') {
     // AN EYEBROW, not a fifth destination. It names no page — it folds the rest of the rail
-    // out — and at the destinations' 15px/500 it read as one more place to go, which is what
+    // out — and at the destinations' 14px/500 it read as one more place to go, which is what
     // put a chevron and a glyph on a row that had to compete with them for width. 12px
     // uppercase settles both: it is visibly a heading, and the label has room again in all
     // eleven languages.
@@ -170,12 +167,12 @@ export const chordBadge = (extra = ''): string =>
 export const searchKey = (t: AdminStrings): string =>
   `<button type="button" data-nav-search aria-label="${escapeAttr(t.paletteTitle)}"`
   + ` class="rail-search-key flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-transparent px-2 text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200">`
-  + `${glyph('search')}${chordBadge()}</button>`
+  + `${glyph('searchCentred')}${chordBadge()}</button>`
 
 /** Search as a ROW, for a rail with no wordmark. One control in two dresses. */
 export const searchRow = (t: AdminStrings): string =>
   `<button type="button" data-nav-search class="${rowClass(false)} rail-search-row justify-between">`
-  + `<span class="flex min-w-0 items-center gap-3">${glyph('search')}`
+  + `<span class="flex min-w-0 items-center gap-3">${glyph('searchCentred')}`
   + `<span class="rail-label truncate">${escapeHtml(t.paletteTitle)}</span></span>`
   + chordBadge('text-neutral-500 dark:text-neutral-400') + '</button>'
 

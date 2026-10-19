@@ -6,6 +6,8 @@
 // invisible to it: the count fell by one and the check stayed green (2026-09-15), which is what
 // a guard that has quietly stopped checking looks like. One helper, so the rule is stated once
 // and every node view inherits it.
+import { ICON_STROKE } from '@/icons'
+
 export const el = <K extends keyof HTMLElementTagNameMap>(
   tag: K, opts: { className?: string } & Record<string, string> = {},
 ): HTMLElementTagNameMap[K] => {
@@ -23,7 +25,7 @@ export const el = <K extends keyof HTMLElementTagNameMap>(
  * this, which is what makes `innerHTML` ordinary here rather than a hole. The same argument the
  * React set makes for `dangerouslySetInnerHTML` in `navIcons.tsx`.
  */
-export function svgGlyph(body: string, cls: string, stroke = '1.8'): SVGSVGElement {
+export function svgGlyph(body: string, cls: string, stroke = String(ICON_STROKE)): SVGSVGElement {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   for (const [k, v] of Object.entries({
     viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': stroke,

@@ -380,7 +380,7 @@ Route changes, the progress bar and recovery from a deploy have their own file:
 
 ## Icons and marks
 
-- Admin navigation uses the custom Quire Ink line-icon language.
+- Admin navigation uses the custom Quire Ink line-icon language; its one stroke, centred ink and the rail's lines: [`admin-rail-and-icons.md`](./admin-rail-and-icons.md).
 - **The four public-header glyphs are settled** — search circle, three-circle palette,
   sun/moon, two-line menu. Shared button
   sizing still comes from `ICON_BTN`; preserving glyphs does not permit per-button drift.

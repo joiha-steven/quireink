@@ -17,7 +17,7 @@
 // RAISED keys. No black anywhere.
 import { el, leaf, type Mark } from '@/admin-shared/markup'
 import { TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP } from '@/admin-shared/kit'
-import type { IconName } from '@/icons'
+import { ICON_STROKE, type IconName } from '@/icons'
 import { formatBytes, formatDate } from '@/i18n/format'
 import type { MediaItem, SiteLang } from '@/types'
 
@@ -101,7 +101,7 @@ const glyph = (name: IconName): Mark => ({
   tag: 'svg',
   cls: 'h-4 w-4',
   attrs: {
-    viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.8',
+    viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': String(ICON_STROKE),
     'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true',
     'data-glyph': name,
   },

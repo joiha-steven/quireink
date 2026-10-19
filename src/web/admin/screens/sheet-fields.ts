@@ -21,6 +21,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { PostStatus, SiteLang } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { buttonClass, CHECK, CONTROL } from '@/admin-shared/kit'
+import { iconSvg } from '@/icons'
 import { NOTE_TEXT } from '@/admin-shared/scale'
 import { EMPTY_SLOT } from '@/admin-shared/slot'
 import { formatTyped, typedShape } from '@/admin-shared/date-typing'
@@ -168,10 +169,7 @@ export function typedDate(f: {
     + `<button type="button" data-date-open aria-haspopup="dialog" aria-expanded="false"`
     + ` aria-label="${escapeAttr(f.t.dateCalendar)}" class="shrink-0 text-neutral-500`
     + ` hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">`
-    + `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.6"`
-    + ` stroke-linecap="round" aria-hidden="true">`
-    + `<rect x="4" y="5.5" width="16" height="14" rx="1.5"></rect>`
-      + `<path d="M4 9.5h16M8.5 3.5v3M15.5 3.5v3"></path></svg></button></div>`
+    + `${iconSvg('calendar', 'h-4 w-4')}</button></div>`
       // The scheduled line: drawn, and shown by the island when the date is ahead of now and
       // the piece is published. A note that arrives late moves every field under it.
       + `<p data-date-note class="${NOTE_TEXT} mt-1.5"${f.note ? '' : ' hidden'}>`

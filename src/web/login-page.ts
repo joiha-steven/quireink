@@ -25,6 +25,7 @@ import { LOGIN_CSS } from '@/web/login.css'
 import { quireLockup } from '@/web/brand'
 import { scriptTag } from '@/web/assets'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { iconSvg } from '@/icons'
 
 /** `{n}` style interpolation, the same shape the admin strings already use. */
 /**
@@ -68,16 +69,8 @@ export function loginShell(settings: SiteSettings, title: string, body: string, 
   )
 }
 
-/** Lucide's eye / eye-off, drawn in the same idiom as the mark. */
-export const EYE = '<svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
-  + ' stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-  + '<path d="M2.1 12S5.7 5.5 12 5.5 21.9 12 21.9 12 18.3 18.5 12 18.5 2.1 12 2.1 12Z"/>'
-  + '<circle cx="12" cy="12" r="3"/></svg>'
-  + '<svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
-  + ' stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-  + '<path d="M10.7 6.2A9.9 9.9 0 0 1 12 6.1c6.3 0 9.9 6.5 9.9 6.5a17.7 17.7 0 0 1-3 3.9"/>'
-  + '<path d="M6.6 7.6A17.6 17.6 0 0 0 2.1 12.6S5.7 19.1 12 19.1a9.6 9.6 0 0 0 4.1-.9"/>'
-  + '<path d="M10 10.6a2.9 2.9 0 0 0 4.1 4.1"/><path d="M3 3l18 18"/></svg>'
+/** The reveal key's two faces, from the shared set so the sign-in page draws at the product's one stroke. */
+export const EYE = iconSvg('eye', 'eye-on') + iconSvg('eyeOff', 'eye-off')
 
 /** An inline error, next to the field it belongs to rather than floating at the top. */
 export const errorBox = (message: string | undefined): string =>
@@ -114,12 +107,8 @@ function insecureNote(text: string): string {
 }
 
 
-/** Lucide's key-round, in the idiom of the eye above: what a passkey looks like everywhere. */
-const KEY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"'
-  + ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-  + '<path d="M2.6 17.4A2 2 0 0 0 2 18.8V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1'
-  + 'a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4z"/>'
-  + '<circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>'
+/** What a passkey looks like everywhere, drawn from the shared set like the eye above. */
+const KEY = iconSvg('key')
 
 /**
  * The passkey door (ADR 0071), under the password form and never in place of it.

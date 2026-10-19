@@ -13,7 +13,7 @@ import type { SiteLang } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { formatCount } from '@/i18n/format'
-import { ICONS } from '@/icons'
+import { iconSvg } from '@/icons'
 import { TAP, UTIL } from '@/admin-shared/scale'
 import { FEED_LIST, FEED_MARK, FEED_ROW, inkFor, markFor } from '@/admin-shared/activity-mark'
 import { ago } from '@/admin-shared/when'
@@ -205,8 +205,7 @@ function activityCard(t: AdminStrings, lang: SiteLang, tz: string, entries: Acti
       const when = (ago(e.at, now, lang) || siteDateTimeShort(e.at, tz, lang)) + (times > 1 ? ` · ×${times}` : '')
       return `<li class="${FEED_ROW}" title="${escapeAttr(title)}">`
         + `<span class="${FEED_MARK} ${inkFor(e.action)}">`
-        + `<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"`
-        + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[markFor(e.action)]}</svg></span>`
+        + `${iconSvg(markFor(e.action), 'h-4 w-4')}</span>`
         + `<div class="min-w-0 flex-1">`
         // THE SENTENCE, from the same table the Log screen reads. The code stays in the title.
         + `<p class="truncate text-sm ${e.action === 'error'

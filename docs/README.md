@@ -53,6 +53,7 @@ copies of a rule means one is wrong within a month
 | [admin-one-dom.md](admin-one-dom.md) | One DOM per state: the rule the server-rendered admin is built on, and its four traps |
 | [admin-kit.md](admin-kit.md) | The kit's one-of-each rules, enforced by `check:admin-kit` |
 | [admin-navigation.md](admin-navigation.md) | How the admin moves between screens, and how it recovers from an update underneath an open tab |
+| [admin-rail-and-icons.md](admin-rail-and-icons.md) | The admin's one stroke weight, glyph centring, and the rail's measured lines |
 | [admin-editor.md](admin-editor.md) | The editor's own contract: the writing surface, the caret, the key feedback |
 | [admin-conversion.md](admin-conversion.md) | The log of ADR 0054's step 5: what each piece of the editor cost to take off React, and what it found |
 | [admin-no-framework.md](admin-no-framework.md) | ADR 0054's steps 6 and 7: React out, then the wrapper around ProseMirror. What each found, and what the editor weighs now |

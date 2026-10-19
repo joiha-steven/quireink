@@ -12,6 +12,7 @@
 // not, because the island has to be able to show one without building it — a delta arrives
 // forty times a second and must not construct an element each time.
 import { el, leaf, txt, type Mark } from '@/admin-shared/markup'
+import { ICON_STROKE } from '@/icons'
 import { META } from '@/admin-shared/scale'
 import { buttonClass, SHEET_TOOL } from '@/admin-shared/kit'
 import { richMarks } from '@/admin-shared/rich-text'
@@ -208,7 +209,7 @@ export function chatRowMark(c: ChatRow, activeId: number | null, w: AssistantWor
     el('button', ROW_X, [
       el('svg', '', [leaf('path', '', '', { d: 'M6 6l12 12M18 6L6 18', 'stroke-linecap': 'round' })], {
         width: '14', height: '14', viewBox: '0 0 24 24', fill: 'none',
-        stroke: 'currentColor', 'stroke-width': '2', 'aria-hidden': 'true',
+        stroke: 'currentColor', 'stroke-width': String(ICON_STROKE), 'aria-hidden': 'true',
       }),
     ], { type: 'button', 'aria-label': w.deleteOne, 'data-ai-del': '' }),
   ], { 'data-ai-chat': String(c.id) })
