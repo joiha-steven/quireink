@@ -69,8 +69,12 @@ const PUBLIC_EXACT = new Set([
   '/api/auth/passkey/options',
 ])
 
-/** The static families, by shape rather than by name, so a new font is not a test failure. */
-const PUBLIC_SHAPES = [/^\/fonts\//, /\.(css|js|png|ico|svg|webmanifest|txt|xml|woff2?)$/]
+/**
+ * The static families, by shape rather than by name, so a new font is not a test failure. The
+ * built-in themes' pictures (`web/theme-shots.ts`) are compiled into the build like the fonts: the
+ * same bytes on every install, of the showcase blog, with nothing of the owner's in them.
+ */
+const PUBLIC_SHAPES = [/^\/fonts\//, /^\/theme-shots\/[a-z]+-(light|dark)\.webp$/, /\.(css|js|png|ico|svg|webmanifest|txt|xml|woff2?)$/]
 
 /** `:slug` and friends, filled with something this instance actually has. */
 const fill = (path: string): string =>

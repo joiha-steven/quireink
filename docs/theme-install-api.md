@@ -91,6 +91,21 @@ another program runs no handler): its server and browser still die with it, meas
 /F` on the parent alone, and the next run deletes a directory whose owner process is gone. A directory
 whose owner is alive, or with no `owner.json`, is left alone.
 
+### The built-in themes' pictures
+
+The four built-in tiles (Settings → Appearance → Theme, and the first-run look step) show the same
+kind of picture an installed theme's `screenshot.webp` is: the showcase blog's front page, top of the
+page, wearing the theme, once light and once dark. `bun run theme:tiles [--port <n>]`
+([`scripts/theme-tiles.ts`](../scripts/theme-tiles.ts)) makes them on the same instance as
+`theme:matrix` (seeder, fixture post, pinned clock), each theme with the chrome font it suggests (the
+engine's default when it suggests none), at 1200 x 720 cut to 480 x 288 WebP, at most 20 KB each. It
+writes `src/assets/static/theme-shots/<id>-<light|dark>.webp` and `versions.json` (each file's SHA-256,
+first 12 characters), ready to commit; two runs on one machine write the same bytes. Rerun it after a
+change to a built-in theme's sheet, the showcase seed, or the base sheet where it moves the front page.
+They are served as `/theme-shots/<id>-<scheme>.webp?v=<hash>`, immutable like the fonts
+([`src/web/theme-shots.ts`](../src/web/theme-shots.ts)), `loading="lazy"`, and linked by those two
+screens only; `src/web/theme-shots.test.ts` holds the sizes, the hashes and that no reader page links one.
+
 ## What an install does
 
 1. **The zip's directory is judged before anything is inflated**: the number of entries, every

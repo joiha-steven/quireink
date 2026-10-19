@@ -342,4 +342,5 @@ must be one of yours or a built-in id of that kind.
   states, print, or a missing date like the one above. Look at the contact sheet.
 - **A theme can only be as good as its screenshot is honest.** The tile shows
   `screenshot.webp`, cropped from the top; make it from the preview's shots of your own theme at
-  exactly 1200 x 900.
+  exactly 1200 x 900. The four built-in tiles beside it show the same kind of picture, the front
+  page at the top, so a sheet of grey bars would read as the one tile with nothing to show.

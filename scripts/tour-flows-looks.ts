@@ -260,14 +260,25 @@ export function registerLookFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok'
     }`))
 
-  // The picker draws the four, and a click presses one without saving anything.
-  flow('admin: the looks are four drawn tiles, and a click presses one', () =>
-    expect('/admin/settings?tab=appearance', `(() => {
+  // The picker shows the four as pictures of themselves (`web/theme-shots.ts`), the one for the
+  // admin's mode painted, and a click presses one without saving anything.
+  flow('admin: the looks are four pictured tiles, and a click presses one', () =>
+    expect('/admin/settings?tab=appearance', `(async () => {
     const track = document.querySelector('[data-choice-track][data-k=theme]')
     if (!track) return 'no look picker on the appearance tab'
     const tiles = [...track.querySelectorAll('[data-choice]')]
     if (tiles.length !== 4) return tiles.length + ' tiles'
-    if (tiles.some((b) => !b.querySelector('svg'))) return 'a tile has no drawing'
+    track.scrollIntoView({ block: 'center' })
+    for (const b of tiles) {
+      const shown = [...b.querySelectorAll('img[data-theme-shot]')].filter((i) => i.checkVisibility())
+      if (shown.length !== 1) return b.dataset.choice + ' shows ' + shown.length + ' pictures, not one'
+      const img = shown[0]
+      // Lazy: it loads once the tile is on screen.
+      for (let i = 0; i < 30 && !(img.complete && img.naturalWidth > 0); i++) await new Promise((ok) => setTimeout(ok, 100))
+      if (img.naturalWidth !== 480) return b.dataset.choice + ': the picture did not paint (' + img.naturalWidth + ')'
+      const scheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+      if (!img.getAttribute('src').includes('-' + scheme + '.webp')) return b.dataset.choice + ' shows ' + img.getAttribute('src') + ' in ' + scheme
+    }
     if (tiles.some((b) => b.querySelectorAll('span').length < 2)) return 'a tile has no line saying who it is for'
     const was = tiles.find((b) => b.getAttribute('aria-pressed') === 'true')
     const other = tiles.find((b) => b.getAttribute('aria-pressed') === 'false')

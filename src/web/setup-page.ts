@@ -37,6 +37,7 @@ import { adminT } from '@/i18n/admin-i18n'
 import { SITE_LANGS } from '@/locales/langs'
 import { fieldError, invalidAttrs, loginShell, setupStep } from '@/web/login-page'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { themeShotUrl, type ShotScheme } from '@/web/theme-shots'
 
 /**
  * Step one: what the site is, where it lives, and what clock it reads.
@@ -170,11 +171,15 @@ ${option('off', lines(false), s.penStepOff, s.penStepOffHint, !on)}
 /**
  * Step four: what you are about to write, which is what the site dresses itself for.
  *
- * Four cards, same shape as the two before it, and DRAWN for the same reason: "the furniture
+ * Four cards, same shape as the two before it, each with a PICTURE of the theme: "the furniture
  * reads as source code while your text stays analogue" is a sentence nobody can picture. The
- * drawings are the same bars the other steps use plus three small parts — a gutter of line
- * numbers, a masthead over columns, a ruled sheet — because that is the whole of what
- * separates the four at this size.
+ * pictures are the ones the Settings tiles show (`web/theme-shots.ts`), the showcase blog's
+ * front page wearing each theme; drawings of bars stood here until 2026-10-19 and read as
+ * placeholders.
+ *
+ * Light or dark by the rule the page's own palette follows (`defaultScheme`, which `pageStyles`
+ * turns into CSS): the system's answer under `system`, through `<picture>`, and the fixed one
+ * otherwise. Nothing runs on this screen that could set the scheme any other way.
  *
  * The names are the ones the Settings field uses. A person who meets "Newspaper" here and
  * goes looking for it later finds the same word.
@@ -182,12 +187,17 @@ ${option('off', lines(false), s.penStepOff, s.penStepOffHint, !on)}
 export function lookStepScreen(settings: SiteSettings): string {
   const s = adminT(settings.language)
 
-  // Each card's drawing is the theme's own (`art.card` in `content/themes-builtin.ts`), the
-  // same few marks the admin's tiles draw, in this screen's `face-*` parts.
-  const option = (value: BuiltinThemeId, art: string, label: string, hint: string): string => `
+  // `alt=""` and the box `aria-hidden`: the theme's name is the next line of the same label.
+  const img = (value: BuiltinThemeId, scheme: ShotScheme): string =>
+    `<img src="${escapeAttr(themeShotUrl(value, scheme))}" alt="" loading="lazy" decoding="async">`
+  const shot = (value: BuiltinThemeId): string => settings.defaultScheme === 'system'
+    ? `<picture><source media="(prefers-color-scheme: dark)" srcset="${escapeAttr(themeShotUrl(value, 'dark'))}">`
+      + `${img(value, 'light')}</picture>`
+    : img(value, settings.defaultScheme)
+  const option = (value: BuiltinThemeId, label: string, hint: string): string => `
 <label class="face-choice">
   <input type="radio" name="theme" value="${escapeAttr(value)}"${value === settings.theme ? ' checked' : ''}>
-  <span class="face-art" aria-hidden="true">${art}</span>
+  <span class="face-art face-shot" aria-hidden="true">${shot(value)}</span>
   <span class="face-name">${escapeHtml(label)}</span>
   <span class="face-hint">${escapeHtml(hint)}</span>
 </label>`
@@ -198,7 +208,7 @@ ${setupStep(settings, s, 7)}
 <p class="login-lede">${escapeHtml(s.lookStepLede)}</p>
 <form method="post" action="/setup/look" class="login-form">
 <div class="face-grid">
-${BUILTIN_THEMES.map(({ id, nameKey, hintKey, art }) => option(id, art.card, s[nameKey], s[hintKey])).join('')}
+${BUILTIN_THEMES.map(({ id, nameKey, hintKey }) => option(id, s[nameKey], s[hintKey])).join('')}
 </div>
 <button type="submit" class="login-submit">${escapeHtml(s.setupFinish)}</button>
 </form>`)

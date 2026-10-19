@@ -2986,6 +2986,12 @@
       padding-inline: calc(var(--spacing) * 12);
     }
   }
+  .dark\:block:where(.dark, .dark *) {
+    display: block;
+  }
+  .dark\:hidden:where(.dark, .dark *) {
+    display: none;
+  }
   :where(.dark\:divide-neutral-800:where(.dark, .dark *) > :not(:last-child)) {
     border-color: var(--color-neutral-800);
   }

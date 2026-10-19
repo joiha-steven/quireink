@@ -7,10 +7,11 @@
 // it adds sits around the key, never inside it: Rollback and Remove are buttons, and a button
 // inside a button is not a thing HTML can hold.
 //
-// THE PICTURE HAS THE BUILT-IN DRAWING'S BOX, to the pixel. Both are an `<svg viewBox="0 0 160
-// 96">` at the tile's width, so the name under it starts at the same height on every tile in a
-// row. The screenshot is an `<img>` laid over it, cropped from the top, over a neutral drawing: a
-// screenshot that does not load (a file the store lost) leaves the drawing, never a broken icon.
+// THE PICTURE IS THE BUILT-IN TILES' PICTURE, to the pixel: both kinds draw `picture` below, an
+// `<svg viewBox="0 0 160 96">` at the tile's width, so the name under it starts at the same height
+// on every tile in a row. The screenshot is an `<img>` laid over it, cropped from the top, over a
+// neutral drawing: a screenshot that does not load (a file the store lost) leaves the drawing,
+// never a broken icon.
 //
 // The island is `admin/island/lib/settings-themes.ts`; its words ride on the picker as
 // `data-theme-words`, because the settings screen's own dictionary is for its Save key.
@@ -41,28 +42,40 @@ const BADGE = 'mt-2 self-start rounded-md bg-neutral-100 px-1.5 py-0.5 text-xs f
   + ' text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
 
 /**
- * A framed page of evenly ruled lines in the built-in drawings' ink: what shows until the
- * screenshot paints, and instead of it when the file is not there. Not Plain's drawing, which
- * would say this theme looks like Plain.
+ * A framed page of evenly ruled lines in a neutral ink: what shows until the screenshot paints,
+ * and instead of it when the file is not there.
  */
 const PLACEHOLDER = '<rect x="0.5" y="0.5" width="159" height="95" rx="5" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-dasharray="4 3"/>'
   + [18, 30, 42, 54, 66].map((y, i) => `<rect x="20" y="${y}" width="${i === 4 ? 72 : 120}" height="4" rx="2" fill="currentColor" fill-opacity=".25"/>`).join('')
 
+/** One screenshot laid over the placeholder, cropped from the top. `cls` adds to its classes. */
+const shot = (src: string, cls: string, lazy: boolean): string =>
+  `<img src="${escapeAttr(src)}" alt=""${lazy ? ' loading="lazy"' : ''} decoding="async" data-theme-shot`
+  + ` class="absolute inset-0 ${cls ? `${cls} ` : ''}h-full w-full rounded-md object-cover object-top`
+  // A hairline round the picture: a white page on a white tile otherwise has no edge at all.
+  + ` ring-1 ring-black/[.07] dark:ring-white/10">`
+
 /**
- * The tile's picture: the placeholder in the built-in drawing's box, and the package's screenshot
- * laid over it, cropped from the top. An `<img>` with an empty `alt`, not an SVG `<image>`: a
- * screenshot the browser cannot decode drew Chrome's broken-image glyph across the whole tile as
- * an `<image>` (seen on the tour's test package), and an `<img alt="">` that fails draws nothing,
- * so the placeholder shows.
+ * The tile's picture: the placeholder in a 160 by 96 box, and the screenshot laid over it, cropped
+ * from the top. An `<img>` with an empty `alt`, not an SVG `<image>`: a screenshot the browser
+ * cannot decode drew Chrome's broken-image glyph across the whole tile as an `<image>` (seen on the
+ * tour's test package), and an `<img alt="">` that fails draws nothing, so the placeholder shows.
+ * The `alt` is empty because the theme's name is the next line of the same key: a name in it would
+ * have a screen reader say the name twice.
+ *
+ * An installed theme has one screenshot, its package's. A built-in one has two, light and dark
+ * (`web/theme-shots.ts`), each shown only in its own mode of the admin; both are `lazy`, so the
+ * browser fetches the one it shows and only once the Appearance tab is open.
  */
-const picture = (screenshot: string): string =>
+export const picture = (screenshot: string | { light: string; dark: string }): string =>
   `<span class="relative mb-2 block">`
   + `<svg viewBox="0 0 160 96" class="block w-full text-neutral-500 dark:text-neutral-400"`
   + ` aria-hidden="true" focusable="false">${PLACEHOLDER}</svg>`
   // `data-theme-shot`: the island hides one that fails to decode, so the placeholder shows
   // rather than the broken-image glyph Chrome draws over an empty `alt` too (`settings-themes.ts`).
-  + (screenshot ? `<img src="${escapeAttr(screenshot)}" alt="" decoding="async" data-theme-shot`
-    + ` class="absolute inset-0 h-full w-full rounded-md object-cover object-top">` : '')
+  + (typeof screenshot !== 'string'
+    ? shot(screenshot.light, 'dark:hidden', true) + shot(screenshot.dark, 'hidden dark:block', true)
+    : screenshot ? shot(screenshot, '', false) : '')
   + `</span>`
 
 /** `{name}` and `{name2}` replaced in `template`, each value once. */
