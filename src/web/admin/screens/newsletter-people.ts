@@ -26,9 +26,9 @@ import { escapeAttr, escapeHtml, isoToZonedInput } from '@/utils'
 import { dateLocale, formatCount } from '@/i18n/format'
 import { CONTROL_SM, TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
 import { ICON_KEY } from '@/admin-shared/controls'
+import { SEGMENT_ON_CARD } from '@/admin-shared/tabs'
 
-import { emptyState, icon, lamp, selectionBar, tabs, tick } from '@/web/admin/kit'
-import { numBand } from '@/web/admin/kit-figures'
+import { emptyState, icon, lamp, selectionBar, tick } from '@/web/admin/kit'
 // Fifty a page. The island never draws a row; it decides which of these fifty-somethings
 // show, and it reads the same constant so the two cannot disagree about what a page is.
 import { SUBSCRIBERS_PER_PAGE as PER_PAGE } from '@/admin-shared/analytics'
@@ -58,6 +58,13 @@ const titled = (word: string, lang: SiteLang): string =>
  */
 const LAMP = { confirmed: 'good', pending: 'attention', unsubscribed: 'off' } as const
 
+// One cell of the count row. Its hairlines come from `.count-row` in admin.css (2x2 on a phone,
+// 1x4 from 640px). The ring is inset so the band's clipping cannot cut it.
+const CELL_BASE = 'block min-w-0 border-neutral-100 px-5 py-4 text-left dark:border-neutral-800'
+const CELL = `${CELL_BASE} transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-neutral-300 dark:focus-visible:ring-neutral-700`
+const CELL_ON = SEGMENT_ON_CARD
+const CELL_OFF = 'hover:bg-neutral-100/70 dark:hover:bg-neutral-800/40'
+
 const openRate = (s: Row['stats']): string | null =>
   s && s.broadcasts > 0 ? `${Math.round((s.opened / s.broadcasts) * 100)}%` : null
 
@@ -68,20 +75,41 @@ export function peoplePanel(
   const { subscribers, counts } = data
   const n = (x: number): string => escapeHtml(formatCount(x, lang))
   const statusLabel: Record<string, string> = {
-    confirmed: t.nlConfirmed, pending: t.nlPending, unsubscribed: t.nlUnsub,
+    confirmed: titled(t.nlConfirmed, lang), pending: titled(t.nlPending, lang), unsubscribed: titled(t.nlUnsub, lang),
   }
 
-  const band = numBand([
-    { n: formatCount(counts.confirmed, lang), label: titled(t.nlConfirmed, lang) },
+  // THE COUNT ROW IS THE FILTER. It used to be a band of figures above a second strip of the
+  // same four words, so one fact (how many of each) was printed twice and the strip, drawn
+  // without a role, wore the pen a second time under the People / Send / Test tabs. A cell is a
+  // key: the chosen one is a CHOSEN VALUE (the sunken key), never the pen, which marks only
+  // where you are. `data-tab` and `pressKey` are the strip's own hooks, so the island that
+  // narrowed by the strip narrows by this row unchanged.
+  const total = counts.confirmed + counts.pending + counts.unsubscribed
+  const cells: { key: string; n: number; label: string; labelHtml?: string }[] = [
+    { key: 'all', n: total, label: t.filterAll },
+    { key: 'confirmed', n: counts.confirmed, label: titled(t.nlConfirmed, lang) },
     {
-      n: formatCount(counts.pending, lang),
+      key: 'pending', n: counts.pending, label: titled(t.nlPending, lang),
       // The pen's own mark in front of it, the same one the write list puts against an
       // unfinished piece: pending is not a fault, it is something still in motion.
       labelHtml: `<span aria-hidden="true" class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-[var(--pen-edge)] align-middle"></span>`
         + escapeHtml(titled(t.nlPending, lang)),
     },
-    { n: formatCount(counts.unsubscribed, lang), label: titled(t.nlUnsub, lang) },
-  ])
+    { key: 'unsubscribed', n: counts.unsubscribed, label: titled(t.nlUnsub, lang) },
+  ]
+  // With nobody on the list there is nothing to narrow, so the row is figures only.
+  const live = subscribers.length > 0
+  const band = `<div${live ? ' data-sub-scope' : ''} class="count-row grid grid-cols-2 border-b border-neutral-100 dark:border-neutral-800 sm:grid-cols-4">`
+    + cells.map((c) => {
+      const on = live && c.key === 'all'
+      const body = `<span class="flex items-baseline gap-2"><b class="text-2xl font-semibold tracking-tight tabular-nums">${n(c.n)}</b></span>`
+        + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${c.labelHtml ?? escapeHtml(c.label)}</span>`
+      if (!live) return `<div class="${CELL_BASE}">${body}</div>`
+      return `<button type="button" data-tab="${c.key}" aria-pressed="${on}"`
+        + ` data-on="${CELL} ${CELL_ON}" data-off="${CELL} ${CELL_OFF}"`
+        + ` class="${CELL} ${on ? CELL_ON : CELL_OFF}">${body}</button>`
+    }).join('')
+    + `</div>`
 
   if (subscribers.length === 0) {
     return `<div data-nl-panel="people"${open ? '' : ' hidden'}>${band}`
@@ -158,19 +186,6 @@ export function peoplePanel(
   const tools = `<div class="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-5 py-3 dark:border-neutral-800">`
     + `<input type="search" data-sub-search placeholder="${escapeAttr(t.nlSearchPlaceholder)}"`
     + ` aria-label="${escapeAttr(t.nlSearchPlaceholder)}" class="${CONTROL_SM} min-w-0 flex-1">`
-    + tabs({
-      items: [
-        { key: 'all', label: t.filterAll },
-        { key: 'confirmed', label: titled(t.nlConfirmed, lang) },
-        { key: 'pending', label: titled(t.nlPending, lang) },
-        { key: 'unsubscribed', label: titled(t.nlUnsub, lang) },
-      ],
-      value: 'all',
-      // Dense: four keys, the last of them "Unsubscribed", ran 13px past a 375px phone's
-      // column and were clipped with no cue that the strip scrolled.
-      dense: true,
-      attrs: 'data-sub-scope',
-    })
     // EVERY MATCH, on every page (2026-09-30): the export takes ticked rows only, and 500
     // subscribers was 500 boxes to tick by hand.
     + `<label class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300">`

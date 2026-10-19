@@ -131,6 +131,9 @@ if (root && cardHost) {
     }
     if (tally && words.inPosts) {
       tally.textContent = commentTally(words, shown, posts, lang, (x) => formatCount(x, lang))
+      // Hidden while it would only restate the band: nothing narrowed, nothing to add.
+      const total = screen.querySelectorAll('[data-comment]').length
+      tally.hidden = shown === total && posts === cards.filter((c) => c.querySelector('[data-comment]')).length
     }
     if (noMatch) noMatch.hidden = posts > 0
     order()

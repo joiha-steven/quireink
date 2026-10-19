@@ -67,6 +67,26 @@ already open: arrange mode, and the media picker.
 - The picker answers `null` as well as speaking, because a screen waiting on a callback that
   never comes is worse than a picker that closed.
 
+## What the browser tab says
+
+**The screen first, then the site: `Comments · My blog`.** With fifteen tabs open only the front
+of a title stays visible, and "quireINK" there named the product, which every tab shares. The
+words are the ones the screen's own heading uses (`Screen.title` in
+[`screens/index.ts`](../src/web/admin/screens/index.ts), one entry per screen, so the tab and
+the page cannot disagree); Settings adds the open tab (`Appearance · Settings · My blog`); an
+editor names the piece (`New post/page/note` before its first save, `postName` for a saved
+piece with no title). A site with no title falls back to `quireINK`.
+
+The SERVER draws the title on every page load. Two places change the address WITHOUT a load and
+re-title themselves (`island/lib/tab-title.ts`, site part read from `data-site-title` on `<html>`):
+a settings tab swap (labels arrive as `data-tab-titles` on the screen, one source with the strip)
+and a new piece's first save, which rewrites the URL to the piece's own and names the tab after it.
+The other `replaceState` callers (media kind, newsletter and trash tabs, content filters, the
+assistant's chat) keep the same screen, so the title stays right. A piece with no title is named by
+`postName` (ADR 0064), the way the rest of the product names it. What the tab does NOT follow is
+typing: an open editor says the title the piece had at the last load or save.
+The builder is [`admin-shared/tab-title.ts`](../src/admin-shared/tab-title.ts) (the server escapes it in `web/admin/tab-title.ts`), tested beside it.
+
 ## How wide the rail is, and who decides
 
 Two questions, answered a day apart, and it helps to keep them apart.

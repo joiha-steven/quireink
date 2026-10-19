@@ -15,13 +15,14 @@
 // the open drawer — so the island puts the first two back through `sessionStorage`, which is
 // the only part of that state a person would notice going.
 import type { Post, SiteLang, SiteSettings } from '@/types'
-import { adminT } from '@/i18n/admin-i18n'
+import { adminT, type AdminStrings } from '@/i18n/admin-i18n'
 import { escapeHtml } from '@/utils'
+import { postName } from '@/content/untitled'
 import { CARD, buttonClass } from '@/admin-shared/kit'
 import { emptyState } from '@/web/admin/kit'
-import { getIndex } from '@/content/posts'
-import { getPageIndex } from '@/content/pages'
-import { getNoteIndex } from '@/content/notes'
+import { getIndex, getPost } from '@/content/posts'
+import { getPage, getPageIndex } from '@/content/pages'
+import { getNote, getNoteIndex } from '@/content/notes'
 import { getViewTotals } from '@/analytics/summary'
 import { needsFrom, writeItems, type WriteItem } from '@/web/admin/screens/content-items'
 import { writePane } from '@/web/admin/screens/content-pane'
@@ -108,6 +109,22 @@ function opening(path: string): { kind: 'post' | 'page' | 'note'; slug: string }
     }
   }
   return null
+}
+
+/**
+ * What the tab of an editor address says: the piece's own title, because three editors open on
+ * three posts must tell apart. A piece never saved says "New post" (or page, or note), and a
+ * saved one with no title says what the Write list says for it. Read apart from the sheet's own
+ * load: it needs one row, not the category and tag lists the panel draws from.
+ */
+export async function editorTitle(t: AdminStrings, path: string): Promise<string[]> {
+  const at = opening(path)
+  if (!at) return [t.navWrite]
+  if (!at.slug) return [{ post: t.newPost, page: t.newPage, note: t.newNote }[at.kind]]
+  const row = await (at.kind === 'post' ? getPost(at.slug) : at.kind === 'page' ? getPage(at.slug) : getNote(at.slug))
+  // A slug with no piece behind it is the sheet's dead end, and the tab names the screen it is on.
+  if (!row) return [t.notFoundTitle]
+  return [postName(row)]
 }
 
 /**

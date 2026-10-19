@@ -53,6 +53,16 @@ that file first; this one only adds what is true here.
   and never masked — the admin's `scroll-fade` let the sheet's hint line print through the last
   rows; it prints each block's Markdown shortcut beside its row). The closing line under the writing says
   the two gestures once.
+- **"Hide attributes" is one key at a time.** Docked (from 1360px, a plain visit) the action row's
+  toggle is on screen and the panel's footer key is hidden by `[data-admin-sheet='docked']` in
+  `admin.css`. Modal (narrower, or the publish step at any width) the toggle sits under the scrim,
+  so the footer key stays: it is the one that closes the dialog from inside. The attribute is
+  the island's own, so there is one place that decides.
+- **Known gap: with Attributes open at 1440 the toolbar wraps to two rows.** The sheet is 750px
+  there and the single row needs 966 (934 of keys and gaps plus `px-4`); at 1024 with the panel
+  shut the sheet is 870 and it wraps too. The keys are already the kit's 36px, so tightening
+  cannot close a 216px gap, and scrolling one row was the phone's answer that this section
+  chose against for a desktop. Not changed.
 - **The table's tools get their own line**, under the strip and ranged left, and only while
   the cursor is in a table. They used to join the end of the main run, and because that run
   is centred, five buttons arriving slid every button already there 62.5px to the left

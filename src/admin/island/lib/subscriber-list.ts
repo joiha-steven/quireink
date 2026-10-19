@@ -64,7 +64,9 @@ export function wireSubscribers(screen: HTMLElement, opts: {
   const next = pick<HTMLButtonElement>('[data-sub-next]')
   const bar = pick('[data-sub-bar]')
   const picked = pick('[data-pick-count]')
-  const band = [...screen.querySelectorAll<HTMLElement>('[data-nl-panel="people"] .flex-1 b')]
+  /** The count row's figures, by the filter key they sit under. */
+  const figure = (key: string): HTMLElement | null =>
+    screen.querySelector<HTMLElement>(`[data-sub-scope] [data-tab="${key}"] b`)
 
   const boxes = (): HTMLInputElement[] =>
     [...screen.querySelectorAll<HTMLInputElement>('[data-sub-pick]')]
@@ -163,8 +165,9 @@ export function wireSubscribers(screen: HTMLElement, opts: {
     if (!body?.success) return false
     const was = entries.find((e) => e.id === id)?.status
     gone.add(id)
-    const cell = band[was === 'confirmed' ? 0 : was === 'pending' ? 1 : 2]
-    if (cell) cell.textContent = n(Math.max(0, Number(cell.textContent?.replace(/\D/g, '') ?? 0) - 1))
+    for (const cell of [figure('all'), figure(was ?? '')]) {
+      if (cell) cell.textContent = n(Math.max(0, Number(cell.textContent?.replace(/\D/g, '') ?? 0) - 1))
+    }
     return true
   }
 

@@ -26,6 +26,8 @@ import { ahead, mainWord, siteDateTimeShort, standing, type Standing } from '@/a
 import { withLiveIdentity } from '@/admin/components/restore-identity'
 import { askForLink } from './lib/ask-link'
 import { say } from './lib/media-bridge'
+import { retitle } from './lib/tab-title'
+import { postName } from '@/content/untitled'
 import { readSnapshot, sendSnapshot } from './lib/sheet-keep'
 import { nameEnough, payloadOf, previewStep, saveChain, savePiece, statusForSave, worthSaving, type Plan } from './lib/sheet-save'
 import { mountPaper } from './lib/sheet-paper'
@@ -284,6 +286,8 @@ function boot(root: HTMLElement, data: Payload): void {
       // THE ADDRESS BAR IS SYNCED AND THE PAGE IS NOT RELOADED. A reload would cost the caret,
       // the selection and the whole undo stack on the click that saved the work.
       window.history.replaceState(null, '', `${SHEET_PATH[kind]}/${encodeURIComponent(res.slug)}`)
+      // The tab named a NEW piece; it is saved now and the page did not reload.
+      retitle([postName({ title: draft.title, excerpt: draft.excerpt, slug: res.slug })])
       const now = JSON.stringify([slug, draft.title, status ?? draft.status, draft.excerpt, sentDate])
       if (now !== listed) { listed = now; void redrawColumn() }
       return true
