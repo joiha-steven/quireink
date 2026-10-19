@@ -373,8 +373,8 @@ are a scroll container behaving as one.
   → `settings.theme`, first: the coarsest decision) + shape + `palettes` (**Default appearance**,
   then the grid) left, fonts / font upload / custom CSS right, type sizes full width under
   both; **Comments & mail** (`settings-people.ts`) the comments switch again, comment keys,
-  newsletter SMTP; **Server & connections** `siteCard` (crawlers + custom code), Cloudflare,
-  redirects, import, `installCard` (cache, updates, storage), AI, MCP, API, ActivityPub, backups, off-site; **Account**
+  newsletter SMTP; **Server & connections** `installCard` (cache, updates, storage), AI, ActivityPub, backups, off-site, import, then the shut **Advanced** band: `siteCard` (crawlers + custom code), MCP, API, Cloudflare, Run on Cloudflare,
+  redirects; **Account**
   security, then **This admin**: the **Dashboard** switch (`settings.dashboard.systemLine`), the
   activity log, and rendering (font smoothing, **Motion** → `settings.motion.enabled`, **Key
   feedback** → `motion.keys` / `keyVolume`, the pen squeak, the autosave interval).

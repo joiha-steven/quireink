@@ -79,7 +79,7 @@ const help: HelpText = {
       body: `<p>TLS와 모든 독자 가까이에 있는 캐시를 위해 Cloudflare를 앞에 두세요 — 독자가 서버에서 멀리 있을 때 가장 크게 이득을 봅니다.</p>
 <ul class="after">
 <li><b>Cache Rules</b>: <code>/admin</code>과 <code>/api</code>는 우회하고, 나머지는 서버가 정한 시간만큼 모두 캐시합니다. <b>Rocket Loader는 끄세요</b>(스크립트 순서를 바꾸고 지연시켜 관리 화면을 망가뜨립니다). SSL: Full (Strict).</li>
-<li>{t:navSettings} → {t:tabServer} → {t:cardCloudflare}에 Cloudflare API 토큰과 Zone ID를 넣으면, 저장할 때마다 영역이 알아서 비워집니다.</li>
+<li>{t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardCloudflare}에 Cloudflare API 토큰과 Zone ID를 넣으면, 저장할 때마다 영역이 알아서 비워집니다.</li>
 <li>사이드바의 <b>{t:clearCache}</b>는 이 서버와 Cloudflare를 비운 뒤 홈페이지와 최신 페이지를 다시 데워 둡니다.</li>
 <li>새 코드를 배포한 뒤에는 <code>GET /api/cron?purge=1</code>로 엣지를 비우세요. Cloudflare는 HTML을 캐시하므로, 오래된 페이지는 독자가 새로 고침으로 없앨 수 있는 것이 아닙니다.</li>
 </ul>
@@ -88,18 +88,18 @@ const help: HelpText = {
     {
       id: 'mcp',
       title: 'MCP — AI에게 블로그 운영 맡기기',
-      body: `<p>내장된 <b>MCP 서버</b>는 AI 에이전트에게 <b>관리 화면과 같은 규칙</b>을 줍니다. 글과 페이지를 쓰고 고치고, 이미지와 설정을 돌보며, 모든 변경은 당신의 것과 똑같이 검사되고 활동 로그에 기록됩니다. {t:navSettings} → {t:tabServer} → {t:cardMcp}에서 켜고 접근 토큰을 만드세요 — 토큰은 한 번만 표시되고 해시로만 저장됩니다.</p>
+      body: `<p>내장된 <b>MCP 서버</b>는 AI 에이전트에게 <b>관리 화면과 같은 규칙</b>을 줍니다. 글과 페이지를 쓰고 고치고, 이미지와 설정을 돌보며, 모든 변경은 당신의 것과 똑같이 검사되고 활동 로그에 기록됩니다. {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardMcp}에서 켜고 접근 토큰을 만드세요 — 토큰은 한 번만 표시되고 해시로만 저장됩니다.</p>
 <p>같은 능력이 관리 화면 안에 <b>어시스턴트</b> 화면으로도 있으며, {t:navSettings} → {t:tabServer} → {t:cardAi}의 모델로 동작합니다 — MCP 클라이언트는 필요 없습니다. 어느 쪽으로 들어오든 에이전트는 <b>읽고 돌봅니다</b>. 이번 주 방문을 지난주와 비교하고, 댓글을 휴지통으로 쓸어 담고, 아카이브를 검색하고(초안 포함), 사람들이 실제로 읽는 것에 맞춰 첫 페이지를 다시 배치하고, 준비된 팔레트로 모양을 바꾸고, 뉴스레터 테스트 호를 당신에게만 보냅니다. <i>이번 주 블로그는 어땠나요?</i>라고 물으면 대시보드와 같은 숫자로 답합니다 — 아래의 <b>쿡북</b>은 실제 일을 해내는 프롬프트를 모은 페이지입니다.</p>
 <p>선이 그어진 곳: 구독자 주소와 누가 어떤 댓글을 썼는지는 MCP를 넘어가지 않습니다. 모양은 준비된 선택지만 받고 임의의 색은 받지 않습니다. 삭제는 사라지지 않고 휴지통으로 갑니다. 그리고 실제 뉴스레터 발송은 <b>일부러 도구로 두지 않았습니다</b> — 보낸 메일은 되돌릴 수 없으니, 그 버튼은 당신 손에 남습니다.</p>
-<p class="links"><a href="doc:docs/agent-cookbook.md">에이전트 쿡북</a> <a href="doc:docs/mcp.md">MCP 문서</a> <a href="/admin/settings?tab=server">{t:tabServer}</a> <a href="/admin/log">활동 로그</a></p>`,
+<p class="links"><a href="doc:docs/agent-cookbook.md">에이전트 쿡북</a> <a href="doc:docs/mcp.md">MCP 문서</a> <a href="/admin/settings?tab=server&amp;setting=mcpEnable">{t:tabServer}</a> <a href="/admin/log">활동 로그</a></p>`,
     },
     {
       id: 'api',
       title: 'Content API — 프로그램이 블로그를 읽게 하기',
-      body: `<p><b>Content API</b>는 게시된 글을 <code>/api/v1</code>에서 JSON으로 제공합니다 — 게시물, 페이지, 노트, 카테고리, 각각 작성된 Markdown과 함께. 블로그를 읽기보다는 블로그로 무언가를 만들기 위한 것입니다. 두 번째 프런트엔드, 검색 색인, 정적 사본, 자기 링크를 점검하는 스크립트 같은 것들. {t:navSettings} → {t:tabServer}에서 켜세요. 켜기 전까지는 그 주소들이 모두 <b>404</b>로 응답합니다.</p>
+      body: `<p><b>Content API</b>는 게시된 글을 <code>/api/v1</code>에서 JSON으로 제공합니다 — 게시물, 페이지, 노트, 카테고리, 각각 작성된 Markdown과 함께. 블로그를 읽기보다는 블로그로 무언가를 만들기 위한 것입니다. 두 번째 프런트엔드, 검색 색인, 정적 사본, 자기 링크를 점검하는 스크립트 같은 것들. {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardApi}에서 켜세요. 켜기 전까지는 그 주소들이 모두 <b>404</b>로 응답합니다.</p>
 <p><b>읽기만 하고, 키가 없습니다.</b> 주소를 아는 사람은 누구나 읽을 수 있고, 얻는 것은 사이트를 둘러보며 이미 얻을 수 있던 것과 정확히 같습니다. 초안도, 날짜가 미래인 글도, 휴지통에 있는 것도 없고, 블로그를 바꿀 수 있는 것도 없습니다. 스위치가 있는 이유는 이것이 무엇을 가능하게 하느냐가 아니라 무엇을 <i>쉽게</i> 만드느냐 때문입니다 — 블로그 전체를 페이지 수만큼의 요청으로. 조용한 개인 블로그라면 편리한 기능입니다. 당신의 블로그에 맞게 정하세요.</p>
 <p>프로그램에서 글을 쓰려면 위의 <b>MCP</b>나, 노트 앱에서 Micropub을 쓰세요. 둘 다 로그인하지만 이것은 로그인하지 않으며, 그래서 읽기만 할 수 있습니다.</p>
-<p class="links"><a href="doc:docs/content-api.md">Content API 문서</a> <a href="/admin/settings?tab=server">{t:tabServer}</a></p>`,
+<p class="links"><a href="doc:docs/content-api.md">Content API 문서</a> <a href="/admin/settings?tab=server&amp;setting=apiEnable">{t:tabServer}</a></p>`,
     },
     {
       id: 'fediverse',
@@ -165,7 +165,7 @@ const help: HelpText = {
     ['구독자가 가입했는데 메일을 받지 못했습니다', '주소는 메일을 보내기 전에 저장되므로, SMTP가 고장 나도 가입은 남습니다. {t:navNewsletter} → {t:nlTabPeople}에서 실패 내용을 확인한 뒤 {t:navNewsletter} → {t:nlTabTest}를 쓰세요.'],
     ['예약한 글이 제시간에 공개되지 않았습니다', '서버가 돌아가고 있는 한 블로그는 정한 시각에서 1분 안에 알아서 게시합니다. 그 순간 서버가 꺼져 있었다면, 서버가 돌아오는 즉시 글이 공개됩니다.'],
     ['인증 앱이 없어졌는데 로그인에서 그 코드를 요구합니다', '코드 화면에서 “{t:authUseRecovery}”를 고르고 복구 코드 하나를 입력하세요. 각 코드는 한 번만 쓸 수 있습니다. 그다음 {t:navSettings} → {t:tabAccount}에서 새 코드를 만드세요.'],
-    ['이름을 바꾼 뒤 옛 주소가 404를 냅니다', '이름을 바꾸면 301이 자동으로 추가됩니다. 그 주소가 여기에 존재한 적이 없다면 {t:navSettings} → {t:tabServer} → {t:redirectsTitle}에서 추가하세요.'],
+    ['이름을 바꾼 뒤 옛 주소가 404를 냅니다', '이름을 바꾸면 301이 자동으로 추가됩니다. 그 주소가 여기에 존재한 적이 없다면 {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:redirectsTitle}에서 추가하세요.'],
     ['복원한 뒤 이미지가 사라졌습니다', '/api/health를 여세요 — 데이터베이스와 저장 폴더를 따로 보고합니다.'],
   ],
 }

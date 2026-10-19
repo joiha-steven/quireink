@@ -36,6 +36,34 @@ card beside a tall one is stretched and the next card cannot start until both ha
 Which card goes on which side is re-measured when a page is reported uneven, and the
 heights are written beside the assignment where the next person will check them.
 
+**An advanced band folds what a writer never needs** (2026-10-19). Server & connections mixed
+the owner's cards with a developer's, so a person who came to switch on backups scrolled past
+JSON-LD switches, two boxes of raw HTML and an MCP token table. `advancedBand` in
+[`settings-shell.ts`](../src/web/admin/screens/settings-shell.ts) draws them below the tab's own
+two columns, under one key (*Advanced*) with one line naming what is behind it.
+- **What counts as advanced**: a card nobody needs in order to RUN a blog — what crawlers and
+  feeds are served and code pasted into every page, redirects, the CDN and the move to
+  Cloudflare, the MCP server and the Content API. The cache, updates, storage limits, backups and
+  their off-site copy, the import, the AI key the writing assistant runs on and the fediverse
+  name are decisions about the blog itself and stay on top. When in doubt a card stays visible.
+- **Shut by default, a DEVICE preference** (`quireink-admin-settings-advanced` in
+  `localStorage`, like the explanations switch), never a setting. The server draws every card and
+  ships the body `hidden`; `island/lib/settings-advanced.ts` opens it.
+- **Folding hides nothing from the tools that find a setting.** A search hit, a `?setting=<key>`
+  link (the command palette and Help use it) and a field the server refuses all open the band and
+  land on the row, without changing the preference. The sheet's Save reads every `data-k` on
+  the screen whether shown or not, so a key changed inside and folded away is still counted and
+  stored, and a card's own Save works the same open or shut.
+- **A shut band never hides a problem, and does not cry wolf.** The key carries a count of the
+  cards inside whose test FAILED (`connectionFailed`) or which hold an UNSAVED edit
+  (`connectionUnsaved`, or a changed key on a card with no lamp), in the amber of the lamp
+  vocabulary ([admin-design.md](./admin-design.md)). *Not set up yet* (`connectionUnset`) is
+  never counted: every card in the band is optional, and a count on every fresh blog with no
+  Cloudflare account is a count nobody reads. A seeded blog shows no count. The island tells
+  the resting amber from the other two by the lamp still wearing the title the server drew.
+- **It is two columns too**, balanced by hand like the stacks above it; the measurements sit
+  beside the assignment in `settings-server.ts`.
+
 ⚠️ **A grid item needs `min-w-0` or a `truncate` row will not let the column shrink.** A grid
 item's automatic minimum size is its content's min-content width, and `truncate` sets
 `white-space: nowrap`, so one un-truncated headline sets the floor for the whole track. Measured

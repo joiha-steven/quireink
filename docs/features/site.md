@@ -55,7 +55,7 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
   the blog. The house answered this once already: the paper look's "Table 1." labels are drawn
   by CSS counters from a per-language stylesheet, not written into the body.
 
-## URL redirects — `src/server/redirects.ts`, Admin → Settings → Server & connections
+## URL redirects — `src/server/redirects.ts`, Admin → Settings → Server & connections → Advanced
 
 - **What:** owner-managed 301 (permanent) / 302 (temporary) redirects, plus an automatic
   301 whenever a post/page slug is renamed (so existing links + search results survive a
@@ -85,7 +85,7 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
   machine-read files, and everything under `/api/`, `/uploads/`, `/assets/`, `/.well-known/`
   and the like. Refused when saved (`reserved:`) and skipped when served, so a row stored before
   the list existed does nothing: a redirect on `/login` once locked the owner out.
-- **Admin:** a Redirects card (list + add + delete) in Settings → Server & connections. `source` is normalized
+- **Admin:** a Redirects card (list + add + delete) in Settings → Server & connections → Advanced. `source` is normalized
   (leading slash, no query/trailing slash); `destination` is a path or an absolute http(s) URL,
   and a full URL on the site's own address is stored as its path. Refused, each as a code the
   admin says in the owner's language: a self-redirect (`same_path`), a ring of rules that leads

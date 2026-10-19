@@ -147,9 +147,11 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   // picker nobody can find is a picker nobody uses.
   { tab: 'appearance', label: 'cardFont', note: 'fontPresetHint' },
   { tab: 'appearance', label: 'chromeFontLabel', note: 'chromeFontHint' },
-  { tab: 'appearance', label: 'fontSmoothing' },
   { tab: 'appearance', label: 'lookLabel' },
   { tab: 'account', label: 'motionLabel' },
+  // On Account since the type switches moved to This admin: under Appearance the search opened a
+  // tab that does not draw it.
+  { tab: 'account', label: 'fontSmoothing' },
   { tab: 'account', label: 'keyFeedbackLabel', note: 'keyFeedbackDesc' },
   { tab: 'account', label: 'keyVolumeLabel', note: 'keyVolumeDesc' },
   { tab: 'account', label: 'penSqueakLabel', note: 'penSqueakDesc' },
@@ -181,6 +183,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'server', label: 'mcpEnable' },
   { tab: 'server', label: 'mcpUrlLabel' },
   { tab: 'server', label: 'mcpTokensTitle' },
+  { tab: 'server', label: 'apiEnable', note: 'apiEnableDesc' },
   { tab: 'server', label: 'cardAi' },
   { tab: 'server', label: 'aiProviderLabel' },
   { tab: 'server', label: 'aiKeyLabel' },
@@ -204,12 +207,21 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'server', label: 'backupKeysPass', note: 'backupKeysPassHint' },
   { tab: 'server', label: 'offsiteTitle', note: 'offsiteHelp' },
   { tab: 'server', label: 's3Bucket' },
-  { tab: 'server', label: 'offsiteTest' },
   { tab: 'server', label: 'backupIntervalLabel' },
   { tab: 'server', label: 'backupKeepLabel' },
   { tab: 'server', label: 'maxUploadLabel', note: 'maxUploadHint' },
   { tab: 'server', label: 'storageQuotaLabel', note: 'storageQuotaHint' },
 ]
+
+/**
+ * A row's id in the command palette: its dictionary KEY, never its place in the list above.
+ *
+ * ⚠️ The palette keeps the ids of the last rows used in `localStorage`. They were `g:<index>`,
+ * so adding, removing or moving one entry here quietly pointed every remembered row after it at
+ * a different setting. A key is unique in this list (`settings-index.test.ts` holds that) and
+ * survives any reordering; ids remembered under the old scheme match nothing and are dropped.
+ */
+export const settingRowId = (entry: SettingEntry): string => `g:${entry.label}`
 
 // `fold` moved to `@/admin-shared/fold` (ADR 0054): the log screen is server-rendered now and
 // folds its haystack there, so the two faces have to strip accents the same way.

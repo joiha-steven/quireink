@@ -79,7 +79,7 @@ const help: HelpText = {
       body: `<p>Stellen Sie Cloudflare davor, für TLS und einen Cache nahe bei jedem Leser — der große Gewinn, wenn Ihre Leser weit von Ihrem Server entfernt sind.</p>
 <ul class="after">
 <li><b>Cache Rules</b>: <code>/admin</code> und <code>/api</code> umgehen, alles andere so lange cachen, wie der Server angibt. Schalten Sie <b>Rocket Loader aus</b> (er ordnet Skripte um und verzögert sie, was die Verwaltung kaputt macht). SSL: Full (Strict).</li>
-<li>Tragen Sie ein Cloudflare-API-Token und die Zone ID unter {t:navSettings} → {t:tabServer} → {t:cardCloudflare} ein, dann leert jedes Speichern die Zone von selbst.</li>
+<li>Tragen Sie ein Cloudflare-API-Token und die Zone ID unter {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardCloudflare} ein, dann leert jedes Speichern die Zone von selbst.</li>
 <li><b>{t:clearCache}</b> in der Seitenleiste leert diesen Server und Cloudflare und wärmt danach die Startseite und die neuesten Seiten wieder vor.</li>
 <li>Leeren Sie nach dem Deployment von neuem Code die Edge mit <code>GET /api/cron?purge=1</code>. Cloudflare cacht HTML, eine veraltete Seite kann ein Leser also nicht einfach durch Neuladen loswerden.</li>
 </ul>
@@ -88,18 +88,18 @@ const help: HelpText = {
     {
       id: 'mcp',
       title: 'MCP — eine KI das Blog führen lassen',
-      body: `<p>Der eingebaute <b>MCP-Server</b> gibt einem KI-Agenten <b>dieselben Regeln wie die Verwaltung</b>: Beiträge und Seiten schreiben und aktualisieren, sich um Bilder und Einstellungen kümmern, jede Änderung geprüft und genau wie Ihre ins Aktivitätsprotokoll geschrieben. Schalten Sie ihn ein und erstellen Sie Zugriffstokens unter {t:navSettings} → {t:tabServer} → {t:cardMcp} — ein Token wird einmal angezeigt und nur als Hash gespeichert.</p>
+      body: `<p>Der eingebaute <b>MCP-Server</b> gibt einem KI-Agenten <b>dieselben Regeln wie die Verwaltung</b>: Beiträge und Seiten schreiben und aktualisieren, sich um Bilder und Einstellungen kümmern, jede Änderung geprüft und genau wie Ihre ins Aktivitätsprotokoll geschrieben. Schalten Sie ihn ein und erstellen Sie Zugriffstokens unter {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardMcp} — ein Token wird einmal angezeigt und nur als Hash gespeichert.</p>
 <p>Dieselben Fähigkeiten gibt es in der Verwaltung als Bildschirm <b>Assistent</b>, der mit dem Modell aus {t:navSettings} → {t:tabServer} → {t:cardAi} läuft — kein MCP-Client nötig. Durch beide Türen <b>liest und pflegt</b> der Agent: Er stellt den Traffic dieser Woche dem der letzten gegenüber, fegt Kommentare in den Papierkorb, durchsucht das Archiv (Entwürfe inklusive), ordnet die Titelseite um das herum, was die Leute tatsächlich lesen, gestaltet das Aussehen aus den fertigen Paletten neu und schickt eine Testausgabe des Newsletters nur an Sie. Fragen Sie ihn <i>Wie lief mein Blog diese Woche?</i>, und er antwortet mit den Zahlen der Übersicht selbst — das <b>Kochbuch</b> unten ist eine Seite voller Prompts, die echte Arbeit erledigen.</p>
 <p>Wo die Grenzen liegen: Abonnentenadressen und wer welchen Kommentar geschrieben hat, gehen nie über MCP; beim Aussehen gelten nur die fertigen Auswahlen, nie eine freie Farbe; Gelöschtes landet im Papierkorb, nicht im Nichts; und den echten Newsletter zu versenden ist <b>bewusst kein Werkzeug</b> — eine E-Mail lässt sich nicht zurückholen, also bleibt dieser Knopf bei Ihnen.</p>
-<p class="links"><a href="doc:docs/agent-cookbook.md">Agenten-Kochbuch</a> <a href="doc:docs/mcp.md">MCP-Doku</a> <a href="/admin/settings?tab=server">{t:tabServer}</a> <a href="/admin/log">Aktivitätsprotokoll</a></p>`,
+<p class="links"><a href="doc:docs/agent-cookbook.md">Agenten-Kochbuch</a> <a href="doc:docs/mcp.md">MCP-Doku</a> <a href="/admin/settings?tab=server&amp;setting=mcpEnable">{t:tabServer}</a> <a href="/admin/log">Aktivitätsprotokoll</a></p>`,
     },
     {
       id: 'api',
       title: 'Content-API — ein Programm das Blog lesen lassen',
-      body: `<p>Die <b>Content-API</b> liefert Ihre veröffentlichten Texte als JSON unter <code>/api/v1</code> — Beiträge, Seiten, Notizen und Ihre Kategorien, jeweils mit dem Markdown, in dem sie geschrieben wurden. Sie ist dafür da, etwas aus dem Blog zu bauen, statt es zu lesen: ein zweites Frontend, einen Suchindex, eine statische Kopie, ein Skript, das die eigenen Links prüft. Schalten Sie sie unter {t:navSettings} → {t:tabServer} ein; bis dahin antwortet jede dieser Adressen mit <b>404</b>.</p>
+      body: `<p>Die <b>Content-API</b> liefert Ihre veröffentlichten Texte als JSON unter <code>/api/v1</code> — Beiträge, Seiten, Notizen und Ihre Kategorien, jeweils mit dem Markdown, in dem sie geschrieben wurden. Sie ist dafür da, etwas aus dem Blog zu bauen, statt es zu lesen: ein zweites Frontend, einen Suchindex, eine statische Kopie, ein Skript, das die eigenen Links prüft. Schalten Sie sie unter {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardApi} ein; bis dahin antwortet jede dieser Adressen mit <b>404</b>.</p>
 <p><b>Sie liest nur, und sie hat keinen Schlüssel.</b> Wer die Adresse kennt, kann sie lesen, und bekommt genau das, was er beim Durchblättern der Website ohnehin schon bekäme: keine Entwürfe, keine vordatierten Beiträge, nichts aus dem Papierkorb und nichts, was das Blog verändern kann. Den Schalter gibt es wegen dessen, was sie <i>billig</i> macht, nicht wegen dessen, was sie möglich macht — das ganze Blog in so vielen Anfragen, wie es Seiten hat. Auf einem ruhigen persönlichen Blog ist das eine Bequemlichkeit; entscheiden Sie für Ihres.</p>
 <p>Um aus einem Programm zu schreiben, nehmen Sie <b>MCP</b> oben oder Micropub aus einer Notiz-App. Beide melden sich an; diese hier nicht, und deshalb darf sie nur lesen.</p>
-<p class="links"><a href="doc:docs/content-api.md">Content-API-Doku</a> <a href="/admin/settings?tab=server">{t:tabServer}</a></p>`,
+<p class="links"><a href="doc:docs/content-api.md">Content-API-Doku</a> <a href="/admin/settings?tab=server&amp;setting=apiEnable">{t:tabServer}</a></p>`,
     },
     {
       id: 'fediverse',
@@ -165,7 +165,7 @@ const help: HelpText = {
     ['Ein Abonnent hat sich angemeldet, aber keine E-Mail bekommen', 'Die Adresse wird gespeichert, bevor die Mail verschickt wird, die Anmeldung übersteht also ein kaputtes SMTP. Suchen Sie unter {t:navNewsletter} → {t:nlTabPeople} nach dem Fehler und nutzen Sie dann {t:navNewsletter} → {t:nlTabTest}.'],
     ['Ein geplanter Beitrag ist nicht pünktlich online gegangen', 'Das Blog veröffentlicht ihn von selbst innerhalb einer Minute nach seiner Zeit, solange der Server läuft. War der Server in dem Moment aus, geht der Beitrag online, sobald er wieder läuft.'],
     ['Die Authenticator-App ist weg, und die Anmeldung fragt nach ihrem Code', 'Wählen Sie auf dem Code-Bildschirm „{t:authUseRecovery}“ und geben Sie einen Ihrer Wiederherstellungscodes ein; jeder funktioniert einmal. Erstellen Sie danach neue unter {t:navSettings} → {t:tabAccount}.'],
-    ['Eine alte Adresse liefert nach einer Umbenennung 404', 'Umbenennen legt von selbst eine 301 an. Hat es die Adresse hier nie gegeben, legen Sie eine unter {t:navSettings} → {t:tabServer} → {t:redirectsTitle} an.'],
+    ['Eine alte Adresse liefert nach einer Umbenennung 404', 'Umbenennen legt von selbst eine 301 an. Hat es die Adresse hier nie gegeben, legen Sie eine unter {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:redirectsTitle} an.'],
     ['Bilder sind nach einer Wiederherstellung verschwunden', 'Öffnen Sie /api/health — es meldet die Datenbank und den Speicherordner getrennt.'],
   ],
 }

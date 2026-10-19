@@ -871,10 +871,13 @@ input[type='color']::-moz-color-swatch {
 
    `.admin-note` rides on `NOTE_TEXT` in `scale.ts` — see the note there for why it is on the
    token rather than on two dozen call sites, and why `NOTE_ALERT` is deliberately left out
-   of it. `.tab-hint` is exempt because it is the one line that says what a TAB is for, which
-   is wayfinding rather than explanation: hiding it would leave eight unlabelled boxes. The line
-   that stands in for a table control the chosen theme draws itself (`ownable` in
-   `settings-post.ts`) is exempt for the same reason: hidden, a bare label would sit there. */
+   of it. `.tab-hint` marks a line that is wayfinding rather than explanation, and is exempt:
+   the sentence under the Advanced key says what is folded behind it (`advancedBand` in
+   `settings-shell.ts`), and a key whose contents cannot be guessed is a key nobody opens. The
+   line that stands in for a table control the chosen theme draws itself (`ownable` in
+   `settings-post.ts`) is exempt for the same reason: hidden, a bare label would sit there.
+   (The name is older than both: it marked the sentence each tab printed under the strip
+   until ADR 0073 took that line away.) */
 /* THE UNCHOSEN LABEL ON A CARVED SEGMENT TRACK, which has to satisfy two numbers at once and
    sits between two Tailwind steps.
 
@@ -948,6 +951,11 @@ input[type='color']::-moz-color-swatch {
   .admin-shell { display: flex; flex-direction: column; min-height: 100dvh; }
   .admin-shell > .admin-canvas { flex: 1 1 auto; }
 }
+
+/* THE ADVANCED KEY'S CHEVRON points down while the band is shut and up while it is open, read
+   off the key's own `aria-expanded` so the picture and what a screen reader is told cannot
+   disagree. The island moves both (`island/lib/settings-advanced.ts`). */
+[data-advanced-toggle][aria-expanded='true'] .advanced-chevron { rotate: 180deg; }
 
 [data-explanations='off'] .admin-note:not(.tab-hint) { display: none; }
 /* And the HOLE it leaves. Tailwind's `space-y-*` is `& > :not([hidden]) ~ :not([hidden])`,

@@ -2,7 +2,7 @@
 
 # SEO & PWA
 
-## SEO (toggleable, Admin → Settings → Server & connections)
+## SEO (toggleable, Admin → Settings → Server & connections → Advanced)
 
 - `settings.seo` = `{ autoSchema, sitemap, llms, robots, rss, ogImage, ogFallbackImage }` +
   `settings.siteUrl` (canonical; '' → localhost via `resolveSiteUrl()`).

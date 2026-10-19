@@ -20,7 +20,7 @@ import { buttonClass, CONTROL, OVERLAY } from '@/admin-shared/kit'
 import { FOUND_NAME, FOUND_ROW, FOUND_WHERE } from '@/admin-shared/found'
 import { chordSpellings } from '@/web/admin/rail-rows'
 import { BUILTIN, SHORTCUTS, type Shortcut } from '@/admin-shared/keys'
-import { SETTINGS_INDEX } from '@/admin-shared/settings-index'
+import { SETTINGS_INDEX, settingRowId } from '@/admin-shared/settings-index'
 import { SECTION, UTIL } from '@/admin-shared/scale'
 
 /**
@@ -203,12 +203,14 @@ function palette(t: AdminStrings): string {
   // SHOWN: the tab, and only the tab — the note is a whole sentence and putting it in a
   // `shrink-0` right-hand column took the entire row. SEARCHED: the note as well, because
   // people describe a setting rather than name it.
-  const settings = SETTINGS_INDEX.map((entry, i) => row({
-    id: `g:${i}`,
+  const settings = SETTINGS_INDEX.map((entry) => row({
+    id: settingRowId(entry),
     label: t[entry.label],
     hint: tabName[entry.tab] ?? entry.tab,
     search: `${t[entry.label]} ${entry.note ? t[entry.note] : ''}`,
-    href: `/admin/settings?tab=${entry.tab}`,
+    // `&setting=` lands ON the row, and opens the Advanced band when the row is folded in it;
+    // the tab alone left a hit on a developer setting standing behind a shut key.
+    href: `/admin/settings?tab=${entry.tab}&setting=${entry.label}`,
     group: 'setting',
   }))
 

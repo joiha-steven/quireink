@@ -79,7 +79,7 @@ const help: HelpText = {
       body: `<p>Put Cloudflare in front for TLS and a cache near every reader — the big win when readers are far from your server.</p>
 <ul class="after">
 <li><b>Cache Rules</b>: bypass <code>/admin</code> and <code>/api</code>, cache everything else for the time the server says. Turn <b>Rocket Loader off</b> (it reorders and delays scripts, which breaks the admin). SSL: Full (Strict).</li>
-<li>Add a Cloudflare API token and Zone ID in {t:navSettings} → {t:tabServer} → {t:cardCloudflare}, and every save clears the zone by itself.</li>
+<li>Add a Cloudflare API token and Zone ID in {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardCloudflare}, and every save clears the zone by itself.</li>
 <li><b>{t:clearCache}</b>, in the sidebar, clears this server and Cloudflare, then warms the home page and the newest pages again.</li>
 <li>After deploying new code, clear the edge with <code>GET /api/cron?purge=1</code>. Cloudflare caches HTML, so a stale page is not something a reader can refresh away.</li>
 </ul>
@@ -88,18 +88,18 @@ const help: HelpText = {
     {
       id: 'mcp',
       title: 'MCP — let an AI run the blog',
-      body: `<p>The built-in <b>MCP server</b> gives an AI agent the <b>same rules as the admin</b>: write and update posts and pages, look after pictures and settings, every change checked and written to the activity log exactly like yours. Turn it on and make access tokens in {t:navSettings} → {t:tabServer} → {t:cardMcp} — a token is shown once and stored only as a hash.</p>
+      body: `<p>The built-in <b>MCP server</b> gives an AI agent the <b>same rules as the admin</b>: write and update posts and pages, look after pictures and settings, every change checked and written to the activity log exactly like yours. Turn it on and make access tokens in {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardMcp} — a token is shown once and stored only as a hash.</p>
 <p>The same abilities live inside the admin as the <b>Assistant</b> screen, running on the model from {t:navSettings} → {t:tabServer} → {t:cardAi} — no MCP client needed. Through either door the agent <b>reads and looks after</b>: this week’s traffic against last week’s, comments swept into the Trash, the archive searched (drafts included), the front page rearranged around what people actually read, the look restyled from the ready-made palettes, a test issue of the newsletter sent to you alone. Ask it <i>how did my blog do this week?</i> and it answers with the dashboard’s own numbers — the <b>cookbook</b> below is a page of prompts that do real jobs.</p>
 <p>Where the lines are: subscriber addresses and who wrote which comment never cross MCP; the look accepts the ready-made choices only, never a free colour; deletes go to the Trash, not away; and sending the real newsletter is <b>deliberately not a tool</b> — an email cannot be unsent, so that button stays yours.</p>
-<p class="links"><a href="doc:docs/agent-cookbook.md">Agent cookbook</a> <a href="doc:docs/mcp.md">MCP docs</a> <a href="/admin/settings?tab=server">{t:tabServer}</a> <a href="/admin/log">Activity log</a></p>`,
+<p class="links"><a href="doc:docs/agent-cookbook.md">Agent cookbook</a> <a href="doc:docs/mcp.md">MCP docs</a> <a href="/admin/settings?tab=server&amp;setting=mcpEnable">{t:tabServer}</a> <a href="/admin/log">Activity log</a></p>`,
     },
     {
       id: 'api',
       title: 'Content API — let a program read the blog',
-      body: `<p>The <b>Content API</b> serves your published writing as JSON at <code>/api/v1</code> — posts, pages, notes and your categories, each with the Markdown it was written in. It is for building something out of the blog rather than reading it: a second front end, a search index, a static copy, a script that checks its own links. Turn it on in {t:navSettings} → {t:tabServer}; until you do, every one of those addresses answers <b>404</b>.</p>
+      body: `<p>The <b>Content API</b> serves your published writing as JSON at <code>/api/v1</code> — posts, pages, notes and your categories, each with the Markdown it was written in. It is for building something out of the blog rather than reading it: a second front end, a search index, a static copy, a script that checks its own links. Turn it on in {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardApi}; until you do, every one of those addresses answers <b>404</b>.</p>
 <p><b>It only reads, and it has no key.</b> Anyone who knows the address can read it, and what they get is exactly what they could already get by browsing the site: no drafts, no posts dated ahead, nothing in the Trash, and nothing that can change the blog. The switch is there because of what it makes <i>cheap</i>, not what it makes possible — the whole blog in as many requests as it has pages. On a quiet personal blog that is a convenience; decide for yours.</p>
 <p>To write from a program, use <b>MCP</b> above, or Micropub from a notebook app. Both sign in; this does not, which is why it may only read.</p>
-<p class="links"><a href="doc:docs/content-api.md">Content API docs</a> <a href="/admin/settings?tab=server">{t:tabServer}</a></p>`,
+<p class="links"><a href="doc:docs/content-api.md">Content API docs</a> <a href="/admin/settings?tab=server&amp;setting=apiEnable">{t:tabServer}</a></p>`,
     },
     {
       id: 'fediverse',
@@ -165,7 +165,7 @@ const help: HelpText = {
     ['A subscriber signed up but got no email', 'The address is saved before the mail is sent, so the sign-up survives a broken SMTP. Look in {t:navNewsletter} → {t:nlTabPeople} for the failure, then use {t:navNewsletter} → {t:nlTabTest}.'],
     ['A scheduled post did not go live on time', 'The blog publishes it by itself within a minute of its time, as long as the server is running. If the server was down at that moment, the post goes live as soon as it is back.'],
     ['The authenticator app is gone and sign-in asks for its code', 'On the code screen, choose “{t:authUseRecovery}” and type one of your recovery codes; each one works once. Then make new ones in {t:navSettings} → {t:tabAccount}.'],
-    ['An old address gives 404 after a rename', 'Renaming adds a 301 by itself. If the address never existed here, add one in {t:navSettings} → {t:tabServer} → {t:redirectsTitle}.'],
+    ['An old address gives 404 after a rename', 'Renaming adds a 301 by itself. If the address never existed here, add one in {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:redirectsTitle}.'],
     ['Pictures vanished after a restore', 'Open /api/health — it reports the database and the storage folder separately.'],
   ],
 }

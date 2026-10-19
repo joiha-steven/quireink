@@ -64,9 +64,10 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
       if (panel('appearance').hidden) return 'the appearance tab did not come forward'
       if (!panel('blog').hidden) return 'the blog tab stayed on screen'
       if (new URL(location.href).searchParams.get('tab') !== 'appearance') return 'the address forgot the tab'
-      // The line under the strip is the tab's own sentence, so it moves with it.
+      // The row moves with its panel and holds the explanations switch alone (ADR 0073).
       const hint = document.querySelector('[data-notes-row]:not([hidden])')
-      if (!hint || hint.dataset.notesRow !== 'appearance') return 'the hint under the strip did not follow'
+      if (!hint || hint.dataset.notesRow !== 'appearance') return 'the row under the strip did not follow'
+      if (hint.children.length !== 1 || !hint.querySelector('[data-notes-toggle]')) return 'the row under the strip holds more than its switch'
       tab('blog').click(); await sleep(250)
       if (new URL(location.href).searchParams.get('tab')) return 'going back to Blog left the address dirty'
       return 'ok (one tab on screen, the address and the strip agree on which)'
@@ -328,6 +329,8 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
         // at a time here rather than all at once, so each is laid out in the real column width.
         const was = panel.hidden
         panel.hidden = false
+        // And the Advanced band opened with it: a folded card is one key-press from the screen.
+        const folded = [...panel.querySelectorAll('[data-advanced-body]')].filter((b) => b.hidden); for (const b of folded) b.hidden = false
         for (const e of panel.querySelectorAll('.card-body button, .card-body input, .card-body select')) {
           if (!shown(e) || exempt(e)) continue
           seen += 1
@@ -337,7 +340,7 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
             off.push(what.slice(0, 22) + '=' + h)
           }
         }
-        panel.hidden = was
+        for (const b of folded) b.hidden = true; panel.hidden = was
       }
       if (seen < 40) return 'only ' + seen + ' control(s) measured, which is too few to mean anything'
       if (off.length) {

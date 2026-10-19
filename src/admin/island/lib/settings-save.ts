@@ -99,7 +99,12 @@ export type Form = {
   save: () => Promise<boolean>
 }
 
-export function wireSave(screen: HTMLElement, w: SaveWords): Form {
+/**
+ * `counted` runs after every recount, which includes the moment a save lands and the form
+ * settles — the one change of state no input event reports. The advanced band's attention
+ * count listens there (`settings-advanced.ts`).
+ */
+export function wireSave(screen: HTMLElement, w: SaveWords, counted?: () => void): Form {
   const lang = (screen.dataset.lang ?? 'en') as SiteLang
   /**
    * ⚠️ A LEAVE THE OWNER HAS ALREADY AGREED TO IS NOT ASKED ABOUT AGAIN.
@@ -137,6 +142,7 @@ export function wireSave(screen: HTMLElement, w: SaveWords): Form {
     // The receipt clears the moment the form is dirty again: a stale "Saved at 14:02" beside
     // three unsaved changes is a lie.
     if (said) said.textContent = saving ? (w.saving ?? '') : (savedAt && n === 0 ? `${w.savedAt ?? ''} ${savedAt}` : '')
+    counted?.()
   }
 
   async function save(): Promise<boolean> {

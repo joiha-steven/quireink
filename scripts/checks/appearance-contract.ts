@@ -99,7 +99,13 @@ const TABS: Map<string, Set<string>> = (() => {
       .map((x) => join(dir, `${x[1]!}.ts`))
       .filter((path) => existsSync(path))
       .map((path) => readFileSync(path, 'utf8'))
-    byKey.set(m[1]!, titles([own, ...extra].join('\n')))
+    const cards = titles([own, ...extra].join('\n'))
+    // A tab that folds cards under Advanced (`advancedBand`, docs/admin-kit.md) has that key as a
+    // step on the way to them: "Server & connections → Advanced → Site settings". Read off the
+    // tab's OWN file, since every tab imports the shell where the band is defined.
+    const advanced = value('settingsAdvanced')
+    if (advanced && /\badvancedBand\(t,/.test(own)) cards.add(advanced.toLowerCase())
+    byKey.set(m[1]!, cards)
   }
   // Keyed by the LABEL a reader sees ("Search & URLs"), not by the internal id ("seo").
   const out = new Map<string, Set<string>>()

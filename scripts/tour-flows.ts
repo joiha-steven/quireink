@@ -16,6 +16,7 @@ import { registerAdminFlows } from './tour-flows-admin'
 import { registerAiFlows } from './tour-flows-ai'
 import { registerMediaFlows } from './tour-flows-media'
 import { registerSettings2Flows } from './tour-flows-settings2'
+import { registerAdvancedFlows } from './tour-flows-advanced'
 import { registerEvenFlows } from './tour-flows-even'
 import { registerWiredFlows } from './tour-flows-wired'
 import { registerBackupFlows } from './tour-flows-backup'
@@ -330,6 +331,8 @@ export function registerFlows({ flow, expect, atWidth, passkeyHost }: PasskeyTou
   registerAiFlows({ flow, expect })
   registerMediaFlows({ flow, expect })
   registerSettings2Flows({ flow, expect })
+  // The developer's cards folded under Advanced: search, ?setting= and Save still reach them.
+  registerAdvancedFlows({ flow, expect })
   // What a keyboard and a screen reader can reach (2026-09-21).
   registerReachFlows({ flow, atWidth })
   registerWiredFlows({ flow, expect })

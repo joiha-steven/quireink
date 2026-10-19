@@ -211,7 +211,7 @@ and where it is drawn. They will not be renamed without a note in the changelog.
 
 ## When it is not CSS you need: your own code
 
-**Server & connections → Site settings** holds your own HTML. One box goes in the page `<head>`, where
+**Server & connections → Advanced → Site settings** holds your own HTML. One box goes in the page `<head>`, where
 most snippets ask to be; the other goes just before `</body>`, where Cloudflare's beacon and
 a few others ask to be. Both ship on every public page, in the order you typed them, and
 neither is checked or rewritten — a box whose purpose is to carry a script cannot strip

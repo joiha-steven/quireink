@@ -4,7 +4,7 @@
 
 - **What it is.** The blog's published writing as JSON, for a client building something out of it
   rather than reading it: a second front end, a search index, a static export, an app. Read-only,
-  unauthenticated, **off unless the owner enables it** (Admin → Settings → Server & connections,
+  unauthenticated, **off unless the owner enables it** (Admin → Settings → Server & connections → Advanced → Content API,
   `settings.api.enabled`). While off, every path answers `404` with `{"error":"Not found"}` —
   the same status `/api/mcp` gives, for the same reason a `403` would be worse.
 - **Why a switch at all.** It publishes no new FACT: everything it serves is already fetchable by
