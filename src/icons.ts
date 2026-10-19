@@ -18,8 +18,8 @@
 //
 // Every body's INK is centred on (12, 12), measured on the rendered bounding box — the rail
 // stacks them in one column and a glyph 0.75 units off hangs 0.56px off it at 18px. Where a
-// thin tail or a lopsided mass makes the box and the eye disagree (`searchCentred`, `log`), the
-// drawing sits between the two measures and says so at the entry.
+// thin tail makes the box and the eye disagree (`searchCentred`), the drawing sits between the
+// two measures; `log` follows its stroke mass, which the tour holds to 0.6px. Each says so at the entry.
 //
 // Every body is drawn on a 24×24 viewBox and inherits colour and stroke from its wrapper,
 // so a per-path `stroke-width="1.4"` is the ONLY local override an entry may carry.
@@ -170,20 +170,19 @@ export const ICONS = {
     '<path d="M20 4.75H5.5A1.5 1.5 0 0 0 4 6.25v8a1.5 1.5 0 0 0 1.5 1.5H8v3.5l4.5-3.5H20z"/>'
     + '<path d="M8.5 9.25h7M8.5 12.05h4.5" stroke-width="1.4"/>',
   /**
-   * ⚠️ DRAWN 0.65 UNITS RIGHT OF CENTRE, ON PURPOSE. A clock is a closed ring and three rules are
+   * ⚠️ DRAWN 1.5 UNITS RIGHT OF CENTRE, ON PURPOSE. A clock is a closed ring and three rules are
    * three short strokes: this glyph carries about 31 units of ink on its left and 12 on its
    * right, so a drawing centred on its BOUNDING BOX hangs visibly to the left. Reported by eye
    * in the collapsed rail, then measured — a stroke-mass centroid over all thirteen rail icons
    * put this one 1.47 units off and no other past 0.6.
    *
-   * A box is not what anyone looks at, and neither is the mass alone, which would leave the
-   * box 1.25 units out. The drawing sits between them: box centre 12.65, mass centre 11.69, so
-   * neither measure is more than 0.7 units (0.5px at the rail's 18px) from the column.
+   * A box is not what anyone looks at. The bounding box is deliberately lopsided now (4.5 to 22
+   * against a 24 field) so that the INK sits on the column the icons above and below it stand on.
    */
   log:
-    '<circle cx="8.9" cy="12" r="5"/><path d="M8.9 9.5V12l1.8 1.2"/>'
-    + '<path d="M17.4 7H21.4M17.4 12H21.4M17.4 17h2.5"/>'
-    + '<path d="M6.5 10a2.9 2.9 0 0 1 1.3-1.6" stroke-width="1.4"/>',
+    '<circle cx="9.5" cy="12" r="5"/><path d="M9.5 9.5V12l1.8 1.2"/>'
+    + '<path d="M18 7H22M18 12H22M18 17h2.5"/>'
+    + '<path d="M7.1 10a2.9 2.9 0 0 1 1.3-1.6" stroke-width="1.4"/>',
   help:
     '<circle cx="12" cy="12" r="8.5"/>'
     + '<path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.1.9-1.1 1.8v.3"/>'

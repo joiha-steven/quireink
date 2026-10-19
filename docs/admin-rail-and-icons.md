@@ -15,9 +15,10 @@ applies; this holds the measured rules for glyphs and for the rail they stand in
   sign-in page; check ticks and chart lines are listed there as not-glyphs, each with the file that
   holds it.
 - **A glyph's ink is centred on (12, 12) of its own box**, measured on the rendered bounding box,
-  so the rail can stack them in one column with no per-row nudge. `searchCentred` and `log` are the two
-  where a thin tail or a lopsided mass makes the box and the eye disagree; they sit between the
-  two measures and say so at the entry.
+  so the rail can stack them in one column with no per-row nudge. `searchCentred` sits
+  between box and mass, where a thin tail makes the two disagree. `log` is centred on its stroke
+  MASS instead, 1.5 units right of its box, because the tour's `even: the shut rail draws its
+  icons on one column` measures mass to 0.6px; a box-and-mass compromise failed it at 0.63px.
 
 ## The rail
 
