@@ -223,6 +223,19 @@ html[data-look=paper] .post-cat{font-family:var(--font-sans);
   text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--c-heading);
   text-decoration:none}
 html[data-look=paper] article > header .mt-2{margin-top:.5rem}
+/* A PIECE WITH NO HEADLINE STILL OPENS ON ITS DATE. Above the rail breakpoint the base sheet
+   draws no header for a short post, because the facts it would hold are in the gutter panel
+   (rail-css.ts) - and this sheet hides that panel (.post-info above), so the date was
+   printed nowhere. The header comes back, holding only the date line, and the body gets back
+   the gap the base took away with it. :not(:has(h1)) is "no headline" (the contract has no
+   attribute for it). The :has(.post-facts) is not decoration: it is the one class the
+   contract offers to make this selector outweigh the revert-layer hold the base leaves in
+   this layer for that very header, which a lighter selector would lose to. */
+html[data-look=paper] article > header:has(.post-facts):not(:has(h1)){display:grid}
+html[data-look=paper] article > header:not(:has(h1)) ~ .prose{margin-top:2.5rem}
+/* The date line stands where a headline would: the same half rem under the header's top edge
+   the h1 keeps (.mt-2 above), not the 1.1rem it keeps to sit under one. */
+html[data-look=paper] article > header:not(:has(h1)) .post-facts{margin-top:.5rem}
 
 /* THE STANDFIRST BECOMES AN ABSTRACT: ranged left inside a narrower measure, between two
    hairlines, a size down. No word is added anywhere in this sheet - the shape is the

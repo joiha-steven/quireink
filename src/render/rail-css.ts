@@ -62,11 +62,14 @@ export function singleRailCss(colWidth: number, opts: { scoped?: boolean } = {})
 
 /**
  * The one rail rule that keeps the weight it had against a theme (ADR 0072, `web/css-layers.ts`):
- * above the breakpoint a short post's empty header is not drawn. The newspaper's
+ * above the breakpoint a short post's empty header is not drawn. A theme's plain
  * `article > header{display:grid}` is lighter and lost to it while the two shared one cascade;
- * with the theme in a layer over the base it would win and draw the header. Said in the theme
- * layer as `revert-layer`, under the same query and selector, it hands `display` back to the base
- * exactly where the base rule applies, and a theme rule heavier than it still wins, as before.
+ * with the theme in a layer over the base it would win and draw the header on every theme. Said
+ * in the theme layer as `revert-layer`, under the same query and selector, it hands `display`
+ * back to the base exactly where the base rule applies, and a theme rule heavier than it still
+ * wins, as before. The newspaper deliberately is one: it hides the gutter panel that carries the
+ * date, so it brings the untitled header back (`look-paper.css.ts`, "A PIECE WITH NO HEADLINE").
+ * Do not "fix" that rule away, and a theme that hides `.post-info` needs the same.
  */
 export function railHoldCss(colWidth: number, opts: { scoped?: boolean } = {}): string {
   const css = `@media (min-width:${breakpoint(colWidth)}px){`

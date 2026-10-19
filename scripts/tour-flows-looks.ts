@@ -125,6 +125,69 @@ export function registerLookFlows({ flow, expect, atWidth }: Tour): void {
   })
 
 
+  // A SHORT POST (no title) keeps its date line in every theme at every width. Above the rail
+  // breakpoint the base sheet hides the meta line because the info panel in the gutter repeats
+  // it; the newspaper hides that panel too, so the date was drawn nowhere. Measured, per theme
+  // and width, from what the browser painted: the element is in the DOM, has a box inside the
+  // viewport, and the text colour differs from the page background.
+  const SHORT_DATE = 'tour-short-dated'
+  const DATE_PROBE = `(() => {
+    // Any copy of the date will do: the line under the headline, or the row in the gutter panel.
+    const all = [...document.querySelectorAll('article time, .post-info time')]
+    if (!all.length) return 'no date element'
+    const shown = all.filter((t) => t.checkVisibility({ checkVisibilityCSS: true }))
+    if (!shown.length) return 'date not visible: ' + all.length + ' copies, all hidden'
+    const t = shown[0]
+    const r = t.getBoundingClientRect()
+    if (r.width < 8 || r.height < 8) return 'date has no box: ' + Math.round(r.width) + 'x' + Math.round(r.height)
+    if (r.left < 0 || r.right > innerWidth) return 'date outside the viewport: ' + Math.round(r.left) + '..' + Math.round(r.right)
+    if (document.documentElement.scrollWidth > innerWidth) return 'page scrolls sideways: ' + document.documentElement.scrollWidth
+    const ink = getComputedStyle(t).color
+    const ground = getComputedStyle(document.body).backgroundColor
+    if (ink === ground) return 'date is the colour of the page: ' + ink
+    return 'ok ' + Math.round(r.top) + ' ' + ink
+  })()`
+  flow('a short post keeps its date line in every theme at every width', async () => {
+    const made = await expect('/admin', `(async () => {
+      await fetch('/api/posts/${SHORT_DATE}', { method: 'DELETE' })
+      await fetch('/api/trash', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'posts', action: 'purge', ids: ['${SHORT_DATE}'] }) })
+      const r = await fetch('/api/posts', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: '', slug: '${SHORT_DATE}', content: 'A short one, with no headline at all.', status: 'published', categories: [], tags: [] }) })
+      return r.ok ? 'ok' : 'POST /api/posts -> ' + r.status
+    })()`)
+    if (made !== 'ok') return made
+    const lost: string[] = []
+    const seen: string[] = []
+    let cleaned = ''
+    try {
+      for (const look of ['plain', 'code', 'paper', 'notes']) {
+        const set = await expect('/admin', put({ look }))
+        if (set !== 'ok') return set
+        for (const width of [375, 768, 1440]) {
+          const got = await atWidth(width, '/' + SHORT_DATE, DATE_PROBE)
+          seen.push(look + '@' + width + ' ' + got)
+          if (!got.startsWith('ok')) lost.push(look + ' at ' + width + ': ' + got)
+        }
+      }
+    } finally {
+      // The look first: a failed clean-up of the post must not leave later flows on another theme.
+      // Purged, not just trashed, so no later flow sees an extra Trash row.
+      try {
+        await expect('/admin', put({ look: 'code' }))
+      } finally {
+        cleaned = await expect('/admin', `(async () => {
+          await fetch('/api/posts/${SHORT_DATE}', { method: 'DELETE' })
+          const r = await fetch('/api/trash', { method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ kind: 'posts', action: 'purge', ids: ['${SHORT_DATE}'] }) })
+          return r.ok ? 'ok' : 'purge -> ' + r.status
+        })()`)
+      }
+    }
+    if (cleaned !== 'ok') return 'the short post was not purged: ' + cleaned
+    return lost.length ? 'the date line is missing: ' + lost.join('; ') : 'ok 4 themes x 3 widths: ' + seen.length + ' dates visible'
+  })
+
   // The headline speaks the chrome's monospace; the paragraph under it stays in the book face.
   flow('the source-code look sets headlines in its monospace and leaves the text a book', () =>
     atWidth(1440, '/a-type-scale-you-can-defend', `(() => {

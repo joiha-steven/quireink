@@ -51,6 +51,9 @@
 
 ### Fixed
 
+- **A post without a title shows its date on Newspaper at desktop width.** Above the width where
+  the side panel appears, such a post printed its date only in that panel, which Newspaper hides,
+  so the date was drawn nowhere. It now opens on its date line, level with where a headline sits.
 - **A letter your uploaded reading font lacks is drawn in the face you would see without it.** The
   fallback after an uploaded font named a variable nothing defined, which could drop the whole
   reading font. It now falls to the chosen theme's reading font, when one is picked, and then to

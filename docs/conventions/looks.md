@@ -43,6 +43,11 @@ what runs.
   the few base rules that keep their weight against a theme (`BASE_HOLDS_CSS`, restated in the
   theme layer ahead of the sheet). A base rule a theme must not override joins that list; the
   sheet never copies a base value to win back what the layer took.
+- **A theme that hides `.post-info` must bring back the untitled post's header.** Above the rail
+  breakpoint the base draws no header for a post with no title, because the date lives in the
+  gutter panel; hide the panel and the date is drawn nowhere. The header comes back with a rule
+  heavier than the base's hold, as Newspaper's does (`look-paper.css.ts`, "A PIECE WITH NO
+  HEADLINE"); any installed theme meets the same trap.
 - **The owner's chrome font reaches every theme.** A sheet never sets `body` (or anything
   else that stands for the chrome) in a face of its own. Each of the three did through
   2.2.19, which left the chrome-font control drawing nothing on them; a settings row from
@@ -85,7 +90,8 @@ each (after them, every run listed nothing, and the matrix, book mode included, 
 shot for shot for the default settings and three profiles off it):
 
 - **Six base rules outweighed a built-in theme's**: the comment thread's heading, the book's
-  heading leading and the untitled post's hidden header above the rail breakpoint (Newspaper),
+  heading leading and the untitled post's hidden header above the rail breakpoint (the hold
+  stays; Newspaper outweighs it on purpose because it hides the gutter panel that carries the date),
   the book's half line of padding round a heading, paged and scrolled (Newspaper and
   Notebook), the text-only front page's lead headline (Source code), the pressed current chip
   (Notebook). Each is restated in the theme layer with `revert-layer`, ahead of any
