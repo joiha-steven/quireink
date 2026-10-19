@@ -206,10 +206,12 @@ describe('the owner menu on the header row', () => {
     // measured there on 2026-09-16 -- y=2729 of a 3601px page at 1180 -- with the button
     // hidden by the same band, so the menu, the categories and the tags could not be reached
     // at all between 960px and 1272px.
-    await saveSettings({ menu })
+    // The post list at `/`, whatever an earlier case left the home page as.
+    const s = await getSettings()
+    await saveSettings({ menu, home: { ...s.home, mode: 'list' } })
     clearCache()
     const listing = await (await get('/')).text()
-    expect(listing).toContain('<aside class="rail">')
+    expect(listing).toContain('<aside class="rail rail-main">')
     expect(listing).not.toContain('rail-toc')
     expect(listing).not.toContain('max-width:1271px){.rail-toggle')
     // The article pays for its own line, on the pages that have a band to justify it.

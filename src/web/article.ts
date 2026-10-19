@@ -293,9 +293,12 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
   // is a page had no navigation on its front door (issue #61). The nav is a SIBLING of
   // `.toc`, not a child: `.toc li` is what the terminal chrome numbers, and `rail-toc` is
   // what the band selects on -- a listing keeps its drawer there instead (`articleBandCss`).
-  const menu = menuBlock(settings.menu, s.menu)
+  // Menu in the masthead: this is the phone drawer's copy, and alone it is not drawn from 60rem up (`menuBlock`).
+  const menuInHeader = resolveTheme(settings).layout.menu === 'header'
+  const menu = menuBlock(settings.menu, s.menu, { copy: menuInHeader })
+  const menuOnly = menuInHeader && menu !== '' && contents === ''
   const toc = contents || menu
-    ? `<aside class="rail rail-toc">${drawerSearch(settings)}<div class="rail-inner">${menu}${contents}</div></aside>`
+    ? `<aside class="rail rail-toc${menuOnly ? ' rail-menu-only' : ''}">${drawerSearch(settings)}<div class="rail-inner">${menu}${contents}</div></aside>`
     : ''
   // The comment thread is a MOUNT POINT, not markup: the island fetches it. The article
   // page is cached HTML (Invariant 1) and a comment is not a post, so rendering the thread
@@ -376,7 +379,7 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
     // lead between them, justified with hyphens once the column is wide enough. It sits on
     // the shell rather than on .prose so the editor and the reading view can share it.
     `${progress}<div class="wrap${settings.features.bookText ? ' book-text' : ''}">
-${siteHeader(settings, { mailConfigured, menuInHeader: resolveTheme(settings).layout.menu === 'header' })}
+${siteHeader(settings, { mailConfigured, menuInHeader, railMenuOnly: menuOnly })}
 <div class="with-rail"><main id="content">
 <article>
 ${hero}

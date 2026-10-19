@@ -56,7 +56,8 @@ copies of a rule means one is wrong within a month
 | [admin-editor.md](admin-editor.md) | The editor's own contract: the writing surface, the caret, the key feedback |
 | [admin-conversion.md](admin-conversion.md) | The log of ADR 0054's step 5: what each piece of the editor cost to take off React, and what it found |
 | [admin-no-framework.md](admin-no-framework.md) | ADR 0054's steps 6 and 7: React out, then the wrapper around ProseMirror. What each found, and what the editor weighs now |
-| [appearance.md](appearance.md) | For the OWNER: every knob that changes how the site looks, the CSS variables and class names custom CSS may target, and what cannot be changed |
+| [appearance.md](appearance.md) | For the OWNER: every knob that changes how the site looks, custom CSS, and what cannot be changed |
+| [appearance-contract.md](appearance-contract.md) | The CSS variables, class names and attributes custom CSS and installed themes may rely on (`check:contract`) |
 | [theme-install-api.md](theme-install-api.md) | Installing a theme from a zip: the owner's routes, the Look card that drives them, what an install checks and stores, and `/themes/<hash>/…` |
 | [homepage.md](homepage.md) | What `/` serves: the post list, a page, or a composed front page |
 | [seo-pwa.md](seo-pwa.md) | Sitemap, feeds, OG, region, PWA |

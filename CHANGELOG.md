@@ -17,6 +17,13 @@
   than the screen, a box past its edge, text cut off, an image that does not load and a font that
   does not load. Nothing is installed on your own blog. See
   [Installing a theme](docs/theme-install-api.md#preview-before-installing).
+- **A theme that puts the menu in the header no longer has to hide the side column's copy itself.**
+  Quire Ink hides it, and the side column and its button when nothing else is left in them, on
+  screens wide enough for the header menu; phones keep the menu in the drawer. Themes can also
+  style the list-page heading, a card's excerpt and meta line, a note's source line and the
+  timeline's year groups by name, and tell a lead, pictured or untitled card apart. The names a
+  theme or custom CSS may use now have their own page,
+  [Appearance contract](docs/appearance-contract.md).
 - **Install, choose, roll back and remove themes from Settings → Appearance → Theme.** Installed
   themes appear as tiles after the four built in, with their screenshot, version, author and an
   Unreviewed badge, and are chosen and saved like any other tile. Install from a file sends a
@@ -59,6 +66,10 @@
 
 ### Fixed
 
+- **On Newspaper, the side column starts level with the article.** Its first block sat 28 pixels
+  low on wide screens (16 in between), because it kept the gap meant for the menu Newspaper moves
+  into the header. Lists, archive, search and notes pages show it most; posts lose 4 pixels of
+  extra space above their contents.
 - **A post without a title shows its date on Newspaper at desktop width.** Above the width where
   the side panel appears, such a post printed its date only in that panel, which Newspaper hides,
   so the date was drawn nowhere. It now opens on its date line, level with where a headline sits.

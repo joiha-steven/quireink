@@ -93,8 +93,14 @@ function termCloud(
  * The site menu as the TOP block of the rail, moved out of the header by the frozen tree.
  * Headingless: the nav leads the rail. Rows reuse `rail-row`, so they range right in the
  * desktop gutter and left in the mobile drawer with no per-surface handling.
+ *
+ * `copy`: the same page draws this menu in its header too (`layout.menu: 'header'`, or a page
+ * with no rail of its own). The nav is then `.rail-menu-copy`, which the base sheet hides from
+ * 60rem up, where the header's menu is on screen (`rail.css.ts`); below that the header's menu
+ * is hidden and this copy is the phone drawer's way to it. Decided here, in the same render as
+ * the header, so the two can never disagree: a cached page holds both or neither.
  */
-export function menuBlock(items: MenuItem[], label: string): string {
+export function menuBlock(items: MenuItem[], label: string, opts: { copy?: boolean } = {}): string {
   if (items.length === 0) return ''
   // A row stored before the save refused unsafe links is still skipped here.
   const rows = items.filter((item) => isSafeHref(item.href)).map((item) => {
@@ -105,7 +111,7 @@ export function menuBlock(items: MenuItem[], label: string): string {
     return `<li><a class="rail-row link-accent t-small" href="${escapeAttr(item.href || '/')}"${rel}>`
       + `<span>${escapeHtml(item.label)}</span></a></li>`
   }).join('')
-  return `<nav aria-label="${escapeAttr(label)}"><ul>${rows}</ul></nav>`
+  return `<nav${opts.copy ? ' class="rail-menu-copy"' : ''} aria-label="${escapeAttr(label)}"><ul>${rows}</ul></nav>`
 }
 
 /**
@@ -131,9 +137,24 @@ const rail = (variant: string, blocks: string, head = '') =>
  * when there is no drawer. Measured 2026-09-02 at 375px and 768px: four configured links,
  * zero reachable. Empty when there is no menu, for the reason `renderSidebar` gives.
  */
-export function menuRail(settings: SiteSettings): Sidebar {
+export function menuRail(settings: SiteSettings, inHeader: boolean): Sidebar {
   if (settings.menu.length === 0) return { html: '', css: '' }
-  return { html: rail('', menuBlock(settings.menu, t(settings.language).menu), drawerSearch(settings)), css: '' }
+  return menuOnlyRail(settings, menuBlock(settings.menu, t(settings.language).menu, { copy: inHeader }), inHeader)
+}
+
+/**
+ * A rail whose only block is the menu. When the header holds the menu too, the rail is
+ * `.rail-menu-only` and `menuOnly` is set: from 60rem up the base sheet does not draw it
+ * (`rail.css.ts`) and the page puts its drawer button away (`listing-page.ts`), because a
+ * rail whose one block is hidden there is an empty box with a divider beside it. Below 60rem
+ * it is the drawer, and the drawer is the phone's only way to the menu.
+ */
+function menuOnlyRail(settings: SiteSettings, menu: string, inHeader: boolean): Sidebar {
+  return {
+    html: rail(inHeader ? ' rail-menu-only' : '', menu, drawerSearch(settings)),
+    css: '',
+    menuOnly: inHeader,
+  }
 }
 
 export type Sidebar = {
@@ -144,6 +165,11 @@ export type Sidebar = {
    * The two-rail layout also narrows `--shell-w`, which is why this is not a fixed sheet.
    */
   css: string
+  /**
+   * The rail holds nothing but a copy of the header's menu, so from 60rem up the page has no
+   * rail to draw and no drawer to open (`menuOnlyRail`).
+   */
+  menuOnly?: boolean
 }
 
 /**
@@ -157,12 +183,16 @@ export async function renderSidebar(
   settings: SiteSettings, activeHref?: string,
 ): Promise<Sidebar> {
   const none: Sidebar = { html: '', css: '' }
+  // A theme with the menu in its masthead (`layout.menu: 'header'`): every copy of the menu
+  // in this rail is `.rail-menu-copy`, and what the rail shows from 60rem up is reckoned
+  // without it.
+  const inHeader = resolveTheme(settings).layout.menu === 'header'
   // The sidebar switch owns the DISCOVERY blocks — categories, tags, the years. It does not
   // own the owner's menu, which is the site's navigation and has to be reachable from every
   // page. Switching it off used to take the menu with it and put it nowhere else: measured
   // on 2026-09-01, four configured links appearing zero times in the served HTML. What is
   // left when it is off is a rail carrying the menu and nothing but.
-  if (!settings.features.sidebar) return menuRail(settings)
+  if (!settings.features.sidebar) return menuRail(settings, inHeader)
 
   const [{ categories, tags }, posts, viewTotals, allSeries] = await Promise.all([
     getPublicTaxonomy(), getPublicPosts(),
@@ -240,6 +270,7 @@ export async function renderSidebar(
   // to the archive, as it always was.
   const marked = years.map((y) => ({ ...y, year: y.label }))
   const search = drawerSearch(settings)
+  const menu = menuBlock(settings.menu, labels.menu, { copy: inHeader })
 
   // Infinite scroll forces the single layout: its timeline needs the right gutter, so a
   // two-rail split cannot apply. (Where the single layout fills that gutter itself, the
@@ -250,9 +281,18 @@ export async function renderSidebar(
   // drawer, so it carries a desktop-hidden copy of the discovery blocks — without it the
   // drawer would lose them entirely on a phone, where the left rail does not exist.
   if (layout === 'two') {
+    // Nothing but the menu: one rail and no empty left one beside it. The narrower column
+    // stays, so the page keeps the width this layout gives it.
+    if (inHeader && discovery === '' && nav === '') {
+      return { ...menuOnlyRail(settings, menu, true), css: listingRailCss(Math.round(settings.contentWidth * LISTING_WIDTH_RATIO)) }
+    }
+    // Above the breakpoint the right rail shows its gutter blocks only (`.drawer-only` goes).
+    // With the menu in the header and no subjects, that is nothing: the rail stays the
+    // drawer below the breakpoint and is not drawn above it, as the single layout's is.
+    const rightVariant = inHeader && nav === '' ? ' rail-right rail-drawer' : ' rail-right'
     return {
       html: rail(' rail-left', discovery)
-        + rail(' rail-right', menuBlock(settings.menu, labels.menu)
+        + rail(rightVariant, menu
           + `<div class="drawer-only">${discovery}</div>` + nav, search),
       css: listingRailCss(Math.round(settings.contentWidth * LISTING_WIDTH_RATIO)),
     }
@@ -270,16 +310,16 @@ export async function renderSidebar(
   const markedCloud = termCloud(labels.archiveTitle, marked, {}, activeHref)
   const aside = yearIndex + discovery
   if (aside === '') {
-    return { html: rail('', menuBlock(settings.menu, labels.menu) + nav, search), css: '' }
+    if (inHeader && nav === '') return menuOnlyRail(settings, menu, true)
+    return { html: rail('', menu + nav, search), css: '' }
   }
-  // What the left rail shows in the GUTTER. A theme with the menu in its masthead
-  // (`layout.menu: 'header'`) hides the rail's copy, so it does not count there. With nothing
-  // left the rail is still the drawer, but above the breakpoint it is not drawn: an empty box
-  // with a divider beside it reads as a fault.
-  const gutter = (resolveTheme(settings).layout.menu === 'header' ? '' : menuBlock(settings.menu, labels.menu))
-    + cats + seriesBlock + tagBlock
+  // What the left rail shows in the GUTTER. The menu's copy does not count when the header
+  // holds the menu, because the base sheet hides it there. With nothing left the rail is
+  // still the drawer, but above the breakpoint it is not drawn: an empty box with a divider
+  // beside it reads as a fault.
+  const gutter = (inHeader ? '' : menu) + cats + seriesBlock + tagBlock
   return {
-    html: rail(gutter === '' ? ' rail-main rail-drawer' : ' rail-main', menuBlock(settings.menu, labels.menu)
+    html: rail(gutter === '' ? ' rail-main rail-drawer' : ' rail-main', menu
       + (discovery ? `<div class="drawer-only">${discovery}</div>` : '')
       + cats + seriesBlock
       + (markedCloud ? `<div class="drawer-only">${markedCloud}</div>` : '')

@@ -48,6 +48,23 @@ what runs.
   gutter panel; hide the panel and the date is drawn nowhere. The header comes back with a rule
   heavier than the base's hold, as Newspaper's does (`look-paper.css.ts`, "A PIECE WITH NO
   HEADLINE"); any installed theme meets the same trap.
+- **`layout.menu: "header"` is the engine's job, not the sheet's.** The renderer draws the menu in
+  the header and marks the rail's copy `.rail-menu-copy`, and a rail holding nothing else, with
+  the drawer button that opens it, `.rail-menu-only` (`web/sidebar.ts`, `web/article.ts`,
+  `web/chrome.ts`); from 60rem up, where the header shows the menu, the base sheet draws none of
+  them and the block after a hidden copy loses the space above it, so the first block drawn sits
+  at the rail's top (`web/rail.css.ts`, `render/rail-css.ts`). Below 60rem the copy is the
+  drawer's, the phone's way to the menu. A theme writes nothing for this. One that also shows its
+  header menu below 60rem, as Newspaper's strip does, does the same there itself on the contract's
+  names: hide `.rail-menu-copy`, `article .rail-menu-only` and `.rail-toggle.rail-menu-only`, and
+  zero the top margin of `.rail-inner > :nth-child(1 of :not(.rail-menu-copy))`; no `:has()`.
+- **A font face is one file, with no `unicode-range`.** `theme.json` lists each face as a file, a
+  weight and a style (`theme/check-manifest.ts`, at most four faces a font), and the engine writes
+  one `@font-face` per face. A file subset to Latin leaves every other glyph to the fallback
+  stack, so a Vietnamese or other latin-ext blog needs a file that covers all of its subsets.
+- **A variable font is declared once per weight it is used at.** A face's weight is one number
+  (100 to 900, in hundreds), never a range, and two faces may not share a weight and style; list
+  the same file again for each weight the sheet asks for, or the browser synthesises the others.
 - **The owner's chrome font reaches every theme.** A sheet never sets `body` (or anything
   else that stands for the chrome) in a face of its own. Each of the three did through
   2.2.19, which left the chrome-font control drawing nothing on them; a settings row from
@@ -284,7 +301,8 @@ palette's.
 A masthead, a lead headline, column rules, and a piece printed as an offprint.
 
 - **The menu is in the masthead on every page** (`menuInHeader` in `article.ts` and
-  `listing-page.ts` when the look is `paper`), and the rail's copy is hidden. On a phone it is
+  `listing-page.ts` when the look is `paper`), and the rail's copy (`.rail-menu-copy`) is hidden:
+  by the engine from 60rem up, by `look-paper-shelf.css.ts` below that. On a phone it is
   one strip that scrolls sideways, painted here because the base paints it only above 60rem.
   Inline on a piece it had been a block headed MENU between the series box and the contents,
   and the first line of text sat at y=980 on a 1000px screen; it is at 832 now.

@@ -185,9 +185,9 @@ html[data-look=paper] .site-bar > .site-menu{grid-area:3/1/4/-1;flex-wrap:wrap;
   html[data-look=paper] .site-bar > .site-menu{justify-content:center}
 }
 /* A drawer with nothing left in it has no button: on the composed front the rail holds the
-   menu alone, and the menu is in the masthead now. */
-html[data-look=paper] body:has(.site-bar > .site-menu):not(:has(.rail-inner > :not(nav:not(.toc)))) .rail-toggle{
-  display:none}
+   menu alone, and the menu is in the masthead now. The engine marks that button
+   .rail-menu-only and puts it away from 60rem up; this look's drawer is empty below that too. */
+html[data-look=paper] .rail-toggle.rail-menu-only{display:none}
 
 /* --- THE PIECE'S OWN PAGE SHAPE ---------------------------------------------
    The facts about the piece leave the right-hand panel and go under the headline where a

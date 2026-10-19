@@ -1,7 +1,8 @@
 // Guard #9: the promise custom CSS is written against still describes the software.
 //
 // This product ships no themes, so when the 155 knobs run out the answer is the owner's own
-// stylesheet — and `docs/appearance.md` promises them a set of variable names and class names
+// stylesheet — and `docs/appearance-contract.md` (split out of `docs/appearance.md`, which links
+// it) promises them a set of variable names and class names
 // that "will not be renamed without a note in the changelog". Until 2026-08-31 nothing read
 // that list. Renaming a variable or a class would have broken every custom stylesheet in the
 // wild, silently, on somebody else's blog, with eight guards and 2448 tests all green.
@@ -20,6 +21,8 @@ import { TYPE_ROLES as ENGINE_ROLES } from '../../src/content/fonts'
 import { PROMISED_ATTRIBUTES, PROMISED_NAMES, PROMISED_SELECTORS, PROMISED_VARS, TYPE_ROLES } from '../../src/content/appearance-contract'
 
 const DOC = 'docs/appearance.md'
+/** The names themselves, split out of DOC when it reached the 400-line cap; DOC links to it. */
+const CONTRACT_DOC = 'docs/appearance-contract.md'
 
 /** Everything that can emit a variable or a class onto a public page. */
 const SOURCE_DIRS = ['src/web', 'src/render', 'src/pen', 'src/content', 'src/assets/js']
@@ -149,7 +152,7 @@ for (const surface of SURFACES) {
     seen.add(n)
   }
 }
-if (!existsSync(DOC)) fail.push(`${DOC} is missing — the promise has no text`)
+if (!existsSync(CONTRACT_DOC)) fail.push(`${CONTRACT_DOC} is missing — the promise has no text`)
 
 const code = sources()
 if (code.length < 10_000) {
@@ -170,41 +173,41 @@ for (const name of PROMISED_NAMES) {
 }
 
 // --- 2: the doc and the module say the same thing --------------------------------------
-const doc = existsSync(DOC) ? readFileSync(DOC, 'utf8') : ''
+const contractDoc = existsSync(CONTRACT_DOC) ? readFileSync(CONTRACT_DOC, 'utf8') : ''
 for (const name of PROMISED_NAMES) {
-  if (!hasWord(doc, name)) fail.push(`${name} is in the contract but not in ${DOC}, which is what users read`)
+  if (!hasWord(contractDoc, name)) fail.push(`${name} is in the contract but not in ${CONTRACT_DOC}, which is what users read`)
 }
 
 // And the other direction, so a name added to the prose alone cannot become a promise
 // nobody guards. Only the fenced block is scanned: the doc's prose mentions variables in
 // passing, and a mention is not a promise.
-const from = doc.indexOf('### The variables that are safe to set')
-const to = doc.indexOf('### The class names that are safe to target')
+const from = contractDoc.indexOf('### The variables that are safe to set')
+const to = contractDoc.indexOf('### The class names that are safe to target')
 if (from === -1 || to === -1) {
-  fail.push(`${DOC} no longer has the two sections this check reads`)
+  fail.push(`${CONTRACT_DOC} no longer has the two sections this check reads`)
 } else {
   const promisedVars = new Set(PROMISED_NAMES)
-  for (const m of doc.slice(from, to).matchAll(/(--[a-z0-9-]+)\s*:/gi)) {
+  for (const m of contractDoc.slice(from, to).matchAll(/(--[a-z0-9-]+)\s*:/gi)) {
     if (!promisedVars.has(m[1]!)) {
-      fail.push(`${m[1]} is offered in ${DOC} but is not in the contract, so nothing guards it`)
+      fail.push(`${m[1]} is offered in ${CONTRACT_DOC} but is not in the contract, so nothing guards it`)
     }
   }
 }
 
 // The class section the same way: a backticked class in the doc's list must be in the
 // contract. `header.site` is compared by its bare word, like the check above.
-const classFrom = doc.indexOf('### The class names that are safe to target')
-const attrFrom = doc.indexOf('### The attributes that are safe to select on')
-if (attrFrom === -1) fail.push(`${DOC} has no "The attributes that are safe to select on" section`)
+const classFrom = contractDoc.indexOf('### The class names that are safe to target')
+const attrFrom = contractDoc.indexOf('### The attributes that are safe to select on')
+if (attrFrom === -1) fail.push(`${CONTRACT_DOC} has no "The attributes that are safe to select on" section`)
 if (classFrom !== -1 && attrFrom > classFrom) {
   const known = new Set(PROMISED_SELECTORS.map((s) => bare(s.name)))
-  for (const m of doc.slice(classFrom, attrFrom).matchAll(/`([^`]+)`/g)) {
+  for (const m of contractDoc.slice(classFrom, attrFrom).matchAll(/`([^`]+)`/g)) {
     for (const c of m[1]!.matchAll(/[.#][A-Za-z][\w-]*/g)) {
-      if (!known.has(bare(c[0]))) fail.push(`${c[0]} is offered in ${DOC} but is not in the contract, so nothing guards it`)
+      if (!known.has(bare(c[0]))) fail.push(`${c[0]} is offered in ${CONTRACT_DOC} but is not in the contract, so nothing guards it`)
     }
   }
-  for (const m of doc.slice(attrFrom).split('\n## ')[0]!.matchAll(/`(data-[a-z-]+)/g)) {
-    if (!PROMISED_ATTRIBUTES.some((a) => a.name === m[1])) fail.push(`${m[1]} is offered in ${DOC} but is not in the contract, so nothing guards it`)
+  for (const m of contractDoc.slice(attrFrom).split('\n## ')[0]!.matchAll(/`(data-[a-z-]+)/g)) {
+    if (!PROMISED_ATTRIBUTES.some((a) => a.name === m[1])) fail.push(`${m[1]} is offered in ${CONTRACT_DOC} but is not in the contract, so nothing guards it`)
   }
 }
 
@@ -227,6 +230,7 @@ if (classFrom !== -1 && attrFrom > classFrom) {
 // produced thirteen findings of which three were real — the rest were Synology's menus and
 // prose that happened to contain an arrow. A guard that cries wolf gets switched off, so
 // this one reads ONE table and nothing else.
+const doc = existsSync(DOC) ? readFileSync(DOC, 'utf8') : ''
 const TABLE_END = doc.indexOf('### About the table settings')
 const tableFrom = doc.indexOf('| Setting | Where | What moves |')
 if (tableFrom === -1 || TABLE_END === -1) {
@@ -273,8 +277,8 @@ if (fail.length > 0) {
   console.error('  This list is what custom CSS is written against, and this product has no')
   console.error('  themes — it is the only way an owner can go past the settings. Renaming a')
   console.error('  name here breaks stylesheets on blogs you will never see. Keep the name, or')
-  console.error('  retire it in src/content/appearance-contract.ts, docs/appearance.md and the')
-  console.error('  changelog together.')
+  console.error('  retire it in src/content/appearance-contract.ts, docs/appearance-contract.md')
+  console.error('  and the changelog together.')
   process.exit(1)
 }
 

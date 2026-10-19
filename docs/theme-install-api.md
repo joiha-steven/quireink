@@ -133,7 +133,10 @@ The page is drawn as **plain**, every field of it, plus what the current version
 
 - `<link rel="stylesheet" href="/themes/<hash>/theme.css">` straight after the base sheet, and
   `data-theme="<id>"` on `<html>` (no `data-look`).
-- `layout.menu: "header"` puts the menu in the masthead as the Newspaper does; `layout.deepenMetaInk`
+- `layout.menu: "header"` puts the menu in the masthead as the Newspaper does, and the engine keeps
+  the rail's copy (`.rail-menu-copy`) and a rail holding only that copy (`.rail-menu-only`) off the
+  screen from 60rem up, where the masthead shows the menu; below that the copy is the phone drawer's
+  ([looks.md](conventions/looks.md#what-every-dialect-must-obey)). `layout.deepenMetaInk`
   writes the same meta-ink rule the Notebook gets, behind the theme's sheet.
 - `ownsSettings`: the page is drawn without the saved value of each key; the value stays saved.
 - Every face of every declared font as `@font-face{font-family:'theme-<font id>';…;font-display:swap;

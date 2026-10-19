@@ -102,8 +102,10 @@ export async function listingPage(
   // The rail itself has to go too, not only the button: the layout's single-rail geometry
   // promotes any `.rail` into the left gutter above its own breakpoint, and the menu was
   // then printed twice on the same screen (measured at 1440px, 2026-09-02).
-  const sidebar = noRail ? menuRail(settings) : rail
-  const noRailCss = noRail && sidebar.html ? '@media (min-width:60rem){.rail,.rail-toggle{display:none}}' : ''
+  // The same holds for any rail that carries nothing but a copy of the header's menu, which a
+  // theme with `layout.menu: 'header'` gets wherever the owner has no subjects in the rail. Both
+  // are `.rail-menu-only` then, and the base sheet does it (`rail.css.ts`).
+  const sidebar = noRail ? menuRail(settings, true) : rail
   return renderDocument(
     settings,
     {
@@ -122,7 +124,7 @@ export async function listingPage(
       stylesheet: PUBLIC_SHEET,
       extra: feedLink,
     },
-    pageStyles(settings, [css, sidebar.css, noRailCss, chips.css].filter(Boolean).join('\n')),
+    pageStyles(settings, [css, sidebar.css, chips.css].filter(Boolean).join('\n')),
     // The rail is rendered LAST inside `main`: it is absolutely placed, so DOM order is
     // free, and this way the page heading still leads the document outline.
     `<div class="wrap">
@@ -133,6 +135,7 @@ ${/* The header carries the menu only where there is no rail to hold it, which i
   siteHeader(settings, {
     mailConfigured,
     menuInHeader: noRail || resolveTheme(settings).layout.menu === 'header',
+    railMenuOnly: sidebar.menuOnly === true && sidebar.html !== '',
     // ONE h1 per page, and the body gets first refusal. A listing's own heading is either
     // the term's name or its lead card, and the lead card is a switch: with it off the home
     // page had no h1 at all, and neither does a deep page or an empty feed. Asked of the

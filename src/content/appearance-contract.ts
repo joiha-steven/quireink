@@ -135,6 +135,7 @@ export const PROMISED_SELECTORS: PromisedSelector[] = [
   { name: 'header.site', surface: 'shared', note: 'the site header' },
   { name: 'footer.site', surface: 'shared', note: 'the site footer' },
   { name: '.rail', surface: 'shared', note: 'the sidebar, and the drawer it becomes on a phone' },
+  { name: '.listing-head', surface: 'blog', note: "the heading block of a list page, whose h1 is the page's title" },
   { name: '.post-list', surface: 'blog', note: 'the list of posts' },
   { name: '.card-thumb', surface: 'blog', note: "a list row's picture" },
   { name: '.post-hero', surface: 'blog', note: 'the picture at the top of an article' },
@@ -162,6 +163,8 @@ export const PROMISED_SELECTORS: PromisedSelector[] = [
   { name: '.rail-toggle', surface: 'shared', note: 'the button that opens the sidebar on a phone' },
   { name: '.rail-scrim', surface: 'shared', note: 'the dimmed page behind the open drawer' },
   { name: '.rail-search', surface: 'shared', note: 'the search box at the top of the rail' },
+  { name: '.rail-menu-copy', surface: 'shared', note: "the rail's copy of the menu when the header holds it; drawn only in the phone drawer" },
+  { name: '.rail-menu-only', surface: 'shared', note: 'a rail holding nothing but that copy, and the button that opens it; not drawn from 60rem up' },
   { name: '.rail-lead', surface: 'blog', note: 'a top-level row in the article contents' },
   { name: '.rail-sub', surface: 'blog', note: 'a nested row in the article contents' },
   { name: '.rail-count', surface: 'blog', note: 'the number beside a rail link' },
@@ -179,6 +182,8 @@ export const PROMISED_SELECTORS: PromisedSelector[] = [
   { name: '.taxo-rule', surface: 'blog', note: 'the rule above them' },
   { name: '.term-list', surface: 'blog', note: 'a run of category or tag links' },
   { name: '.card-kick', surface: 'blog', note: 'the category line above a list card title' },
+  { name: '.card-exc', surface: 'blog', note: "a list card's excerpt" },
+  { name: '.card-meta', surface: 'blog', note: "a list card's date and reading time" },
   { name: '.series', surface: 'blog', note: 'the series box above the body' },
   { name: '.series-bar', surface: 'blog', note: 'the progress bar of a series' },
   { name: '.series-head', surface: 'blog', note: 'the heading row of a series box' },
@@ -193,6 +198,8 @@ export const PROMISED_SELECTORS: PromisedSelector[] = [
   { name: '.term-count', surface: 'blog', note: 'the count beside a category or tag' },
   { name: '.tl-year-tag', surface: 'blog', note: "a year's tag on the listing timeline" },
   { name: '.tl-mark', surface: 'blog', note: 'a month mark on the listing timeline' },
+  { name: '.tl-yr', surface: 'blog', note: "one year's group of cards on the listing timeline" },
+  { name: '.note-source', surface: 'blog', note: "a note's source line: where the quoted words come from" },
   { name: '.pager-count', surface: 'blog', note: 'the "page N / M" label' },
   { name: '.chip', surface: 'blog', note: 'one category or series link in the chip row' },
   { name: '.chips', surface: 'blog', note: 'the chip row under the header' },
@@ -236,8 +243,9 @@ export const PROMISED_SELECTORS: PromisedSelector[] = [
 ]
 
 /**
- * The `data-*` attributes custom CSS may select on, written on `<html>`. Values are the ones
- * the code writes; an absent attribute is a state too.
+ * The `data-*` attributes custom CSS may select on: the first six written on `<html>`, the last
+ * three on a list card (`.post-list article`). Values are the ones the code writes; an absent
+ * attribute is a state too.
  */
 export const PROMISED_ATTRIBUTES: Promised[] = [
   { name: 'data-palette', note: 'the active palette id: mono, sepia, forest, ocean, scifi or amber' },
@@ -246,6 +254,9 @@ export const PROMISED_ATTRIBUTES: Promised[] = [
   { name: 'data-look', note: 'the look: code, paper or notes; absent on the plain look' },
   { name: 'data-list', note: 'the listing layout the reader chose, list or grid' },
   { name: 'data-motion', note: 'on or off: whether animation is enabled' },
+  { name: 'data-lead', note: "on a list card: the home page's promoted newest post, whose title (when it has one) is the page's h1; no value" },
+  { name: 'data-thumb', note: 'on a list card: top or side, where its picture sits; absent when the card has none' },
+  { name: 'data-short', note: 'on a list card: the post has no title, so the card leads with its words; no value' },
 ]
 
 /** Every promised name, flat — what the guard walks. */

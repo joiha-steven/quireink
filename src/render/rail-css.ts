@@ -346,10 +346,15 @@ export function listingRailCss(
     `${R} .rail-row[aria-current]::after{right:auto;left:0}` +
     INNER +
     `.drawer-only{display:none}` +
+    // The first block DRAWN leads the column with no space above it: the drawer-only copies
+    // and a menu copy the header holds are not drawn here, and the space after them stayed.
+    `.rail .rail-inner > :nth-child(1 of :not(.rail-menu-copy,.drawer-only)){margin-top:0}` +
     `.rail-toggle,.rail-scrim,.rail-search{display:none}` +
     (opts.shell === false
       ? `.rail.rail-main.rail-drawer{display:none}.with-rail .tl-feed::after,.with-rail .tl-feed .tl-year,.with-rail .tl-feed article .tl-mark{display:none}`
-      : '') +
+      // A right rail with nothing for the gutter (the menu in the header, no subjects) is the
+      // drawer alone, as the single layout's left one is above.
+      : `${R}.rail-drawer{display:none}`) +
     `}`
   )
 }

@@ -66,6 +66,20 @@ html[data-rail=open],html[data-rail=open] body{overflow:hidden}
    nothing else: the left rail is the drawer and holds a drawer-only copy of what this one
    carries, so on a phone it is not drawn at all. */
 .rail.rail-aside{display:none}
+/* THE MENU IN THE HEADER. A theme with layout.menu "header" (and a page with no rail of its
+   own) draws the menu in the header, which shows it from 60rem up; the rail's copy is marked
+   .rail-menu-copy by the renderer (sidebar.ts, menuBlock) and is not drawn where the header's
+   is, so the menu is never on screen twice. A rail with nothing else in it is .rail-menu-only
+   and goes with it, or it would draw an empty box with a divider. Below 60rem the header's
+   menu is hidden and the copy is the drawer's, the phone's way to it. Marked in the same render
+   as the header, so a cached page holds both or neither. Two classes on the rail so the
+   gutter geometry, which sets .rail{display:block} later in the sheet, does not undo it; the
+   drawer button that would open a menu-only rail is .rail-menu-only too, and goes with it.
+   The block after a hidden copy loses the space that separated it from the copy, or the first
+   block drawn sat 28px under the rail's top in the gutter (out of line with the facts panel)
+   and 16px low in the band: heavy enough to beat the band's own spacing rule. */
+@media (min-width:60rem){.rail-menu-copy,.rail.rail-menu-only,.rail-toggle.rail-menu-only{display:none}
+  .rail .rail-inner > :nth-child(1 of :not(.rail-menu-copy)){margin-top:0}}
 /* The drawer is a surface of the page's own tokens (the same --c-bg and --c-rule the page is
    drawn in, so a light page opens a light drawer and a dark one a dark drawer, in every
    palette and look): nothing in it is a literal colour. */

@@ -40,7 +40,7 @@
   on pages with no rail) — no separate header dropdown. **The menu is on the header row ONLY where no
   rail can hold it** — the composed front page (`siteMenu` in `web/chrome.ts` behind
   `ChromeOptions.menuInHeader`, `.site-menu` from 60rem up) — and on every page of the newspaper
-  look, whose masthead is where a paper lists its sections (the rail's copy is hidden there). It
+  look, whose masthead is where a paper lists its sections (the rail's copy, `.rail-menu-copy`, is hidden there). It
   briefly rendered on every page, which doubled the links on every listing; reverted 2026-08-03.
   An article's rail leads with the menu above its contents (`menuBlock` in `article.ts`). Below
   60rem only the drawer has it, except in the newspaper look's sideways-scrolling strip. Menu + most-viewed count + featured are edited in

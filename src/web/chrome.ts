@@ -61,6 +61,12 @@ export type ChromeOptions = {
    */
   menuInHeader?: boolean
   /**
+   * The page's drawer holds nothing but a copy of the header's menu (`Sidebar.menuOnly`). The
+   * drawer button is then `.rail-menu-only` too, and the base sheet puts it away from 60rem up
+   * with the rail it opens (`rail.css.ts`).
+   */
+  railMenuOnly?: boolean
+  /**
    * Make the site's name the page's `<h1>`.
    *
    * Only for a listing whose body has none. A listing's own h1 is its lead card, which is a
@@ -223,7 +229,7 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   // Opens the sidebar drawer, and stays the rightmost control. Above the rail breakpoint
   // the injected geometry hides it, because the sidebar is then the gutter rail; on a page
   // that rendered no rail the island hides it, because it would open nothing.
-  actions.push(`<button type="button" class="icon-btn rail-toggle" data-rail-toggle
+  actions.push(`<button type="button" class="icon-btn rail-toggle${opts.railMenuOnly ? ' rail-menu-only' : ''}" data-rail-toggle
  aria-expanded="false" aria-label="${escapeAttr(s.menu)}">${ICON.menu}${token(s.shortMenu)}</button>`)
 
   // `.site-actions` is a DIV and not a <nav>. Every control in it — search, theme, palette,

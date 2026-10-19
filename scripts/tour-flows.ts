@@ -337,7 +337,7 @@ export function registerFlows({ flow, expect, atWidth, passkeyHost }: PasskeyTou
   registerBackupFlows({ flow, expect, atWidth })
   registerCloudFlows({ flow, expect })
   // After the backup flows, so the snapshot they build and restore is the fixture's own.
-  registerThemeFlows({ flow, expect })
+  registerThemeFlows({ flow, expect, atWidth })
   registerNewsFlows({ flow, expect, atWidth })
   registerStatsFlows({ flow, expect, atWidth })
   registerShellFlows({ flow, expect, atWidth })

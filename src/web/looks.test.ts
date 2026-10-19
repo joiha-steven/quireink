@@ -126,8 +126,10 @@ describe('the newspaper dialect', () => {
       expect(line).not.toContain('display:flex')
     }
     // And only when the masthead holds it: a page worn in this look without being served in
-    // it (a demo that swaps looks in the browser) has no masthead menu to fall back on.
-    expect(LOOK_PAPER_CSS).toContain('body:has(.site-bar > .site-menu) .rail-inner > nav:not(.toc){display:none}')
+    // it (a demo that swaps looks in the browser) has no masthead menu to fall back on. The
+    // renderer marks the rail's copy `.rail-menu-copy` only on a page whose header draws the
+    // menu (`theme-menu-header.test.ts`), so the sheet hides the mark, never the bare nav.
+    expect(LOOK_PAPER_CSS).toContain('html[data-look=paper] .rail-menu-copy,\nhtml[data-look=paper] article .rail-menu-only{display:none}')
     expect(LOOK_PAPER_CSS).not.toMatch(/^html\[data-look=paper] \.rail-inner > nav:not\(\.toc\)\{display:none/m)
   })
 

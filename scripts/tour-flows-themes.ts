@@ -88,7 +88,7 @@ const tidy = `(async () => {
   return r.ok ? 'ok' : 'could not put the fixture theme back: ' + r.status
 })()`
 
-export function registerThemeFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
+export function registerThemeFlows({ flow, expect, atWidth }: Pick<Tour, 'flow' | 'expect' | 'atWidth'>): void {
   flow('a theme installed from a zip is listed unreviewed, chosen, worn, removed, and the site is Plain again', async () => {
     try {
       const chosen = await expect('/admin/settings?tab=appearance', `(async () => {
@@ -202,4 +202,125 @@ export function registerThemeFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       if (listed.data.some((t) => t.id === 'tour-refused')) return 'a refused package was installed'
       return 'ok ' + lines.length + ' finding(s), first: ' + where
     })()`, 900))
+
+  // THE MENU IN THE HEADER IS THE ENGINE'S JOB. A theme whose manifest says layout.menu "header"
+  // and whose sheet says nothing about the rail: at 1440 the header shows the menu and no rail
+  // shows its copy or stands empty; at 375 the header's menu is hidden and the drawer offers it.
+  const id = 'tour-masthead'
+  const zip = Buffer.from(themeZip({ 'theme.json': { ...MANIFEST, id, name: 'Tour masthead', layout: { menu: 'header' } } })).toString('base64')
+  const tidyMasthead = `(async () => {
+    await fetch('/api/themes/${id}', { method: 'DELETE', credentials: 'same-origin' })
+    const r = await fetch('/api/settings', { method: 'PUT', credentials: 'same-origin',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ theme: 'code' }) })
+    return r.ok ? 'ok' : 'could not put the fixture theme back: ' + r.status
+  })()`
+  const wearMasthead = `(async () => {
+    const bytes = Uint8Array.from(atob(${JSON.stringify(zip)}), (c) => c.charCodeAt(0))
+    const form = new FormData()
+    form.append('file', new File([bytes], 'tour-masthead.zip', { type: 'application/zip' }), 'tour-masthead.zip')
+    const put = await fetch('/api/themes', { method: 'POST', credentials: 'same-origin', body: form })
+    if (!put.ok) return 'install -> ' + put.status
+    const r = await fetch('/api/settings', { method: 'PUT', credentials: 'same-origin',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ theme: '${id}' }) })
+    return r.ok ? 'ok' : 'choose -> ' + r.status
+  })()`
+  flow('a theme with the menu in the header shows it once at 1440 and in the drawer at 375', async () => {
+    try {
+      const worn = await expect('/admin', wearMasthead)
+      if (worn !== 'ok') return worn
+      const wide = `(() => {
+        const vis = (el) => el.checkVisibility({ checkVisibilityCSS: true })
+        if (document.documentElement.dataset.theme !== '${id}') return 'the page does not wear the theme'
+        const head = document.querySelector('.site-bar > .site-menu')
+        if (!head || !vis(head)) return 'the header shows no menu'
+        const copies = [...document.querySelectorAll('.rail .rail-menu-copy')]
+        if (!copies.length) return 'the rail carries no marked copy of the menu'
+        if (copies.some(vis)) return 'the rail shows its copy beside the header menu'
+        const empty = [...document.querySelectorAll('.rail')].filter((r) => vis(r)
+          && ![...r.querySelectorAll('.rail-inner > *')].some(vis))
+        if (empty.length) return 'a rail is drawn with nothing in it: ' + empty[0].className
+        return 'ok'
+      })()`
+      const narrow = `(async () => {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+        const vis = (el) => el.checkVisibility({ checkVisibilityCSS: true })
+        const head = document.querySelector('.site-bar > .site-menu')
+        if (head && vis(head)) return 'the header shows its menu on a phone'
+        const button = document.querySelector('.rail-toggle')
+        if (!button || !vis(button)) return 'no drawer button on a phone'
+        button.click()
+        await sleep(400)
+        const copy = document.querySelector('.rail .rail-menu-copy')
+        const links = copy ? [...copy.querySelectorAll('a')].filter(vis).length : 0
+        button.click()
+        return links > 0 ? 'ok ' + links : 'the drawer does not offer the menu'
+      })()`
+      const seen: string[] = []
+      for (const path of ['/a-type-scale-you-can-defend', '/colophon', '/']) {
+        const at1440 = await atWidth(1440, path, wide)
+        if (at1440 !== 'ok') return path + ' at 1440: ' + at1440
+        const at375 = await atWidth(375, path, narrow)
+        if (!at375.startsWith('ok')) return path + ' at 375: ' + at375
+        seen.push(path + ' ' + at375.slice(3) + ' links')
+      }
+      return 'ok once at 1440, in the drawer at 375: ' + seen.join(', ')
+    } finally {
+      await expect('/admin', tidyMasthead)
+    }
+  })
+
+  // AND THE RAIL STILL STARTS AT ITS TOP. The copy is hidden, but the space the base puts between
+  // rail blocks (.rail-inner > * + *) used to stay: the first block that IS drawn sat 28px under
+  // the rail's top in the gutter, out of line with the facts panel and the year index, and 16px
+  // low in the band. Measured on every rail the page draws, for the installed theme and for
+  // Newspaper, which hides the copy itself; at 1440 also as the contents' top against the panel's.
+  flow('a rail whose menu is in the header starts its first drawn block at the top', async () => {
+    const probe = `(() => {
+      const vis = (el) => el.checkVisibility({ checkVisibilityCSS: true })
+      const out = []
+      // The first drawn block's own top margin: without a menu above it, it has none. Measured as
+      // a margin rather than as a distance, because where the column is in flow (the band, the
+      // newspaper's shelf) that margin collapses through the column and the rail, and the whole
+      // rail moves down instead, so no distance inside the rail shows it.
+      for (const inner of document.querySelectorAll('.rail .rail-inner')) {
+        if (!vis(inner)) continue
+        const first = [...inner.children].find(vis)
+        if (first) out.push(Math.round(parseFloat(getComputedStyle(first).marginTop)))
+      }
+      const info = document.querySelector('.post-info')
+      const toc = document.querySelector('.rail .toc')
+      const level = info && toc && vis(info) && vis(toc) && getComputedStyle(info).position === 'absolute'
+        ? ' info-vs-toc=' + Math.round(toc.getBoundingClientRect().top - info.getBoundingClientRect().top) : ''
+      return out.length ? out.join(',') + level : 'no rail drawn'
+    })()`
+    const off: string[] = []
+    const seen: string[] = []
+    try {
+      const worn = await expect('/admin', wearMasthead)
+      if (worn !== 'ok') return worn
+      const cells: [string, string, number][] = [
+        [id, '/a-type-scale-you-can-defend', 1440], [id, '/a-type-scale-you-can-defend', 1100], [id, '/', 1440],
+        ['paper', '/a-type-scale-you-can-defend', 1440], ['paper', '/a-type-scale-you-can-defend', 1100],
+        ['paper', '/a-type-scale-you-can-defend', 768], ['paper', '/a-type-scale-you-can-defend', 375], ['paper', '/', 1440],
+      ]
+      let wearing = id
+      for (const [theme, path, width] of cells) {
+        if (theme !== wearing) {
+          const set = await expect('/admin', `fetch('/api/settings', { method: 'PUT', credentials: 'same-origin',
+            headers: { 'content-type': 'application/json' }, body: JSON.stringify({ theme: '${theme}' }) }).then((r) => r.ok ? 'ok' : 'choose -> ' + r.status)`)
+          if (set !== 'ok') return set
+          wearing = theme
+        }
+        const got = await atWidth(width, path, probe)
+        seen.push(theme + ' ' + path + '@' + width + ' ' + got)
+        if (got === 'no rail drawn') continue
+        if (got.split(' ')[0]!.split(',').some((n) => n !== '0') || (got.includes('info-vs-toc=') && !got.endsWith('info-vs-toc=0'))) {
+          off.push(theme + ' ' + path + ' at ' + width + ': ' + got)
+        }
+      }
+    } finally {
+      await expect('/admin', tidyMasthead)
+    }
+    return off.length ? 'the first rail block is not at the top: ' + off.join('; ') : 'ok ' + seen.join('; ')
+  })
 }
