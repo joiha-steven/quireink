@@ -20,10 +20,10 @@ import type { SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr } from '@/utils'
-import { resolveTab, type Tab } from '@/admin-shared/settings-tabs'
+import { resolveTab, TAB_IDS, type Tab } from '@/admin-shared/settings-tabs'
 import { pageHeader } from '@/web/admin/kit'
 import { settingsView } from '@/web/admin/views'
-import { panel, sheetAround } from '@/web/admin/screens/settings-shell'
+import { panel, sheetAround, tabLabel } from '@/web/admin/screens/settings-shell'
 import { blogTab } from '@/web/admin/screens/settings-blog'
 import { homeTab } from '@/web/admin/screens/settings-home'
 import { postTab } from '@/web/admin/screens/settings-post'
@@ -159,7 +159,9 @@ export async function settingsScreen(settings: SiteSettings, query: URLSearchPar
   const origin = settings.siteUrl || ''
 
   return `<div data-screen="settings" data-settings-tab="${escapeAttr(open)}"`
-    + ` data-lang="${escapeAttr(settings.language)}" data-settings-words="${words(t)}">`
+    + ` data-lang="${escapeAttr(settings.language)}" data-settings-words="${words(t)}"`
+    + ` data-tab-titles="${escapeAttr(JSON.stringify(Object.fromEntries(TAB_IDS.map((k) => [k, tabLabel(t, k)]))))}"`
+    + ` data-tab-screen="${escapeAttr(t.settingsTitle)}">`
     + pageHeader({ title: t.settingsTitle })
     + sheetAround(t, open, panels(t, view.settings, view, { redirects, origin, followers }, open))
     + `</div>`

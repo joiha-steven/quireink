@@ -150,3 +150,9 @@ failed:
 - **One control style per kind.** `tick()` (`web/admin/kit.ts`) is the box — a real `input[type=checkbox]` under
   `appearance-none`, drawn, since `accent-` colours a fill and leaves the platform's border.
 
+- **A count row that filters is a choice, never the pen.** Newsletter > People once printed the
+  confirmed / pending / unsubscribed counts and then the same words again as a strip, which
+  (drawn without a role) wore the pen a second time under the People / Send / Test tabs. The
+  count row is the filter now: its cells are `data-tab` keys, the chosen one takes the sunken key
+  and `aria-pressed`, and `wireSubscribers` narrows by them. The comments tally sentence ships
+  hidden and shows only while a filter narrows the list; unfiltered it repeated the band.

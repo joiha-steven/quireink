@@ -20,6 +20,7 @@ import { railBootScript, railData, railHtml, railHtmlAttrs } from '@/web/admin/r
 import { overlaysHtml } from '@/web/admin/overlays'
 import { notFoundScreen } from '@/web/admin/screens/not-found'
 import { screenFor } from '@/web/admin/screens'
+import { tabTitle } from '@/web/admin/tab-title'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeHtml } from '@/utils'
 import { allFontFaceCss, packageFaces } from '@/render/font-faces'
@@ -243,15 +244,14 @@ function adminStyles(settings: SiteSettings): string {
  * SITE — the one thing a tab among fifteen tabs is for. The favicon was worse than absent:
  * the shell linked none, so the browser fell back to `/favicon.ico`, which is the icon
  * compiled into the product. An owner who had uploaded their own was looking at Quire Ink's.
+ *
+ * The title now names the SCREEN first and the site second (`tab-title.ts`). The server draws it
+ * on every page load; the two places that change the address WITHOUT a load (a settings tab swap,
+ * a new piece's first save) re-title through `island/lib/tab-title.ts`, reading the site part
+ * from `data-site-title` on <html>.
  */
-function tabHead(settings: SiteSettings): string {
-  let host = ''
-  try {
-    host = new URL(settings.siteUrl).host
-  } catch {
-    /* not set, or not a URL: the name alone is still better than the product's */
-  }
-  const title = host ? `quireINK · ${host}` : 'quireINK'
+function tabHead(settings: SiteSettings, screen: string[] = []): string {
+  const title = tabTitle(screen, settings.title)
   const icon = settings.faviconUrl
     ? `<link rel="icon" href="${settings.faviconUrl.replace(/"/g, '&quot;')}">`
     : ''
@@ -273,6 +273,8 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
   const screen = found
     ? await found.screen.render(settings, query)
     : await notFoundScreen(settings)
+  const t = adminT(settings.language)
+  const named = found ? await found.screen.title(t, query) : [t.notFoundTitle]
   const ink = found?.screen.pen ? `\n<link rel="stylesheet" href="${INK}">` : ''
   const island = found?.screen.island
     ? `\n<script type="module" src="/admin/assets/${islandNamed(found.screen.island)}"></script>`
@@ -282,11 +284,11 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
   // emitted here. Stamping it would leave a hook that says the admin follows a setting it
   // does not.
   return `<!DOCTYPE html>
-<html lang="${esc(settings.language)}" data-tz="${esc(siteZone(settings.timezone))}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)} data-admin-screen="${found ? found.name : 'not-found'}">
+<html lang="${esc(settings.language)}" data-tz="${esc(siteZone(settings.timezone))}" class="admin" data-site-title="${esc(settings.title)}" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)} data-admin-screen="${found ? found.name : 'not-found'}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-${tabHead(settings)}
+${tabHead(settings, named)}
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="${STYLES}">${ink}
 ${PRELOADS}

@@ -156,11 +156,14 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
     + selectionBar({
       clearLabel: t.clearSelection, deleteLabel: t.deleteSelected, attrs: 'data-comment-selection',
     })
-    + `<span data-comment-tally class="${SHEET_TOOL}">`
+    // The tally sentence is only for a NARROWED view. Unfiltered it repeated the band's first
+    // two figures one row above them, so it ships hidden and the island raises it when the
+    // search or the age filter leaves fewer than the band's totals.
+    + `<span data-comment-tally class="${SHEET_TOOL}" hidden>`
     + `${escapeHtml(commentTally(tally, rows.length, by.size, settings.language, n))}</span>`
     + `<input type="search" data-comment-search placeholder="${escapeAttr(t.commentsSearch)}"`
     + ` aria-label="${escapeAttr(t.commentsSearch)}"`
-    + ` class="h-8 w-56 rounded-md border border-neutral-200 bg-white px-3 text-sm shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:placeholder:text-neutral-500">`
+    + ` class="h-8 w-40 rounded-md border border-neutral-200 bg-white px-3 text-sm shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:placeholder:text-neutral-500">`
 
   // The two words the island can need to say, plus the sentence it recomputes. Everything else
   // on this screen is already written above.

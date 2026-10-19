@@ -211,9 +211,16 @@ export function sheetPanel(frame: PanelFrame): string {
     + (frame.bottom ? `<div data-panel-bottom>${frame.bottom}</div>` : '')
     + `</div>`
     + `<div class="flex items-center justify-end gap-2 border-t border-neutral-100 px-6 py-4 dark:border-neutral-800">`
+    // The wrapper is what `admin.css` hides while the panel is DOCKED (`data-admin-sheet='docked'`,
+    // written by `island/lib/sheet-open.ts`): beside the writing the action row's own "Hide
+    // attributes" toggle is on screen and clickable, so two keys with one name is one too many.
+    // As a MODAL (below 1360px, and always for the publish step) the toggle sits under the scrim,
+    // so this is the key that closes the dialog from inside it. A wrapper, not the button: the
+    // button's shape sets a display and two display rules are decided by stylesheet order.
+    + `<span data-panel-shut-wrap class="contents">`
     + `<button type="button" data-panel-shut data-say-later="${escapeAttr(t.pubLater)}"`
     + ` data-say-hide="${escapeAttr(t.hideAttributes)}" class="${escapeAttr(buttonClass('secondary'))}">`
-    + `${escapeHtml(t.hideAttributes)}</button>`
+    + `${escapeHtml(t.hideAttributes)}</button></span>`
     // Only while the panel is ASKING. A Publish key on a panel opened to fix a slug is a key
     // somebody presses by accident.
     + `<button type="button" data-panel-publish hidden class="${escapeAttr(buttonClass())}">`

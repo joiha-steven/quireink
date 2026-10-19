@@ -25,6 +25,7 @@ import { wireLists } from './lib/settings-lists'
 import { wireMail } from './lib/settings-mail'
 import { wireNotes } from './lib/settings-notes'
 import { showTab } from './lib/tab-strip'
+import { retitle } from './lib/tab-title'
 import { wirePics } from './lib/settings-pics'
 import { wireSave, type SaveWords } from './lib/settings-save'
 import { wireSecurity } from './lib/settings-security'
@@ -91,6 +92,16 @@ if (root) {
 
   // ---- which tab is open ------------------------------------------------------------------
 
+  /** Each tab's label, as the server drew it into the tab title, so the tab and the strip agree. */
+  function tabNames(): Record<string, string> {
+    try {
+      const parsed: unknown = JSON.parse(screen.dataset.tabTitles ?? '{}')
+      return typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, string>) : {}
+    } catch {
+      return {}
+    }
+  }
+
   function swap(tab: string): void {
     screen.dataset.settingsTab = tab
     // `replaceState`, not `pushState`: seven tabs are one screen, and Back should leave
@@ -99,6 +110,7 @@ if (root) {
     if (tab === 'blog') url.searchParams.delete('tab')
     else url.searchParams.set('tab', tab)
     history.replaceState(history.state, '', url)
+    retitle([tabNames()[tab] ?? '', screen.dataset.tabScreen ?? ''])
     for (const p of panels) p.hidden = p.dataset.settingsPanel !== tab
     for (const r of notesRows) r.hidden = r.dataset.notesRow !== tab
     for (const b of strip?.querySelectorAll<HTMLElement>('[data-tab]') ?? []) {

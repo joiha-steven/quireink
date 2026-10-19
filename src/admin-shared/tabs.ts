@@ -17,7 +17,7 @@
 // 200-character list per key. The underlined `lg` strip is a handful of keys per page and is
 // left spelled out. `no-scrollbar` and `scroll-fade-x` stay written out beside the names: the
 // tour finds a track by them.
-import { component } from '@/admin-shared/component'
+import { component, utilitiesOf } from '@/admin-shared/component'
 
 export type TabSize = 'lg' | 'sm'
 
@@ -130,8 +130,15 @@ const CORNERS: Record<TabEdge, string> = {
 const SEGMENT = component('kit-seg', 'py-1 text-[0.8125rem] font-medium transition')
 const SEGMENT_HERE = component('kit-seg-here',
   'bg-[var(--pen)] text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]')
-const SEGMENT_ON = component('kit-seg-on',
+export const SEGMENT_ON = component('kit-seg-on',
   'bg-white font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.55)]')
+/**
+ * The chosen key for a control that sits on the CARD, not in a groove: SEGMENT_ON's white key
+ * would vanish on a white card, so the same carved key takes one grey step. Derived from
+ * SEGMENT_ON so the two cannot drift. Used by the subscriber count row.
+ */
+export const SEGMENT_ON_CARD = component('kit-seg-on-card',
+  utilitiesOf(SEGMENT_ON).replace('bg-white', 'bg-neutral-100'))
 const SEGMENT_IDLE = component('kit-seg-idle',
   'hover:bg-neutral-300/60 hover:text-neutral-900 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200')
 

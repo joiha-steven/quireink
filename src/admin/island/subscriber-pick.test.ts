@@ -52,3 +52,42 @@ describe('select every match', () => {
     expect(all.indeterminate).toBe(true)
   })
 })
+
+describe('the count row is the filter', () => {
+  const cell = (screen: HTMLElement, key: string): HTMLElement =>
+    screen.querySelector<HTMLElement>(`[data-sub-scope] [data-tab="${key}"]`)!
+
+  it('draws All, Confirmed, Pending and Unsubscribed as pressable cells, and no second strip', () => {
+    const screen = mount()
+    const keys = [...screen.querySelectorAll('[data-sub-scope] [data-tab]')].map((c) => c.getAttribute('data-tab'))
+    expect(keys).toEqual(['all', 'confirmed', 'pending', 'unsubscribed'])
+    expect(screen.querySelectorAll('[data-sub-scope]').length).toBe(1)
+    expect(cell(screen, 'all').querySelector('b')!.textContent).toBe('60')
+    expect(cell(screen, 'all').getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('moves the pressed mark to the clicked cell and never wears the pen', () => {
+    const screen = mount()
+    cell(screen, 'pending').click()
+    expect(cell(screen, 'pending').getAttribute('aria-pressed')).toBe('true')
+    expect(cell(screen, 'all').getAttribute('aria-pressed')).toBe('false')
+    expect(cell(screen, 'pending').className).not.toContain('--pen)')
+  })
+
+  it('deleting a pending subscriber lowers All and Pending by one and leaves the rest', async () => {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ success: true }), { status: 200 })) as unknown as typeof fetch
+    const screen = mount()
+    const figures = (): string[] =>
+      ['all', 'confirmed', 'pending', 'unsubscribed'].map((k) => cell(screen, k).querySelector('b')!.textContent!)
+    expect(figures()).toEqual(['60', '40', '20', '0'])
+    screen.querySelector<HTMLElement>('tr[data-sub][data-status="pending"] [data-sub-drop]')!.click()
+    await new Promise((r) => setTimeout(r, 20))
+    expect(figures()).toEqual(['59', '40', '19', '0'])
+  })
+
+  it('writes the status words with a capital in the rows', () => {
+    const screen = mount()
+    const first = screen.querySelector('tr[data-sub] td:nth-child(3)')!.textContent!.trim()
+    expect(first).toBe('Pending')
+  })
+})

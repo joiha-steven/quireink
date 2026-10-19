@@ -18,16 +18,19 @@
 // address falls through to the dead end the moment the entry goes, and `check:routes` and the
 // tour both cover it either way.
 import type { SiteSettings } from '@/types'
+import type { AdminStrings } from '@/i18n/admin-i18n'
+import { resolveTab } from '@/admin-shared/settings-tabs'
 import { analyticsScreen } from '@/web/admin/screens/analytics'
 import { assistantScreen } from '@/web/admin/screens/assistant'
 import { commentsScreen } from '@/web/admin/screens/comments'
-import { contentScreen, editorFrame } from '@/web/admin/screens/content'
+import { contentScreen, editorFrame, editorTitle } from '@/web/admin/screens/content'
 import { dashboardScreen } from '@/web/admin/screens/dashboard'
 import { helpScreen } from '@/web/admin/screens/help'
 import { mediaScreen } from '@/web/admin/screens/media'
 import { logScreen } from '@/web/admin/screens/log'
 import { newsletterScreen } from '@/web/admin/screens/newsletter'
 import { settingsScreen } from '@/web/admin/screens/settings'
+import { tabLabel } from '@/web/admin/screens/settings-shell'
 import { trashScreen } from '@/web/admin/screens/trash'
 
 export type Screen = {
@@ -39,6 +42,11 @@ export type Screen = {
    * has no such state ignores it, which is most of them.
    */
   render: (settings: SiteSettings, query: URLSearchParams) => Promise<string>
+  /**
+   * What the browser tab names this screen, most specific first: the words the screen's own
+   * heading uses, so the tab and the page cannot disagree. `spa.ts` appends the site's title.
+   */
+  title: (t: AdminStrings, query: URLSearchParams) => string[] | Promise<string[]>
   /**
    * The island's build name, or null for a screen that needs no JavaScript at all.
    *
@@ -59,35 +67,35 @@ export type Screen = {
 /** Keyed by the exact path. A screen with children states its own prefix rule here later. */
 export const SCREENS: Record<string, Screen> = {
   // The admin's front door, and almost pure reading: one island, for one dismissible band.
-  '/admin': { render: dashboardScreen, island: 'dashboard' },
+  '/admin': { title: (t) => [t.navHome], render: dashboardScreen, island: 'dashboard' },
   // The one screen with no behaviour at all: an index of `#` links is the browser's own.
-  '/admin/help': { render: helpScreen, island: null },
-  '/admin/log': { render: logScreen, island: 'log' },
+  '/admin/help': { title: (t) => [t.navHelp], render: helpScreen, island: null },
+  '/admin/log': { title: (t) => [t.logTitle], render: logScreen, island: 'log' },
   // Seven kinds and five ways to write, all of it over rows that are already in the markup.
-  '/admin/trash': { render: trashScreen, island: 'trash' },
+  '/admin/trash': { title: (t) => [t.trashTitle], render: trashScreen, island: 'trash' },
   // Grouped by post BY THE SERVER, which is where the grouping always happened in effect.
-  '/admin/comments': { render: commentsScreen, island: 'comments' },
+  '/admin/comments': { title: (t) => [t.commentsNavTitle], render: commentsScreen, island: 'comments' },
   // Two faces behind one address, both drawn here: the summary, and one page's drill-down at
   // `?path=`. The island is a filter and a ten-second poll; everything else is reading.
-  '/admin/analytics': { render: analyticsScreen, island: 'analytics' },
+  '/admin/analytics': { title: (t) => [t.analyticsTitle], render: analyticsScreen, island: 'analytics' },
   // The one screen that streams. The conversation is in the address now (`?chat=`), so the
   // server draws the transcript it holds and the island only ever adds what arrives after.
-  '/admin/assistant': { render: assistantScreen, island: 'assistant' },
+  '/admin/assistant': { title: (t) => [t.navAssistant], render: assistantScreen, island: 'assistant' },
   // Three kinds in one sheet, all three drawn and the kind in the address. The island is the
   // grid's behaviour: selection, search, sort, upload. The picker the other screens ask for
   // with `quire:pick-media` is NOT this island's, so it works on pages this screen never
   // loads on; it is an overlay the rail island imports on demand (`island/lib/media-picker.ts`).
-  '/admin/media': { render: mediaScreen, island: 'media' },
+  '/admin/media': { title: (t) => [t.libraryTitle], render: mediaScreen, island: 'media' },
   // Seven tabs over one form, ALL SEVEN drawn — the Save key stores the whole thing, so drawing
   // one tab and navigating between them would lose unsaved work at every switch. It holds the
   // admin's most dangerous routes, so nothing on it is a form: see `screens/settings.ts`.
-  '/admin/settings': { render: settingsScreen, island: 'settings' },
+  '/admin/settings': { title: (t, q) => [tabLabel(t, resolveTab(q.get('tab'))), t.settingsTitle], render: settingsScreen, island: 'settings' },
   // Three tabs over one audience, all three drawn. It holds the admin's one irreversible
   // action, so nothing on it is a form: see `screens/newsletter-send.ts`.
-  '/admin/newsletter': { render: newsletterScreen, island: 'newsletter' },
+  '/admin/newsletter': { title: (t) => [t.navNewsletter], render: newsletterScreen, island: 'newsletter' },
   // The write list and the empty paper beside it. Every piece is drawn once and the filters
   // hide (trap 2); the island is the search, the selection and the two drawers.
-  '/admin/content': { render: contentScreen, island: 'content' },
+  '/admin/content': { title: (t) => [t.navWrite], render: contentScreen, island: 'content' },
 }
 
 /**
@@ -116,7 +124,7 @@ export function screenFor(path: string): { name: string; screen: Screen } | null
     if (p !== prefix && !p.startsWith(`${prefix}/`)) continue
     return {
       name: prefix.slice('/admin/'.length),
-      screen: { render: (settings) => editorFrame(settings, p), island, pen: true },
+      screen: { title: (t) => editorTitle(t, p), render: (settings) => editorFrame(settings, p), island, pen: true },
     }
   }
   return null

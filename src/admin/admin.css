@@ -478,6 +478,12 @@ img.ProseMirror-separator {
 [data-admin-sheet='docked'] .admin-canvas {
   padding-right: var(--admin-sheet-w);
 }
+/* Docked, the action row's own toggle is on screen and clickable, so the panel's footer "Hide" key
+   is the second key of one name. Modal (narrower, or the publish step) it is the only way shut from
+   inside the dialog, so it stays. */
+[data-admin-sheet='docked'] [data-panel-shut-wrap] {
+  display: none;
+}
 /* On the canvas rather than under the attribute, or only the OPENING would be animated and
    closing the sheet would snap the column back across 192px in one frame. */
 .admin-canvas {
@@ -1738,4 +1744,19 @@ tr[data-piece][data-last] {
    the steps is the order the eye meets them. Rows are the half of the list, rounded up. */
 @media (min-width: 640px) {
   .steps-down { grid-auto-flow: column; grid-template-rows: repeat(3, auto); }
+}
+
+/* THE COUNT ROW'S HAIRLINES (Newsletter > People). Drawn by position because the row is a 2x2
+   on a phone and a 1x4 from 640px, and a utility per cell cannot say "every inner boundary, no
+   outer one" for both: the first cut had no `sm:` border utilities in the sheet and left the
+   middle boundary of the 1x4 undrawn. Colour stays with the cell's own utilities. */
+.count-row > * {
+  border-style: solid;
+  border-width: 0 1px 1px 0;
+}
+.count-row > :nth-child(even) { border-right-width: 0; }
+.count-row > :nth-child(n+3) { border-bottom-width: 0; }
+@media (width >= 40rem) {
+  .count-row > *, .count-row > :nth-child(even), .count-row > :nth-child(n+3) { border-width: 0 1px 0 0; }
+  .count-row > :last-child { border-right-width: 0; }
 }
