@@ -126,6 +126,24 @@
   which font each theme is drawn for.
 - **The Custom CSS box groups its class names** into the ones on every page, the blog pages and
   the front page.
+- **Dates in the admin name the month and carry the full year**, in each language's own order:
+  "Oct 19, 2026, 2:05 PM" in English, "19 thg 10, 2026, 14:05" in Vietnamese, instead of
+  "10/19/26 - 07:08", which reads as two different days in the US and in Europe.
+- **One name and one shape per number.** The home screen's Traffic card uses the same words as
+  Analytics ("Avg. time on page", "Avg. read depth"), and a time reads in the admin's language
+  ("1 phút 52 giây"). Every figure and label in a row of numbers lines up.
+- **The theme pickers show real pictures.** The four built-in themes are screenshots of a blog
+  wearing them, light and dark, in Settings and in the first-run setup, instead of grey bars.
+- **Newsletter's counts are the filter.** All, Confirmed, Pending and Unsubscribed are four cells
+  you click; the second filter strip under them is gone. Comments shows its total once.
+- **The browser tab names the screen**, such as "Comments · My blog", or the post you are editing.
+- **The formatting toolbar stays on one line.** Keys that do not fit go behind a More (⋯) menu
+  instead of wrapping onto a second row, for example with the Attributes panel open.
+- **Developer options fold away.** In Settings > Server & connections, search-engine switches,
+  custom code, redirects, Cloudflare, the MCP server and the Content API sit under Advanced,
+  shut until you open it; settings search still finds and opens them. The line printed under
+  the settings tabs is gone.
+- **Icons share one stroke weight and the side column lines up** to the pixel, open and folded.
 
 ### Fixed
 
