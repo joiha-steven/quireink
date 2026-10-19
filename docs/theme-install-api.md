@@ -4,7 +4,7 @@
 > and the public route that serves their files. The routes are
 > [`src/web/admin/themes.ts`](../src/web/admin/themes.ts) and [`src/web/theme-files.ts`](../src/web/theme-files.ts);
 > the store is [`src/content/installed-themes.ts`](../src/content/installed-themes.ts) and the
-> checking [`src/theme/read-package.ts`](../src/theme/read-package.ts). The admin drives them from
+> checking [`src/theme/read-package.ts`](../src/theme/read-package.ts). Writing a theme is [themes.md](themes.md). The admin drives them from
 > the Look card ([below](#in-the-admin)); once chosen, the public site wears one ([below](#wearing-one)).
 
 Every `/api/themes` route is on the owner-gated router: a session cookie, and for a write a

@@ -7,7 +7,7 @@ Quire Ink ships **one design**, worn in four built-in themes, and as many more a
 a zip, each checked by the engine first ([ADR 0072](decisions/0072-a-theme-is-a-checked-skin-over-the-one-markup.md)):
 Appearance → Theme → Install from a file, or the owner's API ([theme-install-api.md](theme-install-api.md)).
 There is no gallery: a gallery is a promise to keep every theme working forever, and the ones
-that stop being maintained are the ones people are running. A theme from a zip is marked
+that stop being maintained are the ones people are running; to share a theme you hand over the zip, and [Writing a theme](themes.md) is the guide for making one. A theme from a zip is marked
 Unreviewed, because nothing but the engine's checks has looked at it. What this page maps is the set of
 knobs, ending with the escape hatch for anything they do not cover.
 

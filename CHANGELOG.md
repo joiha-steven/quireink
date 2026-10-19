@@ -17,6 +17,10 @@
   than the screen, a box past its edge, text cut off, an image that does not load and a font that
   does not load. Nothing is installed on your own blog. See
   [Installing a theme](docs/theme-install-api.md#preview-before-installing).
+- **A guide for making your own theme.** [Making a theme](docs/themes.md) walks from copying the
+  public starter theme (github.com/joiha-steven/quireink-theme-starter) to checking, previewing,
+  zipping and installing it, with every field of theme.json and every check explained by an
+  example that is refused and the rewrite that passes.
 - **A theme that puts the menu in the header no longer has to hide the side column's copy itself.**
   Quire Ink hides it, and the side column and its button when nothing else is left in them, on
   screens wide enough for the header menu; phones keep the menu in the drawer. Themes can also

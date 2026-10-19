@@ -59,6 +59,7 @@ copies of a rule means one is wrong within a month
 | [appearance.md](appearance.md) | For the OWNER: every knob that changes how the site looks, custom CSS, and what cannot be changed |
 | [appearance-contract.md](appearance-contract.md) | The CSS variables, class names and attributes custom CSS and installed themes may rely on (`check:contract`) |
 | [theme-install-api.md](theme-install-api.md) | Installing a theme from a zip: the owner's routes, the Look card that drives them, what an install checks and stores, and `/themes/<hash>/…` |
+| [themes.md](themes.md) | For the person who WRITES a theme: the loop, the package, `theme.json`, the contract and the pitfalls; [themes-css-rules.md](themes-css-rules.md) holds every checker rule with a refused and a passing example |
 | [homepage.md](homepage.md) | What `/` serves: the post list, a page, or a composed front page |
 | [seo-pwa.md](seo-pwa.md) | Sitemap, feeds, OG, region, PWA |
 | [agent-ready.md](agent-ready.md) | Markdown negotiation, `.well-known` discovery, the three shipped skills, Content-Signal |

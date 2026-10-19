@@ -39,7 +39,7 @@ Màu, chữ, bố cục trang chủ và menu đều là cài đặt trong trang 
 ## Điểm nổi bật
 
 - **Trình soạn Markdown thật**, có bảng, chú thích, hộp ghi chú, công thức, bộ ảnh và video. Tự lưu khi gõ, giữ các bản cũ, hẹn giờ đăng.
-- **Bốn kiểu giao diện, sáu bảng màu, bốn font đọc**, sáng và tối, và chế độ sách dàn bài thành hai cột như trang giấy.
+- **Bốn kiểu giao diện có sẵn và mọi theme bạn cài từ file zip ([tự viết theme](docs/themes.md)), sáu bảng màu, bốn font đọc**, sáng và tối, và chế độ sách dàn bài thành hai cột như trang giấy.
 - **Cây bút cho bạn và cho người đọc**: tô năm màu mực, gạch chân, khoanh chữ — vẽ tay, không nét nào giống nét nào.
 - **Đăng nhập bằng passkey** (vân tay, khuôn mặt hoặc mã PIN của máy) bên cạnh mật khẩu và mã xác thực, không thay chúng.
 - **Thống kê không dùng cookie**, theo từng bài và cả site, và bản tin gửi bằng máy chủ mail của bạn.
