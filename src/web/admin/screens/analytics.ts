@@ -18,7 +18,7 @@ import { flag, formatDuration } from '@/admin-shared/analytics'
 import { emptyState, linkTabs, pageHeader, sheet, sheetTop } from '@/web/admin/kit'
 import { durationFigure, numBand } from '@/web/admin/kit-figures'
 import { analyticsSummaryView, rangeOf, type Window } from '@/web/admin/views'
-import { barList, trendChart, trendMark, type BarRow } from '@/web/admin/screens/analytics-kit'
+import { barList, trendChart, trendLine, type BarRow } from '@/web/admin/screens/analytics-kit'
 import { deliveryPanel, liveNow, topPages } from '@/web/admin/screens/analytics-cards'
 import { pieceIndex } from '@/web/admin/screens/analytics-pieces'
 import { analyticsDetailScreen } from '@/web/admin/screens/analytics-detail'
@@ -78,14 +78,13 @@ function band(t: AdminStrings, lang: SiteLang, d: AnalyticsSummary, window: Wind
     : '—'
 
   return numBand([
-    { n: n(d.totalViews), label: t.analyticsViews, after: comparable ? trendMark(d.totalViews, d.prevViews, t, lang, true) : '' },
+    { n: n(d.totalViews), label: t.analyticsViews, sub: comparable ? trendLine(d.totalViews, d.prevViews, t, lang) : '' },
     {
       n: n(d.uniqueVisitors),
       label: t.analyticsVisitors,
-      after: comparable ? trendMark(d.uniqueVisitors, d.prevVisitors, t, lang, true) : '',
-      sub: split,
+      sub: [comparable ? trendLine(d.uniqueVisitors, d.prevVisitors, t, lang) : '', split ?? ''],
     },
-    { n: formatDuration(d.avgDwellMs, lang), nHtml: durationFigure(d.avgDwellMs, lang), label: t.analyticsAvgTime },
+    { n: formatDuration(d.avgDwellMs, lang), nHtml: durationFigure(d.avgDwellMs, lang), label: t.analyticsAvgTime, wide: true },
     { n: `${d.avgReadDepth}%`, label: t.analyticsAvgDepth },
     { n: onePage, label: t.analyticsOnePageOnly },
   ])

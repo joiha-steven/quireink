@@ -11,7 +11,7 @@ import { flag, formatDuration } from '@/admin-shared/analytics'
 import { emptyState, linkTabs, pageHeader } from '@/web/admin/kit'
 import { card, durationFigure, statCard } from '@/web/admin/kit-figures'
 import { analyticsDetailView, type Window } from '@/web/admin/views'
-import { barList, trendChart, trendMark, type BarRow } from '@/web/admin/screens/analytics-kit'
+import { barList, trendChart, trendMark, trendNote, type BarRow } from '@/web/admin/screens/analytics-kit'
 import { rangeLabels } from '@/web/admin/screens/analytics'
 
 /**
@@ -29,8 +29,8 @@ const DEPTH_LABELS = ['0–25%', '26–50%', '51–75%', '76–100%']
 function tiles(t: AdminStrings, lang: SiteLang, d: PageSummary): string {
   const n = (x: number): string => formatCount(x, lang)
   return `<div class="grid grid-cols-2 gap-4 lg:grid-cols-5">`
-    + statCard({ label: t.analyticsViews, value: n(d.totalViews), after: trendMark(d.totalViews, d.prevViews, t, lang) })
-    + statCard({ label: t.analyticsVisitors, value: n(d.uniqueVisitors), after: trendMark(d.uniqueVisitors, d.prevVisitors, t, lang) })
+    + statCard({ label: t.analyticsViews, value: n(d.totalViews), after: trendMark(d.totalViews, d.prevViews, t, lang, true), sub: trendNote(d.totalViews, d.prevViews, t, lang) })
+    + statCard({ label: t.analyticsVisitors, value: n(d.uniqueVisitors), after: trendMark(d.uniqueVisitors, d.prevVisitors, t, lang, true), sub: trendNote(d.uniqueVisitors, d.prevVisitors, t, lang) })
     + statCard({ label: t.analyticsAvgTime, value: formatDuration(d.avgDwellMs, lang), valueHtml: durationFigure(d.avgDwellMs, lang) })
     + statCard({ label: t.analyticsAvgDepth, value: `${d.avgReadDepth}%` })
     // The glance share NEVER travels without the count it was taken over. A leave sample exists
