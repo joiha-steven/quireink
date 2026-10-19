@@ -15,7 +15,7 @@
 // screen needs it, with its reasoning; a speculative port of all forty would be forty class
 // lists nobody has looked at on a screen.
 import { escapeAttr, escapeHtml } from '@/utils'
-import { ICONS, GLYPHS, type GlyphName, type IconName } from '@/icons'
+import { GLYPHS, GLYPH_STROKE, iconSvg, type GlyphName, type IconName } from '@/icons'
 import {
   CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOOL, SHEET_TOOL_DANGER, SHEET_TOP,
   TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, buttonClass, type LampState,
@@ -27,9 +27,7 @@ import {
 import { HEADER_GAP, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
 
 /** A glyph from the shared set, at the surface's own size. */
-export const icon = (name: IconName, cls = GLYPH): string =>
-  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"`
-  + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="${cls}">${ICONS[name]}</svg>`
+export const icon = (name: IconName, cls = GLYPH): string => iconSvg(name, cls)
 
 /**
  * A page's own name, once per screen.
@@ -97,8 +95,9 @@ export function emptyState({ title, description = '', glyph, actionHtml = '', hi
     + (glyph
       ? `<div class="mb-5 text-neutral-300 dark:text-neutral-700">`
         // 48 units, not 24: the stroke has to stay a LINE at 96px, and the small set's 1.8 of
-        // 24 would be 7.2px of ink here.
-        + `<svg viewBox="0 0 48 48" class="h-24 w-24" fill="none" stroke="currentColor" stroke-width="1.1"`
+        // 24 would be 7.2px of ink here. `GLYPH_STROKE` (1.1 of 48 = 2.2px at 96) is the set's
+        // own weight for these drawings, not a number of this screen's.
+        + `<svg viewBox="0 0 48 48" class="h-24 w-24" fill="none" stroke="currentColor" stroke-width="${GLYPH_STROKE}"`
         + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPHS[glyph]}</svg></div>`
       : '')
     // The title is a STATE ("Nothing yet"), which is the machine talking, so it keeps the
@@ -134,10 +133,8 @@ export function select({ name, label, options, value, attrs = '' }: {
     + options.map(([v, text]) =>
       `<option value="${escapeAttr(v)}"${v === value ? ' selected' : ''}>${escapeHtml(text)}</option>`).join('')
     + `</select>`
-    + `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"`
-    + ` stroke-linecap="round" stroke-linejoin="round"`
-    + ` class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">`
-    + `${ICONS.down}</svg></span>`
+    + iconSvg('down', 'pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500 dark:text-neutral-400')
+    + `</span>`
 }
 
 /**

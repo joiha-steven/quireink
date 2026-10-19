@@ -83,7 +83,7 @@ export function railRows(t: AdminStrings): Map<NavId, RailRow> {
     // They are here because they can be switched OFF and `hidden` needs a name for them; no
     // list ever holds them. See `NAV_IDS` in `content/nav-order.ts`.
     { id: 'logo', href: '/admin', label: 'quireINK', icon: null },
-    { id: 'search', label: t.paletteTitle, icon: 'search' },
+    { id: 'search', label: t.paletteTitle, icon: 'searchCentred' },
   ]
   return new Map(rows.map((r) => [r.id, r]))
 }
@@ -299,14 +299,13 @@ export const RAIL_WIDTH = { shut: '4.5rem', open: '13rem', arranging: '16rem' } 
 // at the page you are already on repainted it grey. A rule you cannot see the order of is a
 // rule you should not be relying on.
 /**
- * ⚠️ 15px/500, up from 14px/400 on 2026-09-07, and the rail is the one place in this admin
- * where a step up is worth its cost. It is the first thing read on every visit and it was
- * set at the same size as a table cell and a hint — measured 2026-09-07: four destinations
- * and a group, every row 40px of 14px grey, nothing on the column but text at one size.
+ * ⚠️ 14px/500, on the type scale (15 was not a step): the WEIGHT lifts the rail above a table cell,
+ * as it did at 15 from 2026-09-07. 16 would cost the width a label keeps in eleven languages.
+ * `shrink-0`: the column scrolls, and flex shrank rows from 40px to 34px on an 800px window.
  */
 // ⚠️ COMPONENTS since 2026-10-03 (`component.ts`): on every page, rows of 570–660 characters each.
 export const SIDEBAR_NAV_QUIET = component('kit-rail-row',
-  'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-[0.9375rem] font-medium text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]')
+  'relative flex h-10 w-full shrink-0 items-center rounded-lg px-3 text-left text-sm font-medium text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]')
 
 // `neutral-200/70`, not `neutral-100`: the rail sits on the PAPER canvas (#f7f6f4), and
 // neutral-100 (#f5f5f5) is two points away from it — a hover nobody can see. Measured the

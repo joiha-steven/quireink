@@ -1052,9 +1052,9 @@ input[type='color']::-moz-color-swatch {
    `web/admin/kit.ts` puts that pair of sizes on the `<svg>` it wraps around the shared set in
    `src/icons.ts`, and the rail writes the same pair itself in `web/admin/rail-rows.ts`.
    20px is right in a 14px
-   context (a media tile's keys, a table row's actions) and too heavy beside the rail's 15px
-   labels, where the mark out-weighed the word it belongs to. 18px, stroke 1.8, which is the
-   set's own hand at the size it was drawn for. */
+   context (a media tile's keys, a table row's actions); the rail sits one step lower at 18px
+   because its glyph shares a 40px row with a label of the same 14px and a 20px mark out-weighed
+   the word it belongs to. Stroke 1.8 of 24, which is 1.35px at this size. */
 .rail-glyphs { --admin-glyph: 1.125rem; }
 
 /* ═══ THE RAIL'S STATES, AS CSS ═══════════════════════════════════════════════════════════
@@ -1110,6 +1110,20 @@ input[type='color']::-moz-color-swatch {
 /* The 40px this used to restore when the rail shut is the row's own height now that the group
    row is set like the destinations above it (`SIDEBAR_GROUP` in `admin-shared/rail.ts`). */
 
+/* THE GROUP'S INDENT IS ONE STEP OF 16px. Its guide line stands on the left edge of the glyph
+   boxes above it (the group's 12px margin on the rail's 12px padding), and the rows inside begin
+   a 1px line plus 3px past it, so a sub-row's glyph starts 16px right of a destination's and its
+   label 16px right of theirs. It was a 4px pad: 17px of step, one off the 4px grid the rest of
+   the column keeps. */
+.rail-group { padding-left: 3px; }
+/* The current-page bar inside the group is centred ON the guide line (1px at the group's edge,
+   so a 3px bar starts 1px before it and ends 1px after), where the destinations' bar is centred
+   in the rail's 12px gutter. At the gutter's offset it landed 0.5px off the line: a thick stroke
+   beside a thin one rather than one stroke. The collapsed rail has no guide, so it keeps the
+   gutter's offset. */
+:root[data-rail-collapsed='0'] #admin-rail .rail-group [aria-current='page']::before,
+.admin-drawer .rail-group [aria-current='page']::before { left: -5px; }
+
 /* A zone's floor only exists while something is being arranged. It is a DROP TARGET, and at
    rest it was 12px of nothing between the destinations and the group — which made the phone's
    drawer 32px taller than it had been. */
@@ -1133,10 +1147,14 @@ input[type='color']::-moz-color-swatch {
    attribute — so shutting the rail unfolded seven rows nobody had asked for. Caught by
    counting the rows a person can SEE in each state rather than by reading the DOM. */
 :root[data-rail-collapsed='1'][data-rail-more='1'] #admin-rail .rail-group { display: contents; }
-/* LEFT PADDING ONLY, and only when the rail is open: every label starts 24px from the edge
-   while the mark sat at 12 and alone hung off the left. Collapsed the mark is centred in a
-   72px rail, where a one-sided pad would push it off centre. */
-:root[data-rail-collapsed='0'] #admin-rail .rail-wordmark { padding-left: .75rem; }
+/* LEFT PADDING ONLY, and only when the rail is open: the word's first letter starts where the
+   glyphs below it start. A row's glyph box begins 12px in (the row's own padding) and the
+   widest glyph inks (frames: mail, image) begin 2 of their 24 units inside that box, so the
+   word is padded by the row's 12px plus 2/24 of the glyph size. Measured at 18px glyphs: the
+   word's ink at 25.5px, the frames' at 25.5px; it was 24.4 at a flat 12px, 1.1px nearer the
+   rail's edge than any glyph under it. Collapsed the mark is centred in a 72px rail, where a
+   one-sided pad would push it off centre. */
+:root[data-rail-collapsed='0'] #admin-rail .rail-wordmark { padding-left: calc(.75rem + var(--admin-glyph) / 12); }
 /* The way back out points the other way. */
 :root[data-rail-collapsed='1'] #admin-rail .rail-collapse-chevron { rotate: 180deg; }
 /* The owner's menu sits at the END of the strip on an open rail and in the MIDDLE of a shut

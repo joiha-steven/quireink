@@ -26,6 +26,7 @@ import type { NavOrder, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr } from '@/utils'
+import { ICONS, ICON_STROKE } from '@/icons'
 import { reconcileNavOrder } from '@/content/nav-order'
 import { MEDIA_VIEW_DEFAULT, MEDIA_VIEW_KEYS, NARROW, RAIL_KEYS, RAIL_WIDTH, ZONES, defaultOrder, railRows, type MediaKind, type RailRow } from '@/admin-shared/rail'
 import { WORDMARK, floor, renderRow, searchKey, searchRow } from '@/web/admin/rail-rows'
@@ -55,7 +56,7 @@ function column(order: NavOrder, rows: Map<string, RailRow>, t: AdminStrings, pa
   // Indented by a RULE rather than by padding: `SIDEBAR_NAV` is the one row string every item
   // in this column shares, and a per-item `pl-6` here is how that rule stops being true.
   // Collapsed, there is nothing to indent, which is a CSS question.
-  const group = `<div class="rail-group ml-3 flex flex-col gap-1 border-l border-neutral-200 pl-1 dark:border-neutral-800">${draw(order.more)}${floor('more')}</div>`
+  const group = `<div class="rail-group ml-3 flex shrink-0 flex-col gap-1 border-l border-neutral-200 dark:border-neutral-800">${draw(order.more)}${floor('more')}</div>`
   // ALWAYS BOTH SHAPES of the search control, and CSS picks. Switching the wordmark off moves
   // search from the top row into the column, and that switch is thrown inside arrange mode
   // without a reload — so a rail that rendered only the shape it needed would have to be
@@ -120,8 +121,10 @@ export function railHtml({ settings, aiConfigured, path }: RailOptions): string 
     + `<div class="flex items-center gap-1"><button type="button" data-rail-key="drawer"`
     + ` aria-label="${escapeAttr(t.navMenu)}" aria-expanded="false"`
     + ` class="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800">`
-    + `<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">`
-    + `<path class="rail-burger" d="M4 7h16M4 12h16M4 17h16"/><path class="rail-cross" d="M6 6l12 12M18 6L6 18"/>`
+    // The set's own `menu` and `close`, both in the markup and CSS picks (`[data-rail-open]`), so
+    // the button draws at the product's one stroke instead of a pair of paths of its own.
+    + `<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="${ICON_STROKE}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">`
+    + `<g class="rail-burger">${ICONS.menu}</g><g class="rail-cross">${ICONS.close}</g>`
     + `</svg></button></div></header>`
 
   // A DIV for the scrim, never a button. As a button it was a focusable control called Home

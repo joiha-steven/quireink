@@ -20,7 +20,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { siteDateTimeShort } from '@/admin-shared/sheet-state'
-import { ICONS } from '@/icons'
+import { iconSvg } from '@/icons'
 import { SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
 import { glyphOf, kindOf, logSentence, type LogKind } from '@/admin-shared/log-sentence'
 import { fold } from '@/admin-shared/fold'
@@ -100,9 +100,7 @@ const KINDS: LogKind[] = ['writing', 'media', 'people', 'settings', 'system', 's
 
 /** One 14px glyph, from the shared set, so the log looks like the rest of the admin. */
 const rowGlyph = (action: string): string =>
-  `<svg viewBox="0 0 24 24" class="h-3.5 w-3.5 shrink-0 text-neutral-400 dark:text-neutral-500"`
-  + ` fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"`
-  + ` stroke-linejoin="round" aria-hidden="true">${ICONS[glyphOf(action)]}</svg>`
+  iconSvg(glyphOf(action), 'h-3.5 w-3.5 shrink-0 text-neutral-400 dark:text-neutral-500')
 
 /**
  * One line of the ledger: time, the glyph, the sentence.

@@ -150,7 +150,7 @@ export function themeKey(t: AdminStrings): string {
     + `<button type="button" data-rail-key="theme" aria-label="${escapeAttr(t.themeLabel)}"`
     + ` title="${escapeAttr(t.themeLabel)}"`
     + ` aria-expanded="false" class="${SIDEBAR_ICON}">`
-    + `<span class="rail-sun">${glyph('theme')}</span><span class="rail-moon">${glyph('moon')}</span></button>`
+    + `<span class="rail-sun">${glyph('theme')}</span><span class="rail-moon">${glyph('moonCentred')}</span></button>`
     + `<div data-rail-menu="theme" hidden class="absolute bottom-full left-0 z-50 mb-1 w-44 overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">`
     + modes.map(([mode, label]) =>
       `<button type="button" data-rail-theme="${mode}" class="${item}">${escapeHtml(label)}`

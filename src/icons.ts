@@ -16,14 +16,41 @@
 //     flap, the shade along a book's spine. Pure glyphs (close, chevrons, check, plus)
 //     stay clean: they are marks, not objects, and an echo on a mark is decoration.
 //
+// Every body's INK is centred on (12, 12), measured on the rendered bounding box — the rail
+// stacks them in one column and a glyph 0.75 units off hangs 0.56px off it at 18px. Where a
+// thin tail or a lopsided mass makes the box and the eye disagree (`searchCentred`, `log`), the
+// drawing sits between the two measures and says so at the entry.
+//
 // Every body is drawn on a 24×24 viewBox and inherits colour and stroke from its wrapper,
 // so a per-path `stroke-width="1.4"` is the ONLY local override an entry may carry.
 // Editing a shape here changes it everywhere at once — which is the point.
+
+// THE WEIGHTS, as named numbers, so a wrapper never types one. `stroke-language.test.ts` fails an admin
+// or login file that writes an inline `<svg` with a stroke-width outside this set (the tick and
+// the chart lines are the listed exceptions, because they are not glyphs).
+//   ICON_STROKE        every body below, on its 24 units, whatever size it is drawn at: the
+//                      same glyph size always means the same stroke, since the stroke scales
+//                      with the box (20px = 1.5px of ink, 18px = 1.35px, 16px = 1.2px).
+//   ECHO_STROKE        the echo stroke inside a body.
+//   GLYPH_STROKE       the 48-unit drawings in `GLYPHS`, read at 96px: 1.1 of 48 is the same
+//                      2.2px of ink a 96px picture needs, where 1.8 of 24 would be 7.2px.
+//   GLYPH_ECHO_STROKE  the echo inside a `GLYPHS` drawing.
+export const ICON_STROKE = 1.8
+export const ECHO_STROKE = 1.4
+export const GLYPH_STROKE = 1.1
+export const GLYPH_ECHO_STROKE = 0.85
 
 export const ICONS = {
   search:
     '<circle cx="11" cy="11" r="6"/><path d="M15.4 15.4 20.5 20.5"/>'
     + '<path d="M7.6 9.3A4.3 4.3 0 0 1 9.9 7.1" stroke-width="1.4"/>',
+  // THE RAIL'S SEARCH: `search` redrawn 0.4 units up and left. The public header's glyph is
+  // settled and stays byte-identical above; in a column of centred glyphs the handle drags the
+  // box 0.75 right and down while the lens mass sits 0.05 left, so this one splits the difference
+  // (box 12.35, mass 11.55).
+  searchCentred:
+    '<circle cx="10.6" cy="10.6" r="6"/><path d="M15 15 20.1 20.1"/>'
+    + '<path d="M7.2 8.9A4.3 4.3 0 0 1 9.5 6.7" stroke-width="1.4"/>',
   // A SMALL DISC AND LONG RAYS, and the proportion is the whole of it. The ray was 2 units
   // long at stroke 1.8, and a round cap adds half the stroke at each end: the mark drawn was
   // 3.8 long by 1.8 thick, which at the 20px this renders at is 3.2px by 1.5px — a dot, not
@@ -49,6 +76,11 @@ export const ICONS = {
   moon:
     '<path d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5a8.5 8.5 0 1 0 10.8 10.8Z"/>'
     + '<path d="M12.4 6.6a6 6 0 0 0 5 5" stroke-width="1.4"/>',
+  // The rail's moon: `moon` moved 0.25 left and 0.25 down so its box centres on (12, 12). The
+  // public header's sun/moon is settled, so the original above stays byte-identical.
+  moonCentred:
+    '<path d="M20.25 14.55A8.5 8.5 0 0 1 9.45 3.75a8.5 8.5 0 1 0 10.8 10.8Z"/>'
+    + '<path d="M12.15 6.85a6 6 0 0 0 5 5" stroke-width="1.4"/>',
   // THE PAINTER'S BLOB, not a ring with dots in it. The ring version read as a FACE: two
   // dots level near the top and a third below the centre is the arrangement a person's
   // features make, and once seen it cannot be unseen. The silhouette is what carries the
@@ -77,8 +109,8 @@ export const ICONS = {
     '<path d="M12 6.5C10.4 5.2 8.4 4.5 6 4.5H4v13h2c2.4 0 4.4.7 6 2 1.6-1.3 3.6-2 6-2h2v-13h-2c-2.4 0-4.4.7-6 2z"/>'
     + '<path d="M12 6.5v13"/><path d="M10.3 9.5v4.5" stroke-width="1.4"/>',
   close: '<path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/>',
-  prev: '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
-  next: '<path d="m9.5 5.5 6.5 6.5-6.5 6.5"/>',
+  prev: '<path d="M15.25 5.5 8.75 12l6.5 6.5"/>',
+  next: '<path d="m8.75 5.5 6.5 6.5-6.5 6.5"/>',
   // The one direction `prev` and `next` do not cover, and a select needs it: the mark that
   // says "this opens downward". Added 2026-09-14, when the server had to draw a select too
   // (ADR 0054) and the only copy of this shape was a path typed inside `kit.tsx`. Clean, like
@@ -88,8 +120,8 @@ export const ICONS = {
   add: '<path d="M12 5v14M5 12h14"/>',
   more: '<circle cx="5.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor" stroke="none"/>',
   trash:
-    '<path d="M6.5 8.5 7.4 20h9.2l.9-11.5"/><path d="M4.5 8h15M9.5 8V5.5h5V8"/>'
-    + '<path d="M9.7 11.3h4.6" stroke-width="1.4"/>',
+    '<path d="M6.5 7.75 7.4 19.25h9.2l.9-11.5"/><path d="M4.5 7.25h15M9.5 7.25V4.75h5v2.5"/>'
+    + '<path d="M9.7 10.55h4.6" stroke-width="1.4"/>',
   // The broad-edge nib, not the icon packs' pencil: the slit down the face and the vent
   // hole are what a real nib carries, and the writing tool is this product's whole subject.
   nib:
@@ -114,43 +146,44 @@ export const ICONS = {
     '<path d="M12 3.5v11"/><path d="m7.5 10.2 4.5 4.5 4.5-4.5"/>'
     + '<path d="M4 16.5v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
   calendar:
-    '<rect x="4" y="6" width="16" height="14" rx="1.5"/><path d="M4 10.5h16M9 3.5V8M15 3.5V8"/>'
-    + '<path d="M7.2 13.5h4.4" stroke-width="1.4"/>',
+    '<rect x="4" y="6.25" width="16" height="14" rx="1.5"/><path d="M4 10.75h16M9 3.75v4.5M15 3.75v4.5"/>'
+    + '<path d="M7.2 13.75h4.4" stroke-width="1.4"/>',
   chart:
-    '<path d="M5.5 20v-7M12 20V5.5M18.5 20v-9.5"/>'
-    + '<path d="M4.8 21.5h6" stroke-width="1.4"/>',
+    '<path d="M5.5 18.6v-7M12 18.6V4.1M18.5 18.6V9.1"/>'
+    + '<path d="M5.3 20.1h6" stroke-width="1.4"/>',
   settings:
     '<circle cx="12" cy="12" r="6"/><path d="M12 3.5V6M12 18v2.5M3.5 12H6M18 12h2.5"/>'
     + '<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>'
     + '<path d="M9.7 10.2A2.9 2.9 0 0 1 11.4 9.1" stroke-width="1.4"/>',
   // The pen held over its mark — the assistant's badge: a tool pointed at the writing.
   penMark:
-    '<path d="M12 3.5V13"/><circle cx="12" cy="17" r="3.8"/>'
-    + '<circle cx="12" cy="17" r="1.2" fill="currentColor" stroke="none"/>'
-    + '<path d="M9.3 15.9a3 3 0 0 1 1.5-1.5" stroke-width="1.4"/>',
+    '<path d="M12 3.35V12.85"/><circle cx="12" cy="16.85" r="3.8"/>'
+    + '<circle cx="12" cy="16.85" r="1.2" fill="currentColor" stroke="none"/>'
+    + '<path d="M9.3 15.75a3 3 0 0 1 1.5-1.5" stroke-width="1.4"/>',
   home:
     '<path d="M4 11 12 4l8 7"/><path d="M6 10v10h12V10"/>'
     + '<path d="M10 20v-5.5h4" stroke-width="1.4"/>',
   page:
-    '<path d="M5 4.5h10.5L19 8v12H5z"/><path d="M15.5 4.5V8H19"/>'
-    + '<path d="M8.5 12h7M8.5 15.5h5"/>',
+    '<path d="M5 4.25h10.5L19 7.75v12H5z"/><path d="M15.5 4.25v3.5H19"/>'
+    + '<path d="M8.5 11.75h7M8.5 15.25h5"/>',
   comment:
-    '<path d="M20 5.5H5.5A1.5 1.5 0 0 0 4 7v8a1.5 1.5 0 0 0 1.5 1.5H8V20l4.5-3.5H20z"/>'
-    + '<path d="M8.5 10h7M8.5 12.8h4.5" stroke-width="1.4"/>',
+    '<path d="M20 4.75H5.5A1.5 1.5 0 0 0 4 6.25v8a1.5 1.5 0 0 0 1.5 1.5H8v3.5l4.5-3.5H20z"/>'
+    + '<path d="M8.5 9.25h7M8.5 12.05h4.5" stroke-width="1.4"/>',
   /**
-   * ⚠️ DRAWN 1.5 UNITS RIGHT OF CENTRE, ON PURPOSE. A clock is a closed ring and three rules are
+   * ⚠️ DRAWN 0.65 UNITS RIGHT OF CENTRE, ON PURPOSE. A clock is a closed ring and three rules are
    * three short strokes: this glyph carries about 31 units of ink on its left and 12 on its
    * right, so a drawing centred on its BOUNDING BOX hangs visibly to the left. Reported by eye
    * in the collapsed rail, then measured — a stroke-mass centroid over all thirteen rail icons
    * put this one 1.47 units off and no other past 0.6.
    *
-   * A box is not what anyone looks at. The bounding box is deliberately lopsided now (4.5 to 22
-   * against a 24 field) so that the INK sits on the column the icons above and below it stand on.
+   * A box is not what anyone looks at, and neither is the mass alone, which would leave the
+   * box 1.25 units out. The drawing sits between them: box centre 12.65, mass centre 11.69, so
+   * neither measure is more than 0.7 units (0.5px at the rail's 18px) from the column.
    */
   log:
-    '<circle cx="9.5" cy="12" r="5"/><path d="M9.5 9.5V12l1.8 1.2"/>'
-    + '<path d="M18 7H22M18 12H22M18 17h2.5"/>'
-    + '<path d="M7.1 10a2.9 2.9 0 0 1 1.3-1.6" stroke-width="1.4"/>',
+    '<circle cx="8.9" cy="12" r="5"/><path d="M8.9 9.5V12l1.8 1.2"/>'
+    + '<path d="M17.4 7H21.4M17.4 12H21.4M17.4 17h2.5"/>'
+    + '<path d="M6.5 10a2.9 2.9 0 0 1 1.3-1.6" stroke-width="1.4"/>',
   help:
     '<circle cx="12" cy="12" r="8.5"/>'
     + '<path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.1.9-1.1 1.8v.3"/>'
@@ -182,14 +215,41 @@ export const ICONS = {
   // The owner, standing in for a portrait that has not been set. Shoulders, not a bust in a
   // circle: the circle is drawn by whatever frames it, and two rings would be two marks.
   person:
-    '<circle cx="12" cy="8.2" r="3.8"/><path d="M4.8 20.5a7.2 7.2 0 0 1 14.4 0"/>'
-    + '<path d="M9.7 6.8a3 3 0 0 1 1.8-1.2" stroke-width="1.4"/>',
+    '<circle cx="12" cy="7.75" r="3.8"/><path d="M4.8 20.05a7.2 7.2 0 0 1 14.4 0"/>'
+    + '<path d="M9.7 6.35a3 3 0 0 1 1.8-1.2" stroke-width="1.4"/>',
+  // The two faces of a password field's reveal key, and the passkey door's key: drawn on the
+  // sign-in page's own sheet until 2026-10-19, at 1.7 against the set's 1.8. Lucide's outlines,
+  // now in the set so one stroke covers the product. The strike through the open eye is a
+  // separate body because the key swaps between them rather than animating one.
+  eye:
+    '<path d="M2.1 12S5.7 5.5 12 5.5 21.9 12 21.9 12 18.3 18.5 12 18.5 2.1 12 2.1 12Z"/>'
+    + '<circle cx="12" cy="12" r="3"/>',
+  eyeOff:
+    '<path d="M10.7 6.2A9.9 9.9 0 0 1 12 6.1c6.3 0 9.9 6.5 9.9 6.5a17.7 17.7 0 0 1-3 3.9"/>'
+    + '<path d="M6.6 7.6A17.6 17.6 0 0 0 2.1 12.6S5.7 19.1 12 19.1a9.6 9.6 0 0 0 4.1-.9"/>'
+    + '<path d="M10 10.6a2.9 2.9 0 0 0 4.1 4.1"/><path d="M3 3l18 18"/>',
+  key:
+    '<path d="M2.6 17.4A2 2 0 0 0 2 18.8V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1'
+    + 'a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4z"/>'
+    + '<circle cx="16.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/>',
   glyphs:
-    '<path d="m5 17 4-10 4 10M6.3 13.5h5.4"/><path d="M15.5 17V9.5"/>'
-    + '<circle cx="17.5" cy="13.5" r="2.6"/><path d="M20.1 11v6"/>',
+    '<path d="m4.5 17 4-10 4 10M5.8 13.5h5.4"/><path d="M15 17V9.5"/>'
+    + '<circle cx="17" cy="13.5" r="2.6"/><path d="M19.6 11v6"/>',
 } as const
 
 export type IconName = keyof typeof ICONS
+
+/**
+ * One glyph from the set as a finished `<svg>`, at whatever size `cls` gives it.
+ *
+ * THE ONLY PLACE the server writes the wrapper's stroke, so a screen cannot draw a glyph at a
+ * weight of its own. `cls` carries the size (`h-4 w-4`, or the admin's `GLYPH`); `attrs` is for
+ * a hook such as a `data-*` and is never a stroke.
+ */
+export const iconSvg = (name: IconName, cls = '', attrs = ''): string =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${ICON_STROKE}"`
+  + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${cls ? ` class="${cls}"` : ''}`
+  + `${attrs ? ` ${attrs}` : ''}>${ICONS[name]}</svg>`
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The BIG drawings — the picture at the top of an empty state, read at 96px.
