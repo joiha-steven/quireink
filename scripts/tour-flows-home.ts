@@ -56,7 +56,11 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
       // four that answer "did anybody read it" are the divs.
       const figures = [...card.querySelectorAll('div.tabular-nums')].map((d) => d.textContent.trim())
       if (figures.length < 4) return 'the card shows ' + figures.length + ' figures: ' + figures.join(' ')
-      const dwell = figures.some((f) => f.includes(':'))
+      // A dwell time carries a unit or a colon in any language ("1m 52s", "1 phút 52 giây",
+      // "1:52"); a count carries only digits and separators. Character classes only: this body
+      // is a template literal (see the note further down). The class holds a space, a no-break
+      // space and a narrow no-break space, the three a language puts between thousands.
+      const dwell = figures.some((f) => /[0-9]/.test(f) && /[^0-9   .,%]/.test(f))
       const depth = figures.some((f) => f.endsWith('%'))
       if (!dwell || !depth) return 'no time-per-post or read-through among: ' + figures.join(' ')
       return 'ok ' + figures.join(' · ')
