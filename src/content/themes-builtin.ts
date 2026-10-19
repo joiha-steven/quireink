@@ -17,9 +17,6 @@ import type { ThemeFont, ThemePalette } from '@/theme'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { DISPLAY_SLUG } from '@/content/fonts'
 import { LOOK_CODE_RAIL_ASIDE_CSS, LOOK_CODE_RAIL_BAND_CSS } from '@/web/look-code-rail.css'
-import {
-  CODE_CARD, CODE_TILE, NOTES_CARD, NOTES_TILE, PAPER_CARD, PAPER_TILE, PLAIN_CARD, PLAIN_TILE,
-} from '@/content/themes-builtin-art'
 
 /** A key of the admin's strings whose value is one string (some are tables of them). */
 type AdminText = { [K in keyof AdminStrings]: AdminStrings[K] extends string ? K : never }[keyof AdminStrings]
@@ -107,8 +104,6 @@ export type SiteTheme = {
    * theme's CSS the checker does not read (`web/look-code-rail.css.ts` says how it is held).
    */
   rail: { band: string; aside: string } | null
-  /** What stands for the theme where the owner picks one (`content/themes-builtin-art.ts`). */
-  art: { tile: string; card: string }
   /**
    * The settings the theme is drawn for, offered to the owner when the theme is switched on
    * and never written over a choice already saved. The same field a theme's `theme.json`
@@ -142,7 +137,7 @@ export type BuiltinTheme = SiteTheme & { id: BuiltinThemeId }
 const PLAIN: BuiltinTheme = {
   id: 'plain', nameKey: 'lookPlain', hintKey: 'lookStepPlainHint',
   sheet: null, dataLook: '', layout: { menu: 'rail', deepenMetaInk: false }, display: null, chromeFace: 'setting', rail: null,
-  art: { tile: PLAIN_TILE, card: PLAIN_CARD }, suggests: {}, legacyChromeFont: null, ownsSettings: [], package: null,
+  suggests: {}, legacyChromeFont: null, ownsSettings: [], package: null,
 }
 
 /** In the order the admin and the setup step offer them. */
@@ -153,7 +148,6 @@ export const BUILTIN_THEMES: readonly BuiltinTheme[] = [
     sheet: 'look-code', dataLook: 'code', layout: { menu: 'rail', deepenMetaInk: false }, display: null,
     chromeFace: 'setting',
     rail: { band: LOOK_CODE_RAIL_BAND_CSS, aside: LOOK_CODE_RAIL_ASIDE_CSS },
-    art: { tile: CODE_TILE, card: CODE_CARD },
     suggests: { chromeFont: 'jetbrains-mono' }, legacyChromeFont: 'jetbrains-mono', ownsSettings: [], package: null,
   },
   {
@@ -168,7 +162,6 @@ export const BUILTIN_THEMES: readonly BuiltinTheme[] = [
     // `own`: the sheet sets the chrome in the reading face, and only its labels (kickers,
     // dates, section heads) in the chrome font.
     chromeFace: 'own', rail: null,
-    art: { tile: PAPER_TILE, card: PAPER_CARD },
     suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter',
     // The sheet rules its own tables like a printed page (`web/look-paper.css.ts`): borders and
     // header ground are set there, so these three knobs have nothing to act on.
@@ -178,7 +171,6 @@ export const BUILTIN_THEMES: readonly BuiltinTheme[] = [
     id: 'notes', nameKey: 'lookNotes', hintKey: 'lookStepNotesHint',
     sheet: 'look-notes', dataLook: 'notes', layout: { menu: 'rail', deepenMetaInk: true }, display: null,
     chromeFace: 'setting', rail: null,
-    art: { tile: NOTES_TILE, card: NOTES_CARD },
     suggests: { chromeFont: 'inter' }, legacyChromeFont: 'inter', ownsSettings: [], package: null,
   },
 ]

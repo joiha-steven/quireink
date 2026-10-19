@@ -51,7 +51,7 @@ const RESERVED_EXACT = new Set([
   '/notes/feed.xml', '/notes/feed.json', '/notes/clip', '/speculation-rules.json',
 ])
 const RESERVED_PREFIX = [
-  '/login/', '/setup/', '/admin/', '/api/', '/uploads/', '/assets/', '/fonts/', '/.well-known/',
+  '/login/', '/setup/', '/admin/', '/api/', '/uploads/', '/assets/', '/fonts/', '/theme-shots/', '/.well-known/',
   '/comment-auth/', '/preview/',
 ]
 

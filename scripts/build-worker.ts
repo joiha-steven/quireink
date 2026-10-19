@@ -175,7 +175,7 @@ const plugin: BunPlugin = {
       wasm.set(args.path, `./${name}`)
       return { path: args.path, external: true }
     })
-    build.onLoad({ filter: /\.(woff2?|ttf|png|ico|jpe?g|svg)$/ }, (args) => {
+    build.onLoad({ filter: /\.(woff2?|ttf|png|ico|jpe?g|svg|webp)$/ }, (args) => {
       const bytes = readFileSync(args.path)
       const name = `${createHash('sha256').update(bytes).digest('hex').slice(0, 10)}-${basename(args.path)}`
       copyFileSync(args.path, join(PUBLIC, 'static', name))

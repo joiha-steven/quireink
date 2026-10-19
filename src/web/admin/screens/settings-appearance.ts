@@ -98,6 +98,14 @@ function shape(t: AdminStrings, s: SiteSettings): string {
  * skin is different and the PROTOCOL is the same, so `data-choice-track` / `data-choice` /
  * `aria-pressed` carry it and the island's `pickChoice` moves it with no new code.
  */
+/**
+ * The second line of a reading-font tile, set in the face it offers. Letters and figures, because
+ * those are what tell faces apart at this size: the two-storey or one-storey g, and whether the
+ * figures sit on the line or drop below it (old-style). Not copy, so not translated; it read
+ * "Aa · 1793" until 2026-10-19, a year that meant nothing to anyone choosing a face.
+ */
+const SPECIMEN = 'Aa Gg 0123'
+
 const tile = (v: string, on: boolean, cls: string, style: string, body: string, attrs = ''): string =>
   `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${on}"${tileFaces(cls)}${attrs}`
   + ` class="${tileClass(on, cls)}" style="font-family:${escapeAttr(style)}">${body}</button>`
@@ -133,7 +141,7 @@ function fonts(t: AdminStrings, s: SiteSettings, offers: readonly ThemeOffer[]):
     // ONE shade for the second line, where React had two. `pickChoice` repaints the BUTTON it
     // pressed and not the words inside it, and a second pair of hidden spans per tile to carry
     // one step of grey is four nodes for something the sunken tile already says.
-    + `<span class="block text-xs text-neutral-600 dark:text-neutral-300">Aa · 1793</span>`)).join('')
+    + `<span class="block text-xs text-neutral-600 dark:text-neutral-300">${SPECIMEN}</span>`)).join('')
     // An installed theme's reading fonts, after the built-in ones, in the same skin; shown while
     // that theme's tile is pressed. The sample is the face's own; `data-theme-face` is what the
     // island asks the browser to load, and when it cannot, the sample gives way to a line that
@@ -141,7 +149,7 @@ function fonts(t: AdminStrings, s: SiteSettings, offers: readonly ThemeOffer[]):
     + offerFonts(offers, 'reading').map(([o, f]) => tile(f.id, o.id === s.theme && f.id === readingNow,
       'px-3 py-2 text-left', offerStack(o, f),
       `<span class="block text-base leading-tight break-words">${escapeHtml(f.name)}</span>`
-      + `<span class="block text-xs text-neutral-600 dark:text-neutral-300" data-theme-face-sample>Aa · 1793</span>`
+      + `<span class="block text-xs text-neutral-600 dark:text-neutral-300" data-theme-face-sample>${SPECIMEN}</span>`
       + unloadedLine(t) + fromLine(t, o),
       `${optionAttrs(o, s)} data-theme-face="${escapeAttr(offerFamily(o, f))}"`)).join('')
   const chrome = CHROME_FONTS.map((f) => tile(f.id, f.id === chromeNow,

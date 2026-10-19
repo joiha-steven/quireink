@@ -258,30 +258,13 @@ html[data-motion=off] .login-passkey-button:active{transform:none}
    asked. */
 .face-art .face-mark{width:62%;height:.4rem;border-radius:.12rem;
   background:#${PEN_LIGHT.yellow}}
-/* THE FOURTH STEP'S THREE EXTRA PARTS. Four dialects need four drawings, and the bars above
-   only tell two of them apart: a gutter of line numbers says editor, a nameplate over a
-   heavy rule says paper, and a lifted sheet with printing already on it says notebook. Each
-   is scoped through .face-art for the reason the .face-cols rule records above — the bar
-   rule is (0,1,1) and a bare class is (0,1,0), so an unscoped version loses. */
-.face-art .face-gut{display:flex;flex-direction:row;align-items:center;gap:.28rem;
-  background:none}
-.face-art .face-num{flex:none;width:.34rem;height:.22rem}
-.face-art .face-gut .face-line{flex:1}
-/* The nameplate is centred and short; the rule under it is the one heavy line a paper has. */
-.face-art .face-plate{width:52%;height:.4rem;margin:0 auto}
-.face-art .face-heavy{height:.12rem;
-  background:color-mix(in srgb, var(--c-text) 55%, transparent)}
-/* Paper on a desk: a panel a shade lighter than the card it sits on, with its own shadow,
-   because that is the whole of how the notebook tells a page from what is under it. */
-/* Dotted, as the look's own sheet is since 2026-09-23: the drawing says the same thing the
-   page will, and the ruled lines it carried before no longer do. */
-.face-art .face-sheet{display:flex;flex-direction:column;justify-content:center;gap:.28rem;
-  flex:1;padding:.3rem;border-radius:.1rem;background-color:var(--c-bg);
-  background-image:radial-gradient(circle,
-    color-mix(in srgb, var(--c-text) 30%, transparent) 0 .6px,transparent .9px);
-  background-size:.35rem .35rem;
-  box-shadow:0 1px 3px color-mix(in srgb, var(--c-text) 22%, transparent)}
-.face-art .face-ruled{height:.1rem}
+/* The fourth step: a picture of each theme rather than bars (setup-page.ts, lookStepScreen).
+   The box keeps the tile shape of Settings (5:3) instead of the 4.6rem strip above, which at
+   a phone width would crop the picture to its masthead. The ring is the edge a white page on a
+   white card otherwise lacks; the face-art ground shows until the picture paints. */
+.face-art.face-shot{display:block;height:auto;aspect-ratio:5/3;padding:0;overflow:hidden;
+  box-shadow:0 0 0 1px var(--c-rule)}
+.face-shot img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
 .face-name{display:block;margin:.5rem 0 .1rem;font-weight:600;font-size:.9rem}
 .face-hint{display:block;font-size:.8rem;color:var(--c-meta);line-height:1.45}
 /* The select repeats the input's box EXACTLY rather than approximating it. Written first

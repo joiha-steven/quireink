@@ -1,4 +1,4 @@
-// Settings → Appearance → "Theme": the built-in themes as DRAWN tiles, not four words.
+// Settings → Appearance → "Theme": the built-in themes as PICTURED tiles, not four words.
 //
 // It was a segmented strip of four names until 2026-09-23, and a name is the one thing that
 // cannot sell a look: "Source code" or "Notebook" says nothing about what a reader will see,
@@ -7,9 +7,11 @@
 // each saying who it is for; this is the same answer in the admin's own kit, with the same
 // words, so a person who met "Newspaper" at setup finds the same card here.
 //
-// The drawings are inline SVG in `currentColor` rather than the setup screen's CSS parts: that
-// screen has its own sheet (`login.css.ts`), and the admin takes classes from its utilities and
-// nothing else (`check:admin-css`). A drawing needs no class at all.
+// The picture on each tile is a photograph of the showcase blog's front page wearing the theme,
+// light and dark (`web/theme-shots.ts`, written by `bun run theme:tiles`). Drawings of grey bars
+// stood here until 2026-10-19, and beside an installed theme's real screenshot they read as
+// placeholders. Both kinds of tile now draw one `picture` (`settings-appearance-installed.ts`),
+// so the box, the crop and the fallback are the same on every tile.
 //
 // THE PROTOCOL IS THE STRIP'S: `data-choice-track` / `data-choice` / `aria-pressed`, so the
 // island's `pickChoice` moves it and the form's diff reads it with no new code — the reading-
@@ -22,8 +24,9 @@ import { buttonClass } from '@/admin-shared/kit'
 import { offerFaces, suggestKey } from '@/web/admin/screens/settings-appearance-offers'
 import { settingRow } from '@/web/admin/fields'
 import {
-  brokenWarning, installControl, installedTile, NO_INSTALLED, previewKey, themeWords, type InstalledView,
+  brokenWarning, installControl, installedTile, NO_INSTALLED, picture, previewKey, themeWords, type InstalledView,
 } from '@/web/admin/screens/settings-appearance-installed'
+import { themeShotUrl } from '@/web/theme-shots'
 
 /**
  * A key pressed into the card, wearing its own specimen. A solid ink tile can show neither
@@ -47,12 +50,6 @@ export const tileClass = (on: boolean, cls: string): string =>
  */
 export const tileFaces = (cls: string): string =>
   ` data-on="${escapeAttr(tileClass(true, cls))}" data-off="${escapeAttr(tileClass(false, cls))}"`
-
-// The drawing on each tile is the theme's own (`art.tile` in `content/themes-builtin.ts`),
-// wrapped here in the admin's svg.
-const art = (tile: string): string =>
-  `<svg viewBox="0 0 160 96" class="mb-2 block w-full text-neutral-500 dark:text-neutral-400"`
-  + ` aria-hidden="true" focusable="false">${tile}</svg>`
 
 /**
  * What pressing the tile moves on the rest of the form, as setting key to value: the island
@@ -88,11 +85,12 @@ const TILE_LAYOUT = 'flex flex-col p-3 text-left'
 export function lookPicker(t: AdminStrings, s: SiteSettings, view: InstalledView = NO_INSTALLED): string {
   // Each built-in key in the same two-row cell an installed one has (`installedTile`), its Preview
   // key in the second row, so the keys of a row are one height whichever kinds share it.
-  const builtins = BUILTIN_THEMES.map(({ id, nameKey, hintKey, art: { tile }, suggests, ownsSettings }) =>
+  const builtins = BUILTIN_THEMES.map(({ id, nameKey, hintKey, suggests, ownsSettings }) =>
     `<div class="row-span-2 grid min-w-0 grid-rows-subgrid">`
     + `<button type="button" data-choice="${escapeAttr(id)}" aria-pressed="${id === s.theme}"`
     + suggestsAttr(suggests) + ownsAttr(ownsSettings, t[nameKey])
-    + `${tileFaces(TILE_LAYOUT)} class="${tileClass(id === s.theme, TILE_LAYOUT)}">${art(tile)}`
+    + `${tileFaces(TILE_LAYOUT)} class="${tileClass(id === s.theme, TILE_LAYOUT)}">`
+    + picture({ light: themeShotUrl(id, 'light'), dark: themeShotUrl(id, 'dark') })
     + `<span class="block text-sm font-semibold leading-tight">${escapeHtml(t[nameKey])}</span>`
     + `<span class="mt-1 block text-xs font-normal text-neutral-600 dark:text-neutral-300">${escapeHtml(t[hintKey])}</span>`
     + `</button><div class="flex flex-wrap gap-2 self-start">${previewKey(t, id, t[nameKey])}</div></div>`).join('')

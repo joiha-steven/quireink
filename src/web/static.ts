@@ -1,4 +1,6 @@
-// The files a reader's browser fetches directly: reading fonts, the favicon, the app icon.
+// The files a reader's browser fetches directly: reading fonts, the favicon, the app icon; and
+// the pictures of the built-in themes, which only the owner's two theme pickers link
+// (`web/theme-shots.ts`).
 //
 // Every one is imported with `with { type: 'file' }`, which yields a reference the runtime's
 // `assetBody` streams (`@/runtime/impl/assets`): on Bun a path on disk, on Cloudflare a path in the
@@ -40,6 +42,15 @@ import sourcesans_vietnamese from '@/assets/static/fonts/sourcesans-vietnamese.w
 import sourceserif_latin from '@/assets/static/fonts/sourceserif-latin.woff2' with { type: 'file' }
 import sourceserif_latin_ext from '@/assets/static/fonts/sourceserif-latin-ext.woff2' with { type: 'file' }
 import sourceserif_vietnamese from '@/assets/static/fonts/sourceserif-vietnamese.woff2' with { type: 'file' }
+// Written by `bun run theme:tiles`; named in `web/theme-shots.ts`, which adds each one's version.
+import shot_plain_light from '@/assets/static/theme-shots/plain-light.webp' with { type: 'file' }
+import shot_plain_dark from '@/assets/static/theme-shots/plain-dark.webp' with { type: 'file' }
+import shot_code_light from '@/assets/static/theme-shots/code-light.webp' with { type: 'file' }
+import shot_code_dark from '@/assets/static/theme-shots/code-dark.webp' with { type: 'file' }
+import shot_paper_light from '@/assets/static/theme-shots/paper-light.webp' with { type: 'file' }
+import shot_paper_dark from '@/assets/static/theme-shots/paper-dark.webp' with { type: 'file' }
+import shot_notes_light from '@/assets/static/theme-shots/notes-light.webp' with { type: 'file' }
+import shot_notes_dark from '@/assets/static/theme-shots/notes-dark.webp' with { type: 'file' }
 
 /** Request path to the on-disk (or embedded) file behind it. */
 const FILES: Record<string, string> = {
@@ -67,12 +78,21 @@ const FILES: Record<string, string> = {
   '/fonts/sourceserif-latin.woff2': sourceserif_latin,
   '/fonts/sourceserif-latin-ext.woff2': sourceserif_latin_ext,
   '/fonts/sourceserif-vietnamese.woff2': sourceserif_vietnamese,
+  '/theme-shots/plain-light.webp': shot_plain_light,
+  '/theme-shots/plain-dark.webp': shot_plain_dark,
+  '/theme-shots/code-light.webp': shot_code_light,
+  '/theme-shots/code-dark.webp': shot_code_dark,
+  '/theme-shots/paper-light.webp': shot_paper_light,
+  '/theme-shots/paper-dark.webp': shot_paper_dark,
+  '/theme-shots/notes-light.webp': shot_notes_light,
+  '/theme-shots/notes-dark.webp': shot_notes_dark,
 }
 
 const TYPES: Record<string, string> = {
   woff2: 'font/woff2',
   png: 'image/png',
   ico: 'image/x-icon',
+  webp: 'image/webp',
 }
 
 /** Every path this module can serve. The router registers each one explicitly. */

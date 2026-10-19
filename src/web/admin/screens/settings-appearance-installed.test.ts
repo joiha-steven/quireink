@@ -71,12 +71,13 @@ describe('the installed tiles', () => {
     expect(two).not.toContain('<b>loud')
   })
 
-  it('draws every installed tile’s picture in the built-in drawing’s 160 by 96 box', () => {
+  it('draws every tile’s picture, built in or installed, in the same 160 by 96 box', () => {
     const html = lookPicker(t, DEFAULT_SETTINGS, { installed: [LEDGER], health: OK })
-    const builtin = [...html.matchAll(/<svg viewBox="([^"]+)" class="mb-2 block w-full/g)].map((m) => m[1])
-    expect(builtin).toEqual(BUILTIN_THEMES.map(() => '0 0 160 96'))
-    // The installed one: the same box, its 8px below moved onto the wrapper the screenshot sits in.
-    expect(cell(html, 'ledger')).toContain('<span class="relative mb-2 block"><svg viewBox="0 0 160 96" class="block w-full')
+    const box = '<span class="relative mb-2 block"><svg viewBox="0 0 160 96" class="block w-full'
+    // One box per tile: the four built in and the installed one, and no other drawing in the track.
+    expect(html.split(box).length - 1).toBe(BUILTIN_THEMES.length + 1)
+    expect(html.split('<svg viewBox="0 0 160 96"').length - 1).toBe(BUILTIN_THEMES.length + 1)
+    expect(cell(html, 'ledger')).toContain(box)
   })
 
   it('offers Rollback only where a version before the current one exists, and Remove on every theme', () => {
