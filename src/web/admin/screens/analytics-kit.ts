@@ -20,7 +20,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount } from '@/i18n/format'
 import { CARD } from '@/admin-shared/kit'
 import { trendOf } from '@/admin-shared/analytics'
-import { formatDateShort } from '@/admin-shared/when'
+import { formatDateShort, formatDateTimeShort } from '@/admin-shared/when'
 
 /**
  * The trend arrow that sits inside a figure. Empty when an arrow would be a lie — see `trendOf`.
@@ -141,11 +141,13 @@ export function trendChart({ points, peakLabel, viewsLabel, visitorsLabel, parti
 
   // An HOURLY bucket keeps its hour on the axis: the 24-hour range is labelled
   // `2026-09-22 15:00`, and the date alone printed both ends as two dates a day apart with
-  // no time on either (release review, 2026-09-23).
-  const axis = (day: string): string => {
-    const hour = /\d{2}:\d{2}$/.exec(day)
-    return hour ? `${formatDateShort(day, lang)} ${hour[0]}` : formatDateShort(day, lang)
-  }
+  // no time on either (release review, 2026-09-23). It is a wall clock on the site's zone with
+  // no offset, which `formatDateTimeShort` prints back digit for digit, in the same shape as
+  // every other date and time in the admin.
+  const axis = (day: string): string =>
+    /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}$/.test(day)
+      ? formatDateTimeShort(day.replace(' ', 'T'), lang)
+      : formatDateShort(day, lang)
   const ends = n > 1 && drawn[0] && drawn[n - 1]
     ? `<div class="mt-1.5 flex justify-between text-xs text-neutral-500 dark:text-neutral-400">`
       + `<span class="tabular-nums">${escapeHtml(axis(drawn[0].day))}</span>`

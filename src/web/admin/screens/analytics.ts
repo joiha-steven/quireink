@@ -16,7 +16,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount, formatWeekday, weekdayOrder } from '@/i18n/format'
 import { flag, formatDuration } from '@/admin-shared/analytics'
 import { emptyState, linkTabs, pageHeader, sheet, sheetTop } from '@/web/admin/kit'
-import { numBand } from '@/web/admin/kit-figures'
+import { durationFigure, numBand } from '@/web/admin/kit-figures'
 import { analyticsSummaryView, rangeOf, type Window } from '@/web/admin/views'
 import { barList, trendChart, trendMark, type BarRow } from '@/web/admin/screens/analytics-kit'
 import { deliveryPanel, liveNow, topPages } from '@/web/admin/screens/analytics-cards'
@@ -85,7 +85,7 @@ function band(t: AdminStrings, lang: SiteLang, d: AnalyticsSummary, window: Wind
       after: comparable ? trendMark(d.uniqueVisitors, d.prevVisitors, t, lang) : '',
       sub: split,
     },
-    { n: formatDuration(d.avgDwellMs), label: t.analyticsAvgTime },
+    { n: formatDuration(d.avgDwellMs, lang), nHtml: durationFigure(d.avgDwellMs, lang), label: t.analyticsAvgTime },
     { n: `${d.avgReadDepth}%`, label: t.analyticsAvgDepth },
     { n: onePage, label: t.analyticsOnePageOnly },
   ])

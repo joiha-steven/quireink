@@ -116,7 +116,7 @@ export function deliveryPanel(t: AdminStrings, lang: SiteLang, tz: string, summa
 }
 
 /** An em-dash, never a zero: nothing measured is a different fact from "they left at once". */
-const dwell = (ms?: number | null): string => (ms == null ? '—' : formatDuration(ms))
+const dwell = (ms: number | null | undefined, lang: SiteLang): string => (ms == null ? '—' : formatDuration(ms, lang))
 const depth = (pct?: number | null): string => (pct == null ? '—' : `${pct}%`)
 
 const NUM = 'w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300'
@@ -154,7 +154,7 @@ export function topPages(t: AdminStrings, lang: SiteLang, pages: TopPage[], titl
     + pages.map((p) => `<tr class="${TROW}"><td class="w-full max-w-0 px-4 py-2.5">`
       + `<a href="${escapeAttr(detailHref(p.path, range))}" class="${TITLE_CELL}" title="${escapeAttr(p.path)}">${name(p.path)}</a></td>`
       + `<td class="${NUM}">${n(p.views)}</td><td class="${NUM}">${n(p.visitors)}</td>`
-      + `<td class="${NUM_QUIET}">${escapeHtml(dwell(p.avgDwellMs))}</td>`
+      + `<td class="${NUM_QUIET}">${escapeHtml(dwell(p.avgDwellMs, lang))}</td>`
       + `<td class="${NUM_QUIET}">${escapeHtml(depth(p.avgDepth))}</td></tr>`).join('')
     + `</tbody></table></div></div>`
 
@@ -164,7 +164,7 @@ export function topPages(t: AdminStrings, lang: SiteLang, pages: TopPage[], titl
     + pages.map((p) => `<li class="border-b border-neutral-100 px-4 py-3 last:border-b-0 dark:border-neutral-800">`
       + `<a href="${escapeAttr(detailHref(p.path, range))}" class="${TITLE_CELL} text-sm" title="${escapeAttr(p.path)}">${name(p.path)}</a>`
       + `<dl class="mt-1.5 grid grid-cols-4 gap-2 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">`
-      + [n(p.views), n(p.visitors), escapeHtml(dwell(p.avgDwellMs)), escapeHtml(depth(p.avgDepth))]
+      + [n(p.views), n(p.visitors), escapeHtml(dwell(p.avgDwellMs, lang)), escapeHtml(depth(p.avgDepth))]
         .map((v, i) => `<div><dt>${escapeHtml(head[i] ?? '')}</dt>`
           + `<dd class="text-neutral-700 dark:text-neutral-300">${v}</dd></div>`).join('')
       + `</dl></li>`).join('')

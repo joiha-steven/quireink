@@ -179,8 +179,11 @@ export const installCard = (t: AdminStrings, s: SiteSettings, u: UpdateStatus): 
 const snapshotRow = (t: AdminStrings): string =>
   `<template data-backup-row>`
   + `<li class="flex items-center justify-between gap-3 px-4 py-2.5 text-sm" data-backup>`
-  + `<span class="min-w-0 truncate"><span data-backup-when></span>`
-  + `<span class="ml-2 text-neutral-500 dark:text-neutral-400" data-backup-size></span></span>`
+  // WHEN AND HOW BIG WRAP AS A PAIR, never cut: at 375 the date with its month spelled out
+  // (131px in German) and the size do not fit beside the two keys, and a truncated pair showed
+  // half a time and no size at all.
+  + `<span class="flex min-w-0 flex-wrap gap-x-2"><span class="whitespace-nowrap" data-backup-when></span>`
+  + `<span class="whitespace-nowrap text-neutral-500 dark:text-neutral-400" data-backup-size></span></span>`
   + `<span class="flex shrink-0 items-center gap-3">`
   // ⚠️ THE TWO KEYS ARE NOT THE SAME KIND OF KEY. Download takes a copy; Delete unlinks the
   // archive and nothing brings it back — no trash, no restore. They wore the identical grey

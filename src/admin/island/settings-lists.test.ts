@@ -108,6 +108,22 @@ describe('the snapshot list', () => {
     expect(text('data-backup-last')).not.toBe(t.backupLastRun)
   })
 
+  it('puts the seconds of a recent run on the clock, not after the AM/PM', async () => {
+    const recent = new Date(Date.now() - 5_000)
+    recent.setSeconds(23)
+    if (recent.getTime() > Date.now()) recent.setMinutes(recent.getMinutes() - 1)
+    const iso = recent.toISOString()
+    routes.set('/api/backup/list', {
+      snapshots: [{ name: 'a.tar.gz', size: 1, createdAt: iso }], lastRunAt: iso,
+    } satisfies BackupListWire)
+    wireLists(root, {})
+    await settle()
+    const line = text('data-backup-last')
+    // English ends in the day period; ":23" appended to that printed "8:29 AM:23".
+    expect(line).toMatch(/:23\s(AM|PM)$/)
+    expect(line).not.toMatch(/M:\d\d$/)
+  })
+
   it('shows the amber lamp and the never-word when there is no copy anywhere', async () => {
     routes.set('/api/backup/list', { snapshots: [], lastRunAt: null } satisfies BackupListWire)
     wireLists(root, {})

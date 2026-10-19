@@ -9,7 +9,7 @@ import { one } from '@/store/query'
 import { createUser } from './users'
 import { resetSecretCache, serverSecret } from './secret'
 import {
-  clearedCookie, COOKIE_NAME, createSession, listSessions, purgeExpiredSessions,
+  clearedCookie, COOKIE_NAME, createSession, deviceOf, listSessions, purgeExpiredSessions,
   resolveSession, revokeAllSessions, revokeSession, sessionCookie,
 } from './sessions'
 
@@ -57,6 +57,25 @@ describe('createSession', () => {
     const row = one<{ user_agent: string }>(`select user_agent from sessions`)
     expect(row!.user_agent).toBe('Firefox on macOS')
     expect(row!.user_agent).not.toContain('AppleWebKit')
+  })
+
+  it('reads its own bucket back, with what the parser did not know left out', () => {
+    expect(deviceOf('Firefox on macOS')).toEqual({ browser: 'Firefox', os: 'macOS' })
+    // The rows already in the table for a client nobody could place.
+    expect(deviceOf('Other on Other')).toEqual({ browser: null, os: null })
+    expect(deviceOf('Other on Linux')).toEqual({ browser: null, os: 'Linux' })
+    expect(deviceOf('Samsung Internet on Other')).toEqual({ browser: 'Samsung Internet', os: null })
+    expect(deviceOf(null)).toEqual({ browser: null, os: null })
+    expect(deviceOf('')).toEqual({ browser: null, os: null })
+    // Free text in another shape is kept whole rather than cut somewhere arbitrary.
+    expect(deviceOf('curl')).toEqual({ browser: 'curl', os: null })
+  })
+
+  it('round-trips what it stores for an agent it cannot place', () => {
+    createSession(userId, { userAgent: 'curl/8.4.0' })
+    const row = one<{ user_agent: string }>(`select user_agent from sessions`)
+    expect(row!.user_agent).toBe('Other on Other')
+    expect(deviceOf(row!.user_agent)).toEqual({ browser: null, os: null })
   })
 
   it('salts the IP, so the table cannot be scanned for a known address', () => {

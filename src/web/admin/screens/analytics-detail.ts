@@ -9,7 +9,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount } from '@/i18n/format'
 import { flag, formatDuration } from '@/admin-shared/analytics'
 import { emptyState, linkTabs, pageHeader } from '@/web/admin/kit'
-import { card, statCard } from '@/web/admin/kit-figures'
+import { card, durationFigure, statCard } from '@/web/admin/kit-figures'
 import { analyticsDetailView, type Window } from '@/web/admin/views'
 import { barList, trendChart, trendMark, type BarRow } from '@/web/admin/screens/analytics-kit'
 import { rangeLabels } from '@/web/admin/screens/analytics'
@@ -31,7 +31,7 @@ function tiles(t: AdminStrings, lang: SiteLang, d: PageSummary): string {
   return `<div class="grid grid-cols-2 gap-4 lg:grid-cols-5">`
     + statCard({ label: t.analyticsViews, value: n(d.totalViews), after: trendMark(d.totalViews, d.prevViews, t, lang) })
     + statCard({ label: t.analyticsVisitors, value: n(d.uniqueVisitors), after: trendMark(d.uniqueVisitors, d.prevVisitors, t, lang) })
-    + statCard({ label: t.analyticsAvgTime, value: formatDuration(d.avgDwellMs) })
+    + statCard({ label: t.analyticsAvgTime, value: formatDuration(d.avgDwellMs, lang), valueHtml: durationFigure(d.avgDwellMs, lang) })
     + statCard({ label: t.analyticsAvgDepth, value: `${d.avgReadDepth}%` })
     // The glance share NEVER travels without the count it was taken over. A leave sample exists
     // only when the browser delivered the beacon, so the denominator is not the view count, and

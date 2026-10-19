@@ -17,7 +17,7 @@ describe('the send list', () => {
     const html = sendPanel(t, 'en', [{ ...post({}), stats: null }] as never, true, 'Asia/Ho_Chi_Minh')
     expect(html).toContain('Just a quick thought')
     // 23:30 UTC on the 29th is the 30th in Hanoi.
-    expect(html).toContain('9/30/26')
+    expect(html).toContain('Sep 30, 2026')
     expect(html).toContain('grid grid-cols-1')
   })
 })

@@ -54,7 +54,7 @@ describe('the date after the standing', () => {
   it('is the PUBLISH date on a scheduled piece, never the save time', () => {
     const saved = formatDateTimeShort(NOW, 'en')
     const line = standingDate('scheduled', '2026-10-19T09:00', saved, 'en')
-    expect(line).toBe('10/19/26 - 09:00')
+    expect(line).toMatch(/^Oct 19, 2026, 9:00\sAM$/)
     expect(line).not.toBe(saved)
   })
   it('keeps the wall clock digits in another language too', () => {

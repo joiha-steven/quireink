@@ -18,7 +18,7 @@ import { TAP, UTIL } from '@/admin-shared/scale'
 import { FEED_LIST, FEED_MARK, FEED_ROW, inkFor, markFor } from '@/admin-shared/activity-mark'
 import { ago } from '@/admin-shared/when'
 import { logSentence } from '@/admin-shared/log-sentence'
-import { card } from '@/web/admin/kit-figures'
+import { card, durationFigure } from '@/web/admin/kit-figures'
 
 export type DashboardData = {
   traffic: { views30: number; visitors30: number; views7: number; spark: number[]; avgDwellMs: number; avgReadDepth: number }
@@ -82,16 +82,10 @@ function sparkline(data: number[], lang: SiteLang): string {
  * put views at the far left and visitors 800px away with nothing in between: two figures about
  * the same thirty days read as two unrelated facts.
  */
-const figure = (value: string, label: string, lead = false): string =>
+const figure = (valueHtml: string, label: string, lead = false): string =>
   `<div class="min-w-0"><div class="${lead ? 'text-3xl font-bold' : 'text-3xl font-semibold text-neutral-500 dark:text-neutral-400'} tracking-tight tabular-nums">`
-  + `${escapeHtml(value)}</div>`
+  + `${valueHtml}</div>`
   + `<div class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">${escapeHtml(label)}</div></div>`
-
-/** Average dwell as `m:ss`. Seconds alone read as a serial number at four digits. */
-function minutesSeconds(ms: number): string {
-  const total = Math.max(0, Math.round(ms / 1000))
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
-}
 
 export function trafficCard(t: AdminStrings, lang: SiteLang, traffic: DashboardData['traffic']): string {
   const n = (x: number): string => formatCount(x, lang)
@@ -103,11 +97,14 @@ export function trafficCard(t: AdminStrings, lang: SiteLang, traffic: DashboardD
       + `<span class="text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(t.analyticsRange30)}</span>`
       + link('/admin/analytics', VIEW_ALL, t.dashViewAnalytics) + `</div>`,
     body: `<div class="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">`
-      + figure(n(traffic.views30), t.dashViews, true)
-      + figure(n(traffic.visitors30), t.dashVisitors)
+      // The same four names and number shapes as the Analytics screen's band, which is one
+      // click away: "Time per post 1:52" here beside "Avg. time on page 1m 52s" there read as
+      // two different measurements of the same thirty days.
+      + figure(escapeHtml(n(traffic.views30)), t.analyticsViews, true)
+      + figure(escapeHtml(n(traffic.visitors30)), t.analyticsVisitors)
       // The two that say whether anybody READ it, as opposed to how many arrived.
-      + figure(minutesSeconds(traffic.avgDwellMs), t.dashAvgTime)
-      + figure(`${traffic.avgReadDepth}%`, t.dashReadDepth)
+      + figure(durationFigure(traffic.avgDwellMs, lang), t.analyticsAvgTime)
+      + figure(`${traffic.avgReadDepth}%`, t.analyticsAvgDepth)
       + `</div>`
       + `<div class="mt-5">${sparkline(traffic.spark, lang)}</div>`
       + `<div class="mt-2 text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(t.dashViews7)}: `

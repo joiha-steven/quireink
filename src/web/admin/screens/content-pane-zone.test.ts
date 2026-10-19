@@ -62,7 +62,8 @@ describe('the list and the header, on a site in another zone than the server', (
     const { list, header } = await both('/admin/editor/queued', 'post:queued')
     expect(list).toContain(HANOI)
     expect(header).toContain(HANOI)
-    expect(list).toContain('09:00')
+    // The wall clock's own hour, in English's own clock (`\s`: ICU's narrow space before AM).
+    expect(list).toMatch(/\b9:00\sAM\b/)
   })
 
   it('dates a scheduled NOTE by its publish date in the list, as the header does', async () => {
@@ -73,8 +74,9 @@ describe('the list and the header, on a site in another zone than the server', (
 
   it('prints a draft’s last touch the same in both places', async () => {
     const { list, header } = await both('/admin/editor/unsent', 'post:unsent')
-    const at = / · (\d[^·]*\d{2}:\d{2})/.exec(header)?.[1]
-    expect(at).toBeTruthy()
-    expect(list).toContain(at!)
+    // The stamp is the last part of the line: "Draft · Oct 18, 2099, 7:00 PM".
+    const at = header.split(' · ').at(-1) ?? ''
+    expect(at).toMatch(/\d{4}.*\d:\d{2}/)
+    expect(list).toContain(at)
   })
 })

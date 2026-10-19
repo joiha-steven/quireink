@@ -225,15 +225,16 @@ const backupWhen = (iso: string): string => pageStamp(iso)
 /**
  * THE LAST RUN, to the second while it is recent. Two runs inside one minute printed the same
  * "30/9/26 - 11:11", so pressing Back up now twice looked as if the second did nothing. Under an
- * hour old the stamp is the admin's own with `:ss` on the clock; older, it is the plain one.
+ * hour old the stamp is the admin's own with seconds on the clock; older, it is the plain one.
+ * The seconds go through the formatter, not onto the end of its answer: an English clock ends in
+ * "AM", and `:ss` appended there printed "8:29 AM:23".
  */
 const backupRunWhen = (iso: string): string => {
-  const base = backupWhen(iso)
   const at = new Date(iso).getTime()
   const age = Date.now() - at
   // A browser clock a few seconds behind the server's is the normal case right after "Back up now".
-  if (Number.isNaN(at) || age < -60_000 || age >= 3_600_000) return base
-  return `${base}:${String(new Date(at).getSeconds()).padStart(2, '0')}`
+  if (Number.isNaN(at) || age < -60_000 || age >= 3_600_000) return backupWhen(iso)
+  return pageStamp(iso, true)
 }
 
 async function fillBackups(screen: HTMLElement): Promise<void> {

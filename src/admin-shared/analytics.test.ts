@@ -4,6 +4,7 @@
 // trend arrow against a baseline of nothing.
 import { describe, expect, it } from 'bun:test'
 import { flag, formatDuration, trendOf } from '@/admin-shared/analytics'
+import { LANG_CODES } from '@/locales/langs'
 
 describe('the flag beside a country', () => {
   it('turns a two-letter code into regional indicators', () => {
@@ -20,21 +21,38 @@ describe('the flag beside a country', () => {
 
 describe('how long somebody stayed', () => {
   it('counts seconds under a minute', () => {
-    expect(formatDuration(1_000)).toBe('1s')
-    expect(formatDuration(59_400)).toBe('59s')
+    expect(formatDuration(1_000, 'en')).toBe('1s')
+    expect(formatDuration(59_400, 'en')).toBe('59s')
   })
 
   it('drops the seconds when there are none, rather than printing "2m 0s"', () => {
-    expect(formatDuration(120_000)).toBe('2m')
-    expect(formatDuration(125_000)).toBe('2m 5s')
+    expect(formatDuration(120_000, 'en')).toBe('2m')
+    expect(formatDuration(125_000, 'en')).toBe('2m 5s')
+    expect(formatDuration(120_000, 'vi')).toBe('2 phút')
   })
 
   // Nothing measured and nothing to say are the same string here; the CALLER decides whether
   // to print an em-dash instead, which the top-pages table does and the headline band does not.
-  it('answers 0s for missing, zero and negative', () => {
-    expect(formatDuration(undefined)).toBe('0s')
-    expect(formatDuration(0)).toBe('0s')
-    expect(formatDuration(400)).toBe('0s')
+  it('answers zero seconds for missing, zero and negative', () => {
+    expect(formatDuration(undefined, 'en')).toBe('0s')
+    expect(formatDuration(0, 'en')).toBe('0s')
+    expect(formatDuration(400, 'en')).toBe('0s')
+    expect(formatDuration(-5_000, 'vi')).toBe('0 giây')
+  })
+
+  // It printed "1m 52s" in all eleven languages: English unit letters on a Vietnamese dashboard.
+  it('speaks the admin language', () => {
+    expect(formatDuration(112_000, 'en')).toBe('1m 52s')
+    expect(formatDuration(112_000, 'vi')).toBe('1 phút 52 giây')
+    expect(formatDuration(112_000, 'de')).toBe('1 Min., 52 Sek.')
+    expect(formatDuration(112_000, 'ja')).toBe('1m52s')
+    expect(formatDuration(112_000, 'ko')).toBe('1분 52초')
+    expect(formatDuration(112_000, 'zh')).toBe('1分钟52秒')
+    for (const lang of LANG_CODES) {
+      const out = formatDuration(112_000, lang)
+      expect(out).toContain('52')
+      expect(out).toMatch(/^1\D/)
+    }
   })
 })
 

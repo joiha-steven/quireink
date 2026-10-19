@@ -111,7 +111,7 @@ describe('admin screens on a site in another zone than the server', () => {
   it('the media library dates an upload by the site’s day, not UTC’s', () => {
     const file = { url: '/uploads/a.pdf', filename: 'a.pdf', size: 10, uploadedAt: '2026-10-18T20:00:00.000Z' }
     const html = filesPanel(adminT('en'), 'en', SITE, [file] as never, [], true)
-    expect(html).toContain('October 19, 2026')
+    expect(html).toContain('Oct 19, 2026')
   })
 })
 
