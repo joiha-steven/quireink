@@ -197,6 +197,7 @@ function footer(t: AdminStrings, s: SiteSettings): string {
     + ` class="${TB_KEY}${face ? ` ${face}` : ''}">${escapeHtml(mark)}</button>`
   return `<div class="space-y-2" data-footer>`
     + `<div class="flex flex-wrap gap-1.5">`
+    // The B is bold on purpose (`check:admin-kit` OFF_SCALE_OK): it is the picture of the command.
     + key(t.tbBold, 'B', 'data-footer-wrap="**"', 'font-bold')
     + key(t.tbItalic, 'I', 'data-footer-wrap="*"', 'italic')
     + key(t.tbUnderline, 'U', 'data-footer-wrap="++"', 'underline')

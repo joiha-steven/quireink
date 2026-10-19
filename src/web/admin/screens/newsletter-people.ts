@@ -26,6 +26,7 @@ import { escapeAttr, escapeHtml, isoToZonedInput } from '@/utils'
 import { dateLocale, formatCount } from '@/i18n/format'
 import { CONTROL_SM, TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
 import { ICON_KEY } from '@/admin-shared/controls'
+import { FIGURE } from '@/admin-shared/scale'
 import { SEGMENT_ON_CARD } from '@/admin-shared/tabs'
 
 import { emptyState, icon, lamp, selectionBar, tick } from '@/web/admin/kit'
@@ -102,7 +103,7 @@ export function peoplePanel(
   const band = `<div${live ? ' data-sub-scope' : ''} class="count-row grid grid-cols-2 border-b border-neutral-100 dark:border-neutral-800 sm:grid-cols-4">`
     + cells.map((c) => {
       const on = live && c.key === 'all'
-      const body = `<span class="flex items-baseline gap-2"><b class="text-2xl font-semibold tracking-tight tabular-nums">${n(c.n)}</b></span>`
+      const body = `<span class="flex items-baseline gap-2"><b class="${FIGURE}">${n(c.n)}</b></span>`
         + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${c.labelHtml ?? escapeHtml(c.label)}</span>`
       if (!live) return `<div class="${CELL_BASE}">${body}</div>`
       return `<button type="button" data-tab="${c.key}" aria-pressed="${on}"`

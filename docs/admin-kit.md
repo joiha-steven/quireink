@@ -24,6 +24,12 @@ A test about a primitive's LOOK reads it through `expandComponents()`, never the
 label, note. Since 2026-08-29 `Card panel` imports `SECTION` rather than typing a size; a
 hand-typed size is how a scale stops being one.
 
+**TYPE COMES FROM A ROLE, NEVER FROM A WEIGHT OR SIZE TYPED ON THE SPOT** (2026-10-19). `check:admin-kit` fails
+`font-bold`/`extrabold`/`black`, `text-[<n>px]` and `text-lg`..`text-9xl` in any admin source file (tests and
+`scale.ts` aside): a title is `SECTION`, a number `FIGURE`, a note's size `NOTE_SIZE`. A site that must stay off
+the scale is listed in `OFF_SCALE_OK` in `scripts/checks/admin-kit-scale.ts` with the line and the reason, and the entry
+fails the check the day it stops matching.
+
 **A two-column band is two STACKS, and their heights get re-measured.** Cards go into explicit
 column stacks, never straight into the grid — a grid lays its children out in rows, so a short
 card beside a tall one is stretched and the next card cannot start until both have finished.

@@ -235,7 +235,7 @@ function palette(t: AdminStrings): string {
     + `<input data-palette-box placeholder="${escapeAttr(t.palettePlaceholder)}"`
     + ` aria-label="${escapeAttr(t.palettePlaceholder)}" role="combobox" aria-expanded="true"`
     + ` aria-controls="palette-list" aria-autocomplete="list"`
-    + ` class="w-full border-b border-neutral-200 bg-transparent px-4 py-3.5 text-[15px] outline-none`
+    + ` class="w-full border-b border-neutral-200 bg-transparent px-4 py-3.5 text-sm outline-none`
     + ` placeholder:text-neutral-400 dark:border-neutral-700 dark:placeholder:text-neutral-500">`
     + `<p data-palette-none hidden class="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">`
     + `${escapeHtml(t.filterEmpty)}</p>`

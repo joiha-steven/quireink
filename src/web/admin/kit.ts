@@ -24,7 +24,7 @@ import { GLYPH, META } from '@/admin-shared/scale'
 import {
   SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE, TAB_TRACK, TAB_TRACK_DENSE, edgeAt, keyFaces, tabItemClass, type TabRole, type TabSize,
 } from '@/admin-shared/tabs'
-import { HEADER_GAP, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
+import { HEADER_GAP, NOTE_SIZE, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
 
 /** A glyph from the shared set, at the surface's own size. */
 export const icon = (name: IconName, cls = GLYPH): string => iconSvg(name, cls)
@@ -54,7 +54,7 @@ export function pageHeader({ title = '', titleHtml = '', description = '', descr
   const note = descriptionHtml || (description ? escapeHtml(description) : '')
   return `<div class="${HEADER_GAP} flex flex-wrap items-center justify-between gap-4">`
     + `<div class="min-w-0"><h1 class="${TITLE}">${name}</h1>`
-    + (note ? `<p class="mt-2 max-w-2xl text-[0.8125rem] leading-[1.6] text-neutral-500 dark:text-neutral-400">${note}</p>` : '')
+    + (note ? `<p class="mt-2 max-w-2xl ${NOTE_SIZE} leading-[1.6] text-neutral-500 dark:text-neutral-400">${note}</p>` : '')
     + `</div>`
     + (actions ? `<div class="flex flex-wrap items-center gap-2">${actions}</div>` : '')
     + `</div>`

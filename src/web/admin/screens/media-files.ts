@@ -58,7 +58,7 @@ function fileRow(t: AdminStrings, lang: SiteLang, tz: string, f: FileItem, manag
     + ` data-file="${escapeAttr(f.url)}">`
     + (managed ? '' : tickBox(f, ''))
     + `<span class="flex h-9 w-12 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-xs`
-    + ` font-bold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">${escapeHtml(fileKind(f))}</span>`
+    + ` font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">${escapeHtml(fileKind(f))}</span>`
     + `<div class="min-w-0 grow">`
     + `<p class="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200"`
     + ` title="${escapeAttr(f.filename)}">${escapeHtml(f.filename)}</p>`

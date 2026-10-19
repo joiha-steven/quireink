@@ -108,7 +108,7 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
       + (flags[i]
         // A DONE step trades its number for a tick and takes the pen: the number was the thing
         // to do next, and a finished step is no longer one.
-        ? `<span aria-hidden="true" data-step-done class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--pen)] text-xs font-bold text-neutral-950">✓</span>`
+        ? `<span aria-hidden="true" data-step-done class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--pen)] text-xs font-semibold text-neutral-950">✓</span>`
         : `<span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-xs font-medium tabular-nums text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">${i + 1}</span>`)
       + `<div class="min-w-0"><a href="${escapeAttr(s.href)}" class="inline-block ${TAP} text-sm font-medium underline-offset-2 hover:underline ${flags[i] ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-900 dark:text-neutral-100'}">${escapeHtml(s.label)}</a>`
       + `<p class="mt-0.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">${escapeHtml(s.body)}</p></div></li>`).join('')
@@ -197,6 +197,7 @@ function systemLine(t: AdminStrings, settings: SiteSettings, d: Awaited<ReturnTy
     : update.state === 'current' ? t.updateCurrent : ''
   const build = `<a href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer"`
     + ` class="${TAP} ${META_ON_CANVAS} hover:text-neutral-900 dark:hover:text-white">${dot}`
+    // The wordmark is brand art, so its weight is not on the type scale (`check:admin-kit` OFF_SCALE_OK).
     + `quire<span class="font-bold">INK</span> v${escapeHtml(version)}`
     + (commit ? `<span class="tabular-nums"> (${escapeHtml(commit.slice(0, 7))})</span>` : '')
     // The DOT alone said this, and only to somebody who knew amber meant behind: a colour is a

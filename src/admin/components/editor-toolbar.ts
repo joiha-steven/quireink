@@ -27,7 +27,7 @@ import { TOOLBAR_MIDDLE, TOOLBAR_RUN, TOOLBAR_STRIP } from '@/admin-shared/toolb
  * proves the stylesheet has a rule for each of these.
  */
 const className = {
-  key: 'grid h-9 min-w-9 shrink-0 place-items-center rounded-md px-1 text-[15px]'
+  key: 'grid h-9 min-w-9 shrink-0 place-items-center rounded-md px-1 text-sm'
     + ' hover:bg-white dark:hover:bg-neutral-700',
   // Pressed. A background alone is not enough on a bar of glyphs, so it takes an inner shadow
   // and a hairline as well.
@@ -73,6 +73,8 @@ const className = {
   tableRow: 'border-t border-neutral-200/60 dark:border-neutral-800/80',
   glyph: 'h-[18px] w-[18px]',
   small: 'text-xs font-medium',
+  // Heavier than the icons beside them on purpose (`check:admin-kit` OFF_SCALE_OK): these are
+  // letters standing in for glyphs.
   bold: 'text-xs font-bold',
   ring: 'inline-block rounded-full border border-current px-1 leading-tight',
 }

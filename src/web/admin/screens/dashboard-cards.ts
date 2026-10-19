@@ -14,7 +14,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { formatCount } from '@/i18n/format'
 import { iconSvg } from '@/icons'
-import { TAP, UTIL } from '@/admin-shared/scale'
+import { FIGURE, TAP, UTIL } from '@/admin-shared/scale'
 import { FEED_LIST, FEED_MARK, FEED_ROW, inkFor, markFor } from '@/admin-shared/activity-mark'
 import { ago } from '@/admin-shared/when'
 import { logSentence } from '@/admin-shared/log-sentence'
@@ -83,7 +83,7 @@ function sparkline(data: number[], lang: SiteLang): string {
  * the same thirty days read as two unrelated facts.
  */
 const figure = (valueHtml: string, label: string, lead = false): string =>
-  `<div class="min-w-0"><div class="${lead ? 'text-3xl font-bold' : 'text-3xl font-semibold text-neutral-500 dark:text-neutral-400'} tracking-tight tabular-nums">`
+  `<div class="min-w-0"><div class="${FIGURE}${lead ? '' : ' text-neutral-500 dark:text-neutral-400'}">`
   + `${valueHtml}</div>`
   + `<div class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">${escapeHtml(label)}</div></div>`
 

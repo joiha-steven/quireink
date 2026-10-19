@@ -18,6 +18,7 @@
 // left spelled out. `no-scrollbar` and `scroll-fade-x` stay written out beside the names: the
 // tour finds a track by them.
 import { component, utilitiesOf } from '@/admin-shared/component'
+import { NOTE_SIZE } from '@/admin-shared/scale'
 
 export type TabSize = 'lg' | 'sm'
 
@@ -127,7 +128,7 @@ const CORNERS: Record<TabEdge, string> = {
  * carries its own two faces, and `pressKey` (admin/island/lib/press-key.ts) swaps between them.
  */
 /** The segmented key's faces, as components; `tabItemClass` below explains each list. */
-const SEGMENT = component('kit-seg', 'py-1 text-[0.8125rem] font-medium transition')
+const SEGMENT = component('kit-seg', `py-1 ${NOTE_SIZE} font-medium transition`)
 const SEGMENT_HERE = component('kit-seg-here',
   'bg-[var(--pen)] text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]')
 export const SEGMENT_ON = component('kit-seg-on',
@@ -155,7 +156,7 @@ export const tabItemClass = (
   size === 'lg'
     // `-mb-px` so the item's own 2px border sits ON the track's hairline rather than under it.
     // Dense is the write pane's size: 13px and a shorter stem, whole words never broken.
-    ? `-mb-px border-b-2 font-medium transition ${dense ? 'min-w-6 whitespace-nowrap pb-1.5 text-[0.8125rem]' : 'pb-2.5 text-sm'} ${
+    ? `-mb-px border-b-2 font-medium transition ${dense ? `min-w-6 whitespace-nowrap pb-1.5 ${NOTE_SIZE}` : 'pb-2.5 text-sm'} ${
         active
           // A marker stroke under the label, not a wash behind it: an underlined strip is
           // already a quiet control and a lime block in it would be the loudest thing on the

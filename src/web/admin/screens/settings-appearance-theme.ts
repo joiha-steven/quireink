@@ -18,7 +18,7 @@ import type { ThemePreset } from '@/content/themes'
 import { SCHEMES } from '@/content/themes'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { SHEET_TOOL } from '@/admin-shared/kit'
-import { META, NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
+import { META, NOTE_TEXT, SETTING_GAP, SETTING_LABEL } from '@/admin-shared/scale'
 import { hiddenField, settingRow } from '@/web/admin/fields'
 import { INSET } from '@/web/admin/fields-box'
 import { checkField, colourField, pick } from '@/web/admin/fields-pick'
@@ -190,7 +190,7 @@ function colourTable(t: AdminStrings, p: ThemePreset, s: SiteSettings, drawn: st
   const theme: ThemeSettings = s.themes[p.id] ?? p.theme
   const open = p.id === drawn
   const head = `<div class="flex items-center justify-between gap-3">`
-    + `<h3 class="text-sm font-bold">${escapeHtml(t.paletteNames[p.id] ?? p.name)}</h3>`
+    + `<h3 class="${SETTING_LABEL}">${escapeHtml(t.paletteNames[p.id] ?? p.name)}</h3>`
     + `<button type="button" data-reset-palette="${escapeAttr(p.id)}" class="${SHEET_TOOL} shrink-0">`
     + `${escapeHtml(t.resetDefault)}</button></div>`
   // Column heads on the row layout only — stacked, each cell is already named by the

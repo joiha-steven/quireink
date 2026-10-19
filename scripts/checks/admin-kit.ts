@@ -14,6 +14,7 @@
 
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { checkOffScale } from './admin-kit-scale'
 
 type Rule = {
   /** What the primitive is, for the error message. */
@@ -24,6 +25,8 @@ type Rule = {
   home: string
   /** What the offender should do instead. */
   instead: string
+  /** What the home holds when it BUILDS the signature from another constant. Defaults to the signature. */
+  homeText?: string
 }
 
 const RULES: Rule[] = [
@@ -112,6 +115,7 @@ const RULES: Rule[] = [
     // size, the slant and the leading and swaps the ink (`NOTE_ALERT`), and a signature that
     // still named the grey would have been a rule this kit could no longer satisfy.
     signature: 'text-[0.8125rem] italic leading-[1.55]',
+    homeText: '${NOTE_SIZE} italic leading-[1.55]',
     home: 'src/admin-shared/scale.ts',
     instead: 'import NOTE_TEXT from @/admin-shared/scale — or pass `note` to settingRow / textField in web/admin/fields',
   },
@@ -152,12 +156,12 @@ for (const rule of RULES) {
   let seenAtHome = false
   for (const file of files) {
     const text = readFileSync(file, 'utf8')
-    if (!text.includes(rule.signature)) continue
     // Windows hands back backslashes; the rules are written with the repo's own separator.
     if (file.replaceAll('\\', '/') === rule.home) {
-      seenAtHome = true
+      if (text.includes(rule.homeText ?? rule.signature)) seenAtHome = true
       continue
     }
+    if (!text.includes(rule.signature)) continue
     console.error(`✗ check:admin-kit: ${file} re-declares ${rule.what}`)
     console.error(`  Found ${JSON.stringify(rule.signature)}, which belongs to ${rule.home}.`)
     console.error(`  ${rule.instead}.`)
@@ -167,7 +171,7 @@ for (const rule of RULES) {
   // this rule went quietly dead — the exact way `check:css-literal` stopped guarding two
   // sheets while still reporting ok.
   if (!seenAtHome) {
-    console.error(`✗ check:admin-kit: ${rule.home} no longer contains ${JSON.stringify(rule.signature)}`)
+    console.error(`✗ check:admin-kit: ${rule.home} no longer contains ${JSON.stringify(rule.homeText ?? rule.signature)}`)
     console.error('  The rule is guarding nothing. Update the signature in this file.')
     failed = true
   }
@@ -351,6 +355,7 @@ for (const file of files) {
   failed = true
 }
 
+if (!checkOffScale(files)) failed = true
 /**
  * A CLAMP STANDING NEXT TO A DISPLAY UTILITY, which is a clamp that does nothing.
  *
