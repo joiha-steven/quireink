@@ -974,6 +974,9 @@
   .flex-1 {
     flex: 1;
   }
+  .flex-\[1\.5\] {
+    flex: 1.5;
+  }
   .shrink {
     flex-shrink: 1;
   }

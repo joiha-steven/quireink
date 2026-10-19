@@ -24,25 +24,36 @@ import { trendOf } from '@/admin-shared/analytics'
 import { formatDateShort, formatDateTimeShort } from '@/admin-shared/when'
 
 /**
- * The trend arrow that sits inside a figure. Empty when an arrow would be a lie — see `trendOf`.
+ * The trend arrow: arrow and ratio on ONE line, no taller than the line it sits in. Empty when an
+ * arrow would be a lie — see `trendOf`. The tooltip and the screen-reader text say what the
+ * compared window is.
  *
- * It names what it compares against: "▲ ×44" alone was a multiplier with no baseline. The
- * figure from the previous window of the same length is printed beside it, and the sentence
- * that says what that window is rides in the tooltip and for a screen reader.
- *
- * `flowed`: the mark sits in a wrapping flex row that supplies the gap (`numBand`), so a mark that
- * drops under its figure in a narrow cell lines up with it instead of being indented by a margin.
+ * It used to carry the "vs 34 before" comparison as a second line under the ratio, beside the
+ * figure; that made the mark taller than the 30px figure and pushed the label of the two cells
+ * that had one about 12px below the other three (measured at 1440). Beside the figure it also
+ * dropped to a line of its own in the 140px cells at 768. The band's `trendLine` now puts the whole
+ * thing on the cell's sub lines, so its figure line is the same in every cell. `beside` keeps the
+ * mark on the figure line, for the wide tiles of the per-page screen.
  */
-export function trendMark(cur: number, prev: number | undefined, t: AdminStrings, lang: SiteLang, flowed = false): string {
+export function trendMark(cur: number, prev: number | undefined, t: AdminStrings, lang: SiteLang, beside = false): string {
   const trend = trendOf(cur, prev)
   if (!trend) return ''
-  const before = formatCount(prev ?? 0, lang)
-  const hint = t.analyticsVsPrevHint.replace('{n}', before)
-  // Two short lines, each unbreakable: in a 150px cell the one-line form wrapped to three.
-  return `<span class="${flowed ? '' : 'ml-2 '}inline-block whitespace-nowrap align-middle text-xs font-medium leading-tight text-neutral-500 dark:text-neutral-400" title="${escapeAttr(hint)}">`
+  const hint = t.analyticsVsPrevHint.replace('{n}', formatCount(prev ?? 0, lang))
+  return `<span class="${beside ? 'ml-2 ' : ''}inline-block whitespace-nowrap text-xs font-medium leading-none text-neutral-500 dark:text-neutral-400" title="${escapeAttr(hint)}">`
     + `${trend.up ? '▲' : '▼'} ${escapeHtml(trend.label)}`
-    + `<span class="block font-normal">${escapeHtml(t.analyticsVsPrev.replace('{n}', before))}</span>`
     + `<span class="sr-only"> ${escapeHtml(hint)}</span></span>`
+}
+
+/** The "vs 34 before" words that go with `trendMark`. Empty when the mark is. Plain text, not escaped. */
+export function trendNote(cur: number, prev: number | undefined, t: AdminStrings, lang: SiteLang): string {
+  if (!trendOf(cur, prev)) return ''
+  return t.analyticsVsPrev.replace('{n}', formatCount(prev ?? 0, lang))
+}
+
+/** Mark and note as one sub line of a `numBand` cell: "▲ ×44 vs 34 before". Raw HTML, empty when there is no trend. */
+export function trendLine(cur: number, prev: number | undefined, t: AdminStrings, lang: SiteLang): string {
+  const mark = trendMark(cur, prev, t, lang)
+  return mark ? `${mark} ${escapeHtml(trendNote(cur, prev, t, lang))}` : ''
 }
 
 export type BarRow = { key: string; label: string; value: number; href?: string }

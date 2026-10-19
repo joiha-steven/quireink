@@ -81,21 +81,25 @@ export const statBand = (tiles: string): string =>
 
 /**
  * THE BAND OF NUMBERS at the head of a sheet: the figures somebody would otherwise work out by
- * scrolling. `n` and `label` are already-escaped text; `after`, `sub` and `labelHtml` are raw
+ * scrolling. `n` and `label` are already-escaped text; `after`, `sub` (one line, or several) and `labelHtml` are raw
  * HTML, as in the React `NumBand` they mirror.
+ *
+ * `wide` gives a cell half again the share of the row: a duration figure in the longer languages
+ * ("1 phút 52 giây", 117px) wrapped to a second line in the 102px an even fifth leaves at 768,
+ * which pushed its label 30px below the others.
  *
  * `labelHtml` is the raw door beside `label`, and it exists because one label on the subscriber
  * band is not a string: "Pending" carries the pen's own mark in front of it, the same mark the
  * write list puts against an unfinished piece. Exactly one of the pair is honoured, raw first.
  */
-export function numBand(items: { n: string; nHtml?: string; label?: string; labelHtml?: string; after?: string; sub?: string }[]): string {
+export function numBand(items: { n: string; nHtml?: string; label?: string; labelHtml?: string; after?: string; sub?: string | string[]; wide?: boolean }[]): string {
   return `<div class="flex flex-wrap border-b border-neutral-100 dark:border-neutral-800">`
     + items.map((it) =>
-      `<div class="min-w-32 flex-1 border-r border-neutral-100 px-5 py-4 last:border-r-0 dark:border-neutral-800">`
+      `<div class="min-w-32 ${it.wide ? 'flex-[1.5]' : 'flex-1'} border-r border-neutral-100 px-5 py-4 last:border-r-0 dark:border-neutral-800">`
       + `<span class="flex flex-wrap items-baseline gap-x-4">`
       + `<b class="${FIGURE}">${it.nHtml ?? escapeHtml(it.n)}</b>${it.after ?? ''}</span>`
       + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.labelHtml ?? escapeHtml(it.label ?? '')}</span>`
-      + (it.sub ? `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.sub}</span>` : '')
+      + [it.sub ?? []].flat().filter(Boolean).map((line) => `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${line}</span>`).join('')
       + `</div>`).join('')
     + `</div>`
 }
