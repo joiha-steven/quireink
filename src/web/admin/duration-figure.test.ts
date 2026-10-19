@@ -5,7 +5,7 @@ import { durationFigure } from '@/web/admin/kit-figures'
 import { formatDuration } from '@/admin-shared/analytics'
 
 // The figure's only markup is the unit span, so removing exactly that span leaves the words.
-const text = (html: string): string => html.split(/<span class="text-base font-normal">|<\/span>/).join('')
+const text = (html: string): string => html.split(/<span class="text-base leading-none font-normal">|<\/span>/).join('')
 
 describe('the duration figure', () => {
   it('reads as the same words as the text form', () => {
@@ -16,6 +16,6 @@ describe('the duration figure', () => {
 
   it('sets the units apart from the digits', () => {
     const html = durationFigure(112_000, 'vi')
-    expect(html).toBe('1<span class="text-base font-normal"> phút </span>52<span class="text-base font-normal"> giây</span>')
+    expect(html).toBe('1<span class="text-base leading-none font-normal"> phút </span>52<span class="text-base leading-none font-normal"> giây</span>')
   })
 })
