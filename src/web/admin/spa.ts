@@ -214,7 +214,7 @@ function adminStyles(settings: SiteSettings): string {
     // overrides; never its chrome font, for the reason above. Before the uploaded font, which wins.
     fonts.reading ? packageFaces(theme.package) : '',
     themeFontVarsCss({ ...fonts, chrome: null }),
-    fontToCss(settings.customFont),
+    fontToCss(settings.customFont, fonts),
   ].filter(Boolean).join('\n')
 }
 

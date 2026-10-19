@@ -46,6 +46,10 @@
 
 ### Fixed
 
+- **A letter your uploaded reading font lacks is drawn in the face you would see without it.** The
+  fallback after an uploaded font named a variable nothing defined, which could drop the whole
+  reading font. It now falls to the chosen theme's reading font, when one is picked, and then to
+  the selected built-in face.
 - **The editor showed Inter when the reading font was an installed theme's.** The admin now sets
   the editor in the face and palette the published site draws.
 - **Choosing a theme again could save other palette and fonts than the ones on screen.** When the

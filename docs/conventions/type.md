@@ -86,9 +86,9 @@
 - **Inter is self-hosted** (`src/assets/static/fonts/inter-{latin,latin-ext,vietnamese}.woff2`,
   variable, declared via `@font-face` + `unicode-range` in `src/render/font-faces.ts`). The
   family name every chain falls back to is `--font-sans`, set in `layout.ts` and `admin/spa.ts`.
-  **Open question (2026-09-10):** `settings-css.ts` ends the reading-font chain with
-  `var(--font-inter)`, and nothing in `src/` or the built CSS defines that variable, so the
-  fallback resolves to nothing; measure what the browser does with it before changing either file. **Never fetch a font from Google** at build or at runtime —
+  An uploaded reading font (`settings-css.ts`) is followed by the chain drawn without it: the
+  installed theme's reading family when that is the choice, then the selected preset's stack.
+  No variable is referenced, because nothing defines one for it. **Never fetch a font from Google** at build or at runtime —
   it broke offline and CI builds, and it is the reason all of these are in the tree. The OG
   route self-hosts the same Inter separately as `.woff` (Satori can't decode woff2). To update
   Inter, re-drop the woff2 files. **Which font files are `<link rel=preload>`-ed is one

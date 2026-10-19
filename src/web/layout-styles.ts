@@ -241,7 +241,7 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // declaration and without naming a colour (`prose.css.ts` holds the selectors).
     tableToCss(settings.table, theme.ownsSettings),
     typographyToCss(settings.typography),
-    fontToCss(settings.customFont),
+    fontToCss(settings.customFont, fonts),
     // Keyed on `data-chrome-font`, which `renderDocument` puts on <html>. It has to come
     // after the chrome font is resolved and before the owner's own CSS can override it, and
     // it emits only the one block this page's own attributes can match.

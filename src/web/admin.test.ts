@@ -11,6 +11,7 @@ import { COOKIE_NAME, createSession } from '@/auth/sessions'
 import { resetSecretCache } from '@/auth/secret'
 import { resetLimits } from '@/server/rate-limit'
 import { payload } from '@/test/api'
+import { getFontPreset } from '@/content/fonts'
 import { saveSettings } from '@/content/settings'
 
 const DIR = './.tmp/test-admin'
@@ -264,6 +265,14 @@ describe('the admin shell carries the owner settings', () => {
     await saveSettings({ fontPreset: 'literata' })
     const html = await (await app.request('/admin', { headers: { cookie } })).text()
     expect(html).toContain("--font-reading:'Literata'")
+  })
+
+  it('ends the uploaded font chain in the selected preset stack, not in an undefined variable', async () => {
+    await saveSettings({ fontPreset: 'inter', customFont: { family: 'My Face', faces: [{ weight: 400, url: '/uploads/my-face.woff2' }] } })
+    const html = await (await app.request('/admin', { headers: { cookie } })).text()
+    expect(html).toContain(`--font-reading:'My Face', ${getFontPreset('inter').stack}}`)
+    expect(html).not.toContain('--font-inter')
+    await saveSettings({ fontPreset: 'literata', customFont: { family: '', faces: [] } })
   })
 
   // The writing surface is a `.prose` surface, and what you type has to be set in the face

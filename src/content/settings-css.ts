@@ -11,6 +11,8 @@
 import type { FontSettings, TypographySettings } from '@/types'
 import { TYPE_ROLES } from '@/content/themes'
 import { fontFormat } from '@/content/settings-type'
+import { getFontPreset } from '@/content/fonts'
+import { themeFamily, type DrawnFonts } from '@/content/theme-choices'
 
 // Per-role type CSS vars on :root (+ optional font-smoothing). Injected after globals.css
 // (same defaults), so a saved scale wins and a fresh install still works.
@@ -65,9 +67,14 @@ export function typographyToCss(t: TypographySettings): string {
 }
 
 // Emit one @font-face per uploaded weight for the owner typeface and point
-// --font-reading at it (Inter stays the fallback). Empty when no font is set.
-export function fontToCss(f: FontSettings): string {
+// --font-reading at it. A missing glyph falls to the chain drawn without the custom font: the
+// installed theme's reading family when it is the choice, then the preset stack (as
+// `themeFontVarsCss` writes it). Nothing defines a variable to reference instead.
+// Empty when no font is set.
+export function fontToCss(f: FontSettings, fonts: Pick<DrawnFonts, 'readingPreset' | 'reading'>): string {
   if (!f.family || f.faces.length === 0) return ''
+  const stack = getFontPreset(fonts.readingPreset).stack
+  const fallback = fonts.reading ? `${themeFamily(fonts.reading)}, ${stack}` : stack
   const faces = f.faces
     .map((face) => {
       const fmt = fontFormat(face.url)
@@ -77,5 +84,5 @@ export function fontToCss(f: FontSettings): string {
     .join('')
   // An uploaded custom font styles the reader's words (article, comments, editor),
   // matching the built-in fontPreset scope — the chrome stays Inter.
-  return faces + `:root{--font-reading:'${f.family}', var(--font-inter)}`
+  return faces + `:root{--font-reading:'${f.family}', ${fallback}}`
 }

@@ -3,6 +3,7 @@
 // markup with the package's sheet, switches, fonts and palette on it. Versions, removal and a
 // broken row are `theme-render-versions.test.ts`.
 import { describe, expect, it } from 'bun:test'
+import { DEFAULT_FONT_PRESET, getFontPreset } from '@/content/fonts'
 import { getSettings } from '@/content/settings'
 import { tableToCss } from '@/content/settings-table'
 import { getPreset } from '@/content/themes'
@@ -137,6 +138,22 @@ describe("the theme's fonts", () => {
     // replaces is neither preloaded nor declared, or the fallback paint would fetch it.
     expect(html).not.toContain('rel="preload"')
     expect(css).not.toContain("@font-face{font-family:'Literata'")
+  })
+
+  it('ends an uploaded font chain in the selected preset stack on a page without a theme font', async () => {
+    await save({ fontPreset: 'inter', customFont: { family: 'My Face', faces: [{ weight: 400, url: '/uploads/my-face.woff2' }] } })
+    const css = inlineStyle((await page('/a-post')).html)
+    expect(css).toContain(`--font-reading:'My Face', ${getFontPreset('inter').stack}}`)
+    await save({ fontPreset: 'literata', customFont: { family: '', faces: [] } })
+  })
+
+  it('ends an uploaded font chain in the theme family, then the preset stack', async () => {
+    await rich()
+    await save({ theme: 'broadsheet', fontPreset: 'body-serif', customFont: { family: 'My Face', faces: [{ weight: 400, url: '/uploads/my-face.woff2' }] } })
+    const css = inlineStyle((await page('/a-post')).html)
+    expect(css).toContain(`--font-reading:'My Face', 'theme-body-serif', ${getFontPreset(DEFAULT_FONT_PRESET).stack}}`)
+    expect(css).not.toContain('--font-inter')
+    await save({ customFont: { family: '', faces: [] } })
   })
 
   it('leads the CJK reading stacks of a zh, ja or ko site with the theme family', async () => {
