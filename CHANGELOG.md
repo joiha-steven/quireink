@@ -4,6 +4,11 @@
 
 ### Added
 
+- **Check a theme on your own computer before installing it.** `bun run theme:check <folder or
+  zip>` runs the same check the install screen runs and gives the same verdict: `ok` with the
+  theme's id, version and file count, or one line per problem with the file, line and column and
+  the same explanation the admin shows. See
+  [Installing a theme](docs/theme-install-api.md#check-before-installing).
 - **Install, choose, roll back and remove themes from Settings → Appearance → Theme.** Installed
   themes appear as tiles after the four built in, with their screenshot, version, author and an
   Unreviewed badge, and are chosen and saved like any other tile. Install from a file sends a

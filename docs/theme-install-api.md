@@ -26,6 +26,35 @@ no_previous` for a rollback with nothing to go back to; and **`422 theme_refused
 are in [`src/theme/types.ts`](../src/theme/types.ts)). A refused package writes nothing: no row and
 no file.
 
+## Check before installing
+
+`bun run theme:check <dir|zip>` runs the install's own checker on a theme directory (what an author
+edits) or a `.zip`, and writes nothing. A directory is zipped in memory, deflated and with its
+directories as records like a real `zip -r`, and read by the same `readThemePackage` with the same
+options the route passes ([`src/content/theme-package-options.ts`](../src/content/theme-package-options.ts)),
+so a pass there is a pass here. A link inside the directory is refused, not followed, and a directory
+with more than 66 entries or a file past its limit is refused from the sizes alone, before anything is read.
+
+- Accepted: one line (`ok · <id> <version> · <n> files`), exit 0.
+- Refused: one line per finding, `rule · file:line:col · subject`, with the admin's English sentence for
+  the rule under it, exit 1.
+- No argument, or a path that is missing or cannot be read: a message and the usage line
+  (`usage: bun run theme:check <theme directory | theme.zip>`), exit 2.
+
+**Zip the folder's CONTENTS, not the folder.** `theme.json` must be at the top of the zip. Finder's
+Compress and Explorer's "Send to compressed folder" on the folder itself nest everything one level down,
+and the install refuses that. Hidden files are refused too (`.DS_Store`, `Thumbs.db`, `__MACOSX/`), so
+leave them out:
+
+```
+# macOS / Linux, from inside the theme folder
+zip -r ../my-theme.zip . -x '.*' '*/.*' '__MACOSX/*'
+
+# Windows PowerShell, from inside the theme folder (the built-in bsdtar, not Compress-Archive,
+# which writes backslashes in names on Windows PowerShell 5)
+& "$env:SystemRoot\System32\tar.exe" -a -cf ..\my-theme.zip --exclude Thumbs.db --exclude .DS_Store (Get-ChildItem -Name)
+```
+
 ## What an install does
 
 1. **The zip's directory is judged before anything is inflated**: the number of entries, every

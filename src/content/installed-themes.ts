@@ -19,11 +19,10 @@
 // Nothing deletes theme files: a removed or rolled-back version is a soft-deleted row whose
 // files stay, for the pages still holding its URL.
 
-import { readThemePackage, type PackageOptions, type Violation } from '@/theme'
-import { themeContract } from '@/content/theme-contract'
-import { DEFAULT_THEME_ID, OWNABLE_SETTINGS, type OwnableSetting, type SiteTheme } from '@/content/themes-builtin'
+import { readThemePackage, type Violation } from '@/theme'
+import { packageOptions, SUPPORTED_THEME_API } from '@/content/theme-package-options'
+import { DEFAULT_THEME_ID, type OwnableSetting, type SiteTheme } from '@/content/themes-builtin'
 import type { ThemeFont, ThemePalette } from '@/theme'
-import { RESERVED_FONT_IDS, RESERVED_PALETTE_IDS, RESERVED_THEME_IDS } from '@/content/theme-reserved'
 import { getSettings, saveSettings } from '@/content/settings'
 import { uploadFile } from '@/media/blob'
 import { themeBlobPath } from '@/media/theme-blobs'
@@ -31,8 +30,7 @@ import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs } from '@/store/db'
 import { forgetInstalledTheme, themeFromRow } from '@/content/chosen-theme'
 
-/** The theme API versions this build reads (ADR 0072, decision 2). */
-export const SUPPORTED_THEME_API: readonly number[] = [1]
+export { SUPPORTED_THEME_API }
 
 /** One file as the row lists it. */
 export type InstalledFile = { path: string; size: number; type: string }
@@ -41,22 +39,6 @@ export { themeBlobPath }
 
 /** The SHA-256 hex a package is keyed by: nothing else may name a theme directory. */
 export const isThemeHash = (value: string): boolean => /^[0-9a-f]{64}$/.test(value)
-
-/**
- * What the checker is told about this blog. The ids a stranger's theme may not take are the
- * built-in ones: its id would shadow a built-in theme, its palettes and fonts join menus that
- * already hold these.
- */
-function packageOptions(): PackageOptions {
-  return {
-    supportedApi: SUPPORTED_THEME_API,
-    reservedIds: RESERVED_THEME_IDS,
-    reservedPaletteIds: RESERVED_PALETTE_IDS,
-    reservedFontIds: RESERVED_FONT_IDS,
-    ownableSettings: new Set(OWNABLE_SETTINGS),
-    contract: themeContract(),
-  }
-}
 
 export type InstallResult =
   | { ok: true; id: string; version: string; hash: string; changed: boolean }

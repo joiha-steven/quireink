@@ -131,7 +131,11 @@ export class ZipWriter {
 
   /** A text file: deflated, and buffered because it is small enough to be. */
   addText(path: string, text: string): void {
-    const raw = enc.encode(text)
+    this.addBytes(path, enc.encode(text))
+  }
+
+  /** Bytes of any kind, buffered like `addText`. A path ending in `/` with no bytes is a directory record. */
+  addBytes(path: string, raw: Uint8Array): void {
     const packed = new Uint8Array(deflateRawSync(raw))
     // A tiny or incompressible file can deflate LARGER than it started. Storing it then is
     // both smaller and faster to read back.
