@@ -17,7 +17,7 @@
 //
 // ⚠️ EVERY DATE HERE IS THE SITE'S CLOCK. The list printed its instants in the SERVER PROCESS's
 // zone while the header printed the site's, so a host on UTC under a blog set to Hanoi showed
-// 19/10/26 - 02:00 in the list beside 19/10/26 - 09:00 over the paper. The last-touch time goes
+// 02:00 in the list beside 09:00 over the paper, on the same day. The last-touch time goes
 // through the same helper on the server (`sheet-frame.ts`) and in the island (`island/sheet.ts`).
 import type { PostStatus, SiteLang } from '@/types'
 import { formatDateTimeShort } from '@/admin-shared/when'
@@ -67,17 +67,19 @@ export function standingDate(
 }
 
 /**
- * An instant as the SITE's wall clock reads it, in the admin's short shape (`19/10/26 - 09:00`).
+ * An instant as the SITE's wall clock reads it, in the admin's short shape ("Oct 19, 2026, 9:00 AM").
  *
  * The instant is turned into the site's wall clock first (`isoToZonedInput`, which the date field
  * uses), then printed as `standingDate` prints a wall clock — so the list, the header and the
  * Attributes panel answer from one zone whatever zone the server or the browser runs in. An empty
  * zone is UTC, as it is everywhere else the setting is read. Empty for a stamp that will not parse.
  */
-export function siteDateTimeShort(at: string | number, timezone: string, lang: SiteLang): string {
+export function siteDateTimeShort(at: string | number, timezone: string, lang: SiteLang, seconds = false): string {
   const d = new Date(at)
   if (Number.isNaN(d.getTime())) return ''
-  return formatDateTimeShort(isoToZonedInput(d.toISOString(), timezone), lang)
+  const wall = isoToZonedInput(d.toISOString(), timezone)
+  // The wall clock stops at minutes; the seconds of an instant are the same in every zone.
+  return formatDateTimeShort(seconds && wall ? `${wall}:${String(d.getUTCSeconds()).padStart(2, '0')}` : wall, lang, seconds)
 }
 
 /** The words the line under the title is made of. */
@@ -86,7 +88,7 @@ export type MetaWords = {
 }
 
 /**
- * `Page · Draft · 15/9/26 - 13:14`: what this is, what state the SERVER holds it in, and the date
+ * `Page · Draft · Sep 15, 2026, 1:14 PM`: what this is, what state the SERVER holds it in, and the date
  * `standingDate` picks. A post says only its state: it is the default kind, and the write column
  * beside it already says which of the three is open.
  */

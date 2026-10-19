@@ -107,9 +107,33 @@ export function createSession(
   return { token, expiresAt }
 }
 
+/**
+ * The stored bucket, `<browser> on <os>`. It is a STORAGE shape, not a sentence: the words the
+ * owner reads are put together by `deviceOf` below and the session list's own locale key, so
+ * this English "on" and the parser's "Other" never reach the page.
+ */
+const DEVICE_JOIN = ' on '
+/** What `parseUa` answers for a browser or system it does not know. */
+const UNKNOWN = 'Other'
+
 function describeUa(ua: string): string {
   const { browser, os } = parseUa(ua)
-  return `${browser} on ${os}`
+  return `${browser}${DEVICE_JOIN}${os}`
+}
+
+/**
+ * The two halves of a stored device bucket, each `null` when the parser did not know it.
+ *
+ * Every row ever written has this shape, including the "Other on Other" of a client the parser
+ * could not place, so reading it back needs no migration. A value in any other shape (none is
+ * written, but the column is free text) is kept whole as the browser.
+ */
+export function deviceOf(stored: string | null): { browser: string | null; os: string | null } {
+  if (!stored) return { browser: null, os: null }
+  const cut = stored.lastIndexOf(DEVICE_JOIN)
+  const [browser, os] = cut === -1 ? [stored, ''] : [stored.slice(0, cut), stored.slice(cut + DEVICE_JOIN.length)]
+  const known = (part: string): string | null => (part && part !== UNKNOWN ? part : null)
+  return { browser: known(browser), os: known(os) }
 }
 
 /**

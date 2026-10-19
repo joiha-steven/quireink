@@ -9,8 +9,8 @@
 // it goes through `quire:confirm` first.
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { FileItem, SiteLang } from '@/types'
-import { escapeAttr, escapeHtml, formatBytes } from '@/utils'
-import { formatDate } from '@/i18n/format'
+import { escapeAttr, escapeHtml, formatBytes, isoToZonedInput } from '@/utils'
+import { formatDateShort } from '@/admin-shared/when'
 import { NOTE_TEXT, TAP } from '@/admin-shared/scale'
 import { emptyState, selectionBar, tick } from '@/web/admin/kit'
 import { dropWell } from '@/web/admin/screens/media-images'
@@ -22,8 +22,10 @@ const FRAME = 'divide-y divide-neutral-200 overflow-hidden rounded-lg border bor
 const QUIET = 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white'
 
 
+// The admin's one date shape, on the site's day, as the newsletter's Joined column prints it. It
+// was the reader's long form ("October 19, 2026"), the only list in the admin that said it so.
 const meta = (f: FileItem, lang: SiteLang, tz: string): string =>
-  `${escapeHtml(formatBytes(f.size))} · ${escapeHtml(formatDate(f.uploadedAt, lang, tz))}`
+  `${escapeHtml(formatBytes(f.size))} · ${escapeHtml(formatDateShort(isoToZonedInput(f.uploadedAt, tz) || f.uploadedAt, lang))}`
 
 // The kit's drawn tick, not the browser's 16px box: a native box cannot be hit past its own edge.
 const tickBox = (f: FileItem, cls: string): string =>
@@ -48,16 +50,20 @@ function fileRow(t: AdminStrings, lang: SiteLang, tz: string, f: FileItem, manag
       + `${escapeHtml(t.copyUrl)}</button>`
       + `<a href="${escapeAttr(f.url)}" download="${escapeAttr(f.filename)}" class="${TAP} ${QUIET}">`
       + `${escapeHtml(t.download)}</a>`
-  return `<li class="flex items-center gap-3 bg-white p-3 dark:bg-neutral-900"`
+  // ON A PHONE THE KEYS TAKE THEIR OWN LINE. Held beside the name at 375 they left the name and
+  // its size and date a column 17 to 59px wide, five lines tall in German. The row wraps instead
+  // (the name column asks for its own width with `grow`; `flex-1` asks for none, so it never did),
+  // the keys keep the right edge, and from `sm` up it is one line again.
+  return `<li class="flex flex-wrap items-center gap-3 bg-white p-3 sm:flex-nowrap dark:bg-neutral-900"`
     + ` data-file="${escapeAttr(f.url)}">`
     + (managed ? '' : tickBox(f, ''))
     + `<span class="flex h-9 w-12 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-xs`
     + ` font-bold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">${escapeHtml(fileKind(f))}</span>`
-    + `<div class="min-w-0 flex-1">`
+    + `<div class="min-w-0 grow">`
     + `<p class="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200"`
     + ` title="${escapeAttr(f.filename)}">${escapeHtml(f.filename)}</p>`
     + `<p class="${NOTE_TEXT}">${meta(f, lang, tz)}</p></div>`
-    + `<div class="flex shrink-0 flex-wrap items-center gap-3 text-xs">${actions}</div></li>`
+    + `<div class="ml-auto flex shrink-0 flex-wrap items-center gap-3 text-xs">${actions}</div></li>`
 }
 
 export function filesPanel(

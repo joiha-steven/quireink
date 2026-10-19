@@ -18,7 +18,7 @@ import type { Context } from 'hono'
 import { checkPassword, verifyPassword } from '@/auth/password'
 import { getUser, passwordHashFor, setPassword, setTotpLastStep, setTotpSecret, totpStateFor } from '@/auth/users'
 import { regenerateCodes, remainingCodes } from '@/auth/recovery'
-import { listSessions, revokeAllSessions, revokeSession } from '@/auth/sessions'
+import { deviceOf, listSessions, revokeAllSessions, revokeSession } from '@/auth/sessions'
 import { generateSecret, otpauthUri, verifyCode } from '@/auth/totp'
 import { qrSvg } from '@/render/qr'
 import { logActivity } from '@/server/activity'
@@ -30,6 +30,7 @@ import type { SecurityWire } from '@/admin-shared/wire'
 import { listPasskeys } from '@/auth/passkeys'
 import { getSettings } from '@/content/settings'
 import { rpIdFor } from '@/web/passkey-routes'
+import { adminT, type AdminStrings } from '@/i18n/admin-i18n'
 
 const body = async <T>(c: Context): Promise<Partial<T>> =>
   (await c.req.json().catch(() => ({}))) as Partial<T>
@@ -55,6 +56,17 @@ export async function confirms(c: Context): Promise<{ id: number; sessionId: str
 
 export const isResponse = (v: unknown): v is Response => v instanceof Response
 
+/**
+ * A session's device in the admin's language: "Firefox on macOS", or only the half that is
+ * known, or "Unknown device". The row stored "Other on Other" for a client the parser could not
+ * place, and the list printed exactly that, in English, whatever language the admin spoke.
+ */
+export function deviceLabel(stored: string | null, t: AdminStrings): string {
+  const { browser, os } = deviceOf(stored)
+  if (browser && os) return t.securityDeviceOn.replace('{browser}', browser).replace('{os}', os)
+  return browser ?? os ?? t.securityUnknownDevice
+}
+
 export function securityRoutes() {
   const router = ownerRouter()
 
@@ -65,6 +77,8 @@ export function securityRoutes() {
    */
   router.get('/api/security', async (c) => {
     const { user, session } = owner(c)
+    const settings = await getSettings()
+    const t = adminT(settings.language)
     // ANNOTATED, not inferred. The island reads this reply through the same type, so a column
     // that changes shape in `sessions` fails here instead of throwing in a browser nobody is
     // watching (`src/admin-shared/wire.ts` carries the case that taught us).
@@ -75,10 +89,10 @@ export function securityRoutes() {
       // A name, three dates and an id per passkey; never the key (ADR 0071). The RP ID rides
       // along so the card can say WHICH address these belong to, before the owner moves it.
       passkeys: listPasskeys(user.id),
-      passkeyRpId: rpIdFor(c, await getSettings()),
+      passkeyRpId: rpIdFor(c, settings),
       sessions: listSessions(user.id).map((s) => ({
         id: s.id,
-        device: s.userAgent,
+        device: deviceLabel(s.userAgent, t),
         createdAt: s.createdAt,
         lastSeenAt: s.lastSeenAt,
         current: s.id === session.id,

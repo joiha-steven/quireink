@@ -133,7 +133,9 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
       actions,
       body: `<p class="mb-4 text-sm text-neutral-600 dark:text-neutral-300">${escapeHtml(t.firstRunIntro)}</p>`
         + steps
-        + `<div class="mt-5"><button type="button" data-first-run-dismiss class="${TAP} text-sm font-medium text-neutral-500 underline-offset-2 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-white">`
+        // The kit's own small button, not an underlined word: it closes the whole band, which is
+        // an action, and a link-styled button beside five real links read as a sixth step.
+        + `<div class="mt-5"><button type="button" data-first-run-dismiss class="${buttonClass('secondary', 'sm')}">`
         + `${escapeHtml(t.firstRunDismiss)}</button></div>`,
     })
     + `</div>`

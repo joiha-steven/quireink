@@ -134,7 +134,7 @@ The CSS and JavaScript rows are build artefacts, the same bytes on every install
 
 **2.2.16** came out of reading the whole product again, screen by screen and route by route. The [changelog](../CHANGELOG.md) has all of it.
 
-- **The admin speaks your language further.** Help is in all eleven languages and names every screen in the admin's own words; dates follow the admin's language (9/3/26 in English, 3.9.26 in German); German says Sie and Portuguese is Brazilian throughout; counts agree with their nouns.
+- **The admin speaks your language further.** Help is in all eleven languages and names every screen in the admin's own words; dates follow the admin's language and name the month (Sep 3, 2026 in English, 3. Sept. 2026 in German); German says Sie and Portuguese is Brazilian throughout; counts agree with their nouns.
 - **Curly quotes on the published page,** in the piece's own language: “ ” in English, „ “ in German, « » in French, 「 」 in Japanese. The Markdown keeps what you typed, code keeps its straight quotes, and a reader's older marks still land. **On for a new blog, off on an upgraded one;** the switch is in Settings, Posts.
 - **Smaller things:** describe a picture by hand in the library, select every matching subscriber for an export, see your recovery codes and second factor at a glance, recover an account at the machine, and read code that clears 4.5:1 on every palette.
 - **Fixed, and some of it mattered:** on a blog with no site address a sign-in ticket could be traded for a session without the second factor; the first-run questions skipped four of their seven steps; ⌘S on a live post saved it as a draft; a redirect could take over `/login`; an older tab could save over a newer one.

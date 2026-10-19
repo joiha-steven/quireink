@@ -17,6 +17,9 @@ import { verifyPassword } from '@/auth/password'
 import { passwordHashFor, totpStateFor } from '@/auth/users'
 import { remainingCodes } from '@/auth/recovery'
 import { codeForStep, generateSecret, stepAt } from '@/auth/totp'
+import { saveSettings } from '@/content/settings'
+import { adminT } from '@/i18n/admin-i18n'
+import { deviceLabel } from '@/web/admin/security'
 
 const DIR = './.tmp/test-security'
 freshDatabase(DIR)
@@ -84,6 +87,31 @@ describe('what the screen is told', () => {
     )
     expect(data.sessions).toHaveLength(2)
     expect(data.sessions.filter((s) => s.current)).toHaveLength(1)
+  })
+
+  it('names each device in the admin’s language, never "Other on Other"', async () => {
+    createSession(userId, { userAgent: 'curl/8.4.0' })
+    const devices = async (): Promise<string[]> =>
+      (await payload<{ sessions: { device: string }[] }>(await call('/api/security'))).sessions.map((s) => s.device).sort()
+    // The owner's own session carried no agent; the iPhone one did; curl is placed by nothing.
+    expect(await devices()).toEqual(['Safari on iOS', 'Unknown device', 'Unknown device'])
+    await saveSettings({ language: 'vi' })
+    try {
+      expect(await devices()).toEqual(['Safari trên iOS', 'Thiết bị không rõ', 'Thiết bị không rõ'])
+    } finally {
+      await saveSettings({ language: 'en' })
+    }
+  })
+
+  it('says only the half it knows', () => {
+    const en = adminT('en')
+    expect(deviceLabel('Firefox on macOS', en)).toBe('Firefox on macOS')
+    expect(deviceLabel('Other on Linux', en)).toBe('Linux')
+    expect(deviceLabel('Chrome on Other', en)).toBe('Chrome')
+    expect(deviceLabel('Other on Other', en)).toBe('Unknown device')
+    expect(deviceLabel(null, en)).toBe('Unknown device')
+    expect(deviceLabel('Chrome on Android', adminT('ja'))).toBe('Android の Chrome')
+    expect(deviceLabel('Chrome on Android', adminT('de'))).toBe('Chrome auf Android')
   })
 
   // The session table stores a salted IP hash and a coarse device bucket. Neither is a thing

@@ -903,6 +903,7 @@ export type AdminStrings = {
   securitySignOutOthers: string
   securitySignedOut: string
   securityUnknownDevice: string
+  securityDeviceOn: string
   securityWrongPassword: string
   securityTooMany: string
   securityBadCode: string
@@ -1165,11 +1166,7 @@ export type AdminStrings = {
   statStorage: string
   dashTraffic: string
   dashViewAnalytics: string
-  dashViews: string
-  dashVisitors: string
   dashViews7: string
-  dashAvgTime: string
-  dashReadDepth: string
   dashPickUp: string
   dashTopPosts: string
   dashTopEmpty: string
@@ -1194,6 +1191,7 @@ export type AdminStrings = {
   cardPost: string
   cardPictures: string
   cardServerSettings: string
+  serverGroupFeeds: string
   cardInstall: string
   cardThisAdmin: string
   groupPostHead: string

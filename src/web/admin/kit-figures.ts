@@ -6,6 +6,8 @@
 // stat tile, the band it sits in, and the row of big numbers a screen opens with.
 import { escapeAttr, escapeHtml } from '@/utils'
 import { CARD } from '@/admin-shared/kit'
+import { formatDuration } from '@/admin-shared/analytics'
+import type { SiteLang } from '@/types'
 import { FIGURE, META, SECTION } from '@/admin-shared/scale'
 
 /**
@@ -42,15 +44,17 @@ const BARE_TILE = 'px-5 py-4'
  * darkens its own edge rather than lifting — a tile that rises and casts a shadow is the
  * dashboard costume `admin-design.md` took out.
  */
-export function statCard({ label, value, sub = '', after = '', href = '', bare = false }: {
+export function statCard({ label, value, valueHtml, sub = '', after = '', href = '', bare = false }: {
   label: string
   value: string
+  /** Raw HTML honoured before `value`, for a figure with words in it (`durationFigure`). */
+  valueHtml?: string
   sub?: string
   after?: string
   href?: string
   bare?: boolean
 }): string {
-  const inner = `<div class="flex items-start justify-between gap-2"><div class="${FIGURE}">${escapeHtml(value)}${after}</div></div>`
+  const inner = `<div class="flex items-start justify-between gap-2"><div class="${FIGURE}">${valueHtml ?? escapeHtml(value)}${after}</div></div>`
     + `<div class="${META} mt-2.5">${escapeHtml(label)}</div>`
     + (sub ? `<div class="${META} mt-1">${escapeHtml(sub)}</div>` : '')
   const shape = bare ? BARE_TILE : `${CARD} p-5`
@@ -84,14 +88,30 @@ export const statBand = (tiles: string): string =>
  * band is not a string: "Pending" carries the pen's own mark in front of it, the same mark the
  * write list puts against an unfinished piece. Exactly one of the pair is honoured, raw first.
  */
-export function numBand(items: { n: string; label?: string; labelHtml?: string; after?: string; sub?: string }[]): string {
+export function numBand(items: { n: string; nHtml?: string; label?: string; labelHtml?: string; after?: string; sub?: string }[]): string {
   return `<div class="flex flex-wrap border-b border-neutral-100 dark:border-neutral-800">`
     + items.map((it) =>
       `<div class="min-w-32 flex-1 border-r border-neutral-100 px-5 py-4 last:border-r-0 dark:border-neutral-800">`
       + `<span class="flex items-baseline gap-2">`
-      + `<b class="text-2xl font-semibold tracking-tight tabular-nums">${escapeHtml(it.n)}</b>${it.after ?? ''}</span>`
+      + `<b class="text-2xl font-semibold tracking-tight tabular-nums">${it.nHtml ?? escapeHtml(it.n)}</b>${it.after ?? ''}</span>`
       + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.labelHtml ?? escapeHtml(it.label ?? '')}</span>`
       + (it.sub ? `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.sub}</span>` : '')
       + `</div>`).join('')
     + `</div>`
+}
+
+/** The words of a duration figure: a body size beside the figure's digits. */
+const FIGURE_UNIT = 'text-base font-normal'
+
+/**
+ * A dwell time as a headline figure: the digits at the figure's size, the language's own units
+ * at body size. "1 phút 52 giây" and "1 Min., 52 Sek." set whole at 30px measured 200px and
+ * more, and broke over two lines in the 135px figure on a 375px dashboard; "1m 52s", the same
+ * figure in English, is 76px. `nHtml`/`valueHtml` carry it; `formatDuration` is the text.
+ */
+export function durationFigure(ms: number | undefined, lang: SiteLang): string {
+  return formatDuration(ms, lang)
+    .split(/(\d+)/)
+    .map((run) => (run === '' || /^\d+$/.test(run) ? escapeHtml(run) : `<span class="${FIGURE_UNIT}">${escapeHtml(run)}</span>`))
+    .join('')
 }

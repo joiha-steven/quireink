@@ -9,20 +9,66 @@
 // the server kit's `statCard` already takes an `after` slot. A second name for the same tile
 // is how the two faces drifted by one shade of grey the last time.
 
+import type { SiteLang } from '@/types'
+import { dateLocale } from '@/i18n/format'
+
 /** Flag emoji from an ISO 3166-1 alpha-2 code (regional indicators); '' if invalid. */
 export function flag(cc: string): string {
   if (!/^[A-Za-z]{2}$/.test(cc)) return ''
   return String.fromCodePoint(...[...cc.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65))
 }
 
-/** Human dwell time. `0s` for missing; seconds under a minute, else "m s". */
-export function formatDuration(ms?: number): string {
-  const secs = Math.round((ms ?? 0) / 1000)
-  if (secs <= 0) return '0s'
-  if (secs < 60) return `${secs}s`
-  const m = Math.floor(secs / 60)
-  const s = secs % 60
-  return s ? `${m}m ${s}s` : `${m}m`
+type DurationParts = { minutes?: number; seconds?: number }
+type DurationFormatter = { format(parts: DurationParts): string }
+type DurationFormatCtor = new (locale: string, options: { style: 'narrow' }) => DurationFormatter
+
+/** One printer per language, or null where neither `Intl` route will build one. */
+const DURATION = new Map<SiteLang, ((parts: DurationParts) => string) | null>()
+
+/**
+ * The language's own short units: "1m 52s" in English, "1 phút 52 giây" in Vietnamese, "1 Min.,
+ * 52 Sek." in German, "1分钟52秒" in Chinese. `Intl.DurationFormat` where the engine has it (Bun
+ * does, and every caller is on the server), else the two units from `Intl.NumberFormat`. Not in
+ * the TypeScript library yet, hence the shape typed here.
+ */
+function durationWords(lang: SiteLang): ((parts: DurationParts) => string) | null {
+  if (!DURATION.has(lang)) {
+    let words: ((parts: DurationParts) => string) | null = null
+    try {
+      const locale = dateLocale(lang)
+      const unit = (u: 'minute' | 'second') => new Intl.NumberFormat(locale, { style: 'unit', unit: u, unitDisplay: 'narrow' })
+      const Ctor = (Intl as unknown as { DurationFormat?: DurationFormatCtor }).DurationFormat
+      if (Ctor) {
+        const fmt = new Ctor(locale, { style: 'narrow' })
+        // A duration of all zeros prints as an empty string; zero seconds is the answer here.
+        const zero = unit('second').format(0)
+        words = (parts) => fmt.format(parts) || zero
+      } else {
+        const [min, sec] = [unit('minute'), unit('second')]
+        words = ({ minutes, seconds }) =>
+          [minutes ? min.format(minutes) : '', seconds || !minutes ? sec.format(seconds ?? 0) : ''].filter(Boolean).join(' ')
+      }
+    } catch {
+      words = null
+    }
+    DURATION.set(lang, words)
+  }
+  return DURATION.get(lang) ?? null
+}
+
+/**
+ * Human dwell time in the admin's language. Zero seconds for missing; seconds under a minute,
+ * else minutes and seconds, the seconds dropped when there are none ("2m", never "2m 0s").
+ * Minutes are not rolled into hours: nobody stays on a page long enough for that to read better.
+ */
+export function formatDuration(ms: number | undefined, lang: SiteLang): string {
+  const total = Math.max(0, Math.round((ms ?? 0) / 1000))
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  const parts: DurationParts = m ? (s ? { minutes: m, seconds: s } : { minutes: m }) : { seconds: s }
+  const words = durationWords(lang)
+  if (words) return words(parts)
+  return m ? (s ? `${m}m ${s}s` : `${m}m`) : `${s}s`
 }
 
 /** Which way a figure moved, and by how much, or null when there is nothing to say. */

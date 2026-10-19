@@ -24,7 +24,7 @@ export type SheetPiece = {
   slug: string
   title: string
   content: string
-  /** `Draft · 15/9/26 - 13:14`, already worded and formatted by the server. */
+  /** `Draft · Sep 15, 2026, 1:14 PM`, already worded and formatted by the server. */
   metaLine: string
   /** When it was last saved, formatted, or empty for a piece never saved: the island's own copy
    *  of the line's last part, so it never has to guess which part that is. */

@@ -133,7 +133,7 @@ export function siteCard(t: AdminStrings, s: SiteSettings): string {
   // a hardcoded green lamp and a second Save key until 2026-09-19.
   return panelCard({
     title: t.cardServerSettings,
-    body: group({ title: t.tabServer, first: true, body: crawlers(t, s) })
+    body: group({ title: t.serverGroupFeeds, first: true, body: crawlers(t, s) })
       + group({
         title: t.cardCustomCode, note: t.customCodeNote,
         body: `<div class="space-y-5">`

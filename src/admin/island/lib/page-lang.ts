@@ -16,5 +16,5 @@ export const pageLang = (): SiteLang => (document.documentElement.lang || 'en') 
  */
 export const pageZone = (): string => document.documentElement.dataset.tz ?? ''
 
-/** An instant as the admin's one stamp, in the site's zone and the page's language. */
-export const pageStamp = (at: string | number): string => siteDateTimeShort(at, pageZone(), pageLang())
+/** An instant as the admin's one stamp, in the site's zone and the page's language; `seconds` on the clock when asked. */
+export const pageStamp = (at: string | number, seconds = false): string => siteDateTimeShort(at, pageZone(), pageLang(), seconds)

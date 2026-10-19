@@ -63,8 +63,11 @@ function comment(t: AdminStrings, lang: SiteLang, tz: string, c: AdminComment, t
     + tick({ label: c.name, className: 'mt-1 self-start', attrs: `data-comment-pick data-id="${c.id}"` })
     + `<span aria-hidden="true" class="${INITIAL}">${escapeHtml(initialOf(c.name))}</span>`
     + `<div class="min-w-0 flex-1">`
-    + `<div class="${META}">${mark(c.name, WHO)}`
-    + `<span class="whitespace-nowrap">${escapeHtml(siteDateTimeShort(c.createdAt, tz, lang))}</span>`
+    // WHO AND WHEN WRAP AS A PAIR, so a narrow row puts the date under the name rather than
+    // cutting the name. With the month spelled out the date is ~125px, and at 375 the row left
+    // "Tomás Fe…" beside it.
+    + `<div class="${META}"><span class="flex min-w-0 flex-wrap items-baseline gap-x-2">${mark(c.name, WHO)}`
+    + `<span class="whitespace-nowrap">${escapeHtml(siteDateTimeShort(c.createdAt, tz, lang))}</span></span>`
     // Delete waits for the pointer and takes no room while it waits: a moderator reads far more
     // rows than they act on. Red ballpoint, the ink this admin reserves for striking out.
     + `<button type="button" data-comment-delete data-id="${c.id}"`
