@@ -79,7 +79,7 @@ const help: HelpText = {
       body: `<p>Đặt Cloudflare phía trước để có TLS và một bộ cache gần mỗi người đọc — lợi lớn nhất khi người đọc ở xa máy chủ của bạn.</p>
 <ul class="after">
 <li><b>Cache Rules</b>: bỏ qua <code>/admin</code> và <code>/api</code>, cache mọi thứ còn lại trong khoảng thời gian máy chủ báo. <b>Tắt Rocket Loader</b> (nó xếp lại và trì hoãn các script, làm hỏng admin). SSL: Full (Strict).</li>
-<li>Thêm API token Cloudflare và Zone ID ở {t:navSettings} → {t:tabServer} → {t:cardCloudflare}, và mỗi lần lưu sẽ tự xoá cache của zone.</li>
+<li>Thêm API token Cloudflare và Zone ID ở {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardCloudflare}, và mỗi lần lưu sẽ tự xoá cache của zone.</li>
 <li><b>{t:clearCache}</b>, ở thanh bên, xoá cache trên máy chủ này và trên Cloudflare, rồi làm nóng lại trang chủ và các trang mới nhất.</li>
 <li>Sau khi deploy mã mới, xoá cache ở edge bằng <code>GET /api/cron?purge=1</code>. Cloudflare cache cả HTML, nên một trang cũ không phải thứ người đọc tải lại trang là hết.</li>
 </ul>
@@ -88,18 +88,18 @@ const help: HelpText = {
     {
       id: 'mcp',
       title: 'MCP — để AI vận hành blog',
-      body: `<p><b>Máy chủ MCP</b> có sẵn cho một AI agent <b>đúng những luật của admin</b>: viết và cập nhật bài và trang, chăm ảnh và cài đặt, mọi thay đổi đều được kiểm tra và ghi vào nhật ký hoạt động y như thay đổi của bạn. Bật nó và tạo token truy cập ở {t:navSettings} → {t:tabServer} → {t:cardMcp} — token chỉ hiện một lần và chỉ được lưu dưới dạng mã băm.</p>
+      body: `<p><b>Máy chủ MCP</b> có sẵn cho một AI agent <b>đúng những luật của admin</b>: viết và cập nhật bài và trang, chăm ảnh và cài đặt, mọi thay đổi đều được kiểm tra và ghi vào nhật ký hoạt động y như thay đổi của bạn. Bật nó và tạo token truy cập ở {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardMcp} — token chỉ hiện một lần và chỉ được lưu dưới dạng mã băm.</p>
 <p>Cùng những khả năng đó có ngay trong admin, là màn hình <b>Trợ lý</b>, chạy bằng model ở {t:navSettings} → {t:tabServer} → {t:cardAi} — không cần client MCP nào. Qua cửa nào thì agent cũng <b>đọc và chăm blog</b>: lượt truy cập tuần này so với tuần trước, bình luận được quét vào Thùng rác, kho bài được tìm (kể cả bản nháp), trang nhất được sắp lại quanh những gì người ta thật sự đọc, giao diện được đổi theo các bảng màu làm sẵn, một số bản tin thử chỉ gửi riêng cho bạn. Hỏi nó <i>tuần này blog của tôi thế nào?</i> và nó trả lời bằng chính các con số của bảng điều khiển — <b>sổ tay</b> dưới đây là một trang các câu lệnh làm được việc thật.</p>
 <p>Ranh giới nằm ở đâu: địa chỉ người đăng ký và ai viết bình luận nào không bao giờ đi qua MCP; giao diện chỉ nhận các lựa chọn làm sẵn, không bao giờ một màu tuỳ ý; xoá thì vào Thùng rác, không mất hẳn; và gửi bản tin thật <b>cố ý không phải là một công cụ</b> — email đã gửi thì không rút lại được, nên nút đó vẫn là của bạn.</p>
-<p class="links"><a href="doc:docs/agent-cookbook.md">Sổ tay agent</a> <a href="doc:docs/mcp.md">Tài liệu MCP</a> <a href="/admin/settings?tab=server">{t:tabServer}</a> <a href="/admin/log">Nhật ký hoạt động</a></p>`,
+<p class="links"><a href="doc:docs/agent-cookbook.md">Sổ tay agent</a> <a href="doc:docs/mcp.md">Tài liệu MCP</a> <a href="/admin/settings?tab=server&amp;setting=mcpEnable">{t:tabServer}</a> <a href="/admin/log">Nhật ký hoạt động</a></p>`,
     },
     {
       id: 'api',
       title: 'Content API — để một chương trình đọc blog',
-      body: `<p><b>Content API</b> phục vụ những gì bạn đã đăng dưới dạng JSON ở <code>/api/v1</code> — bài viết, trang, ghi chú và danh mục của bạn, mỗi thứ kèm đúng đoạn Markdown mà nó được viết ra. Nó dành cho việc dựng một thứ gì đó từ blog chứ không phải để đọc blog: một front end thứ hai, một chỉ mục tìm kiếm, một bản sao tĩnh, một script tự kiểm tra liên kết của blog. Bật ở {t:navSettings} → {t:tabServer}; chưa bật thì mọi địa chỉ đó đều trả <b>404</b>.</p>
+      body: `<p><b>Content API</b> phục vụ những gì bạn đã đăng dưới dạng JSON ở <code>/api/v1</code> — bài viết, trang, ghi chú và danh mục của bạn, mỗi thứ kèm đúng đoạn Markdown mà nó được viết ra. Nó dành cho việc dựng một thứ gì đó từ blog chứ không phải để đọc blog: một front end thứ hai, một chỉ mục tìm kiếm, một bản sao tĩnh, một script tự kiểm tra liên kết của blog. Bật ở {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardApi}; chưa bật thì mọi địa chỉ đó đều trả <b>404</b>.</p>
 <p><b>Nó chỉ đọc, và không có key.</b> Ai biết địa chỉ đều đọc được, và thứ họ nhận được đúng bằng thứ họ vốn đã lấy được khi duyệt site: không bản nháp, không bài hẹn ngày tới, không gì trong Thùng rác, và không gì có thể thay đổi blog. Công tắc có ở đó vì những gì nó làm cho <i>dễ</i>, không phải vì những gì nó làm cho khả thi — cả blog chỉ trong số request bằng số trang của nó. Với một blog cá nhân ít người ghé thì đó là tiện lợi; blog của bạn thì bạn quyết.</p>
 <p>Để ghi từ một chương trình, dùng <b>MCP</b> ở trên, hoặc Micropub từ một app ghi chép. Cả hai đều phải đăng nhập; cái này thì không, vì vậy nó chỉ được đọc.</p>
-<p class="links"><a href="doc:docs/content-api.md">Tài liệu Content API</a> <a href="/admin/settings?tab=server">{t:tabServer}</a></p>`,
+<p class="links"><a href="doc:docs/content-api.md">Tài liệu Content API</a> <a href="/admin/settings?tab=server&amp;setting=apiEnable">{t:tabServer}</a></p>`,
     },
     {
       id: 'fediverse',
@@ -165,7 +165,7 @@ const help: HelpText = {
     ['Một người đã đăng ký nhưng không nhận được email nào', 'Địa chỉ được lưu trước khi thư được gửi, nên lượt đăng ký vẫn còn dù SMTP hỏng. Xem lỗi ở {t:navNewsletter} → {t:nlTabPeople}, rồi dùng {t:navNewsletter} → {t:nlTabTest}.'],
     ['Bài hẹn giờ không lên site đúng giờ', 'Blog tự đăng bài trong vòng một phút sau giờ hẹn, miễn là máy chủ đang chạy. Nếu đúng lúc đó máy chủ tắt, bài sẽ lên ngay khi máy chủ chạy lại.'],
     ['Mất ứng dụng xác thực và màn hình đăng nhập đòi mã của nó', 'Ở màn hình nhập mã, chọn “{t:authUseRecovery}” và gõ một trong các mã khôi phục của bạn; mỗi mã chỉ dùng được một lần. Sau đó tạo mã mới ở {t:navSettings} → {t:tabAccount}.'],
-    ['Một địa chỉ cũ trả về 404 sau khi đổi tên', 'Đổi tên tự thêm một chuyển hướng 301. Nếu địa chỉ đó chưa từng có ở đây, hãy thêm một cái ở {t:navSettings} → {t:tabServer} → {t:redirectsTitle}.'],
+    ['Một địa chỉ cũ trả về 404 sau khi đổi tên', 'Đổi tên tự thêm một chuyển hướng 301. Nếu địa chỉ đó chưa từng có ở đây, hãy thêm một cái ở {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:redirectsTitle}.'],
     ['Ảnh biến mất sau khi khôi phục bản sao lưu', 'Mở /api/health — nó báo riêng tình trạng cơ sở dữ liệu và thư mục lưu trữ.'],
   ],
 }

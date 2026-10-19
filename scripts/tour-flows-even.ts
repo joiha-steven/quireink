@@ -40,6 +40,9 @@ const SCREENS = [
   '/admin/settings?tab=post',
   '/admin/settings?tab=people',
   '/admin/settings?tab=server',
+  // The same tab with its Advanced band open: `?setting=` opens it, and only VISIBLE siblings
+  // are measured, so with the band shut its six cards were never looked at.
+  '/admin/settings?tab=server&setting=mcpEnable',
   '/admin/settings?tab=account',
   // The writing screen and its two panes, which are the admin's other half.
   '/admin/write',

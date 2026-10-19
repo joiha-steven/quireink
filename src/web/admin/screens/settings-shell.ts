@@ -12,11 +12,11 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { CONTROL_SM, SHEET, SHEET_TOOL, SHEET_TOP, buttonClass } from '@/admin-shared/kit'
 import { FOUND_KEY, FOUND_WHERE } from '@/admin-shared/found'
-import { NOTE_TEXT } from '@/admin-shared/scale'
+import { META, NOTE_TEXT, SECTION } from '@/admin-shared/scale'
 import { TAB_IDS, type Tab } from '@/admin-shared/settings-tabs'
 import { SETTINGS_INDEX, fold } from '@/admin-shared/settings-index'
 import { OVERLAY } from '@/admin-shared/kit'
-import { tabs } from '@/web/admin/kit'
+import { icon, lamp, tabs } from '@/web/admin/kit'
 
 export const PANEL_ID = 'settings-panel'
 
@@ -29,25 +29,21 @@ export const tabLabel = (t: AdminStrings, k: Tab): string => ({
   people: t.tabPeople, server: t.tabServer, account: t.tabAccount,
 }[k])
 
-const tabHint = (t: AdminStrings, k: Tab): string => ({
-  blog: t.tabBlogHint, home: t.tabHomeHint, post: t.tabPostHint,
-  appearance: t.tabAppearanceHint, people: t.tabPeopleHint,
-  server: t.tabServerHint, account: t.tabAccountHint,
-}[k])
-
 /**
- * The line under the tabs: what this tab is for, and the switch that quiets every OTHER
- * explanation on the screen. THIS one stays — a tab with no line under it is an unlabelled box,
- * and quieting the screen must not do that.
+ * The row under the tabs: the switch that quiets every explanation on the screen, at the
+ * sheet's right edge.
  *
- * One row per tab, all seven drawn, because the sentence is the tab's own. `items-baseline`, so
- * the switch sits on the hint's line rather than centred against a hint that has wrapped to two,
- * which it does on a phone in every language.
+ * ⚠️ NO SENTENCE BESIDE IT ANY MORE (ADR 0073). Each tab printed the question it answers here
+ * ("Who this machine talks to.") in italic small print, which repeated the selected tab's own
+ * name one line lower. Nothing read it: the panel is named by `aria-label`, the search indexes
+ * settings rather than tabs, and Help keeps the same seven sentences in its list of tabs
+ * (`admin-shared/help.ts`), which is where an explanation of the tabs is asked for.
+ *
+ * One row per tab, all seven drawn, so the switch travels with the panel the strip shows.
  */
 function notesRow(t: AdminStrings, k: Tab, open: boolean): string {
-  return `<div class="mb-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1"`
+  return `<div class="mb-5 flex justify-end"`
     + ` data-notes-row="${escapeAttr(k)}"${open ? '' : ' hidden'}>`
-    + `<p class="${NOTE_TEXT} tab-hint min-w-0 flex-1 basis-64 max-w-2xl">${escapeHtml(tabHint(t, k))}</p>`
     + `<button type="button" data-notes-toggle class="${SHEET_TOOL} shrink-0"`
     + ` data-on="${escapeAttr(t.settingsNotesHide)}" data-off="${escapeAttr(t.settingsNotesShow)}">`
     + `${escapeHtml(t.settingsNotesShow)}</button></div>`
@@ -123,7 +119,10 @@ function search(t: AdminStrings): string {
   const rows = SETTINGS_INDEX.map((r, i) => {
     const label = String(t[r.label] ?? '')
     const note = r.note ? String(t[r.note] ?? '') : ''
+    // `data-setting` is the row's dictionary KEY, which is what `?setting=` names (ADR 0041): the
+    // command palette and the dashboard link by it, and the island finds the row the same way.
     return `<li id="settings-found-${i}" role="option" aria-selected="false" data-found="${escapeAttr(r.tab)}"`
+      + ` data-setting="${escapeAttr(r.label)}"`
       + ` data-label="${escapeAttr(label)}" data-find="${escapeAttr(fold(`${label} ${note}`))}" hidden>`
       + `<button type="button" class="${FOUND_KEY}">`
       + `<span class="text-sm text-neutral-800 dark:text-neutral-200">${escapeHtml(label)}</span>`
@@ -152,6 +151,54 @@ function search(t: AdminStrings): string {
     + `<ul id="settings-found" role="listbox" data-settings-found`
     + ` class="max-h-80 divide-y divide-neutral-200 overflow-y-auto dark:divide-neutral-800">`
     + `${rows}</ul></div></div>`
+}
+
+/**
+ * THE ADVANCED BAND: the cards on a tab that a writer never needs, folded under one key
+ * ([admin-kit.md](../../../../docs/admin-kit.md), "An advanced band").
+ *
+ * ⚠️ DRAWN WHOLE AND SHUT. The server cannot read `localStorage`, so it draws every card and the
+ * body ships `hidden`; the island opens it for a device that asked for it, and for a search hit,
+ * a refused field or a `?setting=` link that lands inside (`island/lib/settings-advanced.ts`).
+ * Nothing leaves the page, so the sheet's Save still counts and stores every key in here.
+ *
+ * ⚠️ A SHUT BAND MAY NOT HIDE A PROBLEM. The key carries a count of the cards inside whose test
+ * FAILED or which hold an UNSAVED edit, and the island keeps it (`needsAttention`). It ships
+ * hidden: the server can draw neither state — no test result is stored, and nothing is unsaved
+ * in a page just written. "Not set up yet" is NOT counted: every card in here is optional, and
+ * a count on every fresh blog is a count nobody reads.
+ *
+ * Each side is a list of cards for a `COL`, and the two are balanced by hand like every other
+ * stack on the screen: the band is the same two columns as the tab above it.
+ */
+export function advancedBand(t: AdminStrings, a: {
+  /** Unique on the screen: the body's id, which the key's `aria-controls` names. */
+  id: string
+  hint: string
+  left: string[]
+  right: string[]
+}): string {
+  const hintId = `${a.id}-hint`
+  return `<section data-advanced>`
+    // THE WHOLE ROW IS THE KEY, 44px tall (24px of title and `py-2.5`), so a thumb needs no pad.
+    + `<button type="button" data-advanced-toggle aria-expanded="false" aria-controls="${escapeAttr(a.id)}"`
+    + ` aria-describedby="${escapeAttr(hintId)}"`
+    + ` class="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2.5 text-left">`
+    + `<span class="flex items-center gap-2"><span class="${SECTION}">${escapeHtml(t.settingsAdvanced)}</span>`
+    + `<span class="advanced-chevron grid h-4 w-4 place-items-center text-neutral-500 transition-transform dark:text-neutral-400">`
+    + `${icon('down', 'h-4 w-4')}</span></span>`
+    + `<span class="flex items-center gap-2 ${META}" data-advanced-count`
+    + ` data-template="${escapeAttr(t.settingsAdvancedCount)}" hidden>`
+    + lamp({ state: 'attention' })
+    + `<span data-advanced-count-text></span></span>`
+    + `</button>`
+    // `tab-hint` keeps it on screen when the explanations are hidden: it says what is BEHIND the
+    // key, which is wayfinding, and a key whose contents cannot be guessed is a key nobody opens.
+    + `<p id="${escapeAttr(hintId)}" class="${NOTE_TEXT} tab-hint">${escapeHtml(a.hint)}</p>`
+    + `<div id="${escapeAttr(a.id)}" data-advanced-body class="mt-5" hidden>`
+    + `<div class="${GRID}"><div class="${COL}">${a.left.join('')}</div>`
+    + `<div class="${COL}">${a.right.join('')}</div></div></div>`
+    + `</section>`
 }
 
 /** One tab's paper. `admin-enter` is the frame `@starting-style` catches when a tab opens. */

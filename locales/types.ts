@@ -1786,6 +1786,12 @@ export type AdminStrings = {
   /** Settings only: the switch that draws or quiets every explanation on the screen. */
   settingsNotesShow: string
   settingsNotesHide: string
+  /** The key that folds a tab's developer cards away (`advancedBand`), and what it says. */
+  settingsAdvanced: string
+  /** {n}: cards inside the folded band whose lamp is amber, or that hold an unsaved edit. */
+  settingsAdvancedCount: string
+  /** What the Server tab's band holds, named card by card. */
+  serverAdvancedHint: string
   // sign-in (new in 2.0; see v2/docs/06-auth.md)
   authSignIn: string
   // Both take {site}. The sign-in page wears the Quire Ink mark, so the blog it opens is named

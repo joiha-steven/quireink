@@ -28,6 +28,8 @@ import { showTab } from './lib/tab-strip'
 import { retitle } from './lib/tab-title'
 import { wirePics } from './lib/settings-pics'
 import { wireSave, type SaveWords } from './lib/settings-save'
+import { wireAdvanced } from './lib/settings-advanced'
+import { findSetting } from './lib/settings-find'
 import { wireSecurity } from './lib/settings-security'
 import { wireSound } from './lib/settings-sound'
 import { wireTheme } from './lib/settings-theme'
@@ -50,7 +52,10 @@ if (root) {
   const ON = strip?.querySelector<HTMLElement>('[aria-selected="true"]')?.className ?? ''
   const OFF = strip?.querySelector<HTMLElement>('[aria-selected="false"]')?.className ?? ''
 
-  const form = wireSave(screen, words)
+  // The fold on the Server tab: open or shut per device, opened (not remembered) by a search hit,
+  // a refused field or a `?setting=` link, and counting the cards inside that need a look.
+  const advanced = wireAdvanced(screen)
+  const form = wireSave(screen, words, advanced.recount)
   if (box) wireControls(box, form.recount)
   // The eleven cards that keep their own key, because they can TRY the far end — which is the
   // one thing the sheet's Save cannot do.
@@ -185,6 +190,8 @@ if (root) {
     // paragraph carries the same key the event does (`screens/settings-home.ts`), so ask for it.
     const note = screen.querySelector<HTMLElement>(`[data-field-error="${CSS.escape(k)}"]`)
     if (note) note.hidden = false
+    // A refused field folded under Advanced cannot take the focus or be seen: open its band.
+    advanced.reveal(field)
     field?.focus()
   })
 
@@ -319,10 +326,15 @@ if (root) {
    */
   function jump(label: string): void {
     if (!label) return
-    const target = [...screen.querySelectorAll<HTMLElement>('label, .block')]
-      .find((el) => el.textContent?.trim() === label)
-    const row = target?.closest<HTMLElement>('.setting-row, .block, [data-k]') ?? target
+    // In the panel just opened: the same words can stand on two tabs, and a match on a hidden
+    // one would be scrolled to and ringed where nobody can see it.
+    const scope = panels.find((p) => !p.hidden) ?? screen
+    // What matches, and in what order, is `findSetting`: `settings-find.test.ts` checks every row
+    // of the index lands somewhere on its own tab, which is the guard this lookup never had.
+    const row = findSetting(scope, label)
     if (!row) return
+    // A match folded under Advanced opens its band first: a ring on a hidden row is no answer.
+    advanced.reveal(row)
     row.scrollIntoView({ block: 'center', behavior: 'smooth' })
     // `.setting-found` is the same ring the React face drew, and it is in `admin.css` already:
     // a 2px outline that fades out over 1.6s, which is the animation's own length.
@@ -334,7 +346,27 @@ if (root) {
 
   // The server already resolved `?tab=`, including the eight old ids. This only has to catch an
   // address that changed under the page — a Back that walked out of the search, say.
-  const open: Tab = resolveTab(new URL(location.href).searchParams.get('tab'))
+  const here = new URL(location.href).searchParams
+  const open: Tab = resolveTab(here.get('tab'))
   if (screen.dataset.settingsTab !== open) swap(open)
   else measure()
+
+  // ⚠️ `?setting=<key>` LANDS ON THE SETTING (ADR 0041), wherever it is. The key is the search
+  // row's dictionary key, so the row names both the tab and the label to point at — and a
+  // setting folded under Advanced opens its band rather than leaving the link at a shut key.
+  // The command palette and the dashboard's portrait link both address settings this way.
+  const asked = here.get('setting')
+  const named = asked ? found?.querySelector<HTMLElement>(`[data-setting="${CSS.escape(asked)}"]`) : null
+  if (named?.dataset.found) {
+    if (named.dataset.found !== screen.dataset.settingsTab) swap(named.dataset.found)
+    jump(named.dataset.label ?? '')
+  }
+  // ⚠️ AND THEN THE ADDRESS FORGETS IT. `swap` keeps every other parameter, so a `setting=` left
+  // in the URL dragged a reload — after the owner had moved to another tab — back to this row
+  // and its band. The link has done its one job once it has landed.
+  if (asked !== null) {
+    const url = new URL(location.href)
+    url.searchParams.delete('setting')
+    history.replaceState(history.state, '', url)
+  }
 }

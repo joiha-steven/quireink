@@ -6,7 +6,7 @@
 // and they save through five different endpoints between them.
 //
 // ADR 0054: the server draws it. Every card is in `settings-server-*.ts` beside this file;
-// what is here is the two stacks and what goes in each.
+// what is here is the two stacks, the advanced band folded under them, and what goes in each.
 //
 // ⚠️ THIS IS THE MOST DANGEROUS SURFACE IN THE ADMIN and NOTHING ON IT IS WIRED. The cards here
 // mint credentials, delete backups, bulk-import content, purge a CDN and spend money, and every
@@ -31,7 +31,8 @@ import { mcpCard } from '@/web/admin/screens/settings-server-mcp'
 import { apiCard } from '@/web/admin/screens/settings-server-api'
 import { activityPubCard } from '@/web/admin/screens/settings-server-ap'
 import { backupsCard, installCard, type UpdateStatus } from '@/web/admin/screens/settings-server-ops'
-import { COL, GRID } from '@/web/admin/screens/settings-shell'
+import { COL, GRID, advancedBand } from '@/web/admin/screens/settings-shell'
+import { SECTION_GAP } from '@/admin-shared/scale'
 import { cloudCard } from '@/web/admin/screens/settings-server-cloud'
 
 /** What this tab needs that is not a setting. */
@@ -56,15 +57,22 @@ export type ServerTabView = {
 }
 
 /**
- * The tab.
+ * The tab: what the OWNER runs on top, the developer's cards folded under Advanced below it.
  *
- * ⚠️ THE STACKS ARE ASSIGNED BY MEASUREMENT, not by subject, and on this tab that matters most:
- * it absorbed four of the old eight, so any hand-made split leaves a hole. Measured at 1440px on
- * the showcase fixture: 994 · 424 · 282 · 203 on the left against 500 · 282 · 339 · 384 · 378 on
- * the right — 1,963 a side. An earlier cut left 2,134 against 1,664, a 470px hole beside the
- * tallest card on the screen and a tab 2,409px long against the 1,800 the regrouping was
- * measured to fix. Redirects and the import moved across for that; re-measure before moving one
- * back.
+ * ⚠️ WHAT IS ADVANCED is a card no writer needs in order to run a blog: what crawlers and feeds
+ * are served and the code pasted into every page, redirects, the CDN and the move to Cloudflare,
+ * and the two doors other programs use (MCP and the Content API). The cache, updates, storage
+ * limits, backups and their off-site copy, the import, the AI key the writing assistant runs on
+ * and the fediverse name stay on top: each is a decision about the blog itself. The rule, and how
+ * the fold behaves under search and Save, is in `docs/admin-kit.md` ("An advanced band").
+ *
+ * ⚠️ THE STACKS ARE ASSIGNED BY MEASUREMENT, not by subject, in both bands. Measured at 1440px on
+ * the showcase fixture with the explanations hidden (the state a tab this long opens in) on
+ * 2026-10-19: on top 543 · 321 · 427 on the left against 686 · 516 · 197 on the right; in the
+ * band 933 · 119 · 249 against 364 · 487 · 500. Before the fold the one grid stood 2,501 against
+ * 3,041, a 540px hole under the left stack. Backups and the copy that leaves the machine stay one
+ * above the other, and MCP sits over the Content API, the two machine doors as a pair.
+ * Re-measure before moving a card.
  */
 export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView): string {
   // The address the outside world uses: the setting, then `SITE_URL`. With neither, the two
@@ -75,26 +83,35 @@ export function serverTab(t: AdminStrings, s: SiteSettings, view: ServerTabView)
   const fallback = siteUrlIsUnset(bare) ? '' : resolveSiteUrl(bare).replace(/\/+$/, '')
   const origin = s.siteUrl.replace(/\/+$/, '') || fallback
   const endpoint = origin ? `${origin}/api/mcp` : ''
-  return `<div class="${GRID}">`
+  return `<div class="${SECTION_GAP}"><div class="${GRID}">`
     + `<div class="${COL}">`
-    + siteCard(t, s)
-    + cloudflareCard(t, view.integrations)
-    + redirectsCard(t, view.redirects)
-    + importCard(t)
-    // The third machine door, on this side since 2026-09-30 (FIXLIST 7.8): the right stack had
-    // grown to 3,029 against 2,050 at 1280, a 999px hole under the import. Now 2,433 and 2,466.
+    + installCard(t, s, view.update)
+    + aiCard(t, s, view.integrations)
+    // The third machine door (ADR 0059), and the one that stays on top: it gives the blog a name
+    // people follow, which is a decision about the blog rather than about a program reading it.
     + activityPubCard(t, s, { origin: view.origin, followers: view.followers })
     + `</div><div class="${COL}">`
-    + installCard(t, s, view.update)
-    // Moving off this server altogether (G5.3), beside the card about running it. Empty on Cloudflare.
-    + cloudCard(t, s)
-    + aiCard(t, s, view.integrations)
-    + mcpCard(t, s, endpoint, fallback)
-    // Under MCP: the two machine doors read as a pair, and this is the smaller one.
-    + apiCard(t, s, origin ? `${origin}/api/v1` : '', fallback)
     + backupsCard(t, s)
     // The snapshot that leaves the machine (ADR 0035): a copy beside the data does not survive
     // the disk. It sits under the backups it ships.
     + offsiteCard(t, view.integrations)
+    + importCard(t)
     + `</div></div>`
+    + advancedBand(t, {
+      id: 'settings-advanced-server',
+      hint: t.serverAdvancedHint,
+      left: [
+        siteCard(t, s),
+        mcpCard(t, s, endpoint, fallback),
+        // Under MCP: the two machine doors read as a pair, and this is the smaller one.
+        apiCard(t, s, origin ? `${origin}/api/v1` : '', fallback),
+      ],
+      right: [
+        cloudflareCard(t, view.integrations),
+        // Moving off this server altogether (G5.3), under the CDN card. Empty on Cloudflare.
+        cloudCard(t, s),
+        redirectsCard(t, view.redirects),
+      ],
+    })
+    + `</div>`
 }

@@ -79,7 +79,7 @@ const help: HelpText = {
       body: `<p>在前面放一层 Cloudflare，负责 TLS，并在每位读者附近提供缓存——读者离你的服务器很远时，这是最大的提升。</p>
 <ul class="after">
 <li><b>Cache Rules</b>：绕过 <code>/admin</code> 和 <code>/api</code>，其余一切按服务器指定的时长缓存。<b>关闭 Rocket Loader</b>（它会重排并延迟脚本，导致后台出错）。SSL: Full (Strict)。</li>
-<li>在 {t:navSettings} → {t:tabServer} → {t:cardCloudflare} 中填入 Cloudflare API 令牌和 Zone ID，之后每次保存都会自动清除该区域的缓存。</li>
+<li>在 {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardCloudflare} 中填入 Cloudflare API 令牌和 Zone ID，之后每次保存都会自动清除该区域的缓存。</li>
 <li>侧边栏里的<b>{t:clearCache}</b>会清除本服务器和 Cloudflare 的缓存，然后重新预热首页和最新的页面。</li>
 <li>部署新代码后，用 <code>GET /api/cron?purge=1</code> 清除边缘缓存。Cloudflare 会缓存 HTML，所以过期的页面不是读者刷新一下就能消除的。</li>
 </ul>
@@ -88,18 +88,18 @@ const help: HelpText = {
     {
       id: 'mcp',
       title: 'MCP——让 AI 来打理博客',
-      body: `<p>内置的 <b>MCP 服务器</b>让 AI 代理遵守<b>与后台相同的规则</b>：撰写和更新文章与页面，打理图片和设置，每一处改动都会像你自己的操作一样经过检查并写入活动日志。在 {t:navSettings} → {t:tabServer} → {t:cardMcp} 中开启它并创建访问令牌——令牌只显示一次，系统只保存其哈希值。</p>
+      body: `<p>内置的 <b>MCP 服务器</b>让 AI 代理遵守<b>与后台相同的规则</b>：撰写和更新文章与页面，打理图片和设置，每一处改动都会像你自己的操作一样经过检查并写入活动日志。在 {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardMcp} 中开启它并创建访问令牌——令牌只显示一次，系统只保存其哈希值。</p>
 <p>同样的能力也以<b>助手</b>页面的形式存在于后台之中，运行在 {t:navSettings} → {t:tabServer} → {t:cardAi} 里的模型上——不需要 MCP 客户端。无论从哪扇门进来，代理都能<b>阅读和打理</b>：本周与上周的流量对比、把评论清理进回收站、搜索归档（包括草稿）、根据读者真正在读的内容重新排列首页、从现成的配色中重新挑选外观、只给你一个人发一期测试邮件通讯。问它<i>我的博客这周表现怎么样？</i>，它会用仪表盘上的同一组数字回答——下面的<b>实用手册</b>是一页能完成实际工作的提示词。</p>
 <p>界线在哪里：订阅者的邮箱地址和哪条评论是谁写的，绝不会经过 MCP；外观只接受现成的选项，绝不接受随意指定的颜色；删除的东西进入回收站，而不是消失；发送真正的邮件通讯<b>刻意不做成工具</b>——邮件发出去就收不回来，所以那个按钮始终由你来按。</p>
-<p class="links"><a href="doc:docs/agent-cookbook.md">代理实用手册</a> <a href="doc:docs/mcp.md">MCP 文档</a> <a href="/admin/settings?tab=server">{t:tabServer}</a> <a href="/admin/log">活动日志</a></p>`,
+<p class="links"><a href="doc:docs/agent-cookbook.md">代理实用手册</a> <a href="doc:docs/mcp.md">MCP 文档</a> <a href="/admin/settings?tab=server&amp;setting=mcpEnable">{t:tabServer}</a> <a href="/admin/log">活动日志</a></p>`,
     },
     {
       id: 'api',
       title: 'Content API——让程序读取博客',
-      body: `<p><b>Content API</b> 在 <code>/api/v1</code> 以 JSON 提供你已发布的内容——文章、页面、笔记和你的分类，每一项都附带它写作时用的 Markdown。它是用来拿博客做点什么的，而不是用来读博客的：第二个前端、一个搜索索引、一份静态副本、一段检查自身链接的脚本。在 {t:navSettings} → {t:tabServer} 中开启；开启之前，所有这些地址都会返回 <b>404</b>。</p>
+      body: `<p><b>Content API</b> 在 <code>/api/v1</code> 以 JSON 提供你已发布的内容——文章、页面、笔记和你的分类，每一项都附带它写作时用的 Markdown。它是用来拿博客做点什么的，而不是用来读博客的：第二个前端、一个搜索索引、一份静态副本、一段检查自身链接的脚本。在 {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardApi} 中开启；开启之前，所有这些地址都会返回 <b>404</b>。</p>
 <p><b>它只能读，而且没有密钥。</b>任何知道地址的人都能读取，而他们拿到的，正是浏览站点本来就能拿到的东西：没有草稿，没有日期在未来的文章，回收站里的一概没有，也没有任何能改动博客的东西。之所以设一个开关，是因为它让某件事变得<i>便宜</i>，而不是让某件事变得可能——用和页面数一样多的请求就能拿走整个博客。对一个安静的个人博客来说，这是一种便利；你的博客由你决定。</p>
 <p>要从程序写入，请使用上面的 <b>MCP</b>，或者从笔记应用使用 Micropub。两者都需要登录；这个不需要，所以它只能读。</p>
-<p class="links"><a href="doc:docs/content-api.md">Content API 文档</a> <a href="/admin/settings?tab=server">{t:tabServer}</a></p>`,
+<p class="links"><a href="doc:docs/content-api.md">Content API 文档</a> <a href="/admin/settings?tab=server&amp;setting=apiEnable">{t:tabServer}</a></p>`,
     },
     {
       id: 'fediverse',
@@ -165,7 +165,7 @@ const help: HelpText = {
     ['有订阅者注册了，却没收到邮件', '地址会在发信之前先保存，所以即使 SMTP 出了问题，订阅也不会丢。到 {t:navNewsletter} → {t:nlTabPeople} 查看失败原因，然后使用 {t:navNewsletter} → {t:nlTabTest}。'],
     ['定时文章没有按时上线', '只要服务器在运行，博客会在预定时间后一分钟内自动发布它。如果那一刻服务器停机了，文章会在服务器恢复后立即上线。'],
     ['验证器应用没了，登录时却要输入它的验证码', '在验证码页面选择“{t:authUseRecovery}”，输入你的任意一个恢复码；每个恢复码只能用一次。然后到 {t:navSettings} → {t:tabAccount} 生成新的恢复码。'],
-    ['改名之后旧地址返回 404', '改名会自动添加一条 301。如果这个地址在这里从未存在过，请到 {t:navSettings} → {t:tabServer} → {t:redirectsTitle} 添加一条。'],
+    ['改名之后旧地址返回 404', '改名会自动添加一条 301。如果这个地址在这里从未存在过，请到 {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:redirectsTitle} 添加一条。'],
     ['恢复备份后图片不见了', '打开 /api/health——它会分别报告数据库和存储文件夹的状态。'],
   ],
 }

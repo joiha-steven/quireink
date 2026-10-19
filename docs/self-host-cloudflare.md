@@ -23,7 +23,7 @@ feels on a bad day rather than on a good one:
 What a typical blog costs on Paid, from the included amounts (10 million requests, 1 million
 Durable Object requests, 50 million rows written, 5 GB of SQLite, 10 GB of R2, 5,000 image
 transformations a month): **$5.00** for 100,000 views a month; about **$5.15** for a million, which is
-what Settings → Server → Cloudflare estimates from the blog's own numbers. Mail is not among them:
+what Settings → Server → Advanced → Cloudflare estimates from the blog's own numbers. Mail is not among them:
 the newsletter and notices go through the SMTP server you set in Settings, on either runtime.
 
 ## With the Deploy to Cloudflare button (the easy way)
@@ -95,7 +95,7 @@ The database migrates when the blog next starts, after Cloudflare has bookmarked
 **Installed with the button:** Cloudflare deploys whatever reaches your copy's `main` branch, so an
 upgrade is bringing the newer release into the copy, and a workflow in the copy does it. **Cloudflare's
 import leaves `.github/workflows` out of the copy** (measured 2026-10-04), so add the workflow once:
-Settings → Server → Cloudflare asks for your copy's name (`owner/name`) and opens GitHub's new-file
+Settings → Server → Advanced → Cloudflare asks for your copy's name (`owner/name`) and opens GitHub's new-file
 page with the file already written; press *Commit changes*. Then, on GitHub, open your copy →
 **Actions → Update Quire Ink → Run workflow** (leave the version blank for the newest). It brings the release in file for file, keeps the Worker and bucket names the button
 chose, commits and pushes; a few minutes later the blog's `/api/health` names the new version. It
@@ -118,7 +118,7 @@ The release's `wrangler.jsonc` carries the default names. If the button wrote a 
 line in that diff is the release's and stays: a bucket name left at the default would point the blog
 at another bucket, without its uploads and backups.
 
-**Moved from a server:** Settings → Server → Cloudflare shows the
+**Moved from a server:** Settings → Server → Advanced → Cloudflare shows the
 newest release and a key to update to it. The Worker uploads the new version, keeps your variables
 and secrets, waits for the blog to answer as the new version — and puts the version before back if
 it does not. It uses the token kept in the Worker when you allowed self-updates during the move, or
@@ -129,7 +129,7 @@ and going back restored the old version.
 
 ## Moving a blog you already run
 
-A Quire Ink on a server, in Docker or on a NAS moves from its own admin: **Settings → Server → Run on
+A Quire Ink on a server, in Docker or on a NAS moves from its own admin: **Settings → Server → Advanced → Run on
 Cloudflare**. Paste your account ID and an API token (the card lists the permissions), type your
 password again, and press *Move to Cloudflare*. It checks the token and the plan, fetches this
 version's Cloudflare package from its GitHub Release, creates the Worker, its storage and its
@@ -146,7 +146,7 @@ which a Worker can verify within its memory.
 
 ## Leaving Cloudflare
 
-Settings → Server → Cloudflare → *Leaving Cloudflare*. Download a backup first: it is the only way
+Settings → Server → Advanced → Cloudflare → *Leaving Cloudflare*. Download a backup first: it is the only way
 back, and it loads into a new Quire Ink on a server, in Docker or on a NAS through *Start from a
 backup* on its first screen.
 

@@ -79,7 +79,7 @@ const help: HelpText = {
       body: `<p>Placez Cloudflare devant pour le TLS et un cache près de chaque lecteur — le grand gain quand les lecteurs sont loin de votre serveur.</p>
 <ul class="after">
 <li><b>Cache Rules</b> : contournez <code>/admin</code> et <code>/api</code>, mettez tout le reste en cache pour la durée qu’indique le serveur. <b>Désactivez Rocket Loader</b> (il réordonne et retarde les scripts, ce qui casse l’administration). SSL: Full (Strict).</li>
-<li>Ajoutez un jeton d’API Cloudflare et le Zone ID dans {t:navSettings} → {t:tabServer} → {t:cardCloudflare}, et chaque enregistrement vide la zone de lui-même.</li>
+<li>Ajoutez un jeton d’API Cloudflare et le Zone ID dans {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardCloudflare}, et chaque enregistrement vide la zone de lui-même.</li>
 <li><b>{t:clearCache}</b>, dans la barre latérale, vide ce serveur et Cloudflare, puis réchauffe la page d’accueil et les pages les plus récentes.</li>
 <li>Après avoir déployé du nouveau code, videz la périphérie avec <code>GET /api/cron?purge=1</code>. Cloudflare met le HTML en cache, donc une page périmée n’est pas quelque chose qu’un lecteur peut faire disparaître en rechargeant.</li>
 </ul>
@@ -88,18 +88,18 @@ const help: HelpText = {
     {
       id: 'mcp',
       title: 'MCP — laisser une IA tenir le blog',
-      body: `<p>Le <b>serveur MCP</b> intégré donne à un agent IA <b>les mêmes règles que l’administration</b> : écrire et mettre à jour articles et pages, s’occuper des images et des réglages, chaque changement vérifié et inscrit au journal d’activité exactement comme les vôtres. Activez-le et créez des jetons d’accès dans {t:navSettings} → {t:tabServer} → {t:cardMcp} — un jeton n’est affiché qu’une fois et n’est stocké que sous forme d’empreinte.</p>
+      body: `<p>Le <b>serveur MCP</b> intégré donne à un agent IA <b>les mêmes règles que l’administration</b> : écrire et mettre à jour articles et pages, s’occuper des images et des réglages, chaque changement vérifié et inscrit au journal d’activité exactement comme les vôtres. Activez-le et créez des jetons d’accès dans {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardMcp} — un jeton n’est affiché qu’une fois et n’est stocké que sous forme d’empreinte.</p>
 <p>Les mêmes capacités existent dans l’administration sous la forme de l’écran <b>Assistant</b>, qui tourne sur le modèle de {t:navSettings} → {t:tabServer} → {t:cardAi} — aucun client MCP nécessaire. Par l’une ou l’autre porte, l’agent <b>lit et entretient</b> : le trafic de cette semaine face à celui de la semaine dernière, des commentaires balayés vers la corbeille, les archives fouillées (brouillons compris), la page d’accueil réorganisée autour de ce que les gens lisent vraiment, l’apparence refaite à partir des palettes toutes prêtes, un numéro de test de la newsletter envoyé à vous seul. Demandez-lui <i>comment s’est passée la semaine de mon blog ?</i> et il répond avec les chiffres du tableau de bord lui-même — les <b>recettes</b> ci-dessous sont une page de consignes qui font un vrai travail.</p>
 <p>Où sont les limites : les adresses des abonnés et l’auteur de chaque commentaire ne passent jamais par MCP ; l’apparence n’accepte que les choix tout prêts, jamais une couleur libre ; les suppressions vont dans la corbeille, pas au néant ; et envoyer la vraie newsletter n’est <b>délibérément pas un outil</b> — un e-mail ne se rattrape pas, donc ce bouton reste le vôtre.</p>
-<p class="links"><a href="doc:docs/agent-cookbook.md">Recettes pour agents</a> <a href="doc:docs/mcp.md">Documentation MCP</a> <a href="/admin/settings?tab=server">{t:tabServer}</a> <a href="/admin/log">Journal d’activité</a></p>`,
+<p class="links"><a href="doc:docs/agent-cookbook.md">Recettes pour agents</a> <a href="doc:docs/mcp.md">Documentation MCP</a> <a href="/admin/settings?tab=server&amp;setting=mcpEnable">{t:tabServer}</a> <a href="/admin/log">Journal d’activité</a></p>`,
     },
     {
       id: 'api',
       title: 'Content API — laisser un programme lire le blog',
-      body: `<p>La <b>Content API</b> sert vos écrits publiés en JSON à <code>/api/v1</code> — articles, pages, notes et vos catégories, chacun avec le Markdown dans lequel il a été écrit. Elle sert à construire quelque chose à partir du blog plutôt qu’à le lire : un second site public, un index de recherche, une copie statique, un script qui vérifie ses propres liens. Activez-la dans {t:navSettings} → {t:tabServer} ; tant que vous ne l’avez pas fait, chacune de ces adresses répond <b>404</b>.</p>
+      body: `<p>La <b>Content API</b> sert vos écrits publiés en JSON à <code>/api/v1</code> — articles, pages, notes et vos catégories, chacun avec le Markdown dans lequel il a été écrit. Elle sert à construire quelque chose à partir du blog plutôt qu’à le lire : un second site public, un index de recherche, une copie statique, un script qui vérifie ses propres liens. Activez-la dans {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardApi} ; tant que vous ne l’avez pas fait, chacune de ces adresses répond <b>404</b>.</p>
 <p><b>Elle ne fait que lire, et elle n’a pas de clé.</b> Quiconque connaît l’adresse peut la lire, et ce qu’il obtient est exactement ce qu’il pourrait déjà obtenir en parcourant le site : pas de brouillons, pas d’articles datés dans le futur, rien de la corbeille, et rien qui puisse modifier le blog. L’interrupteur est là à cause de ce qu’elle rend <i>bon marché</i>, pas de ce qu’elle rend possible — le blog entier en autant de requêtes qu’il a de pages. Sur un petit blog personnel, c’est une commodité ; à vous de décider pour le vôtre.</p>
 <p>Pour écrire depuis un programme, utilisez <b>MCP</b> ci-dessus, ou Micropub depuis une application de prise de notes. Les deux exigent une connexion ; celle-ci non, et c’est pourquoi elle ne peut que lire.</p>
-<p class="links"><a href="doc:docs/content-api.md">Documentation de la Content API</a> <a href="/admin/settings?tab=server">{t:tabServer}</a></p>`,
+<p class="links"><a href="doc:docs/content-api.md">Documentation de la Content API</a> <a href="/admin/settings?tab=server&amp;setting=apiEnable">{t:tabServer}</a></p>`,
     },
     {
       id: 'fediverse',
@@ -165,7 +165,7 @@ const help: HelpText = {
     ['Un abonné s’est inscrit mais n’a reçu aucun e-mail', 'L’adresse est enregistrée avant l’envoi du courrier, donc l’inscription survit à un SMTP en panne. Cherchez l’échec dans {t:navNewsletter} → {t:nlTabPeople}, puis utilisez {t:navNewsletter} → {t:nlTabTest}.'],
     ['Un article programmé n’a pas paru à l’heure', 'Le blog le publie de lui-même dans la minute qui suit son heure, tant que le serveur tourne. Si le serveur était arrêté à ce moment-là, l’article paraît dès qu’il redémarre.'],
     ['L’application d’authentification a disparu et la connexion demande son code', 'Sur l’écran du code, choisissez « {t:authUseRecovery} » et tapez l’un de vos codes de secours ; chacun ne fonctionne qu’une fois. Créez-en ensuite de nouveaux dans {t:navSettings} → {t:tabAccount}.'],
-    ['Une ancienne adresse donne 404 après un renommage', 'Renommer ajoute une 301 de soi-même. Si l’adresse n’a jamais existé ici, ajoutez-en une dans {t:navSettings} → {t:tabServer} → {t:redirectsTitle}.'],
+    ['Une ancienne adresse donne 404 après un renommage', 'Renommer ajoute une 301 de soi-même. Si l’adresse n’a jamais existé ici, ajoutez-en une dans {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:redirectsTitle}.'],
     ['Des images ont disparu après une restauration', 'Ouvrez /api/health — il rend compte séparément de la base de données et du dossier de stockage.'],
   ],
 }

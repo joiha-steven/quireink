@@ -79,7 +79,7 @@ const help: HelpText = {
       body: `<p>TLS と、すべての読者の近くに置くキャッシュのために、Cloudflare を前に置きましょう。読者があなたのサーバーから遠いとき、いちばん効きます。</p>
 <ul class="after">
 <li><b>Cache Rules</b>: <code>/admin</code> と <code>/api</code> はバイパスし、それ以外はサーバーが指示する時間だけすべてキャッシュします。<b>Rocket Loader はオフ</b>にしてください（スクリプトの順番を入れ替えて遅らせるので、管理画面が壊れます）。SSL: Full (Strict)。</li>
-<li>{t:navSettings} → {t:tabServer} → {t:cardCloudflare} に Cloudflare の API トークンと Zone ID を入れると、保存のたびにゾーンが自動でクリアされます。</li>
+<li>{t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardCloudflare} に Cloudflare の API トークンと Zone ID を入れると、保存のたびにゾーンが自動でクリアされます。</li>
 <li>サイドバーの<b>{t:clearCache}</b>は、このサーバーと Cloudflare をクリアし、そのあとホームページと最新のページを温め直します。</li>
 <li>新しいコードをデプロイしたら、<code>GET /api/cron?purge=1</code> でエッジをクリアしてください。Cloudflare は HTML をキャッシュするので、古いページは読者が再読み込みしても消えません。</li>
 </ul>
@@ -88,18 +88,18 @@ const help: HelpText = {
     {
       id: 'mcp',
       title: 'MCP — AI にブログを任せる',
-      body: `<p>内蔵の <b>MCP サーバー</b>は、AI エージェントに<b>管理画面と同じルール</b>を課します。記事やページを書いて更新し、画像や設定の面倒を見て、すべての変更はあなたの操作とまったく同じように検証され、アクティビティログに記録されます。{t:navSettings} → {t:tabServer} → {t:cardMcp} でオンにしてアクセストークンを作ります。トークンは一度だけ表示され、ハッシュとしてしか保存されません。</p>
+      body: `<p>内蔵の <b>MCP サーバー</b>は、AI エージェントに<b>管理画面と同じルール</b>を課します。記事やページを書いて更新し、画像や設定の面倒を見て、すべての変更はあなたの操作とまったく同じように検証され、アクティビティログに記録されます。{t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardMcp} でオンにしてアクセストークンを作ります。トークンは一度だけ表示され、ハッシュとしてしか保存されません。</p>
 <p>同じ能力は管理画面の中にも<b>アシスタント</b>画面としてあり、{t:navSettings} → {t:tabServer} → {t:cardAi} のモデルで動きます。MCP クライアントは要りません。どちらの入口からでも、エージェントは<b>読んで、面倒を見ます</b>。今週のアクセスを先週と比べる、コメントをゴミ箱へ片付ける、アーカイブを（下書きも含めて）検索する、実際に読まれているものに合わせてフロントページを並べ替える、既製のパレットから見た目を整え直す、ニュースレターのテスト号をあなた一人に送る。<i>今週のブログはどうだった？</i>と尋ねれば、ダッシュボードと同じ数字で答えます。下の<b>クックブック</b>は、実際の仕事をこなすプロンプトを集めたページです。</p>
 <p>線引きはこうです。購読者のアドレスと、どのコメントを誰が書いたかは MCP を通りません。見た目は既製の選択肢しか受け付けず、自由な色は使えません。削除はゴミ箱へ行き、消えはしません。そして本番のニュースレター送信は<b>あえてツールにしていません</b>。メールは取り消せないので、そのボタンはあなたの手に残ります。</p>
-<p class="links"><a href="doc:docs/agent-cookbook.md">エージェントのクックブック</a> <a href="doc:docs/mcp.md">MCP のドキュメント</a> <a href="/admin/settings?tab=server">{t:tabServer}</a> <a href="/admin/log">アクティビティログ</a></p>`,
+<p class="links"><a href="doc:docs/agent-cookbook.md">エージェントのクックブック</a> <a href="doc:docs/mcp.md">MCP のドキュメント</a> <a href="/admin/settings?tab=server&amp;setting=mcpEnable">{t:tabServer}</a> <a href="/admin/log">アクティビティログ</a></p>`,
     },
     {
       id: 'api',
       title: 'Content API — プログラムにブログを読ませる',
-      body: `<p><b>Content API</b> は、公開済みの文章を <code>/api/v1</code> で JSON として配信します。投稿、ページ、ノート、そしてカテゴリー。それぞれ書かれたときの Markdown 付きです。ブログを読むためではなく、ブログから何かを作るためのものです。二つ目のフロントエンド、検索インデックス、静的な複製、自分のリンクを確かめるスクリプト。{t:navSettings} → {t:tabServer} でオンにします。オンにするまで、これらのアドレスはどれも <b>404</b> を返します。</p>
+      body: `<p><b>Content API</b> は、公開済みの文章を <code>/api/v1</code> で JSON として配信します。投稿、ページ、ノート、そしてカテゴリー。それぞれ書かれたときの Markdown 付きです。ブログを読むためではなく、ブログから何かを作るためのものです。二つ目のフロントエンド、検索インデックス、静的な複製、自分のリンクを確かめるスクリプト。{t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardApi} でオンにします。オンにするまで、これらのアドレスはどれも <b>404</b> を返します。</p>
 <p><b>読むだけで、キーはありません。</b>アドレスを知っていれば誰でも読めますが、得られるのはサイトを閲覧して得られるものとまったく同じです。下書きも、日付が先の記事も、ゴミ箱の中身もなく、ブログを変えられるものは何もありません。スイッチがあるのは、それが何を可能にするかではなく、何を<i>安く</i>するかのためです。ページの数だけのリクエストで、ブログ全体が手に入ります。静かな個人ブログならそれは便利なだけですが、あなたのブログについてはご自身で決めてください。</p>
 <p>プログラムから書き込むには、上の <b>MCP</b> か、ノートアプリからの Micropub を使ってください。どちらもサインインします。こちらはしないので、読むことしかできないのです。</p>
-<p class="links"><a href="doc:docs/content-api.md">Content API のドキュメント</a> <a href="/admin/settings?tab=server">{t:tabServer}</a></p>`,
+<p class="links"><a href="doc:docs/content-api.md">Content API のドキュメント</a> <a href="/admin/settings?tab=server&amp;setting=apiEnable">{t:tabServer}</a></p>`,
     },
     {
       id: 'fediverse',
@@ -165,7 +165,7 @@ const help: HelpText = {
     ['購読者が登録したのにメールが届かない', 'アドレスはメールを送る前に保存されるので、SMTP が壊れていても登録は残ります。{t:navNewsletter} → {t:nlTabPeople} で失敗を確かめ、それから {t:navNewsletter} → {t:nlTabTest} を使ってください。'],
     ['予約した記事が時間どおりに公開されなかった', 'サーバーが動いていれば、ブログは予定時刻から 1 分以内に自動で公開します。その時刻にサーバーが止まっていたなら、復旧しだい記事は公開されます。'],
     ['認証アプリがなくなり、サインインでそのコードを求められる', 'コード入力画面で「{t:authUseRecovery}」を選び、リカバリーコードを一つ入力してください。各コードは一度だけ使えます。そのあと {t:navSettings} → {t:tabAccount} で新しいコードを作ってください。'],
-    ['名前を変えたら古いアドレスが 404 になる', '名前を変えると 301 が自動で追加されます。そのアドレスがここに存在したことがないなら、{t:navSettings} → {t:tabServer} → {t:redirectsTitle} で追加してください。'],
+    ['名前を変えたら古いアドレスが 404 になる', '名前を変えると 301 が自動で追加されます。そのアドレスがここに存在したことがないなら、{t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:redirectsTitle} で追加してください。'],
     ['復元のあと画像が消えた', '/api/health を開いてください。データベースと保存フォルダーを別々に報告します。'],
   ],
 }

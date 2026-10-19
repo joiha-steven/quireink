@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'bun:test'
 import en from '@/locales/admin/en'
 import vi from '@/locales/admin/vi'
-import { SETTINGS_INDEX, fold, searchSettings } from '@/admin-shared/settings-index'
+import { SETTINGS_INDEX, fold, searchSettings, settingRowId } from '@/admin-shared/settings-index'
 
 describe('fold', () => {
   it('strips Vietnamese tone marks and the stroke on đ', () => {
@@ -89,5 +89,20 @@ describe('the index itself', () => {
   it('lists nothing twice', () => {
     const keys = SETTINGS_INDEX.map((e) => `${e.tab}:${String(e.label)}`)
     expect(keys.length).toBe(new Set(keys).size)
+  })
+})
+
+// The palette remembers the rows used last, by id, in localStorage. An id built from a row's
+// POSITION re-pointed every remembered row the day an entry was added above it.
+describe('settingRowId', () => {
+  it('is the dictionary key, wherever the entry stands in the list', () => {
+    expect(settingRowId({ tab: 'server', label: 'seoOgImage' })).toBe('g:seoOgImage')
+    const shuffled = [...SETTINGS_INDEX].reverse().map(settingRowId)
+    expect(new Set(shuffled)).toEqual(new Set(SETTINGS_INDEX.map(settingRowId)))
+  })
+
+  it('is unique, because a key stands in the index once', () => {
+    const ids = SETTINGS_INDEX.map(settingRowId)
+    expect(ids.length).toBe(new Set(ids).size)
   })
 })

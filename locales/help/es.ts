@@ -79,7 +79,7 @@ const help: HelpText = {
       body: `<p>Pon Cloudflare delante para el TLS y una caché cerca de cada lector: la gran ganancia cuando los lectores están lejos de tu servidor.</p>
 <ul class="after">
 <li><b>Cache Rules</b>: omite <code>/admin</code> y <code>/api</code>, y cachea todo lo demás durante el tiempo que indique el servidor. <b>Apaga Rocket Loader</b> (reordena y retrasa los scripts, y eso rompe la administración). SSL: Full (Strict).</li>
-<li>Añade un token de la API de Cloudflare y el Zone ID en {t:navSettings} → {t:tabServer} → {t:cardCloudflare}, y cada guardado vacía la zona por sí solo.</li>
+<li>Añade un token de la API de Cloudflare y el Zone ID en {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardCloudflare}, y cada guardado vacía la zona por sí solo.</li>
 <li><b>{t:clearCache}</b>, en la barra lateral, vacía este servidor y Cloudflare, y luego vuelve a calentar la portada y las páginas más nuevas.</li>
 <li>Después de desplegar código nuevo, vacía el borde con <code>GET /api/cron?purge=1</code>. Cloudflare guarda en caché el HTML, así que una página desfasada no es algo que un lector pueda arreglar recargando.</li>
 </ul>
@@ -88,18 +88,18 @@ const help: HelpText = {
     {
       id: 'mcp',
       title: 'MCP — deja que una IA lleve el blog',
-      body: `<p>El <b>servidor MCP</b> integrado da a un agente de IA <b>las mismas reglas que la administración</b>: escribir y actualizar entradas y páginas, cuidar las imágenes y los ajustes, con cada cambio comprobado y anotado en el registro de actividad exactamente igual que los tuyos. Actívalo y crea tokens de acceso en {t:navSettings} → {t:tabServer} → {t:cardMcp}: un token se muestra una sola vez y solo se guarda su hash.</p>
+      body: `<p>El <b>servidor MCP</b> integrado da a un agente de IA <b>las mismas reglas que la administración</b>: escribir y actualizar entradas y páginas, cuidar las imágenes y los ajustes, con cada cambio comprobado y anotado en el registro de actividad exactamente igual que los tuyos. Actívalo y crea tokens de acceso en {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardMcp}: un token se muestra una sola vez y solo se guarda su hash.</p>
 <p>Las mismas capacidades viven dentro de la administración como la pantalla <b>Asistente</b>, que funciona con el modelo de {t:navSettings} → {t:tabServer} → {t:cardAi}, sin necesidad de un cliente MCP. Por cualquiera de las dos puertas, el agente <b>lee y cuida</b>: el tráfico de esta semana frente al de la anterior, comentarios barridos a la papelera, el archivo buscado (borradores incluidos), la portada reordenada según lo que la gente lee de verdad, el aspecto cambiado con las paletas ya preparadas, un número de prueba del boletín enviado solo a ti. Pregúntale <i>¿cómo le fue a mi blog esta semana?</i> y responde con las propias cifras del panel; el <b>recetario</b> de abajo es una página de peticiones que hacen trabajos reales.</p>
 <p>Dónde están los límites: las direcciones de los suscriptores y quién escribió cada comentario nunca cruzan MCP; el aspecto solo acepta las opciones ya preparadas, nunca un color libre; lo eliminado va a la papelera, no desaparece; y enviar el boletín de verdad <b>no es una herramienta, a propósito</b>: un correo no se puede desenviar, así que ese botón sigue siendo tuyo.</p>
-<p class="links"><a href="doc:docs/agent-cookbook.md">Recetario del agente</a> <a href="doc:docs/mcp.md">Documentación de MCP</a> <a href="/admin/settings?tab=server">{t:tabServer}</a> <a href="/admin/log">Registro de actividad</a></p>`,
+<p class="links"><a href="doc:docs/agent-cookbook.md">Recetario del agente</a> <a href="doc:docs/mcp.md">Documentación de MCP</a> <a href="/admin/settings?tab=server&amp;setting=mcpEnable">{t:tabServer}</a> <a href="/admin/log">Registro de actividad</a></p>`,
     },
     {
       id: 'api',
       title: 'Content API — deja que un programa lea el blog',
-      body: `<p>La <b>Content API</b> sirve tus textos publicados como JSON en <code>/api/v1</code>: entradas, páginas, notas y tus categorías, cada uno con el Markdown en que se escribió. Sirve para construir algo a partir del blog en lugar de leerlo: una segunda interfaz, un índice de búsqueda, una copia estática, un script que revisa sus propios enlaces. Actívala en {t:navSettings} → {t:tabServer}; hasta que lo hagas, cada una de esas direcciones responde <b>404</b>.</p>
+      body: `<p>La <b>Content API</b> sirve tus textos publicados como JSON en <code>/api/v1</code>: entradas, páginas, notas y tus categorías, cada uno con el Markdown en que se escribió. Sirve para construir algo a partir del blog en lugar de leerlo: una segunda interfaz, un índice de búsqueda, una copia estática, un script que revisa sus propios enlaces. Actívala en {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:cardApi}; hasta que lo hagas, cada una de esas direcciones responde <b>404</b>.</p>
 <p><b>Solo lee, y no tiene clave.</b> Cualquiera que conozca la dirección puede leerla, y lo que obtiene es exactamente lo que ya podía obtener navegando por el sitio: nada de borradores, nada de entradas con fecha por delante, nada de la papelera, y nada que pueda cambiar el blog. El interruptor está ahí por lo que vuelve <i>barato</i>, no por lo que hace posible: el blog entero en tantas peticiones como páginas tiene. En un blog personal tranquilo eso es una comodidad; decide tú para el tuyo.</p>
 <p>Para escribir desde un programa, usa <b>MCP</b>, arriba, o Micropub desde una aplicación de notas. Los dos inician sesión; esto no, y por eso solo puede leer.</p>
-<p class="links"><a href="doc:docs/content-api.md">Documentación de la Content API</a> <a href="/admin/settings?tab=server">{t:tabServer}</a></p>`,
+<p class="links"><a href="doc:docs/content-api.md">Documentación de la Content API</a> <a href="/admin/settings?tab=server&amp;setting=apiEnable">{t:tabServer}</a></p>`,
     },
     {
       id: 'fediverse',
@@ -165,7 +165,7 @@ const help: HelpText = {
     ['Un suscriptor se apuntó pero no recibió ningún correo', 'La dirección se guarda antes de enviar el correo, así que la suscripción sobrevive a un SMTP roto. Busca el fallo en {t:navNewsletter} → {t:nlTabPeople}, y luego usa {t:navNewsletter} → {t:nlTabTest}.'],
     ['Una entrada programada no salió a su hora', 'El blog la publica por sí solo en el minuto siguiente a su hora, siempre que el servidor esté en marcha. Si el servidor estaba caído en ese momento, la entrada sale en cuanto vuelve.'],
     ['Ya no tienes la aplicación de autenticación y el acceso te pide su código', 'En la pantalla del código, elige «{t:authUseRecovery}» y escribe uno de tus códigos de recuperación; cada uno sirve una vez. Luego crea otros nuevos en {t:navSettings} → {t:tabAccount}.'],
-    ['Una dirección antigua da 404 después de renombrar', 'Renombrar añade un 301 por sí solo. Si la dirección nunca existió aquí, añade una en {t:navSettings} → {t:tabServer} → {t:redirectsTitle}.'],
+    ['Una dirección antigua da 404 después de renombrar', 'Renombrar añade un 301 por sí solo. Si la dirección nunca existió aquí, añade una en {t:navSettings} → {t:tabServer} → {t:settingsAdvanced} → {t:redirectsTitle}.'],
     ['Las imágenes desaparecieron tras una restauración', 'Abre /api/health: informa por separado de la base de datos y de la carpeta de almacenamiento.'],
   ],
 }
