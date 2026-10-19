@@ -263,6 +263,7 @@ const fr = {
   promptLink: 'Saisissez l’URL du lien :',
   tbBlock: 'Style de paragraphe',
   tbInsert: 'Insérer',
+  tbMore: 'Plus d’outils',
   tbParagraph: 'Texte courant',
   tbList: 'Liste',
   tbListNumbered: 'Numérotée',

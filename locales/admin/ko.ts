@@ -263,6 +263,7 @@ const ko = {
   promptLink: '링크 URL 입력:',
   tbBlock: '문단 스타일',
   tbInsert: '삽입',
+  tbMore: '도구 더 보기',
   tbParagraph: '본문',
   tbList: '목록',
   tbListNumbered: '번호',

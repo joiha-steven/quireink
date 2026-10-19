@@ -263,6 +263,7 @@ const es = {
   promptLink: 'Escribe la URL del enlace:',
   tbBlock: 'Estilo de párrafo',
   tbInsert: 'Insertar',
+  tbMore: 'Más herramientas',
   tbParagraph: 'Texto normal',
   tbList: 'Lista',
   tbListNumbered: 'Numerada',

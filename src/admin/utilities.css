@@ -2634,6 +2634,9 @@
   .focus\:border-neutral-900:focus {
     border-color: var(--color-neutral-900);
   }
+  .focus\:bg-neutral-100:focus {
+    background-color: var(--color-neutral-100);
+  }
   .focus\:bg-white:focus {
     background-color: var(--color-white);
   }
@@ -2928,6 +2931,9 @@
     }
     .lg\:overflow-x-visible {
       overflow-x: visible;
+    }
+    .lg\:overflow-x-clip {
+      overflow-x: clip;
     }
     .lg\:overflow-y-auto {
       overflow-y: auto;
@@ -3382,6 +3388,9 @@
   }
   .dark\:focus\:border-neutral-700:where(.dark, .dark *):focus {
     border-color: var(--color-neutral-700);
+  }
+  .dark\:focus\:bg-neutral-800:where(.dark, .dark *):focus {
+    background-color: var(--color-neutral-800);
   }
   .dark\:focus\:bg-neutral-900:where(.dark, .dark *):focus {
     background-color: var(--color-neutral-900);

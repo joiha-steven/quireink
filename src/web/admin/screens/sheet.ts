@@ -17,7 +17,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { CARD } from '@/admin-shared/kit'
 import { READING } from '@/admin-shared/scale'
 import { sheetActions, type SheetLinks } from './sheet-actions'
-import { TOOLBAR_CLUSTERS, TOOLBAR_MIDDLE, TOOLBAR_RUN, TOOLBAR_STRIP, clusterWidth } from '@/admin-shared/toolbar-shape'
+import { TOOLBAR_MIDDLE, TOOLBAR_RUN, TOOLBAR_STRIP } from '@/admin-shared/toolbar-shape'
 
 export type SheetPiece = {
   /** Empty for a piece that has never been saved. */
@@ -83,8 +83,9 @@ export function writingSheet(frame: SheetFrame): string {
     // of the sheet's own top stack, not a band floating over the paper. Empty until the chord
     // asks for it, and `top` is written by the island once the action line has been measured.
     + `<div data-find-slot class="sticky z-20"></div>`
-    // At the very TOP of the sheet, the full width of it: on top, full-width, wrapping not
-    // scrolling, grouped in the middle, and GONE in the Markdown view and in focus mode.
+    // At the very TOP of the sheet, the full width of it: on top, full-width, ONE row (it
+    // scrolls on a phone; on a desktop what does not fit goes behind "More"), grouped in the
+    // middle, and GONE in the Markdown view and in focus mode.
     //
     // ⚠️ `contents`, AND IT IS THE WHOLE OF WHETHER THE STRIP STAYS PUT. A sticky element
     // travels inside its own CONTAINING BLOCK, and a wrapper that is exactly as tall as the
@@ -95,8 +96,8 @@ export function writingSheet(frame: SheetFrame): string {
     // on a 24-paragraph draft: scrolled 1,500px, the strip was at y=-1406 before and holds at
     // its offset after.
     //
-    // ⚠️ AND IT IS NOT EMPTY: it holds a blank bar of the real one's shape, which wraps onto the
-    // same rows at any width and which the bar replaces when it lands (`toolbar-shape.ts`).
+    // ⚠️ AND IT IS NOT EMPTY: it holds a blank bar of the real one's shape, one row like the
+    // real one at any width, which the bar replaces when it lands (`toolbar-shape.ts`).
     + `<div data-toolbar-slot class="contents">${toolbarPlace()}</div>`
     // `pb-20` below `lg`: the action bar is FIXED to the bottom edge on a phone, so without room
     // under the paper the last line of a post sits behind Publish and cannot be scrolled clear.
@@ -115,10 +116,13 @@ export function writingSheet(frame: SheetFrame): string {
     + `</div>`
 }
 
-/** A blank bar of the toolbar's shape, so the paper is where it will be before the script runs. */
+/**
+ * A blank bar of the toolbar's shape, so the paper is where it will be before the script runs.
+ * ONE key's height and no width: the real bar is one row at every width, so a row of blank
+ * clusters would only be something to spill past the sheet on a narrow desktop before it lands.
+ */
 function toolbarPlace(): string {
-  const clusters = TOOLBAR_CLUSTERS
-    .map((keys) => `<span class="h-9 shrink-0" style="width:${clusterWidth(keys)}px"></span>`).join('')
   return `<div aria-hidden="true" class="border-b border-transparent">`
-    + `<div class="${TOOLBAR_STRIP} ${TOOLBAR_MIDDLE}"><div class="${TOOLBAR_RUN}">${clusters}</div></div></div>`
+    + `<div class="${TOOLBAR_STRIP} ${TOOLBAR_MIDDLE}"><div class="${TOOLBAR_RUN}">`
+    + `<span class="h-9 shrink-0"></span></div></div></div>`
 }

@@ -263,6 +263,7 @@ const de = {
   promptLink: 'Link-URL eingeben:',
   tbBlock: 'Absatzstil',
   tbInsert: 'Einfügen',
+  tbMore: 'Weitere Werkzeuge',
   tbParagraph: 'Fließtext',
   tbList: 'Liste',
   tbListNumbered: 'Nummeriert',

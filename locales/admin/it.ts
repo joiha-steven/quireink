@@ -263,6 +263,7 @@ const it = {
   promptLink: 'Inserisci l’URL del link:',
   tbBlock: 'Stile del paragrafo',
   tbInsert: 'Inserisci',
+  tbMore: 'Altri strumenti',
   tbParagraph: 'Testo normale',
   tbList: 'Elenco',
   tbListNumbered: 'Numerato',

@@ -150,7 +150,14 @@ export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
       const bold = await wait(() => button((b) => (b.textContent || '').trim() === 'B'))
       if (!bold) return 'no toolbar over the paper'
       const before = bold.getBoundingClientRect().x
-      const table = button((b) => /^Table/.test(b.getAttribute('aria-label') || ''))
+      // On the row, or behind More when the row has no room for it: a hidden key is still a
+      // node, and clicking it would test a button nobody can see (admin-one-dom.md, trap 3).
+      let table = button((b) => /^Table/.test(b.getAttribute('aria-label') || '') && b.checkVisibility())
+      const more = document.querySelector('[data-toolbar-more]')
+      if (!table && more && more.checkVisibility()) {
+        more.click()
+        table = [...document.querySelectorAll('[role=menu] button')].find((b) => /Table/.test(b.textContent || ''))
+      }
       if (!table) return 'skip: this build offers no table button'
 
       table.click()

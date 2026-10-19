@@ -264,6 +264,7 @@ const pt = {
   promptLink: 'Digite a URL do link:',
   tbBlock: 'Estilo de parágrafo',
   tbInsert: 'Inserir',
+  tbMore: 'Mais ferramentas',
   tbParagraph: 'Texto corrido',
   tbList: 'Lista',
   tbListNumbered: 'Numerada',

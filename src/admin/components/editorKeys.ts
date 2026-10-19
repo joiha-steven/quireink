@@ -75,6 +75,12 @@ export const chordFor = (id: string): string =>
  * parenthesis with the id in it.
  */
 export function tip(label: string, id: string): string {
+  const chord = printedChord(id)
+  return chord ? `${label} (${chord})` : label
+}
+
+/** The chord for one id as a reader sees it, or '' when the id has none. */
+export function printedChord(id: string): string {
   const found = [...SHORTCUTS, ...BUILTIN].find((s) => s.id === id)
-  return found ? `${label} (${printChord(found.chord)})` : label
+  return found ? printChord(found.chord) : ''
 }

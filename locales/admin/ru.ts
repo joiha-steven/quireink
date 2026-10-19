@@ -263,6 +263,7 @@ const ru = {
   promptLink: 'Введите адрес ссылки:',
   tbBlock: 'Стиль абзаца',
   tbInsert: 'Вставить',
+  tbMore: 'Другие инструменты',
   tbParagraph: 'Обычный текст',
   tbList: 'Список',
   tbListNumbered: 'Нумерованный',

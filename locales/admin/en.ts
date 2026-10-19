@@ -263,6 +263,7 @@ const en = {
   promptLink: 'Enter the link URL:',
   tbBlock: 'Paragraph style',
   tbInsert: 'Insert',
+  tbMore: 'More tools',
   tbParagraph: 'Body text',
   tbList: 'List',
   tbListNumbered: 'Numbered',
