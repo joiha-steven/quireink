@@ -101,7 +101,9 @@ export function numBand(items: { n: string; nHtml?: string; label?: string; labe
 }
 
 /** The words of a duration figure: a body size beside the figure's digits. */
-const FIGURE_UNIT = 'text-base font-normal'
+// leading-none: at its own 1.5rem line-height the smaller run hung below the figure's line box
+// and pushed the label under it 2px lower than its neighbours' on the dashboard.
+const FIGURE_UNIT = 'text-base leading-none font-normal'
 
 /**
  * A dwell time as a headline figure: the digits at the figure's size, the language's own units
