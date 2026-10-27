@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-10-27 · Quire Ink 2.2.20
+
+Themes become something you can install. The four built-in looks are now four themes, a theme
+made by anyone installs from a zip on Settings → Appearance, and a kit checks and photographs one
+before it goes near a blog. Upgrading is the usual pull and restart; the new `themes` table is
+added by itself on start.
 
 ### Added
 
@@ -87,6 +92,22 @@
   palette and fonts of an installed theme were still stored from an earlier time, pressing its
   tile showed the defaults but the save kept the stored ones. Pressing the tile now shows them,
   and a save that changes the theme sends the palette and fonts exactly as shown.
+- **The site font now applies on the Source code, Newspaper and Notebook themes.** Each of their
+  stylesheets set the header, menu, sidebar and footer in a face of its own, so the setting
+  changed nothing there. A blog that already wore one of them keeps its header, menu, sidebar and
+  footer as they were: its site font is now read as the face the theme was drawing (JetBrains
+  Mono for Source code, Inter for Newspaper and Notebook), and the admin shows that face. The few
+  pieces that always followed the setting (the copy button on a code block, link cards, the pen's
+  toolbar) now follow that face too, so on such a blog they can change to match the chrome
+  around them. On Newspaper the setting sets
+  the labels (sections, dates, kickers) and the rest of the chrome stays in the reading face.
+- **The setup steps that pick a theme, a pen or a typeface no longer scroll sideways.** A hidden
+  radio took the full width of the page, which pushed it 743px wider than the window on a
+  desktop and 56px on a phone. The tour now fails if any of those steps scrolls sideways.
+- **Eleven published advisories in the libraries Quire Ink is built on are closed** (4 high, 5
+  moderate, 2 low): body-parser, undici, Zod, fast-uri and ip-address, reached through the MCP
+  server and the Cloudflare tooling, and Happy DOM, which only the tests use. Each moved to its
+  patched release; `bun audit` reports nothing.
 
 ### Changed
 
@@ -144,21 +165,6 @@
   shut until you open it; settings search still finds and opens them. The line printed under
   the settings tabs is gone.
 - **Icons share one stroke weight and the side column lines up** to the pixel, open and folded.
-
-### Fixed
-
-- **The site font now applies on the Source code, Newspaper and Notebook themes.** Each of their
-  stylesheets set the header, menu, sidebar and footer in a face of its own, so the setting
-  changed nothing there. A blog that already wore one of them keeps its header, menu, sidebar and
-  footer as they were: its site font is now read as the face the theme was drawing (JetBrains
-  Mono for Source code, Inter for Newspaper and Notebook), and the admin shows that face. The few
-  pieces that always followed the setting (the copy button on a code block, link cards, the pen's
-  toolbar) now follow that face too, so on such a blog they can change to match the chrome
-  around them. On Newspaper the setting sets
-  the labels (sections, dates, kickers) and the rest of the chrome stays in the reading face.
-- **The setup steps that pick a theme, a pen or a typeface no longer scroll sideways.** A hidden
-  radio took the full width of the page, which pushed it 743px wider than the window on a
-  desktop and 56px on a phone. The tour now fails if any of those steps scrolls sideways.
 
 ## 2026-10-09 · Quire Ink 2.2.19
 
