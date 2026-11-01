@@ -10,39 +10,18 @@ But before proposing `docs/`, `scripts/` or `golden/` for that sibling, the seco
 **if it vanished, could a stranger still install this and verify what they installed?** If no
 it is the PRODUCT and stays — the private deploy script ships `scripts/` and the tests read `golden/`.
 
+
 ## Verify
 
 ```
-bun run check:all
+bun run check:all   # typecheck, all static guards, bun test; ~2 min (src/md, src/render, src/web also run the golden compare)
+bun run tour        # every flow in a real browser + restore-check; seeds its own instance on port 3399, refuses to start if taken
 ```
 
-Typecheck, the seventeen static guards (`filesize` · `css` · `nul` · `sql` · `routes` · `type` · `admin-kit` ·
-`bundle` · `contract` · `docs` · `motion` · `i18n` · `deps` · `admin-css` · `admin-wired` · `runtime` · `install-matrix`) and
-`bun test`. ~2 min; a change under `src/md`, `src/render` or `src/web` also runs the golden compare.
-
-`check:all` proves the code compiles and the seams hold. It cannot tell you a column
-collapsed to `reader@e…` or that three columns are 14px out of alignment. Both shipped,
-because nobody opened the page. **CI runs the tour below on every push**, so a change to
-anything rendered goes red there if it was pushed on `check:all` alone (2026-09-11, twice).
-
-```
-bun run tour
-```
-
-Every flow in a real browser, each with a verdict: the reader's controls, every admin page, a
-draft saved and published and trashed and restored, an upload refused for being too large, the
-archive built. It seeds its own instance on **port 3399** and deletes it after, and refuses to
-start if the port is taken (a tour on a busy port tours the wrong instance and fails every admin
-flow). `PORT=` moves it. Flows live in [`scripts/tour-flows.ts`](./scripts/tour-flows.ts); the
-browser plumbing is [`scripts/tour.ts`](./scripts/tour.ts).
-
-It then runs [`scripts/restore-check.ts`](./scripts/restore-check.ts): the tour proves the backup
-BUILDS; this restores it with `scripts/restore.ts`'s code — every table hashing back to the manifest,
-`integrity_check` on both rebuilt databases, no table with fewer rows than before the snapshot
-(caches aside), every upload byte-identical. A backup nobody has restored is not a backup.
-
-For one page, looked at rather than asserted: [`scripts/drive.ts`](./scripts/drive.ts) and
-[`scripts/shot.ts`](./scripts/shot.ts). Verify against the **origin**, never through the CDN. An install: `scripts/ops/matrix.sh <cell>` (ADR 0065).
+Run **both** for anything rendered: `check:all` cannot see a collapsed column or 14px misalignment, and CI runs
+the tour on every push. Flows: [`scripts/tour-flows.ts`](./scripts/tour-flows.ts), plumbing: [`scripts/tour.ts`](./scripts/tour.ts).
+One page, looked at: [`scripts/drive.ts`](./scripts/drive.ts), [`scripts/shot.ts`](./scripts/shot.ts). Verify against the **origin**,
+never through the CDN. An install: `scripts/ops/matrix.sh <cell>` (ADR 0065).
 
 ## Read first
 
@@ -62,27 +41,6 @@ For one page, looked at rather than asserted: [`scripts/drive.ts`](./scripts/dri
 
 **Do not read `CHANGELOG.md` while coding.** It is append-only at release time and its
 history is never needed to fix or understand code.
-
-## Debug router — a symptom, and the files to open first
-
-| Symptom / area | Read these first |
-|---|---|
-| Routing, middleware, what a request does | `src/web/app.ts`, `src/web/guard.ts`, `src/web/cache-headers.ts` |
-| Cache, or content not updating | `src/server/cache.ts` (in-process), `src/web/cache-headers.ts` (shared), `src/server/edge-cache.ts` |
-| A page's HTML · a theme refused or let through | `src/web/{layout,chrome,article,listing}.ts`, `src/web/*.css.ts` · `src/theme/` (the install-time checker, ADR 0072; door at `src/theme/index.ts`) |
-| Markdown → HTML, the editor's document, the excerpt · highlighting, footnotes · the pen | `src/md/` (the engine, ADR 0052; one import out, held by `src/md/boundary.test.ts`) · `src/render/` · `src/pen/` (self-contained, door at `src/pen/index.ts`) |
-| Island JS: search, theme, comments, subscribe, book mode | `src/assets/js/` |
-| Admin screens, the editor | `src/web/admin/` (the markup the server draws), `src/admin/` (the browser half: `island/` and the editor), `src/admin-shared/` (what both sides read) |
-| Sign-in, TOTP, passkeys, sessions, recovery codes | `src/auth/`, `src/web/auth-routes.ts`, `src/web/passkey-routes.ts` (ADR 0071), `src/web/enrol-routes.ts` (first run) |
-| Posts, pages, slugs, series, revisions, settings | `src/content/` |
-| Uploads, image variants, ranges · anything Bun or Cloudflare does its own way | `src/media/` · `src/runtime/` (`ports.ts` first, then [`docs/runtimes.md`](./docs/runtimes.md)); I/O changes both sides in one commit |
-| Newsletter, broadcast, SMTP | `src/news/` |
-| Comments · Analytics | `src/comments/` · `src/analytics/` (writes go through `buffer.ts`) |
-| SQL, migrations, the live/trashed predicate | `src/store/` |
-| Scheduled publishing, redirects, rate limit, activity | `src/server/` |
-| MCP server, tokens · the read-only Content API | `src/mcp/`, `src/web/admin/mcp-transport.ts`, `src/web/admin/mcp.ts` · `src/web/api-v1.ts` |
-| UI strings, translations | `src/i18n/`, `locales/` (repo root, so translators can find it) |
-| Imports (WordPress/Ghost/…), image rescue | `src/import/`, `src/web/admin/ops.ts` |
 
 ## Hard rules — each one is a bug that already shipped
 
@@ -107,14 +65,10 @@ history is never needed to fix or understand code.
 
 ## Danger zones
 
-- **`golden/v1/corpus/` is the golden compare's contract**, read by `src/render/golden.test.ts`
-  on every run. **Never regenerate it:** those files are what 1.x actually printed, from a
-  renderer that no longer exists, so overwriting them does not update the reference — it
-  destroys it, and the gate then reports parity against our own output. When output changes on
-  purpose, name the fixture in `DIVERGED` in that test and capture the new answer under
-  `golden/v2/corpus/`; the rest keep the original contract.
-- **The retired Next.js implementation is gone from the tree** ([ADR 0019](./docs/decisions/0019-remove-the-frozen-tree-from-the-working-copy.md)),
-  preserved at tag `v1-final`. Do not reintroduce it, and do not "fix" a doc by pointing at
-  a `v1/` path.
+- **Never regenerate `golden/v1/corpus/`** (the golden compare's contract, read by `src/render/golden.test.ts`).
+  When output changes on purpose, name the fixture in `DIVERGED` in that test and capture the new answer under `golden/v2/corpus/`.
+- **Do not reintroduce the retired Next.js tree** (tag `v1-final`, ADR 0019), and do not point a doc at a `v1/` path.
 - **Production is not a test environment.** A newsletter cannot be unsent.
 - **All scratch goes under `.tmp/`** — one gitignored root, never a new one at the root.
+
+Find a file: [`MAP.md`](./MAP.md). Why a rule exists: [`HISTORY.md`](./HISTORY.md).
