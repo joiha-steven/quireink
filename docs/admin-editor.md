@@ -193,6 +193,10 @@ that file first; this one only adds what is true here.
   piece opens it as the PUBLISH sheet, footered "Later / Publish", and that one always lies
   on top of the page over a scrim: those are questions being answered about the piece, and
   a column that squeezed the writing to make room for them is what ADR 0024 step 5 ended.
+  A post's date there is NOW, on the site's clock, when the draft's date is behind and still the
+  one it opened with (`firstPublishDate`, `admin-shared/sheet-state.ts`): that date is when the
+  writing began, and a draft published under it sat behind everything since in every feed. A
+  chosen date, or one ahead, is kept, and the new one is in the box before Publish is pressed.
 - **A sheet the writer opens themselves DOCKS from 85rem up** (`DOCK_AT` in
   `island/lib/sheet-open.ts`). On
   top of the page it hid 232px of the writing column at 1280 (34.5% of every line), 104px at

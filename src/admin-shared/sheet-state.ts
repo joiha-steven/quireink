@@ -44,6 +44,20 @@ export function ahead(date: WallClock, timezone: string, now: number = Date.now(
   return Date.parse(zonedInputToIso(date, timezone)) > now
 }
 
+/**
+ * The date a piece takes at its FIRST publish: now, on the site's clock, when it is a draft whose
+ * date is behind and is still the one it opened with. That date is when the writing began, and a
+ * draft published under it went live behind everything since, in the list and in feed readers. A
+ * date the writer chose (`date` no longer `opened`), a date ahead (a schedule) and a live piece keep
+ * theirs; null means keep. The panel shows the new date before Publish is pressed, and it can be changed.
+ */
+export function firstPublishDate(
+  date: WallClock, saved: PostStatus, opened: WallClock, timezone: string, now: number = Date.now(),
+): WallClock | null {
+  if (!date || saved === 'published' || date !== opened || ahead(date, timezone, now)) return null
+  return isoToZonedInput(new Date(now).toISOString(), timezone)
+}
+
 /** Draft, scheduled or published, from a status and a date — what the SERVER holds. */
 export function standing(
   status: PostStatus, date: WallClock, timezone: string, now: number = Date.now(),

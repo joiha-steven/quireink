@@ -22,7 +22,7 @@ import { saveStatusLine } from '@/admin-shared/draft-keep'
 import { formatTime } from '@/admin-shared/when'
 import { formatWallClock } from '@/i18n/format'
 import { titleSlug } from '@/utils'
-import { ahead, mainWord, siteDateTimeShort, standing, type Standing } from '@/admin-shared/sheet-state'
+import { ahead, firstPublishDate, mainWord, siteDateTimeShort, standing, type Standing } from '@/admin-shared/sheet-state'
 import { withLiveIdentity } from '@/admin/components/restore-identity'
 import { askForLink } from './lib/ask-link'
 import { say } from './lib/media-bridge'
@@ -75,6 +75,7 @@ function boot(root: HTMLElement, data: Payload): void {
   let savedStatus: SheetDraft['status'] = slug ? draft.status : 'draft'
   // …and its date: the header and the main key read these two, never the form (`sheet-state.ts`).
   let savedDate = slug ? draft.date : ''
+  const openedDate = draft.date // a first publish moves a date still at this to now (`firstPublishDate`)
   let baseSavedAt = data.rowSavedAt
 
   // A new piece reopens from its own device copy, title and slug boxes included (`sheet-tab.ts`).
@@ -202,6 +203,8 @@ function boot(root: HTMLElement, data: Payload): void {
       // questions — the slug, the date, the terms, both pictures — and they all already carry
       // an answer (ADR 0024, step 5).
       if (draft.status !== 'published' && !asking) {
+        const at = kind === 'post' ? firstPublishDate(draft.date, savedStatus, openedDate, timezone) : null
+        if (at) { edit({ date: at }); fields.setDate(at) }
         asking = true
         panel.show(true)
         sheetBar.setAttrs(true)

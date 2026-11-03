@@ -2,7 +2,7 @@
 // dated by its schedule. Both shipped wrong: "Scheduled · <save time>", and "Published" with a
 // "View post" on a draft whose box had only been ticked.
 import { describe, expect, it } from 'bun:test'
-import { ahead, mainReady, mainWord, standing, standingDate } from './sheet-state'
+import { ahead, firstPublishDate, mainReady, mainWord, standing, standingDate } from './sheet-state'
 import { formatDateTimeShort } from './when'
 
 const NOW = Date.parse('2026-10-08T10:54:00Z')
@@ -92,5 +92,20 @@ describe('the main key', () => {
     expect(mainReady('scheduled', false, false)).toBe(false)
     expect(mainReady('scheduled', true, false)).toBe(true)
     expect(mainReady('draft', true, true)).toBe(false)
+  })
+})
+
+// A draft dated when its writing began went live under that day, behind everything published since,
+// in the list and in every feed reader (2026-11-03). The first publish is "now" unless it was chosen.
+describe('firstPublishDate', () => {
+  const now = Date.parse('2026-11-03T08:00:00.000Z')
+  it('dates a draft from the past to now, on the site clock, at its first publish', () => {
+    expect(firstPublishDate('2026-10-22T09:00', 'draft', '2026-10-22T09:00', 'Asia/Ho_Chi_Minh', now)).toBe('2026-11-03T15:00')
+  })
+  it('leaves a date the writer picked, a date ahead, a live piece and a page alone', () => {
+    expect(firstPublishDate('2026-10-01T09:00', 'draft', '2026-10-22T09:00', 'UTC', now)).toBeNull()
+    expect(firstPublishDate('2026-12-01T09:00', 'draft', '2026-12-01T09:00', 'UTC', now)).toBeNull()
+    expect(firstPublishDate('2026-10-22T09:00', 'published', '2026-10-22T09:00', 'UTC', now)).toBeNull()
+    expect(firstPublishDate('', 'draft', '', 'UTC', now)).toBeNull()
   })
 })
