@@ -206,6 +206,15 @@ describe('what it refuses, and by what name', () => {
     expect(() => unsealAll(cut, identityOf(me.secret))).toThrow()
   })
 
+  it('refuses a last frame whose tag was cut short, which GCM would check only that much of', () => {
+    // An empty archive is one frame and that frame is all tag. Cut to its first four bytes, it was
+    // read as no ciphertext and a four-byte tag, which GCM accepts and checks only as far as it
+    // goes: a forged ending is then one guess in 2^32, not 2^128.
+    const a = seal(Buffer.alloc(0), [me.publicKey], SALT)
+    expect(() => unsealAll(a, identityOf(me.secret))).not.toThrow()
+    expect(() => unsealAll(a.subarray(0, a.length - 12), identityOf(me.secret))).toThrow()
+  })
+
   it('refuses a stanza lifted out of another archive', () => {
     // The wrap key is bound to both public keys, so a moved stanza derives a different key.
     // ⚠️ SAID OUT LOUD: this test would also pass without that binding, because the header MAC

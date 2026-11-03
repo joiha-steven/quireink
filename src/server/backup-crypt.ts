@@ -230,7 +230,9 @@ function open(stanza: Stanza, identity: KeyObject): Buffer | null {
     const ephRaw = un64(stanza.eph)
     const seed = seedOf(identity)
     const shared = x25519.getSharedSecret(seed, ephRaw)
-    const d = createDecipheriv('aes-256-gcm', wrapKey(shared, ephRaw, rawPublic(seed)), Buffer.alloc(12))
+    // `authTagLength`, here and in `opener`: without it GCM takes a tag of any length from four
+    // bytes up and checks only that many, so a short one is a shorter guess.
+    const d = createDecipheriv('aes-256-gcm', wrapKey(shared, ephRaw, rawPublic(seed)), Buffer.alloc(12), { authTagLength: TAG })
     d.setAuthTag(un64(stanza.tag))
     return Buffer.concat([d.update(un64(stanza.key)), d.final()])
   } catch {
@@ -329,8 +331,10 @@ export function unseal(head: Buffer, identity: KeyObject): { fileKey: Buffer; st
 /** The payload half, once `unseal` has the key. Throws on a bad tag, which is the point. */
 export function opener(fileKey: Buffer, chunk = CHUNK): (frame: Buffer, last: boolean, i: number) => Buffer {
   return (frame, last, i) => {
-    if (frame.length > chunk + TAG) throw new Error('bad-chunk')
-    const d = createDecipheriv('aes-256-gcm', fileKey, nonceFor(i, last))
+    // ...and never SHORTER than a tag. A frame of four bytes was read as no ciphertext and a
+    // four-byte tag, which GCM accepted and checked only as far as it went.
+    if (frame.length > chunk + TAG || frame.length < TAG) throw new Error('bad-chunk')
+    const d = createDecipheriv('aes-256-gcm', fileKey, nonceFor(i, last), { authTagLength: TAG })
     d.setAuthTag(frame.subarray(frame.length - TAG))
     return Buffer.concat([d.update(frame.subarray(0, frame.length - TAG)), d.final()])
   }
