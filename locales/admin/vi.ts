@@ -1335,6 +1335,7 @@ const vi = {
   importImages: 'Đang tải ảnh về',
   importImagesDone: 'Ảnh đã về thư viện',
   importImagesFailed: 'không tải được',
+  importFailedList: 'Không lấy được các ảnh này. Bài viết vẫn trỏ về trang cũ để lấy chúng: hãy tự lưu về trước khi trang cũ tắt.',
   apEnable: 'Cho người khác theo dõi blog',
   apEnableDesc: 'Đưa blog ra thành một tài khoản mà Mastodon và họ hàng có thể theo dõi. Bài mới hiện trong dòng thời gian của người theo dõi gồm tiêu đề, đoạn dẫn và một liên kết về đây.',
   apHandle: 'Tên gọi',

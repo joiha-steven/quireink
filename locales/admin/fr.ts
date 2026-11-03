@@ -1335,6 +1335,7 @@ const fr = {
   importImages: 'Rapatriement des images',
   importImagesDone: 'Images rapatriées',
   importImagesFailed: 'n’ont pas pu être récupérées',
+  importFailedList: 'Ces images n’ont pas pu être récupérées. Les articles pointent encore vers l’ancien site pour elles : enregistrez-les à la main avant qu’il ne ferme.',
   apEnable: 'Laissez les gens suivre ce blog',
   apEnableDesc: 'Publie le blog comme un compte que Mastodon et ses voisins peuvent suivre. Les nouveaux articles arrivent dans le fil de vos abonnés : le titre, le chapeau et un lien qui ramène ici.',
   apHandle: 'Pseudo',

@@ -6,15 +6,12 @@
 // shipped feature; what an owner actually had was a card that looked operable, a Choose key
 // that opened nothing, and a Run key that shipped `disabled` and was never armed.
 //
-// ⚠️ THIS IS THE ONE CONTROL ON THE SETTINGS SCREEN THAT BULK-WRITES CONTENT, and nothing on
-// either side of it is idempotent. `ops.ts` never overwrites: a second run of the same file
-// writes `hello-2`, `about-2` and so on, reports a perfectly successful import, and — because
-// a multi-segment WordPress path is not caught by the live-content guard in `server/redirects.ts`
-// — repoints the old-URL redirect at the DUPLICATE. Every inbound link then lands on the copy.
-// The server has no rate limit, no lock and no dedupe on `/api/import/*`, so the only thing
-// standing between an impatient second press and two copies of a blog is the `disabled`
-// attribute this file maintains. That is why it is set before the request and restored in a
-// `finally`, and why the file is cleared on success.
+// ⚠️ THIS IS THE ONE CONTROL ON THE SETTINGS SCREEN THAT BULK-WRITES CONTENT. `ops.ts` never
+// overwrites, and a re-run recognises what an earlier one brought in (by slug, title and date,
+// or by the redirect from the item's old path), but an item with no date or a page edited since
+// still comes in twice, and the server has no lock on `/api/import/*`. So an impatient second
+// press is still worth stopping here: `disabled` is set before the request and restored in a
+// `finally`, and the file is cleared on success.
 //
 // ⚠️ NO RELOAD WHEN IT IS DONE. The React card called `router.refresh()`; the obvious port is
 // `location.reload()`, and on THIS screen that is wrong — `settings-save.ts` holds a
@@ -53,7 +50,7 @@ function routeFor(name: string): string {
  * for `remaining === 0` never ends on a blog with one dead image. `moved === 0` is the other
  * half: this batch moved nothing, so the next one will move nothing either.
  */
-async function bringImagesHome(key: HTMLButtonElement, w: ListWords): Promise<void> {
+async function bringImagesHome(screen: HTMLElement, key: HTMLButtonElement, w: ListWords): Promise<void> {
   const word = key.dataset.labelImages ?? ''
   let moved = 0
   for (;;) {
@@ -68,6 +65,14 @@ async function bringImagesHome(key: HTMLButtonElement, w: ListWords): Promise<vo
     key.textContent = `${word}… ${moved}/${moved + report.remaining}`
     if (report.remaining === 0 || report.moved === 0) {
       const failed = report.failed.length
+      // Each address it could not fetch, into the slot the server drew: the owner's checklist
+      // before the old host goes (`docs/features/editing.md`). A count alone named none of them.
+      const box = screen.querySelector<HTMLElement>('[data-import-failed]')
+      const list = screen.querySelector<HTMLElement>('[data-import-failed-list]')
+      if (box && list) {
+        list.textContent = report.failed.map((f) => `${f.url}  (${f.reason})`).join('\n')
+        show(box, failed > 0)
+      }
       say(failed > 0
         ? `${w.importImagesDone ?? ''}: ${moved} · ${failed} ${w.importImagesFailed ?? ''}`
         : `${w.importImagesDone ?? ''}: ${moved}`)
@@ -76,7 +81,7 @@ async function bringImagesHome(key: HTMLButtonElement, w: ListWords): Promise<vo
   }
 }
 
-async function run(file: File, key: HTMLButtonElement, w: ListWords): Promise<void> {
+async function run(screen: HTMLElement, file: File, key: HTMLButtonElement, w: ListWords): Promise<void> {
   const body = new FormData()
   // The field name the three routes read. No `content-type` header: the browser has to write
   // the multipart boundary itself, and setting one by hand is how an upload arrives unparseable.
@@ -103,7 +108,7 @@ async function run(file: File, key: HTMLButtonElement, w: ListWords): Promise<vo
   // Locked where they came from, so drafts here: said, or the owner finds them by chance.
   const locked = (json.data.locked ?? 0) > 0 ? ` · ${(w.importLocked ?? '').replace('{n}', String(json.data.locked))}` : ''
   say(`${w.importDone ?? ''}: ${json.data.posts} + ${json.data.pages}` + (notes > 0 ? ` + ${notes}` : '') + skipped + already + locked)
-  await bringImagesHome(key, w)
+  await bringImagesHome(screen, key, w)
 }
 
 export function wireImport(screen: HTMLElement, w: ListWords): void {
@@ -131,7 +136,7 @@ export function wireImport(screen: HTMLElement, w: ListWords): void {
       key.disabled = true
       key.textContent = key.dataset.labelBusy ?? key.textContent
       try {
-        await run(file, key, w)
+        await run(screen, file, key, w)
         // Cleared on success AND on a reported failure, because the second press is the one
         // that doubles the blog. The owner chooses the file again, which is a keystroke; the
         // alternative costs them an afternoon of deleting posts by hand.

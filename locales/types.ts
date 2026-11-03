@@ -1615,6 +1615,7 @@ export type AdminStrings = {
   importImages: string
   importImagesDone: string
   importImagesFailed: string
+  importFailedList: string
   apEnable: string
   apEnableDesc: string
   apHandle: string

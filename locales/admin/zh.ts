@@ -1335,6 +1335,7 @@ const zh = {
   importImages: '正在取回图片',
   importImagesDone: '图片已取回',
   importImagesFailed: '未能获取',
+  importFailedList: '这些图片无法获取。文章仍指向旧站点的图片：请在旧站点关闭前手动保存。',
   apEnable: '让别人关注这个博客',
   apEnableDesc: '把博客发布成一个账号，让 Mastodon 和它的邻居们可以关注。新文章会以标题、导语和一条回到这里的链接，出现在关注者的时间线里。',
   apHandle: '账号名',

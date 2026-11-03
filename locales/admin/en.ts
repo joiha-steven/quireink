@@ -1335,6 +1335,7 @@ const en = {
   importImages: 'Bringing images home',
   importImagesDone: 'Images brought home',
   importImagesFailed: 'could not be fetched',
+  importFailedList: 'These pictures could not be fetched. Posts still point at the old site for them: save them by hand before it goes.',
   apEnable: 'Let people follow this blog',
   apEnableDesc: 'Publish the blog as an account that Mastodon and its neighbours can follow. New posts arrive in a follower’s timeline as the title, the standfirst and a link back here.',
   apHandle: 'Handle',

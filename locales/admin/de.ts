@@ -1335,6 +1335,7 @@ const de = {
   importImages: 'Bilder werden geholt',
   importImagesDone: 'Bilder übernommen',
   importImagesFailed: 'konnten nicht geladen werden',
+  importFailedList: 'Diese Bilder ließen sich nicht abrufen. Die Beiträge verweisen dafür noch auf die alte Website: Sichere sie von Hand, bevor sie verschwindet.',
   apEnable: 'Andere diesem Blog folgen lassen',
   apEnableDesc: 'Veröffentlicht das Blog als Konto, dem Mastodon und seine Nachbarn folgen können. Neue Beiträge erscheinen in der Timeline eines Followers als Titel, Vorspann und Link hierher zurück.',
   apHandle: 'Handle',

@@ -392,7 +392,7 @@ card, a link) it is called by its first words; see
   fetches up to five images through the SSRF guard and the upload caps, stores them in the
   media library and rewrites every reference; the MCP `import_images` tool is the same loop
   for an agent. Stateless by rescan (a crash loses nothing; a blog imported earlier is served
-  the same); failures are reported once, not retried forever — the failure list is the
+  the same); failures are reported once, not retried forever — the failure list, printed under the Import card one address a line, is the
   owner's checklist before the old hosting lapses. Logged as `import.images`.
 - Max upload 100MB (`MAX_IMPORT_BYTES` in `src/web/body-cap.ts`); non-WXR files are rejected. A
   ZIP export (Substack, Medium, a Quire Ink bundle) is also capped once unpacked: 64 MB an entry

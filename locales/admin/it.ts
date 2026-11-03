@@ -1335,6 +1335,7 @@ const it = {
   importImages: 'Riporto a casa le immagini',
   importImagesDone: 'Immagini riportate a casa',
   importImagesFailed: 'non si sono potute scaricare',
+  importFailedList: 'Non è stato possibile recuperare queste immagini. Gli articoli puntano ancora al vecchio sito: salvale a mano prima che chiuda.',
   apEnable: 'Lascia che seguano questo blog',
   apEnableDesc: 'Pubblica il blog come un account che Mastodon e i suoi vicini possono seguire. Gli articoli nuovi arrivano nella timeline di chi ti segue come titolo, occhiello e un link che riporta qui.',
   apHandle: 'Handle',

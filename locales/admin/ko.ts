@@ -1335,6 +1335,7 @@ const ko = {
   importImages: '이미지 가져오는 중',
   importImagesDone: '이미지 가져옴',
   importImagesFailed: '가져오지 못함',
+  importFailedList: '이 이미지들은 가져오지 못했습니다. 게시물은 아직 예전 사이트의 이미지를 가리킵니다. 예전 사이트가 사라지기 전에 직접 저장하세요.',
   apEnable: '다른 사람이 이 블로그를 팔로우하도록 허용',
   apEnableDesc: '블로그를 하나의 계정으로 공개해 Mastodon과 그 이웃들이 팔로우할 수 있게 합니다. 새 글은 제목과 리드문, 그리고 여기로 돌아오는 링크의 형태로 팔로워의 타임라인에 도착합니다.',
   apHandle: '핸들',

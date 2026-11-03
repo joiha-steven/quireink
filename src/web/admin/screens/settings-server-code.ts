@@ -256,6 +256,12 @@ export function importCard(t: AdminStrings): string {
       + `<button type="button" data-import-run disabled class="${buttonClass('primary', 'sm')}"`
       + ` data-label-idle="${escapeAttr(t.importRun)}" data-label-busy="${escapeAttr(`${t.importRun}…`)}"`
       + ` data-label-images="${escapeAttr(t.importImages)}">${escapeHtml(t.importRun)}</button>`
+      // The pictures the old host would not hand over, one address a line: the owner's list of
+      // what to save by hand before that host goes. The toast counted them and named none (2026-11-03).
+      + `<div data-import-failed hidden class="space-y-2">`
+      + `<p class="${NOTE_TEXT}">${escapeHtml(t.importFailedList)}</p>`
+      + `<pre data-import-failed-list class="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded-lg border border-neutral-200 p-3 font-mono text-xs dark:border-neutral-800"></pre>`
+      + `</div>`
       + `</div>`,
   })
 }
