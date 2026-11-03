@@ -41,6 +41,18 @@ const sheetHref = async (): Promise<string> => {
 }
 
 describe('compression', () => {
+  it('keeps a route\'s own Vary and adds the encoding to it, rather than losing one of the two', async () => {
+    // The Markdown answer at an article's address says `Vary: Accept`. Hono copies the old
+    // answer's headers over the one compression hands back, and that copy put the route's `Vary`
+    // back over the merged one: brotli on the wire, and nothing saying it varies on the encoding.
+    await savePost({ title: 'Long in Markdown', slug: 'long-md', status: 'published', date: PAST, content: longPage })
+    const res = await get('/long-md', { ...MODERN, accept: 'text/markdown' })
+    expect(res.headers.get('content-encoding')).toBe('br')
+    const vary = (res.headers.get('vary') ?? '').split(/\s*,\s*/)
+    expect(vary).toContain('Accept')
+    expect(vary).toContain('Accept-Encoding')
+  })
+
   it('sends brotli to a client that accepts it, and says what it varies on', async () => {
     await savePost({ title: 'Long', status: 'published', date: PAST, content: longPage })
     const res = await get('/long', MODERN)

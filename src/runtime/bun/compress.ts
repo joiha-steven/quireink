@@ -44,7 +44,7 @@
 import type { CompressPort } from '@/runtime/ports'
 import { brotliCompress, brotliCompressSync, constants as zlib } from 'node:zlib'
 import { promisify } from 'node:util'
-import type { MiddlewareHandler } from 'hono'
+import type { Context, MiddlewareHandler } from 'hono'
 
 /**
  * Below this, the gzip header and trailer cost more than the saving on typical prose.
@@ -329,23 +329,37 @@ function compressionMiddleware(): MiddlewareHandler {
       if (matches(c.req.header('if-none-match'), tag)) {
         // No body, and `content-length` would describe the one that is not being sent.
         headers.delete('content-length')
-        c.res = new Response(null, { status: 304, headers })
+        replace(c, new Response(null, { status: 304, headers }))
         return
       }
     }
 
     if (enc === null) {
       // The body has been consumed, so it has to be handed back whatever the decision.
-      c.res = new Response(body, { status: res.status, headers })
+      replace(c, new Response(body, { status: res.status, headers }))
       return
     }
 
     headers.set('content-encoding', enc)
     headers.delete('content-length') // it is now wrong, and Bun sets the right one
 
-    c.res = new Response(
+    replace(c, new Response(
       await compress(body, hash, enc, qualityFor(headers.get('cache-control'), body.byteLength)),
       { status: res.status, headers },
-    )
+    ))
   }
+}
+
+/**
+ * Hand Hono the new answer as it was built.
+ *
+ * ⚠️ ASSIGNING `c.res` COPIES THE OLD ANSWER'S HEADERS OVER THE NEW ONE'S, every one but the
+ * content type (Hono 4, `context.js`). `headers` above already holds all of them, plus the
+ * `Vary` this merged, and the copy put the route's own `Vary` back over it: an article saying
+ * `Vary: Accept` went out brotli-encoded with no `Accept-Encoding` in it, for a shared cache to
+ * hand to a client that never asked for brotli (2026-11-03). Emptied first, there is nothing to copy.
+ */
+function replace(c: Context, res: Response): void {
+  c.res = undefined
+  c.res = res
 }
