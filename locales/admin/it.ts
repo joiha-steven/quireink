@@ -773,7 +773,7 @@ const it = {
   themeRules: {
     C1: 'Il foglio scrive un colore. I colori vengono solo dalle palette. Usa una variabile di palette come var(--c-text), o un color-mix() di queste; un colore tuo va in una palette di theme.json.',
     T1: 'Il foglio scrive una dimensione del carattere. Le dimensioni vengono solo dalla scala tipografica. Usa var(--fs-body) o un’altra dimensione --fs-*, em, %, o calc() su una dimensione --fs-*.',
-    F1: 'Il foglio nomina una famiglia di caratteri. I caratteri vengono solo dalle impostazioni dei font. Scrivi solo uno tra var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display); i tuoi caratteri si dichiarano in theme.json.',
+    F1: 'Il foglio nomina una famiglia di caratteri, o dà inherit, initial o unset a body, html, * o .wrap, il che mette intestazione, piè di pagina e colonna nel carattere predefinito del browser. Scrivi solo uno tra var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display). Un carattere messo su body, html, * o .wrap scavalca il Carattere del sito scelto in Aspetto, come fa Giornale; i tuoi caratteri si dichiarano in theme.json.',
     P1: '!important non è ammesso: le tue impostazioni devono continuare a vincere. Toglilo: senza, una regola del tema vince già sulla gran parte del foglio di base.',
     S1: 'Un selettore nomina qualcosa che l’API dei temi non promette di mantenere. Usa un nome di elemento, o un nome di classe, id o data-* del contratto d’aspetto.',
     S2: 'Il foglio deve dare stile al blog e alla prima pagina, e uno dei due manca. Aggiungi una regola per la parte indicata: .post-list o .prose per il blog, .front o .fc per la prima pagina.',

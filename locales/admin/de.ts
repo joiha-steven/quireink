@@ -773,7 +773,7 @@ const de = {
   themeRules: {
     C1: 'Im Stylesheet steht eine Farbe. Farben kommen nur aus Paletten. Erlaubt sind Palettenvariablen wie var(--c-text) und color-mix() daraus; eine eigene Farbe gehört in eine Palette in theme.json.',
     T1: 'Im Stylesheet steht eine Schriftgröße. Größen kommen nur aus der Typo-Skala. Erlaubt sind var(--fs-body) und die anderen --fs-*-Größen, em, % oder calc() über eine --fs-*-Größe.',
-    F1: 'Im Stylesheet steht eine Schriftfamilie. Schriften kommen nur aus den Schrifteinstellungen. Erlaubt ist genau eine von var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display), allein; eigene Schriften stehen in theme.json.',
+    F1: 'Im Stylesheet steht eine Schriftfamilie, oder body, html, * oder .wrap bekommen inherit, initial oder unset, womit Kopf, Fuß und Seitenleiste in der Standardschrift des Browsers erscheinen. Erlaubt ist genau eine von var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display). Eine Schrift auf body, html, * oder .wrap übergeht die Website-Schrift, die der Inhaber unter Darstellung wählt, wie bei Zeitung; eigene Schriften stehen in theme.json.',
     P1: '!important ist nicht erlaubt: Ihre Einstellungen müssen weiterhin gewinnen. Ohne es gewinnt eine Theme-Regel schon gegen den Großteil des Grund-Stylesheets.',
     S1: 'Ein Selektor nennt etwas, dessen Erhalt die Theme-API nicht zusagt. Erlaubt sind Elementnamen und die Klassen-, ID- und data-*-Namen aus dem Darstellungsvertrag.',
     S2: 'Das Stylesheet muss den Blog und die Startseite gestalten, und eines davon fehlt. Es fehlt eine Regel für den genannten Teil: .post-list oder .prose für den Blog, .front oder .fc für die Startseite.',

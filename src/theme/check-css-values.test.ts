@@ -5,6 +5,8 @@
 import { describe, expect, it } from 'bun:test'
 import { NAMED_COLOURS } from '@/theme/css-names'
 import { brief, check } from '@/theme/test-fixtures'
+import { checkThemeCss } from '@/theme/check-css'
+import { themeContract } from '@/content/theme-contract'
 
 describe('C1: no hardcoded colour', () => {
   it('accepts variables, relative colour from a variable, color-mix of variables, transparent, currentcolor', () => {
@@ -138,6 +140,48 @@ describe('F1: font families follow the owner', () => {
     ].join('\n')))).toEqual([
       'F1 1:19 Georgia', 'F1 2:19 var(--font-sans),serif', 'F1 3:19 var(--font-sans, Arial)',
     ])
+  })
+
+  // What holds the chrome: the header, the footer, the rail and the dates inherit their face from
+  // these. Measured with the starter theme, `inherit` on body put all of them in Times.
+  // The real contract, which names `.wrap`, `html.dark` and `data-theme`; both surfaces styled.
+  const real = (css: string) => checkThemeCss(`${css}\n.post-list{margin:0}\n.front{margin:0}`, themeContract(), new Set())
+
+  it('refuses inherit, initial, unset and a written name on body, html, * and .wrap', () => {
+    expect(brief(real([
+      'body{font-family:inherit}',
+      'html{font-family:initial}',
+      '*{font-family:unset}',
+      '.wrap{font-family:Georgia}',
+      'body{font-family:var(--font-reading),serif}',
+    ].join('\n')))).toEqual([
+      'F1 1:18 inherit', 'F1 2:18 initial', 'F1 3:15 unset', 'F1 4:19 Georgia', 'F1 5:18 var(--font-reading),serif',
+    ])
+  })
+
+  // A theme that sets its chrome's face on purpose, as the built-in Newspaper does, overrides the
+  // owner's Site font; that is allowed, and docs/themes.md says what it costs.
+  it('accepts each engine font variable on body, html, * and .wrap', () => {
+    const vars = ['--font-sans', '--font-reading', '--font-mono', '--font-display']
+    for (const sel of ['body', 'html', '*', '.wrap', 'html[data-look=paper] body']) {
+      for (const v of vars) expect(real(`${sel}{font-family:var(${v})}`), `${sel} ${v}`).toEqual([])
+    }
+  })
+
+  it('finds them however they are written: together, qualified, under each other, inside :is() and @media', () => {
+    const refused = [
+      'html[data-theme=x] body', 'html.dark body', ':root', 'body *', '.wrap > *', 'BODY', ':is(body)', ':where(.wrap)',
+      'h1, body', 'div.wrap', '*[data-theme]',
+    ]
+    for (const sel of refused) expect(brief(real(`${sel}{font-family:inherit}`)), sel).toEqual([expect.stringMatching(/^F1 /)])
+    expect(brief(real('@media (min-width:40rem){body{font-family:inherit}}'))).toHaveLength(1)
+  })
+
+  it('still lets inherit through on anything narrower', () => {
+    expect(real([
+      '.prose{font-family:inherit}', '.prose *{font-family:inherit}', 'body .deck{font-family:inherit}',
+      'header.site .title{font-family:inherit}', 'body::before{font-family:inherit}', ':is(h1,h2){font-family:inherit}',
+    ].join('\n'))).toEqual([])
   })
 })
 

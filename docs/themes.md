@@ -387,10 +387,11 @@ must be one of yours or a built-in id of that kind.
   named in the contract.) Prefer contract names; where you cannot, put a
   comment on the rule saying what it depends on (the starter does) so the next update's breakage
   is easy to find.
-- **A face set on `body`, `*` or `.wrap` passes F1 and breaks the owner's chrome-font control.**
-  Measured with the owner on IBM Plex Mono: `body{font-family:var(--font-reading)}` puts the menu,
-  footer, rail and dates in the reading face, and `body{font-family:inherit}` puts them in Times.
-  Set a face on the pieces you mean (`.title`, `.deck`), not on what holds the chrome.
+- **A face set on `body`, `html`, `*` or `.wrap` overrides the owner's Site font**: the menu,
+  footer, rail and dates follow it instead, as on the built-in Newspaper, which does it on purpose.
+  The checker allows an engine variable there and refuses `inherit`, `initial` and `unset`
+  (`inherit` on `body` put them all in Times). Unless your theme is about its chrome's face, set a
+  face on the pieces you mean (`.title`, `.deck`).
 - **`theme:preview` measures five things**: a page wider than the window, a box past the window's
   edge, text cut by `overflow: hidden`, an image that did not load, a font file that did not load.
   It leaves out what a page does on purpose (a wide table scrolling in its frame, `line-clamp`).

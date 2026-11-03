@@ -773,7 +773,7 @@ const es = {
   themeRules: {
     C1: 'La hoja escribe un color. Los colores solo vienen de las paletas. Usa una variable de paleta como var(--c-text), o un color-mix() de ellas; un color propio va en una paleta de theme.json.',
     T1: 'La hoja escribe un tamaño de letra. Los tamaños solo vienen de la escala tipográfica. Usa var(--fs-body) u otro tamaño --fs-*, em, %, o calc() sobre un tamaño --fs-*.',
-    F1: 'La hoja nombra una familia tipográfica. Las fuentes solo vienen de los ajustes de fuente. Escribe solo uno de var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display); tus propias fuentes se declaran en theme.json.',
+    F1: 'La hoja nombra una familia tipográfica, o da inherit, initial o unset a body, html, * o .wrap, lo que deja la cabecera, el pie y la barra lateral en la tipografía por defecto del navegador. Escribe solo uno de var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display). Una tipografía puesta en body, html, * o .wrap pasa por encima de la Tipografía del sitio elegida en Apariencia, como hace Periódico; tus propias fuentes se declaran en theme.json.',
     P1: '!important no está permitido: tus ajustes tienen que seguir ganando. Quítalo: sin él, una regla del tema ya gana a casi toda la hoja base.',
     S1: 'Un selector nombra algo que la API de temas no promete mantener. Usa un nombre de elemento, o un nombre de clase, id o data-* del contrato de apariencia.',
     S2: 'La hoja tiene que dar estilo al blog y a la portada, y falta uno de los dos. Añade una regla para la parte nombrada: .post-list o .prose para el blog, .front o .fc para la portada.',

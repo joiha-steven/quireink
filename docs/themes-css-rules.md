@@ -71,7 +71,7 @@ When you change a size, change its leading and tracking with it from the same ro
 
 ## F1: a font family is named in the sheet
 
-> A font family is named in the sheet. Faces come only from the font settings. Write one of var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display), alone; your own fonts are declared in theme.json.
+> A font family is named in the sheet, or body, html, * or .wrap are given inherit, initial or unset, which puts the header, footer and rail in the browser’s default face. Write var(--font-reading), var(--font-sans), var(--font-mono) or var(--font-display) alone. A face set on body, html, * or .wrap overrides the Site font the owner picks in Appearance, as Newspaper does; your own fonts are declared in theme.json.
 
 `font-family` may be `inherit` or exactly one of `var(--font-reading)`, `var(--font-sans)`,
 `var(--font-mono)`, `var(--font-display)`. Your own face is declared in `theme.json`
@@ -85,10 +85,27 @@ allows, or suggest one of the built-in reading fonts ([recipes](themes-recipes.m
 .prose{font-family:Georgia,serif}
 /* refused: F1 · theme.css:1:20 · var(--font-reading),serif */
 .prose{font-family:var(--font-reading),serif}
+/* refused: F1 · theme.css:1:18 · inherit (what holds the chrome) */
+body{font-family:inherit}
+/* refused: F1 */
+html[data-theme=my-theme] body{font-family:unset}
+.wrap{font-family:initial}
+*{font-family:Georgia}
 
 /* passes */
 .prose{font-family:var(--font-reading)}
+h1{font-family:var(--font-display)}
+body{font-family:var(--font-sans)}
+html[data-look=paper] body{font-family:var(--font-reading)}
 ```
+
+On `body`, `html` (or `:root`), `*` and `.wrap`, alone, under one another or inside `:is()`, only an
+engine variable passes: `inherit`, `initial` and `unset` are refused there too, because the header,
+footer, rail and dates inherit their face from there and `inherit` on `body` put them all in Times.
+An engine face there is allowed, and it is a choice with a cost: it **overrides the owner's Site
+font** for the whole chrome (measured with Site font on IBM Plex Mono: `var(--font-reading)` on
+`body` put the menu, footer, rail and dates in Literata). Newspaper does it on purpose. Unless the
+theme is about its chrome's face, set the face on the pieces you mean (`.title`, `.deck`).
 
 ## P1: `!important`
 
