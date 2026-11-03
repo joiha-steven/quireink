@@ -772,7 +772,7 @@ const en = {
   themeRules: {
     C1: 'A colour is written into the sheet. Colours come only from palettes. Use a palette variable such as var(--c-text), or color-mix() of them; a colour of your own goes in a palette in theme.json.',
     T1: 'A font size is written into the sheet. Sizes come only from the type scale. Use var(--fs-body) or another --fs-* size, em, %, or calc() over a --fs-* size.',
-    F1: 'A font family is named in the sheet. Faces come only from the font settings. Write one of var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display), alone; your own fonts are declared in theme.json.',
+    F1: 'A font family is named in the sheet, or body, html, * or .wrap are given a face other than var(--font-sans), which would override the Site font the owner picks in Appearance. Write var(--font-reading), var(--font-sans), var(--font-mono) or var(--font-display) alone, on the pieces you mean; on body, html, * and .wrap only var(--font-sans), and leave the site’s face to the Site font setting. Your own fonts are declared in theme.json.',
     P1: '!important is not allowed: the owner’s settings must still win. Remove it: a theme rule already wins over most of the base without it.',
     S1: 'A selector names something the theme API does not promise to keep. Use an element name, or a class, id or data-* name from the appearance contract.',
     S2: 'The sheet must style both the blog and the front page, and one of them is missing. Add a rule for the one named: .post-list or .prose for the blog, .front or .fc for the front page.',

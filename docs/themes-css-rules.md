@@ -71,7 +71,7 @@ When you change a size, change its leading and tracking with it from the same ro
 
 ## F1: a font family is named in the sheet
 
-> A font family is named in the sheet. Faces come only from the font settings. Write one of var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display), alone; your own fonts are declared in theme.json.
+> A font family is named in the sheet, or body, html, * or .wrap are given a face other than var(--font-sans), which would override the Site font the owner picks in Appearance. Write var(--font-reading), var(--font-sans), var(--font-mono) or var(--font-display) alone, on the pieces you mean; on body, html, * and .wrap only var(--font-sans), and leave the site’s face to the Site font setting. Your own fonts are declared in theme.json.
 
 `font-family` may be `inherit` or exactly one of `var(--font-reading)`, `var(--font-sans)`,
 `var(--font-mono)`, `var(--font-display)`. Your own face is declared in `theme.json`
@@ -85,10 +85,26 @@ allows, or suggest one of the built-in reading fonts ([recipes](themes-recipes.m
 .prose{font-family:Georgia,serif}
 /* refused: F1 · theme.css:1:20 · var(--font-reading),serif */
 .prose{font-family:var(--font-reading),serif}
+/* refused: F1 · theme.css:1:18 · var(--font-reading) (what holds the chrome) */
+body{font-family:var(--font-reading)}
+/* refused: F1 · theme.css:1:18 · inherit */
+body{font-family:inherit}
+/* refused: F1 */
+html[data-theme=my-theme] body{font-family:var(--font-display)}
+.wrap{font-family:var(--font-reading)}
+*{font-family:var(--font-reading)}
 
 /* passes */
 .prose{font-family:var(--font-reading)}
+h1{font-family:var(--font-display)}
+body{font-family:var(--font-sans)}
 ```
+
+On `body`, `html` (or `:root`), `*` and `.wrap`, alone, under one another or inside `:is()`, only
+`var(--font-sans)` passes, `inherit` included in what is refused. The header, footer, rail and dates
+inherit their face from there, so any other face takes the owner's **Site font** setting away
+(measured with it on IBM Plex Mono: a reading face there put all of them in Literata, and `inherit`
+on `body` in Times). Set a face on the pieces you mean, `.prose *` and `body .deck` included.
 
 ## P1: `!important`
 

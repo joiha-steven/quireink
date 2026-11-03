@@ -773,7 +773,7 @@ const pt = {
   themeRules: {
     C1: 'A folha escreve uma cor. As cores vêm só das paletas. Use uma variável de paleta como var(--c-text), ou um color-mix() delas; uma cor sua vai numa paleta do theme.json.',
     T1: 'A folha escreve um tamanho de letra. Os tamanhos vêm só da escala tipográfica. Use var(--fs-body) ou outro tamanho --fs-*, em, %, ou calc() sobre um tamanho --fs-*.',
-    F1: 'A folha nomeia uma família de fontes. As fontes vêm só das configurações de fonte. Escreva só um entre var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display); suas próprias fontes são declaradas no theme.json.',
+    F1: 'A folha nomeia uma família de fonte, ou dá a body, html, * ou .wrap uma fonte diferente de var(--font-sans), o que passa por cima da Fonte do site escolhida em Aparência. Escreva só um entre var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display), nas partes que quer mudar; em body, html, * e .wrap só var(--font-sans), e deixe a fonte do site para o ajuste Fonte do site. Suas próprias fontes são declaradas no theme.json.',
     P1: '!important não é permitido: as suas configurações têm de continuar a ganhar. Tire-o: sem ele, uma regra do tema já vence quase toda a folha base.',
     S1: 'Um seletor nomeia algo que a API de temas não promete manter. Use um nome de elemento, ou um nome de classe, id ou data-* do contrato de aparência.',
     S2: 'A folha tem de estilizar o blog e a página inicial, e falta um dos dois. Adicione uma regra para a parte indicada: .post-list ou .prose para o blog, .front ou .fc para a página inicial.',

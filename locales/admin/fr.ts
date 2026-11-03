@@ -772,7 +772,7 @@ const fr = {
   themeRules: {
     C1: 'La feuille écrit une couleur. Les couleurs ne viennent que des palettes. Utilisez une variable de palette comme var(--c-text), ou un color-mix() de celles-ci ; une couleur à vous va dans une palette de theme.json.',
     T1: 'La feuille écrit une taille de police. Les tailles ne viennent que de l’échelle typographique. Utilisez var(--fs-body) ou une autre taille --fs-*, em, %, ou un calc() sur une taille --fs-*.',
-    F1: 'La feuille nomme une famille de polices. Les polices ne viennent que des réglages de police. Écrivez une seule valeur parmi var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display) ; vos propres polices se déclarent dans theme.json.',
+    F1: 'La feuille nomme une famille de police, ou donne à body, html, * ou .wrap une autre police que var(--font-sans), ce qui passe outre la Police du site choisie dans Apparence. Écrivez une seule valeur parmi var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display), sur les parties visées ; sur body, html, * et .wrap seulement var(--font-sans), et laissez la police du site au réglage Police du site. Vos propres polices se déclarent dans theme.json.',
     P1: '!important n’est pas permis : vos réglages doivent continuer de l’emporter. Retirez-le : sans lui, une règle du thème l’emporte déjà sur l’essentiel de la feuille de base.',
     S1: 'Un sélecteur nomme quelque chose que l’API des thèmes ne promet pas de garder. Utilisez un nom d’élément, ou un nom de classe, d’id ou de data-* du contrat d’apparence.',
     S2: 'La feuille doit styler le blog et la page d’accueil, et l’un des deux manque. Ajoutez une règle pour la partie nommée : .post-list ou .prose pour le blog, .front ou .fc pour la page d’accueil.',

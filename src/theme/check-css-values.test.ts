@@ -5,6 +5,8 @@
 import { describe, expect, it } from 'bun:test'
 import { NAMED_COLOURS } from '@/theme/css-names'
 import { brief, check } from '@/theme/test-fixtures'
+import { checkThemeCss } from '@/theme/check-css'
+import { themeContract } from '@/content/theme-contract'
 
 describe('C1: no hardcoded colour', () => {
   it('accepts variables, relative colour from a variable, color-mix of variables, transparent, currentcolor', () => {
@@ -138,6 +140,48 @@ describe('F1: font families follow the owner', () => {
     ].join('\n')))).toEqual([
       'F1 1:19 Georgia', 'F1 2:19 var(--font-sans),serif', 'F1 3:19 var(--font-sans, Arial)',
     ])
+  })
+
+  // What holds the chrome: the header, the footer, the rail and the dates inherit their face from
+  // these. Measured with the owner's chrome font on IBM Plex Mono, a reading face here put all of
+  // them in Literata, and inherit on body put them in Times.
+  // The real contract, which names `.wrap`, `html.dark` and `data-theme`; both surfaces styled.
+  const real = (css: string) => checkThemeCss(`${css}\n.post-list{margin:0}\n.front{margin:0}`, themeContract(), new Set())
+
+  it('refuses any face but var(--font-sans) on body, html, * and .wrap, inherit included', () => {
+    expect(brief(real([
+      'body{font-family:var(--font-reading)}',
+      'html{font-family:var(--font-display)}',
+      '*{font-family:var(--font-mono)}',
+      '.wrap{font-family:var(--font-reading)}',
+      'body{font-family:inherit}',
+      'html{font-family:inherit}',
+    ].join('\n')))).toEqual([
+      'F1 1:18 var(--font-reading)', 'F1 2:18 var(--font-display)', 'F1 3:15 var(--font-mono)',
+      'F1 4:19 var(--font-reading)', 'F1 5:18 inherit', 'F1 6:18 inherit',
+    ])
+  })
+
+  it('accepts var(--font-sans) on each of them, which is what they already wear', () => {
+    expect(real('body{font-family:var(--font-sans)}\nhtml{font-family:var(--font-sans)}\n*{font-family:var(--font-sans)}\n.wrap{font-family:var(--font-sans)}')).toEqual([])
+  })
+
+  it('finds them however they are written: together, qualified, under each other, inside :is() and @media', () => {
+    const refused = [
+      'html[data-theme=x] body', 'html.dark body', ':root', 'body *', '.wrap > *', 'BODY', ':is(body)', ':where(.wrap)',
+      'h1, body', 'div.wrap', '*[data-theme]',
+    ]
+    for (const sel of refused) expect(brief(real(`${sel}{font-family:var(--font-reading)}`)), sel).toHaveLength(1)
+    expect(brief(real('@media (min-width:40rem){body{font-family:var(--font-reading)}}'))).toHaveLength(1)
+  })
+
+  it('still lets a theme set the reading face on the pieces it means', () => {
+    expect(real([
+      '.prose{font-family:var(--font-reading)}', 'h1{font-family:var(--font-display)}',
+      '.prose *{font-family:var(--font-reading)}', 'body .deck{font-family:var(--font-reading)}',
+      'header.site .title{font-family:var(--font-reading)}', 'body::before{font-family:var(--font-reading)}',
+      '.prose{font-family:inherit}', ':is(h1,h2){font-family:var(--font-display)}',
+    ].join('\n'))).toEqual([])
   })
 })
 

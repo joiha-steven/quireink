@@ -84,10 +84,10 @@ article > header h1{font-size:calc(var(--fs-h1) * 1.25);line-height:var(--lh-h1)
 .prose small{font-size:80%}
 ```
 
-**Never set a face on `body`, `*` or `.wrap`.** The chrome inherits from there, so
-`body{font-family:var(--font-reading)}` sets the menu, the footer, the rail and every date in the
-reading face, and the owner's chrome-font setting stops doing anything; `body{font-family:inherit}`
-drops them to the browser's default, Times. Set the face on the pieces you mean:
+**No face on `body`, `html`, `*` or `.wrap` but `var(--font-sans)`.** The chrome inherits from
+there, so a reading face on `body` set the menu, the footer, the rail and every date in it, and the
+owner's Site font setting stopped doing anything; `body{font-family:inherit}` dropped them to Times.
+The checker refuses both (F1). Set the face on the pieces you mean:
 
 ```css
 header.site .title{font-family:var(--font-reading)}
