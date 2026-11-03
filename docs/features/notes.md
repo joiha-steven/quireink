@@ -29,7 +29,7 @@ Written like a post, kept apart from the posts ([ADR 0044](../decisions/0044-a-n
 
 ## Writing — `src/content/notes.ts`, `src/web/admin/notes.ts`
 
-- **The note editor** (`/admin/note-editor`, `NoteForm`): the page editor's sheet with a
+- **The note editor** (`/admin/note-editor`): the page editor's sheet with a
   date and, on the attributes panel, the three clip fields — source address (`http(s)` only,
   anything else is dropped at save), source title, and the passage kept. Autosave under the
   `note` kind, the same draft safety net, Trash with restore and purge.

@@ -36,8 +36,8 @@ Pull requests welcome — a native speaker's ear beats ours.
 `bun run check:i18n` holds eight conventions across the 22 dictionary files (`locales/` and
 `locales/admin/`; the Help files are not in it). The one that catches people
 first: **no straight apostrophe**. `'` is a typewriter mark; the letter is `’`, and French,
-English and Italian elision all want it. The guard also knows that French puts a space before
-`:` and `?`, that German and Russian have their own quotation marks, and that a locale should
+English and Italian elision all want it. The guard also knows
+that German and Russian have their own quotation marks, and that a locale should
 not silently inherit another's punctuation.
 
 Read the strings already in the file you are editing before writing a new one. Register,

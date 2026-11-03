@@ -8,7 +8,7 @@
   **ON for a new blog since 2026-09-12**, and a blog that already has a settings row keeps
   the look it had (the asymmetry is in `fromStored`). It governs the SCROLLING article only:
   book mode sets its own text either way (`web/book-text.css.ts`). `gridView` =
-  the reader's grid/list header toggle (`GridToggle`); off hides the button AND `listing.ts` ignores a
+  the reader's grid/list header toggle (`[data-grid-toggle]`); off hides the button AND `listing.ts` ignores a
   stored `list=grid`, so every listing stays a list (and the infinite-scroll timeline, hidden in grid, always shows).
   Under 640px the button is not offered at all (`mobile.css.ts`): measured at 390, a grid there
   was the same one column minus its excerpts. A choice made on a laptop still travels.
@@ -22,12 +22,12 @@
   `settings.mostViewedCount` public posts by all-time views — default 3, `0` hides it —
   `getViewTotals()` joined to `getPublicPosts()`) + **featured** (owner-curated `settings.featured`
   slugs, in order, first 5, dropped when a slug stops being public). **Right rail** = navigation:
-  **menu** (`SidebarMenu`, moved out of the header) + **categories** (a condensed wrapped cloud with
-  post counts in parentheses — `CategoryCloud`, `getPublicTaxonomy()`) + **tags** (`TagCloud`). On
+  **menu** (`menuBlock`, moved out of the header) + **categories** (a condensed wrapped cloud with
+  post counts in parentheses — `termCloud`, `getPublicTaxonomy()`) + **tags** (`termCloud`). On
   **mobile** there is ONE gutter-less drawer: the left rail is hidden and its two blocks
   are duplicated into the right rail's drawer (`.drawer-only`), giving the order menu → most viewed →
-  featured → categories → tags. Assembled in `ListingSidebar` (two `<Rail className="rail-left|rail-right">`
-  reusing `IndexBlock`/`CategoryCloud`/`TagCloud`); the geometry (per-page breakpoint + column width + right-rail mirror)
+  featured → categories → tags. Assembled in `renderSidebar` (two `rail(' rail-left|rail-right')`
+  reusing `indexBlock`/`termCloud`); the geometry (per-page breakpoint + column width + right-rail mirror)
   is injected from `src/render/rail-css.ts` (`singleRailCss` for the default/post ToC rail, its sheet copy scoped by `data-col`, see performance.md;
   `listingRailCss` for the two rails — the latter uses higher-specificity `.rail.rail-left|right` so it
   wins without ordering games). Each block self-hides when empty. **Post/page reading views show ONLY the
@@ -65,7 +65,7 @@
   + accent dot on a `--c-bg` background) that pins to the top of the gutter while its year's posts scroll and
   is pushed out when the next year's group arrives — the tag's background masks months sliding up under it.
   A year's own first month is skipped (the sticky year covers it). Dates line up with the posts on the left —
-  **no JS, no measurement** (`PostCard`'s `month` prop + CSS `position:sticky`; geometry from `timelineCss`).
+  **no JS, no measurement** (`card()`'s `month` option + CSS `position:sticky`; geometry from `timelineCss`).
   The spine is the same faint `--c-rule` hairline as the sidebar dividers; dots are round. No post counts, no click nav. Its breakpoint is much LOWER
   than the sidebar's (a short date label needs only a thin gutter — `colWidth + 2*(gap+130)`), so it shows on
   normal laptops. **Desktop list view only**: below the breakpoint there is no gutter (markers + spine
@@ -87,27 +87,27 @@
   The reading-progress bar is CSS (`animation-timeline: scroll()`), not an island. There is no
   loading skeleton: a page is rendered on the server and sent in one piece, so there is nothing to
   stream into.
-- `Toc` shows whenever a post has headings OR an in-page jump (`showToc` in the page; renders
+- `Toc` shows whenever a post has headings OR an in-page jump (`contents` in `article.ts`; renders
   nothing otherwise). When the post MIXES levels (H2 + H3), top-level rows get `.rail-lead` (a bigger
   `•` dot marker via `::before`) and child rows get `.rail-sub` (smaller, no dot) — so it reads as a
   few big markers over quieter children; the dot is inline so it flows for both rail orientations. An
-  all-H2 or all-H3 ToC stays uniform. In the gutter rail the ToC is sticky (`.rail-inner`); `railCss`
+  all-H2 or all-H3 ToC stays uniform. In the gutter rail the ToC is sticky (`.rail-inner`); `singleRailCss`
   caps it to the viewport with `overflow-y:auto`, so a ToC longer than the screen scrolls inside its own
   box instead of pinning its tail off-screen (the drawer already scrolls via `.rail`). Header: **"Mục lục"** (`tocIndex`), the
   `<summary>` of an open `<details>`; the first row is the post's title, a jump to the top. The last row joins the present
-  tags/categories/comments labels, with no count, and jumps to the first existing section via `TOC_ANCHORS` + `scroll-mt-24` targets. Collapsible on
+  tags/categories/comments labels, with no count, and jumps to the first existing section via `TOC_ANCHORS` + `.anchor` targets. Collapsible on
   every viewport — pinned in the desktop gutter, and on mobile it shares the sidebar drawer (opened
   from the header menu button, mobile only), outside-tap/Escape-dismissable. Solid page background;
   `post-content.ts` assigns slug ids. Phones get wider side gutters for the reading text.
 - **Heading ids are de-duped** (2nd `foo` → `foo-2`): `dedupeHeadingIds`
   (`src/render/post-content.ts`) and `extractHeadings` (`src/utils.ts`) run the SAME counter over
   H2/H3 in document order — change one, change both or the ToC anchors break.
-- **Link hrefs are sanitized** (`safeHref` in `post-content.ts` drops `javascript:`/`data:`/`vbscript:`)
-  — marked v5+ no longer does. Raw HTML in markdown is already escaped (the `html` renderer →
-  `escapeHtml`), so `<script>`/`<img onerror>` render as visible text.
-- **Draft preview:** `/preview/:slug?key=<hmac>` (`src/web/preview.ts`), sent
+- **Link hrefs are sanitized** (`safeHref` in `src/md/html-rules.ts` drops `javascript:`/`data:`/`vbscript:`).
+  Raw HTML in markdown is escaped (`rawHtml: 'escape'` in
+  `render/page-rules.ts`), so `<script>`/`<img onerror>` render as visible text.
+- **Draft preview:** `/preview/:slug?key=<token>` (`src/web/preview.ts`), sent
   `cache-control: no-store` and `x-robots-tag: noindex, nofollow`, and never entered in the page
-  cache. `previewToken` = HMAC(slug, `serverSecret('preview-link')`) — **not** `AUTH_SECRET`,
+  cache. `previewToken` = the expiry (30 days) plus HMAC(`slug.expiry`, `serverSecret('preview-link')`) — **not** `AUTH_SECRET`,
   which left with next-auth and, while the code still read it, silently keyed every token with
   the empty string. The editor's Preview saves a draft's pending edits first; a live piece is never
   saved to be previewed — the editor sends its snapshot and `/preview` shows that. The separate
@@ -115,23 +115,23 @@
 
 ## Footnotes + music embeds — `src/render/footnotes.ts`, `src/render/video.ts`, `src/render/post-content.ts`
 
-- **Footnotes:** `text[^id]` + `[^id]: definition`. `prepareFootnotes` (pre-marked) pulls the
-  definitions out and swaps each reference for a private-use placeholder (so marked leaves it
-  alone and the html-escaping renderer can't touch it); `applyFootnotes` (post-marked) turns
+- **Footnotes:** `text[^id]` + `[^id]: definition`. `prepareFootnotes` (before the parse) pulls the
+  definitions out and swaps each reference for a private-use placeholder (so the engine leaves it
+  alone and the html-escaping renderer can't touch it); `applyFootnotes` (after the parse) turns
   placeholders into `<sup class="fnref">` links and appends `<section class="footnotes"><ol>`
   with back-links. Numbered by first reference; a `[^x]` in a fenced code block is masked and
   ignored; a ref with no def stays literal; an unreferenced def is dropped. Definition text →
   `renderInlineMarkdown` (escaped). CSS: `.fnref` / `.footnotes` / `.fn-back` in `src/web/public.css.ts`.
 - **Spotify / Apple Music:** `videoEmbed` recognizes `open.spotify.com/{track,album,playlist,
   episode,show}/…` and `music.apple.com/<cc>/{album,playlist,song,music-video}/…` and returns
-  the official `/embed` URL. `buildVideos` renders these as an `audio-embed` (fixed 175px frame)
+  the official `/embed` URL. `buildVideos` renders these as an `audio-embed` (fixed 9.25rem frame)
   instead of a 16:9 `video-embed`. Plain `<iframe>` like the video embeds — NO third-party
-  script, so no CSP change (the CSP sets no `frame-src`/`default-src`, so iframes are allowed).
+  script (the app sends no CSP; a deployment's `frame-src` must name these hosts, and the recommended ones do not all do so).
   The Apple Music URL is quote-guarded against an `src` breakout.
 ## Highlighter + callouts + copy-code — `src/pen/` (grammar, dies, pigments, sheets — one self-contained module, door at `src/pen/index.ts`), `src/render/post-content.ts` (`buildCallouts`), `src/assets/js/code-copy.ts`
 
 - **Highlighter:** `==text==` → `<mark data-pen=…>`; `==text==#green` adds `data-ink=…` (5 inks).
-  Inline marked extension, so bold/links/code ride under one stroke; `==` may not open/close on
+  Inline rule of the engine (`src/md/inline-pen.ts`), so bold/links/code ride under one stroke; `==` may not open/close on
   space, so `x == y` is untouched. The look is CSS, never markup (`src/pen/ink.css.ts`): 12 grown
   dies × 80 grips (`src/pen/dies-highlight.ts`), each die carrying its physics — fibre grain,
   edge tremor, wet-to-dry — applied inside the data-URI (ADR 0042); dealt per highlight by the
@@ -151,7 +151,7 @@
   on the server under a notebook code or their commenter sign-in — `reader_marks` holds the
   page's list under an opaque id, the server's copy wins on load, every change is written back, a renamed post, page or note takes
   its rows to the new path (`reader-marks-move.ts`), and a year untouched sweeps it. The owner sees none of it; `features.readerPen` off is a 404.
-  ON by default, and **asked once during setup** (step three, `setup-page.ts`): it is the only
+  ON by default, and **asked once during setup** (step six, `setup-page.ts`): it is the only
   switch here that changes what other people may do on your pages, and an owner who never opens
   Settings never learns it is there.
 - **The pen elsewhere:** `GET /pen.css` is both halves under the `.pen` class in this blog's inks,
@@ -168,7 +168,7 @@
   parse falls back to the escaped source with no colour of its own. `src/web/math.css.ts` adds one
   rule that matters: the block scrolls so the page never does. ADR 0020.
 - **Callouts:** write a blockquote whose first line is `[!NOTE]` / `[!TIP]` / `[!WARNING]` /
-  `[!IMPORTANT]` / `[!CAUTION]`. `buildCallouts` (a post-process on marked's HTML) rewrites it to
+  `[!IMPORTANT]` / `[!CAUTION]`. `buildCallouts` (a post-process on the engine's HTML) rewrites it to
   `<div class="callout callout-<type>">` with a bold label; an unknown `[!FOO]` or a plain quote
   is untouched. Styling is monochrome (accent left-border + label) to stay on the palette — no
   semantic colours. CSS in `src/web/public.css.ts` (`.callout`, `.callout-label`).

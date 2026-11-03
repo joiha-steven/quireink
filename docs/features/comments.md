@@ -49,7 +49,7 @@ Google account.
   already issued, rather than waiting for them to lapse.
 - **Privacy:** email is stored but NEVER sent to the public client (separate `PUBLIC_COLS` vs
   `ADMIN_COLS`); website gets `rel="nofollow ugc noopener"`. `/api/comments/me` returns the
-  signed-in NAME only, and is the one public response on the site marked `no-store`.
+  signed-in NAME only, and is the one public response whose body differs per reader, and is `no-store` for that reason.
 - **Post rename / purge:** `renameComments` moves comments with the slug; `deleteCommentsForPost`
   clears them when a post is purged (both wired in `posts.ts`).
 - **Admin:** `/admin/comments` is a reading queue on one sheet (2026-08-18): each comment is two
@@ -59,7 +59,7 @@ Google account.
   pre-feature rows) — and a quiet Delete at its end. Rows fill two newspaper columns from `lg` up.
   The sheet-top search reaches the text, the name and the post title (accent-folded one way only —
   `src/accent.ts`: typed WITH accents it means them) and paints
-  hits with the pen (`Marked`). Delete = soft delete via owner-gated `DELETE /api/comments/[id]`
+  hits with the pen (`src/admin/island/comments.ts`). Delete = soft delete via owner-gated `DELETE /api/comments/[id]`
   → Trash (restore/purge on the Trash screen's Comments tab).
 - **The gate — `src/comments/stamp.ts`, `src/assets/js/stamp.ts` ([ADR 0032](../decisions/0032-the-comment-gate-needs-no-account.md)).**
   Manual comments carry a **stamp**: a challenge the server signs into the comments mount point,
@@ -70,7 +70,7 @@ Google account.
   sends again; everything else answers 400. `replayed` is the common one, not an attack: the
   page is cached, so every reader of a post holds the same challenge and the first comment
   spends it. After any send the island arms its next answer from a fresh challenge, never the
-  page's. The issue time doubles as a floor — under three seconds was not typed. **Turnstile takes over whenever its keys are set** (since 2026-08-27);
+  page's. The issue time doubles as a floor — under three seconds was not typed. **Turnstile takes over when its keys are set and its toggle is on** (since 2026-08-27);
   Settings → Comments & mail says which gate is standing. A signed-in Google reader skips both.
   Without a secure context there is no `crypto.subtle`, so only the age check stands: that
   install needs TLS.
@@ -87,13 +87,13 @@ Google account.
 - **Cloudflare Turnstile (`src/auth/turnstile.ts`, `src/assets/js/turnstile.ts`).** Toggle
   `settings.comments.turnstile`; **enforced only when the toggle is on AND a Turnstile secret
   exists**, so toggling on without keys never locks out commenting (the admin row shows a "needs
-  keys" badge + the key inputs appear right below). The manual form gates the comment box **behind
+  keys" badge + the key inputs appear right below). The manual form gates the submit **behind
   the Turnstile pass**; the POST verifies the token server-side via siteverify (fail closed).
   Tokens are single-use → the form re-arms after each post.
 - **Google sign-in for commenters** is `settings.comments.googleAuth` and is described in the
   bullet above — the OAuth flow is `src/comments/google-oauth.ts` and the identity is a signed
   cookie, not a session row. **A signed-in commenter is never an owner**: the two are separate
   cookies, separate code paths, and the admin gate is `ownerRouter()` alone.
-- **Routes:** `/api/comments` (GET list + POST create) is the ONLY public-exempt comment path, and
-  it is listed with its reason in `scripts/checks/routes-guarded.ts`; `DELETE /api/comments/:id`
+- **Routes:** `/api/comments` (GET list + POST create), `/api/comments/mute` and `/comment-auth/signout` are the public-exempt comment paths, each
+  listed with its reason in `scripts/checks/routes-guarded.ts`; `DELETE /api/comments/:id`
   stays owner-gated.

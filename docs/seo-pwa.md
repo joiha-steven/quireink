@@ -64,7 +64,7 @@
   beside the site's. **The `self` link is the URL the document was fetched from**: point it
   at `/feed.xml` and an aggregator following it swaps the reader's chosen subject for the
   whole blog, with nothing on the page they clicked from to show it.
-- `renderSitemap` — home + posts + pages, **plus one entry per category and per tag**, and
+- `renderSitemap` — home + the list path + `/archive` + posts + pages + the notebook, **plus one entry per category, tag and series**, and
   `<image:image>` on a post that has one. Terms are read off the PUBLIC post list, never
   `getCategories`/`getTags`: those include drafts, and `/category/x` 404s for a term no
   public post carries. They are keyed by slug (two names can slugify to one URL) and their
@@ -77,7 +77,7 @@
   common misspelling and the shape of some old Search Console submissions. An alias, not a
   second document: unconditional, reading no settings, so when the sitemap is switched off
   the 404 comes from the one route that owns that answer.
-- `renderLlms` — a markdown index of posts and pages, newest first, titles and one-line
+- `renderLlms` — a markdown index of posts, pages and notes, newest first, titles and one-line
   summaries only: a model that wants the body follows the link.
 - **Page 1 of a listing IS the listing.** `/category/x/page/1` → `/category/x`, the same for
   a tag, and `/page/1` → wherever the post list lives: a 301 from `canonicalPath()`
@@ -117,7 +117,7 @@
   URLs or nothing, the same rule as the canonical.
   The switch was read by nothing until 2026-08-25.
 - **A page that should not be indexed says so.** `Head.robots` prints
-  `<meta name="robots">`, and two pages use it: sign-in, and `/search`. The results page mints
+  `<meta name="robots">`, and these pages use it: the sign-in and setup screens (`noindex`), and `/search`, the clip page and an infinite-scroll listing past page 1 (`noindex, follow`). The results page mints
   a URL per query and had no canonical either, so a crawler following the form found an
   unbounded set of near-duplicate listings with nothing telling it to stop. `noindex, follow`
   rather than `noindex, none`: the links on that page are the real posts.
@@ -172,4 +172,4 @@ document this as present): the `Content-Signal` line in `robots.txt`. It is the 
 - App icon order: `appIconUrl` → `faviconUrl` → the bundled `app-icon.png`.
 - **Favicon: ONE `<link rel="icon">`**, emitted by `layout.ts` only when `settings.faviconUrl`
   is set. `/favicon.ico` redirects to that URL when there is one and otherwise serves the
-  bundled file (`src/web/app.ts`).
+  bundled file (`src/web/asset-routes.ts`).

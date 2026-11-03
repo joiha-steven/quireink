@@ -40,8 +40,8 @@ from. Rows, in order: **lead → featured → one per category → most read →
 - **Hierarchy is size, then standfirst, then image, then rules** — measured off the NYT front
   page on 2026-07-31, where most stories carry no picture at all. So `home.front.kind` is one
   grammar with the dials moved, not two layouts: `image` leads on a picture and keeps the
-  standfirst short (130 chars on the lead, none on a card); `text` drops the picture, raises
-  the headline a step and lets it run (240 / 120). A site with no images looks finished.
+  standfirst short (150 chars on the lead, 90 on a card); `text` drops the picture, raises
+  the headline a step and lets it run (260 / 190). A site with no images looks finished.
 - **A post appears ONCE.** Rows are built in priority order over a shared `used` set, so the
   newest post is the lead OR the first card of its category OR the first of latest, never all
   three. A row left with nothing does not render — no empty headings.

@@ -31,17 +31,17 @@
   its **unsubscribe link works**, so a restore cannot put back a reader who left from the Trash;
   re-subscribing it starts over as a fresh pending row with a fresh token.
 - **SMTP (`src/news/mail.ts`, speaking the protocol itself via `src/news/smtp.ts` and `src/news/mime.ts`).** Config lives on `integration_keys` (server-only secrets,
-  env fallback) — set in Admin → Settings → Comments & mail (`NewsletterFields`, via `api/mail`).
+  env fallback) — set in Admin → Settings → Comments & mail (`smtp()` in `src/web/admin/screens/settings-people.ts`, via `api/mail`).
   `sendMail` never throws: `{ sent:false, error:'smtp_not_configured' }` when unset, so subscribe
   still records the pending row. `isMailConfigured` = host + From present.
-- **Sign-up form** (`SubscribeForm`) renders at the foot of a post ONLY when SMTP is configured
+- **Sign-up form** (`subscribeCard` in `web/chrome.ts`) renders at the foot of a post ONLY when SMTP is configured
   (`getMailStatus().configured`), and `POST /api/subscribe` refuses (404) without it too. A confirmed
   address gets the same answer as a new one, JSON included. The same gate also puts an envelope button in the public header
-  (`SubscribeTrigger`, last before the mobile drawer toggle) that opens the identical card as a
+  (`[data-subscribe-open]`, last before the mobile drawer toggle) that opens the identical card as a
   modal (built client-side by `subscribe.ts` in `core.js`, on the `.overlay` panel search shares; Escape / backdrop / ✕ closes), so a reader can subscribe from any
   page.
-- **Admin → Newsletter** (`/admin/newsletter`, `NewsletterView`) is where the list is worked;
-  Settings → Comments & mail keeps ONLY the SMTP credentials (`NewsletterFields`, which now derives
+- **Admin → Newsletter** (`/admin/newsletter`, `src/web/admin/screens/newsletter.ts`) is where the list is worked;
+  Settings → Comments & mail keeps ONLY the SMTP credentials (which derives
   the TLS checkbox from the port — implicit TLS is 465, 587 is STARTTLS; the wrong pair fails with
   an opaque OpenSSL "wrong version number"). Three tabs:
   - *People* — every subscriber with their send history from the log: emails sent, failures (with
@@ -55,7 +55,7 @@
     checkbox first; the send itself is a two-press latch: the first press arms the button and prints
     the recipient count, a second within five seconds sends ([admin-design.md](../admin-design.md)).
   - *Test* — the three sample sends.
-- **Test send** (`POST /api/mail/test`, owner only, `NewsletterTest`). Three kinds — `smtp`
+- **Test send** (`POST /api/mail/test`, owner only, `testPanel`). Three kinds — `smtp`
   (bare "it works" note), `post` (the broadcast, built from the newest published post, or a
   stand-in on an empty blog), `subscribe` (the double opt-in confirmation) — each built by the
   SAME builder the live path uses, so a green test means the real send works. Recipient defaults
@@ -66,7 +66,7 @@
 - **Send log** (`newsletter_sends`, `src/news/newsletter-log.ts`). `sendMail` writes ONE row per
   outgoing email — success or failure, all four kinds (`confirm`/`broadcast`/`reply`/`test`) — so
   no path can email an address without it showing up. Keyed by ADDRESS, not a subscriber FK:
-  reply notifications go to commenters who never subscribed. Deleting a subscriber clears their
+  reply notifications go to commenters who never subscribed. Purging a subscriber clears their
   rows. `statsByEmail`/`statsByPost` fold it once into the admin's columns; a failed send is not
   counted as sent, and the open-rate denominator is successful BROADCASTS only.
 - **Open tracking.** A broadcast carries a 1x1 pixel at `GET /api/newsletter/open?t=` (public —
@@ -75,10 +75,10 @@
   refetching can't inflate the count; no IP, UA or referrer is recorded. The preview and the test
   send pass no token, so reviewing an email never counts as an open. Links are NOT wrapped, so
   there is no click tracking and every URL in the mail is the real one.
-- **Manual broadcast** (`src/news/broadcast.ts` `broadcastPost`, `POST /api/broadcast`). There is NO
+- **Manual broadcast** (`src/news/broadcast.ts` `broadcastPosts`, `POST /api/broadcast`). There is NO
   automatic send: the cron publishes a scheduled post on time but never emails anyone (owner's
-  call — every send is previewed and pressed by hand). `broadcastPost` mails one publicly-visible
-  post to every confirmed subscriber, one email each with its own open token, and stamps
+  call — every send is previewed and pressed by hand). `broadcastPosts` mails one or more publicly-visible
+  posts, several as one digest, to every confirmed subscriber, one email each with its own open token, and stamps
   `posts.broadcast_at`. The double-send guard reads the LOG, not the stamp: posts from the old
   auto-broadcast era carry a backfilled stamp with no matching log rows, so the stamp alone would
   wrongly report them as sent. `force: true` (the admin's resend checkbox) overrides it. The route
