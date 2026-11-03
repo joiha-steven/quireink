@@ -10,7 +10,7 @@
 // second read of it from the store: removing it from the store under the request proves it.
 import { describe, it, expect, beforeEach, afterAll, afterEach } from 'bun:test'
 import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import sharp from 'sharp'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/test/sqlite'
@@ -43,23 +43,32 @@ beforeEach(async () => {
   cookie = `${COOKIE_NAME}=${createSession(user.id).token}`
 })
 
-const stored = (): number => {
+// Counts only the keys a test names. The store is wherever STORAGE_LOCAL_DIR points when a write
+// happens, and an upload's variants are finished in the background (`admin/uploads.ts`), so a
+// file that ran earlier could still be writing its six variants into this store: on CI
+// (2026-11-03) the count read 0, 7, 8 for three attachments that had stored one each.
+const stored = (only: RegExp): number => {
   if (!existsSync(STORE)) return 0
-  const walk = (d: string): number => readdirSync(d).reduce((n, f) => n + (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : 1), 0)
+  const walk = (d: string): number => readdirSync(d).reduce((n, f) => {
+    const p = join(d, f)
+    return n + (statSync(p).isDirectory() ? walk(p) : only.test(relative(STORE, p).split('\\').join('/')) ? 1 : 0)
+  }, 0)
   return walk(STORE)
 }
+let counted = /$^/
 
 /** Every `arrayBuffer()` of `size` bytes or more, and how many files were stored when it began. */
 const reads: number[] = []
 const original = Blob.prototype.arrayBuffer
 let watchFrom = Infinity
 Blob.prototype.arrayBuffer = function (this: Blob) {
-  if (this.size >= watchFrom) reads.push(stored())
+  if (this.size >= watchFrom) reads.push(stored(counted))
   return original.call(this)
 }
 afterEach(() => {
   reads.length = 0
   watchFrom = Infinity
+  counted = /$^/
 })
 
 /** A noisy PNG, so it is well past the bytes the sniffer reads and every copy is a real one. */
@@ -80,6 +89,7 @@ describe('a batch upload', () => {
   it('attaches files one at a time: each is read once the ones before it are written', async () => {
     const bytes = Buffer.alloc(40_000, 7)
     watchFrom = bytes.length
+    counted = /^files\/[abc]\.bin$/
     const res = await post('/api/files/attach', ['a', 'b', 'c'].map((n) => ({ name: `${n}.bin`, type: 'application/octet-stream', bytes })))
     expect(res.status).toBe(201)
     expect(reads).toEqual([0, 1, 2])
@@ -89,6 +99,7 @@ describe('a batch upload', () => {
     const pictures = await Promise.all([1, 2, 3].map(png))
     watchFrom = Math.min(...pictures.map((p) => p.length))
     expect(watchFrom).toBeGreaterThan(1024)
+    counted = /^media\/p[0-2](\.png|-thumb\.webp)$/
     const res = await post('/api/media/upload', pictures.map((bytes, i) => ({ name: `p${i}.png`, type: 'image/png', bytes })))
     expect(res.status).toBe(201)
     // An original and its thumbnail per picture before the next is read.
