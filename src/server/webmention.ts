@@ -16,6 +16,7 @@ import { readTextCapped, safeFetch } from '@/server/safe-fetch'
 import { all, one, run } from '@/store/query'
 import { nowMs, toIso } from '@/store/db'
 import type { Note } from '@/types'
+import { stripTags } from '@/utils'
 
 type Fetcher = (url: string, init?: RequestInit) => Promise<Response>
 
@@ -133,20 +134,22 @@ export function receiveWebmention(source: string, target: string, site: string):
 
 /** The passage a Quire Ink clip kept, read off its page; '' for any other source. */
 export function keptPassage(html: string): string {
-  const m = /<blockquote class="note-quote[^"]*">\s*<p>([\s\S]*?)<\/p>/i.exec(html)
-  if (!m) return ''
+  // The opening, then its `</p>` looked for ONCE: as one regex, a quote opened again and again
+  // and never closed was searched to the end from every opening (3.0 s for 512 KB). No close after
+  // the first opening means none after any later one either.
+  const open = /<blockquote class="note-quote[^"]*">\s*<p>/i.exec(html)
+  if (!open) return ''
+  const from = open.index + open[0].length
+  const close = /<\/p>/gi
+  close.lastIndex = from
+  const end = close.exec(html)
+  if (!end) return ''
   // Entities first, `&amp;` last of all, so `&amp;lt;` comes out as the text `&lt;` and not as
-  // a `<`. Then every tag, to a fixed point: the passage was escaped text on its page, so a
-  // `<` that survives decoding is markup somebody wrote into the quote, not prose to keep.
-  const text = m[1]!.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+  // a `<`. Then every tag: the passage was escaped text on its page, so a `<` that survives
+  // decoding is markup somebody wrote into the quote, not prose to keep.
+  const text = html.slice(from, end.index).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'").replace(/&amp;/g, '&')
   return stripTags(text).replace(/\s+/g, ' ').trim().slice(0, 4000)
-}
-
-const stripTags = (s: string): string => {
-  let prev: string
-  do { prev = s; s = s.replace(/<[^>]*>/g, '') } while (s !== prev)
-  return s
 }
 
 /** Fetch the source and confirm it links to the target; record what was found. */

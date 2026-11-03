@@ -39,6 +39,25 @@ export function escapeHtml(s: string): string {
  */
 export const escapeAttr = escapeHtml
 
+/**
+ * Tags out of text that is going to be TEXT: each `<` goes with everything up to the next `>`, as
+ * `/<[^>]*>/g` did, and one pass is the fixpoint that pass used to be looped to — a `<` left over
+ * has no `>` after it, and removing text adds none, so `<scr<b>ipt>` leaves `ipt>`, never
+ * `<script>`. By indexOf because the regex retried from every `<` left over, to the end each time:
+ * 100 KB of `<` took 5.1 s, and a webmention source is a page anybody writes (2026-11-04).
+ */
+export function stripTags(s: string): string {
+  let out = ''
+  let at = 0
+  for (;;) {
+    const lt = s.indexOf('<', at)
+    const gt = lt < 0 ? -1 : s.indexOf('>', lt)
+    if (gt < 0) return out + s.slice(at)
+    out += s.slice(at, lt)
+    at = gt + 1
+  }
+}
+
 // Convert arbitrary text to a URL-safe slug (Vietnamese diacritics, Cyrillic, Greek, ß and
 // full-width Latin: `transliterate.ts`).
 export function slugify(input: string): string {

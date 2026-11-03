@@ -10,6 +10,7 @@ import {
   htmlToMarkdown, importSlug, slugTracker, decodeEntities, deriveExcerpt,
   type ImportedPost, type ImportResult,
 } from '@/import/convert'
+import { stripTags } from '@/utils'
 
 export type Entry = { name: string; text: string }
 
@@ -179,22 +180,6 @@ function publishedAt(html: string): string {
     at = gt
   }
   return ''
-}
-
-// Tags out of a title, which is plain TEXT — stored as Markdown and escaped again on render. Each
-// `<` goes with everything up to the next `>`, as `/<[^>]*>/g` did, and one pass is the fixpoint
-// that pass was looped to: a `<` left over has no `>` after it, and removing text adds none (so
-// `<scr<b>ipt>` leaves `ipt>`, never `<script>`). As a regex it was quadratic in the `<`s left over.
-function stripTags(s: string): string {
-  let out = ''
-  let at = 0
-  for (;;) {
-    const lt = s.indexOf('<', at)
-    const gt = lt < 0 ? -1 : s.indexOf('>', lt)
-    if (gt < 0) return out + s.slice(at)
-    out += s.slice(at, lt)
-    at = gt + 1
-  }
 }
 
 export function parseMedium(entries: Entry[], now: string): ImportResult {
