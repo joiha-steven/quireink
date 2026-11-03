@@ -11,7 +11,7 @@ import { one } from '@/store/query'
 import { savePost, getPost } from '@/content/posts'
 import { savePage, getPage } from '@/content/pages'
 import { saveNote, getNote } from '@/content/notes'
-import { saveUnique } from '@/content/slugs'
+import { RESERVED_SLUGS, saveUnique } from '@/content/slugs'
 import { saveRedirect } from '@/server/redirects'
 import { normalizePath } from '@/server/redirect-path'
 import { previewToken } from '@/content/preview'
@@ -96,6 +96,10 @@ export function opsRoutes() {
     // post already living there wins. Only a single-segment source can collide.
     const sourceSlug = source.slice(1)
     if (!sourceSlug.includes('/') && (await getPost(sourceSlug) !== null || await getPage(sourceSlug) !== null)) return 0
+    // Nor a path the blog answers ITSELF before any post: an old page at /search/ or /notes/
+    // put the blog's own search and notebook behind a 301 to the imported copy (2026-11-03).
+    // An owner may still point one there by hand; an import is not asked, so it does not.
+    if (!sourceSlug.includes('/') && RESERVED_SLUGS.has(sourceSlug)) return 0
     try {
       // Never over a redirect the owner already has: an import is not asked, so it does not win.
       await saveRedirect({ source, destination: `/${slug}`, permanent: true, replace: false })

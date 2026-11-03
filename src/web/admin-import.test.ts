@@ -195,6 +195,24 @@ describe('the WordPress import', () => {
     expect((await app.request('/hello')).status).toBe(200)
   })
 
+  // An old page at /search/ or /notes/ took the address of the blog's own search and notebook:
+  // the redirect answers before the router, so both pages 301ed to the imported copy (2026-11-03).
+  it('never puts a redirect on a path the blog answers itself', async () => {
+    const at = (path: string, title: string) => `
+<item>
+  <title>${title}</title>
+  <link>https://old.example/${path}/</link>
+  <wp:post_name>${path}</wp:post_name>
+  <wp:post_type>page</wp:post_type>
+  <wp:status>publish</wp:status>
+  <content:encoded><![CDATA[<p>Body.</p>]]></content:encoded>
+</item>`
+    const report = await payload<{ redirects: number }>(send(wxr(at('search', 'Search') + at('notes', 'Notes'))))
+    expect(report.redirects).toBe(0)
+    expect((await app.request('/search?q=x')).status).toBe(200)
+    expect((await app.request('/notes')).status).toBe(200)
+  })
+
   it('adds no redirect when the old path IS the new slug', async () => {
     const flat = `
 <item>
