@@ -8,6 +8,7 @@ import { spawn, spawnSync } from 'node:child_process'
 import net from 'node:net'
 import { rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { updateCheck } from './local-env'
 
 const ROOT = resolve(import.meta.dir, '..')
 const PORT = Number(process.env.CF_TEST_PORT || 8797)
@@ -83,7 +84,7 @@ const built = spawnSync(process.execPath, ['scripts/build-worker.ts', '--entry',
 if (built.status !== 0) process.exit(1)
 
 rmSync(STATE, { recursive: true, force: true })
-const dev = spawn(join(ROOT, 'node_modules', '.bin', 'wrangler'), ['dev', '--local', '--port', String(PORT), '--persist-to', STATE, '--var', `CF_TEST_SMTP_PORT:${SMTP_PORT}`, '--var', `CF_TEST_S3_PORT:${S3_PORT}`, '--config', 'scripts/cf-test/wrangler.jsonc'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] })
+const dev = spawn(join(ROOT, 'node_modules', '.bin', 'wrangler'), ['dev', '--local', '--port', String(PORT), '--persist-to', STATE, '--var', `CF_TEST_SMTP_PORT:${SMTP_PORT}`, '--var', `CF_TEST_S3_PORT:${S3_PORT}`, '--var', `UPDATE_CHECK:${updateCheck()}`, '--config', 'scripts/cf-test/wrangler.jsonc'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] })
 let log = ''
 dev.stdout.on('data', (d) => { log += d })
 dev.stderr.on('data', (d) => { log += d })

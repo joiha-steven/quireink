@@ -84,7 +84,7 @@ serve_source() { # dir port [extra env...]
   local dir=$1 port=$2; shift 2
   # `exec`, so the background job IS bun and its pid is the one to kill. `cd x && bun … &` would
   # background the whole list, and `$!` would be a subshell that dies leaving bun on the port.
-  ( cd "$dir" && exec env DATA_DIR=./data STORAGE_LOCAL_DIR=./uploads PORT="$port" UPDATE_CHECK=0 \
+  ( cd "$dir" && exec env DATA_DIR=./data STORAGE_LOCAL_DIR=./uploads PORT="$port" UPDATE_CHECK="${UPDATE_CHECK:-0}" \
       SITE_URL="http://127.0.0.1:$port" "$@" bun src/index.ts > "$dir/server.log" 2>&1 ) &
   echo $! > "$dir/.pid"
   PIDS+=("$!")
@@ -111,7 +111,7 @@ run_image() { # name image port data-root [extra docker args...]
   local name=$1 image=$2 port=$3 root=$4; shift 4
   mkdir -p "$root/data" "$root/uploads"
   docker run -d --name "$name" -p "127.0.0.1:$port:3000" \
-    -e PUID="$(id -u)" -e PGID="$(id -g)" -e UPDATE_CHECK=0 -e SITE_URL="http://127.0.0.1:$port" \
+    -e PUID="$(id -u)" -e PGID="$(id -g)" -e UPDATE_CHECK="${UPDATE_CHECK:-0}" -e SITE_URL="http://127.0.0.1:$port" \
     -v "$root/data:/var/lib/quire/data" -v "$root/uploads:/var/lib/quire/uploads" "$@" "$image" >/dev/null
   CONTAINERS+=("$name")
 }
@@ -166,7 +166,7 @@ case "$CELL" in
 #!/usr/bin/env bash
 pid=\$(cat "$WORK/blog/.pid"); kill "\$pid" 2>/dev/null || true
 for _ in \$(seq 1 50); do kill -0 "\$pid" 2>/dev/null || break; sleep 0.2; done
-( cd "$WORK/blog" && exec env DATA_DIR=./data STORAGE_LOCAL_DIR=./uploads PORT=3502 UPDATE_CHECK=0 QUIREINK_PACKAGE=source \
+( cd "$WORK/blog" && exec env DATA_DIR=./data STORAGE_LOCAL_DIR=./uploads PORT=3502 UPDATE_CHECK="${UPDATE_CHECK:-0}" QUIREINK_PACKAGE=source \
   SITE_URL=http://127.0.0.1:3502 nohup bun src/index.ts > "$WORK/blog/server.log" 2>&1 ) &
 echo \$! > "$WORK/blog/.pid"
 EOF
@@ -233,6 +233,9 @@ EOF
     [ "$(uname -s)" = "Linux" ] && [ "${CI:-}" = "true" ] || { echo "server-http runs server.sh as root: CI runners only" >&2; exit 2; }
     say "building the image of $NEXT"
     docker build --quiet -t "quireink:matrix-$NEXT" "$WORK/next" >/dev/null
+    # server.sh writes the container's .env itself and has no way to pass UPDATE_CHECK, so the image
+    # carries it: the runner is a real machine, and its blog would be counted on every release.
+    printf 'FROM quireink:matrix-%s\nENV UPDATE_CHECK=0\n' "$NEXT" | docker build --quiet -t "quireink:matrix-$NEXT" - >/dev/null
     teardown() { sudo docker compose -f /opt/quireink/compose.yml down -v >/dev/null 2>&1 || true; sudo rm -rf /opt/quireink /var/lib/quireink; }
     CONTAINERS+=("quireink-quire-1")
     say "server.sh on a blank machine, no domain"

@@ -6,6 +6,7 @@
 // is started and stopped, and the rules for an output directory that is about to be emptied.
 import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve, sep } from 'node:path'
+import { localEnv } from './local-env'
 
 export const CLOCK_ISO = '2026-07-30T17:00:00.000Z'
 
@@ -91,7 +92,7 @@ export async function waitHealthy(base: string): Promise<void> {
 export function instanceEnv(work: string): Record<string, string> {
   // CRON_INTERNAL=0: the in-process scheduler (`src/server/tick.ts`) would otherwise publish or
   // purge on its own timer while shots are being taken.
-  return { THEME_MATRIX_NOW: CLOCK_ISO, STORAGE_LOCAL_DIR: join(work, 'uploads'), UPDATE_CHECK: '0', CRON_INTERNAL: '0' }
+  return { THEME_MATRIX_NOW: CLOCK_ISO, STORAGE_LOCAL_DIR: join(work, 'uploads'), CRON_INTERNAL: '0' }
 }
 
 export const CLOCK_PRELOAD = resolve('scripts/theme-matrix-clock.ts')
@@ -115,7 +116,7 @@ export type Server = { stop(): Promise<void> }
 export function startServer(data: string, port: number, log: string, env: Record<string, string>): Server {
   const base = `http://127.0.0.1:${port}`
   const server = Bun.spawn([process.execPath, '--preload', CLOCK_PRELOAD, 'src/index.ts'], {
-    env: { ...process.env, ...env, DATA_DIR: data, PORT: String(port), SITE_URL: base },
+    env: { ...localEnv(), ...env, DATA_DIR: data, PORT: String(port), SITE_URL: base },
     stdout: Bun.file(log), stderr: Bun.file(log),
   })
   return {

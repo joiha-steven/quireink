@@ -52,8 +52,8 @@ test -n "$SESSION" || { echo "FAIL: the seeder minted no session"; exit 1; }
 export QUIRE_SESSION="$SESSION"
 
 echo "== serve =="
-DATA_DIR=$TMP/list  STORAGE_LOCAL_DIR=$TMP/up PORT=$PORT_LIST  bun src/index.ts > "$TMP/list.log" 2>&1 &
-DATA_DIR=$TMP/front STORAGE_LOCAL_DIR=$TMP/up PORT=$PORT_FRONT bun src/index.ts > "$TMP/front.log" 2>&1 &
+DATA_DIR=$TMP/list  STORAGE_LOCAL_DIR=$TMP/up PORT=$PORT_LIST  UPDATE_CHECK="${UPDATE_CHECK:-0}" bun src/index.ts > "$TMP/list.log" 2>&1 &
+DATA_DIR=$TMP/front STORAGE_LOCAL_DIR=$TMP/up PORT=$PORT_FRONT UPDATE_CHECK="${UPDATE_CHECK:-0}" bun src/index.ts > "$TMP/front.log" 2>&1 &
 for _ in $(seq 1 40); do
   curl -sf -o /dev/null "http://127.0.0.1:$PORT_LIST/" && curl -sf -o /dev/null "http://127.0.0.1:$PORT_FRONT/" && break
   sleep 1
@@ -188,7 +188,7 @@ echo "== setup panels =="
 # heights on one plate. Top-aligned, they read as one row.
 PORT_SETUP=3412
 SETUP_DIR=$TMP/setup
-DATA_DIR=$SETUP_DIR STORAGE_LOCAL_DIR=$TMP/up-setup PORT=$PORT_SETUP bun src/index.ts > "$TMP/setup.log" 2>&1 &
+DATA_DIR=$SETUP_DIR STORAGE_LOCAL_DIR=$TMP/up-setup PORT=$PORT_SETUP UPDATE_CHECK="${UPDATE_CHECK:-0}" bun src/index.ts > "$TMP/setup.log" 2>&1 &
 for _ in $(seq 1 40); do curl -sf -o /dev/null "http://127.0.0.1:$PORT_SETUP/api/health" && break; sleep 1; done
 S="http://127.0.0.1:$PORT_SETUP"
 TOKEN_PATH=$(grep -oE '/setup\?token=[A-Za-z0-9_-]+' "$TMP/setup.log" | head -1)
@@ -209,7 +209,7 @@ SETUP_SESSION=$(DATA_DIR=$SETUP_DIR STORAGE_LOCAL_DIR=$TMP/up-setup bun "$TMP/mi
   | grep '^QUIRE_SESSION=' | cut -d= -f2-)
 test -n "$SETUP_SESSION" || { echo "FAIL: the setup mint made no session"; exit 1; }
 kill %3 2>/dev/null || true; sleep 1
-DATA_DIR=$SETUP_DIR STORAGE_LOCAL_DIR=$TMP/up-setup PORT=$PORT_SETUP bun src/index.ts > "$TMP/setup2.log" 2>&1 &
+DATA_DIR=$SETUP_DIR STORAGE_LOCAL_DIR=$TMP/up-setup PORT=$PORT_SETUP UPDATE_CHECK="${UPDATE_CHECK:-0}" bun src/index.ts > "$TMP/setup2.log" 2>&1 &
 for _ in $(seq 1 40); do curl -sf -o /dev/null "http://127.0.0.1:$PORT_SETUP/api/health" && break; sleep 1; done
 
 # The address panel: the field autofills from the address the browser is on, which in here

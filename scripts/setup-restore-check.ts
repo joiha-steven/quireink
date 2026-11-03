@@ -17,6 +17,7 @@ import { Database } from 'bun:sqlite'
 import { existsSync, readdirSync, rmSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { randomBytes } from 'node:crypto'
+import { localEnv } from './local-env'
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:3399'
 const COOKIE = `__Host-quire_session=${process.env.QUIRE_SESSION ?? ''}`
@@ -89,7 +90,7 @@ const code = randomBytes(18).toString('base64url')
 const data = join(WORK, 'data')
 const uploads = join(WORK, 'uploads')
 const server = Bun.spawn(['bun', 'src/index.ts'], {
-  env: { ...process.env, DATA_DIR: data, STORAGE_LOCAL_DIR: uploads, PORT: String(port), UPDATE_CHECK: '0', SETUP_CODE: code, SITE_URL: second, BACKUP_DIR: join(WORK, 'backups') },
+  env: { ...localEnv(), DATA_DIR: data, STORAGE_LOCAL_DIR: uploads, PORT: String(port), SETUP_CODE: code, SITE_URL: second, BACKUP_DIR: join(WORK, 'backups') },
   stdout: 'ignore', stderr: 'pipe',
 })
 let up = false

@@ -39,6 +39,7 @@ import { APP_VERSION } from '../../src/version'
 import { CHUNK_ABOVE_BYTES } from '../../src/server/restore-parts'
 import { pushArchive } from '../../src/server/restore-push'
 import { fakeBucket, isolateHeap, measured, said, sameBlog, signIn } from './cloudflare-dev-kit'
+import { localEnv, updateCheck } from '../local-env'
 
 const ROOT = resolve(import.meta.dir, '..', '..')
 const WORK = join(ROOT, '.tmp', 'cloudflare-dev')
@@ -118,7 +119,7 @@ for (let i = 0; i < Math.ceil(BIG_MB / 4); i++) {
 
 const bun = spawn(process.execPath, ['src/index.ts'], {
   cwd: ROOT, stdio: 'ignore',
-  env: { ...process.env, DATA_DIR: data, STORAGE_LOCAL_DIR: uploads, PORT: String(BUN_PORT), UPDATE_CHECK: '0', SITE_URL: bunUrl, BACKUP_DIR: join(WORK, 'bun', 'backups') },
+  env: { ...localEnv(), DATA_DIR: data, STORAGE_LOCAL_DIR: uploads, PORT: String(BUN_PORT), SITE_URL: bunUrl, BACKUP_DIR: join(WORK, 'bun', 'backups') },
 })
 children.push(bun)
 if (!(await waitFor(`${bunUrl}/api/health`, 40))) fail(`the Bun blog never answered on ${bunUrl}`)
@@ -135,7 +136,7 @@ console.log(`✓ the showcase on Bun${BIG_MB ? ` with ${BIG_MB} MB of uploads` :
 
 const wrangler = spawn(join(ROOT, 'node_modules', '.bin', 'wrangler'), [
   'dev', '--local', '--port', String(CF_PORT), '--inspector-port', String(INSPECT_PORT), '--persist-to', join(WORK, 'cf-state'),
-  '--var', `SETUP_CODE:${code}`, '--var', `SITE_URL:${cfUrl}`, '--var', 'UPDATE_CHECK:0',
+  '--var', `SETUP_CODE:${code}`, '--var', `SITE_URL:${cfUrl}`, '--var', `UPDATE_CHECK:${updateCheck()}`,
 ], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] })
 children.push(wrangler)
 let log = ''
@@ -242,7 +243,7 @@ const backUrl = `http://127.0.0.1:${BACK_PORT}`
 const backCode = randomBytes(18).toString('base64url')
 const fresh = spawn(process.execPath, ['src/index.ts'], {
   cwd: ROOT, stdio: 'ignore',
-  env: { ...process.env, DATA_DIR: back.data, STORAGE_LOCAL_DIR: back.uploads, PORT: String(BACK_PORT), UPDATE_CHECK: '0', SITE_URL: backUrl, SETUP_CODE: backCode, BACKUP_DIR: join(WORK, 'back', 'backups') },
+  env: { ...localEnv(), DATA_DIR: back.data, STORAGE_LOCAL_DIR: back.uploads, PORT: String(BACK_PORT), SITE_URL: backUrl, SETUP_CODE: backCode, BACKUP_DIR: join(WORK, 'back', 'backups') },
 })
 children.push(fresh)
 const fromCf = join(WORK, 'from-cloudflare.tar.gz')
