@@ -107,7 +107,7 @@ in all eleven languages — the row may not wrap.
 
 **Two stat shapes, one empty state.** `statCard` and the band it stands in, `statBand`, are
 both in [`web/admin/kit-figures.ts`](../src/web/admin/kit-figures.ts) — two shapes, and a third
-is a copy. `emptyState` ([`web/admin/kit.ts`](../src/web/admin/kit.ts)) existed and two files
+is a copy. Home draws neither since 2026-11-03 (its traffic is one line of ink). `emptyState` ([`web/admin/kit.ts`](../src/web/admin/kit.ts)) existed and two files
 used it while five hand-rolled a message in three styles.
 
 **An empty state is a picture, a state, a sentence and a way out.** `emptyState` takes a

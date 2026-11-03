@@ -104,7 +104,7 @@ character and none of its typographic rules **except one**, below.
   source — measured off a photograph of a real pen box, never re-typed by eye.
   A colour that means one thing is a signal; a palette is not. The test for a third ink is
   the same as it always was: what does this pen MEAN on a page?
-- **The card carries ONE shadow step** (2026-08-29): 1px of contact at 4% black, an edge
+- **The sheet carries ONE shadow step** (2026-08-29): 1px of contact at 4% black, an edge
   rather than a lift, dark mode none. It is deliberately an arbitrary value and not
   `shadow-sm`, so `check:admin-kit` did not have to move for it — the thing that guard
   protects against is a card PRETENDING to float while sitting in the flow, which is what a
@@ -269,14 +269,14 @@ character and none of its typographic rules **except one**, below.
   default does not change. Nothing is lost while it is on — the bubble bar on a selection and
   "/" at the caret carry every command the row holds, which is the arrangement Medium is
   known for and the reason putting the row away costs nothing.
-- **The home carries the numbers; the DETAIL lives on its own screen.** Views, visitors, time
-  per post and read-through are on the home page — that is why Analytics could leave the rail
-  — and the charts, the ranges and the per-page breakdown are one click further, from the
-  cards that show the headline figures. Taxonomy, integrations and system information still do
-  not compete on the home page.
-- **The home hands back the unfinished writing straight after the numbers.** A count of
-  drafts is not the same fact as the drafts; the band names them and opens the editor on one.
-  Administration counts (posts, pages, comments, images, storage) sit BELOW the widgets.
+- **Home is a writing desk, not a dashboard** (2026-11-03). Its title is "Home", as every screen's
+  is; under it, on ONE sheet in ruled bands: the unfinished writing first (one row each, the
+  whole title, opening the editor), the first five minutes while they last, the 30 days of
+  traffic as one line of ink over a bare sparkline (views, visitors, time per post, read-through
+  — why Analytics could leave the rail; the charts and breakdowns are one click further), then
+  what needs attention, the most read, the referrers and what happened. No greeting by time of
+  day, no 30px figure row, no counts of posts, pages, comments, images or bytes (each screen they
+  name says it), no countries column: those were the SaaS dashboard template, block for block.
 
 ## One DOM per state
 

@@ -14,11 +14,11 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { formatCount } from '@/i18n/format'
 import { iconSvg } from '@/icons'
-import { FIGURE, TAP, UTIL } from '@/admin-shared/scale'
+import { SECTION, TAP } from '@/admin-shared/scale'
 import { FEED_LIST, FEED_MARK, FEED_ROW, inkFor, markFor } from '@/admin-shared/activity-mark'
 import { ago } from '@/admin-shared/when'
 import { logSentence } from '@/admin-shared/log-sentence'
-import { card, durationFigure } from '@/web/admin/kit-figures'
+import { durationFigure } from '@/web/admin/kit-figures'
 
 export type DashboardData = {
   traffic: { views30: number; visitors30: number; views7: number; spark: number[]; avgDwellMs: number; avgReadDepth: number }
@@ -82,31 +82,41 @@ function sparkline(data: number[], lang: SiteLang): string {
  * put views at the far left and visitors 800px away with nothing in between: two figures about
  * the same thirty days read as two unrelated facts.
  */
-const figure = (valueHtml: string, label: string, lead = false): string =>
-  `<div class="min-w-0"><div class="${FIGURE}${lead ? '' : ' text-neutral-500 dark:text-neutral-400'}">`
-  + `${valueHtml}</div>`
-  + `<div class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">${escapeHtml(label)}</div></div>`
+/**
+ * A BAND on Home's one sheet: its name, and whatever it holds (2026-11-03). Home was eight white
+ * cards of one radius, one edge and one header shape (a 16px name left, a small link right): the
+ * SaaS dashboard template, item for item. The rule between two bands is the sheet's `divide-y`,
+ * so a band draws no edge of its own.
+ */
+export const band = ({ title, actions = '', body, className = '' }: {
+  title: string; actions?: string; body: string; className?: string
+}): string =>
+  `<section class="py-6${className ? ` ${className}` : ''}">`
+  + `<div class="mb-3 flex items-center justify-between gap-3"><h2 class="${SECTION}">${title}</h2>${actions}</div>`
+  + body + `</section>`
+
+/** A figure inside the traffic line: the number in ink, its name in the quiet ink after it. */
+const figure = (valueHtml: string, label: string): string =>
+  `<span class="whitespace-nowrap"><span data-figure class="font-medium text-neutral-900 tabular-nums dark:text-white">`
+  + `${valueHtml}</span> ${escapeHtml(label)}</span>`
 
 export function trafficCard(t: AdminStrings, lang: SiteLang, traffic: DashboardData['traffic']): string {
   const n = (x: number): string => formatCount(x, lang)
-  return card({
+  return band({
     title: escapeHtml(t.dashTraffic),
-    // The window, said ONCE. It used to be repeated inside two of the labels, which at four
-    // figures wrapped one label to two lines and left the row on a ragged baseline.
-    actions: `<div class="flex items-center gap-3">`
-      + `<span class="text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(t.analyticsRange30)}</span>`
-      + link('/admin/analytics', VIEW_ALL, t.dashViewAnalytics) + `</div>`,
-    body: `<div class="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">`
-      // The same four names and number shapes as the Analytics screen's band, which is one
-      // click away: "Time per post 1:52" here beside "Avg. time on page 1m 52s" there read as
-      // two different measurements of the same thirty days.
-      + figure(escapeHtml(n(traffic.views30)), t.analyticsViews, true)
-      + figure(escapeHtml(n(traffic.visitors30)), t.analyticsVisitors)
-      // The two that say whether anybody READ it, as opposed to how many arrived.
-      + figure(durationFigure(traffic.avgDwellMs, lang), t.analyticsAvgTime)
-      + figure(`${traffic.avgReadDepth}%`, t.analyticsAvgDepth)
-      + `</div>`
-      + `<div class="mt-5">${sparkline(traffic.spark, lang)}</div>`
+    actions: link('/admin/analytics', VIEW_ALL, t.dashViewAnalytics),
+    // ONE LINE OF INK, not four 30px figures in a row (2026-11-03): the same four names and number
+    // shapes as the Analytics band one click away, said once with the window at the end. The
+    // sparkline stays, under the line and with no frame round it.
+    body: `<p class="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">`
+      + [
+        figure(escapeHtml(n(traffic.views30)), t.analyticsViews),
+        figure(escapeHtml(n(traffic.visitors30)), t.analyticsVisitors),
+        figure(durationFigure(traffic.avgDwellMs, lang), t.analyticsAvgTime),
+        figure(`${traffic.avgReadDepth}%`, t.analyticsAvgDepth),
+      ].join(' · ')
+      + ` · ${escapeHtml(t.analyticsRange30)}</p>`
+      + `<div class="mt-4">${sparkline(traffic.spark, lang)}</div>`
       + `<div class="mt-2 text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(t.dashViews7)}: `
       + `<span class="tabular-nums">${escapeHtml(n(traffic.views7))}</span></div>`,
   })
@@ -122,7 +132,7 @@ function topPostsCard(t: AdminStrings, lang: SiteLang, posts: DashboardData['top
       // ⚠️ THE COUNT IS THE ANSWER, so it is not the smallest thing on the row.
       + `<span class="shrink-0 text-sm text-neutral-600 tabular-nums dark:text-neutral-300">${escapeHtml(formatCount(p.views, lang))}</span>`
       + `</a></li>`).join('') + `</ol>`
-  return card({ title: escapeHtml(t.dashTopPosts), body })
+  return band({ title: escapeHtml(t.dashTopPosts), body, className: 'border-t border-neutral-200 lg:border-t-0 dark:border-neutral-800' })
 }
 
 /**
@@ -145,28 +155,24 @@ function needsCard(t: AdminStrings, needs: DashboardData['needs']): string {
         ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
         : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300'}">${i.count}</span>`
       + `</a></li>`).join('') + `</ul>`
-  return card({ title: escapeHtml(t.dashNeedsAttention), body })
+  return band({ title: escapeHtml(t.dashNeedsAttention), body })
 }
 
-/** Where the last 30 days of readers came from. Two short lists, side by side. */
+/**
+ * Where the last 30 days of readers came from: the referrers. The countries column went on
+ * 2026-11-03; it is the Analytics screen's, one click away, and on Home it was the second half of
+ * a two-up "TOP REFERRERS / TOP COUNTRIES" block the template always has.
+ */
 function sourcesCard(t: AdminStrings, lang: SiteLang, sources: DashboardData['sources']): string {
-  const columns = [
-    { heading: t.analyticsTopReferrers, rows: sources.referrers.slice(0, 4) },
-    { heading: t.analyticsTopCountries, rows: sources.countries.slice(0, 4) },
-  ]
-  const body = columns.every((c) => c.rows.length === 0)
+  const rows = sources.referrers.slice(0, 4)
+  const body = rows.length === 0
     ? `<p class="${QUIET}">${escapeHtml(t.dashSourcesEmpty)}</p>`
-    : `<div class="grid gap-x-8 gap-y-4 sm:grid-cols-2">` + columns.map((col) =>
-      // An eyebrow over a stretch of rows: `UTIL`, the one role in the scale allowed uppercase.
-      `<div><div class="${UTIL} mb-1.5">${escapeHtml(col.heading)}</div><ul class="space-y-1">`
-      + (col.rows.length === 0 ? `<li class="py-1 text-sm text-neutral-300 dark:text-neutral-600">—</li>` : '')
-      + col.rows.map((r) =>
-        `<li class="flex items-baseline justify-between gap-3 py-0.5 text-sm">`
-        + `<span class="min-w-0 truncate text-neutral-600 dark:text-neutral-300">${escapeHtml(r.label)}</span>`
-        + `<span class="shrink-0 text-sm text-neutral-600 tabular-nums dark:text-neutral-300">${escapeHtml(formatCount(r.visitors, lang))}</span>`
-        + `</li>`).join('')
-      + `</ul></div>`).join('') + `</div>`
-  return card({
+    : `<ul class="space-y-1">` + rows.map((r) =>
+      `<li class="flex items-baseline justify-between gap-3 py-0.5 text-sm">`
+      + `<span class="min-w-0 truncate text-neutral-600 dark:text-neutral-300">${escapeHtml(r.label)}</span>`
+      + `<span class="shrink-0 text-sm text-neutral-600 tabular-nums dark:text-neutral-300">${escapeHtml(formatCount(r.visitors, lang))}</span>`
+      + `</li>`).join('') + `</ul>`
+  return band({
     title: escapeHtml(t.dashSources),
     actions: link('/admin/analytics', VIEW_ALL, t.dashViewAnalytics),
     body,
@@ -214,7 +220,8 @@ function activityCard(t: AdminStrings, lang: SiteLang, tz: string, entries: Acti
         + `<p class="truncate text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(when)}</p>`
         + `</div></li>`
     }).join('') + `</ul>`
-  return card({
+  return band({
+    className: 'border-t border-neutral-200 lg:border-t-0 dark:border-neutral-800',
     title: escapeHtml(t.recentActivity),
     actions: link('/admin/log', `${TAP} text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white`, t.recentViewAll),
     body,
@@ -222,15 +229,10 @@ function activityCard(t: AdminStrings, lang: SiteLang, tz: string, entries: Acti
 }
 
 /**
- * ONE 2x2 grid, rows stretching — and the even count is what makes that right.
+ * TWO ROWS OF TWO on the sheet, each row one of the sheet's ruled stripes; a phone stacks each
+ * pair with a rule between (the second band's `border-t`, dropped from `lg` up).
  *
- * ⚠️ `items-stretch` (the default) is load-bearing HERE and nowhere else. At an ODD count a
- * stretched row strands the leftover card full-width around a sentence, which is the failure
- * `admin-design.md` describes for the Settings tabs. At an even count a stretched row is
- * exactly what is wanted, because the pair in it is the thing being compared. Do not put
- * `items-start` back without also giving the band an odd number of cards again.
- *
- * `min-w-0` on the STACKS is a bug fix, not a precaution: a grid item's automatic minimum size
+ * `min-w-0` on the cells is a bug fix, not a precaution: a grid item's automatic minimum size
  * is its content's min-content width, and `truncate` sets `white-space: nowrap`, so a "Most
  * viewed" row's min-content is the full untruncated headline. Measured at 375px before it:
  * `scrollWidth` 422 against a 375 viewport.
@@ -239,9 +241,8 @@ function activityCard(t: AdminStrings, lang: SiteLang, tz: string, entries: Acti
  * what happened.
  */
 export function widgets(t: AdminStrings, lang: SiteLang, tz: string, data: DashboardData, recent: ActivityEntry[], activityEnabled: boolean): string {
-  const cell = (inner: string): string => `<div class="min-w-0 [&>section]:h-full">${inner}</div>`
-  return cell(needsCard(t, data.needs))
-    + cell(topPostsCard(t, lang, data.topPosts))
-    + cell(sourcesCard(t, lang, data.sources))
-    + cell(activityCard(t, lang, tz, recent, activityEnabled))
+  const row = (a: string, b: string): string =>
+    `<div class="grid gap-x-8 lg:grid-cols-2"><div class="min-w-0">${a}</div><div class="min-w-0">${b}</div></div>`
+  return row(needsCard(t, data.needs), topPostsCard(t, lang, data.topPosts))
+    + row(sourcesCard(t, lang, data.sources), activityCard(t, lang, tz, recent, activityEnabled))
 }

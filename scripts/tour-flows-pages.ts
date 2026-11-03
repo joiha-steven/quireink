@@ -207,38 +207,24 @@ export function registerPageFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'
       return 'ok busiest ordered ' + busiest.join('>') + ', one word narrowed to ' + narrowed + ' card(s)'
     })()`, 1200))
 
-  // THE ADMIN'S FRONT DOOR, and the one fact on it the server cannot know: what o'clock it is
-  // where the reader is sitting. A site in Asia/Bangkok read by its owner in Berlin should say
-  // good evening when it is evening where the EYES are, so the server draws all four greetings
-  // and the boot script stamps `data-daypart` before the first paint. Exactly one may show.
-  //
-  // ⚠️ THE TWO ATTRIBUTES MUST STAY DIFFERENT NAMES. Written as one name, the hide rule matched
-  // `<html>` itself — the element the boot script stamps — and the entire admin rendered as a
-  // blank page, on every screen. This flow measures the root, so that failure is loud here.
+  // THE ADMIN'S FRONT DOOR, drawn by the server with the page. It greeted by the browser's time
+  // of day until 2026-11-03; it is titled like every other screen now, and what is pinned is
+  // that nothing on it waits for a bundle: the heading, the sparkline and the bands arrive with
+  // the HTML.
   // NOTE: a template literal. No backticks.
-  flow('admin: the dashboard arrives finished, and greets by the browser clock', () => expect('/admin', `
+  flow('admin: the dashboard arrives finished, titled like every screen', () => expect('/admin', `
     (async () => {
       const html = await (await fetch('/admin')).text()
       if (!html.includes('data-screen="dashboard"')) return 'the server did not draw the dashboard'
-      if (getComputedStyle(document.documentElement).display === 'none') {
-        return 'the root element is hidden: a rule meant for the greeting spans matched html itself'
-      }
-      const part = document.documentElement.getAttribute('data-daypart')
-      if (!part) return 'the boot script stamped no part of the day'
-      const spans = [...document.querySelectorAll('h1 [data-greet]')]
-      if (spans.length !== 4) return 'expected four greetings in the markup, found ' + spans.length
-      const shown = spans.filter((s) => getComputedStyle(s).display !== 'none')
-      if (shown.length !== 1) return shown.length + ' greetings are showing at once'
-      if (shown[0].getAttribute('data-greet') !== part) {
-        return 'showing ' + shown[0].getAttribute('data-greet') + ' while the clock says ' + part
-      }
-      // And the rest of the page is really there, not waiting for React: the traffic card's
-      // sparkline is drawn from the server's own numbers.
+      if (getComputedStyle(document.documentElement).display === 'none') return 'the root element is hidden'
+      const h1 = document.querySelector('[data-screen="dashboard"] h1')
+      if (!h1 || !h1.textContent.trim()) return 'no page title on the dashboard'
+      if (document.querySelector('[data-greet]')) return 'a greeting is still drawn'
       if (!document.querySelector('[data-screen="dashboard"] svg polyline')) return 'no sparkline was drawn'
       if (document.querySelectorAll('[data-screen="dashboard"] section').length < 4) {
-        return 'the widgets did not arrive with the page'
+        return 'the bands did not arrive with the page'
       }
-      return 'ok four greetings drawn, one shown, matching ' + part
+      return 'ok titled ' + h1.textContent.trim()
     })()`, 900))
 
   // THE FIRST-RUN BAND, moved here from `tour-flows-admin.ts` on 2026-09-14: that file was at

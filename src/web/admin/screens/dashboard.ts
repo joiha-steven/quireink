@@ -5,88 +5,46 @@
 // state at all, and all of it waited for a bundle, a route chunk and a data fetch before a word
 // appeared. A screen that is almost pure reading had the longest wait in the admin.
 //
-// ⚠️ ONE FACT ON THIS PAGE THE SERVER CANNOT KNOW: what time it is where the reader is sitting.
-// The greeting reads the BROWSER's clock on purpose — a site in Asia/Bangkok read by its owner
-// in Berlin should say good evening when it is evening where the eyes are — so all four
-// greetings are drawn and `data-daypart`, stamped by the boot script before the first paint,
-// decides which one shows. The rail's Mac chord works the same way for the same reason.
+// A WRITING DESK, not a dashboard (2026-11-03): the page title, the unfinished writing first, then
+// one line of traffic and four ruled bands on one sheet. It was a greeting by time of day with
+// the owner's name, a row of 30px figures with a sparkline, eight identical white cards and a
+// band of five counts: the SaaS dashboard template, block for block.
 import type { SiteLang, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
-import { escapeAttr, escapeHtml, formatBytes } from '@/utils'
+import { escapeAttr, escapeHtml } from '@/utils'
 import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { buttonClass } from '@/admin-shared/kit'
-import { CARD_GAP, META_ON_CANVAS, SECTION_GAP, TAP, TITLE } from '@/admin-shared/scale'
-import { DAY_PARTS, dayPartName, relativeDay, sinceStart } from '@/admin-shared/when'
+import { META_ON_CANVAS, TAP } from '@/admin-shared/scale'
+import { relativeDay, sinceStart } from '@/admin-shared/when'
 import { firstRunSteps } from '@/admin-shared/first-run'
 
 import { REPO } from '@/admin-shared/help'
-import { icon } from '@/web/admin/kit'
-import { card, statBand, statCard } from '@/web/admin/kit-figures'
-import { trafficCard, widgets } from '@/web/admin/screens/dashboard-cards'
+import { pageHeader, sheet } from '@/web/admin/kit'
+import { band, trafficCard, widgets } from '@/web/admin/screens/dashboard-cards'
 import { dashboardView } from '@/web/admin/views-home'
 import { siteZone } from '@/analytics/types'
 
-/**
- * The two links the greeting owns, by the `?setting=` route ADR 0041 kept working: straight to
- * the card that holds the portrait, and to the tab that holds the name. Written here rather
- * than taken from `first-run.ts`, whose five are a different list about a different job.
- */
-const PORTRAIT_HREF = '/admin/settings?tab=blog&setting=authorAvatar'
+/** Where an owner with no name on the blog sets one: the tab that holds it (ADR 0041's `?tab=`). */
 const NAME_HREF = '/admin/settings?tab=blog'
 
-const RING = 'h-11 w-11 shrink-0 rounded-full border border-neutral-200 dark:border-neutral-700'
-const CHIP = buttonClass('secondary', 'md', 'max-w-full font-normal text-neutral-700 dark:text-neutral-200')
 const VIEW_ALL = `${TAP} text-xs text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white`
 
 /**
- * The portrait, or an INVITATION to set one.
- *
- * The picture stays `aria-hidden`, because the name is written beside it in text: a screen
- * reader that reads a portrait AND the name says the name twice. The empty circle is NOT
- * hidden, deliberately — an empty slot that can be filled should say so and be the way to fill
- * it, and on a blog that has a name but no picture it was the one state with no way out.
+ * The page's title, as on every other screen: "Home" in the page face, the last publication
+ * under it, and New post. It replaced a greeting by the browser's time of day with the owner's
+ * name and portrait ("Good evening, The editor"), which is how a chatbot opens.
  */
-function portrait(t: AdminStrings, author: { name: string; avatarUrl: string }): string {
-  if (author.avatarUrl) {
-    return `<img src="${escapeAttr(author.avatarUrl)}" alt="" aria-hidden="true" class="${RING} object-cover">`
-  }
-  const initials = author.name.split(/\s+/).filter(Boolean).slice(0, 2)
-    .map((word) => [...word][0] ?? '').join('').toUpperCase()
-  const inside = initials
-    ? escapeHtml(initials)
-    : icon('person', 'h-5 w-5')
-  return `<a href="${escapeAttr(PORTRAIT_HREF)}" aria-label="${escapeAttr(t.greetAddPortrait)}"`
-    + ` title="${escapeAttr(t.greetAddPortrait)}"`
-    + ` class="${RING} grid place-items-center bg-neutral-100 text-sm font-medium text-neutral-500 transition-colors hover:border-neutral-400 hover:text-neutral-900 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-500 dark:hover:text-white">`
-    + `${inside}</a>`
-}
-
-/**
- * The first line: whose desk this is. It REPLACES the page title rather than sitting above one.
- *
- * ALL FOUR GREETINGS ARE HERE and CSS shows the one `data-daypart` names. The pattern carries
- * the punctuation, so a language that puts no comma between the greeting and the name does not
- * get one.
- */
-function greeting(t: AdminStrings, settings: SiteSettings, author: { name: string; avatarUrl: string }, lastPublishedAt: string | null): string {
-  const named = author.name.trim()
-  const lines = DAY_PARTS.map((part) => {
-    const hello = t[part]
-    const said = named ? t.greetWithName.replace('{greeting}', hello).replace('{name}', named) : hello
-    return `<span data-greet="${dayPartName(part)}">${escapeHtml(said)}</span>`
-  }).join('')
+function header(t: AdminStrings, settings: SiteSettings, author: { name: string }, lastPublishedAt: string | null): string {
   const when = lastPublishedAt
     ? `${t.greetLastPublished} ${relativeDay(t.greetToday, lastPublishedAt, Date.now(), settings.language)}`
     : t.greetNothingYet
-  return `<div class="mb-10 flex flex-wrap items-center justify-between gap-4">`
-    + `<div class="flex min-w-0 items-center gap-3">${portrait(t, author)}`
-    + `<div class="min-w-0"><h1 class="line-clamp-2 ${TITLE}">${lines}</h1>`
-    + `<p class="${META_ON_CANVAS} mt-0.5">${escapeHtml(when)}`
-    + (named ? '' : ` · <a href="${escapeAttr(NAME_HREF)}" class="${TAP} underline underline-offset-2 hover:text-neutral-900 dark:hover:text-white">${escapeHtml(t.greetSetName)}</a>`)
-    + `</p></div></div>`
-    + `<div class="flex items-center gap-3"><a href="/admin/editor" class="${buttonClass()}">${escapeHtml(t.newPost)}</a></div>`
-    + `</div>`
+  return pageHeader({
+    title: t.navHome,
+    descriptionHtml: escapeHtml(when)
+      + (author.name.trim() ? '' : ` · <a href="${escapeAttr(NAME_HREF)}" class="${TAP} underline underline-offset-2 hover:text-neutral-900 dark:hover:text-white">${escapeHtml(t.greetSetName)}</a>`),
+    actions: `<a href="/admin/editor" class="${buttonClass()}">${escapeHtml(t.newPost)}</a>`,
+  })
 }
 
 /**
@@ -120,7 +78,9 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
   const actions = `<span class="flex items-center gap-2.5">`
     + `<span class="text-xs tabular-nums text-neutral-500 dark:text-neutral-400">`
     + `${escapeHtml(t.firstRunProgress.replace('{done}', String(finished)).replace('{total}', String(flags.length)))}</span>`
-    + `<span aria-hidden="true" class="h-1.5 w-16 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">`
+    // From sm up only: on a phone the title, the count and the bar did not fit one row and the
+    // words wrapped. The count says what the bar shows, so the bar is the one that goes.
+    + `<span aria-hidden="true" class="hidden h-1.5 w-16 overflow-hidden rounded-full bg-neutral-200 sm:block dark:bg-neutral-700">`
     // ⚠️ NO TRANSITION HERE, and the one that was here could never have run: this band is
     // drawn once by the server and the island only shows or hides the whole of it, so the
     // width never changes on a live page. It was `transition-[width] duration-300` — a
@@ -128,8 +88,8 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
     // scale, `media-images.ts`), at a fourth duration literal nothing else in the tree used.
     + `<span class="block h-full rounded-full bg-neutral-900 dark:bg-neutral-100" style="width:${(finished / flags.length) * 100}%"></span>`
     + `</span></span>`
-  const band = `<div data-first-run-progress="${finished}/${flags.length}"${done ? ' hidden' : ''}>`
-    + card({
+  const steps5 = `<div data-first-run-progress="${finished}/${flags.length}"${done ? ' hidden' : ''}>`
+    + band({
       title: escapeHtml(t.firstRunTitle),
       actions,
       body: `<p class="mb-4 text-sm text-neutral-600 dark:text-neutral-300">${escapeHtml(t.firstRunIntro)}</p>`
@@ -140,36 +100,37 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
         + `${escapeHtml(t.firstRunDismiss)}</button></div>`,
     })
     + `</div>`
-  const reopen = `<p class="mb-5"${done ? '' : ' hidden'}><button type="button" data-first-run-reopen`
+  const reopen = `<p class="py-4"${done ? '' : ' hidden'}><button type="button" data-first-run-reopen`
     + ` class="${TAP} text-sm text-neutral-500 underline-offset-2 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-white">`
     + `${escapeHtml(t.firstRunReopen)}</button></p>`
-  return band + reopen
+  // One stripe of the sheet, whichever of the two is showing.
+  return `<div>${steps5}${reopen}</div>`
 }
 
 /**
- * The unfinished writing, handed back (ADR 0024 step 6).
+ * The unfinished writing, handed back (ADR 0024 step 6), and FIRST since 2026-11-03: the page
+ * opens on the piece you were writing, one row each, its whole title.
  *
- * Absent rather than empty when there is nothing: a card saying "no drafts" is a row of
- * furniture reporting the absence of work. Four chips are enough to choose from and not enough
- * to be a list; past four the band SAYS there are more, because a cap nobody is told about
- * reads as "this is all of it".
+ * Absent rather than empty when there is nothing: a band saying "no drafts" is furniture
+ * reporting the absence of work. Four rows are enough to choose from and not enough to be a
+ * list; past four the band SAYS there are more, because a cap nobody is told about reads as
+ * "this is all of it". They were chips, which cut a headline to 115px on a phone so a 135px
+ * timestamp could stand beside it.
  */
-function pickUp(t: AdminStrings, lang: SiteLang, tz: string, band: { items: { title: string; href: string; touched: string; untitledNo?: number }[]; total: number }): string {
-  if (band.items.length === 0) return ''
-  return card({
+function pickUp(t: AdminStrings, lang: SiteLang, tz: string, list: { items: { title: string; href: string; touched: string; untitledNo?: number }[]; total: number }): string {
+  if (list.items.length === 0) return ''
+  return band({
     title: escapeHtml(t.dashPickUp),
-    actions: band.total > band.items.length
+    actions: list.total > list.items.length
       ? `<a href="/admin/content" class="${VIEW_ALL}">${escapeHtml(t.recentViewAll)}</a>`
       : '',
-    body: `<div class="flex flex-wrap gap-2">` + band.items.map((it) =>
-      `<a href="${escapeAttr(it.href)}" class="${CHIP}">`
-      // The mock's chip dot: the pen's edge on everything unfinished.
+    body: `<ul class="space-y-1">` + list.items.map((it) =>
+      `<li><a href="${escapeAttr(it.href)}" class="-mx-2 flex items-baseline gap-3 rounded-lg px-2 py-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">`
+      // The pen's edge on everything unfinished (`admin-design.md`, the work-in-progress dot).
       + `<span aria-hidden="true" class="h-[5px] w-[5px] shrink-0 rounded-full bg-[var(--pen-edge)]"></span>`
-      // `truncate` on the TITLE only, so a long headline shortens and the timestamp beside it
-      // is never pushed out of the chip.
-      + `<span class="truncate">${escapeHtml(it.title || `${t.untitled} #${it.untitledNo ?? 1}`)}</span>`
-      + (it.touched ? `<span class="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(siteDateTimeShort(it.touched, tz, lang))}</span>` : '')
-      + `</a>`).join('') + `</div>`,
+      + `<span class="min-w-0 flex-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">${escapeHtml(it.title || `${t.untitled} #${it.untitledNo ?? 1}`)}</span>`
+      + (it.touched ? `<span class="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(sinceStart(it.touched, Date.now(), lang) || siteDateTimeShort(it.touched, tz, lang))}</span>` : '')
+      + `</a></li>`).join('') + `</ul>`,
   })
 }
 
@@ -227,28 +188,24 @@ export async function dashboardScreen(settings: SiteSettings): Promise<string> {
   const t = adminT(settings.language)
   const d = await dashboardView()
   const lang = settings.language
+  const tz = siteZone(settings.timezone)
 
-  // THE NUMBER STRIP LEADS, then the unfinished writing, then what needs attention, then how
-  // the finished writing did, and the administration counts last — they used to lead
-  // (ADR 0024 step 6).
-  const body = greeting(t, settings, d.author, d.lastPublishedAt)
+  // THE UNFINISHED WRITING LEADS, then the first five minutes while they last, then one line of
+  // traffic, then what needs attention and how the finished writing did. The counts of posts,
+  // pages, comments, pictures and bytes are gone (2026-11-03): each screen they name says it.
+  const stripes = pickUp(t, lang, tz, d.dashboard.pickUp)
     // Above the numbers on purpose: on a fresh install every number is zero, and a screen of
     // zeroes is the least useful thing a new owner can be shown first.
     + firstRun(t, d.firstRunDone, d.setup as unknown as Record<string, boolean>)
     + trafficCard(t, lang, d.dashboard.traffic)
-    + pickUp(t, lang, siteZone(settings.timezone), d.dashboard.pickUp)
-    + `<div class="grid ${CARD_GAP} lg:grid-cols-2">${widgets(t, lang, siteZone(settings.timezone), d.dashboard, d.recent, d.activityEnabled)}</div>`
-    + statBand(
-      statCard({ bare: true, label: t.statPosts, value: String(d.posts), href: '/admin/content' })
-      + statCard({ bare: true, label: t.statPages, value: String(d.pages), href: '/admin/content' })
-      + statCard({ bare: true, label: t.statComments, value: String(d.comments), href: '/admin/comments' })
-      + statCard({ bare: true, label: t.statMedia, value: String(d.originals), href: '/admin/media' })
-      + statCard({ bare: true, label: t.statStorage, value: formatBytes(d.totalBytes) }),
-    )
+    + widgets(t, lang, tz, d.dashboard, d.recent, d.activityEnabled)
+
+  return `<div data-screen="dashboard">`
+    + header(t, settings, d.author, d.lastPublishedAt)
+    + sheet(`<div class="divide-y divide-neutral-200 px-5 sm:px-7 dark:divide-neutral-800">${stripes}</div>`)
     // The whole line has a switch (Settings → System → Dashboard): an owner who wants no brand
     // on the screen gets none. Settings still says when an update exists, so this hides no
     // warning.
-    + (d.systemLine ? systemLine(t, settings, d) : '')
-
-  return `<div data-screen="dashboard"><div class="${SECTION_GAP}">${body}</div></div>`
+    + (d.systemLine ? `<div class="mt-6">${systemLine(t, settings, d)}</div>` : '')
+    + `</div>`
 }

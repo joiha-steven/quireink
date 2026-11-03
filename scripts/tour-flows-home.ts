@@ -52,9 +52,9 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
       const card = [...document.querySelectorAll('section')]
         .find((s) => s.querySelector('h2') && /Traffic|Lượt truy cập/.test(s.querySelector('h2').textContent))
       if (!card) return 'no traffic card on the home screen'
-      // The FIGURES, not every number in the card: the "last 7 days" line is a span, and the
-      // four that answer "did anybody read it" are the divs.
-      const figures = [...card.querySelectorAll('div.tabular-nums')].map((d) => d.textContent.trim())
+      // The FIGURES, not every number in the band: since 2026-11-03 they are one line of ink,
+      // each number marked data-figure, and the "last 7 days" line is not one of them.
+      const figures = [...card.querySelectorAll('[data-figure]')].map((d) => d.textContent.trim())
       if (figures.length < 4) return 'the card shows ' + figures.length + ' figures: ' + figures.join(' ')
       // A dwell time carries a unit or a colon in any language ("1m 52s", "1 phút 52 giây",
       // "1:52"); a count carries only digits and separators. Character classes only: this body
