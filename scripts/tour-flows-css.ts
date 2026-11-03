@@ -86,13 +86,13 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
   flow('the scroll fade dims the edges of an article, and stops when it is switched off', async () => {
     const MEASURE = `
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      // One paragraph half across the window's bottom edge, the only place the fade may dim.
       const measure = async () => {
-        scrollTo(0, 1800)
-        await sleep(400)
-        return {
-          attr: document.documentElement.dataset.scrollFade ?? 'absent',
-          parts: [...document.querySelectorAll('.prose>p')].map((p) => +getComputedStyle(p).opacity),
-        }
+        const ps = [...document.querySelectorAll('.prose>p')], edge = ps[Math.min(4, ps.length - 1)]
+        const r = edge.getBoundingClientRect(), op = (p) => +getComputedStyle(p).opacity
+        scrollTo(0, scrollY + r.top - innerHeight + r.height / 2); await sleep(400)
+        const inside = ps.filter((p) => { const b = p.getBoundingClientRect(); return b.top > 0 && b.bottom < innerHeight })
+        return { attr: document.documentElement.dataset.scrollFade ?? 'absent', edge: op(edge), parts: ps.map(op), inside: inside.map(op) }
       }
       const feature = async (on) => {
         const now = (await (await fetch('/api/admin/view/settings')).json())?.data?.settings?.features
@@ -126,11 +126,11 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       const on = await expect(post, `(async () => {${MEASURE}
         const m = await measure()
         if (m.attr !== 'on') return 'the switch is on and the page does not say so'
-        if (!m.parts.some((o) => o < 0.95)) return 'nothing dimmed at the edges of a scrolled article'
-        // The middle of the window must be SOLID — the reported fault, and the half that a
-        // "does anything fade?" assertion would have passed straight over.
-        if (!m.parts.some((o) => o > 0.99)) return 'every paragraph is dimmed, including the one being read'
-        return 'ok ' + m.parts.length
+        if (!(m.edge < 0.95)) return 'a paragraph across the edge of the window is not dimmed (' + m.edge + ')'
+        // Wholly on screen is SOLID: a card, then a short paragraph, were once faded in the window.
+        const dim = m.inside.filter((o) => o < 0.99).length
+        if (!m.inside.length || dim) return dim + ' of ' + m.inside.length + ' paragraphs wholly on screen are dimmed'
+        return 'ok edge ' + m.edge.toFixed(2) + ', ' + m.inside.length + ' solid'
       })()`, 900)
       if (!on.startsWith('ok')) return on
 
@@ -190,7 +190,7 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       })()`, 900)
       if (quiet !== 'ok') return quiet
 
-      return 'ok (' + on.slice(3) + ' paragraph(s) dim, ' + list.slice(3) + ' cards solid mid-window, none dim with it off)'
+      return 'ok (' + on.slice(3) + ' on screen, ' + list.slice(3) + ' cards solid mid-window, none dim with it off)'
     } finally {
       await expect('/', `(async () => {${MEASURE}
         return (await feature(true)) || 'ok'

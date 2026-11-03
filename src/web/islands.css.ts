@@ -266,12 +266,22 @@ export const ISLANDS_CSS = `
   }
 }
 /* Never to nothing: 0.35 keeps the line legible for anyone who reads at the edge of the
-   window, and the point is where the eye rests, not a curtain. */
+   window, and the point is where the eye rests, not a curtain.
+
+   ⚠️ SOLID THE MOMENT A BLOCK IS WHOLLY ON SCREEN, which the 18% of cover alone did not
+   promise: that offset is 18% of the window PLUS the block, so a short paragraph sat fully
+   inside the bottom 160px of a 900px window at 0.6 to 0.9 (measured 2026-11-03: 2.1 to 4.3:1
+   on 17 posts at 1440). 'entry 100%' is the instant the block is all in, 'exit 0%' the
+   instant it starts to leave, and the cover offsets stay beside them so a block taller than
+   the window is solid no later than it was: the browser sorts the two and the fade runs
+   from the edge to whichever comes first. */
 @keyframes edge-fade{
-  0%{opacity:.35}
-  18%{opacity:1}
-  82%{opacity:1}
-  100%{opacity:.35}
+  entry 0%{opacity:.35}
+  entry 100%{opacity:1}
+  cover 18%{opacity:1}
+  cover 82%{opacity:1}
+  exit 0%{opacity:1}
+  exit 100%{opacity:.35}
 }
 /* SHALLOWER ON A PHONE, and it is arithmetic rather than taste. 18% of a 900px window is
    one line at the top and one at the bottom; 18% of an 844px phone in portrait is three,
@@ -280,10 +290,12 @@ export const ISLANDS_CSS = `
    at well under half opacity. Owner's call, 2026-09-07: keep the effect, narrow the band. */
 @media (max-width:639px){
   @keyframes edge-fade{
-    0%{opacity:.6}
-    8%{opacity:1}
-    92%{opacity:1}
-    100%{opacity:.6}
+    entry 0%{opacity:.6}
+    entry 100%{opacity:1}
+    cover 8%{opacity:1}
+    cover 92%{opacity:1}
+    exit 0%{opacity:1}
+    exit 100%{opacity:.6}
   }
 }
 

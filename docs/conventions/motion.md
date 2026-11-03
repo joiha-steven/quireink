@@ -100,7 +100,8 @@ four values for three intents.
   (animation-timeline)` + `data-motion=on` + the owner's scroll-fade switch, and it is the ONLY
   entrance a card has — a second `view()` animation on `.post-list > article` sat in
   `book.css.ts` outside that switch until the engine, so a feed with the fade off still rose on
-  the way in. There is no page-nav cross-fade in 2.0: cross-document View Transitions were
+  the way in. The article's edge fade dims a block only while it crosses the window's edge: one
+  wholly on screen is at opacity 1 (`edge-fade`, keyed on `entry 100%` and `exit 0%`). There is no page-nav cross-fade in 2.0: cross-document View Transitions were
   considered and not shipped ([`spec/04-frontend.md`](../spec/04-frontend.md)).
 - `settings.motion.keys` is a scoped editor preference, not another motion engine. It enables
   the custom caret response and the synthesized key sound; its visual part asks `motionOn()`.
