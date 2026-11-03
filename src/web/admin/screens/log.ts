@@ -58,6 +58,7 @@ export function namedDetails(
   entries: ActivityEntry[], holders: Map<string, Holder>, ambiguous: Set<string> = new Set(),
 ): NamedEntry[] {
   return entries.map((e) => {
+    if (e.action === 'newsletter.send') return namedSend(e, holders)
     const [family, verb] = e.action.split('.')
     const held = holders.get(`${family}:${e.detail}`)
     if (!held) return e
@@ -67,12 +68,40 @@ export function namedDetails(
   })
 }
 
+/**
+ * A send names the posts it carried by slug, as `slug,slug — sent/recipients`
+ * (`news/broadcast.ts`), and printed them that way: "Sent the newsletter
+ * “the-golden-canon-and-its-arithmetic — 18/20”" beside entries that name the same post by its
+ * title. Each slug is read the way a piece's own entry is, under the same rule, and one that
+ * cannot be read keeps its slug; the counts are kept as written.
+ */
+const SEND = /^(.+) — (\d+\/\d+)$/
+const sendSlugs = (e: ActivityEntry): string[] =>
+  e.action === 'newsletter.send' ? (SEND.exec(e.detail)?.[1] ?? '').split(',').filter(Boolean) : []
+
+function namedSend(e: ActivityEntry, holders: Map<string, Holder>): NamedEntry {
+  const m = SEND.exec(e.detail)
+  if (!m) return e
+  const at = Date.parse(e.at)
+  let changed = false
+  const names = sendSlugs(e).map((slug) => {
+    const held = holders.get(`post:${slug}`)
+    if (!held || at < held.created - 2000) return slug
+    changed = true
+    return held.title
+  })
+  return changed ? { ...e, detail: `${names.join(', ')} — ${m[2]}`, was: e.detail } : e
+}
+
 /** `family:slug` to its current holder, for the slugs these entries name; and which of those texts are also a title. */
 export function titlesFor(entries: ActivityEntry[]): { holders: Map<string, Holder>; ambiguous: Set<string> } {
   const holders = new Map<string, Holder>()
   const ambiguous = new Set<string>()
   for (const [family, table] of Object.entries(TITLED)) {
-    const slugs = [...new Set(entries.filter((e) => e.action.startsWith(`${family}.`) && e.detail).map((e) => e.detail))]
+    const slugs = [...new Set([
+      ...entries.filter((e) => e.action.startsWith(`${family}.`) && e.detail).map((e) => e.detail),
+      ...(family === 'post' ? entries.flatMap(sendSlugs) : []),
+    ])]
     if (slugs.length === 0) continue
     const marks = slugs.map(() => '?').join(',')
     // Table names come from the closed set above; every value is bound.

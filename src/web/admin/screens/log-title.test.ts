@@ -52,4 +52,18 @@ describe('the log names a piece by its title', () => {
     expect(namedDetails(e, holders, new Set(['post:foo']))[0]?.detail).toBe('foo')
     expect(namedDetails(e, holders)[0]?.detail).toBe('Another piece')
   })
+
+  it('names the posts a newsletter carried, and keeps the counts', async () => {
+    // `news/broadcast.ts` logs a send as `slug,slug — sent/recipients`, and the log printed it
+    // that way beside entries naming the same post by its title (2026-11-03).
+    await savePost({ title: 'Ink and paper', slug: 'ink-and-paper', date: new Date().toISOString(), status: 'published', content: 'Body.' })
+    await logActivity('newsletter.send', 'ink-and-paper,no-such-post — 18/20')
+    const html = await logScreen(settings)
+    expect(html).toContain('Ink and paper, no-such-post — 18/20')
+    // Under the piece rule: a send written before the post existed keeps its slug.
+    const holders = new Map([['post:foo', { title: 'Foo', created: Date.parse('2026-10-05T00:00:00.000Z') }]])
+    const send = (at: string) => [{ id: 1, at, action: 'newsletter.send', detail: 'foo — 3/4' }] as never
+    expect(namedDetails(send('2026-10-01T00:00:00.000Z'), holders)[0]?.detail).toBe('foo — 3/4')
+    expect(namedDetails(send('2026-10-06T00:00:00.000Z'), holders)[0]?.detail).toBe('Foo — 3/4')
+  })
 })
