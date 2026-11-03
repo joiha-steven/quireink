@@ -7,7 +7,7 @@
 import type { PackageOptions } from '@/theme'
 import { themeContract } from '@/content/theme-contract'
 import { OWNABLE_SETTINGS } from '@/content/themes-builtin'
-import { RESERVED_FONT_IDS, RESERVED_PALETTE_IDS, RESERVED_THEME_IDS } from '@/content/theme-reserved'
+import { BUILTIN_FONT_IDS, RESERVED_FONT_IDS, RESERVED_PALETTE_IDS, RESERVED_THEME_IDS } from '@/content/theme-reserved'
 
 /** The theme API versions this build reads (ADR 0072, decision 2). */
 export const SUPPORTED_THEME_API: readonly number[] = [1]
@@ -23,6 +23,7 @@ export function packageOptions(): PackageOptions {
     reservedIds: RESERVED_THEME_IDS,
     reservedPaletteIds: RESERVED_PALETTE_IDS,
     reservedFontIds: RESERVED_FONT_IDS,
+    builtinFontIds: BUILTIN_FONT_IDS,
     ownableSettings: new Set(OWNABLE_SETTINGS),
     contract: themeContract(),
   }

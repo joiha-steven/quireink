@@ -1,7 +1,8 @@
 // theme.json (A6): every field in its shape, unknown keys refused at every level, and a
 // palette held to the contrast floor the six built-in palettes clear.
 import { describe, expect, it } from 'bun:test'
-import { THEME_PRESETS } from '@/content/themes'
+import { CHROME_FONTS, FONT_PRESETS, THEME_PRESETS } from '@/content/themes'
+import { packageOptions } from '@/content/theme-package-options'
 import { checkThemeManifest } from '@/theme/check-manifest'
 import type { ThemeManifest } from '@/theme/types'
 
@@ -10,6 +11,7 @@ const OPTS = {
   reservedIds: new Set(['plain', 'code', 'paper', 'notes']),
   reservedPaletteIds: new Set(['mono', 'sepia']),
   reservedFontIds: new Set(['literata', 'inter']),
+  builtinFontIds: { reading: new Set(['literata', 'inter']), chrome: new Set(['inter']) },
   packageFiles: new Set(['theme.json', 'theme.css', 'screenshot.webp', 'fonts/serif-700.woff2', 'fonts/serif-400i.woff2']),
 }
 
@@ -211,7 +213,33 @@ describe('A6: text the admin shows, and suggestions that exist', () => {
     const chrome = { ...font, id: 'ui', role: 'chrome' }
     expect(failures({ ...FULL, fonts: [font, reading, chrome], suggests: { palette: 'newsprint', readingFont: 'body', chromeFont: 'ui' } }))
       .toEqual([])
-    expect(failures(withField('suggests', { palette: 'sepia', readingFont: 'inter', chromeFont: 'literata' }))).toEqual([])
+    expect(failures(withField('suggests', { palette: 'sepia', readingFont: 'literata', chromeFont: 'inter' }))).toEqual([])
+    expect(failures(withField('suggests', { chromeFont: 'literata' }))).toEqual(['suggests.chromeFont'])
+  })
+
+  // The pickers are per role: a reading font is never offered as the chrome font, so a theme
+  // suggesting one passed here, was silently ignored by "Use this theme's suggested palette and
+  // fonts", and stopped theme:preview with an internal error. Checked with the install's own options.
+  it('refuses a built-in font suggested for a role it does not have, with the install route\'s options', () => {
+    const real = { ...packageOptions(), packageFiles: OPTS.packageFiles }
+    const fail = (suggests: object) => {
+      const r = checkThemeManifest({ ...FULL, suggests }, real)
+      return r.ok ? [] : r.violations.map((v) => v.subject)
+    }
+    expect(fail({ chromeFont: 'source-sans' })).toEqual(['suggests.chromeFont'])
+    expect(fail({ chromeFont: 'literata' })).toEqual(['suggests.chromeFont'])
+    expect(fail({ readingFont: 'plex-mono' })).toEqual(['suggests.readingFont'])
+    expect(fail({ readingFont: 'reading' })).toEqual(['suggests.readingFont'])
+  })
+
+  it('accepts every built-in font suggested in a role it has, with the install route\'s options', () => {
+    const real = { ...packageOptions(), packageFiles: OPTS.packageFiles }
+    for (const readingFont of FONT_PRESETS.map((f) => f.id)) {
+      expect(checkThemeManifest({ ...FULL, suggests: { readingFont } }, real).ok).toBe(true)
+    }
+    for (const chromeFont of CHROME_FONTS.map((f) => f.id)) {
+      expect(checkThemeManifest({ ...FULL, suggests: { chromeFont } }, real).ok).toBe(true)
+    }
   })
 
   it('refuses a suggestion that names nothing, or a font of another role', () => {

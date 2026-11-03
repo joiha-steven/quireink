@@ -77,6 +77,12 @@ export type ManifestOptions = {
   reservedPaletteIds: ReadonlySet<string>
   /** Font ids taken by the built-in reading and chrome fonts, which share the font pickers. */
   reservedFontIds: ReadonlySet<string>
+  /**
+   * The built-in fonts by the picker they appear in, which is what a `suggests` entry may name.
+   * Absent, a suggestion may name any reserved font: a caller that does not say which picker
+   * holds what cannot have the roles checked.
+   */
+  builtinFontIds?: { reading: ReadonlySet<string>; chrome: ReadonlySet<string> }
   packageFiles: ReadonlySet<string>
   /**
    * Settings keys a theme may own (`ownsSettings`). Absent, no key may be owned: a caller that
@@ -278,7 +284,7 @@ function readFaces(v: unknown, r: Reader, path: string, packageFiles: ReadonlySe
 
 /**
  * A suggestion names something that exists: a palette this theme adds or a built-in one, a
- * font of the matching role this theme adds or a built-in one.
+ * font of the matching role this theme adds or a built-in one in that role's picker.
  */
 function readSuggests(
   v: unknown, r: Reader, opts: ManifestOptions, palettes: readonly ThemePalette[], fonts: readonly ThemeFont[],
@@ -288,8 +294,8 @@ function readSuggests(
   const ids = (role: ThemeFont['role']) => fonts.filter((f) => f.role === role).map((f) => f.id)
   const known = {
     palette: new Set([...palettes.map((p) => p.id), ...opts.reservedPaletteIds]),
-    readingFont: new Set([...ids('reading'), ...opts.reservedFontIds]),
-    chromeFont: new Set([...ids('chrome'), ...opts.reservedFontIds]),
+    readingFont: new Set([...ids('reading'), ...(opts.builtinFontIds?.reading ?? opts.reservedFontIds)]),
+    chromeFont: new Set([...ids('chrome'), ...(opts.builtinFontIds?.chrome ?? opts.reservedFontIds)]),
   }
   const out: NonNullable<ThemeManifest['suggests']> = {}
   for (const key of ['palette', 'readingFont', 'chromeFont'] as const) {

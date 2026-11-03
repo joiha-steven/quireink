@@ -72,8 +72,8 @@ face; it uses one of four variables, `var(--font-reading)` (the words of a post)
 
 So a serif theme with no font file of its own writes `"suggests": { "readingFont": "source-serif" }`
 in `theme.json`, and the owner gets it with one press of "Use this theme's suggested palette and
-fonts". A chrome font must come from the second column's `chromeFont` rows: `"chromeFont":
-"source-sans"` is not one. A face that is not in the table (Georgia, a Google font) ships as a woff2
+fonts". Each picker has its own list: `"chromeFont": "source-sans"` names a reading font and the
+checker refuses it (A6, `suggests.chromeFont`). A face that is not in the table (Georgia, a Google font) ships as a woff2
 in `fonts/` if its licence allows it ([themes.md section 7](themes.md#7-palettes-fonts-and-layout-switches)).
 A font installed on your computer is not on your readers'.
 
@@ -175,9 +175,6 @@ folder it opens. The zip commands in the guide leave it out, so the zip is fine;
 While you work on one thing, photograph only that:
 `bun run theme:preview <theme> --force --pages home-list,front-image --widths 1440` takes about
 five seconds. Page ids are in [theme-install-api.md](theme-install-api.md#preview-before-installing).
-
-**theme:preview stopped with "settings were not saved as asked".** A `suggests` entry names a
-font of the wrong kind; see the table above.
 
 **Where are the shots?** In the product clone, at `.tmp/theme-preview/<id>/`: `index.html` is the
 contact sheet, `REPORT.txt` the findings, `screenshot.webp` the tile picture.

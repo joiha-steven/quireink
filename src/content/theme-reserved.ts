@@ -11,3 +11,8 @@ import { CHROME_FONTS, FONT_PRESETS, THEME_PRESETS } from '@/content/themes'
 export const RESERVED_THEME_IDS: ReadonlySet<string> = new Set(BUILTIN_THEMES.map((t) => t.id))
 export const RESERVED_PALETTE_IDS: ReadonlySet<string> = new Set(THEME_PRESETS.map((p) => p.id))
 export const RESERVED_FONT_IDS: ReadonlySet<string> = new Set([...FONT_PRESETS.map((f) => f.id), ...CHROME_FONTS.map((f) => f.id)])
+/** The built-in fonts by picker: the reading-font setting offers one list, the chrome-font setting the other. */
+export const BUILTIN_FONT_IDS = {
+  reading: new Set(FONT_PRESETS.map((f) => f.id)) as ReadonlySet<string>,
+  chrome: new Set(CHROME_FONTS.map((f) => f.id)) as ReadonlySet<string>,
+}
