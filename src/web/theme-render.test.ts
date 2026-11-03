@@ -42,6 +42,16 @@ describe('choosing an installed theme', () => {
     expect(await sheet.text()).toStartWith('@layer theme{')
   })
 
+  it('serves a file by the type its name gives, whatever the stored row says', async () => {
+    const hash = await install(themeZip())
+    // What a backup can put back, unchecked: the row naming the stylesheet as a page.
+    const row = db().query<{ files: string }, [string]>(`select files from themes where hash = ?`).get(hash)!
+    const files = (JSON.parse(row.files) as { path: string; type: string }[]).map((f) => ({ ...f, type: 'text/html' }))
+    db().run(`update themes set files = ? where hash = ?`, [JSON.stringify(files), hash])
+    const sheet = await app.request(`/themes/${hash}/theme.css`)
+    expect(sheet.headers.get('content-type')).toBe('text/css; charset=utf-8')
+  })
+
   it('ignores a write naming a theme that is neither built in nor installed', async () => {
     await install(themeZip())
     await save({ theme: 'broadsheet' })

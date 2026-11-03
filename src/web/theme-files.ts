@@ -18,6 +18,7 @@ import { readBlob } from '@/media/blob'
 import { statSize, stream } from '@/runtime/impl/blob'
 import { installedThemeFile, themeBlobPath } from '@/content/installed-themes'
 import { inLayer } from '@/web/css-layers'
+import { themeFileType } from '@/theme'
 
 const IMMUTABLE = 'public, max-age=31536000, immutable'
 /** The same sandbox `/uploads` puts on an SVG (`web/uploads.ts` says why). */
@@ -34,12 +35,16 @@ export async function handleThemeFile(c: Context): Promise<Response> {
   const found = want ? installedThemeFile(want.hash, want.file) : null
   if (!want || !found) return c.text('Not found', 404)
   const pathname = themeBlobPath(want.hash, found.path)
+  // ⚠️ THE TYPE BY THE NAME, as at install, never the one the row carries. A backup puts rows back
+  // unchecked, so a row saying `images/a.svg` is `text/html` sent the file as a page on this
+  // origin, with the owner's session in scope and no sandbox, since that is keyed on the SVG type.
+  const type = themeFileType(found.path)
   const headers: Record<string, string> = {
-    'Content-Type': found.type,
+    'Content-Type': type,
     'Cache-Control': IMMUTABLE,
     'X-Content-Type-Options': 'nosniff',
   }
-  if (found.type === 'image/svg+xml') headers['Content-Security-Policy'] = SVG_SANDBOX
+  if (type === 'image/svg+xml') headers['Content-Security-Policy'] = SVG_SANDBOX
 
   try {
     if (found.path === 'theme.css') {
