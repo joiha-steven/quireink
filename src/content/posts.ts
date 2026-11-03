@@ -19,6 +19,7 @@ import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, fromIso, toIso } from '@/store/db'
 import { clearAutosave } from '@/content/autosave'
 import { renameSends } from '@/news/newsletter-log'
+import { renameMarks } from '@/server/reader-marks-move'
 import { ftsWord } from '@/content/fts-word'
 import { clearTermRedirects, followRename } from '@/content/term-rename'
 
@@ -285,12 +286,14 @@ export async function savePost(
     // old one goes there are two live rows for one post; this used to be four statements after
     // the commit, and a process that stopped between them left both rows standing with
     // `ensureSlugFree` refusing the old slug for good. The send log moves too: keyed by slug,
-    // and the only thing telling the newsletter tab this post already went out.
+    // and the only thing telling the newsletter tab this post already went out. So do the
+    // readers' pen marks, keyed by path (`reader-marks-move.ts`).
     if (renaming) {
       run(`delete from posts where slug = ?`, previousSlug)
       renameRevisions(previousSlug, post.slug)
       renameComments(previousSlug, post.slug)
       renameSends(previousSlug, post.slug)
+      renameMarks(`/${previousSlug}`, `/${post.slug}`)
     }
   })
 

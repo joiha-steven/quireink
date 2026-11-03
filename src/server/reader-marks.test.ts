@@ -178,3 +178,24 @@ describe('what the table will hold', () => {
     expect(MAX_TOTAL_BYTES).toBeGreaterThan(0)
   })
 })
+
+// Keyed by path, and the path moves when the slug does: the marks stayed under the old one, which
+// now 301s away, so a reader never saw them again (2026-11-03). Comments already moved with a rename.
+describe('a renamed piece', () => {
+  it('takes its readers\' marks to the new address, the post and the page alike', async () => {
+    const { savePost } = await import('@/content/posts')
+    const { savePage } = await import('@/content/pages')
+    const who = readerOfCode(mintCode())!
+    const past = '2020-01-01T00:00:00.000Z'
+    await savePost({ slug: 'old', title: 'T', content: 'A sentence.', status: 'published', date: past })
+    expect(putMarks(who.id, '/old', marks(1))).toBe(true)
+    await savePost({ slug: 'new', title: 'T', content: 'A sentence.', status: 'published', date: past }, 'old')
+    expect(getMarks(who.id, '/old')).toBeNull()
+    expect(getMarks(who.id, '/new')).not.toBeNull()
+
+    await savePage({ slug: 'page-old', title: 'P', content: 'Words.', status: 'published' })
+    expect(putMarks(who.id, '/page-old', marks(2))).toBe(true)
+    await savePage({ slug: 'page-new', title: 'P', content: 'Words.', status: 'published' }, 'page-old')
+    expect(getMarks(who.id, '/page-new')).not.toBeNull()
+  })
+})

@@ -150,8 +150,8 @@
   moves into its bar, and a mark can be sent to the reader's own notebook (ADR 0045). ADR 0043.
   Tier two (`pen-sync.ts`, `src/web/pen-routes.ts`, ADR 0047): a reader may keep the same marks
   on the server under a notebook code or their commenter sign-in — `reader_marks` holds the
-  page's list under an opaque id, the server's copy wins on load, every change is written back,
-  and a year untouched sweeps it. The owner sees none of it; `features.readerPen` off is a 404.
+  page's list under an opaque id, the server's copy wins on load, every change is written back, a renamed post or page takes
+  its rows to the new path (`reader-marks-move.ts`), and a year untouched sweeps it. The owner sees none of it; `features.readerPen` off is a 404.
   ON by default, and **asked once during setup** (step three, `setup-page.ts`): it is the only
   switch here that changes what other people may do on your pages, and an owner who never opens
   Settings never learns it is there.

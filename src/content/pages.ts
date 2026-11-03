@@ -11,6 +11,7 @@ import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, toIso } from '@/store/db'
 import { getSettings, saveSettings } from '@/content/settings'
+import { renameMarks } from '@/server/reader-marks-move'
 
 // `updated_at` joined the list read when the admin stopped sorting by title: one stream of
 // posts AND pages, most recently touched first (ADR 0024), needs pages to carry the same
@@ -167,7 +168,10 @@ export async function savePage(
     )
     // Only when there WAS an old row: a PUT naming a slug nothing holds is a create, and
     // treating it as a rename wrote a permanent redirect out of a path that never existed.
-    if (renaming) run(`delete from pages where slug = ?`, previousSlug)
+    if (renaming) {
+      run(`delete from pages where slug = ?`, previousSlug)
+      renameMarks(`/${previousSlug}`, `/${page.slug}`)
+    }
   })
 
   // The live slug wins over any redirect that used it as a source, and it is cleared BEFORE
