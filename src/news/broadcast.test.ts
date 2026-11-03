@@ -22,9 +22,17 @@ const PAST = new Date(Date.now() - 86_400_000).toISOString()
 
 // Port 1 on the loopback has nothing listening, so a connection is refused rather than
 // hanging: a test that waits on a real network timeout is a test nobody runs twice.
+// Put back afterwards: bun runs every test file in one process, and a file that ran after this
+// one saw SMTP configured (admin-news.test.ts, red on CI 2026-11-03 once the file order moved).
+const SMTP_KEYS = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_FROM'] as const
+const smtpBefore = SMTP_KEYS.map((k) => process.env[k])
 process.env.SMTP_HOST = '127.0.0.1'
 process.env.SMTP_PORT = '1'
 process.env.SMTP_FROM = 'blog@example.com'
+afterAll(() => SMTP_KEYS.forEach((k, i) => {
+  if (smtpBefore[i] === undefined) delete process.env[k]
+  else process.env[k] = smtpBefore[i]
+}))
 
 beforeEach(() => {
   db().run(`delete from subscribers`)

@@ -24,6 +24,10 @@ const PAST = new Date(Date.now() - 86_400_000).toISOString()
 const ADDRESSES = ['a@example.com', 'b@example.com', 'c@example.com', 'd@example.com', 'e@example.com']
 
 let relay: Relay
+// Put back afterwards: bun runs every test file in one process, so SMTP left set here reads as
+// configured in every file after this one (see broadcast.test.ts).
+const SMTP_KEYS = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_FROM'] as const
+const smtpBefore = SMTP_KEYS.map((k) => process.env[k])
 beforeAll(async () => {
   relay = await startRelay()
   process.env.SMTP_HOST = '127.0.0.1'
@@ -33,6 +37,10 @@ beforeAll(async () => {
 afterAll(() => {
   relay.close()
   dropDatabase(DIR)
+  SMTP_KEYS.forEach((k, i) => {
+    if (smtpBefore[i] === undefined) delete process.env[k]
+    else process.env[k] = smtpBefore[i]
+  })
 })
 
 beforeEach(() => {
