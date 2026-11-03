@@ -16,7 +16,8 @@ import { run } from '@/store/query'
 import { ensureKeys } from '@/ap/keys'
 import { signRequest } from '@/ap/signature'
 import { setApFetcher, forgetRemoteActors } from '@/ap/deliver'
-import { addFollower, followers } from '@/ap/store'
+import { addFollower, enqueue, followers } from '@/ap/store'
+import { apTick } from '@/ap/tick'
 
 const DIR = './.tmp/test-ap-routes'
 freshDatabase(DIR)
@@ -305,6 +306,32 @@ describe('the inbox', () => {
       await send(JSON.stringify({ type: 'Undo', actor: VICTIM_ID, object: { type: 'Follow' } }), `${K}#main`)
       await send(JSON.stringify({ type: 'Follow', actor: ME, object: `${SITE}/ap/actor` }), `${K}2#main`)
       expect(followers().map((f) => [f.actor, f.inbox])).toEqual([[VICTIM_ID, VICTIM_ACTOR.inbox]])
+    } finally {
+      setApFetcher(async (url) => {
+        const doc = ({ [THEIR_ID]: THEIR_ACTOR, [VICTIM_ID]: VICTIM_ACTOR } as Record<string, unknown>)[url.split('#')[0] ?? '']
+        return doc ? new Response(JSON.stringify(doc)) : new Response('no', { status: 404 })
+      })
+    }
+  })
+
+  it('hands each queued activity over once, however many ticks overlap', async () => {
+    await on()
+    enqueue('{"type":"Accept"}', [`${THEIR_ID}/inbox`])
+    let posts = 0
+    let release = (): void => {}
+    const slow = new Promise<void>((done) => { release = done })
+    setApFetcher(async (_url, init) => {
+      if (init?.method === 'POST') { posts++; await slow }
+      return new Response(null, { status: 202 })
+    })
+    try {
+      const first = apTick()
+      // The minute clock fires again while the first tick is still waiting on the inbox.
+      await new Promise((done) => setTimeout(done, 20))
+      const second = apTick()
+      release()
+      await Promise.all([first, second])
+      expect(posts).toBe(1)
     } finally {
       setApFetcher(async (url) => {
         const doc = ({ [THEIR_ID]: THEIR_ACTOR, [VICTIM_ID]: VICTIM_ACTOR } as Record<string, unknown>)[url.split('#')[0] ?? '']

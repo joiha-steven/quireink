@@ -16,7 +16,27 @@ export type ApTick = { announced: number; sent: number; failed: number }
 
 const IDLE: ApTick = { announced: 0, sent: 0, failed: 0 }
 
+/**
+ * The run in flight, if there is one.
+ *
+ * ⚠️ ONE AT A TIME. The minute clock does not wait for the last tick, `/api/cron` and the hourly
+ * tick call this too, and a run can take minutes: twenty deliveries to inboxes that time out at
+ * fifteen seconds each. `due()` only reads the queue, so a second run started meanwhile read the
+ * same rows and posted the same activities again. A tick that finds one running leaves it to it.
+ */
+let running: Promise<ApTick> | null = null
+
 export async function apTick(): Promise<ApTick> {
+  if (running) return IDLE
+  running = tick()
+  try {
+    return await running
+  } finally {
+    running = null
+  }
+}
+
+async function tick(): Promise<ApTick> {
   const settings = await getSettings()
   // ⚠️ OFF MEANS NOTHING LEAVES. Not "nothing new is announced" — nothing at all, including a
   // queue left over from before the switch was turned off. An owner who switches this off has
