@@ -56,6 +56,19 @@ describe('replicateSnapshot', () => {
     expect(calls.deleted).toEqual(['blog/quire-2026-08-01T0100.tar.gz'])
   })
 
+  it('prunes a snapshot taken by hand among its own kind, never a scheduled one', async () => {
+    await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 1, keep: 2 } })
+    const holding = [
+      'blog/quire-2026-08-01T0100.tar.gz',
+      'blog/quire-2026-08-02T0100.tar.gz',
+      'blog/quire-2026-08-03T010000-manual.tar.gz',
+      'blog/quire-2026-08-04T010000-manual.tar.gz',
+    ]
+    const { client, calls } = fakeBucket(holding)
+    await replicateSnapshot('quire-2026-08-27T090000-manual.tar.gz', new Blob(['x']), { client, prefix: 'blog/' })
+    expect(calls.deleted).toEqual(['blog/quire-2026-08-03T010000-manual.tar.gz'])
+  })
+
   it('reports a bucket failure without throwing — the local snapshot is already safe', async () => {
     const client: OffsiteClient = {
       write: async () => { throw new Error('SignatureDoesNotMatch') },

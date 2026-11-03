@@ -94,7 +94,7 @@ describe('runBackup', () => {
 
   it('prunes to the retention count, newest kept', async () => {
     await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 1, keep: 2 } })
-    await runBackup()
+    await runBackup('scheduled')
 
     // Same-minute names would collide, so the older ones are placed by hand. They are only
     // there to be counted and deleted.
@@ -102,11 +102,33 @@ describe('runBackup', () => {
     await writeFile(join(SNAPSHOTS, 'quire-2021-01-01T0000.tar.gz'), 'older-still')
     expect(await listSnapshots()).toHaveLength(3)
 
-    await runBackup()
+    await runBackup('scheduled')
     const left = (await listSnapshots()).map((s) => s.name)
     expect(left).toHaveLength(2)
     expect(left.some((n) => n.startsWith('quire-20'))).toBe(true)
     expect(left).not.toContain('quire-2020-01-01T0000.tar.gz')
+  })
+
+  // Pressing "Back up now" when something looks wrong is the natural reflex, and it used to
+  // prune like a scheduled run: four presses with `keep: 4` deleted every snapshot from before
+  // the damage (2026-11-03).
+  it('never pushes a scheduled snapshot out when taken by hand, and keeps two of its own', async () => {
+    await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 1, keep: 2 } })
+    mkdirSync(SNAPSHOTS, { recursive: true })
+    await writeFile(join(SNAPSHOTS, 'quire-2020-01-01T0000.tar.gz'), 'scheduled, older')
+    await writeFile(join(SNAPSHOTS, 'quire-2021-01-01T0000.tar.gz'), 'scheduled, newer')
+    await writeFile(join(SNAPSHOTS, 'quire-2019-01-01T000000-manual.tar.gz'), 'by hand, oldest')
+    await writeFile(join(SNAPSHOTS, 'quire-2019-06-01T000000-manual.tar.gz'), 'by hand')
+
+    const taken = await runBackup()
+    expect(taken.name).toMatch(/-manual\.tar\.gz$/)
+    const left = (await listSnapshots()).map((s) => s.name)
+    expect(left).toContain('quire-2020-01-01T0000.tar.gz')
+    expect(left).toContain('quire-2021-01-01T0000.tar.gz')
+    expect(left).toContain(taken.name)
+    expect(left).toContain('quire-2019-06-01T000000-manual.tar.gz')
+    expect(left).not.toContain('quire-2019-01-01T000000-manual.tar.gz')
+    expect(left).toHaveLength(4)
   })
 
   it('leaves nothing behind when the build fails', async () => {
@@ -199,6 +221,20 @@ describe('maybeRunBackup', () => {
     const longAgo = new Date(Date.now() - 5 * 86_400_000)
     await Bun.spawn(['touch', '-d', longAgo.toISOString(), old]).exited
     expect((await maybeRunBackup()).ran).toBe(true)
+  })
+
+  // A snapshot taken by hand is not the schedule's: counting it as one would let a habit of
+  // pressing the button hold the schedule off for ever, and the hand-taken pool keeps only two.
+  it('is due from the newest SCHEDULED snapshot, not from one taken by hand', async () => {
+    await saveSettings({ backups: { ...DEFAULT_BACKUPS, enabled: true, intervalDays: 1, keep: 4 } })
+    mkdirSync(SNAPSHOTS, { recursive: true })
+    const old = join(SNAPSHOTS, 'quire-2020-01-01T0000.tar.gz')
+    await writeFile(old, 'x')
+    await Bun.spawn(['touch', '-d', new Date(Date.now() - 5 * 86_400_000).toISOString(), old]).exited
+    await runBackup()
+    const run = await maybeRunBackup()
+    expect(run.ran).toBe(true)
+    expect(run.name).not.toMatch(/-manual/)
   })
 })
 

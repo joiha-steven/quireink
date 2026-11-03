@@ -52,9 +52,11 @@ install that never opens Settings — precisely the one this product is for — 
 snapshot at all. An owner who saved settings while it was off keeps their stored `false`;
 the default reaches only installs that never chose.
 
-- **Due-ness is measured from the newest file on disk**, not from a recorded run time. There
-  is no state table, so nothing can go stale, deleting every snapshot asks for a fresh one,
-  and a machine restored from a copy does not believe it already has today's.
+- **A snapshot taken by hand never pushes a scheduled one out.** "Back up now" and MCP `run_backup`
+  write `quire-<stamp>-manual.tar.gz` and keep their newest **two**; the schedule keeps its `keep`
+  (pruned together, four presses deleted every snapshot from before the damage). **Due-ness** is
+  the age of the newest *scheduled* file: no state table to go stale, deleting every snapshot asks
+  for a fresh one, and a restored machine does not believe it already has today's.
 - **A snapshot cannot be restored over a running blog from the admin**, and that is the
   design. Restoring means replacing the database files the running process holds open; doing
   it correctly means stopping the service, which is the shell procedure below. An application
@@ -72,8 +74,8 @@ the default reaches only installs that never chose.
 
 **Settings → Server & connections → Off-server copy.** Paste a bucket, an access key pair, and (for
 R2/MinIO) the endpoint — every archive the schedule or the "take one now" button writes is
-also PUT into the bucket, and the remote copies are pruned to the same `keep` as the local
-directory. Env fallbacks exist for a fleet: `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`,
+also PUT into the bucket, and the remote copies are pruned by the local directory's rule. Env
+fallbacks exist for a fleet: `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`,
 `S3_PREFIX`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (the stored value wins). The upload
 streams the archive: from disk on Bun, and on Cloudflare as a multipart upload, 16 MB in the
 Worker at a time (until G4 it read the archive whole, and refused one past 64 MB).

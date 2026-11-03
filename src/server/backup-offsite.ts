@@ -17,7 +17,7 @@
 
 import { getIntegrationKeys } from '@/store/integration-keys'
 import { getSettings } from '@/content/settings'
-import { isSnapshotName } from '@/server/backup'
+import { isSnapshotName, prunable, snapshotKind } from '@/server/backup'
 import { logActivity } from '@/server/activity'
 import { s3Client } from '@/runtime/impl/offsite'
 import type { KeptBody, OffsiteClient } from '@/runtime/ports'
@@ -51,8 +51,8 @@ export async function offsiteTarget(): Promise<OffsiteTarget | null> {
 }
 
 /**
- * Ship one finished archive, then prune the bucket to the same `keep` as the local
- * directory. Never throws: the report goes to the activity log either way, and the
+ * Ship one finished archive, then prune the bucket the way the local directory is pruned:
+ * `keep` scheduled snapshots and `MANUAL_KEEP` taken by hand. Never throws: the report goes to the activity log either way, and the
  * caller's snapshot is already safe on disk.
  *
  * Pruning trusts nothing in the bucket but our own shape: only keys under OUR prefix
@@ -77,8 +77,11 @@ export async function replicateSnapshot(
       .map((o) => o.key)
       .filter((key) => key.startsWith(t.prefix) && isSnapshotName(key.slice(t.prefix.length)))
       .sort((a, b) => b.localeCompare(a)) // the name is the time it was taken
-    for (const key of ours.slice(Math.max(1, keep))) {
-      await t.client.delete(key)
+    // By the same two pools as the directory (`prunable`), so a press of the button does not
+    // push a scheduled copy out of the bucket either.
+    const base = (key: string) => key.slice(t.prefix.length)
+    for (const old of prunable(ours.map(base), snapshotKind(name), keep)) {
+      await t.client.delete(`${t.prefix}${old}`)
     }
     void logActivity('backup.offsite', `${name} -> bucket`)
     return true

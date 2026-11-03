@@ -37,13 +37,43 @@ export type Snapshot = {
  * `.enc` when sealed, because the extension is the only thing telling somebody a year later
  * that `tar -xzf` is not going to work and what to reach for instead.
  */
-export function snapshotName(now = new Date(), sealed = false): string {
+export function snapshotName(now = new Date(), sealed = false, kind: SnapshotKind = 'scheduled'): string {
   const p = (n: number) => String(n).padStart(2, '0')
   // THE SECOND TOO, since 2026-09-30. Two runs inside one minute — the button pressed twice,
   // the clock and an external cron, MCP `run_backup` — wrote ONE file, and the failure path of
   // the second deleted the good first one. Names from before keep matching `isSnapshotName`.
   return `quire-${now.getUTCFullYear()}-${p(now.getUTCMonth() + 1)}-${p(now.getUTCDate())}`
-    + `T${p(now.getUTCHours())}${p(now.getUTCMinutes())}${p(now.getUTCSeconds())}.tar.gz${sealed ? '.enc' : ''}`
+    + `T${p(now.getUTCHours())}${p(now.getUTCMinutes())}${p(now.getUTCSeconds())}`
+    + `${kind === 'manual' ? MANUAL_MARK : ''}.tar.gz${sealed ? '.enc' : ''}`
+}
+
+/**
+ * Who took a snapshot: the schedule, or the owner pressing "Back up now" (or MCP `run_backup`).
+ *
+ * TWO POOLS, each pruned on its own. Pruning them together made the button the way to lose
+ * the history: the reflex on seeing a damaged post is to back up at once, and with `keep: 4`
+ * four presses deleted every snapshot from before the damage (2026-11-03). A snapshot taken by
+ * hand now never pushes a scheduled one out; the hand-taken pool keeps its newest two.
+ *
+ * Carried IN THE NAME, because there is no state table (`lastRunAt`) and the off-site bucket
+ * has to sort the two apart from nothing but its keys. A name from before this has no mark and
+ * counts as scheduled, which is what every one of them was or was treated as.
+ */
+export type SnapshotKind = 'scheduled' | 'manual'
+const MANUAL_MARK = '-manual'
+/** How many snapshots taken by hand are kept, apart from `backups.keep`. */
+export const MANUAL_KEEP = 2
+
+export const snapshotKind = (name: string): SnapshotKind =>
+  name.includes(`${MANUAL_MARK}.tar.gz`) ? 'manual' : 'scheduled'
+
+/**
+ * The names to delete once `name` is written: the older ones of ITS pool past that pool's count.
+ * Newest-first input. Shared with `backup-offsite.ts`, so the bucket is pruned by the same rule.
+ */
+export function prunable(names: string[], kind: SnapshotKind, keep: number): string[] {
+  const limit = kind === 'manual' ? MANUAL_KEEP : Math.max(1, keep)
+  return names.filter((n) => snapshotKind(n) === kind).slice(limit)
 }
 
 /**
@@ -62,7 +92,7 @@ export function snapshotName(now = new Date(), sealed = false): string {
  * `replicateSnapshot` swallows its failures by design, so the bucket would simply grow.
  */
 export const isSnapshotName = (name: string): boolean =>
-  /^quire-\d{4}-\d{2}-\d{2}T\d{4}(\d{2})?\.tar\.gz(\.enc)?$/.test(name)
+  /^quire-\d{4}-\d{2}-\d{2}T\d{4}(\d{2})?(-manual)?\.tar\.gz(\.enc)?$/.test(name)
 
 /** Newest first. An unreadable or absent store is an empty list, not an error. */
 export async function listSnapshots(): Promise<Snapshot[]> {
@@ -90,11 +120,12 @@ let running: Promise<Snapshot> | null = null
 /** Set once the owner has confirmed deleting this blog from Cloudflare (`stopBackups`). */
 let stopped = false
 
-export function runBackup(): Promise<Snapshot> {
+/** `manual` unless the schedule says otherwise: every caller but `maybeRunBackup` is a person. */
+export function runBackup(kind: SnapshotKind = 'manual'): Promise<Snapshot> {
   if (stopped) return Promise.reject(new Error('backups are stopped: this blog is being deleted'))
   // ONE AT A TIME. The button, the clock, an external cron and MCP `run_backup` each started
   // their own, and two at once opened and truncated the same file.
-  running ??= takeSnapshot().finally(() => { running = null })
+  running ??= takeSnapshot(kind).finally(() => { running = null })
   return running
 }
 
@@ -112,17 +143,17 @@ export async function stopBackups(): Promise<void> {
   await running?.catch(() => undefined)
 }
 
-async function takeSnapshot(): Promise<Snapshot> {
+async function takeSnapshot(kind: SnapshotKind): Promise<Snapshot> {
   const settings = await getSettings()
-  const name = snapshotName(new Date(), encryptReady(settings))
+  const name = snapshotName(new Date(), encryptReady(settings), kind)
   // All or nothing (`ArchivePort.writeKept`): a failure leaves neither this name nor a half-written
   // file behind. A half-written archive is worse than none: it counts towards retention and it
   // looks like a backup until the day someone opens it.
   const size = await withArchiveRetry(async () => writeKept(name, await archiveStream(settings)))
 
   const { keep } = (await getSettings()).backups
-  for (const old of (await listSnapshots()).slice(Math.max(1, keep))) {
-    await removeKept(old.name)
+  for (const old of prunable((await listSnapshots()).map((s) => s.name), kind, keep)) {
+    await removeKept(old)
   }
 
   // And off the machine (ADR 0035): every snapshot the schedule or the button writes is
@@ -143,7 +174,7 @@ export async function deleteSnapshot(name: string): Promise<boolean> {
 /**
  * The cron entry: run only when enabled and only when one is due.
  *
- * "Due" is measured from the newest snapshot on disk rather than from a recorded run time,
+ * "Due" is measured from the newest scheduled snapshot on disk rather than from a recorded run time,
  * so deleting every snapshot asks for a fresh one and a restored machine does not think it
  * already has today's.
  */
@@ -151,13 +182,15 @@ export async function maybeRunBackup(): Promise<{ ran: boolean; name?: string; e
   const { backups } = await getSettings()
   if (!backups.enabled || stopped) return { ran: false }
 
-  const last = await lastRunAt()
+  // From the newest SCHEDULED snapshot: one taken by hand is not the schedule's, and counting it
+  // would let a habit of pressing the button hold the schedule off for ever.
+  const last = (await listSnapshots()).find((s) => snapshotKind(s.name) === 'scheduled')?.createdAt
   if (last && Date.now() - Date.parse(last) < backups.intervalDays * 86_400_000) {
     return { ran: false }
   }
 
   try {
-    const { name } = await runBackup()
+    const { name } = await runBackup('scheduled')
     return { ran: true, name }
   } catch (error) {
     // Reported, not thrown: a failed backup must not take the rest of the cron tick with it.
