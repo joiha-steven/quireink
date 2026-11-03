@@ -229,11 +229,22 @@ describe('the steward tools', () => {
     expect(forced.text).not.toContain('attacker@example.com')
   })
 
-  it('create_snapshot writes a real archive into the retained set', async () => {
+  it('create_snapshot writes a real archive among the hand-taken ones, and says so', async () => {
     const { text, isError } = await call('create_snapshot', {})
     expect(isError).toBe(false)
     const data = JSON.parse(text) as { name: string; size: number }
-    expect(data.name).toMatch(/^quire-.*\.tar\.gz$/)
+    expect(data.name).toMatch(/^quire-.*-manual\.tar\.gz$/)
     expect(data.size).toBeGreaterThan(0)
+    // Its description once said it went into the set the scheduler keeps, so an agent calling it
+    // before every edit expected to rotate the schedule's snapshots out; it never does.
+    const res = await app.request('/api/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}`, 'sec-fetch-site': 'none' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 3, method: 'tools/list', params: {} }),
+    })
+    const tools = (await res.json() as { result: { tools: { name: string; description: string }[] } }).result.tools
+    const description = tools.find((t) => t.name === 'create_snapshot')!.description
+    expect(description).not.toContain('same retained set')
+    expect(description).toContain('never pushes a scheduled snapshot out')
   })
 })

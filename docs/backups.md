@@ -52,7 +52,7 @@ install that never opens Settings — precisely the one this product is for — 
 snapshot at all. An owner who saved settings while it was off keeps their stored `false`;
 the default reaches only installs that never chose.
 
-- **A snapshot taken by hand never pushes a scheduled one out.** "Back up now" and MCP `run_backup`
+- **A snapshot taken by hand never pushes a scheduled one out.** "Back up now" and MCP `create_snapshot`
   write `quire-<stamp>-manual.tar.gz` and keep their newest **two**; the schedule keeps its `keep`
   (pruned together, four presses deleted every snapshot from before the damage). **Due-ness** is
   the age of the newest *scheduled* file: no state table to go stale, deleting every snapshot asks

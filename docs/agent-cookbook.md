@@ -138,5 +138,5 @@ calling the client) and the job repeats:
   only, because every preset is already a good screen.
 - **The newsletter's send button stays human.** The agent can draft and can send a test
   to you alone; the broadcast to your readers is yours to press.
-- **`create_snapshot`** before anything big — the agent can take the same backup the
-  scheduler takes.
+- **`create_snapshot`** before anything big — the same archive the scheduler builds, kept
+  with the two newest taken by hand, so calling it often never rotates a scheduled one out.

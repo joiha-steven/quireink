@@ -296,8 +296,9 @@ export function registerStewardTools(server: ToolHost): void {
     'create_snapshot',
     {
       description:
-        'Build a backup snapshot on the server, into the same retained set the scheduler '
-        + 'writes. Good manners before a big change.',
+        'Build a backup snapshot on the server, kept with the ones taken by hand: the newest '
+        + 'two of those stay, and one never pushes a scheduled snapshot out. Good manners '
+        + 'before a big change.',
       inputSchema: {},
     },
     async () => {
