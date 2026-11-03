@@ -382,7 +382,7 @@ card, a link) it is called by its first words; see
 - **The route persists** via `savePost`/`savePage` — new content is ADDED, a slug that collides with
   existing content gets a numeric suffix (nothing overwritten). **A re-run does not duplicate:**
   a post already here with the same slug, title and date (a page: slug, title and body), or at the slug the redirect from its old path names, is
-  counted as skipped, and so is an item whose date will not parse; a date the parser made up for
+  counted as `already` (its old path's 301 written then if a run that stopped part-way never wrote it, and no rule is there), and an item whose date will not parse as skipped; a date the parser made up for
   an undated item never counts as the same. An excerpt the parser derived is saved as derived, so it follows the body. One `clearCache()` at the end; logged as
   `import.wordpress`. **A published item's old path becomes a 301** (one hop, trailing slash and all) in the
   owner's redirects table (WXR `<link>`, Substack `/p/<slug>`; refused when it would shadow

@@ -130,6 +130,16 @@ export function opsRoutes() {
     return had && had.destination.startsWith('/') && !had.destination.slice(1).includes('/') ? had.destination.slice(1) : null
   }
 
+  /**
+   * The 301 of an item an earlier run brought in, when that run never wrote it. The item is saved
+   * and THEN its redirect, two writes nothing holds together (`savePost` is not one transaction
+   * with anything), and a process that died between them left an old address that a re-run,
+   * finding the item here, skipped for good (2026-11-03). Only where the old path has no rule at
+   * all, so a re-run counts nothing it did not write and never wins over the owner's own.
+   */
+  const unwritten = async (path: string | undefined, slug: string): Promise<number> =>
+    path && findRedirect(path) === null ? redirectOldPath(path, slug) : 0
+
   const persist = async (
     result: import('@/import/convert').ImportResult,
     source: string,
@@ -153,7 +163,7 @@ export function opsRoutes() {
     for (const { slug, path, ...rest } of result.posts) {
       if (unparseable(rest.date)) { skipped++; continue }
       const here = await getPost(slug)
-      if (here && here.title === rest.title && sameDate(here.date, rest.date)) { already++; continue }
+      if (here && here.title === rest.title && sameDate(here.date, rest.date)) { already++; redirects += await unwritten(path, slug); continue }
       const before = await broughtBefore(path)
       const there = before && before !== slug ? await getPost(before) : null
       if (there && there.title === rest.title && sameDate(there.date, rest.date)) { already++; continue }
@@ -167,7 +177,7 @@ export function opsRoutes() {
     }
     for (const { slug, path, ...rest } of result.pages) {
       const here = await getPage(slug)
-      if (here && here.title === rest.title && here.content === rest.content) { already++; continue }
+      if (here && here.title === rest.title && here.content === rest.content) { already++; redirects += await unwritten(path, slug); continue }
       const before = await broughtBefore(path)
       const there = before && before !== slug ? await getPage(before) : null
       if (there && there.title === rest.title && there.content === rest.content) { already++; continue }
