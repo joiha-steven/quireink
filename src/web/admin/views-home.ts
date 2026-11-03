@@ -20,13 +20,11 @@ import { getMailStatus } from '@/news/mail'
 import { liveOnly } from '@/store/db'
 import { storageStats } from '@/media/storage-stats'
 import { one } from '@/store/query'
+import { startedAt } from '@/server/started'
 import pkg from '../../../package.json' with { type: 'json' }
 
-/**
- * When this process — or on Cloudflare, this isolate — began, taken when the module loads.
- * `process.uptime()` reads 0 on every call in workerd (2026-10-03), so the line said "just now" forever.
- */
-const STARTED_AT = Date.now()
+// When this process began (`server/started.ts`): `process.uptime()` reads 0 on every call in
+// workerd (2026-10-03), and so does a clock read when this module loads there (2026-11-03).
 
 /**
  * The facts the "System" panel prints. Best-effort throughout: a database hiccup flips a
@@ -105,7 +103,7 @@ async function systemInfo() {
     // The START, not a duration: a payload is rendered once and then sits in a tab, and a
     // duration frozen at render time is wrong by however long the tab has been open. From a
     // timestamp the screen can always work out the truth.
-    startedAt: new Date(STARTED_AT).toISOString(),
+    startedAt: new Date(startedAt()).toISOString(),
   }
 }
 

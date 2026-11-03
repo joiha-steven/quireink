@@ -20,6 +20,7 @@ import { enableBackgroundCache } from '@/server/warm'
 import { fullTick, publishTick } from '@/server/tick'
 import { APP_VERSION } from '@/version'
 import { runUninstall, runUpdate, type AskObject } from '@/install/cloudflare/self'
+import { markStarted } from '@/server/started'
 
 /** Due posts every minute and housekeeping every hour: the clock Bun's `startClock` keeps (ADR 0031). */
 const MINUTE = 60_000
@@ -43,6 +44,8 @@ export class Blog extends DurableObject<CfEnv> {
    */
   private boot(): Promise<void> {
     this.booting ??= this.ctx.blockConcurrencyWhile(async () => {
+      // The clock read when the modules loaded was the epoch here (`server/started.ts`).
+      markStarted()
       rememberBookmark(await this.ctx.storage.getCurrentBookmark())
       openDatabases(readEnv().dataDir)
       this.app = createApp()
