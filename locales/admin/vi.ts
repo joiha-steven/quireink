@@ -466,7 +466,7 @@ const vi = {
   mediaViewList: 'Danh sách',
   tabImages: 'Hình ảnh',
   tabVideos: 'Video',
-  tabFiles: 'Files',
+  tabFiles: 'Tệp',
   videosDropzone: 'Kéo thả video vào đây hoặc bấm để chọn',
   noVideos: 'Chưa có video nào',
   mediaTitle: 'Thư viện ảnh',
