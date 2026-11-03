@@ -225,8 +225,12 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
   const count = (k: string, label: string, value: number): string => textField({
     k, label, type: 'number', value, inline: false, attrs: 'min="1" max="30"',
   })
+  // On Cloudflare there is no shell, no server and no disk: the snapshots are in the bucket, apart
+  // from the database, and an archive goes into a new, empty blog. The card said otherwise there,
+  // word for word as on a server (2026-11-03).
+  const cloud = readEnv().package === 'cloudflare'
   const body = `<div class="space-y-5">`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.exportHint)}</p>`
+    + `<p class="${NOTE_TEXT}">${escapeHtml(cloud ? t.exportHintCloud : t.exportHint)}</p>`
     + `<button type="button" data-backup-export class="${buttonClass('primary', 'sm')}">`
     + `${escapeHtml(t.exportNow)}</button>`
     // TWO WAYS OUT, IN ONE CARD, because an owner looking for either is looking in the same
@@ -281,7 +285,7 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
     + `</div>`
     + `<div class="space-y-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
     + switchList(switchRow({
-      k: 'backups.enabled', label: t.backupAuto, note: t.backupAutoDesc, on: b.enabled,
+      k: 'backups.enabled', label: t.backupAuto, note: cloud ? t.backupAutoDescCloud : t.backupAutoDesc, on: b.enabled,
     }))
     // The schedule is only a question once there is one, so it appears with it — and a hidden
     // block in the MIDDLE of a stack costs nothing, because `space-y-*` gives its margin to
@@ -316,7 +320,7 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
     // find out whether there are backups" are opposite instructions to the person reading it.
     + loadFailure(t, 'data-backup-failed')
     + `<ul class="${PANEL_LIST}" data-backup-list hidden></ul>${snapshotRow(t)}</div>`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.exportReplicationNote)}</p>`
+    + `<p class="${NOTE_TEXT}">${escapeHtml(cloud ? t.exportReplicationNoteCloud : t.exportReplicationNote)}</p>`
     + `</div></div>`
   return connectionCard({
     title: t.backupTitle,

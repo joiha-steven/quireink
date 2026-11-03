@@ -1683,6 +1683,9 @@ export type AdminStrings = {
   exportWritingNow: string
   exportBusy: string
   exportReplicationNote: string
+  exportHintCloud: string
+  backupAutoDescCloud: string
+  exportReplicationNoteCloud: string
   backupAuto: string
   backupAutoDesc: string
   backupIntervalLabel: string
