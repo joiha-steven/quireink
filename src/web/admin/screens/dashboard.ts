@@ -106,9 +106,10 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
   const steps = `<ol class="steps-down grid gap-x-6 gap-y-4 sm:grid-cols-2">`
     + firstRunSteps(t).map((s, i) => `<li class="flex gap-3">`
       + (flags[i]
-        // A DONE step trades its number for a tick and takes the pen: the number was the thing
-        // to do next, and a finished step is no longer one.
-        ? `<span aria-hidden="true" data-step-done class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--pen)] text-xs font-semibold text-neutral-950">✓</span>`
+        // A DONE step trades its number for a tick, in INK: the number was the thing to do next,
+        // and a finished step is no longer one. Not the pen (until 2026-11-03): the highlighter
+        // marks where you are, and three lime discs on Home spent it on something else.
+        ? `<span aria-hidden="true" data-step-done class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-900 text-xs font-semibold text-neutral-950 dark:border-neutral-100 dark:text-white">✓</span>`
         : `<span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-xs font-medium tabular-nums text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">${i + 1}</span>`)
       + `<div class="min-w-0"><a href="${escapeAttr(s.href)}" class="inline-block ${TAP} text-sm font-medium underline-offset-2 hover:underline ${flags[i] ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-900 dark:text-neutral-100'}">${escapeHtml(s.label)}</a>`
       + `<p class="mt-0.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">${escapeHtml(s.body)}</p></div></li>`).join('')
@@ -125,7 +126,7 @@ function firstRun(t: AdminStrings, done: boolean, setup: Record<string, boolean>
     // width never changes on a live page. It was `transition-[width] duration-300` — a
     // layout property, which the engine's own rule says bars must not take (the upload bars
     // scale, `media-images.ts`), at a fourth duration literal nothing else in the tree used.
-    + `<span class="block h-full rounded-full bg-[var(--pen-edge)]" style="width:${(finished / flags.length) * 100}%"></span>`
+    + `<span class="block h-full rounded-full bg-neutral-900 dark:bg-neutral-100" style="width:${(finished / flags.length) * 100}%"></span>`
     + `</span></span>`
   const band = `<div data-first-run-progress="${finished}/${flags.length}"${done ? ' hidden' : ''}>`
     + card({

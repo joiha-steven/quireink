@@ -319,46 +319,18 @@ const SIDEBAR_NAV_HOVER = component('kit-rail-hover',
 const SIDEBAR_NAV_INK = component('kit-rail-ink', 'text-neutral-500 dark:text-neutral-400')
 export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_INK} ${SIDEBAR_NAV_HOVER}`
 
-// The rail's answer to "which page am I on", in highlighter.
+// The rail's answer to "which page am I on", in highlighter, drawn as a highlighter draws.
 //
-// It was `bg-neutral-100` — a grey one step off the canvas, no answer at all — and then a
-// SOLID pen pill, which answered too loudly: a filled block of the brightest ink on the
-// screen, sitting in the rail on every single page. Now it is the mark the rest of the
-// product already makes: a short bar in the pen's edge tone at the row's leading edge, over
-// a wash of the pen diluted into the paper. Same ink, same meaning as an active TAB
-// (`tabs.ts`) — the highlighter marks the place you are in, never the value you chose —
-// but a run of a marker, not a slab of it.
-//
-// The row is a KEY, so the current page is a key HELD DOWN — in the SAME full pen the
-// active tab wears, carved with the SAME inset. It was a 30% wash for one evening, and the
-// owner read the two marks side by side as two different inks; where-you-are is one ink at
-// one strength wherever it appears, held down.
-//
-// The INK on it flips with the theme, and only the ink. In light the pen is #d5f856 and the
-// mark is written in near-black, as a highlighter over a page is. In dark the pen is dimmed
-// — a highlighter seen under low light, not a lime slab — and near-black on it measured
-// 3.8:1, under the 4.5 a label has to clear, which is why it read as grey smeared on
-// mustard. White on it clears: 5.38:1 on #5e721d, the pen's own hue since 2026-09-30
-// (it was the mustard #7e7028 before; `admin.css` says why it moved).
-// THE BAR AT THE RAIL'S EDGE, added 2026-09-07, and it is drawn OUTSIDE the key.
-//
-// The wash alone is a mark you have to be looking at the rail to read — a pale field on a pale
-// column — so the row gains a 3px stroke in `--pen-edge`, the same ink an active TAB strokes
-// under its label (`tabs.ts`): where-you-are is one shape in two orientations rather than two
-// ideas. It goes on the PAPER, in the rail's own 12px gutter, and that placement is measured
-// rather than chosen: inside the key the stroke would be #c3e844 on #d5f856, four points of
-// lightness apart and invisible in a screenshot; on the canvas at #f7f6f4 it is the second
-// loudest thing in the column after the key itself.
-//
-// CENTRED IN THAT GUTTER, at 7.5px: the stroke is 3px, the gutter is 12, and 12 - 7.5 leaves
-// it at 4.5 with 4.5 of paper each side. It was `-left-3`, which put it at 0 — hard against
-// the window's own edge, where it read as a sliver bleeding off the glass rather than as a
-// mark on the rail.
-// ⚠️ NO `before:content-['']`: until 2026-10-03 it ended this list and matched nothing — its rule is
-// `.before\:content-\[\\\'\\\'\]`, source backslashes and all — and every `before:` utility already
-// sets `content: var(--u-content)` (initial ""). The build refuses a name over a dead utility.
-export const SIDEBAR_NAV_ACTIVE = component('kit-rail-here',
-  'bg-[var(--pen)] font-medium text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)] before:absolute before:-left-[7.5px] before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-full before:bg-[var(--pen-edge)]')
+// A STROKE BEHIND THE WORD, since 2026-11-03: a flat band of `--pen` about two thirds of the
+// line tall, square, its two ends cut on a slant, laid behind the label (`.pen-stroke` and the
+// `.kit-rail-here` rules in `admin.css`; behind the glyph when the rail is shut). It was the
+// whole key filled with the pen, carved with an inset, with a 3px `--pen-edge` bar in the gutter
+// beside it: the colour was the product's, the shape was the "active pill tab" every generated
+// dashboard ships. The ink on it flips with the theme and only the
+// ink: near-black on the light pen, white on the dark olive (5.38:1; near-black was 3.8). The
+// row wears no colour of its own, so nothing can paint over the mark (the hover stays on
+// `SIDEBAR_NAV_HOVER`, which the active row does not wear).
+export const SIDEBAR_NAV_ACTIVE = component('kit-rail-here', 'font-medium text-neutral-950 dark:text-white')
 
 // The rail's UTILITY register. The footer's rows (theme, cache, sign out) are CONTROLS,
 // and for a while they wore SIDEBAR_NAV — four more destinations, one apparently a page

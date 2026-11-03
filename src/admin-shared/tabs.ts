@@ -129,8 +129,9 @@ const CORNERS: Record<TabEdge, string> = {
  */
 /** The segmented key's faces, as components; `tabItemClass` below explains each list. */
 const SEGMENT = component('kit-seg', `py-1 ${NOTE_SIZE} font-medium transition`)
-const SEGMENT_HERE = component('kit-seg-here',
-  'bg-[var(--pen)] text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]')
+// The place you are on: the same stroke behind the word the rail's current row wears
+// (`.pen-stroke` in admin.css), not a key filled with the pen and carved in (until 2026-11-03).
+const SEGMENT_HERE = component('kit-seg-here', 'pen-stroke text-neutral-950 dark:text-white')
 export const SEGMENT_ON = component('kit-seg-on',
   'bg-white font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.55)]')
 /**

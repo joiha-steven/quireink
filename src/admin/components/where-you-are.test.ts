@@ -26,8 +26,10 @@ const SIDEBAR_NAV_ACTIVE = expandComponents(rail.SIDEBAR_NAV_ACTIVE)
 const SIDEBAR_NAV_QUIET = expandComponents(rail.SIDEBAR_NAV_QUIET)
 
 describe('the highlighter marks a place', () => {
-  it('paints an active tab you navigated to', () => {
-    expect(tabItemClass(true, 'sm', false, 'place')).toContain('bg-[var(--pen)]')
+  it('strokes an active tab you navigated to', () => {
+    // A highlighter stroke behind the word (`.pen-stroke`), not the key filled with the pen.
+    expect(tabItemClass(true, 'sm', false, 'place')).toContain('pen-stroke')
+    expect(tabItemClass(true, 'sm', false, 'place')).not.toContain('bg-[var(--pen)]')
     // Ink, not `--on-pen`: the olive belongs to marks in running text; on a pressed key it
     // read as grey. Full contrast on the control.
     expect(tabItemClass(true, 'sm', false, 'place')).toContain('text-neutral-950')
@@ -41,27 +43,22 @@ describe('the highlighter marks a place', () => {
     expect(lg).not.toContain('bg-[var(--pen)]')
   })
 
-  it('marks the page you are on in the rail', () => {
-    // A KEY HELD DOWN in the pen — the SAME full ink the active tab wears, carved in. What
-    // this pins is the INK and the STATE: drawn from --pen, at full strength, with an inset.
-    expect(SIDEBAR_NAV_ACTIVE).toContain('bg-[var(--pen)]')
+  it('marks the page you are on in the rail with the same stroke, behind the word', () => {
+    // Since 2026-11-03 the rail's current row is the tab's mark in the rail: the label in ink
+    // with a band of the pen behind it, and no fill, no inset and no gutter bar on the row.
+    // The filled, carved key with a 3px bar beside it was the "active pill tab" of every
+    // generated dashboard, in this product's colour.
     expect(SIDEBAR_NAV_ACTIVE).toContain('text-neutral-950')
-    expect(SIDEBAR_NAV_ACTIVE).toContain('shadow-[inset')
-  })
-
-  it('strokes the rail gutter beside that key, in the tab marker ink', () => {
-    // Since 2026-09-07. The wash alone is a pale field on a pale column; the stroke is what
-    // the eye catches scanning down. `--pen-edge`, which is the ink an active TAB strokes
-    // under its label, so where-you-are is one shape in two orientations.
-    expect(SIDEBAR_NAV_ACTIVE).toContain('before:bg-[var(--pen-edge)]')
-    // OUTSIDE the key, CENTRED in the rail's own 12px gutter. Inside, #c3e844 on #d5f856 is
-    // four points of lightness and invisible — the placement is the whole reason it reads.
-    // 7.5 rather than the full 12: pushed the whole gutter the 3px stroke starts at 0, which
-    // is the window's edge and not the rail's, and it read as cut off by the glass.
-    expect(SIDEBAR_NAV_ACTIVE).toContain('before:-left-[7.5px]')
-    // And the row it hangs off has to be a positioning parent, or the stroke lands on the
-    // page instead of the row.
-    expect(SIDEBAR_NAV_QUIET).toContain('relative')
+    expect(SIDEBAR_NAV_ACTIVE).not.toContain('bg-[var(--pen)]')
+    expect(SIDEBAR_NAV_ACTIVE).not.toContain('shadow-[inset')
+    expect(SIDEBAR_NAV_ACTIVE).not.toContain('before:')
+    const css = readFileSync('src/admin/admin.css', 'utf8')
+    // One rule draws both marks, so the rail and the strip cannot drift into two shapes.
+    const rule = css.slice(css.indexOf('.pen-stroke,'), css.indexOf('}', css.indexOf('.pen-stroke,')))
+    expect(rule).toContain('.kit-rail-here .rail-label')
+    expect(rule).toContain('var(--pen)')
+    // A band about two thirds of the line, not the whole box.
+    expect(rule).toContain('.95em')
   })
 })
 

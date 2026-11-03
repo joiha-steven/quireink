@@ -110,24 +110,20 @@ character and none of its typographic rules **except one**, below.
   protects against is a card PRETENDING to float while sitting in the flow, which is what a
   named Tailwind shadow gives you. There is no second step; a surface that wants one wants to
   be an overlay.
-- **The highlighter marks WHERE YOU ARE** (2026-08-29, and it is the ink's third role rather
-  than a fourth colour). The active tab wears `--pen` with ink text (the reading site's olive `--on-pen` stays on marks in running text — on a control it read as grey, measured 2026-08-31); the rail's current row
-  is a KEY HELD DOWN in the pen — the same full ink as the tab, with the same carved inset
-  (2026-08-31: a bar-plus-wash read as a label, and a diluted wash beside the full tab pill
-  read as a second ink; one ink, one strength, held down). A SELECTED VALUE gets neither,
-  and that distinction is the whole point. They had
-  the identical black pill, which put "Site" — the section you are in — eight lines above
-  "English" — a field's value — in the same ink, size and shape, with nothing answering
-  "where am I". A screen where everything is the same rectangle has told you nothing by the
-  time you have looked at all of it. The seam is the `Tabs` component, the admin's only
-  navigation strip; the ten call sites that build a chooser from `tabItemClass` directly get
-  the SUNKEN KEY, one grey step DOWN from its ground — solid ink shows no relief, and a
-  white key vanishes against the white card, so a chosen value is a darker key pressed into
-  the groove (2026-08-31, the font tiles and the palette card's editing state carved the
-  same way) — and `components/where-you-are.test.ts` fails the day one of
-  them reaches for the marker. ⚠️ The active row is composed from `SIDEBAR_NAV_QUIET`, which has NO hover:
-  both hovers are rules on the same property and Tailwind decides which lands last, so
-  pointing at the page you were already on repainted it grey. Structure, not out-ranking.
+- **The highlighter marks WHERE YOU ARE**, and it marks it the way a highlighter marks a word
+  (2026-11-03): a flat band of `--pen` behind the label, about two thirds of the line tall,
+  square, its ends cut on a slant (`.pen-stroke` in `admin.css`). The rail's current row and the
+  active tab of a strip wear the same rule, with ink on it (the reading site's olive `--on-pen`
+  stays on marks in running text — on a control it read as grey, 2026-08-31). It was a KEY HELD
+  DOWN in the pen: the whole control filled, carved with an inset, a 3px bar in the gutter —
+  the colour was this product's, the shape was the tinted pill tab of the costume above. A
+  SELECTED VALUE gets no pen at all, and that distinction is the whole point: a black pill once
+  put "Site", the section you are in, and "English", a field's value, in the same ink and shape.
+  The `Tabs` component is the seam; a chooser built from `tabItemClass` gets the SUNKEN KEY, one
+  grey step down from its ground, and `components/where-you-are.test.ts` fails the day one of
+  them reaches for the marker. ⚠️ The active row carries no colour of its own and no hover
+  (`SIDEBAR_NAV_QUIET`): two rules on one property land in Tailwind's order, not the element's,
+  and the resting grey once beat the active ink on the pen (4.41:1). Structure, not out-ranking.
 - **TWO control heights, and only two (2026-09-01).** `CONTROL`/`Button` `md` are **36px**
   and move together — a field two pixels proud of the button that acts on it is one row
   broken. `CONTROL_SM`/`Button` `sm`/the segmented strip are **32px**, which is what a
