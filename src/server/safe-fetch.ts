@@ -40,8 +40,41 @@ function isBlockedIPv4(ip: string): boolean {
   if (a === 192 && b === 168) return true // 192.168.0.0/16 private
   if (a === 169 && b === 254) return true // 169.254.0.0/16 link-local (+ metadata)
   if (a === 100 && b >= 64 && b <= 127) return true // 100.64.0.0/10 CGNAT
+  if (a === 192 && b === 0 && o[2] === 0) return true // 192.0.0.0/24 IETF protocol assignments
+  if (a === 198 && (b === 18 || b === 19)) return true // 198.18.0.0/15 benchmarking
+  if (a >= 224) return true // 224/4 multicast, 240/4 reserved, 255.255.255.255 broadcast
   return false
 }
+
+/**
+ * The eight hextets of an IPv6 address, a trailing dotted IPv4 included, or null.
+ *
+ * Expanded rather than matched by prefix, because an IPv4 address can sit inside an IPv6 one in
+ * more spellings than `::ffff:` — `::7f00:1` (IPv4-compatible), `::ffff:0:7f00:1` (SIIT),
+ * `64:ff9b::7f00:1` (NAT64), `2002:7f00:1::` (6to4) — and each one reaches the embedded address
+ * on a host whose network translates it.
+ */
+function hextets(ip: string): number[] | null {
+  // A dotted IPv4 tail is two hextets written another way, so it is rewritten as them first.
+  const v4 = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(ip)
+  let text = ip
+  if (v4) {
+    const o = ipv4Octets(v4[1]!)
+    if (!o) return null
+    text = `${ip.slice(0, -v4[1]!.length)}${((o[0] << 8) | o[1]).toString(16)}:${((o[2] << 8) | o[3]).toString(16)}`
+  }
+  const halves = text.split('::')
+  if (halves.length > 2) return null
+  const part = (h: string): number[] => (h === '' ? [] : h.split(':').map((x) => (/^[0-9a-f]{1,4}$/.test(x) ? parseInt(x, 16) : NaN)))
+  const left = part(halves[0]!)
+  const right = halves.length === 2 ? part(halves[1]!) : []
+  const gap = 8 - left.length - right.length
+  if (halves.length === 2 ? gap < 1 : gap !== 0) return null
+  const out = [...left, ...new Array<number>(halves.length === 2 ? gap : 0).fill(0), ...right]
+  return out.every((n) => !Number.isNaN(n)) ? out : null
+}
+
+const v4Of = (hi: number, lo: number): string => `${hi >> 8}.${hi & 0xff}.${lo >> 8}.${lo & 0xff}`
 
 // True if a normalized IPv6 address is loopback/unspecified/link-local/unique-local,
 // or an IPv4-mapped/embedded address that maps into a blocked IPv4 range.
@@ -59,10 +92,23 @@ function isBlockedIPv6(ip: string): boolean {
     const v4 = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`
     return isBlockedIPv4(v4)
   }
-  // First hextet tells us the high bits for the remaining ranges.
-  const head = parseInt(lower.split(':')[0] || '0', 16)
+  const h = hextets(lower)
+  // An address this cannot read is not one to fetch: `isIP` said it is IPv6, so it is a spelling
+  // this has not been taught, which is exactly where an embedded address would hide.
+  if (!h) return true
+  const zero = (from: number, to: number): boolean => h.slice(from, to).every((x) => x === 0)
+  // IPv4 inside IPv6: compatible (::a.b.c.d), mapped (::ffff:a.b.c.d), SIIT (::ffff:0:a.b.c.d),
+  // NAT64 (64:ff9b::a.b.c.d) and 6to4 (2002:aabb:ccdd::). Each is judged by the IPv4 it carries.
+  if (zero(0, 6) || (zero(0, 5) && h[5] === 0xffff) || (zero(0, 4) && h[4] === 0xffff && h[5] === 0)) {
+    return isBlockedIPv4(v4Of(h[6]!, h[7]!))
+  }
+  if (h[0] === 0x64 && h[1] === 0xff9b) return h[2] === 1 || isBlockedIPv4(v4Of(h[6]!, h[7]!)) // + 64:ff9b:1::/48 local-use
+  if (h[0] === 0x2002) return isBlockedIPv4(v4Of(h[1]!, h[2]!))
+  const head = h[0]!
   if ((head & 0xffc0) === 0xfe80) return true // fe80::/10 link-local
+  if ((head & 0xffc0) === 0xfec0) return true // fec0::/10 site-local, deprecated and still routed by some
   if ((head & 0xfe00) === 0xfc00) return true // fc00::/7 unique-local
+  if ((head & 0xff00) === 0xff00) return true // ff00::/8 multicast
   return false
 }
 

@@ -45,6 +45,24 @@ describe('isBlockedAddress', () => {
     expect(isBlockedAddress('::ffff:169.254.169.254')).toBe(true)
   })
 
+  it('blocks the reserved IPv4 ranges that are not private but are not the internet either', () => {
+    for (const ip of ['192.0.0.192', '198.18.0.1', '198.19.255.255', '224.0.0.1', '240.0.0.1', '255.255.255.255']) {
+      expect(isBlockedAddress(ip)).toBe(true)
+    }
+    expect(isBlockedAddress('192.0.2.1')).toBe(false) // documentation range, outside 192.0.0/24
+    expect(isBlockedAddress('198.20.0.1')).toBe(false)
+  })
+
+  it('blocks an internal IPv4 inside every IPv6 spelling that can carry one', () => {
+    for (const ip of [
+      '::127.0.0.1', '::7f00:1', '::ffff:0:7f00:1', '::ffff:0:169.254.169.254',
+      '64:ff9b::7f00:1', '64:ff9b::169.254.169.254', '64:ff9b:1::1', '2002:7f00:1::', '2002:a9fe:a9fe::1',
+      'fec0::1', 'ff02::1',
+    ]) expect(isBlockedAddress(ip)).toBe(true)
+    // ...and the same spellings carrying a public address are left alone.
+    for (const ip of ['64:ff9b::808:808', '2002:808:808::1', '::ffff:8.8.8.8']) expect(isBlockedAddress(ip)).toBe(false)
+  })
+
   it('allows ordinary public addresses', () => {
     expect(isBlockedAddress('8.8.8.8')).toBe(false)
     expect(isBlockedAddress('1.1.1.1')).toBe(false)
