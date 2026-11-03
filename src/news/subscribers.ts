@@ -87,12 +87,14 @@ export async function confirmSubscriber(token: string): Promise<boolean> {
   ).changes > 0
 }
 
-// Unsubscribe by token (from any state except already-unsubscribed).
+// Unsubscribe by token (from any state except already-unsubscribed), IN THE TRASH TOO. Refused
+// there, the reader was told "You've unsubscribed" and the owner's restore put them back on the
+// list as confirmed (2026-11-03). Unsubscribing only narrows what may be sent, so it is never a
+// way back in; a trashed row's CONFIRM link still does nothing.
 export async function unsubscribeByToken(token: string): Promise<boolean> {
   if (!token) return false
   return run(
-    `update subscribers set status = 'unsubscribed'
-      where token = ? and status != 'unsubscribed' and ${liveOnly('subscribers')}`,
+    `update subscribers set status = 'unsubscribed' where token = ? and status != 'unsubscribed'`,
     token,
   ).changes > 0
 }

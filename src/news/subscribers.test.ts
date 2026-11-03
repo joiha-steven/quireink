@@ -129,13 +129,25 @@ describe('admin views', () => {
       .toEqual(['reader@example.com'])
   })
 
-  it('a trashed subscriber neither receives broadcasts nor answers its own links', async () => {
+  it('a trashed subscriber receives no broadcast, and its confirm link does nothing', async () => {
+    const { token } = await addSubscriber('reader@example.com')
+    const id = one<{ id: number }>(`select id from subscribers where email = 'reader@example.com'`)!.id
+    await deleteSubscriber(id)
+    expect(await confirmSubscriber(token)).toBe(false)
+    expect(await getConfirmedSubscribers()).toEqual([])
+  })
+
+  // Its unsubscribe link DOES work. Refused, the page still said "You've unsubscribed" and the
+  // owner's restore put the reader back on the list as confirmed (2026-11-03). Unsubscribing only
+  // narrows what may be sent, so it holds for a row in the Trash too.
+  it('an unsubscribe from a trashed row sticks through a restore', async () => {
     const { token } = await addSubscriber('reader@example.com')
     await confirmSubscriber(token)
     const id = one<{ id: number }>(`select id from subscribers where email = 'reader@example.com'`)!.id
     await deleteSubscriber(id)
+    expect(await unsubscribeByToken(token)).toBe(true)
+    await restoreSubscriber(id)
     expect(await getConfirmedSubscribers()).toEqual([])
-    expect(await unsubscribeByToken(token)).toBe(false)
   })
 
   it('restore puts the row back exactly as it was', async () => {

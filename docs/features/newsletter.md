@@ -23,7 +23,8 @@
 - **Deleting a subscriber is a soft delete** (Invariant 6): the ✕ in People sends the row to
   the Trash's Subscribers tab, restorable with its send history intact. Purge — from the
   Trash only — is the hard delete, and the moment `deleteSendsFor` clears the address from
-  the send log. A trashed address neither receives broadcasts nor answers its own links;
+  the send log. A trashed address receives no broadcast and its confirm link does nothing, but
+  its **unsubscribe link works**, so a restore cannot put back a reader who left from the Trash;
   re-subscribing it starts over as a fresh pending row with a fresh token.
 - **SMTP (`src/news/mail.ts`, speaking the protocol itself via `src/news/smtp.ts` and `src/news/mime.ts`).** Config lives on `integration_keys` (server-only secrets,
   env fallback) — set in Admin → Settings → Comments & mail (`NewsletterFields`, via `api/mail`).
