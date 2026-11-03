@@ -186,7 +186,7 @@ function commentKeys(t: AdminStrings, c: CommentSettings, env: CommentEnv): stri
     + gateLine
     + switchList([
       switchRow({
-        k: 'comments.turnstile', label: t.commentsTurnstile, note: t.commentsTurnstileDesc,
+        k: 'comments.turnstile', label: t.commentsTurnstile,
         on: c.turnstile, badge: needsKey(c.turnstile, env.turnstileConfigured),
       }),
       switchRow({

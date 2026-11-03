@@ -27,8 +27,8 @@ import { choice, colourGrid, colourRow } from '@/web/admin/fields-pick'
 import { gate } from '@/web/admin/fields-pic'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
 
-/** One reader feature: the key it stores, its name, and the sentence under it. */
-type Feat = { k: keyof FeatureSettings; label: string; note: string }
+/** One reader feature: the key it stores, its name, and a sentence under it where one is needed. */
+type Feat = { k: keyof FeatureSettings; label: string; note?: string }
 
 /**
  * A GROUP OF SWITCHES AS A RULED LIST: rows with a line between them and no edge of their own.
@@ -45,27 +45,27 @@ const switches = (f: FeatureSettings, items: Feat[]): string =>
 
 /** THE HEAD OF A POST: what stands above the first sentence. */
 const head = (t: AdminStrings, f: FeatureSettings): string => switches(f, [
-  { k: 'deck', label: t.featDeck, note: t.featDeckDesc },
-  { k: 'categoryLabel', label: t.featCategoryLabel, note: t.featCategoryLabelDesc },
-  { k: 'readingTime', label: t.featReadingTime, note: t.featReadingTimeDesc },
+  { k: 'deck', label: t.featDeck },
+  { k: 'categoryLabel', label: t.featCategoryLabel },
+  { k: 'readingTime', label: t.featReadingTime },
 ])
 
 /** THE BODY: what happens between the first sentence and the last. */
 const body = (t: AdminStrings, f: FeatureSettings): string => switches(f, [
-  { k: 'toc', label: t.featToc, note: t.featTocDesc },
-  { k: 'progressBar', label: t.featProgress, note: t.featProgressDesc },
-  { k: 'resume', label: t.featResume, note: t.featResumeDesc },
+  { k: 'toc', label: t.featToc },
+  { k: 'progressBar', label: t.featProgress },
+  { k: 'resume', label: t.featResume },
   { k: 'readerPen', label: t.featReaderPen, note: t.featReaderPenDesc },
-  { k: 'penUnderline', label: t.featPenUnderline, note: t.featPenUnderlineDesc },
-  { k: 'penRing', label: t.featPenRing, note: t.featPenRingDesc },
-  { k: 'penLists', label: t.featPenLists, note: t.featPenListsDesc },
-  { k: 'bookText', label: t.featBookText, note: t.featBookTextDesc },
-  { k: 'curlyQuotes', label: t.featCurlyQuotes, note: t.featCurlyQuotesDesc },
+  { k: 'penUnderline', label: t.featPenUnderline },
+  { k: 'penRing', label: t.featPenRing },
+  { k: 'penLists', label: t.featPenLists },
+  { k: 'bookText', label: t.featBookText },
+  { k: 'curlyQuotes', label: t.featCurlyQuotes },
   // ADR 0058. Both are ON for a new blog and OFF for one that already had a settings row, so an
   // upgrade never silently redraws somebody's writing — `NEW_SINCE_INSTALLS_EXISTED`.
   { k: 'bookmarkCards', label: t.featBookmarkCards, note: t.featBookmarkCardsDesc },
-  { k: 'fileCards', label: t.featFileCards, note: t.featFileCardsDesc },
-  { k: 'bookMode', label: t.featBookMode, note: t.featBookModeDesc },
+  { k: 'fileCards', label: t.featFileCards },
+  { k: 'bookMode', label: t.featBookMode },
 ])
 
 /**
@@ -74,7 +74,7 @@ const body = (t: AdminStrings, f: FeatureSettings): string => switches(f, [
  * their own group rather than filed under a position they do not have.
  */
 const reach = (t: AdminStrings, f: FeatureSettings): string => switches(f, [
-  { k: 'search', label: t.featSearch, note: t.featSearchDesc },
+  { k: 'search', label: t.featSearch },
   { k: 'offline', label: t.featOffline, note: t.featOfflineDesc },
 ])
 
@@ -83,15 +83,15 @@ function end(t: AdminStrings, s: SiteSettings): string {
   return `<div class="${SETTING_GAP}">`
     + `<div class="${SETTING_GAP}">`
     + switches(s.features, [
-      { k: 'related', label: t.featRelated, note: t.featRelatedDesc },
-      { k: 'readNext', label: t.featReadNext, note: t.featReadNextDesc },
+      { k: 'related', label: t.featRelated },
+      { k: 'readNext', label: t.featReadNext },
     ])
     // A CURTAIN, not a `{on && …}`: the count GROWS out of the row rather than being inserted
     // into it. Inserting it pushed everything below down by however tall the control happened to
     // be, and the eye cannot follow that — it reports "the screen is different now" and leaves
     // working out what moved to a second look.
     + reveal(s.features.related, textField({
-      k: 'relatedCount', label: t.relatedCount, note: t.relatedCountHint,
+      k: 'relatedCount', label: t.relatedCount,
       type: 'number', value: s.relatedCount, attrs: 'min="0" max="12"',
     }), 'data-reveal="features.related"')
     + `</div>`
@@ -113,14 +113,13 @@ function end(t: AdminStrings, s: SiteSettings): string {
 /** THE HERO — the picture at the top of the post itself. */
 function hero(t: AdminStrings, s: SiteSettings): string {
   return `<div class="${SETTING_GAP}">`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.postImageHint)}</p>`
     // TWO values, not three. A `wide` hero existed for an afternoon and was measured out again:
     // at contentWidth 672 on a 1440 viewport it started at 264 while the left rail ran 126-376,
     // so it printed over the table of contents — and the band between the rails does not grow
     // with the viewport, because the rails are positioned against the column.
     // `types-settings.ts` carries the numbers.
     + choice({
-      k: 'postImage.hero', label: t.postImageHero, note: t.postImageHeroHint,
+      k: 'postImage.hero', label: t.postImageHero,
       value: s.postImage.hero,
       options: [['none', t.piOff], ['inline', t.piHeroInline]],
     })
@@ -131,7 +130,7 @@ function hero(t: AdminStrings, s: SiteSettings): string {
 function figure(t: AdminStrings, s: SiteSettings): string {
   return `<div class="${SETTING_GAP}">`
     + choice({
-      k: 'figure.frame', label: t.figureFrame, note: t.figureFrameHint, value: s.figure.frame,
+      k: 'figure.frame', label: t.figureFrame, value: s.figure.frame,
       options: [
         ['none', t.imgFrameNone], ['thin', t.imgFrameThin],
         ['medium', t.imgFrameMedium], ['thick', t.imgFrameThick],
@@ -147,7 +146,7 @@ function figure(t: AdminStrings, s: SiteSettings): string {
     // `sanitizeFigure`'s `bool()` then discards — so this strip currently saves nothing at all.
     // The values are `1`/`0` so that a boolean-aware `choice` needs no change here.
     + reveal(s.figure.frame !== 'none', choice({
-      k: 'figure.ink', label: t.figureFrameColour, note: t.figureFrameColourHint,
+      k: 'figure.ink', label: t.figureFrameColour,
       value: s.figure.ink ? '1' : '0',
       options: [['0', t.imgFramePaper], ['1', t.imgFrameInk]],
       // ⚠️ `bool: true`, WHICH EMITS `data-k-bool`. It said `attrs: 'data-bool'` until
@@ -164,14 +163,14 @@ function gallery(t: AdminStrings, s: SiteSettings): string {
   return `<div class="${SETTING_GAP}">`
     // Ratios read the same in every language. Only "as shot" is a word.
     + choice({
-      k: 'gallery.ratio', label: t.galleryRatio, note: t.galleryRatioHint, value: s.gallery.ratio,
+      k: 'gallery.ratio', label: t.galleryRatio, value: s.gallery.ratio,
       options: [['', t.imgRatioNatural], ['1x1', '1:1'], ['3x2', '3:2'], ['4x3', '4:3']],
     })
     // NO ruled list around this one, unlike the table's stripe and the comment master switch.
     // `.switch-row.p-4` alone is padded to zero at the sides; it is `.panel-list` above it that
     // puts the 16px back, so a lone row in a list would be the only inset row in the card.
     + switchRow({
-      k: 'gallery.captions', label: t.galleryCaptions, note: t.galleryCaptionsHint,
+      k: 'gallery.captions', label: t.galleryCaptions,
       on: s.gallery.captions,
     })
     + `</div>`
@@ -203,25 +202,24 @@ function ownable(t: AdminStrings, key: OwnableSetting, label: string, control: s
 function table(t: AdminStrings, s: SiteSettings): string {
   const a = s.table
   return `<div class="${SETTING_GAP}">`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.tableHint)}</p>`
     + ownable(t, 'table.head', t.tableHead, choice({
-      k: 'table.head', label: t.tableHead, note: t.tableHeadHint, value: a.head,
+      k: 'table.head', label: t.tableHead, value: a.head,
       options: [
         ['plain', t.tableHeadPlain], ['tint', t.tableHeadTint],
         ['rule', t.tableHeadRule], ['ink', t.tableHeadInk],
       ],
     }))
     + ownable(t, 'table.grid', t.tableGrid, choice({
-      k: 'table.grid', label: t.tableGrid, note: t.tableGridHint, value: a.grid,
+      k: 'table.grid', label: t.tableGrid, value: a.grid,
       options: [['all', t.tableGridAll], ['rows', t.tableGridRows], ['none', t.tableGridNone]],
     }))
     + ownable(t, 'table.ruleWeight', t.tableRuleWeight, choice({
-      k: 'table.ruleWeight', label: t.tableRuleWeight, note: t.tableRuleWeightHint,
+      k: 'table.ruleWeight', label: t.tableRuleWeight,
       value: a.ruleWeight,
       options: [['hairline', t.tableHairline], ['bold', t.tableThick]],
     }))
     + choice({
-      k: 'table.firstColumn', label: t.tableFirstCol, note: t.tableFirstColHint,
+      k: 'table.firstColumn', label: t.tableFirstCol,
       value: a.firstColumn,
       options: [['normal', t.tableColNormal], ['strong', t.tableColStrong]],
     })
@@ -229,11 +227,11 @@ function table(t: AdminStrings, s: SiteSettings): string {
     // about the page, asked about a cell, and two vocabularies for one idea is how a settings
     // screen stops being readable.
     + choice({
-      k: 'table.padding', label: t.tablePadding, note: t.tablePaddingHint, value: a.padding,
+      k: 'table.padding', label: t.tablePadding, value: a.padding,
       options: [['tight', t.shapeCompact], ['normal', t.shapeNormal], ['roomy', t.shapeRelaxed]],
     })
     + choice({
-      k: 'table.narrow', label: t.tableNarrow, note: t.tableNarrowHint, value: a.narrow,
+      k: 'table.narrow', label: t.tableNarrow, value: a.narrow,
       options: [['fit', t.tableNarrowFit], ['scroll', t.tableNarrowScroll]],
     })
     // A switch rather than a two-option choice: it is on or off, and the six above are all
@@ -241,7 +239,7 @@ function table(t: AdminStrings, s: SiteSettings): string {
     // `panelList` because a switch row carries its own padding and expects the boxed row the
     // feature lists put it in.
     + panelList(switchRow({
-      k: 'table.stripe', label: t.tableStripe, note: t.tableStripeHint,
+      k: 'table.stripe', label: t.tableStripe,
       on: a.stripe,
     }))
     + `</div>`
@@ -277,7 +275,6 @@ function inks(t: AdminStrings, s: SiteSettings): string {
   const tooDark = PIGMENTS.filter((k) => v[k] && contrastRatio(bodyText, v[k]) < AA)
 
   return `<div class="${SETTING_GAP}">`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.inkHelp)}</p>`
     + settingRow({
       label: t.inkHighlighter,
       control: colourGrid(PIGMENTS.map((k) =>
@@ -298,7 +295,7 @@ function inks(t: AdminStrings, s: SiteSettings): string {
       `<p class="${NOTE_SIZE} leading-[1.55] text-neutral-900 dark:text-neutral-100">`
       + `${escapeHtml(t.inkTooDark)}</p>`, 'data-ink-dark')
     + settingRow({
-      label: t.inkLines, note: t.inkLinesHint,
+      label: t.inkLines,
       control: colourGrid(
         colourRow({ k: 'inks.ring', label: t.inkRing, value: shown(v.ring, PEN_AUX_LIGHT.red) })
         + colourRow({
@@ -307,7 +304,7 @@ function inks(t: AdminStrings, s: SiteSettings): string {
         })),
     })
     + settingRow({
-      label: t.inkSelection, note: t.inkSelectionHint,
+      label: t.inkSelection,
       // What the sheet's own rule paints when neither field is set: the heading colour on paper,
       // the mid grey on a dark page. Shown so the swatch tells the truth about what the reader
       // currently sees.

@@ -87,7 +87,7 @@ function general(t: AdminStrings, s: SiteSettings): string {
     // Beside its label, and no longer the width of the card: a zone is a short answer, so it
     // takes a short field and the row it was spending on its own.
     + pick({
-      k: 'timezone', label: t.siteTimezone, note: t.siteTimezoneHint, inline: true, width: 'medium',
+      k: 'timezone', label: t.siteTimezone, inline: true, width: 'medium',
       value: s.timezone, options: zoneOptions(t, s.timezone),
     })
     + textField({ k: 'title', label: t.siteTitle, value: s.title, placeholder: 'Quire Ink' })
@@ -113,7 +113,7 @@ function branding(t: AdminStrings, s: SiteSettings): string {
   // only background it will ever be seen on.
   const dark = `<div class="border-t border-neutral-200 pt-5 dark:border-neutral-800">`
     + settingRow({
-      label: t.logoDarkLabel, note: t.logoDarkHint,
+      label: t.logoDarkLabel,
       control: pickedImage({
         k: 'logoDarkUrl', value: s.logoDarkUrl, chooseLabel: t.chooseLogoDark,
         removeLabel: t.removeLogo, emptyLabel: t.noLogoDark, alt: 'Logo (dark)',
@@ -125,12 +125,12 @@ function branding(t: AdminStrings, s: SiteSettings): string {
     + switchRow({ k: 'showLogo', label: t.showLogo, on: s.showLogo })
     + gate(s.showLogo, `<div class="${SETTING_GAP}">${logo}${dark}`
       + textField({
-        k: 'logoWidth', label: t.logoWidth, note: t.logoWidthHint, type: 'number',
+        k: 'logoWidth', label: t.logoWidth, type: 'number',
         value: s.logoWidth, attrs: 'min="24" max="600"',
       })
       + `</div>`, 'data-gate="showLogo"')
     + settingRow({
-      label: t.favicon, note: t.faviconHint,
+      label: t.favicon,
       control: iconUpload({
         k: 'faviconUrl', kind: 'favicon', value: s.faviconUrl, previewClass: 'h-8 w-8 rounded',
         chooseLabel: t.chooseImage, removeLabel: t.removeSelection, emptyLabel: t.noImageSelected,
@@ -167,10 +167,10 @@ function author(t: AdminStrings, s: SiteSettings): string {
 
   return `<div class="${SETTING_GAP}">`
     + `<p class="${NOTE_TEXT}">${escapeHtml(t.authorHint)}</p>`
-    + textField({ k: 'author.name', label: t.authorName, note: t.authorNameHint, value: a.name, attrs: 'maxlength="80"' })
-    + textArea({ k: 'author.bio', label: t.authorBio, note: t.authorBioHint, value: a.bio, rows: 3 })
-    + settingRow({ label: t.authorAvatar, note: t.authorAvatarHint, control: avatar })
-    + textField({ k: 'author.url', label: t.authorLink, note: t.authorLinkHint, type: 'url', value: a.url, placeholder: 'https://' })
+    + textField({ k: 'author.name', label: t.authorName, value: a.name, attrs: 'maxlength="80"' })
+    + textArea({ k: 'author.bio', label: t.authorBio, value: a.bio, rows: 3 })
+    + settingRow({ label: t.authorAvatar, control: avatar })
+    + textField({ k: 'author.url', label: t.authorLink, type: 'url', value: a.url, placeholder: 'https://' })
     + `</div>`
 }
 

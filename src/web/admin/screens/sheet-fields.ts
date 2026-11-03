@@ -121,7 +121,7 @@ export function pickField(f: {
 
 /** A picture: the slot full, the slot empty, and the two keys. Both slots ship. */
 export function pictureField(f: {
-  k: string; label: string; hint: string; value: string; t: AdminStrings
+  k: string; label: string; hint?: string; value: string; t: AdminStrings
 }): string {
   return settingRow({
     label: f.label,

@@ -195,7 +195,6 @@ export function aiCard(t: AdminStrings, s: SiteSettings, i: IntegrationStatus): 
     lampTitle: off ? t.connectionOff : i.aiConfigured ? t.connectionUntested : t.connectionUnset,
     saveLabel: off ? t.save : t.saveAndTest,
     body: `<div class="${SETTING_GAP}">`
-      + `<p class="${NOTE_TEXT}">${escapeHtml(t.aiHelp)}</p>`
       + settingRow({
         label: t.aiProviderLabel, inline: true,
         control: pickControl({

@@ -70,17 +70,16 @@ export type AppearanceTabView = {
 function shape(t: AdminStrings, s: SiteSettings): string {
   const a = s.shape
   return `<div class="${SETTING_GAP}">`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.shapeHint)}</p>`
     + choice({
-      k: 'shape.density', label: t.shapeDensity, note: t.shapeDensityHint, value: a.density,
+      k: 'shape.density', label: t.shapeDensity, value: a.density,
       options: [['compact', t.shapeCompact], ['normal', t.shapeNormal], ['relaxed', t.shapeRelaxed]],
     })
     + choice({
-      k: 'shape.radius', label: t.shapeRadius, note: t.shapeRadiusHint, value: a.radius,
+      k: 'shape.radius', label: t.shapeRadius, value: a.radius,
       options: [['square', t.shapeSquare], ['soft', t.shapeSoft], ['round', t.shapeRound]],
     })
     + choice({
-      k: 'shape.headingWeight', label: t.shapeHeading, note: t.shapeHeadingHint,
+      k: 'shape.headingWeight', label: t.shapeHeading,
       value: a.headingWeight,
       options: [['light', t.shapeLight], ['normal', t.shapeRegular], ['bold', t.shapeBold]],
     })
@@ -166,14 +165,14 @@ function fonts(t: AdminStrings, s: SiteSettings, offers: readonly ThemeOffer[]):
     `<div class="grid grid-cols-2 gap-2" data-choice-track`
     + ` data-k="${escapeAttr(k)}" data-was="${escapeAttr(was)}" data-stored="${escapeAttr(stored)}">${body}</div>`
   return `<div class="${SETTING_GAP}">`
-    + settingRow({ note: t.fontPresetHint, control: grid(reading, 'fontPreset', readingNow, s.fontPreset)
+    + settingRow({ control: grid(reading, 'fontPreset', readingNow, s.fontPreset)
         // Picking a face also rewrites the type table below; the island reveals this line when
         // it does, so the second change is said where the click happened.
         + `<p class="${NOTE_TEXT} mt-2" data-font-applied data-words="${escapeAttr(t.fontPresetApplied)}"`
         + ` role="status" hidden></p>` })
     + `<div class="border-t border-neutral-200 pt-5 dark:border-neutral-800">`
     + settingRow({
-      label: t.chromeFontLabel, note: t.chromeFontHint,
+      label: t.chromeFontLabel,
       control: grid(chrome, 'chromeFont', chromeNow, s.chromeFont),
     })
     + `</div></div>`
@@ -380,7 +379,7 @@ export function appearanceTab(t: AdminStrings, s: SiteSettings, view: Appearance
     + panelCard({
       title: t.customCss,
       body: `<div class="space-y-1.5">${cssEditor(t, s)}`
-        + `<p class="${NOTE_TEXT}">${escapeHtml(t.customCssHint)}</p></div>`,
+        + `</div>`,
     })
     + `</div></div>`
     + panelCard({ title: t.cardTypography, actions: typeResetKey(t), body: typeScale(t, s) })

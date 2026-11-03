@@ -8,7 +8,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { FrontSettings, FrontStrip } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { buttonClass } from '@/admin-shared/kit'
-import { NOTE_TEXT, SETTING_GAP, SETTING_LABEL } from '@/admin-shared/scale'
+import { SETTING_GAP, SETTING_LABEL } from '@/admin-shared/scale'
 import { settingRow, textControl, textField, switchRow } from '@/web/admin/fields'
 import { pairGrid } from '@/web/admin/fields-box'
 import { gate } from '@/web/admin/fields-pic'
@@ -83,11 +83,11 @@ export function frontCard(t: AdminStrings, f: FrontSettings, v: HomeTabView): st
   return `<div class="${SETTING_GAP}">`
     // The one dial that moves the whole page.
     + choice({
-      k: `${k}.kind`, label: t.frontKindLabel, note: t.frontKindHint, value: f.kind,
+      k: `${k}.kind`, label: t.frontKindLabel, value: f.kind,
       options: [['image', t.frontKindImage], ['text', t.frontKindText]],
     })
     // ----- the lead -----
-    + `<div class="${BAND}">` + toggle(`${k}.lead.on`, t.frontLead, f.lead.on, t.frontLeadHint)
+    + `<div class="${BAND}">` + toggle(`${k}.lead.on`, t.frontLead, f.lead.on)
     + gate(f.lead.on, pick({
       k: `${k}.lead.source`, label: t.frontLeadSource, value: f.lead.source,
       options: [['latest', t.frontLeadLatest], ['pinned', t.frontLeadPinned]],
@@ -104,13 +104,13 @@ export function frontCard(t: AdminStrings, f: FrontSettings, v: HomeTabView): st
     `class="mt-3 space-y-3 pl-1" data-gate="${k}.lead.on"`) + `</div>`
     // ----- the owner's own list -----
     + `<div class="${BAND}">`
-    + toggle(`${k}.featured.on`, t.frontFeaturedRow, f.featured.on, t.frontFeaturedHint)
+    + toggle(`${k}.featured.on`, t.frontFeaturedRow, f.featured.on)
     + gate(f.featured.on, rowSize(t, `${k}.featured`, f.featured.count, f.featured.columns, 12),
       `class="mt-3" data-gate="${k}.featured.on"`) + `</div>`
     // ----- one row per category -----
     + `<div class="${BAND}" data-strips>`
     + `<div class="space-y-3"><span class="${SETTING_LABEL}">${escapeHtml(t.frontStrips)}</span>`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.frontStripsHint)}</p></div>`
+    + `</div>`
     + `<div data-strip-rows>${f.strips.map(strip).join('')}</div>`
     + gate(f.strips.length < 8 && free.length > 0, addPick({
       label: t.frontStripAdd, attrs: 'data-strip-add', taken,
@@ -121,7 +121,7 @@ export function frontCard(t: AdminStrings, f: FrontSettings, v: HomeTabView): st
     + `</div>`
     // ----- what people are actually reading -----
     + `<div class="${BAND}">`
-    + toggle(`${k}.popular.on`, t.frontPopularRow, f.popular.on, t.frontPopularHint)
+    + toggle(`${k}.popular.on`, t.frontPopularRow, f.popular.on)
     + gate(f.popular.on, pairGrid(
       textField({ k: `${k}.popular.count`, label: t.frontCount, type: 'number',
         value: f.popular.count, attrs: 'min="1" max="12"' })
@@ -133,14 +133,14 @@ export function frontCard(t: AdminStrings, f: FrontSettings, v: HomeTabView): st
     ), `class="mt-3" data-gate="${k}.popular.on"`) + `</div>`
     // ----- and everything else -----
     + `<div class="${BAND}">`
-    + toggle(`${k}.latest.on`, t.frontLatestRow, f.latest.on, t.frontLatestHint)
+    + toggle(`${k}.latest.on`, t.frontLatestRow, f.latest.on)
     + gate(f.latest.on, rowSize(t, `${k}.latest`, f.latest.count, f.latest.columns, 24),
       `class="mt-3" data-gate="${k}.latest.on"`) + `</div>`
     // ----- what each item says -----
     + `<div class="space-y-3 ${BAND}">`
     + toggle(`${k}.showDate`, t.frontShowDate, f.showDate)
     + toggle(`${k}.showReadingTime`, t.frontShowReading, f.showReadingTime)
-    + toggle(`${k}.tagLinks`, t.frontTagLinks, f.tagLinks, t.frontTagLinksHint)
+    + toggle(`${k}.tagLinks`, t.frontTagLinks, f.tagLinks)
     + `</div></div>`
 }
 

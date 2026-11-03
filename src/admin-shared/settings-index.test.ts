@@ -36,9 +36,9 @@ describe('searchSettings', () => {
   })
 
   it('matches the NOTE as well as the label, because people describe rather than name', () => {
-    // "672" appears only in the width hint, never in any label.
-    const hits = searchSettings('672', vi)
-    expect(hits.map((h) => h.label)).toContain('siteWidth')
+    // "chụp nhanh" (snapshot) appears only in the autosave note, never in any label.
+    const hits = searchSettings('chụp nhanh', vi)
+    expect(hits.map((h) => h.label)).toEqual(['autosaveLabel'])
   })
 
   it('says which tab, which is the whole point', () => {

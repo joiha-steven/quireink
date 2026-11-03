@@ -104,7 +104,6 @@ export function lookPicker(t: AdminStrings, s: SiteSettings, view: InstalledView
   // its live region is in the page before a sentence is put in it and the sentence is read out.
   return `<div data-look-picker data-theme-words="${themeWords(t)}"><div data-look-list>${brokenWarning(t, view)}`
     + settingRow({
-      note: t.lookDesc,
       control: `<div class="grid grid-cols-2 gap-2" data-choice-track data-k="theme"`
         // '' when the stored theme is not one of these tiles (removed, or kept from a later
         // build): then no tile is pressed, and a baseline of the id would read as an unsaved

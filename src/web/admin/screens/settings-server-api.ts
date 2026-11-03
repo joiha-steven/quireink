@@ -60,7 +60,7 @@ export function needsAddress(t: AdminStrings, label: string): string {
  * the server knows and so rides here as `data-fallback`.
  */
 export function machineAddress(t: AdminStrings, a: {
-  label: string; note: string; path: string; address: string; fallback: string
+  label: string; note?: string; path: string; address: string; fallback: string
   control: (address: string) => string
 }): string {
   const known = a.address !== ''
@@ -77,7 +77,7 @@ export function machineAddress(t: AdminStrings, a: {
 export function apiCard(t: AdminStrings, s: SiteSettings, base: string, fallback = ''): string {
   const live = s.api.enabled
   const address = machineAddress(t, {
-    label: t.apiUrlLabel, note: t.apiUrlHint, path: '/api/v1', address: base, fallback,
+    label: t.apiUrlLabel, path: '/api/v1', address: base, fallback,
     control: (shown) => `<div class="flex items-center gap-2">`
       + `<code class="${COPY_BOX} bg-neutral-50 dark:bg-neutral-900" data-api-url>`
       + `${escapeHtml(shown)}</code>`
@@ -99,7 +99,7 @@ export function apiCard(t: AdminStrings, s: SiteSettings, base: string, fallback
     // reasoning as the AI card's status line and `NOTE_ALERT`; the ink stays neutral because
     // nothing here is broken or waiting to be acted on.
     body: panelList(`<div>`
-      + switchRow({ k: 'api.enabled', label: t.apiEnable, note: t.apiEnableDesc, on: live })
+      + switchRow({ k: 'api.enabled', label: t.apiEnable, on: live })
       + `<div class="border-t border-neutral-200 p-4 dark:border-neutral-800">`
       + `<p class="${META}">${escapeHtml(t.apiReadOnly)}</p></div>`
       + `<div class="border-t border-neutral-200 p-4 dark:border-neutral-800">${address}</div>`

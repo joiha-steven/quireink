@@ -115,7 +115,7 @@ export function peoplePanel(
 
   if (subscribers.length === 0) {
     return `<div data-nl-panel="people"${open ? '' : ' hidden'}>${band}`
-      + emptyState({ title: t.nlNoSubs, description: t.nlNoSubsHint })
+      + emptyState({ title: t.nlNoSubs })
       + `</div>`
   }
 

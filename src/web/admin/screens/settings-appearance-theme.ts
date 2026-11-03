@@ -271,7 +271,7 @@ export function palettes(t: AdminStrings, s: SiteSettings, presets: ThemePreset[
     // default — most blogs want to meet a reader where they are — but a blog that IS dark or IS
     // light can now say so.
     + pick({
-      k: 'defaultScheme', label: t.defaultScheme, note: t.defaultSchemeHint, inline: true,
+      k: 'defaultScheme', label: t.defaultScheme, inline: true,
       width: 'medium', value: s.defaultScheme,
       options: SCHEMES.map((id) => [id, t.schemeNames[id] ?? id] as [string, string]),
     })

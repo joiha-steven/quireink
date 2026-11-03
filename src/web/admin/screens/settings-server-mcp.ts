@@ -178,7 +178,7 @@ export function mcpCard(t: AdminStrings, s: SiteSettings, endpoint: string, fall
   // `endpoint` is `''` when the blog does not know its own address: say where it is set rather
   // than hand out a relative path (`machineAddress`, beside the API card that shares it).
   const url = machineAddress(t, {
-    label: t.mcpUrlLabel, note: t.mcpUrlHint, path: '/api/mcp', address: endpoint, fallback,
+    label: t.mcpUrlLabel, path: '/api/mcp', address: endpoint, fallback,
     control: (shown) => `<div class="flex items-center gap-2">`
       + `<code class="${COPY_BOX} bg-neutral-50 dark:bg-neutral-900" data-mcp-url>`
       + `${escapeHtml(shown)}</code>`
@@ -196,7 +196,7 @@ export function mcpCard(t: AdminStrings, s: SiteSettings, endpoint: string, fall
     // box contributes nothing at all.
     body: `<div>`
       + panelList(`<div>`
-        + switchRow({ k: 'mcp.enabled', label: t.mcpEnable, note: t.mcpEnableDesc, on: s.mcp.enabled })
+        + switchRow({ k: 'mcp.enabled', label: t.mcpEnable, on: s.mcp.enabled })
         + gate(live, url,
           'class="border-t border-neutral-200 p-4 dark:border-neutral-800" data-gate-live="mcp.enabled"')
         + `</div>`)

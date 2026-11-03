@@ -183,7 +183,7 @@ function security(t: AdminStrings): string {
     // at two sessions or more in React, so it ships hidden rather than absent — and hidden is
     // the honest state, because at render time the page knows of no sessions at all.
     + settingRow({
-      label: t.securitySessions, note: t.securitySessionsHint,
+      label: t.securitySessions,
       control: `<ul class="divide-y divide-neutral-100 dark:divide-neutral-800" data-sec-sessions></ul>`
         + sessionRow(t)
         + `<button type="button" data-sec-signout-others hidden`
@@ -216,7 +216,7 @@ function rendering(t: AdminStrings, s: SiteSettings): string {
   const when = 'data-disable-when="motion.keys=off"'
   return panelList(
     switchRow({
-      k: 'typography.smoothing', label: t.fontSmoothing, note: t.fontSmoothingDesc,
+      k: 'typography.smoothing', label: t.fontSmoothing,
       on: s.typography.smoothing, 
     })
     + switchRow({
@@ -229,7 +229,7 @@ function rendering(t: AdminStrings, s: SiteSettings): string {
     // drawn BETWEEN children, so the padding has to be on the child.
     + `<div class="p-4">`
     + pick({
-      k: 'motion.keys', label: t.keyFeedbackLabel, note: t.keyFeedbackDesc, inline: true,
+      k: 'motion.keys', label: t.keyFeedbackLabel, inline: true,
       width: 'medium', value: m.keys,
       options: [
         ['off', t.keyFeedbackOff], ['woody', t.keyFeedbackWoody],
@@ -239,7 +239,7 @@ function rendering(t: AdminStrings, s: SiteSettings): string {
     })
     + `</div><div class="p-4">`
     + settingRow({
-      label: t.keyVolumeLabel, note: t.keyVolumeDesc, inline: true,
+      label: t.keyVolumeLabel, inline: true,
       control: `<div class="flex flex-wrap items-center gap-x-4 gap-y-3">`
         + slider({
           k: 'motion.keyVolume', value: m.keyVolume, min: 0, max: 100, step: 5,
@@ -256,7 +256,7 @@ function rendering(t: AdminStrings, s: SiteSettings): string {
     // The pen's squeak (ADR 0049) rides the instrument and the slider above rather than adding
     // a second volume: one answer about sound.
     + switchRow({
-      k: 'motion.penSqueak', label: t.penSqueakLabel, note: t.penSqueakDesc,
+      k: 'motion.penSqueak', label: t.penSqueakLabel,
       on: m.penSqueak, disabled: quiet,
       // Dimmed rather than hidden: a switch whose engine is off has to look unavailable rather
       // than off, or the owner flips it, sees it flip back, and concludes the admin is broken.
@@ -279,7 +279,6 @@ function thisAdmin(t: AdminStrings, s: SiteSettings): string {
     title: t.dashboardTitle, first: true,
     body: panelList(switchRow({
       k: 'dashboard.systemLine', label: t.dashboardSystemLine,
-      note: t.dashboardSystemLineDesc.replace('{tab}', t.tabServer),
       on: s.dashboard.systemLine, 
     })),
   })
@@ -290,11 +289,11 @@ function thisAdmin(t: AdminStrings, s: SiteSettings): string {
       title: t.cardActivity,
       body: panelList(
         switchRow({
-          k: 'features.activityLog', label: t.featActivityLog, note: t.featActivityLogDesc,
+          k: 'features.activityLog', label: t.featActivityLog,
           on: s.features.activityLog, 
         })
         + switchRow({
-          k: 'features.transferStats', label: t.featTransferStats, note: t.featTransferStatsDesc,
+          k: 'features.transferStats', label: t.featTransferStats,
           on: s.features.transferStats, 
         }),
       ),

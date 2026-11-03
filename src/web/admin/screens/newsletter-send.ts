@@ -118,7 +118,7 @@ export function sendPanel(t: AdminStrings, lang: SiteLang, posts: Post[], open: 
       + `<span data-nl-subject class="font-medium"></span></p>`
       + `<iframe data-nl-frame title="${escapeAttr(t.nlPreview)}" sandbox=""`
       + ` class="h-[34rem] w-full rounded-lg border border-neutral-200 bg-white dark:border-neutral-800"></iframe>`
-      + `<p class="${NOTE_TEXT}">${escapeHtml(t.nlPreviewHint)}</p></div>`,
+      + `</div>`,
   })
 
   // `grid-cols-1`, i.e. one `minmax(0, 1fr)` track: with no columns stated the implicit track

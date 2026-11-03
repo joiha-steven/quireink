@@ -209,7 +209,7 @@ export async function logScreen(settings: SiteSettings): Promise<string> {
   // happened yet" and "nothing matched what you typed" are different facts, and each
   // sentence says which one this is.
   const body = entries.length === 0
-    ? emptyState({ title: t.logEmpty, description: t.logEmptyHint })
+    ? emptyState({ title: t.logEmpty })
     : `${emptyState({ title: t.logNoMatch, hidden: true, attrs: 'data-log-nomatch' })}`
       + `<ul data-log-list class="admin-stagger">${entries.map((e: NamedEntry, i: number) => row(t, lang, siteZone(settings.timezone), e, i)).join('')}</ul>`
       + `<div data-log-more class="px-5 py-3"${entries.length > PAGE ? '' : ' hidden'}>`

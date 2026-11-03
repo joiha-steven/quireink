@@ -144,7 +144,7 @@ function layout(t: AdminStrings, s: SiteSettings, v: HomeTabView): string {
   return `<div class="${SETTING_GAP}">`
     // What `/` serves, and where the post list goes when it is no longer there. ADR 0014.
     + choice({
-      k: 'home.mode', label: t.homeModeLabel, note: t.homeModeHint, value: home.mode,
+      k: 'home.mode', label: t.homeModeLabel, value: home.mode,
       options: [['list', t.homeModeList], ['page', t.homeModePage], ['front', t.homeModeFront]],
     })
     // Both of the other modes move the post list, so both need somewhere to move it to. Only one
@@ -163,14 +163,14 @@ function layout(t: AdminStrings, s: SiteSettings, v: HomeTabView): string {
     + `<div>`
     + textField({ k: 'home.listPath', label: t.listPathLabel, note: t.listPathHint, value: home.listPath })
     + refusal + `</div></div>`
-    + textField({ k: 'contentWidth', label: t.siteWidth, note: t.siteWidthHint, type: 'number',
+    + textField({ k: 'contentWidth', label: t.siteWidth, type: 'number',
       value: s.contentWidth, attrs: 'min="360" max="1600"' })
-    + textField({ k: 'postsPerPage', label: t.postsPerPage, note: t.postsPerPageHint,
+    + textField({ k: 'postsPerPage', label: t.postsPerPage,
       type: 'number', value: s.postsPerPage, attrs: 'min="1" max="100"' })
     + menu(t, s)
     // One stacked rail (classic) against two rails and a narrower column.
     + `<div class="${BAND}">` + choice({
-      k: 'sidebarLayout', label: t.sidebarLayoutLabel, note: t.sidebarLayoutHint,
+      k: 'sidebarLayout', label: t.sidebarLayoutLabel,
       value: s.sidebarLayout,
       options: [['single', t.sidebarLayoutSingle], ['two', t.sidebarLayoutTwo]],
     }) + `</div>`
@@ -231,24 +231,24 @@ function footer(t: AdminStrings, s: SiteSettings): string {
  * the design's job rather than a question put to the owner.
  */
 function listing(t: AdminStrings, s: SiteSettings): string {
-  const rows: [keyof FeatureSettings, string, string][] = [
-    ['sidebar', t.featSidebar, t.featSidebarDesc],
-    ['sidebarCategories', t.featSidebarCategories, t.featSidebarCategoriesDesc],
-    ['sidebarSeries', t.featSidebarSeries, t.featSidebarSeriesDesc],
-    ['sidebarArchive', t.featSidebarArchive, t.featSidebarArchiveDesc],
-    ['sidebarTags', t.featSidebarTags, t.featSidebarTagsDesc],
-    ['infiniteScroll', t.featInfiniteScroll, t.featInfiniteScrollDesc],
-    ['gridView', t.featGridView, t.featGridViewDesc],
+  const rows: [keyof FeatureSettings, string][] = [
+    ['sidebar', t.featSidebar],
+    ['sidebarCategories', t.featSidebarCategories],
+    ['sidebarSeries', t.featSidebarSeries],
+    ['sidebarArchive', t.featSidebarArchive],
+    ['sidebarTags', t.featSidebarTags],
+    ['infiniteScroll', t.featInfiniteScroll],
+    ['gridView', t.featGridView],
     // Listed here because the listing is where it is most visible, but it is ONE switch for both
-    // screens and its description says so.
-    ['scrollFade', t.featScrollFade, t.featScrollFadeDesc],
-    ['archive', t.featArchive, t.featArchiveDesc],
-    ['leadPost', t.featLeadPost, t.featLeadPostDesc],
+    // screens.
+    ['scrollFade', t.featScrollFade],
+    ['archive', t.featArchive],
+    ['leadPost', t.featLeadPost],
   ]
   return `<div class="${SETTING_GAP}">`
-    + panelList(rows.map(([key, label, note]) => toggle(`features.${key}`, label, s.features[key], note)).join(''))
+    + panelList(rows.map(([key, label]) => toggle(`features.${key}`, label, s.features[key])).join(''))
     + `<div class="${SETTING_GAP}">` + choice({
-      k: 'postImage.thumb', label: t.postImageThumb, note: t.postImageThumbHint,
+      k: 'postImage.thumb', label: t.postImageThumb,
       value: s.postImage.thumb,
       options: [['none', t.piOff], ['side', t.piThumbSide], ['top', t.piThumbTop]],
     }) + `</div></div>`

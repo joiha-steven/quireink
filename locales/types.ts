@@ -251,8 +251,6 @@ export type AdminStrings = {
   cacheEnableDesc: string
   dashboardTitle: string
   dashboardSystemLine: string
-  dashboardSystemLineDesc: string
-  cacheClearDesc: string
   clearCacheFailed: string
   // Settings -> System -> Updates. `updateAvailable` carries {v}, the newer version.
   updateTitle: string
@@ -271,7 +269,6 @@ export type AdminStrings = {
   updateCurrent: string
   // Settings -> Site. One zone for the whole site: post dates, month markers, analytics days.
   siteTimezone: string
-  siteTimezoneHint: string
   siteTimezoneUnset: string
   // dashboard
   tabPosts: string
@@ -563,18 +560,11 @@ export type AdminStrings = {
   imgFramePaper: string
   imgFrameInk: string
   figureFrame: string
-  figureFrameHint: string
   figureFrameColour: string
-  figureFrameColourHint: string
   galleryRatio: string
-  galleryRatioHint: string
   galleryCaptions: string
-  galleryCaptionsHint: string
-  postImageHint: string
   postImageHero: string
-  postImageHeroHint: string
   postImageThumb: string
-  postImageThumbHint: string
   /** Shared by both choosers: "no picture here". */
   piOff: string
   /** The hero's only "on" value: there is no wider one (see `PostImageSettings.hero`). */
@@ -582,15 +572,11 @@ export type AdminStrings = {
   piThumbSide: string
   piThumbTop: string
   // Settings -> Appearance -> Shape. The three knobs that change shape rather than colour.
-  // Every default reproduces today exactly, which is what `shapeHint` promises.
+  // Every default reproduces today exactly.
   cardShape: string
-  shapeHint: string
   shapeDensity: string
-  shapeDensityHint: string
   shapeRadius: string
-  shapeRadiusHint: string
   shapeHeading: string
-  shapeHeadingHint: string
   shapeCompact: string
   shapeNormal: string
   shapeRelaxed: string
@@ -605,50 +591,38 @@ export type AdminStrings = {
   // Settings -> Appearance -> Tables. One set for the whole blog; GFM cannot express any
   // of it, so the Markdown stays portable.
   cardTable: string
-  tableHint: string
   /** One line in place of the controls the chosen theme draws itself (`ownsSettings`); `{theme}` and `{parts}` are filled in by the island. */
   themeOwnsSetting: string
   tableHead: string
-  tableHeadHint: string
   tableHeadPlain: string
   tableHeadTint: string
   tableHeadRule: string
   tableHeadInk: string
   tableGrid: string
-  tableGridHint: string
   tableGridAll: string
   tableGridRows: string
   tableGridNone: string
   tableRuleWeight: string
-  tableRuleWeightHint: string
   tableHairline: string
   tableThick: string
   tableFirstCol: string
-  tableFirstColHint: string
   tableColNormal: string
   tableColStrong: string
   tablePadding: string
-  tablePaddingHint: string
   tableNarrow: string
-  tableNarrowHint: string
   tableNarrowFit: string
   tableNarrowScroll: string
   tableStripe: string
-  tableStripeHint: string
   // Settings -> Site -> Author. One blog, one owner (ADR 0002). An EMPTY NAME is the
   // default and means silence — no byline, no author box, no `author` in the structured
   // data — so `authorHint` has to say that before the first field.
   cardAuthor: string
   authorHint: string
   authorName: string
-  authorNameHint: string
   authorBio: string
-  authorBioHint: string
   authorAvatar: string
-  authorAvatarHint: string
   authorNoAvatar: string
   authorLink: string
-  authorLinkHint: string
   // Settings -> Layout -> Highlighter
   captionPlaceholder: string
   // post settings panel
@@ -670,7 +644,6 @@ export type AdminStrings = {
   translationGroupPlaceholder: string
   translationsIn: string
   coverImageLabel: string
-  coverImageHint: string
   metaTitleLabel: string
   metaDescriptionLabel: string
   seoSectionHint: string
@@ -689,7 +662,6 @@ export type AdminStrings = {
   removeAria: string
   paletteNames: Record<string, string>
   defaultScheme: string
-  defaultSchemeHint: string
   schemeNames: Record<string, string>
   // media
   libraryTitle: string
@@ -866,23 +838,17 @@ export type AdminStrings = {
   chooseLogoDark: string
   /** The dark logo's row label; the key under it says chooseLogoDark. */
   logoDarkLabel: string
-  logoDarkHint: string
   chooseLogo: string
   removeLogo: string
   logoWidth: string
-  logoWidthHint: string
   siteWidth: string
-  siteWidthHint: string
   postsPerPage: string
-  postsPerPageHint: string
   favicon: string
-  faviconHint: string
   appIcon: string
   appIconHint: string
   excerptLength: string
   excerptLengthHint: string
   relatedCount: string
-  relatedCountHint: string
   securityTitle: string
   securityConfirm: string
   securityConfirmHint: string
@@ -907,7 +873,6 @@ export type AdminStrings = {
   securityConfirmCode: string
   securityTotpDone: string
   securitySessions: string
-  securitySessionsHint: string
   securityThisDevice: string
   securityLastSeen: string
   securitySignOut: string
@@ -948,7 +913,6 @@ export type AdminStrings = {
   pwTooCommon: string
   pwContainsName: string
   customCss: string
-  customCssHint: string
   cssLines: string
   cssBytes: string
   cssUnclosed: string
@@ -1015,7 +979,6 @@ export type AdminStrings = {
   menuHrefUnsafe: string
   // appearance
   navAppearance: string
-  appearanceHint: string
   themePreset: string
   themePresetHint: string
   themeDefault: string
@@ -1069,11 +1032,9 @@ export type AdminStrings = {
   typographyPreviewBody: string
   // custom font (per weight)
   cardFont: string
-  fontPresetHint: string
   fontPresetApplied: string
   chromeFontLabel: string
   chromeFontReading: string
-  chromeFontHint: string
   fontHint: string
   fontFamilyLabel: string
   fontDefault: string
@@ -1087,9 +1048,7 @@ export type AdminStrings = {
   // advanced (text rendering)
   cardRendering: string
   fontSmoothing: string
-  fontSmoothingDesc: string
   lookLabel: string
-  lookDesc: string
   lookPlain: string
   lookCode: string
   lookPaper: string
@@ -1151,16 +1110,13 @@ export type AdminStrings = {
   motionLabel: string
   motionDesc: string
   keyFeedbackLabel: string
-  keyFeedbackDesc: string
   keyFeedbackOff: string
   keyFeedbackWoody: string
   keyFeedbackCrisp: string
   keyFeedbackDeep: string
   keyVolumeLabel: string
-  keyVolumeDesc: string
   keyHear: string
   penSqueakLabel: string
-  penSqueakDesc: string
   autosaveLabel: string
   autosaveHint: string
   // The home screen's line under its title: when the blog last published, and how to name it.
@@ -1225,13 +1181,11 @@ export type AdminStrings = {
   sidebarLayoutLabel: string
   sidebarLayoutSingle: string
   sidebarLayoutTwo: string
-  sidebarLayoutHint: string
   // What `/` serves, and where the post list goes when it is not there. ADR 0014.
   homeModeLabel: string
   homeModeList: string
   homeModePage: string
   homeModeFront: string
-  homeModeHint: string
   homePageLabel: string
   homePageNone: string
   homePageHint: string
@@ -1242,9 +1196,7 @@ export type AdminStrings = {
   frontKindLabel: string
   frontKindImage: string
   frontKindText: string
-  frontKindHint: string
   frontLead: string
-  frontLeadHint: string
   frontLeadSource: string
   frontLeadLatest: string
   frontLeadPinned: string
@@ -1253,26 +1205,20 @@ export type AdminStrings = {
   frontCount: string
   frontColumns: string
   frontFeaturedRow: string
-  frontFeaturedHint: string
   frontStrips: string
-  frontStripsHint: string
   frontStripAdd: string
   frontPopularRow: string
-  frontPopularHint: string
   frontWindow: string
   frontWindow7: string
   frontWindow30: string
   frontWindowAll: string
   frontLatestRow: string
-  frontLatestHint: string
   frontShowDate: string
   frontShowReading: string
   frontTagLinks: string
-  frontTagLinksHint: string
   commentsEnable: string
   commentsEnableDesc: string
   commentsTurnstile: string
-  commentsTurnstileDesc: string
   /** Which comment gate is standing right now (ADR 0032): Turnstile when its keys are
    *  set, and the blog's own signed puzzle otherwise. */
   commentsGateTurnstile: string
@@ -1291,82 +1237,49 @@ export type AdminStrings = {
   commentsHelpOpen: string
   commentsNavTitle: string
   commentsColDelete: string
-  commentsEmptyHint: string
   commentsEmpty: string
   // reader-feature toggles
   featSearch: string
-  featSearchDesc: string
   featToc: string
-  featTocDesc: string
   featRelated: string
-  featRelatedDesc: string
   featReadingTime: string
-  featReadingTimeDesc: string
   featProgress: string
-  featProgressDesc: string
   featSidebar: string
-  featSidebarDesc: string
   featSidebarSeries: string
   featSidebarCategories: string
-  featSidebarCategoriesDesc: string
   featSidebarTags: string
-  featSidebarTagsDesc: string
   featSidebarArchive: string
-  featSidebarArchiveDesc: string
-  featSidebarSeriesDesc: string
   featInfiniteScroll: string
-  featInfiniteScrollDesc: string
   featGridView: string
-  featGridViewDesc: string
   featScrollFade: string
-  featScrollFadeDesc: string
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: string
-  featArchiveDesc: string
   // Settings -> Reading: the service worker (ADR 0039). The description carries the two
   // things a reader would want to know and an owner would not think to ask: nothing is
   // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
   featOffline: string
   featOfflineDesc: string
   featLeadPost: string
-  featLeadPostDesc: string
   featCategoryLabel: string
-  featCategoryLabelDesc: string
   featDeck: string
-  featDeckDesc: string
   featPenUnderline: string
-  featPenUnderlineDesc: string
   featPenRing: string
-  featPenRingDesc: string
   featPenLists: string
-  featPenListsDesc: string
   featBookText: string
-  featBookTextDesc: string
   featCurlyQuotes: string
-  featCurlyQuotesDesc: string
   featBookmarkCards: string
   featBookmarkCardsDesc: string
   featFileCards: string
-  featFileCardsDesc: string
   featBookMode: string
-  featBookModeDesc: string
   featReadNext: string
-  featReadNextDesc: string
   featResume: string
-  featResumeDesc: string
   featReaderPen: string
   featReaderPenDesc: string
   // SEO fields
   seoCanonical: string
   seoCanonicalHint: string
   seoAutoSchema: string
-  seoAutoSchemaDesc: string
-  seoSitemapDesc: string
-  seoRssDesc: string
-  seoLlmsDesc: string
-  seoRobotsDesc: string
   seoOgImage: string
-  seoOgImageDesc: string
   seoFallbackLabel: string
   // time machine
   timeMachine: string
@@ -1452,12 +1365,9 @@ export type AdminStrings = {
   navLog: string
   navHelp: string
   featActivityLog: string
-  featActivityLogDesc: string
   featTransferStats: string
-  featTransferStatsDesc: string
   logTitle: string
   logEmpty: string
-  logEmptyHint: string
   /** The log's own controls: which kinds, how far back, and what to look for. */
   logKindAll: string
   logKindWriting: string
@@ -1511,7 +1421,6 @@ export type AdminStrings = {
   cardCloudflare: string
   cardAi: string
   cardInk: string
-  inkHelp: string
   inkHighlighter: string
   inkYellow: string
   inkGreen: string
@@ -1520,14 +1429,11 @@ export type AdminStrings = {
   inkOrange: string
   inkTooDark: string
   inkLines: string
-  inkLinesHint: string
   inkRing: string
   inkUnderline: string
   inkSelection: string
-  inkSelectionHint: string
   inkSelectionLight: string
   inkSelectionDark: string
-  aiHelp: string
   aiKeyPh: string
   aiProviderOff: string
   aiTasksLabel: string
@@ -1614,21 +1520,16 @@ export type AdminStrings = {
   apHandle: string
   apHandleHint: string
   apAddress: string
-  apAddressHint: string
   apWarning: string
   apFollowers: string
   apNeedsAddress: string
   apiEnable: string
-  apiEnableDesc: string
   apiUrlLabel: string
-  apiUrlHint: string
   machineNeedsAddress: string
   apiUrlCopied: string
   apiReadOnly: string
   mcpEnable: string
-  mcpEnableDesc: string
   mcpUrlLabel: string
-  mcpUrlHint: string
   mcpUrlCopied: string
   mcpTokensTitle: string
   mcpTokensHint: string
@@ -1673,7 +1574,6 @@ export type AdminStrings = {
   offsiteTest: string
   exportHint: string
   exportNow: string
-  exportWritingHint: string
   exportWritingNow: string
   exportBusy: string
   exportReplicationNote: string
@@ -1751,7 +1651,6 @@ export type AdminStrings = {
   nlTabPeople: string
   nlTabSend: string
   nlTabTest: string
-  nlNoSubsHint: string
   nlColEmail: string
   nlColStatus: string
   nlColJoined: string
@@ -1767,7 +1666,6 @@ export type AdminStrings = {
   nlPageNext: string
   nlPickPost: string
   nlPreview: string
-  nlPreviewHint: string
   nlPreviewFailed: string
   nlPreviewEmpty: string
   nlSubjectLabel: string

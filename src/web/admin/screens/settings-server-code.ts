@@ -25,17 +25,17 @@ import { checkField } from '@/web/admin/fields-pick'
 import { pickedImage } from '@/web/admin/fields-pic'
 import { emptyState, icon } from '@/web/admin/kit'
 
-/** One crawler feature: the key it stores, its name, the sentence under it, and the path it
+/** One crawler feature: the key it stores, its name, and the path it
  *  serves. Acronym labels (Sitemap, RSS Feed, llms.txt, robots.txt) stay literal. */
-type Crawl = { k: Exclude<keyof SeoSettings, 'ogFallbackImage'>; label: string; note: string; path: string }
+type Crawl = { k: Exclude<keyof SeoSettings, 'ogFallbackImage'>; label: string; path: string }
 
 const CRAWL = (t: AdminStrings): Crawl[] => [
-  { k: 'autoSchema', label: t.seoAutoSchema, note: t.seoAutoSchemaDesc, path: '' },
-  { k: 'sitemap', label: 'Sitemap', note: t.seoSitemapDesc, path: '/sitemap.xml' },
-  { k: 'rss', label: 'RSS Feed', note: t.seoRssDesc, path: '/feed.xml' },
-  { k: 'llms', label: 'llms.txt', note: t.seoLlmsDesc, path: '/llms.txt' },
-  { k: 'robots', label: 'robots.txt', note: t.seoRobotsDesc, path: '/robots.txt' },
-  { k: 'ogImage', label: t.seoOgImage, note: t.seoOgImageDesc, path: '/og' },
+  { k: 'autoSchema', label: t.seoAutoSchema, path: '' },
+  { k: 'sitemap', label: 'Sitemap', path: '/sitemap.xml' },
+  { k: 'rss', label: 'RSS Feed', path: '/feed.xml' },
+  { k: 'llms', label: 'llms.txt', path: '/llms.txt' },
+  { k: 'robots', label: 'robots.txt', path: '/robots.txt' },
+  { k: 'ogImage', label: t.seoOgImage, path: '/og' },
 ]
 
 /**
@@ -51,7 +51,7 @@ function crawlers(t: AdminStrings, s: SiteSettings): string {
   const box = 'h-20 w-36 shrink-0 rounded-lg'
   return `<div class="${SETTING_GAP}">`
     + switchList(CRAWL(t).map((f) => switchRow({
-      k: `seo.${f.k}`, label: f.label, note: f.note, badge: f.path || undefined,
+      k: `seo.${f.k}`, label: f.label, badge: f.path || undefined,
       on: s.seo[f.k],
     })).join(''))
     + settingRow({

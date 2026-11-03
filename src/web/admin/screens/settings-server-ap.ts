@@ -40,7 +40,6 @@ export function activityPubCard(
 
   const shown = settingRow({
     label: t.apAddress,
-    note: t.apAddressHint,
     control: `<code class="${COPY_BOX} bg-neutral-50 dark:bg-neutral-900" data-ap-address>`
       + `${escapeHtml(address || '—')}</code>`,
   })

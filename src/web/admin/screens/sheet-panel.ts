@@ -134,7 +134,7 @@ function postFields(t: AdminStrings, piece: PanelPiece, lists: PanelLists): stri
       attrs: `maxlength="${EXCERPT_MAX_CHARS}" placeholder="${escapeAttr(fill(t.excerptPlaceholder, { words: piece.excerptWords, max: EXCERPT_MAX_CHARS }))}"`,
     })
     + pictureField({
-      k: 'coverImage', label: t.coverImageLabel, hint: t.coverImageHint, value: piece.coverImage, t,
+      k: 'coverImage', label: t.coverImageLabel, value: piece.coverImage, t,
     })
     + `<div class="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
     + fieldNote(t.seoSectionHint)

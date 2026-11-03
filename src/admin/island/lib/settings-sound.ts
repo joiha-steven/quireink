@@ -7,9 +7,9 @@
 // call is untouched: `components/key-sound.ts` still runs on every keystroke in the writing
 // sheet. Only this screen went quiet.
 //
-// `keyVolumeDesc` says, in eleven languages, "Moving it plays a key, so you can hear where you
-// are putting it." That sentence was false in the shipped build. Restoring the behaviour is what
-// makes it true again; editing the sentence would have been the wrong repair.
+// The volume row used to say, in eleven languages, that moving it plays a key so you can hear
+// where you are putting it. That was false in the shipped build, and the behaviour was restored
+// rather than the sentence edited. The row carries no sentence since 2026-11-03; the key plays.
 //
 // ⚠️ LOADED ON FIRST TOUCH, NOT WITH THE SCREEN. The engine is ~21 KB of source — the voice
 // tables in `key-render.ts` are most of it — and the settings bundle is the heaviest markup page

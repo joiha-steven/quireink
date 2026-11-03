@@ -48,7 +48,7 @@ const cache = (t: AdminStrings, s: SiteSettings): string =>
     k: 'cache.enabled', label: t.cacheEnable, note: t.cacheEnableDesc, on: s.cache.enabled,
   }))
   + settingRow({
-    label: t.clearCache, note: t.cacheClearDesc, inline: true,
+    label: t.clearCache, inline: true,
     control: `<button type="button" data-cache-clear class="${buttonClass('secondary', 'sm')}">`
       + `${escapeHtml(t.clearCache)}</button>`,
   })
@@ -251,7 +251,6 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
     // the quieter of the two keys, because the archive is the one somebody needs weekly and
     // this is the one they need once.
     + `<div class="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.exportWritingHint)}</p>`
     + `<button type="button" data-writing-export class="${buttonClass('secondary', 'sm')}">`
     + `${escapeHtml(t.exportWritingNow)}</button>`
     + `</div>`
