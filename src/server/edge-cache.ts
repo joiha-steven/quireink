@@ -14,6 +14,7 @@
 // normal case, and every test runs in exactly that state.
 
 import { getIntegrationKeys } from '@/store/integration-keys'
+import { readEnv } from '@/env'
 
 const ENDPOINT = 'https://api.cloudflare.com/client/v4/zones'
 
@@ -67,6 +68,10 @@ async function purgeWebhook(): Promise<'ok' | 'skipped' | 'failed'> {
 }
 
 async function purgeCloudflare(): Promise<'ok' | 'skipped' | 'failed'> {
+  // ⚠️ NEVER ON CLOUDFLARE ITSELF. There the blog is a Worker on a Custom Domain, whose answers do
+  // not go into the zone's cache, so a purge clears nothing of this blog's and everything else on
+  // the zone; the card that takes the token is not drawn there (`cloudflareCard`).
+  if (readEnv().package === 'cloudflare') return 'skipped'
   const keys = await getIntegrationKeys()
   if (!keys.cloudflareApiToken || !keys.cloudflareZoneId) return 'skipped'
   try {

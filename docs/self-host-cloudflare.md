@@ -87,6 +87,10 @@ loads them from the bucket as one stream. A program can do the same through the 
 to a download or to an off-site copy (a multipart upload), so their size is not bounded by the
 Worker's 128 MB either.
 
+Settings → Server has no **Cloudflare cache** card here: a Worker's answers do not go into the zone's
+CDN cache, so there is nothing of this blog's to purge, and a purge would empty the cache of
+everything else on the zone. A blog on a server behind Cloudflare keeps the card.
+
 ## Upgrading
 
 The database migrates when the blog next starts, after Cloudflare has bookmarked the moment before

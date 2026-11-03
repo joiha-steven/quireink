@@ -25,6 +25,7 @@ import { settingRow, switchList, switchRow, textControl } from '@/web/admin/fiel
 import { connectionCard, pairGrid } from '@/web/admin/fields-box'
 import { pickControl } from '@/web/admin/fields-pick'
 import { AI_PROVIDERS, AI_PROVIDER_NAMES } from '@/server/ai-capabilities'
+import { readEnv } from '@/env'
 
 /** Cloudflare's own page for minting a Zone.Cache Purge token. */
 const CF_TOKENS = 'https://dash.cloudflare.com/profile/api-tokens'
@@ -85,6 +86,8 @@ function secret(t: AdminStrings, f: {
  * on every save of the card, which is a different rule for one field out of three.
  */
 export function cloudflareCard(t: AdminStrings, i: IntegrationStatus): string {
+  // Not on Cloudflare itself: a Worker's answers are not in the zone's cache (`edge-cache.ts`).
+  if (readEnv().package === 'cloudflare') return ''
   const on = i.cloudflareConfigured
   return connectionCard({
     title: t.cardCloudflare,
