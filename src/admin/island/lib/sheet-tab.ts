@@ -14,8 +14,10 @@
 //
 // Every access is in a `try`, for the reason `sheet-keep.ts` gives: a private window throws on
 // read as readily as on write, and the editor must still open.
-import type { SheetKind } from '@/admin-shared/sheet-wire'
+import type { SheetDraft, SheetKind } from '@/admin-shared/sheet-wire'
 import { draftKey } from '@/admin-shared/sheet-wire'
+import { titleSlug } from '@/utils'
+import { readSnapshot } from './sheet-keep'
 
 /** A lease older than this belongs to a tab that is gone. Renewed at a third of it. */
 export const LEASE_MS = 15_000
@@ -113,4 +115,30 @@ export function claimNewSheet(kind: SheetKind, now = Date.now()): NewSheet {
   window.addEventListener('pagehide', release)
   window.addEventListener('pageshow', (e) => { if (e.persisted) start() })
   return { key: keyOf(mine), adopted, release, stop }
+}
+
+/**
+ * A NEW PIECE REOPENS FROM ITS SNAPSHOT.
+ *
+ * There is no row and so no server copy; the only record of a crash mid-draft is on this device,
+ * and a blank sheet over the top of it is the work gone. Read before the editor is built, so it
+ * opens with the words already in it rather than putting them in afterwards. Its OWN copy, or one
+ * no open tab holds (above): a second "New post" tab is a second post.
+ *
+ * The title and slug boxes are filled here too. The server drew both empty for a piece with no
+ * row, the body came back without them, and the next save stored a title the writer could not see
+ * (2026-11-03). A slug that is not the title's own was typed, and stays put (`slugTyped`).
+ */
+export function reopenNew(
+  kind: SheetKind, root: HTMLElement, draft: SheetDraft,
+): NewSheet & { content: string | null; slugTyped: boolean } {
+  const sheet = claimNewSheet(kind)
+  const kept = sheet.adopted ? readSnapshot<SheetDraft & { content: string }>(sheet.key) : null
+  if (!kept) return { ...sheet, content: null, slugTyped: false }
+  Object.assign(draft, kept.data)
+  const titleBox = root.querySelector<HTMLTextAreaElement>('[data-sheet-title]')
+  const slugBox = root.querySelector<HTMLInputElement>('[data-k="slug"]')
+  if (titleBox) titleBox.value = draft.title
+  if (slugBox) slugBox.value = draft.slug
+  return { ...sheet, content: kept.data.content, slugTyped: draft.slug !== '' && draft.slug !== titleSlug(draft.title) }
 }

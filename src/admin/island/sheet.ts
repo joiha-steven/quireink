@@ -28,7 +28,7 @@ import { askForLink } from './lib/ask-link'
 import { say } from './lib/media-bridge'
 import { retitle } from './lib/tab-title'
 import { postName } from '@/content/untitled'
-import { readSnapshot, sendSnapshot } from './lib/sheet-keep'
+import { sendSnapshot } from './lib/sheet-keep'
 import { nameEnough, payloadOf, previewStep, saveChain, savePiece, statusForSave, worthSaving, type Plan } from './lib/sheet-save'
 import { mountPaper } from './lib/sheet-paper'
 import { wireTitle } from './lib/sheet-title'
@@ -36,7 +36,7 @@ import { wireBar } from './lib/sheet-bar'
 import { wireFields, askForPicture } from './lib/sheet-fields'
 import { wirePanel } from './lib/sheet-open'
 import { wireSafety, type Snapshot } from './lib/sheet-safety'
-import { claimNewSheet } from './lib/sheet-tab'
+import { reopenNew } from './lib/sheet-tab'
 import { wireHistory } from './lib/sheet-history'
 import { sayStanding } from './lib/sheet-standing'
 import { liveSave } from './lib/sheet-live'
@@ -76,22 +76,13 @@ function boot(root: HTMLElement, data: Payload): void {
   let savedDate = slug ? draft.date : ''
   let baseSavedAt = data.rowSavedAt
 
-  /**
-   * A NEW PIECE REOPENS FROM ITS SNAPSHOT.
-   *
-   * There is no row and so no server copy; the only record of a crash mid-draft is on this
-   * device, and a blank sheet over the top of it is the work gone. Read before the editor is
-   * built, so it opens with the words already in it rather than putting them in afterwards.
-   *
-   * ITS OWN copy, or one no open tab is holding (`sheet-tab.ts`): a second "New post" tab is a
-   * second post, not the first one's words.
-   */
-  const fresh = slug ? null : claimNewSheet(kind)
-  const reopened = fresh?.adopted ? readSnapshot<Snapshot>(fresh.key) : null
-  if (reopened) {
-    Object.assign(draft, reopened.data)
-    content = reopened.data.content
+  // A new piece reopens from its own device copy, title and slug boxes included (`sheet-tab.ts`).
+  const fresh = slug ? null : reopenNew(kind, root, draft)
+  const reopened = fresh?.content != null
+  if (fresh?.content != null) {
+    content = fresh.content
     dirty = true
+    slugTyped = fresh.slugTyped
   }
 
   // ---- the parts the server drew ------------------------------------------------------
