@@ -145,12 +145,12 @@
   per line (`box-decoration-break: clone`), by owner's call 2026-09-30 — not `nowrap`. Owner toggles `features.penUnderline` /
   `features.penRing` flip the CSS only — cached bodies never re-render. ADR 0026.
 - **The reader's pen:** `src/assets/js/reader-pen.ts` (own bundle, `features.readerPen`), anchored by
-  text-quote selector in `pen-anchor.ts`, stored per path in `localStorage` (`pen-store.ts`).
-  Draws with the writer's elements and sheets, linking the sheets on demand; the quote gesture
-  moves into its bar, and a mark can be sent to the reader's own notebook (ADR 0045). ADR 0043.
+  text-quote selector in `pen-anchor.ts`, stored per path in `localStorage` (`pen-store.ts`; a renamed page names the paths
+  that 301 to it, `data-pen-was`, and its first load takes their marks). Draws with the writer's elements and sheets, linking
+  them on demand; the quote gesture moves into its bar, and a mark can go to the reader's own notebook (ADR 0045). ADR 0043.
   Tier two (`pen-sync.ts`, `src/web/pen-routes.ts`, ADR 0047): a reader may keep the same marks
   on the server under a notebook code or their commenter sign-in — `reader_marks` holds the
-  page's list under an opaque id, the server's copy wins on load, every change is written back, a renamed post or page takes
+  page's list under an opaque id, the server's copy wins on load, every change is written back, a renamed post, page or note takes
   its rows to the new path (`reader-marks-move.ts`), and a year untouched sweeps it. The owner sees none of it; `features.readerPen` off is a 404.
   ON by default, and **asked once during setup** (step three, `setup-page.ts`): it is the only
   switch here that changes what other people may do on your pages, and an owner who never opens

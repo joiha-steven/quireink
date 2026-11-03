@@ -22,7 +22,7 @@
 import { el, label } from './dom'
 import { flatten, locate, rangeFrom, selectorFor, unwrap, wrap } from './pen-anchor'
 import { fragment, wholeWords } from './quote'
-import { load, newId, save, type Ann, type Kind } from './pen-store'
+import { adopt as adoptMarks, newId, save, type Ann, type Kind } from './pen-store'
 import { codeHere, forgetAll, keepsHere, mint, pull, push, whoami, writeKey, type Via } from './pen-sync'
 
 /** Below this, a selection is a click that slipped rather than a mark. */
@@ -51,7 +51,7 @@ function readerPen(): void {
   const sheets = label('penSheets')
   if (!prose || !sheets) return
   const path = location.pathname
-  let items = load(path)
+  let items = adoptMarks(path, label('penWas').split(' '))
 
   /* ---- the two sheets, linked once and only when a mark needs them ---------------- */
   // In front of the head's FIRST `<style>`, not at the end of it. That is where the pen's

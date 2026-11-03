@@ -11,12 +11,14 @@ import type { Dict } from '@/locales/types'
 import { chromeLabels } from '@/web/chrome'
 import { PEN_LINES_SHEET, PEN_MARKS_SHEET, penSheets } from '@/web/assets'
 import { inkSignature, resolveInks } from '@/pen/palette'
+import { formerPaths } from '@/server/reader-marks-move'
 
 /**
  * The body data for a post or a page: `isPost` gates the gestures a page never gets.
  *
  * @param comments whether the comment island is mounted on this page
  * @param book whether book mode is switched on
+ * @param path the page's own path, for the addresses it was renamed from
  *
  * Those two were unconditional until 2026-09-16, which contradicts this file's own opening
  * line: a switch that is off hands over no words. Comments default to OFF, so a fresh install
@@ -26,7 +28,7 @@ import { inkSignature, resolveInks } from '@/pen/palette'
  */
 export function articleLabels(
   settings: SiteSettings, s: Dict, isPost: boolean, google = false,
-  comments = true, book = true,
+  comments = true, book = true, path = '',
 ): Record<string, string> {
   const post = isPost
   return {
@@ -72,7 +74,7 @@ export function articleLabels(
       bookModeLarger: s.bookModeLarger,
     } : {}),
     ...(post && settings.features.resume ? { resumePrompt: s.resumePrompt } : {}),
-    ...(post && settings.features.readerPen ? readerPenData(settings.inks, s, google) : {}),
+    ...(post && settings.features.readerPen ? readerPenData(settings.inks, s, google, path) : {}),
   }
 }
 
@@ -81,12 +83,14 @@ export function articleLabels(
  * (it links them itself, the moment a mark needs them — ADR 0027 keeps them off a page
  * with no ink), the five highlighter pigments as this site writes them, and its words.
  */
-function readerPenData(inks: InkSettings, s: Dict, google = false): Record<string, string> {
+function readerPenData(inks: InkSettings, s: Dict, google: boolean, path: string): Record<string, string> {
+  const was = path ? formerPaths(path).join(' ') : ''
   const sheets = inkSignature(inks) ? penSheets(inks) : { marks: PEN_MARKS_SHEET, lines: PEN_LINES_SHEET }
   const light = resolveInks(inks).light
   return {
     readerPen: '1',
     penSheets: `${sheets.marks} ${sheets.lines}`,
+    ...(was ? { penWas: was } : {}),
     penInks: ['yellow', 'green', 'pink', 'blue', 'orange'].map((k) => light[k] ?? '').join(','),
     readerPenHighlight: s.readerPenHighlight,
     readerPenUnderline: s.readerPenUnderline,

@@ -360,7 +360,7 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
   const shell = {
     bodyData: articleLabels(settings, s, !!post,
       settings.comments.googleAuth && commentEnv?.googleConfigured === true,
-      commentsMount !== '', !!post && settings.features.bookMode),
+      commentsMount !== '', !!post && settings.features.bookMode, selfPath),
     scripts: articleScripts(!!post && settings.features.bookMode, commentsMount !== '',
       !!post && settings.features.readerPen),
     customHead: settings.customHead,

@@ -18,7 +18,7 @@ const get = async (path: string): Promise<Response> => app.request(path)
 
 beforeEach(async () => {
   clearCache()
-  for (const t of ['posts', 'post_terms', 'post_revisions', 'settings']) db().run(`delete from ${t}`)
+  for (const t of ['posts', 'post_terms', 'post_revisions', 'settings', 'redirects']) db().run(`delete from ${t}`)
   await savePost({ title: 'Marked', content: 'A plain paragraph with no ink on it.', status: 'published',
     date: '2020-01-01T00:00:00.000Z' })
 })
@@ -46,6 +46,16 @@ describe("the reader's pen on a post page", () => {
     expect(html).not.toContain('data-reader-pen')
     expect(html).not.toContain('reader-pen.')
     expect(html).not.toContain('data-pen-sheets')
+  })
+
+  // The marks in a reader's own browser are kept under the page's path, and a rename moves it:
+  // the page names the paths that 301 to it so the island can take what is kept under them.
+  it('names the addresses it was renamed from, so marks kept under them follow', async () => {
+    expect(await get('/marked').then((r) => r.text())).not.toContain('data-pen-was')
+    await savePost({ slug: 'inked', title: 'Marked', content: 'A plain paragraph with no ink on it.',
+      status: 'published', date: '2020-01-01T00:00:00.000Z' }, 'marked')
+    clearCache()
+    expect(await get('/inked').then((r) => r.text())).toContain('data-pen-was="/marked"')
   })
 
   it('stays off a listing: it is a gesture on an article, not on a feed', async () => {

@@ -43,4 +43,20 @@ export function save(path: string, items: Ann[]): void {
   }
 }
 
+/**
+ * The marks for `path`, taking them from an address the page was renamed from (`was`, from the
+ * page) when `path` has none yet: kept by path, they stayed under the old one, which now 301s here.
+ */
+export function adopt(path: string, was: string[]): Ann[] {
+  let items = load(path)
+  for (const old of was) {
+    if (items.length) break
+    if ((items = load(old)).length) {
+      save(path, items)
+      try { localStorage.removeItem(KEY + old) } catch { /* kept twice is no loss */ }
+    }
+  }
+  return items
+}
+
 export const newId = () => Math.random().toString(36).slice(2, 10)

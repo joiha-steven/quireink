@@ -249,7 +249,10 @@ const BUDGET: Record<string, number> = {
   // same day again (14,764 measured, +414): the anchor folds every kind of quote to one, because
   // the page now curls the quotes an author types and a mark stored over `it's` has to find
   // `it’s` (`fold` in pen-anchor.ts). Without it every older mark over a quote stops landing.
-  'reader-pen.js': 14_900,
+  // 15,100 on 2026-11-03 (14,978 measured, +214 since 14,764): a renamed post's marks follow it,
+  // taken from the paths that 301 to it (`adopt` in pen-store.ts), else they sat under an address
+  // nobody loads again.
+  'reader-pen.js': 15_100,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.
