@@ -176,7 +176,7 @@ export async function seedAdmin(origin: number, now: number): Promise<{
   await seedRevisions(origin)
   await seedTrash(origin)
   await seedPages()
-  const subscribers = await seedSubscribers(origin, now)
+  const subscribers = await seedSubscribers(origin)
   const redirects = await seedRedirects()
 
   return { drafts: DRAFTS.length, scheduled: SCHEDULED.length, subscribers, redirects }
@@ -280,7 +280,7 @@ Two series run across those: **Designing a reading page** in four parts, and **I
  * per-address "last sent / opened" column is computed from it, and with no rows every address
  * reads "never".
  */
-async function seedSubscribers(origin: number, now: number): Promise<number> {
+async function seedSubscribers(origin: number): Promise<number> {
   /**
    * The list in ARRIVAL ORDER, oldest first, with the three states mixed through it.
    *
@@ -359,11 +359,15 @@ async function seedSubscribers(origin: number, now: number): Promise<number> {
       ...(ok ? {} : { error: i === 6 ? 'mailbox full' : 'domain not found' }),
     })
     // One row per address in this fixture, so no need to single out the newest.
-    const sentAt = now - 2 * DAY + i * 4000
+    // Two hours AFTER the post it carries, which went up at the anchor: dated two days back from
+    // the clock, the send went out before the post was written, and the Log, which names a slug
+    // only on an entry newer than its post, printed the slug (2026-11-03).
+    const sentAt = origin + 2 * 3600_000 + i * 4000
     run(`update newsletter_sends set sent_at = ? where email = ?`, sentAt, email)
     // Roughly half opened, which is a believable rate and enough rows for the column to vary.
+    // Within the six hours between the send and the clock, so no open is dated in the future.
     if (ok && i % 2 === 0) {
-      run(`update newsletter_sends set opened_at = ? where email = ?`, sentAt + (3 + i) * 3600_000, email)
+      run(`update newsletter_sends set opened_at = ? where email = ?`, sentAt + (3 + i) * 600_000, email)
     }
   }
 

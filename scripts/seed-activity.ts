@@ -73,7 +73,9 @@ function entries(origin: number, now: number): [ActivityAction, string, number][
     ['page.create', 'about', origin - 2 * DAY],
     ['post.create', 'the-golden-canon-and-its-arithmetic', origin],
     ['media.upload', 'registration-target.png', origin + HOUR],
-    ['newsletter.send', 'the-golden-canon-and-its-arithmetic — 18/20', now - 2 * DAY],
+    // AFTER the post it sends, at the time `seed-admin.ts` dates the send itself: two days back
+    // from the clock it went out before the post was written (the anchor is eight hours back).
+    ['newsletter.send', 'the-golden-canon-and-its-arithmetic — 18/20', origin + 2 * HOUR],
     ['comment.delete', 'PrintDeals (spam)', now - 30 * HOUR],
     ['cache.clear', '', now - 5 * HOUR],
   ]
