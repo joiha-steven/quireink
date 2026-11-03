@@ -189,6 +189,20 @@ describe('enrolment', () => {
     expect(replay.status).toBe(401)
   })
 
+  it('will not let a second ticket replace an authenticator enrolled after it was issued', async () => {
+    const late = await startEnrolment()
+    const first = await startEnrolment()
+    await post('/api/auth/enrol', { ticket: first.ticket, code: codeForStep(first.secret, stepAt(Date.now()))! })
+    expect((await post('/api/auth/enrol/done', { ticket: first.ticket, saved: '1' })).status).toBe(303)
+    const secret = () => db().query<{ totp_secret: string | null }, []>(`select totp_secret from users`).get()!.totp_secret
+    const enrolled = secret()
+
+    const res = await post('/api/auth/enrol', { ticket: late.ticket, code: codeForStep(late.secret, stepAt(Date.now()))! })
+    expect(res.status).toBe(401)
+    expect(secret()).toBe(enrolled)
+    expect((await post('/api/auth/enrol/done', { ticket: late.ticket, saved: '1' })).headers.get('set-cookie')).toBeNull()
+  })
+
   it('will not let one ticket produce two sessions', async () => {
     const { ticket, secret } = await startEnrolment()
     await post('/api/auth/enrol', { ticket, code: codeForStep(secret, stepAt(Date.now()))! })

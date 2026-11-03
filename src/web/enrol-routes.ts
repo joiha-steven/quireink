@@ -114,7 +114,11 @@ export async function handleEnrol(c: Context): Promise<Response> {
 
   const userId = pendingUser(values.ticket)
   const secret = pendingSecrets.get(values.ticket)
-  if (userId === null || secret === undefined) {
+  // ⚠️ AND ONLY WHILE NOBODY HAS ENROLLED, the rule `handleEnrolSkip` already keeps. The secret
+  // is put on the ticket when the PASSWORD step finds no authenticator, and a ticket lives five
+  // minutes: two sign-ins in that window held two, the first to finish enrolled, and the second
+  // then replaced that authenticator and its recovery codes and came away with a session.
+  if (userId === null || secret === undefined || totpStateFor(userId)?.secret) {
     if (!wantsHtml) return fail(c, s.authRestart, 401)
     return html(passwordScreen(settings, { error: s.authRestart }), 401)
   }
