@@ -112,7 +112,17 @@ export function htmlToMarkdown(html: string): string {
  * 150-character draft title became a 150-character address (2026-11-03).
  */
 export function importSlug(given: string, title: string): string {
-  return slugify(given) || titleSlug(title)
+  return slugify(decoded(given)) || titleSlug(title)
+}
+
+/**
+ * WordPress keeps a slug written in another script PERCENT-ENCODED (`%e6%97%a5…`), and slugified
+ * as it stood that became the address `e697a5e69cace8aa9e` (2026-11-03). Read as the words it
+ * encodes; a slug that only folds to nothing (CJK) then falls back like any title-less item.
+ */
+function decoded(slug: string): string {
+  if (!slug.includes('%')) return slug
+  try { return decodeURIComponent(slug) } catch { return slug }
 }
 
 export function slugTracker(): (base: string) => string {

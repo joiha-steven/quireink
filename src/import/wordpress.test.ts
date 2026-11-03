@@ -120,6 +120,15 @@ describe('parseWxr slugs', () => {
     expect(slug.endsWith('-')).toBe(false)
   })
 
+  // WordPress keeps a slug in another script percent-encoded, and it was slugified as it stood:
+  // `%e6%97%a5…` became the address `e697a5e69cace8aa9e` (2026-11-03).
+  it('reads a percent-encoded slug as the words it encodes', () => {
+    const name = encodeURIComponent('đèn-pin').toLowerCase()
+    expect(parseWxr(wxr(item({ name, title: 'X' })), NOW).posts[0]?.slug).toBe('den-pin')
+    const cjk = encodeURIComponent('日本語').toLowerCase()
+    expect(parseWxr(wxr(item({ name: cjk, title: '日本語' })), NOW).posts[0]?.slug).not.toMatch(/^e6/)
+  })
+
   it('disambiguates colliding slugs rather than dropping a post', () => {
     const xml = wxr(item({ name: 'same' }) + item({ name: 'same' }) + item({ name: 'same' }))
     expect(parseWxr(xml, NOW).posts.map((p) => p.slug)).toEqual(['same', 'same-2', 'same-3'])
