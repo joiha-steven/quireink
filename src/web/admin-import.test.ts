@@ -213,6 +213,34 @@ describe('the WordPress import', () => {
     expect((await app.request('/notes')).status).toBe(200)
   })
 
+  // A re-run compared the item against the post at ITS OWN slug, so an item that had collided on
+  // the first run (and landed at `-2`) was never recognised: every run added another copy, and an
+  // imported post sent to the Trash came back as `-2` with its old URL still pointing at the bin
+  // (2026-11-03). The redirect the first run wrote says where the item went.
+  it('recognises an item it already brought in under another slug, by the path it came from', async () => {
+    const { savePost, getIndex, deletePost } = await import('@/content/posts')
+    await savePost({ title: 'Mine', slug: 'kerning', content: 'x', status: 'published', date: '2019-01-01T00:00:00.000Z' })
+    const theirs = `
+<item>
+  <title>Kerning is not tracking</title>
+  <link>https://old.example/2019/03/kerning/</link>
+  <wp:post_name>kerning</wp:post_name>
+  <wp:post_type>post</wp:post_type>
+  <wp:status>publish</wp:status>
+  <wp:post_date_gmt>2019-03-01 10:00:00</wp:post_date_gmt>
+  <content:encoded><![CDATA[<p>Body.</p>]]></content:encoded>
+</item>`
+    expect(await payload<{ posts: number }>(send(wxr(theirs)))).toMatchObject({ posts: 1 })
+    expect(await payload<{ posts: number }>(send(wxr(theirs)))).toMatchObject({ posts: 0 })
+    expect((await getIndex()).map((p) => p.slug).sort()).toEqual(['kerning', 'kerning-2'])
+
+    await deletePost('kerning-2')
+    expect(await payload<{ posts: number }>(send(wxr(theirs)))).toMatchObject({ posts: 1 })
+    const res = await app.request('/2019/03/kerning')
+    expect(res.status).toBe(301)
+    expect((await app.request(res.headers.get('location')!)).status).toBe(200)
+  })
+
   it('adds no redirect when the old path IS the new slug', async () => {
     const flat = `
 <item>

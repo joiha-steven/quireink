@@ -12,7 +12,7 @@ import { savePost, getPost } from '@/content/posts'
 import { savePage, getPage } from '@/content/pages'
 import { saveNote, getNote } from '@/content/notes'
 import { RESERVED_SLUGS, saveUnique } from '@/content/slugs'
-import { saveRedirect } from '@/server/redirects'
+import { findRedirect, saveRedirect } from '@/server/redirects'
 import { normalizePath } from '@/server/redirect-path'
 import { previewToken } from '@/content/preview'
 import { publishTick, fullTick } from '@/server/tick'
@@ -102,11 +102,32 @@ export function opsRoutes() {
     if (!sourceSlug.includes('/') && RESERVED_SLUGS.has(sourceSlug)) return 0
     try {
       // Never over a redirect the owner already has: an import is not asked, so it does not win.
-      await saveRedirect({ source, destination: `/${slug}`, permanent: true, replace: false })
+      // Except one that now leads nowhere: an earlier import's, to a piece since sent to the Trash,
+      // which left the old URL a 404 beside the copy just brought in (2026-11-03).
+      const had = findRedirect(source)
+      const dead = had !== null && had.destination.startsWith('/') && !(await liveAt(had.destination))
+      await saveRedirect({ source, destination: `/${slug}`, permanent: true, replace: dead })
       return 1
     } catch {
       return 0
     }
+  }
+
+  /** A live post or page at a one-segment path. */
+  const liveAt = async (path: string): Promise<boolean> => {
+    const slug = path.slice(1)
+    return !slug.includes('/') && (await getPost(slug) !== null || await getPage(slug) !== null)
+  }
+
+  /**
+   * Where an EARLIER import put this item, by the redirect it wrote from the item's old path. A
+   * re-run compared the item only against the piece at its own slug, so one that had collided and
+   * landed at `-2` was never recognised, and every run added another copy (2026-11-03).
+   */
+  const broughtBefore = async (path: string | undefined): Promise<string | null> => {
+    const source = path ? normalizePath(path) : ''
+    const had = source ? findRedirect(source) : null
+    return had && had.destination.startsWith('/') && !had.destination.slice(1).includes('/') ? had.destination.slice(1) : null
   }
 
   const persist = async (
@@ -130,6 +151,9 @@ export function opsRoutes() {
       if (unparseable(rest.date)) { skipped++; continue }
       const here = await getPost(slug)
       if (here && here.title === rest.title && sameDate(here.date, rest.date)) { skipped++; continue }
+      const before = await broughtBefore(path)
+      const there = before && before !== slug ? await getPost(before) : null
+      if (there && there.title === rest.title && sameDate(there.date, rest.date)) { skipped++; continue }
       // An excerpt the PARSER derived is not one the writer wrote: handed over as written, it was
       // frozen and never followed the body again (2026-11-03). Empty, `savePost` derives it at
       // this blog's own length and keeps it derived.
@@ -141,6 +165,9 @@ export function opsRoutes() {
     for (const { slug, path, ...rest } of result.pages) {
       const here = await getPage(slug)
       if (here && here.title === rest.title && here.content === rest.content) { skipped++; continue }
+      const before = await broughtBefore(path)
+      const there = before && before !== slug ? await getPage(before) : null
+      if (there && there.title === rest.title && there.content === rest.content) { skipped++; continue }
       const finalSlug = await saveUnique(slug, (s) => savePage({ ...rest, slug: s }))
       redirects += await redirectOldPath(path, finalSlug)
       importedPages += 1

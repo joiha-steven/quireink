@@ -380,7 +380,7 @@ card, a link) it is called by its first words; see
   (Substack `audience`), it comes in as a draft with no redirect, counted as `locked`: this blog has no lock to put on it.
 - **The route persists** via `savePost`/`savePage` — new content is ADDED, a slug that collides with
   existing content gets a numeric suffix (nothing overwritten). **A re-run does not duplicate:**
-  a post already here with the same slug, title and date (a page: slug, title and body) is
+  a post already here with the same slug, title and date (a page: slug, title and body), or at the slug the redirect from its old path names, is
   counted as skipped, and so is an item whose date will not parse; a date the parser made up for
   an undated item never counts as the same. An excerpt the parser derived is saved as derived, so it follows the body. One `clearCache()` at the end; logged as
   `import.wordpress`. **A published item's old path becomes a 301** in the
