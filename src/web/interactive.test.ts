@@ -350,6 +350,17 @@ describe('unsubscribe', () => {
     expect(statusOf()).toBe('confirmed')
   })
 
+  // Mail scanners open a link before the reader does, so the reader's own click is the second:
+  // it said "This link is invalid or has expired" over a sign-up that had worked (2026-11-03).
+  it('thanks the reader again when the link is opened a second time', async () => {
+    seedSubscriber('twice@example.com', 'pending', 'twice-token')
+    const first = await get('/api/newsletter/confirm?token=twice-token')
+    expect(first.status).toBe(200)
+    const again = await get('/api/newsletter/confirm?token=twice-token')
+    expect(again.status).toBe(200)
+    expect(await again.text()).toBe(await first.text())
+  })
+
   // A page, still, and a 404 under it: a 200 counted a bogus token as a confirmation in every
   // log and monitor (2026-09-30).
   it('shows a page for a bad token, with a status that says it confirmed nothing', async () => {

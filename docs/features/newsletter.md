@@ -5,7 +5,8 @@
 - **Double opt-in.** `subscribers` (email unique · status pending/confirmed/unsubscribed · a
   per-subscriber `token` used for BOTH confirm + unsubscribe links). `POST /api/subscribe`
   (public, rate-limited) upserts a pending row and emails a confirm link;
-  `GET /api/newsletter/confirm?token=` → confirmed; `GET /api/newsletter/unsubscribe?token=` →
+  `GET /api/newsletter/confirm?token=` → confirmed (opened again, the same thanks: a mail scanner
+  often opens it first); `GET /api/newsletter/unsubscribe?token=` →
   unsubscribed. The confirm/unsubscribe routes return a standalone HTML page (`resultPage`) since
   they open from an email. Re-subscribing reuses the row's token; a confirmed address short-
   circuits (no re-send, no membership leak).

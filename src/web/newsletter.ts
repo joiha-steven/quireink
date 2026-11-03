@@ -6,7 +6,7 @@
 // somebody never asked for.
 
 import type { Context } from 'hono'
-import { addSubscriber, confirmSubscriber, forgetConfirmSent, unsubscribeByToken, SubscribeError } from '@/news/subscribers'
+import { addSubscriber, confirmSubscriber, confirmedByToken, forgetConfirmSent, unsubscribeByToken, SubscribeError } from '@/news/subscribers'
 import { recordOpen } from '@/news/newsletter-log'
 import { getSmtpConfig, isMailConfigured, sendMail } from '@/news/mail'
 import { confirmEmail } from '@/news/newsletter-email'
@@ -137,7 +137,10 @@ export async function handleSubscribe(c: Context): Promise<Response> {
 }
 
 export async function handleConfirm(c: Context): Promise<Response> {
-  const confirmed = await confirmSubscriber(c.req.query('token') ?? '')
+  const token = c.req.query('token') ?? ''
+  // Opened again it says the same thanks: mail scanners follow the link before the reader does,
+  // and the reader's own click met "invalid or expired" over a sign-up that had worked (2026-11-03).
+  const confirmed = await confirmSubscriber(token) || confirmedByToken(token)
   const settings = await getSettings()
   const tx = t(settings.language)
   const base = resolveSiteUrl(settings)

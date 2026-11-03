@@ -96,6 +96,15 @@ export async function confirmSubscriber(token: string): Promise<boolean> {
   ).changes > 0
 }
 
+// Whether a token belongs to an address already on the list. A confirm link opened twice — the
+// mail scanner first, the reader second — is a sign-up that worked, not an invalid link.
+export function confirmedByToken(token: string): boolean {
+  if (!token) return false
+  return one<{ id: number }>(
+    `select id from subscribers where token = ? and status = 'confirmed' and ${liveOnly('subscribers')}`, token,
+  ) !== null
+}
+
 // Unsubscribe by token (from any state except already-unsubscribed), IN THE TRASH TOO. Refused
 // there, the reader was told "You've unsubscribed" and the owner's restore put them back on the
 // list as confirmed (2026-11-03). Unsubscribing only narrows what may be sent, so it is never a
