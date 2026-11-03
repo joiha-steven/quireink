@@ -76,7 +76,7 @@
 - **Category label** (`categoryLabel`) and **standfirst** (`deck`, a WRITTEN excerpt under a post title; a derived one is not printed).
 - `/search` — **two layers:** a lean local index (`GET /api/search/index`, `{slug,title,date,terms}`,
   instant + accent-insensitive) merged with `GET /api/search?q=` (SQLite FTS5 over title + BODY via
-  `searchPosts`, `posts_fts match ?` joined back to live published rows). FTS5 folds diacritics in
+  `searchPosts`, `posts_fts match ?` joined back to live published rows whose date has come, at most 50: the date is in the query, so scheduled matches cannot use up the fifty, as they did until 2026-11-03). FTS5 folds diacritics in
   the index (`remove_diacritics 2`, `schema.sql`), so a query typed without accents finds accented
   text (and `đ`, which it does not fold, is asked for from a `d`: `content/fts-word.ts`); a query typed WITH them is narrowed back to them by `src/accent.ts`, because a folded index
   answers "lề" with every "lệ" and "lê" as well. The header search is a

@@ -126,12 +126,15 @@ export async function searchPosts(query: string): Promise<Post[]> {
   // this process and dropped by `rowToMeta`: the endpoint above still answers with metadata
   // and never with a body.
   try {
+    // The date IN the query, not after it (2026-11-03): newest first, the scheduled posts came
+    // first, and fifty that matched left a reader with nothing though a published post said it.
     return all<PostRow>(
       `select ${META_COLS}${accented ? ', p.content' : ''} from posts_fts f
          join posts p on p.rowid = f.rowid
-        where posts_fts match ? and ${liveOnly('p')} and p.status = 'published'
+        where posts_fts match ? and ${liveOnly('p')} and p.status = 'published' and p.date <= ?
         order by p.date desc limit ?`,
       ftsQuery(q),
+      nowMs(),
       accented ? SEARCH_CANDIDATES : SEARCH_LIMIT,
     )
       .filter((row) => keepsAccents(`${row.title}\n${row.content ?? ''}`, q))
