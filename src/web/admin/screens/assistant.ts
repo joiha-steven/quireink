@@ -106,20 +106,23 @@ function emptyBlock(t: AdminStrings, configured: boolean, open: boolean): string
       + ` hover:text-neutral-900 dark:hover:border-neutral-500 dark:hover:text-neutral-100">`
       + `${escapeHtml(tabbed(t.assistantOpenAi))}</a>`
 
+  // `-mx-5` gives back the empty line's own 20px, which is for a list's edge: in the thread the
+  // edge is the thread's gutter, so the line starts where an answer and the composer start.
   return `<div class="h-full" data-ai-empty${open ? ' hidden' : ''}>`
-    + `<div class="mx-auto max-w-3xl">`
+    + `<div class="mx-auto max-w-3xl"><div class="-mx-5">`
     + emptyState({
       title: configured ? t.assistantEmpty : t.assistantNoModel,
       description: tabbed(configured ? t.assistantIntro : t.assistantNeedsModel),
       actionHtml: chips,
     })
-    + `</div></div>`
+    + `</div></div></div>`
 }
 
 /** One row at rest — the height of the button beside it — growing to six as it fills. */
 function composer(t: AdminStrings, configured: boolean): string {
   const off = configured ? '' : ' disabled'
-  return `<div class="border-t border-neutral-100 p-4 dark:border-neutral-800">`
+  // The thread's own gutter, so the box lines up with what is written above it.
+  return `<div class="border-t border-neutral-100 px-6 py-4 sm:px-10 dark:border-neutral-800">`
     + `<div class="mx-auto flex max-w-3xl items-end gap-2">`
     + `<textarea class="${CONTROL} w-full resize-none" rows="1" data-ai-box`
     + ` aria-label="${escapeAttr(t.assistantPlaceholder)}"`
