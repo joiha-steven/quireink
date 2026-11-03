@@ -10,8 +10,9 @@
 //   3. load the archive through `/setup/restore` — as the form posts it, or in parts past the size
 //      the page would switch at — and crawl both (`scripts/parity.ts`): every page the same, before
 //      anything writes to either;
-//   4. `smoke.ts` against workerd as package `cloudflare`, with the owner session the archive
-//      carried: health, the twelve smoke flows, restore-check and MCP;
+//   4. `smoke.ts` against workerd as package `cloudflare`, signed in there as the archive's owner
+//      (password and authenticator; a load signs nobody in): health, the twelve smoke flows,
+//      restore-check and MCP;
 //   5. a snapshot on the worker, copied off-site to a bucket this script serves, then downloaded:
 //      the three must be the same bytes, with workerd's memory read while it happens;
 //   6. the worker's own archive, taken as its owner, pushed IN PARTS into a fresh, empty Bun blog
@@ -31,12 +32,13 @@
 // Ports: BUN_PORT, CF_PORT, BACK_PORT / S3_PORT (the two after BUN_PORT), INSPECT_PORT (after CF_PORT).
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { Database } from 'bun:sqlite'
 import { join, resolve } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { APP_VERSION } from '../../src/version'
 import { CHUNK_ABOVE_BYTES } from '../../src/server/restore-parts'
 import { pushArchive } from '../../src/server/restore-push'
-import { fakeBucket, isolateHeap, measured, said, sameBlog } from './cloudflare-dev-kit'
+import { fakeBucket, isolateHeap, measured, said, sameBlog, signIn } from './cloudflare-dev-kit'
 
 const ROOT = resolve(import.meta.dir, '..', '..')
 const WORK = join(ROOT, '.tmp', 'cloudflare-dev')
@@ -96,6 +98,16 @@ const seeded = spawnSync(process.execPath, ['scripts/seed-showcase.ts', data], {
 })
 const session = /^QUIRE_SESSION=(.+)$/m.exec(`${seeded.stdout}\n${seeded.stderr}`)?.[1]?.trim() ?? ''
 if (seeded.status !== 0 || !session) fail(`the showcase seeder failed or printed no session\n${seeded.stderr.slice(-800)}`)
+// The worker is signed in to as a person would, so the owner needs a password this script knows and
+// the authenticator the seeder enrolled; both travel in the archive.
+const password = randomBytes(18).toString('base64url')
+const user = new Database(join(data, 'quire.db'), { readonly: true })
+const { username, totp_secret: totpSecret } = user.query('select username, totp_secret from users').get() as { username: string; totp_secret: string }
+user.close()
+const setPassword = spawnSync(process.execPath, ['scripts/user.ts', 'set-password', '--username', username], {
+  cwd: ROOT, encoding: 'utf8', input: `${password}\n${password}\n`, env: { ...process.env, DATA_DIR: data },
+})
+if (setPassword.status !== 0) fail(`set-password on the showcase failed\n${setPassword.stderr.slice(-800)}`)
 
 // BIG: random bytes, which gzip cannot shrink, in 4 MB files — well under MAX_UPLOAD_MB, so each
 // is an ordinary upload on both runtimes, and together past what one request may carry.
@@ -148,9 +160,12 @@ if (archive.size > CHUNK_ABOVE_BYTES) {
   form.set('identity', '')
   form.set('passphrase', '')
   form.set('archive', new File([await archive.arrayBuffer()], 'quire-backup.tar.gz'))
+  // A load answers 200 with what came and a key to /login (`setup-restore.ts` loadedScreen); every
+  // refusal is a 4xx, and the marker tells the two apart from any other page.
   const loaded = await fetch(`${cfUrl}/setup/restore`, { method: 'POST', body: form, redirect: 'manual' })
-  if (loaded.status !== 303 || loaded.headers.get('location') !== '/login') {
-    fail(`/setup/restore answered ${loaded.status} → ${loaded.headers.get('location')}\n${(await loaded.text()).slice(0, 600)}\n${log.slice(-1500)}`)
+  const page = await loaded.text()
+  if (loaded.status !== 200 || !page.includes('data-restore-done')) {
+    fail(`/setup/restore answered ${loaded.status}\n${page.slice(0, 600)}\n${log.slice(-1500)}`)
   }
   console.log('✓ the archive loaded into the empty worker through /setup/restore')
 }
@@ -162,12 +177,18 @@ const parity = spawnSync(process.execPath, ['scripts/parity.ts', bunUrl, cfUrl],
 bun.kill('SIGTERM')
 if (parity.status !== 0 && process.env.PARITY_SOFT !== '1') fail('the two runtimes serve different pages for the same data')
 
+// After the crawl, since a sign-in writes a session: the owner the archive carried, as a person signs in.
+const cfSession = await signIn(cfUrl, username, password, totpSecret).catch((error: unknown) =>
+  fail(`signing in to the worker as the archive's owner: ${(error as Error).message}\n${log.slice(-1500)}`))
+const cfOwner = { cookie: `__Host-quire_session=${cfSession}` }
+console.log('✓ signed in to the worker as the archive\'s owner, password and authenticator')
+
 // ----- 3¾. FULL_TOUR=1: every flow of the tour, not only the smoke's twelve ----------------------
 
 let tourFailed = false
 if (process.env.FULL_TOUR === '1') {
   const tour = spawnSync(process.execPath, ['scripts/tour.ts', cfUrl], {
-    cwd: ROOT, stdio: 'inherit', env: { ...process.env, QUIRE_SESSION: session },
+    cwd: ROOT, stdio: 'inherit', env: { ...process.env, QUIRE_SESSION: cfSession },
   })
   tourFailed = tour.status !== 0
 }
@@ -178,7 +199,7 @@ const smoke = spawnSync(process.execPath, ['scripts/smoke.ts', cfUrl], {
   cwd: ROOT, stdio: 'inherit',
   env: {
     ...process.env, EXPECT_VERSION: APP_VERSION, EXPECT_PACKAGE: 'cloudflare',
-    QUIRE_SESSION: session, DATA_DIR: data, STORAGE_LOCAL_DIR: uploads,
+    QUIRE_SESSION: cfSession, DATA_DIR: data, STORAGE_LOCAL_DIR: uploads,
   },
 })
 if (tourFailed) console.error('✗ cloudflare-dev: the full tour failed on workerd (above)')
@@ -186,7 +207,7 @@ if (smoke.status !== 0 || tourFailed) fail(`the smoke failed on workerd\n${log.s
 
 // ----- 5. a snapshot on the worker: kept, copied off-site, downloaded — the same bytes -----------
 
-const asOwner = { ...owner, origin: cfUrl, 'content-type': 'application/json' }
+const asOwner = { ...cfOwner, origin: cfUrl, 'content-type': 'application/json' }
 const bucket = fakeBucket(S3_PORT, join(WORK, 'bucket'))
 const keys = await fetch(`${cfUrl}/api/integrations/s3`, {
   method: 'POST', headers: asOwner,
@@ -204,7 +225,7 @@ if (!copy || copy.size !== snapshot!.size) fail(`the off-site copy is ${copy?.si
 console.log(`✓ a snapshot on the worker, ${(snapshot!.size / MB).toFixed(1)} MB, kept and copied off-site in ${copy!.parts} part(s) of at most ${(copy!.largestPart / MB).toFixed(1)} MB (${said(ran)}) [${since()}]`)
 const downloadPath = join(WORK, 'downloaded.tar.gz')
 const pulled = await measured(wranglerPid, async () => {
-  const res = await fetch(`${cfUrl}/api/backup/download?name=${encodeURIComponent(snapshot!.name)}`, { headers: owner })
+  const res = await fetch(`${cfUrl}/api/backup/download?name=${encodeURIComponent(snapshot!.name)}`, { headers: cfOwner })
   if (!res.ok) fail(`/api/backup/download on the worker answered ${res.status}`)
   return { ...(await saved(res, downloadPath)), declared: Number(res.headers.get('content-length')) }
 }, heap)
@@ -226,7 +247,7 @@ const fresh = spawn(process.execPath, ['src/index.ts'], {
 children.push(fresh)
 const fromCf = join(WORK, 'from-cloudflare.tar.gz')
 const taken = await measured(wranglerPid, async () => {
-  const res = await fetch(`${cfUrl}/api/backup/export`, { headers: owner, signal: AbortSignal.timeout(600_000) })
+  const res = await fetch(`${cfUrl}/api/backup/export`, { headers: cfOwner, signal: AbortSignal.timeout(600_000) })
     .catch((error: unknown) => fail(`the worker's /api/backup/export: ${(error as Error).message}\n${log.slice(-3000)}`))
   if (!res.ok) fail(`the worker's /api/backup/export answered ${res.status}\n${log.slice(-1500)}`)
   const declared = Number(res.headers.get('content-length'))

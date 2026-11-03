@@ -1,10 +1,11 @@
 // What `cloudflare-dev.ts` needs besides the two blogs: a bucket to copy backups into, a reading of
-// workerd's memory while it works, and the question restore-check asks of rows and uploads, put to
-// a blog that went Bun → Cloudflare → Bun. Plain helpers; the script is the story.
+// workerd's memory while it works, a sign-in as the owner, and the question restore-check asks of
+// rows and uploads, put to a blog that went Bun → Cloudflare → Bun. Plain helpers; the script is the story.
 import { Database } from 'bun:sqlite'
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { codeForStep, stepAt } from '../../src/auth/totp'
 
 // ----- a bucket ------------------------------------------------------------------------------------
 
@@ -157,6 +158,30 @@ export async function measured<T>(root: number, work: () => Promise<T>, heap?: A
 export const said = (m: Measured<unknown>): string =>
   `${m.seconds.toFixed(1)} s, workerd ${Math.round(m.beforeMb)} → peak ${Math.round(m.peakMb)} MB resident`
   + (m.heapPeakMb !== null && m.heapBeforeMb !== null ? `, isolate heap ${Math.round(m.heapBeforeMb)} → peak ${Math.round(m.heapPeakMb)} MB` : '')
+
+// ----- the owner, signed in ------------------------------------------------------------------------
+
+/**
+ * A session on `base` the way the owner gets one: the password, then the authenticator's code. A
+ * loaded backup signs nobody in (`setup-restore.ts`), so the session the seeder minted on Bun is no
+ * key to the worker. JSON answers come in `{ data }`; the cookie is the one thing kept.
+ */
+export async function signIn(base: string, username: string, password: string, totpSecret: string): Promise<string> {
+  const post = async (path: string, body: Record<string, string>) => {
+    const res = await fetch(`${base}${path}`, {
+      method: 'POST', headers: { 'content-type': 'application/json', origin: base }, body: JSON.stringify(body),
+    })
+    const answer = (await res.json().catch(() => ({}))) as { data?: { ticket?: string }; error?: string }
+    const cookie = /__Host-quire_session=([^;]+)/.exec(res.headers.get('set-cookie') ?? '')?.[1] ?? ''
+    return { status: res.status, ticket: answer.data?.ticket ?? '', error: answer.error ?? '', cookie }
+  }
+  const first = await post('/api/auth/login', { username, password })
+  if (!first.ticket) throw new Error(`the password step answered ${first.status} ${first.error}`)
+  const code = codeForStep(totpSecret, stepAt(Date.now())) ?? ''
+  const second = await post('/api/auth/2fa', { ticket: first.ticket, code })
+  if (!second.cookie) throw new Error(`the code step answered ${second.status} ${second.error}`)
+  return second.cookie
+}
 
 // ----- the same blog, after the round trip -----------------------------------------------------------
 
