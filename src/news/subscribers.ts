@@ -77,6 +77,15 @@ export async function addSubscriber(
   return { token, alreadyConfirmed: false, sendConfirm }
 }
 
+/**
+ * The confirm email did not leave: take back the cooldown `addSubscriber` stamped for it. Kept, the
+ * reader's next try within the hour sent nothing and was told the link was on its way
+ * (2026-11-03). Lifting it opens nothing to a bombing script, because nothing was sent.
+ */
+export function forgetConfirmSent(emailRaw: string): void {
+  run(`update subscribers set confirm_sent_at = null where email = ?`, emailRaw.trim().toLowerCase())
+}
+
 // Confirm a pending subscriber by token. Returns true if a pending row was flipped.
 export async function confirmSubscriber(token: string): Promise<boolean> {
   if (!token) return false

@@ -6,7 +6,7 @@
 // somebody never asked for.
 
 import type { Context } from 'hono'
-import { addSubscriber, confirmSubscriber, unsubscribeByToken, SubscribeError } from '@/news/subscribers'
+import { addSubscriber, confirmSubscriber, forgetConfirmSent, unsubscribeByToken, SubscribeError } from '@/news/subscribers'
 import { recordOpen } from '@/news/newsletter-log'
 import { getSmtpConfig, isMailConfigured, sendMail } from '@/news/mail'
 import { confirmEmail } from '@/news/newsletter-email'
@@ -120,7 +120,8 @@ export async function handleSubscribe(c: Context): Promise<Response> {
   // Cooling down: a confirm email already left for this address within the hour. The row
   // is pending and the earlier email still works, so there is nothing to send — and the
   // reply says "sent" anyway, because "try again later" addressed to a bombing script is
-  // instructions, and addressed to a reader is a lie (their link IS in the inbox).
+  // instructions, and addressed to a reader is a lie (their link IS in the inbox: a send that
+  // failed lifts the cooldown again below, so the hour only ever follows a letter that left).
   if (!sendConfirm) return reply('sent', tx.nlSuccess)
 
   const confirmUrl = `${resolveSiteUrl(settings)}/api/newsletter/confirm?token=${encodeURIComponent(token)}`
@@ -129,6 +130,7 @@ export async function handleSubscribe(c: Context): Promise<Response> {
   // Best-effort. The row is already pending, so an unconfigured mail server costs the
   // reader their confirm link but the owner can still see the sign-up and act on it.
   const { sent } = await sendMail({ to: email.trim().toLowerCase(), subject, html, kind: 'confirm' })
+  if (!sent) forgetConfirmSent(email)
   return sent
     ? reply('sent', tx.nlSuccess)
     : reply('pending_no_mail', tx.nlNoMail)

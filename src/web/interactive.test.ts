@@ -284,16 +284,6 @@ describe('POST /api/subscribe', () => {
     expect(db().query<{ n: number }, []>(`select count(*) as n from subscribers`).get()?.n).toBe(1)
   })
 
-  it('cools down per address: the second sign-up inside the hour sends no second email', async () => {
-    await post('/api/subscribe', { email: 'eager@example.com' }, '198.51.100.33')
-    const res = await post('/api/subscribe', { email: 'eager@example.com' }, '198.51.100.34')
-    // Same cheerful answer — but the JSON status is 'sent', not 'pending_no_mail', even
-    // though no mail server is configured: nothing was attempted, so nothing failed.
-    expect(res.status).toBe(200)
-    const body = (await res.json()) as { data?: { status?: string }; status?: string }
-    expect(body.data?.status ?? body.status).toBe('sent')
-  })
-
   it('answers a plain form post with a page, not with JSON', async () => {
     // The form is server-rendered markup with a method and an action, so a reader without
     // JavaScript can submit it. Answering them with a page of JSON would be a defect this

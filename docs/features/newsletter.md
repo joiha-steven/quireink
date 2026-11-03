@@ -15,7 +15,8 @@
   serve old forms and the JS path sends none). A caught bot gets the normal success answer:
   an error message to a bot author is a specification of the next bot. Then a per-ADDRESS
   cooldown (`confirm_sent_at`, one confirm email an hour) caps what a subscription-bombing
-  run can make this site send to one victim, whatever IPs it uses. Finally the hourly cron
+  run can make this site send to one victim, whatever IPs it uses. A confirm the relay refused
+  lifts it again (`forgetConfirmSent`), so the reader's next try sends rather than being told so. Finally the hourly cron
   sweeps pending rows whose last confirm went out over 30 days ago (`sweepPendingSubscribers`,
   aged from `confirm_sent_at` so a reader signing up again is not swept) — hard-deleted with
   their confirm-log rows, not moved to the Trash, because bot droppings swept into a bin the
