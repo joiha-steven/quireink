@@ -15,7 +15,7 @@ Any one finding refuses the theme; the checker reports all it finds in one run.
 
 ## C1: a colour is written into the sheet
 
-> A colour is written into the sheet. Colours come only from palettes.
+> A colour is written into the sheet. Colours come only from palettes. Use a palette variable such as var(--c-text), or color-mix() of them; a colour of your own goes in a palette in theme.json.
 
 Hex, colour names, system colours and `rgb()`, `hsl()`, `oklch()` and the like with fixed numbers
 are refused, in any property. Allowed: `var(--c-*)`, `color-mix()` of palette variables,
@@ -40,7 +40,7 @@ If you need a colour that is not one of the seven, add a palette in `theme.json`
 
 ## T1: a font size is written into the sheet
 
-> A font size is written into the sheet. Sizes come only from the type scale.
+> A font size is written into the sheet. Sizes come only from the type scale. Use var(--fs-body) or another --fs-* size, em, %, or calc() over a --fs-* size.
 
 `font-size` may be `var(--fs-*)` (h1 to h5, body, small, caption, code), `em`, `%`, `inherit`, or
 `calc()`, `min()`, `max()`, `clamp()` over a `--fs-*`. `px` and `rem` are refused, as is the `font`
@@ -64,7 +64,7 @@ When you change a size, change its leading and tracking with it from the same ro
 
 ## F1: a font family is named in the sheet
 
-> A font family is named in the sheet. Faces come only from the font settings.
+> A font family is named in the sheet. Faces come only from the font settings. Write one of var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display), alone; your own fonts are declared in theme.json.
 
 `font-family` may be `inherit` or exactly one of `var(--font-reading)`, `var(--font-sans)`,
 `var(--font-mono)`, `var(--font-display)`. Your own face is declared in `theme.json`
@@ -81,7 +81,7 @@ variables.
 
 ## P1: `!important`
 
-> !important is not allowed: the owner's settings must still win.
+> !important is not allowed: the owner’s settings must still win. Remove it: a theme rule already wins over most of the base without it.
 
 ```css
 /* refused: P1 · theme.css:1:31 · !important */
@@ -93,7 +93,7 @@ variables.
 
 ## S1: a selector names something the contract does not promise
 
-> A selector names something the theme API does not promise to keep.
+> A selector names something the theme API does not promise to keep. Use an element name, or a class, id or data-* name from the appearance contract.
 
 Element names are free. A class, an id, or a `data-*` attribute must be in
 [appearance-contract.md](appearance-contract.md). `[class*=post]` and the other substring matches
@@ -119,7 +119,7 @@ about: it usually means a name is missing. Until then, see the
 
 ## S2: the blog and the front page must both be styled
 
-> The sheet must style both the blog and the front page, and one of them is missing.
+> The sheet must style both the blog and the front page, and one of them is missing. Add a rule for the one named: .post-list or .prose for the blog, .front or .fc for the front page.
 
 At least one selector must use a class or id the contract marks **blog** (`.post-list`, `.prose`,
 `.deck`, ...) and one it marks **front** (`.front`, `.fc`, `.front-grid`, ...). Names marked
@@ -137,7 +137,7 @@ file; the subject is the missing surface.
 
 ## S3: no words in `content`
 
-> Text in content is not allowed. The words on the page are the engine's.
+> Text in content is not allowed. The words on the page are the engine’s. Leave content empty, or use punctuation, a counter or var(--l-figure).
 
 A string in `content`, `quotes`, `list-style`, `text-overflow`, `hyphenate-character` or
 `text-emphasis` may not read as words (any letter, or a digit outside ASCII 0 to 9).
@@ -161,7 +161,7 @@ because `var()` can carry it into any text property: `:root{--t-label:"Read"}` i
 
 ## V1: a custom property the theme may not set or read
 
-> A custom property the theme may not set or read.
+> A custom property the theme may not set or read. Name your own properties --t-*; read only the documented variables, --t-* and --l-*.
 
 You may **set** only properties named `--t-*`. You may **read** with `var()` only a variable from
 the contract, a `--t-*`, or a `--l-*` label. `inherit(--x)` and `if(style(--x))` are refused too,
@@ -183,7 +183,7 @@ colours come from palettes.
 
 ## A1: an at-rule or property that is not allowed
 
-> An at-rule or a property that is not allowed, such as @import or @font-face.
+> An at-rule or a property that is not allowed, such as @import or @font-face. Only @media, @supports, @container and @keyframes are allowed; fonts are declared in theme.json.
 
 Only `@media`, `@supports`, `@container` and `@keyframes` are allowed. `@import`, `@font-face`,
 `@layer`, `@namespace` and the rest are refused. So are the properties `behavior` and `binding`,
@@ -210,7 +210,7 @@ For the font, the rewrite is a `fonts` entry in `theme.json` and `font-family: v
 
 ## A2: a URL that is not a file in the package
 
-> A URL that is not a file in the package. Remote and data URLs are refused.
+> A URL that is not a file in the package. Remote and data URLs are refused. Point at a file in the package, such as images/paper.webp.
 
 `url()` and `image-set()` must name, as a quoted or bare literal, a file the package holds, written
 as the package names it (`images/paper.webp`). A remote URL, a `data:` URL, a path that is not in
@@ -228,7 +228,7 @@ the zip, or a `var()` inside `url()` is refused.
 
 ## A3: a file the package may not hold
 
-> A file the package may not hold, or one whose content is not what its name says.
+> A file that is missing, that a package may not hold, or whose content is not what its name says. theme.json, theme.css and screenshot.webp sit at the top of the zip, with only fonts/ and images/ beside them: zip the folder’s contents, not the folder.
 
 Covers the package's paths and kinds ([themes.md section 3](themes.md#3-the-package)): a path not
 on the list, a hidden file, a link, a nested folder, a missing required file, more than 64 files,
@@ -254,7 +254,7 @@ exactly 1200 x 900, and zip the contents with the commands in
 
 ## A4: an SVG with active content
 
-> An SVG with active content: a script, an event handler or a link out.
+> An SVG with active content: a script, an event handler or a link out. Remove it, or use a PNG or WebP instead.
 
 An SVG in `images/` is read against an allow list of drawing elements (`svg`, `g`, `path`, shapes,
 gradients, `use`, `text` and a few more). A script, an `on*` attribute, a `style` attribute, an
@@ -270,7 +270,7 @@ WebP or PNG.
 
 ## A5: too large
 
-> Too large: a file, the package, or what it expands to is past the limit.
+> Too large: a file, the package, or what it expands to is past the limit. The limits: the zip 5 MB, theme.css 64 KB, a font 400 KB, an image 1 MB.
 
 The limits are in [themes.md section 3](themes.md#3-the-package). The subject is the size in bytes
 (for the zip as a whole: the zip's size, or `expands past the limit`).
@@ -285,7 +285,7 @@ covers all of them, see [fonts](themes.md#7-palettes-fonts-and-layout-switches))
 
 ## A6: the manifest is not right
 
-> theme.json is missing a field, or a field has the wrong shape.
+> theme.json is missing a field, or a field has the wrong shape. The path shown names the field, such as palettes[0].light.meta.
 
 The subject is the JSON path of the first problem on each field, and line and column are 0. Missing
 field, wrong type, a value outside its allowed set, an unknown key, a duplicate id, a reserved id,
@@ -310,7 +310,7 @@ dark palette) until it reaches 5.0:1 against that half's `bg`.
 
 ## X1: CSS a browser would drop or read differently
 
-> CSS a browser would drop, or read differently from how it is written.
+> CSS a browser would drop, or read differently from how it is written. Usually a missing colon or brace, or a rule nested inside another.
 
 The checker refuses a sheet where the browser would repair or ignore part of it, so you are never
 left wondering which half applied: CSS nesting (a rule inside a rule), a declaration with no colon,
