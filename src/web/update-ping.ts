@@ -1,9 +1,9 @@
-// Where the update check is triggered from: the first public request of the day.
-//
-// Not a cron, and the difference is the whole point of the number. A timer says "this
-// process was running at midnight", which a forgotten container on a shelf also says. A
-// reader arriving says "somebody used this blog today", and that is the sentence the
-// receiving end is trying to count. A blog nobody reads is not counted, on purpose.
+// One of the two places the update check is triggered from: the first public request of the
+// day. The other is the hourly clock (`server/tick.ts`), since 2026-08-29: a personal blog with
+// no reader that day was counted as gone, and that was most days. So the number counts blogs
+// that are RUNNING, a forgotten container on a shelf included, not blogs that were read; the
+// buckets it carries (`server/update-facts.ts`) are what tell the two apart. Whichever path
+// gets there first takes the day.
 //
 // The middleware is on the hot path of every request, so what it does there is one integer
 // comparison against the day this process has already decided about (`server/update-check.ts`).
