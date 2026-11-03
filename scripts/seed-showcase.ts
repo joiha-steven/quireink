@@ -137,6 +137,9 @@ await saveSettings({
   // refusing to close, and another that the fixture was wearing no dialect at all, because
   // a click meant for the page underneath had landed on the panel's Plain paper button.
   seenRelease: APP_VERSION,
+  // And it has answered the questions after the account: left false, every sign-in lands on the
+  // rest of the setup (`web/auth-http.ts` `landing`), as it should on a first run cut short.
+  setupDone: true,
   menu: [
     // Typography and Calligraphy carry the fixture's two voices (machine type, the hand);
     // Printing still exists as a category and in the archive, but the owner cut it from

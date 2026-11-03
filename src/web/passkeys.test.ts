@@ -168,10 +168,12 @@ describe('signing in with a passkey', () => {
   })
 
   it('holds `next` to the same rule as the password form', async () => {
+    await saveSettings({ setupDone: true })
     const key = await softKey()
     await addPasskey(key)
     const { res } = await signIn(key, { next: '//evil.example' })
     expect((await res.json() as { location: string }).location).toBe('/admin')
+    await saveSettings({ setupDone: false })
   })
 
   it('an assertion is good once: the same bytes again are refused', async () => {

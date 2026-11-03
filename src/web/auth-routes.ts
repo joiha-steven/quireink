@@ -28,7 +28,7 @@ import { isIpHost, rpIdFor } from '@/web/passkey-routes'
 import type { SiteSettings } from '@/types'
 import { qrSvg } from '@/render/qr'
 import { fail, json } from '@/web/api'
-import { html, readFields, safeNext, signedIn } from '@/web/auth-http'
+import { html, landing, readFields, safeNext, signedIn } from '@/web/auth-http'
 import { enrolmentSkippable, rememberEnrolmentSecret } from '@/web/enrol-routes'
 import { plural } from '@/i18n/plural'
 import {
@@ -158,7 +158,7 @@ export async function handleTwoFactor(c: Context): Promise<Response> {
     userAgent: c.req.header('user-agent'),
   })
 
-  if (result.status === 'ok') return signedIn(result, safeNext(values.next), wantsHtml)
+  if (result.status === 'ok') return signedIn(result, landing(values.next, settings), wantsHtml)
 
   if (result.status === 'rate-limited') {
     const message = fillTemplate(s.authLockedOut, { minutes: Math.ceil(result.retryAfter / 60) })

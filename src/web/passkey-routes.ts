@@ -15,7 +15,7 @@ import { adminT } from '@/i18n/admin-i18n'
 import { clientIp } from '@/server/rate-limit'
 import { beginPasskeySignIn, finishPasskeySignIn } from '@/auth/passkey-login'
 import { sessionCookie } from '@/auth/sessions'
-import { safeNext } from '@/web/auth-http'
+import { landing } from '@/web/auth-http'
 import { fail, json } from '@/web/api'
 
 /**
@@ -93,7 +93,7 @@ export async function handlePasskeySignIn(c: Context): Promise<Response> {
   if (result.status === 'ok') {
     // The cookie the password path sets, by the same function. The island reads `location` and
     // goes there, so `next` is held to the same rule as on the form (`safeNext`).
-    const location = safeNext(typeof body.next === 'string' ? body.next : undefined)
+    const location = landing(typeof body.next === 'string' ? body.next : undefined, settings)
     return new Response(JSON.stringify({ status: 'ok', location }), {
       headers: { 'set-cookie': sessionCookie(result.token, result.expiresAt), 'content-type': 'application/json; charset=utf-8' },
     })

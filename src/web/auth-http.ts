@@ -54,6 +54,20 @@ export function safeNext(raw: string | undefined): string {
   return raw.replace(/[^\x00-\x7f]/gu, (c) => encodeURIComponent(c))
 }
 
+/**
+ * Where a session that has just been issued lands: `next`, held to `safeNext`, except that the
+ * bare admin is the REST OF THE SETUP while the questions after the account have not been
+ * answered. Every sign-in asks for `/admin` (the gate sends `/login?next=/admin`), so a first run
+ * cut short at the recovery codes signed back in to the dashboard and never saw the four
+ * questions; `setupDone` stayed false for good, which also keeps the release notes from ever
+ * showing (`overlays.ts`), and an owner made from the CLI never saw them either (2026-11-03). A
+ * page somebody was sent to sign in for is still where they go.
+ */
+export function landing(next: string | undefined, settings: { setupDone: boolean }): string {
+  const to = safeNext(next)
+  return !settings.setupDone && (to === '/admin' || to === '/admin/') ? '/setup/site' : to
+}
+
 /** ASCII controls, whitespace and backslashes: nothing a same-site path needs, and each one a way off it. */
 export const UNSAFE_PATH_CHARS = /[\x00-\x20\x7f\\]/
 

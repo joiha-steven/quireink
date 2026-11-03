@@ -15,6 +15,7 @@ import { resetPending } from '@/auth/login'
 import { resetEnrolment } from '@/web/enrol-routes'
 import { resetSecretCache } from '@/auth/secret'
 import { resetLimits } from '@/server/rate-limit'
+import { saveSettings } from '@/content/settings'
 import { payload } from '@/test/api'
 
 const DIR = './.tmp/test-auth-routes'
@@ -234,6 +235,9 @@ describe('the redirect after signing in', () => {
   // An open redirect turns a trustworthy sign-in page into a link an attacker can send:
   // sign in on the real site, then get bounced somewhere else.
   it('refuses an absolute or protocol-relative next', async () => {
+    // A blog whose setup is done, so the fallback is the admin and not the rest of the setup
+    // (`landing`, which the next test holds).
+    await saveSettings({ setupDone: true })
     // `/\evil.example` is in the list because a check that only rejects `//` passes it and
     // the browser normalises the backslash into exactly the same protocol-relative URL.
     for (const next of ['https://evil.example/x', '//evil.example/x', '/\\evil.example/x']) {
@@ -255,6 +259,7 @@ describe('the redirect after signing in', () => {
       db().run(`delete from sessions`)
       db().run(`update users set totp_secret = null, totp_last_step = null`)
     }
+    await saveSettings({ setupDone: false })
   })
 
   // The hole the test above exposed by passing for the wrong reason: the pending ticket
@@ -265,6 +270,15 @@ describe('the redirect after signing in', () => {
     const res = await post('/api/auth/enrol/done', { ticket, saved: '1' })
     expect(res.status).toBe(401)
     expect(res.headers.get('set-cookie')).toBeNull()
+  })
+
+  // A first run cut short and signed back into through `/login?next=/admin` landed on the
+  // dashboard and never saw the questions after the account (2026-11-03).
+  it('sends the bare admin to the rest of the setup while it is not done', async () => {
+    const { ticket, secret } = await startEnrolment()
+    await post('/api/auth/enrol', { ticket, code: codeForStep(secret, stepAt(Date.now()))! })
+    const done = await post('/api/auth/enrol/done', { ticket, saved: '1', next: '/admin' })
+    expect(done.headers.get('location')).toBe('/setup/site')
   })
 
   it('honours a same-site path', async () => {

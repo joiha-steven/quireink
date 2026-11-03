@@ -22,7 +22,9 @@ and the rest is a browser: the language first (so the screens after it are in it
 username, email, password, then the QR code for an authenticator and the ten recovery codes,
 once. **Store the recovery codes somewhere that is not the machine.** Four short questions
 follow — what the site is called, where it lives and what clock it reads; the front page;
-whether readers get a pen; and the look — and then you are in the editor.
+whether readers get a pen; and the look — and then you are in the editor. Left part-way, or with
+the owner made from the CLI, the next sign-in comes back to those questions rather than to the
+dashboard, until the last of them is answered.
 
 The token lives in memory, so a restart mints a new one and the old line stops being a
 secret. Reading it proves you have the machine, which is why setup is not simply a page

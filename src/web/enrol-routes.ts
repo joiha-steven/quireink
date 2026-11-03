@@ -21,7 +21,7 @@ import { regenerateCodes } from '@/auth/recovery'
 import { completeEnrolment, pendingUser } from '@/auth/login'
 import { qrSvg } from '@/render/qr'
 import { fail, json } from '@/web/api'
-import { html, readFields, safeNext, signedIn } from '@/web/auth-http'
+import { html, landing, readFields, signedIn } from '@/web/auth-http'
 import {
   enrolScreen, passwordScreen, recoveryCodesScreen,
 } from '@/web/login-page'
@@ -93,7 +93,8 @@ export function enrolmentSkippable(settings: SiteSettings): boolean {
  *
  * `/setup/site` while this install has not been through the questions that follow the
  * account, and the admin once it has. An owner who enrolled again after a TOTP reset went
- * through them long ago and is not dragged back. An explicit `next` always wins.
+ * through them long ago and is not dragged back. An explicit `next` wins, except the bare admin,
+ * which every sign-in asks for (`landing`).
  *
  * It used to ask whether a SITE ADDRESS was set, on the reasoning that the site step exists
  * to set one. But `SITE_URL` in the environment is an address, and every deployment path
@@ -103,8 +104,7 @@ export function enrolmentSkippable(settings: SiteSettings): boolean {
  * handed straight over to `/admin`.
  */
 function firstRunNext(settings: SiteSettings, next: string): string {
-  if (next !== '') return safeNext(next)
-  return settings.setupDone ? '/admin' : '/setup/site'
+  return landing(next, settings)
 }
 
 export async function handleEnrol(c: Context): Promise<Response> {
