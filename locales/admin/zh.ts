@@ -1328,6 +1328,7 @@ const zh = {
   importRun: '导入',
   importDone: '已导入',
   importSkipped: '跳过 {n} 项（不是文章或页面，或原本就在回收站）',
+  importLocked: '{n} 项在原处受限（密码、会员、付费订阅者），已作为草稿导入',
   importWrongKind: '这个文件不是本博客能读取的导出格式：WordPress 的 XML、Ghost 的 JSON，或 Substack、Medium、Quire Ink 的 ZIP。',
   importTooBig: '文件超过了导入的上限（100 MB）。',
   importImages: '正在取回图片',

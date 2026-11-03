@@ -56,8 +56,8 @@ export function parseSubstack(entries: Entry[], now: string): ImportResult {
   const rows = parseCsv(csv.text)
   const header = rows[0] ?? []
   const col = (name: string): number => header.indexOf(name)
-  const [idC, dateC, pubC, titleC, subC, typeC] =
-    ['post_id', 'post_date', 'is_published', 'title', 'subtitle', 'type'].map(col)
+  const [idC, dateC, pubC, titleC, subC, typeC, audienceC] =
+    ['post_id', 'post_date', 'is_published', 'title', 'subtitle', 'type', 'audience'].map(col)
 
   const html = new Map<string, string>()
   for (const e of entries) {
@@ -68,6 +68,7 @@ export function parseSubstack(entries: Entry[], now: string): ImportResult {
   const uniqueSlug = slugTracker()
   const posts: ImportedPost[] = []
   let skipped = 0
+  let locked = 0
 
   for (const r of rows.slice(1)) {
     const id = r[idC] ?? ''
@@ -84,7 +85,11 @@ export function parseSubstack(entries: Entry[], now: string): ImportResult {
     const excerpt = decodeEntities((r[subC] ?? '').trim()) || deriveExcerpt(content)
     const d = new Date(r[dateC] ?? '')
     const publicSlug = importSlug(slugPart, title)
-    const isPublished = (r[pubC] ?? '').toLowerCase() === 'true'
+    // For subscribers only there (`only_paid`, `only_free`): a draft here, which has no paywall.
+    const audience = audienceC >= 0 ? (r[audienceC] ?? '').trim() : ''
+    const guarded = audience !== '' && audience !== 'everyone'
+    if (guarded) locked++
+    const isPublished = !guarded && (r[pubC] ?? '').toLowerCase() === 'true'
     posts.push({
       title,
       slug: uniqueSlug(publicSlug),
@@ -100,7 +105,7 @@ export function parseSubstack(entries: Entry[], now: string): ImportResult {
       path: isPublished ? `/p/${publicSlug}` : undefined,
     })
   }
-  return { posts, pages: [], skipped }
+  return { posts, pages: [], skipped, locked }
 }
 
 // ---- Medium -------------------------------------------------------------------------------

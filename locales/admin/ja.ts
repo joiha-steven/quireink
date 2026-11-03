@@ -1328,6 +1328,7 @@ const ja = {
   importRun: 'インポート',
   importDone: 'インポートしました',
   importSkipped: '{n} 件をスキップしました（投稿やページではない、または元のゴミ箱にあるもの）',
+  importLocked: '{n} 件は元の場所で制限されていたため（パスワード、メンバー、有料購読者）、下書きとして取り込みました',
   importWrongKind: 'このファイルは読み込める形式ではありません。WordPress の XML、Ghost の JSON、または Substack・Medium・Quire Ink の ZIP を使ってください。',
   importTooBig: 'ファイルがインポートの上限（100 MB）を超えています。',
   importImages: '画像を取り込み中',

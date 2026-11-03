@@ -177,3 +177,28 @@ ${published ? `<time class="dt-published" datetime="${published}">x</time>` : ''
     expect(draft.title).toBe('Unfinished thing')
   })
 })
+
+// Quire Ink has no paywall and no password on a post, so an import made every locked piece
+// public: a WordPress post behind a password, a Ghost post for paying members, a Substack post
+// for paid subscribers went to the front page, the feed and the next newsletter (2026-11-03).
+// They come in as drafts, counted, for the owner to decide.
+describe('a piece that was locked where it came from', () => {
+  it('comes in from Ghost as a draft, and is counted', () => {
+    const r = parseGhost({ db: [{ data: { posts: [
+      { id: 1, title: 'Members only', slug: 'members-only', status: 'published', visibility: 'paid', html: '<p>secret</p>', published_at: '2024-01-01T00:00:00Z' },
+      { id: 2, title: 'For everyone', slug: 'for-everyone', status: 'published', visibility: 'public', html: '<p>open</p>', published_at: '2024-01-01T00:00:00Z' },
+    ] } }] }, NOW)
+    expect(r.posts.map((p) => [p.slug, p.status])).toEqual([['members-only', 'draft'], ['for-everyone', 'published']])
+    expect(r.locked).toBe(1)
+  })
+
+  it('comes in from Substack as a draft, and is counted', () => {
+    const r = parseSubstack([
+      { name: 'posts.csv', text: 'post_id,post_date,is_published,type,audience,title,subtitle\n111.paid-one,2024-01-01T00:00:00.000Z,true,newsletter,only_paid,Paid one,\n222.free-one,2024-01-02T00:00:00.000Z,true,newsletter,everyone,Free one,\n' },
+      { name: 'posts/111.paid-one.html', text: '<p>paid body</p>' },
+      { name: 'posts/222.free-one.html', text: '<p>free body</p>' },
+    ], NOW)
+    expect(r.posts.map((p) => [p.slug, p.status])).toEqual([['paid-one', 'draft'], ['free-one', 'published']])
+    expect(r.locked).toBe(1)
+  })
+})

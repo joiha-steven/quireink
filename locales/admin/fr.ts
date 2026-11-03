@@ -1328,6 +1328,7 @@ const fr = {
   importRun: 'Importer',
   importDone: 'Importé',
   importSkipped: '{n} laissés de côté (ni article ni page, ou déjà dans la corbeille là-bas)',
+  importLocked: '{n} étaient verrouillés là-bas (mot de passe, membres, abonnés payants) et arrivent en brouillon',
   importWrongKind: 'Ce fichier n’est pas un export que ce blog sait lire : un XML WordPress, un JSON Ghost, ou un ZIP Substack, Medium ou Quire Ink.',
   importTooBig: 'Ce fichier dépasse la taille maximale d’un import (100 Mo).',
   importImages: 'Rapatriement des images',

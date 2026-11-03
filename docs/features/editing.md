@@ -375,8 +375,9 @@ card, a link) it is called by its first words; see
   **falling back to `wp:post_date`** (WordPress leaves the GMT date as `0000-00-00` on anything
   never published, so drafts would otherwise all import dated today) and then to `now`;
   status `publish` and `future` (WordPress's scheduled post) → `published` with the item's own date,
-  so a future one stays scheduled; anything else → `draft`; excerpt from `excerpt:encoded` or
-  `deriveExcerpt`.
+  so a future one stays scheduled; anything else → `draft`; excerpt from `excerpt:encoded` or `deriveExcerpt`.
+  **Locked there, a draft here:** behind a password (WordPress), for members (Ghost `visibility`) or subscribers
+  (Substack `audience`), it comes in as a draft with no redirect, counted as `locked`: this blog has no lock to put on it.
 - **The route persists** via `savePost`/`savePage` — new content is ADDED, a slug that collides with
   existing content gets a numeric suffix (nothing overwritten). **A re-run does not duplicate:**
   a post already here with the same slug, title and date (a page: slug, title and body) is

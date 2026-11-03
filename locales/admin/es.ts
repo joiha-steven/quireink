@@ -1328,6 +1328,7 @@ const es = {
   importRun: 'Importar',
   importDone: 'Importado',
   importSkipped: '{n} omitidos (no son entradas ni páginas, o ya estaban en la papelera allí)',
+  importLocked: '{n} estaban bloqueados allí (contraseña, miembros, suscriptores de pago) y entraron como borradores',
   importWrongKind: 'Este archivo no es una exportación que este blog pueda leer: un XML de WordPress, un JSON de Ghost o un ZIP de Substack, Medium o Quire Ink.',
   importTooBig: 'Este archivo supera el tamaño máximo de una importación (100 MB).',
   importImages: 'Trayendo las imágenes a casa',

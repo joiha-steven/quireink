@@ -158,7 +158,7 @@ export function opsRoutes() {
     )
     return {
       posts: importedPosts, pages: importedPages, notes: importedNotes,
-      skipped, redirects,
+      skipped, redirects, locked: result.locked ?? 0,
     }
   }
 

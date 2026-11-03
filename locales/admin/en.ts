@@ -1328,6 +1328,7 @@ const en = {
   importRun: 'Import',
   importDone: 'Imported',
   importSkipped: '{n} left out (not a post or page, or already in the trash there)',
+  importLocked: '{n} were locked there (a password, members, paid subscribers), so they came in as drafts',
   importWrongKind: 'This file is not an export this blog can read: a WordPress XML, a Ghost JSON, or a Substack, Medium or Quire Ink ZIP.',
   importTooBig: 'This file is larger than an import can be (100 MB).',
   importImages: 'Bringing images home',

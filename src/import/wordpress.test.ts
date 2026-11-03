@@ -23,6 +23,7 @@ function item(fields: {
   content?: string
   terms?: string
   link?: string
+  password?: string
 }): string {
   const f = fields
   return `<item>
@@ -32,6 +33,7 @@ function item(fields: {
     <wp:post_name><![CDATA[${f.name ?? ''}]]></wp:post_name>
     <wp:post_type>${f.type ?? 'post'}</wp:post_type>
     <wp:status>${f.status ?? 'publish'}</wp:status>
+    ${f.password ? `<wp:post_password><![CDATA[${f.password}]]></wp:post_password>` : ''}
     <wp:post_date_gmt>${f.dateGmt ?? '2025-03-04 09:30:00'}</wp:post_date_gmt>
     <wp:post_date>${f.date ?? '2025-03-04 16:30:00'}</wp:post_date>
     ${f.terms ?? ''}
@@ -58,6 +60,13 @@ describe('parseWxr selection', () => {
     const out = parseWxr(xml, NOW)
     expect(out.posts.find((p) => p.slug === 'live')?.status).toBe('published')
     expect(out.posts.find((p) => p.slug === 'wip')?.status).toBe('draft')
+  })
+
+  it('imports a post behind a password as a draft, counted, with no redirect from its old address', () => {
+    const r = parseWxr(wxr(item({ name: 'locked', password: 'hunter2', link: 'https://old.example/locked/' }) + item({ name: 'open' })), NOW)
+    expect(r.posts.map((p) => [p.slug, p.status])).toEqual([['locked', 'draft'], ['open', 'published']])
+    expect(r.posts[0]!.path).toBeUndefined()
+    expect(r.locked).toBe(1)
   })
 
   it('keeps the path a published item lived at, and only that', () => {

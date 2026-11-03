@@ -65,6 +65,7 @@ export function parseWxr(xml: string, now: string): WxrResult {
   const posts: ImportedPost[] = []
   const pages: ImportedPage[] = []
   let skipped = 0
+  let locked = 0
 
   for (const item of items) {
     const type = text(item['wp:post_type'])
@@ -79,7 +80,10 @@ export function parseWxr(xml: string, now: string): WxrResult {
     const slug = uniqueSlug(importSlug(text(item['wp:post_name']), title))
     const html = raw(item['content:encoded'])
     const body = htmlToMarkdown(html)
-    const mappedStatus = status === 'publish' || status === 'future' ? 'published' : 'draft'
+    // Behind a password there: a draft here, which has no password to put on it (`locked`).
+    const guarded = text(item['wp:post_password']).trim() !== ''
+    if (guarded) locked++
+    const mappedStatus = !guarded && (status === 'publish' || status === 'future') ? 'published' : 'draft'
     const path = oldPath(item.link, mappedStatus === 'published')
 
     if (type === 'page') {
@@ -113,5 +117,5 @@ export function parseWxr(xml: string, now: string): WxrResult {
       path,
     })
   }
-  return { posts, pages, skipped }
+  return { posts, pages, skipped, locked }
 }

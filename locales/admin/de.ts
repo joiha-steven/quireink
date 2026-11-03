@@ -1328,6 +1328,7 @@ const de = {
   importRun: 'Importieren',
   importDone: 'Importiert',
   importSkipped: '{n} ausgelassen (kein Beitrag und keine Seite, oder dort bereits im Papierkorb)',
+  importLocked: '{n} waren dort gesperrt (Passwort, Mitglieder, zahlende Abonnenten) und kamen als Entwürfe herein',
   importWrongKind: 'Diese Datei ist kein Export, den dieser Blog lesen kann: ein WordPress-XML, ein Ghost-JSON oder ein ZIP von Substack, Medium oder Quire Ink.',
   importTooBig: 'Diese Datei ist größer, als ein Import sein darf (100 MB).',
   importImages: 'Bilder werden geholt',

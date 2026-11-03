@@ -64,6 +64,7 @@ export function parseGhost(doc: unknown, now: string): ImportResult {
   const posts: ImportedPost[] = []
   const pages: ImportedPage[] = []
   let skipped = 0
+  let locked = 0
 
   for (const p of (d.posts as GhostPost[] | undefined) ?? []) {
     const status = str(p.status)
@@ -80,7 +81,10 @@ export function parseGhost(doc: unknown, now: string): ImportResult {
     // A post Ghost kept only as lexical (`html: null`) imported with an EMPTY body; its words
     // come from the lexical tree when there is no HTML.
     const body = str(p.html) ? htmlToMarkdown(str(p.html)) : lexicalToMarkdown(str(p.lexical))
-    const published = status === 'published' || status === 'sent' || status === 'scheduled'
+    // For members, paying members or a tier there: a draft here, which has no paywall (`locked`).
+    const guarded = str(p.visibility) !== '' && str(p.visibility) !== 'public'
+    if (guarded) locked++
+    const published = !guarded && (status === 'published' || status === 'sent' || status === 'scheduled')
     // The featured image was never mapped, so every post lost it (2026-09-30).
     const featuredImage = str(p.feature_image) || undefined
 
@@ -102,7 +106,7 @@ export function parseGhost(doc: unknown, now: string): ImportResult {
       ...(featuredImage ? { featuredImage } : {}),
     })
   }
-  return { posts, pages, skipped }
+  return { posts, pages, skipped, locked }
 }
 
 /**

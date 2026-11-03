@@ -1328,6 +1328,7 @@ const vi = {
   importRun: 'Nhập',
   importDone: 'Đã nhập',
   importSkipped: '{n} mục bị bỏ qua (không phải bài viết hay trang, hoặc đã nằm trong thùng rác bên đó)',
+  importLocked: '{n} bài bị khoá ở bên đó (mật khẩu, thành viên, người trả phí) nên vào đây thành nháp',
   importWrongKind: 'Tệp này không phải bản xuất mà blog đọc được: XML của WordPress, JSON của Ghost, hoặc ZIP của Substack, Medium hay Quire Ink.',
   importTooBig: 'Tệp này lớn hơn mức một lần nhập cho phép (100 MB).',
   importImages: 'Đang tải ảnh về',

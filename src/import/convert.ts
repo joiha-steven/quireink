@@ -61,6 +61,12 @@ export type ImportedNote = {
 }
 export type ImportResult = {
   posts: ImportedPost[]; pages: ImportedPage[]; notes?: ImportedNote[]; skipped: number
+  /**
+   * Items that were LOCKED where they came from — a password, members, paid subscribers — and
+   * come in as drafts because this blog has no lock to put on them. Counted, so the owner is told
+   * rather than finding them; an import used to publish every one of them (2026-11-03).
+   */
+  locked?: number
 }
 
 // ---- deterministic cleanup ----------------------------------------------------------

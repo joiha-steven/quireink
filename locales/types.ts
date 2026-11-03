@@ -1608,6 +1608,7 @@ export type AdminStrings = {
   importDone: string
   /** `{n}` items an import left out, and the one reason that covers every importer. */
   importSkipped: string
+  importLocked: string
   importWrongKind: string
   importTooBig: string
   importImages: string

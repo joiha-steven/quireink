@@ -1328,6 +1328,7 @@ const ru = {
   importRun: 'Импортировать',
   importDone: 'Импортировано',
   importSkipped: 'Пропущено: {n} (не записи и не страницы или уже в корзине)',
+  importLocked: 'Закрыто там (пароль, участники, платные подписчики), поэтому пришло черновиками: {n}',
   importWrongKind: 'Этот файл — не экспорт, который блог умеет читать: XML из WordPress, JSON из Ghost или ZIP из Substack, Medium или Quire Ink.',
   importTooBig: 'Файл больше, чем допускает импорт (100 МБ).',
   importImages: 'Перевожу изображения домой',
