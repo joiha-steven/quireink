@@ -39,7 +39,7 @@ Stated so a report can say which of these is wrong, which is more useful than a 
 - Sessions are a 32-byte CSPRNG token in a `__Host-` prefixed, `HttpOnly`, `Secure`,
   `SameSite=Lax` cookie. Only its SHA-256 is stored. The prefix scopes it to one host, so
   a session does not follow a domain change.
-- Passwords are argon2id (`Bun.password`). TOTP is required once the blog has a public
+- Passwords are argon2id (`Bun.password`; on Cloudflare `@noble/hashes`, the same hash strings). TOTP is required once the blog has a public
   address; while it has none, first enrolment may be skipped once ([ADR 0030](./docs/decisions/0030-two-factor-can-wait-until-there-is-an-address.md)),
   and a used step is recorded so a code cannot be replayed. Ten single-use recovery codes are hashed at
   rest and shown once.
@@ -55,7 +55,7 @@ Stated so a report can say which of these is wrong, which is more useful than a 
   every tool that writes waits for the owner's click (`docs/features/admin.md`, the assistant).
 - The HTML the software itself writes ships **no inline script**, which is what lets the
   recommended CSP omit `'unsafe-inline'` from `script-src`. A report that this is violated
-  is a real finding. The one exception is by design: **Server & connections → Custom code** inserts
+  is a real finding. The one exception is by design: **Server & connections → Advanced → Custom code** inserts
   whatever the owner pastes, verbatim, on public pages only (never the admin, the sign-in
   page or a preview). That is the owner's script on the owner's site, and it runs only where
   the owner's own policy allows it.

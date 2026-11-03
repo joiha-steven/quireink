@@ -20,7 +20,7 @@ month. So before writing code, read the file that owns what you are touching.
 
 | You are about to | Read |
 |---|---|
-| Write any code at all | [`CLAUDE.md`](./CLAUDE.md): the house rules, and a debug router that names the files per symptom |
+| Write any code at all | [`CLAUDE.md`](./CLAUDE.md): the house rules and what to read first; [`MAP.md`](./MAP.md) names the files per symptom |
 | Change something load-bearing | [`docs/invariants.md`](./docs/invariants.md): seven rules, each with its enforcing code and its guard |
 | Touch type, spacing, i18n or a release | [`docs/conventions/`](./docs/conventions/README.md), one file per surface |
 | Ask why it is like this | [`docs/decisions/`](./docs/decisions/README.md), append-only, including the reversals |
@@ -59,11 +59,12 @@ Behaviour the suite does not cover gets a test in the same commit. A guard going
 information rather than an obstacle: each one exists because the mess it catches already
 happened here at least once.
 
-**A change under `src/render/` or `src/web/` also faces the golden gate.**
+**A change under `src/md/` or `src/render/` also faces the golden gate.**
 [`src/render/golden.test.ts`](./src/render/golden.test.ts) renders every fixture in
-`golden/v1/corpus/` and compares it byte for byte against captured 1.x output. One moved byte
-usually means a template is wrong. Re-baselining is sometimes the correct answer, but it is
-a decision: say in the commit what moved and why it is allowed to.
+`golden/corpus/` and compares it byte for byte against the 1.x output captured in
+`golden/v1/corpus/`. One moved byte usually means a template is wrong. A deliberate change never
+regenerates that folder: it names the fixture in `DIVERGED`, captures the new answer under
+`golden/v2/corpus/`, and says in the commit what moved and why it is allowed to.
 
 ## What makes a change easy to accept
 
