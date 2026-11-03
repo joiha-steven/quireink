@@ -21,7 +21,7 @@ import { dirname, join, resolve } from 'node:path'
 import { packageOptions } from '@/content/theme-package-options'
 import { ZipWriter } from '@/import/zip-write'
 import en from '@/locales/admin/en'
-import { readThemePackage, THEME_LIMITS, type PackageResult, type ThemeManifest, type Violation } from '@/theme'
+import { decodeThemeText, readThemePackage, THEME_LIMITS, type PackageResult, type ThemeManifest, type Violation } from '@/theme'
 import { MISSING } from '@/theme/check-files'
 import { isOsLitterName, isOsLitterPath } from '@/theme/os-litter'
 
@@ -30,7 +30,7 @@ export const USAGE = 'usage: bun run theme:check <theme directory | theme.zip>'
 export type CheckOutcome = { code: 0 | 1 | 2; lines: string[] }
 
 /** The outcome, and when the theme was accepted the zip that was judged and its manifest (`theme:preview` installs it). */
-export type LoadedTheme = { outcome: CheckOutcome; accepted?: { zip: Uint8Array; manifest: ThemeManifest } }
+export type LoadedTheme = { outcome: CheckOutcome; accepted?: { zip: Uint8Array; manifest: ThemeManifest; css: string } }
 
 type Walked = { files: { rel: string; size: number }[]; dirs: string[]; violations: Violation[]; litter: string[]; hidden: string[] }
 
@@ -219,7 +219,12 @@ export async function loadThemePath(arg: string | undefined): Promise<LoadedThem
   const leftOut = [...walkedLeftOut, ...readingLines(result)]
   if (result.ok) {
     const { manifest, files } = result.pkg
-    return { outcome: { code: 0, lines: [...leftOut, `ok · ${manifest.id} ${manifest.version} · ${files.length} files`] }, accepted: { zip, manifest } }
+    const sheet = files.find((f) => f.path === 'theme.css')
+    const css = sheet ? decodeThemeText(sheet.bytes) : ''
+    return {
+      outcome: { code: 0, lines: [...leftOut, `ok · ${manifest.id} ${manifest.version} · ${files.length} files`] },
+      accepted: { zip, manifest, css: typeof css === 'string' ? css : '' },
+    }
   }
   const hints = fromZip ? zipHints(zipNames(zip), result) : []
   const lines = [...leftOut, ...hints]

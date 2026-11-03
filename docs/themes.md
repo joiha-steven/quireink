@@ -392,9 +392,9 @@ must be one of yours or a built-in id of that kind.
   The checker allows an engine variable there and refuses `inherit`, `initial` and `unset`
   (`inherit` on `body` put them all in Times). Unless your theme is about its chrome's face, set a
   face on the pieces you mean (`.title`, `.deck`).
-- **`theme:preview` measures five things**: a page wider than the window, a box past the window's
-  edge, text cut by `overflow: hidden`, an image that did not load, a font file that did not load.
-  It leaves out what a page does on purpose (a wide table scrolling in its frame, `line-clamp`).
+- **`theme:preview` measures six things**: a declaration the browser drops (`colour:`, a missing `;`),
+  a page wider than the window, a box past its edge, text cut by `overflow: hidden`, an image or a
+  font file that did not load. It leaves out what a page does on purpose (`line-clamp`, a table that scrolls).
   It does **not** catch uneven spacing, misalignment, overlap that fits in the window, low contrast
   of text you placed on a ground of your own (only palettes are contrast-checked), hover and focus
   states, print, or a missing date like the one above. Look at the contact sheet.

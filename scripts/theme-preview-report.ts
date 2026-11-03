@@ -1,6 +1,8 @@
 // The two things `theme:preview` leaves beside its shots: REPORT.txt, the findings in lines a
 // terminal shows, and index.html, a contact sheet with every shot grouped by page and that page's
 // findings above its shots. Plain functions over what was captured; nothing here touches disk.
+import en from '@/locales/admin/en'
+import { droppedSentence, isMistake, type DroppedFinding } from './theme-preview-dropped'
 import type { LayoutFinding } from './theme-preview-layout'
 import type { Page } from './theme-matrix-instance'
 
@@ -33,12 +35,31 @@ export function groupFindings(shots: readonly ShotRecord[]): GroupedFinding[] {
   return [...byKey.values()]
 }
 
-export function reportText(info: RunInfo, shots: readonly ShotRecord[]): string {
+const words = en.themePreviewFindings
+
+/** One declaration the browser dropped, as `theme:check` prints a finding: where, what, then the sentence. */
+export const droppedLine = (f: DroppedFinding): string => `theme.css:${f.line}:${f.col} · ${f.text}`
+
+/** The sheet's findings: the same for every page, so said once, before the pages'. */
+function droppedLines(dropped: readonly DroppedFinding[]): string[] {
+  const block = (list: readonly DroppedFinding[], title: (n: number, s: string) => string) => list.length === 0 ? [] : [
+    title(list.length, list.length === 1 ? '' : 's'),
+    ...list.flatMap((f) => [droppedLine(f), `    ${droppedSentence(f, words)}`]),
+    '',
+  ]
+  return [
+    ...block(dropped.filter(isMistake), (n, s) => `${n} declaration${s} in theme.css the browser drops:`),
+    ...block(dropped.filter((f) => !isMistake(f)), (n, s) => `${n} propert${s ? 'ies' : 'y'} in theme.css this browser does not have (not a finding):`),
+  ]
+}
+
+export function reportText(info: RunInfo, shots: readonly ShotRecord[], dropped: readonly DroppedFinding[] = []): string {
   const grouped = groupFindings(shots)
   const head = [
     `theme:preview ${info.themeId} ${info.version} (${info.name})`,
     `${shots.length} shots in ${info.seconds}s, clock ${info.clock}`,
     '',
+    ...droppedLines(dropped),
   ]
   if (grouped.length === 0) return [...head, 'no layout findings', ''].join('\n')
   const lines = grouped.map((g) => `${g.page} @ ${g.width}px [${g.where.join(', ')}] ${g.kind} · ${g.detail}`)
@@ -52,8 +73,10 @@ const esc = (s: string): string =>
  * The contact sheet. System colours only (`Canvas`, `CanvasText`, `Mark`), so it reads in the
  * author's light or dark without a palette of its own. Shots are links to the full-size file.
  */
-export function indexHtml(info: RunInfo, shots: readonly ShotRecord[]): string {
+export function indexHtml(info: RunInfo, shots: readonly ShotRecord[], dropped: readonly DroppedFinding[] = []): string {
   const grouped = groupFindings(shots)
+  const sheet = dropped.length === 0 ? '' : `<section id="theme-css"><h2>theme.css</h2><ul class="findings">${dropped.map((f) =>
+    `<li><b>${esc(droppedLine(f))}</b>: ${esc(droppedSentence(f, words))}</li>`).join('')}</ul></section>`
   const pages = [...new Map(shots.map((s) => [s.page.id, s.page])).values()]
   const sections = pages.map((page) => {
     const mine = shots.filter((s) => s.page.id === page.id)
@@ -86,6 +109,7 @@ figcaption{font-size:.875rem;margin-block-start:.25rem}
 <h1>${esc(info.name)} ${esc(info.version)} <code>${esc(info.themeId)}</code></h1>
 <p>${shots.length} shots in ${info.seconds}s, clock pinned at ${esc(info.clock)}. ${grouped.length === 0 ? 'No layout findings.' : `${grouped.length} layout finding${grouped.length === 1 ? '' : 's'}.`}</p>
 <nav>${nav}</nav>
+${sheet}
 ${sections.join('\n')}
 </body></html>
 `

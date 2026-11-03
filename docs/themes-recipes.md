@@ -155,8 +155,8 @@ hiding `.post-info` drops an untitled post's date unless you bring its header ba
 **I changed the CSS and nothing changed.** In order of likelihood:
 
 1. A typo in a property or a value. The checker does not catch `colour:`, `display:gird` or a
-   missing `;` between two declarations ([X1](themes-css-rules.md#x1-css-a-browser-would-drop-or-read-differently)).
-   Open the preview's page in a browser's developer tools: the browser strikes through what it dropped.
+   missing `;` between two declarations ([X1](themes-css-rules.md#x1-css-a-browser-would-drop-or-read-differently));
+   `theme:preview` does, first thing in `REPORT.txt`, with the line and what to write instead.
 2. A base rule outweighs yours. A handful keep their weight against any theme
    ([themes.md section 6](themes.md#6-the-contract)); a heavier selector wins, a later one does not.
 3. On a blog: you installed the new zip without raising `version`. That works (the same version

@@ -1107,6 +1107,12 @@ export type AdminStrings = {
   /** One line per rule code of the theme checker (`theme/types.ts`), and `other` for a code this build does not know. */
   /** One sentence per rule code; `missing` is said instead of A3's for a required file the package lacks. */
   themeRules: Record<ThemeRuleCode | 'other' | 'missing', string>
+  /**
+   * What `theme:preview` says under a finding the checker cannot make: a declaration the browser
+   * dropped (`Property`, `Value`, `Empty`, a missing `Semicolon` or `Colon`, then `Instead` with
+   * the guess the browser kept, or `NoGuess`), or a property this browser lacks (`Unknown`, alone).
+   */
+  themePreviewFindings: Record<'droppedProperty' | 'droppedUnknown' | 'droppedValue' | 'droppedEmpty' | 'droppedSemicolon' | 'droppedColon' | 'droppedInstead' | 'droppedNoGuess', string>
   motionLabel: string
   motionDesc: string
   keyFeedbackLabel: string

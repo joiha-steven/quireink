@@ -7,7 +7,8 @@
 //    installed by the function `POST /api/themes` calls and chosen through the settings writer.
 // 3. Every page in `theme-preview-plan.ts` at each width, light and dark, once per palette the
 //    theme declares, photographed whole by the matrix's browser, and measured for layout faults
-//    (`theme-preview-layout.ts`).
+//    (`theme-preview-layout.ts`). Before the pages, every declaration of theme.css is put to the
+//    same browser, and each it drops is a finding (`theme-preview-dropped.ts`).
 // 4. Shots, REPORT.txt and index.html (a contact sheet by page) go to `.tmp/theme-preview/<id>/`,
 //    with `screenshot.webp`: the tile's picture, made from the front page at 1440 in the light,
 //    ready to copy into the theme. Stock macOS cannot write a WebP (`sips -s format webp` writes
@@ -15,7 +16,7 @@
 // A folder with no `screenshot.webp` yet is previewed with a blank one in its place, so a theme
 // started from nothing can be looked at before it has a picture; the check still refuses it.
 //
-// exit 0 captured with no layout finding · 1 refused, a layout finding, or the run failed ·
+// exit 0 captured with no finding · 1 refused, a dropped declaration, a layout finding, or the run failed ·
 // 2 bad usage (arguments, an output directory that is not allowed, a busy --port).
 // The instance and the browser are stopped on every way out, Ctrl-C included. A run killed outright
 // leaves its instance directory; the next run deletes it once its owner process is gone
@@ -30,6 +31,7 @@ import {
   assertPortFree, CLOCK_ISO, CLOCK_PRELOAD, defaultBrowser, freePort, instanceEnv, run, seedPristine,
   startServer, waitHealthy,
 } from './theme-matrix-instance'
+import { droppedIn, isMistake, type DroppedFinding } from './theme-preview-dropped'
 import { asMeasurement, layoutFindings, MEASURE, type LayoutFinding } from './theme-preview-layout'
 import { cellsFor, fontsOf, parseArgs, SCHEMES, shotName, USAGE } from './theme-preview-plan'
 import { indexHtml, reportText, type ShotRecord } from './theme-preview-report'
@@ -109,7 +111,7 @@ export async function preview(argv: readonly string[]): Promise<number> {
   }
   if (standIn !== null) say('no screenshot.webp yet: previewing with a blank one; theme:check refuses the theme until it has one')
   say(loaded.outcome.lines.join('\n'))
-  const { zip, manifest } = loaded.accepted
+  const { zip, manifest, css } = loaded.accepted
 
   let out: string
   let port: number
@@ -132,6 +134,7 @@ export async function preview(argv: readonly string[]): Promise<number> {
   const cells = cellsFor(manifest, args.pages)
   const fonts = fontsOf(manifest)
   const shots: ShotRecord[] = []
+  let dropped: DroppedFinding[] = []
 
   rmSync(out, { recursive: true, force: true })
   mkdirSync(out, { recursive: true })
@@ -146,6 +149,9 @@ export async function preview(argv: readonly string[]): Promise<number> {
 
     const browser = await Browser.open(CLOCK_ISO)
     live.browser = browser
+    dropped = await droppedIn(css, (expression) => browser.evaluate(expression))
+    const mistakes = dropped.filter(isMistake).length
+    if (mistakes > 0) say(`theme.css: the browser drops ${mistakes} declaration${mistakes === 1 ? '' : 's'}; REPORT.txt says which, and what to write instead`)
     for (const [n, cell] of cells.entries()) {
       const data = join(work, 'cell')
       const log = join(work, 'server.log')
@@ -197,9 +203,9 @@ export async function preview(argv: readonly string[]): Promise<number> {
   }
 
   const info = { themeId: manifest.id, version: manifest.version, name: manifest.name, seconds: Math.round((Date.now() - started) / 1000), clock: CLOCK_ISO }
-  const text = reportText(info, shots)
+  const text = reportText(info, shots, dropped)
   writeFileSync(join(out, 'REPORT.txt'), text)
-  writeFileSync(join(out, 'index.html'), indexHtml(info, shots))
+  writeFileSync(join(out, 'index.html'), indexHtml(info, shots, dropped))
   say(text.trimEnd().split('\n').slice(0, 40).join('\n'))
   say(`shots, REPORT.txt and index.html in ${out}`)
   const source = tileSource(shots)
@@ -209,7 +215,7 @@ export async function preview(argv: readonly string[]): Promise<number> {
   } else {
     say('no screenshot.webp: it is made from the front page or the post list at 1440 in the light, and this run took neither')
   }
-  return shots.some((s) => s.findings.length > 0) ? 1 : 0
+  return dropped.some(isMistake) || shots.some((s) => s.findings.length > 0) ? 1 : 0
 }
 
 if (import.meta.main) {

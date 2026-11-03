@@ -82,6 +82,15 @@ as the tour finds it ([`scripts/chrome-path.ts`](../scripts/chrome-path.ts)).
    out: a wide table or code block scrolling in its own frame, `line-clamp` and ellipses, book mode's
    other pages, the parked skip link.
 
+Before the pages, every declaration in `theme.css` is put to the same browser
+([`scripts/theme-preview-dropped.ts`](../scripts/theme-preview-dropped.ts)), the CSSOM parse a sheet goes
+through: each one it drops is a finding, with the line and column and what to write instead when a
+spelling close to it is one the browser keeps (`colour` → `color`, `gird` → `grid`, `999` → `999px`,
+the `;` a run of two declarations is missing). A property this browser does not have and nothing
+near it, most often another engine's (`hanging-punctuation`), is listed and is not a finding. Not
+judged: custom properties, and the value of one holding `var()`, which the browser checks only once
+the variable is known.
+
 Shots go to `.tmp/theme-preview/<id>/`, with `REPORT.txt`, `index.html`, a contact sheet grouped
 by page with each page's findings above its shots, and `screenshot.webp`: the tile's picture, 1200 x
 900, cut from the top of the front page (else the post list) at 1440 in the light, ready to copy into

@@ -368,8 +368,8 @@ property. A misspelt property or a value the property does not take is dropped b
 passes the checker, so these all pass and do nothing: `colour:var(--c-text)`, `display:gird`,
 `text-wrap:balanced`, `border-radius:999` (no unit), `margin:1rem 2rem 3rem 4rem 5rem`, and
 `color:var(--c-text) font-weight:700` (a missing `;` between two declarations, which turns both into
-one value). When a rule seems to do nothing, open the preview page in a browser and look at the rule
-in the developer tools: a struck-through declaration is one the browser dropped.
+one value). `theme:preview` finds them: it puts every declaration to the browser and lists each one
+it drops, with its line and what to write instead.
 
 A file keeps at most 200 findings. Past that the list ends with one more line,
 `X1 · theme.css · truncated`: nobody fixes 200 things at once, so fix these and run it again.
