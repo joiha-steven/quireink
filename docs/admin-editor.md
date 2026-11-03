@@ -12,8 +12,9 @@ that file first; this one only adds what is true here.
 ## The editor
 
 - The chrome is the SHEET'S OWN top rows (the Writing Desk mock's `sheettop`): the action
-  line — back link + save state + word count on the left, quiet Markdown/Attributes text
-  controls and the Preview/View/Save/main-key buttons on the right — is the card's first row, and
+  line — back link + save state + word count on the left, one "⋯" holding Markdown, Attributes
+  and Focus (2026-11-03: they were three quiet words in the row, each the weight of a button
+  beside Preview) and the Preview/View/Save/main-key buttons on the right — is the card's first row, and
   the toolbar sticks directly under it. The main key says what a press would do: **Publish** on
   a draft, **Schedule** when the date chosen is ahead, and **Update** on a piece the server
   already holds as published or scheduled (2026-10-08), enabled only once something changed. A

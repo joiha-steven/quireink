@@ -206,6 +206,7 @@ export function registerKeepFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWidt
       if (!(await wait(() => document.querySelector('.ProseMirror'), 140))) {
         return done('the editor never opened')
       }
+      for (const m of document.querySelectorAll('[data-sheet-more]')) m.open = true
       const attrs = [...document.querySelectorAll('[data-sheet-attrs]')]
         .find((el) => el.offsetParent !== null)
       if (!attrs) return done('no key for the attributes panel')
@@ -343,8 +344,8 @@ export function registerKeepFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWidt
       // A stamp on the editor, so a page that RELOADED can be told from one that did not.
       window.__tourStamp = 'here'
 
-      // The VISIBLE one: two of each ship, and at this width the first in the markup is the
-      // phone menu's, folded away inside a details element.
+      // In the bar's "⋯" menu at every width since 2026-11-03, so the menu is opened first.
+      for (const m of document.querySelectorAll('[data-sheet-more]')) m.open = true
       const attrs = [...document.querySelectorAll('[data-sheet-attrs]')]
         .find((el) => el.offsetParent !== null)
       if (!attrs) return done('no key for the attributes panel')

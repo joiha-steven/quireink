@@ -157,6 +157,16 @@ export function wireBar(root: HTMLElement, hooks: BarHooks): Bar {
   }
   window.addEventListener('keydown', onKey)
 
+  // The "⋯" folds once one of its items is pressed, or a press lands outside it: what was asked
+  // for is on the screen, and a menu left open over the paper hides the first lines of it.
+  const more = root.querySelector<HTMLDetailsElement>('[data-sheet-more]')
+  const fold = (e: MouseEvent): void => {
+    if (!more?.open) return
+    const at = e.target as HTMLElement
+    if (!more.contains(at) || (at.closest('button, a') && !at.closest('summary'))) more.open = false
+  }
+  document.addEventListener('click', fold)
+
   /**
    * The count is POLLED, and that is deliberate: it is read off the document, which means
    * serializing it, and nobody reads a word count mid-word.
@@ -251,6 +261,7 @@ export function wireBar(root: HTMLElement, hooks: BarHooks): Bar {
     destroy: () => {
       clearInterval(counting)
       window.removeEventListener('keydown', onKey)
+      document.removeEventListener('click', fold)
       stopFocus()
     },
   }

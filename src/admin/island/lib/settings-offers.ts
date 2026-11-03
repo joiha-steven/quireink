@@ -175,6 +175,7 @@ export function tellSuggest(root: HTMLElement): void {
 export function applyThemeOffers(root: HTMLElement): void {
   const theme = themeTile(root)?.dataset.choice ?? ''
   for (const el of root.querySelectorAll<HTMLElement>('[data-theme-option]')) el.hidden = el.dataset.themeOption !== theme
+  for (const el of root.querySelectorAll<HTMLElement>('[data-theme-tick]')) el.hidden = el.dataset.themeTick !== theme
   settleTrack(root, 'fontPreset')
   settleTrack(root, 'chromeFont')
   settlePalette(root)
@@ -188,9 +189,9 @@ export function applyThemeOffers(root: HTMLElement): void {
 /** The boxes that hold what the installed themes add, beside the built-in options. */
 const HOSTS = [
   '[data-choice-track][data-k="fontPreset"]', '[data-choice-track][data-k="chromeFont"]',
-  '[data-palette-track]', '[data-palette-tables]',
+  '[data-palette-track]', '[data-palette-tables]', '[data-palette-shown-list]',
 ]
-const ADDED = ':scope > [data-theme-option], :scope > [data-theme-palette-note]'
+const ADDED = ':scope > [data-theme-option], :scope > [data-theme-palette-note], :scope > [data-theme-tick]'
 
 /** The baseline and the row's value, taken from the fresh draw. */
 function takeBaseline(here: HTMLElement | null, there: HTMLElement | null): void {

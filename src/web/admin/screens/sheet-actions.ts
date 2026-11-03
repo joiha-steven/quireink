@@ -90,39 +90,30 @@ export function sheetActions(t: AdminStrings, links: SheetLinks): string {
     // 390px phone, with Save draft and Publish off the right edge and the whole admin scrolling
     // sideways to reach them. Measured 2026-08-27: 584px of scroll width on a 390px viewport.
     + `<div class="flex shrink-0 flex-nowrap items-center justify-end gap-1.5 lg:flex-wrap">`
-    // THE PHONE'S "⋯". Below `lg` the three controls that change what you LOOK at live behind
-    // it, so the bottom row carries four objects instead of seven.
-    + `<details class="relative lg:hidden"><summary class="${quiet} list-none cursor-pointer select-none"`
-    + ` aria-label="${escapeAttr(t.moreActions)}">&#8943;</summary>`
-    + `<div class="absolute bottom-full right-0 mb-2 flex w-44 flex-col p-1 ${escapeAttr(OVERLAY)}">`
-    + menuItem('data-sheet-md', t.tbMarkdown, ' aria-pressed="false"')
-    + menuItem('data-sheet-attrs', t.attributes,
+    // THE "⋯", at every width. The three controls that change what you LOOK at live behind it,
+    // so the row carries Preview, Save and Publish and nothing that weighs the same beside them;
+    // their chords still work without it. Below `lg` it also holds Preview and the live link,
+    // and opens upwards, because the bar sits on the bottom edge there.
+    + `<details data-sheet-more class="relative"><summary class="${quiet} list-none cursor-pointer select-none"`
+    + ` aria-label="${escapeAttr(t.moreActions)}" title="${escapeAttr(t.moreActions)}">&#8943;</summary>`
+    + `<div class="absolute bottom-full right-0 mb-2 flex w-44 flex-col p-1 lg:bottom-auto lg:top-full lg:mb-0 lg:mt-2`
+    + ` ${escapeAttr(OVERLAY)}">`
+    + menuItem(`data-sheet-md${chord('markdown')} title="${escapeAttr(t.tbMarkdown)}"`, t.tbMarkdown, ' aria-pressed="false"')
+    // `data-attrs` so the tour can find this without matching a word in eleven languages.
+    + menuItem(`data-attrs data-sheet-attrs${chord('attributes')} title="${escapeAttr(t.attributes)}"`, t.attributes,
       ` data-say-open="${escapeAttr(t.attributes)}" data-say-shut="${escapeAttr(t.hideAttributes)}"`)
-    + menuItem('data-sheet-focus', t.edFocus, ' aria-pressed="false"')
+    // It takes the button row and the write pane off the screen and leaves the paper; the bubble
+    // bar and "/" keep every command the row held.
+    + menuItem(`data-sheet-focus${chord('focus')} title="${escapeAttr(t.edFocus)}"`, t.edFocus, ' aria-pressed="false"')
     // Preview is a post's alone, on the phone as on the desktop: the other two kinds have no
     // preview route, and an item that answers nothing is worse than an item that is not there.
     + (links.canPreview
-      ? menuItem('data-sheet-preview', previewWord, links.previewNow ? '' : ' hidden')
+      ? `<span class="contents lg:hidden">`
+        + menuItem('data-sheet-preview', previewWord, links.previewNow ? '' : ' hidden') + `</span>`
       : '')
     + `<a data-sheet-live href="${escapeAttr(links.live.href)}" target="_blank" rel="noopener"`
-    + ` class="${quiet} text-left"${links.liveNow ? '' : ' hidden'}>${escapeHtml(links.live.label)}</a>`
+    + ` class="${quiet} text-left lg:hidden"${links.liveNow ? '' : ' hidden'}>${escapeHtml(links.live.label)}</a>`
     + `</div></details>`
-
-    // Quiet, and BEFORE the session-ending pair: these three change what you look AT, not what
-    // happens to the piece. SPELLED OUT in the same voice — a bold mono "MD" next to a plain
-    // word read as a control from a different product.
-    + `<button type="button" data-sheet-md`
-    + `${chord('markdown')} title="${escapeAttr(t.tbMarkdown)}" aria-pressed="false"`
-    + ` class="hidden lg:block ${quiet}">${escapeHtml(t.tbMarkdown)}</button>`
-    // `data-attrs` so the tour can find this without matching a word in eleven languages.
-    + `<button type="button" data-attrs data-sheet-attrs`
-    + ` data-say-open="${escapeAttr(t.attributes)}" data-say-shut="${escapeAttr(t.hideAttributes)}"`
-    + `${chord('attributes')} title="${escapeAttr(t.attributes)}"`
-    + ` class="hidden lg:block ${quiet}">${escapeHtml(t.attributes)}</button>`
-    // The third of the look-at-it group. It takes the button row and the write pane off the
-    // screen and leaves the paper; the bubble bar and "/" keep every command the row held.
-    + `<button type="button" data-sheet-focus${chord('focus')} title="${escapeAttr(t.edFocus)}"`
-    + ` aria-pressed="false" class="hidden lg:block ${quiet}">${escapeHtml(t.edFocus)}</button>`
 
     // ⚠️ THE WRAPPER CARRIES `hidden`, not the button. `hidden` and `inline-flex` are both
     // display utilities, so which wins is decided by their order in the STYLESHEET and not by

@@ -92,9 +92,8 @@ character and none of its typographic rules **except one**, below.
   the small state dots keep 4px, and `switchControl` says so where somebody would otherwise
   "fix" it.
 - **TWO INKS NOW, since 2026-08-29** — and the rule below is kept because its argument
-  is still the test, not because the count is still one. The wordmark took three colours
-  (ink, red ballpoint, highlighter) when it shipped on 2026-08-27, so "monochrome plus one"
-  had stopped describing the product it belongs to. What did not change is WHY a colour is
+  is still the test, not because the count is still one: the wordmark took three colours
+  (ink, red ballpoint, highlighter) on 2026-08-27. What did not change is WHY a colour is
   allowed: it has to mean on screen what it means on paper. The highlighter is what you mark
   as worth returning to. **The red ballpoint is what you strike OUT — so it dresses the
   actions that destroy something, and nothing else.** `SHEET_TOOL_DANGER` and the `danger`
@@ -102,6 +101,10 @@ character and none of its typographic rules **except one**, below.
   because a delete that looks like its neighbour is what put a native `confirm()` in the way
   of a deleted post. Values from `PEN_AUX_LIGHT`/`PEN_AUX_DARK` in `pen/pigments.ts`, the one
   source — measured off a photograph of a real pen box, never re-typed by eye.
+- **One filled key per screen; what changes the VIEW is a word (2026-11-03).** The editor's
+  Markdown, Attributes and Focus sit in its "⋯", theme Preview and the font slots' Choose are
+  `SHEET_TOOL` words, and the empty Write sheet starts a piece with three words beside the
+  pane's one filled New post.
   A colour that means one thing is a signal; a palette is not. The test for a third ink is
   the same as it always was: what does this pen MEAN on a page?
 - **The sheet carries ONE shadow step** (2026-08-29): 1px of contact at 4% black, an edge
@@ -255,15 +258,12 @@ character and none of its typographic rules **except one**, below.
   write pane — the list of everything written — rides beside the sheet on the Write screen
   at every width, and **beside an EDITOR only from 1640px**; on a narrower window the sheet
   takes the room and the list is one "← Write" away.
-  ⚠️ **1640 is measured, and it was `xl` (1280) until 2026-08-24.** At 1280 the pane left
-  the sheet 630px and the editor's button row needs 787: the row wrapped to two lines, the
-  action line above it wrapped to two more, and a writer on a 13-inch laptop met THREE tiers
-  of chrome before the first word. The pane is 320 and the shell takes 330, so the sheet is
-  the window less 650 and the row needs ~950 with air around it. Both the pane and the row
-  are the owner's explicit picks; below 1640 they do not both fit, and the writing wins.
-  Do not put it back to `xl` without re-measuring the row.
+  ⚠️ **1640 is measured; it was `xl` (1280) until 2026-08-24**, where the pane left the sheet
+  630px, the button row needed 787 and wrapped, and a 13-inch laptop met THREE tiers of chrome
+  before the first word. The sheet is the window less 650 (pane 320, shell 330) and the row
+  needs ~950 with air; below 1640 both do not fit, and the writing wins. Re-measure before `xl`.
 - **Focus mode is the other half of that** (`island/lib/focus-mode.ts`, 2026-08-24). One
-  switch in the action line, `Ctrl/Cmd + \`, takes the pane AND the button row off the
+  switch in the action line's "⋯", `Ctrl/Cmd + \`, takes the pane AND the button row off the
   screen at any width and leaves the paper. **It applies beside an EDITOR only.** On the
   Write screen the pane is not chrome around the paper, it is the screen — hiding it there
   left the list gone and, below `xl`, nothing at all, on every visit until the switch was

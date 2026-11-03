@@ -103,7 +103,7 @@ type Card = { id: string; name: string; theme: ThemeSettings; offer?: ThemeOffer
  *
  * A THEME'S PALETTE is the same key in the same grid, with two differences. It says which theme it
  * comes from. And it stretches to its row (`data-card-extra`, kept by the island when it repaints
- * the key), so a name that wraps does not leave the ticks beside it a line apart. Its tick is the
+ * the key), so a name that wraps does not leave the cards beside it a line short. Its tick (`shownList`) is the
  * stored list's answer for its id whichever theme is stored, so pressing its theme brings back
  * what was chosen for it; it is the default only under its own theme, since two themes may name a
  * palette alike.
@@ -127,16 +127,6 @@ function presetCard(t: AdminStrings, card: Card, s: SiteSettings, drawn: string)
   const pill = `<span class="whitespace-nowrap rounded-full border border-neutral-300 px-1.5`
     + ` py-0.5 text-xs text-neutral-600 dark:border-neutral-600 dark:text-neutral-300"`
     + ` data-card-default${isDefault ? '' : ' hidden'}>${escapeHtml(t.themeDefault)}</span>`
-  // The default palette is always shown, so the visitor never ends up with zero palettes — and
-  // a locked tick has to LOOK unavailable rather than merely refuse.
-  const tick = `<div class="mt-1.5 px-1${isDefault ? ' cursor-not-allowed' : ''}"`
-    + ` data-card-tick>`
-    + checkField({
-      label: t.paletteShown, on: shown,
-      // `data-shown-saved`: in the saved list itself, not only pressed for being the default; the
-      // island puts this back on the tick when the default moves away (`makeDefaultPalette`).
-      attrs: `data-palette-shown="${escapeAttr(id)}"${s.enabledPalettes.includes(id) ? ' data-shown-saved' : ''}${isDefault ? ' disabled' : ''}`,
-    }) + `</div>`
   const extra = offer ? ' flex-1' : ''
   // `data-palette-hidden` records the dash as a FACT the island can read back. The class alone
   // would have to be parsed out of a className the island also rewrites, and a face copied off a
@@ -150,7 +140,34 @@ function presetCard(t: AdminStrings, card: Card, s: SiteSettings, drawn: string)
     + miniMode(theme.light) + miniMode(theme.dark) + `</div>`
     + `<div class="mt-2 flex min-h-5 items-center justify-between gap-1 px-0.5">${label}${pill}</div>`
     + (offer ? `<span class="block px-0.5">${fromLine(t, offer)}</span>` : '')
-    + `</button>${tick}</div>`
+    + `</button></div>`
+}
+
+/**
+ * WHICH PALETTES A VISITOR MAY PICK, as one list of names under the grid.
+ *
+ * It was a "Shown to visitors" tick under every card: the same three words nine times, each
+ * the weight of the card's own name. One heading and the names say it once. A theme's palette
+ * carries `data-theme-tick` with its theme's id, so the island shows, hides and redraws it with
+ * its card (`settings-offers.ts`); not `data-theme-option`, which counts what a theme offers.
+ */
+function shownList(t: AdminStrings, cards: Card[], s: SiteSettings, drawn: string): string {
+  const one = ({ id, name, offer }: Card): string => {
+    const isDefault = (!offer || offer.id === s.theme) && id === drawn
+    // The default palette is always shown, so the visitor never ends up with zero palettes — and
+    // a locked tick has to LOOK unavailable rather than merely refuse.
+    return `<div class="${isDefault ? 'cursor-not-allowed' : ''}" data-card-tick="${escapeAttr(id)}"`
+      + `${offer ? ` data-theme-tick="${escapeAttr(offer.id)}"${offer.id === s.theme ? '' : ' hidden'}` : ''}>`
+      + checkField({
+        label: name, on: s.enabledPalettes.includes(id) || isDefault,
+        // `data-shown-saved`: in the saved list itself, not only pressed for being the default; the
+        // island puts this back on the tick when the default moves away (`makeDefaultPalette`).
+        attrs: `data-palette-shown="${escapeAttr(id)}"${s.enabledPalettes.includes(id) ? ' data-shown-saved' : ''}${isDefault ? ' disabled' : ''}`,
+      }) + `</div>`
+  }
+  return `<fieldset class="mt-4"><legend class="text-sm font-medium text-neutral-800 dark:text-neutral-200">`
+    + `${escapeHtml(t.paletteShown)}</legend>`
+    + `<div class="mt-2 flex flex-wrap gap-x-4 gap-y-2" data-palette-shown-list>${cards.map(one).join('')}</div></fieldset>`
 }
 
 /**
@@ -247,6 +264,7 @@ export function palettes(t: AdminStrings, s: SiteSettings, presets: ThemePreset[
   const grid = `<div class="grid grid-cols-2 gap-3 sm:grid-cols-3" data-palette-track`
     + ` data-card-on="${escapeAttr(CARD_ON)}" data-card-off="${escapeAttr(CARD_OFF)}">`
     + [...builtin, ...added].map((c) => presetCard(t, c, s, drawn)).join('') + `</div>`
+  const shown = shownList(t, [...builtin, ...added], s, drawn)
   return `<div class="${SETTING_GAP}">`
     // Light or dark comes BEFORE which palette, because it is the coarser question: a visitor
     // meets one of two pages, and the palette only tints whichever they got. 'System' stays the
@@ -262,7 +280,7 @@ export function palettes(t: AdminStrings, s: SiteSettings, presets: ThemePreset[
     // is the table read aloud.
     + settingRow({
       label: t.themePreset, note: `${t.themePresetHint} ${t.paletteVisibilityHint}`,
-      control: grid + setDefault + enabled,
+      control: grid + setDefault + shown + enabled,
     })
     // ALL SIX TABLES, in one wrapper. The wrapper is the trap-5 fix: it is never hidden, so
     // the `space-y-5` above it has one child here whichever palette is open.

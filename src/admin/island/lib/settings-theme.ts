@@ -88,7 +88,11 @@ export function tellEnabled(root: HTMLElement): void {
   const on: string[] = []
   for (const tick of root.querySelectorAll<HTMLInputElement>('[data-palette-shown]')) {
     const id = tick.dataset.paletteShown ?? ''
-    const card = tick.closest<HTMLElement>('[data-palette-card]')
+    // The tick sits in the list under the grid, not in its card, and two themes may name a
+    // palette alike: the card is the one with this id AND this tick's theme (none for a built-in).
+    const option = tick.closest<HTMLElement>('[data-card-tick]')?.dataset.themeTick
+    const card = root.querySelector<HTMLElement>(`[data-palette-card="${CSS.escape(id)}"]`
+      + (option ? `[data-theme-option="${CSS.escape(option)}"]` : ':not([data-theme-option])'))
     if (card?.hidden) continue
     if (tick.checked || id === wearing) on.push(id)
     if (card) card.dataset.paletteHidden = tick.checked || id === wearing ? '0' : '1'

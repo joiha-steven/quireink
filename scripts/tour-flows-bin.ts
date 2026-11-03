@@ -52,11 +52,12 @@ export function registerTrashFromEditorFlows({ flow, expect }: Tour): void {
         }
         return null
       }
-      // ⚠️ THE VISIBLE ONE. Two of each of these ship — the phone's "⋯" menu and the desktop
-      // row — and querySelector hands back the first in the markup, which at this width is the
-      // one folded away inside a details element. A control nobody can see is not the control.
+      // ⚠️ THE VISIBLE ONE. Attributes lives in the bar's "⋯" menu at every width (2026-11-03),
+      // so the menu is opened and the key is the one a person could see. A control nobody can
+      // see is not the control.
       // (No backticks in here: the whole expression is a template literal.)
       const shownOne = (hook) => [...document.querySelectorAll(hook)].find(seen) || null
+      for (const m of document.querySelectorAll('[data-sheet-more]')) m.open = true
       const attributes = await wait(() => shownOne('[data-sheet-attrs]'))
       if (!attributes) return 'the editor never showed its Attributes control'
       attributes.click()

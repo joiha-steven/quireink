@@ -49,6 +49,8 @@ export function registerAttributeFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'a
       const sheet = document.querySelector('.admin-enter') || document.body
       const seen = (el) => el && el.offsetParent !== null
 
+      // Attributes is in the bar's "⋯" menu at every width since 2026-11-03: opened first.
+      for (const m of document.querySelectorAll('[data-sheet-more]')) m.open = true
       const attrs = [...sheet.querySelectorAll('button')].filter(seen).find((b) => b.hasAttribute('data-attrs'))
       if (!attrs) return done('no key for the attributes panel')
       attrs.click()

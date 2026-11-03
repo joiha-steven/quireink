@@ -18,7 +18,7 @@
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { InstalledTheme, ThemeOffer } from '@/content/installed-themes'
 import type { ThemeHealth } from '@/content/theme-health'
-import { buttonClass } from '@/admin-shared/kit'
+import { SHEET_TOOL, buttonClass } from '@/admin-shared/kit'
 import { NOTE, NOTE_ALERT } from '@/admin-shared/scale'
 import { escapeAttr, escapeHtml } from '@/utils'
 
@@ -86,12 +86,13 @@ export const fill = (template: string, values: Record<string, string>): string =
  * Preview: the site in a new tab wearing `id`, for the owner alone, with nothing saved
  * (`web/theme-preview.ts`). A link and not a button, because what it does is open a page: the
  * browser's own new-tab handling, and no island. On every tile the site can draw, built-in or
- * installed; never on one whose manifest does not read.
+ * installed; never on one whose manifest does not read. A word under the tile, not a button:
+ * nine outlined Preview keys under nine tiles were the heaviest thing on the tab.
  */
 export const previewKey = (t: AdminStrings, id: string, name: string): string =>
   `<a href="/api/themes/${escapeAttr(encodeURIComponent(id))}/preview" target="_blank" rel="noopener"`
   + ` data-theme-preview-key="${escapeAttr(id)}" aria-label="${escapeAttr(fill(t.themePreviewLabel, { theme: name }))}"`
-  + ` class="${buttonClass('secondary', 'sm')}">${escapeHtml(t.themePreview)}</a>`
+  + ` class="${SHEET_TOOL}">${escapeHtml(t.themePreview)}</a>`
 
 /**
  * One installed theme: its key, then the keys that act on the package. `tile` is the built-in

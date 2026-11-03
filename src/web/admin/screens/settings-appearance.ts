@@ -26,7 +26,7 @@ import { PROMISED_SELECTORS, PROMISED_VARS } from '@/content/appearance-contract
 import { formatCount } from '@/i18n/format'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { braceBalance } from '@/admin-shared/css-brace'
-import { SHEET_TOOL, buttonClass } from '@/admin-shared/kit'
+import { SHEET_TOOL } from '@/admin-shared/kit'
 import { NOTE_TEXT, SETTING_GAP, UTIL } from '@/admin-shared/scale'
 import { panelCard, settingRow } from '@/web/admin/fields'
 import { PANEL } from '@/web/admin/fields-box'
@@ -209,11 +209,11 @@ function fontUpload(t: AdminStrings, s: SiteSettings): string {
       + `${has ? '' : ' hidden'}>${escapeHtml(t.fontUploaded)}</span>`
       + `<span class="text-xs text-neutral-600 dark:text-neutral-400" data-font-state="off"`
       + `${has ? ' hidden' : ''}>—</span>`
-      + `<button type="button" data-font-pick="${w}" class="${buttonClass('secondary', 'sm')}"`
+      + `<button type="button" data-font-pick="${w}" class="${SHEET_TOOL}"`
       + ` data-off="${escapeAttr(t.fontChoose)}" data-on="${escapeAttr(t.fontReplace)}"`
       + ` data-busy="${escapeAttr(t.loading)}">${escapeHtml(has ? t.fontReplace : t.fontChoose)}`
       + `</button>`
-      + `<button type="button" data-font-remove="${w}" class="${buttonClass('ghost', 'sm')}"`
+      + `<button type="button" data-font-remove="${w}" class="${SHEET_TOOL}"`
       + `${has ? '' : ' hidden'}>${escapeHtml(t.removeSelection)}</button>`
       + `</span></div>`
   }
