@@ -139,6 +139,7 @@ const vi = {
   commentsStatPeople: 'người',
   commentsFootHint: 'Bấm vào lời bình để đọc toàn văn. Xoá là xoá mềm — chuyển vào Thùng rác.',
   filterEmpty: 'Không có bài viết khớp bộ lọc.',
+  commentsNoMatch: 'Không có bình luận nào khớp với tìm kiếm.',
   writeNothingYet: 'Chưa viết gì. Bấm “{new}” để bắt đầu bài đầu tiên.',
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no

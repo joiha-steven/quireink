@@ -179,7 +179,9 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
   return `<div data-screen="comments" data-lang="${escapeAttr(settings.language)}" data-comment-words="${words}">`
     + pageHeader({ title: t.commentsNavTitle })
     + sheet(sheetTop(tools) + band
-      + `<p data-comment-nomatch class="px-5 py-8 text-sm text-neutral-500 dark:text-neutral-400" hidden>${escapeHtml(t.filterEmpty)}</p>`
+      // Its own sentence: it shared `filterEmpty` with Write and said "No posts match your
+      // filter." to a search through comments (2026-11-03).
+      + `<p data-comment-nomatch class="px-5 py-8 text-sm text-neutral-500 dark:text-neutral-400" hidden>${escapeHtml(t.commentsNoMatch)}</p>`
       + `<div data-comment-cards class="paper-cols">${groups.map((g) => card(t, settings.language, siteZone(settings.timezone), g)).join('')}</div>`
       + `<div class="${SHEET_FOOT}">${escapeHtml(t.commentsFootHint)} ${escapeHtml(t.commentsWalkHint)}</div>`)
     + `</div>`

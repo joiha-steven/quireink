@@ -140,6 +140,7 @@ const pt = {
   commentsStatPeople: 'pessoas',
   commentsFootHint: 'Clique em um comentário para ler inteiro. Excluir é exclusão suave — vai para a lixeira.',
   filterEmpty: 'Nenhum post bate com o seu filtro.',
+  commentsNoMatch: 'Nenhum comentário corresponde à busca.',
   writeNothingYet: 'Nada escrito ainda. Toque em «{new}» para começar o primeiro texto.',
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no

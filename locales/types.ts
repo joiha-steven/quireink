@@ -295,6 +295,8 @@ export type AdminStrings = {
   filterPlaceholder: string
   filterAll: string
   filterEmpty: string
+  /** Comments' search that finds nothing: comments, not posts. */
+  commentsNoMatch: string
   /** The Write list on a blog with nothing in it; `{new}` is the New post key's own words. */
   writeNothingYet: string
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it

@@ -139,6 +139,7 @@ const ru = {
   commentsStatPeople: 'человек',
   commentsFootHint: 'Нажмите на комментарий, чтобы прочитать целиком. Удаление мягкое — комментарий уходит в корзину.',
   filterEmpty: 'Под ваш фильтр не подходит ни одна запись.',
+  commentsNoMatch: 'Под ваш поиск не подходит ни один комментарий.',
   writeNothingYet: 'Пока ничего не написано. Нажмите «{new}», чтобы начать первый текст.',
   // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
