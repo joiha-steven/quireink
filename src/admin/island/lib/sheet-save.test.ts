@@ -96,3 +96,14 @@ describe('what Preview saves first', () => {
     expect(previewPlan('published', 'draft')).toEqual({ snapshot: true })
   })
 })
+
+// Two ways to name a piece from its title: the sheet's `edit()` cut at 80 like the server, and this
+// one did not, so a save that reached it with no slug sent 174 characters (2026-11-03).
+describe('a slug made from the title on the wire', () => {
+  it('is cut where the server and the sheet cut it', () => {
+    const title = 'A title that goes on and on about ink and paper and the slow work of writing by hand at night'
+    const slug = payloadOf('post', draft({ title, slug: '' }), 'body', TZ).slug as string
+    expect(slug.length).toBeLessThanOrEqual(80)
+    expect(slug.endsWith('-')).toBe(false)
+  })
+})

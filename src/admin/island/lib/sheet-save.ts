@@ -9,7 +9,7 @@
 // whichever machine is typing. A post scheduled from a laptop on UTC went out seven hours late
 // in Hanoi, and the line under the field agreed with the laptop.
 import { API_PATH, type SheetDraft, type SheetKind } from '@/admin-shared/sheet-wire'
-import { slugify, zonedInputToIso } from '@/utils'
+import { titleSlug, zonedInputToIso } from '@/utils'
 import { slugFromWords } from '@/content/untitled'
 
 /**
@@ -50,7 +50,7 @@ export function payloadOf(
   // whose name slugifies to nothing (emoji, CJK) keeps the clock, as it always has.
   const name = (kind === 'note' ? (draft.title || draft.sourceTitle) : draft.title).trim()
   const named = draft.slug
-    || (name ? slugify(name) : slugFromWords(content))
+    || (name ? titleSlug(name) : slugFromWords(content))
     || `${kind}-${Date.now()}`
   const base: Record<string, unknown> = {
     title: draft.title,
