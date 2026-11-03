@@ -25,7 +25,7 @@ first body image (`render/figures.ts`, `seen === 0`), and the light site logo
 
 ## Fonts — preload ONLY what the LCP text needs
 
-The LCP element on a post is the **title**, set in the **reading font** (`--font-reading`).
+The LCP element on a post is the **title**, set in the **reading font** (`--font-reading`), or in a theme's own headline face where it has one.
 The **chrome font** (`--font-sans`: header/footer/rail/meta/admin) is never the LCP element.
 All faces are self-hosted, subset by `unicode-range`, and declared `font-display: swap`, so
 the title always paints instantly in a fallback and the web font swaps in. `<link
@@ -58,7 +58,7 @@ The numbers come from `scripts/ops/font-fallback-metrics.py`, which measures bot
 each needs its OWN, because one `size-adjust` cannot describe two local faces of different
 width. Order in the stack is the platform test — first name the device HAS, wins.
 
-**The rule — one place, `fontPreloadHrefs(fontPreset, language, hasCustomFont, chromeFont)`
+**The rule — one place, `fontPreloadHrefs(fontPreset, language, hasCustomFont, chromeFont, displaySlug)`
 in `src/content/fonts.ts`, called once in `src/web/layout.ts`:**
 
 | Case | Preload |
@@ -67,7 +67,7 @@ in `src/content/fonts.ts`, called once in `src/web/layout.ts`:**
 | Built-in reading font, `vi` | `‹slug›-latin.woff2` **and** `‹slug›-vietnamese.woff2` (a VN title needs both unicode-ranges) |
 | Built-in reading font, CJK locale (`ja`, `zh`, `ko`) **or `ru`** | **nothing** — the built-ins ship no CJK glyphs and never will (a CJK webfont is megabytes), so the title renders in a system face; a latin preload it won't use only steals bandwidth. Which system face is not left to the browser: every reading stack ends in a NAMED CJK tail, one per language, selected by `cjkLangCss` on `:lang(zh\|ja\|ko)`. Zero bytes downloaded — see `CJK_ZH` / `CJK_JA` / `CJK_KO` in `src/content/fonts.ts` |
 | **Uploaded custom font** (`settings.customFont`) | **nothing** — the face is unsubsetted (whole charset, often large); a high-priority preload would contend with the render-blocking CSS and hurt LCP. It still wins `--font-reading` via `fontToCss`; `swap` covers the paint |
-| **Chrome font**, when it is a self-hosted family of its own (JetBrains Mono default, IBM Plex Mono, Inter) | **its own subset(s), same rule as the reading font** — and this row USED to read "never, it is not the LCP element". That was written when the chrome face was Inter: the fallback was a system sans and the swap was barely visible. It is a MONOSPACE on any site that picked one, and the header, the meta line and both rails all re-flow when it lands. Measured before the change (origin, cold, 4× CPU throttle); the reading font still wins the race and is still declared first. One exception, and it cost 160 ms of LCP to find: an install that has never CHOSEN a chrome font is using the reading face, so `isChromeFontId` gates this — `getChromeFont` falls back to Inter for an unknown id, which is right for the font stack and wrong here, because it preloads 44 KB the page will not paint a glyph in |
+| **Chrome font**, when `CHROME_FONTS[].preload` says so (JetBrains Mono, IBM Plex Mono) | **its own subset(s), same rule as the reading font** — and this row USED to read "never, it is not the LCP element". That was written when the chrome face was Inter: the fallback was a system sans and the swap was barely visible. It is a MONOSPACE on any site that picked one, and the header, the meta line and both rails all re-flow when it lands. Measured before the change (origin, cold, 4× CPU throttle); the reading font still wins the race and is still declared first. Inter, the default since 2026-09-13, carries no `preload`: its fallback barely moves, so a preload would buy only bytes. An unknown id is gated by `isChromeFontId`: `getChromeFont` falls back to Inter, which is right for the font stack and wrong here, and that mistake cost 160 ms of LCP to find |
 
 ### Variation axes are trimmed, not shipped whole
 
@@ -121,7 +121,7 @@ Hard invariants (also in [`conventions/type.md`](./conventions/type.md)):
   `-latin` / `-latin-ext` / `-vietnamese`.
 - **Never preload `latin-ext` or a specific weight.** Built-in reading fonts are variable
   (one file per subset carries every weight); `latin-ext` glyphs are rare and load on demand. The pen's `kalam-digits` (numbered lists) is never preloaded either: 1.4 KB, fetched only when a numeral renders.
-- **Preload the chrome font only when it is a self-hosted family of its own** (`isChromeFontId`
+- **Preload the chrome font only when it is a self-hosted family of its own** (`CHROME_FONTS[].preload`
   decides); `chromeFont: 'reading'` preloads nothing extra. The table above has the
   measurement, and the trap: `getChromeFont` falls back to Inter for an unknown id, which is
   right for the font stack and costs 160 ms as a preload.
@@ -395,6 +395,6 @@ through these, not straight to the driver**, or it is the next freeze on the day
   `book-mode.js` / `comment-thread.js` / `reader-pen.js` if and only if that switch is on, and nothing else,
   and the correct font preloads for the site language.
 - **Critical path / LCP:** Lighthouse "Network dependency tree" — the chain should be HTML →
-  public CSS → (at most) the reading font's language subset(s). No chrome font, no unused
-  subset, no admin CSS.
+  public CSS → (at most) the reading font's language subset(s), a chosen monospace chrome font's,
+  a theme's headline face. No unused subset, no admin CSS.
 

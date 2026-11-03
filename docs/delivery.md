@@ -149,7 +149,7 @@ you changed. Off means:
 
 Nothing about Invariant 1 changes: when the cache is on, a write still empties all of it.
 The switch decides whether there is a cache at all, not how it is invalidated. Pinned by
-`src/web/app.test.ts` ("switched off in Settings").
+`src/web/cache-switch.test.ts` ("switched off").
 
 ### A theme preview passes both layers by
 
