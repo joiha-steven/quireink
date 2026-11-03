@@ -93,6 +93,11 @@ function registerMediaTools(server: ToolHost): void {
     'delete_media',
     { description: 'Move a media item to the Trash (soft delete — the blob is kept; recoverable).', inputSchema: { url: z.string() } },
     async ({ url }) => {
+      // Compared store-relative, as `delete_file` compares: the library answers absolute URLs and a
+      // caller may send either form.
+      if (!(await getMedia()).some((m) => collapseBlob(m.url) === collapseBlob(url))) {
+        return asError(`No such image in the library: ${url}. list_media shows the URLs.`)
+      }
       await deleteMedia(url)
       await logActivity('media.delete', '1 image')
       return asText(`Moved media to Trash: ${url}`)
@@ -103,6 +108,9 @@ function registerMediaTools(server: ToolHost): void {
     'restore_media',
     { description: 'Restore a trashed media item back to the live library.', inputSchema: { url: z.string() } },
     async ({ url }) => {
+      if (!(await getTrashedMedia()).some((m) => collapseBlob(m.url) === collapseBlob(url))) {
+        return asError(`No such image in the Trash: ${url}. list_trashed_media shows what is there.`)
+      }
       await restoreMediaBatch([url])
       await logActivity('media.restore', '1 image')
       return asText(`Restored media: ${url}`)
@@ -143,6 +151,9 @@ function registerFileTools(server: ToolHost): void {
     'restore_file',
     { description: 'Restore a trashed file attachment back to the live library.', inputSchema: { url: z.string() } },
     async ({ url }) => {
+      if (!(await getTrashedFiles()).some((f) => collapseBlob(f.url) === collapseBlob(url))) {
+        return asError(`No such file in the Trash: ${url}. list_trashed_files shows what is there.`)
+      }
       await restoreFilesBatch([url])
       await logActivity('file.restore', '1 file')
       return asText(`Restored file: ${url}`)

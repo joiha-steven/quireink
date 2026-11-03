@@ -177,6 +177,8 @@ function registerPostTools(server: ToolHost): void {
     'delete_post',
     { description: 'Move a post to the Trash (soft delete — recoverable). Does not remove it permanently.', inputSchema: { slug: z.string() } },
     async ({ slug }) => {
+      // A slug that names nothing is an error, not a success the model reports as done (2026-11-03).
+      if (!(await getPost(slug))) return asError(`Post not found: ${slug}. list_posts shows the slugs.`)
       await deletePost(slug)
       clearCache()
       await logActivity('post.delete', slug)
@@ -188,6 +190,7 @@ function registerPostTools(server: ToolHost): void {
     'restore_post',
     { description: 'Restore a trashed post back to live.', inputSchema: { slug: z.string() } },
     async ({ slug }) => {
+      if (!(await getTrashedPosts()).some((p) => p.slug === slug)) return asError(`No trashed post: ${slug}. list_trashed_posts shows what is there.`)
       await restorePost(slug)
       clearCache()
       await logActivity('post.restore', slug)
@@ -258,6 +261,7 @@ function registerPageTools(server: ToolHost): void {
     'delete_page',
     { description: 'Move a page to the Trash (soft delete — recoverable).', inputSchema: { slug: z.string() } },
     async ({ slug }) => {
+      if (!(await getPage(slug))) return asError(`Page not found: ${slug}. list_pages shows the slugs.`)
       await deletePage(slug)
       clearCache()
       await logActivity('page.delete', slug)
@@ -269,6 +273,7 @@ function registerPageTools(server: ToolHost): void {
     'restore_page',
     { description: 'Restore a trashed page back to live.', inputSchema: { slug: z.string() } },
     async ({ slug }) => {
+      if (!(await getTrashedPages()).some((p) => p.slug === slug)) return asError(`No trashed page: ${slug}. list_trashed_pages shows what is there.`)
       await restorePage(slug)
       clearCache()
       await logActivity('page.restore', slug)

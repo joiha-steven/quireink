@@ -30,6 +30,8 @@ import { getAdminComments, softDeleteComment } from '@/comments/comments'
 import { searchEverything } from '@/content/search-owner'
 import { updateCheckStatus } from '@/server/update-check'
 import { logActivity } from '@/server/activity'
+import { one } from '@/store/query'
+import { liveOnly } from '@/store/db'
 import { asJson, asError } from '@/mcp/result'
 import pkg from '../../package.json' with { type: 'json' }
 
@@ -114,6 +116,11 @@ export function registerInsightTools(server: ToolHost): void {
       inputSchema: { id: z.number().int().describe('Comment id from list_comments') },
     },
     async ({ id }) => {
+      // A live comment only: an id that names nothing, or one already in the Trash, was answered
+      // `deleted: true` and reported to the owner as done (2026-11-03).
+      if (!one<{ n: number }>(`select 1 as n from comments where id = ? and ${liveOnly('comments')}`, id)) {
+        return asError(`No live comment with id ${id}. list_comments shows the ids.`)
+      }
       // The same two calls as the admin route (`web/admin/news.ts`), and nothing more:
       // comments render outside the page cache, so there is no cache to clear.
       await softDeleteComment(id)

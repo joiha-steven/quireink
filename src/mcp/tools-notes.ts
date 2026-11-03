@@ -84,6 +84,7 @@ export function registerNoteTools(server: ToolHost): void {
     'delete_note',
     { description: 'Move a note to the Trash (soft delete — recoverable with restore_note).', inputSchema: { slug: z.string() } },
     async ({ slug }) => {
+      if (!(await getNote(slug))) return asError(`Note not found: ${slug}. list_notes shows the slugs.`)
       await deleteNote(slug)
       clearCache()
       await logActivity('note.delete', slug)
