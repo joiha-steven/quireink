@@ -131,8 +131,11 @@ export async function restoreArchive(opts: RestoreOptions): Promise<RestoreRepor
       if (await sameBytes(dest, size, body)) return
       throw new Error(`${dest} already exists with different contents; move the uploads directory aside, or restore into an empty one`)
     }
-    await writeNew(dest, body)
+    // ON THE LIST BEFORE THE FIRST BYTE: the file being written when the archive runs out is the
+    // one a cleanup must not miss. Pushed after, it stayed behind truncated, and the retry with a
+    // good archive stopped at it as "already exists with different contents" (2026-11-03).
     written.push(dest)
+    await writeNew(dest, body)
   }
   const adopt = (): void => {
     if (!asRoot) return

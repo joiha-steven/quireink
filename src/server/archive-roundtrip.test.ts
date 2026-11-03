@@ -140,6 +140,29 @@ describe('a rows archive', () => {
     expect(existsSync(join(DIR, 'r6', 'u', 'icon.png'))).toBe(false)
   }, 20_000)
 
+  // The file being written when the archive ran out was not on the list of files to clear, so a
+  // failed restore left a truncated picture in the uploads directory, and the retry with a good
+  // archive then stopped at it as "already exists with different contents" (2026-11-03).
+  it('leaves no upload behind, not even the one it was writing when the archive ran out', async () => {
+    const noise = join(UPLOADS, 'media', 'noise.bin')
+    writeFileSync(noise, crypto.getRandomValues(new Uint8Array(60_000)))
+    try {
+      const archive = join(DIR, 'noise.tar.gz')
+      await archiveTo(archive)
+      const whole = readFileSync(archive)
+      for (const fraction of [0.5, 0.6, 0.7, 0.8, 0.9, 0.95]) {
+        const at = join(DIR, `rcut-${fraction}`)
+        const cut = `${at}.tar.gz`
+        writeFileSync(cut, whole.subarray(0, Math.floor(whole.length * fraction)))
+        await expect(restoreArchive({ archive: cut, dataDir: join(at, 'data'), uploadsDir: join(at, 'u') })).rejects.toThrow()
+        const left = existsSync(join(at, 'u')) ? [...new Bun.Glob('**/*').scanSync({ cwd: join(at, 'u'), onlyFiles: true })] : []
+        expect({ fraction, left }).toEqual({ fraction, left: [] })
+      }
+    } finally {
+      rmSync(noise, { force: true })
+    }
+  }, 30_000)
+
   it('refuses a data directory where the old database left its write-ahead log behind', async () => {
     // The killed-not-stopped blog: `quire.db` moved aside, its `-wal` still there. Restored
     // beside it, SQLite would replay the OLD blog's log into the new file.
