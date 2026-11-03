@@ -806,18 +806,10 @@ const vi = {
   penSqueakDesc: 'Đầu bút dạ rít trên giấy khi bạn tô, gạch hay khoanh chữ trong trình soạn. Tạo tại chỗ, không có tệp âm thanh; theo nhạc cụ và âm lượng ở trên.',
   autosaveLabel: 'Giữ bản nháp trên máy mỗi (giây)',
   autosaveHint: 'Số giây giữa hai lần chụp nhanh khi bạn gõ, từ 15 đến 600: một bản giữ trên máy này, một bản trên máy chủ. Không bản nào là bài đã đăng; chỉ Lưu và Đăng bài mới đổi bài đó. Đây là bản còn lại khi tab bị sập hay điện thoại tự tải lại dưới ngón tay bạn.',
-  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
-  // joins one to the name — so a language that puts no comma between them does not get one,
-  // and eleven dictionaries hold five rows instead of eight.
-  greetMorning: 'Chào buổi sáng',
-  greetAfternoon: 'Chào buổi chiều',
-  greetEvening: 'Chào buổi tối',
-  greetNight: 'Khuya rồi',
-  greetWithName: '{greeting}, {name}',
+  // The home screen's line under its title: when the blog last published, and how to name it.
   greetLastPublished: 'Đăng gần nhất',
   greetNothingYet: 'Chưa đăng bài nào',
   greetSetName: 'Đặt tên và ảnh của bạn',
-  greetAddPortrait: 'Thêm chân dung',
   greetToday: 'hôm nay',
   statPosts: 'Bài viết',
   statPages: 'Trang',

@@ -1,29 +1,8 @@
-// The greeting's two pieces of arithmetic, which are the two ways it can say something false.
-//
-// The home screen used to open with the word "Overview". It now opens with a name and a
-// portrait, and the whole value of that is being TRUE about a person — a greeting that says
-// good morning at midnight, or "last published in 10 days", is worse than the category name
-// it replaced, because it is personal AND wrong.
+// The line under Home's title says when the blog last published, and that is the one way it
+// can say something false: "last published in 10 days", or "today" for yesterday, is worse
+// than no line. The time-of-day greeting it sat beside went on 2026-11-03.
 import { describe, expect, it } from 'bun:test'
-// `Greeting.tsx` went with the dashboard (ADR 0054); its two pieces of arithmetic live in
-// `@/admin-shared/when`, where the server renderer and the boot script's own copy of the four
-// boundaries both sit beside them.
-import { partOfDay, relativeDay } from '@/admin-shared/when'
-
-describe('what part of the day it is', () => {
-  it('walks the four boundaries', () => {
-    const at = (h: number) => partOfDay(h).replace('greet', '').toLowerCase()
-    expect([0, 4].map(at)).toEqual(['night', 'night'])
-    expect([5, 11].map(at)).toEqual(['morning', 'morning'])
-    expect([12, 17].map(at)).toEqual(['afternoon', 'afternoon'])
-    expect([18, 21].map(at)).toEqual(['evening', 'evening'])
-    expect([22, 23].map(at)).toEqual(['night', 'night'])
-  })
-
-  it('covers every hour, with no gap and no second answer', () => {
-    for (let h = 0; h < 24; h++) expect(typeof partOfDay(h)).toBe('string')
-  })
-})
+import { relativeDay } from '@/admin-shared/when'
 
 describe('when the last piece went out', () => {
   // `relativeDay` takes the word, the clock in ms and the language, rather than a `t` object

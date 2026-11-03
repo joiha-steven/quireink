@@ -806,18 +806,10 @@ const ko = {
   penSqueakDesc: '편집기에서 형광펜, 밑줄, 동그라미를 칠 때 펠트펜이 종이를 긁는 소리가 납니다. 그 자리에서 합성되며 소리 파일은 없습니다. 위의 악기와 음량을 따릅니다.',
   autosaveLabel: '이 기기에 저장하는 간격(초)',
   autosaveHint: '입력하는 동안 스냅숏을 찍는 간격(초, 15~600). 하나는 이 기기에, 하나는 서버에 보관합니다. 둘 다 게시된 글이 아니며, 그것은 저장과 게시로만 바뀝니다. 탭이 죽거나 휴대폰이 손가락 아래에서 새로고침되어도 남는 사본입니다.',
-  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
-  // joins one to the name — so a language that puts no comma between them does not get one,
-  // and eleven dictionaries hold five rows instead of eight.
-  greetMorning: '좋은 아침입니다',
-  greetAfternoon: '안녕하세요',
-  greetEvening: '좋은 저녁입니다',
-  greetNight: '늦은 시간이네요',
-  greetWithName: '{name}님, {greeting}',
+  // The home screen's line under its title: when the blog last published, and how to name it.
   greetLastPublished: '마지막 발행',
   greetNothingYet: '아직 발행한 글이 없습니다',
   greetSetName: '이름과 사진 설정하기',
-  greetAddPortrait: '사진 추가',
   greetToday: '오늘',
   statPosts: '게시물',
   statPages: '페이지',

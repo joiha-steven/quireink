@@ -806,18 +806,10 @@ const ru = {
   penSqueakDesc: 'Фломастер скрипит по бумаге, когда вы выделяете, подчёркиваете или обводите слова в редакторе. Синтезируется на месте, без звукового файла; следует инструменту и громкости выше.',
   autosaveLabel: 'Держать локальную копию каждые (секунд)',
   autosaveHint: 'Секунды между снимками, пока вы печатаете, от 15 до 600: один на этом устройстве, один на сервере. Ни один не опубликованная запись — её меняют только «Сохранить» и «Опубликовать». Это копия, которая переживёт упавшую вкладку или телефон, перезагрузившийся под пальцем.',
-  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
-  // joins one to the name — so a language that puts no comma between them does not get one,
-  // and eleven dictionaries hold five rows instead of eight.
-  greetMorning: 'Доброе утро',
-  greetAfternoon: 'Добрый день',
-  greetEvening: 'Добрый вечер',
-  greetNight: 'Доброй ночи',
-  greetWithName: '{greeting}, {name}',
+  // The home screen's line under its title: when the blog last published, and how to name it.
   greetLastPublished: 'Последняя публикация',
   greetNothingYet: 'Пока ничего не опубликовано',
   greetSetName: 'Добавьте имя и портрет',
-  greetAddPortrait: 'Добавить портрет',
   greetToday: 'сегодня',
   statPosts: 'Записи',
   statPages: 'Страницы',

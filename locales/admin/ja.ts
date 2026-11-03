@@ -806,18 +806,10 @@ const ja = {
   penSqueakDesc: 'エディタでマーカー、下線、囲みを引くと、フェルトペンが紙を擦る音がします。その場で合成され、音声ファイルはありません。上の楽器と音量に従います。',
   autosaveLabel: 'この端末に保存する間隔（秒）',
   autosaveHint: '入力中にスナップショットを取る間隔（秒、15〜600）。この端末に1つ、サーバーに1つ保存します。どちらも公開中の投稿ではなく、それを変えるのは保存と公開だけです。タブが落ちたり、スマホが指の下で再読み込みしたりしても残るコピーです。',
-  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
-  // joins one to the name — so a language that puts no comma between them does not get one,
-  // and eleven dictionaries hold five rows instead of eight.
-  greetMorning: 'おはようございます',
-  greetAfternoon: 'こんにちは',
-  greetEvening: 'こんばんは',
-  greetNight: 'おそくまでおつかれさまです',
-  greetWithName: '{name}さん、{greeting}',
+  // The home screen's line under its title: when the blog last published, and how to name it.
   greetLastPublished: '最終公開',
   greetNothingYet: 'まだ公開した記事はありません',
   greetSetName: '名前と顔写真を設定',
-  greetAddPortrait: '顔写真を追加',
   greetToday: '今日',
   statPosts: '投稿',
   statPages: 'ページ',

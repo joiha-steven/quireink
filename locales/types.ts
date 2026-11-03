@@ -1163,18 +1163,10 @@ export type AdminStrings = {
   penSqueakDesc: string
   autosaveLabel: string
   autosaveHint: string
-  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
-  // joins one to the name — so a language that puts no comma between them does not get one,
-  // and eleven dictionaries hold five rows instead of eight.
-  greetMorning: string
-  greetAfternoon: string
-  greetEvening: string
-  greetNight: string
-  greetWithName: string
+  // The home screen's line under its title: when the blog last published, and how to name it.
   greetLastPublished: string
   greetNothingYet: string
   greetSetName: string
-  greetAddPortrait: string
   greetToday: string
   statPosts: string
   statPages: string

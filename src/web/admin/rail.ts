@@ -156,23 +156,12 @@ export function railHtml({ settings, aiConfigured, path }: RailOptions): string 
  * with the rest of the page; a rail that could only be collapsed once the bundle had loaded
  * would still be correct, and this is about the frame before that.
  *
- * ⚠️ `data-daypart` IS NOT THE RAIL'S, and it is here anyway. The dashboard's greeting reads
- * the BROWSER's clock on purpose — a site in Asia/Bangkok read by its owner in Berlin should
- * say good evening when it is evening where the eyes are — so the server draws all four
- * greetings and this decides which one shows. It belongs to whichever script runs before the
- * first paint, and there is exactly one of those; a second inline script in the head to carry
- * one attribute would be a second thing in the place `docs/performance.md` guards most.
- *
- * The four boundaries here and `partOfDay` in `admin-shared/when.ts` are the same arithmetic
- * written twice, which is the one duplication in this file: the boot script cannot import.
- * `when.ts` names this as its pair, and the greeting test walks both.
- *
  * ⚠️ THE THEME IS IN HERE NOW, and the comment above this script in `spa.ts` has claimed it was
  * since the day that comment was written. It was not: the resolution lived only in the island
  * (`wireTheme`), which is a MODULE and therefore deferred, so a dark-mode admin painted light
- * until the bundle ran. The four modes are resolved twice, here and there, for the same reason
- * the day boundaries are — and the island keeps its copy because the mode can change while the
- * page is open, which this one-shot cannot see.
+ * until the bundle ran. The four modes are resolved twice, here and there: this one cannot
+ * import, and the island keeps its copy because the mode can change while the page is open,
+ * which this one-shot cannot see.
  */
 export function railBootScript(): string {
   return `(function(){try{
@@ -190,8 +179,7 @@ ${(Object.keys(MEDIA_VIEW_KEYS) as MediaKind[]).map((kind) =>
   + `:${JSON.stringify(MEDIA_VIEW_DEFAULT[kind])});`).join('\n')}
 h.style.setProperty('--admin-nav-w',shut?${JSON.stringify(RAIL_WIDTH.shut)}:${JSON.stringify(RAIL_WIDTH.open)});
 if(/mac|iphone|ipad/i.test(navigator.platform||''))h.setAttribute('data-mac','1');
-/* the BROWSER's clock on purpose: a greeting follows the owner's own time of day */var hr=new Date().getHours();
-h.setAttribute('data-daypart',hr<5?'night':hr<12?'morning':hr<18?'afternoon':hr<22?'evening':'night');
+var hr=new Date().getHours();
 var m=S.getItem('theme')||'system';
 if(m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches)||(m==='time'&&(hr>=18||hr<6)))h.classList.add('dark');
 }catch(e){}})()`

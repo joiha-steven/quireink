@@ -86,35 +86,6 @@ export function relativeDay(today: string, iso: string, nowMs: number, lang: Sit
   return fmt.format(Math.round(days / 365), 'year')
 }
 
-export type DayPart = 'greetMorning' | 'greetAfternoon' | 'greetEvening' | 'greetNight'
-
-/** Morning / afternoon / evening / night, on the four boundaries most languages agree on. */
-export function partOfDay(hour: number): DayPart {
-  if (hour < 5) return 'greetNight'
-  if (hour < 12) return 'greetMorning'
-  if (hour < 18) return 'greetAfternoon'
-  if (hour < 22) return 'greetEvening'
-  return 'greetNight'
-}
-
-/**
- * The four, in the order the boot script's own arithmetic has to agree with.
- *
- * ⚠️ THE GREETING READS THE BROWSER'S CLOCK, NOT THE SERVER'S, and that is the one fact on the
- * dashboard the server cannot know. A site in Asia/Bangkok read by its owner in Berlin should
- * say good evening when it is evening where the EYES are. So the server draws all four
- * greetings and the boot script stamps `data-daypart` on `<html>` before the first paint; CSS
- * shows the one that matches. The same trick the rail uses for the Mac chord, for the same
- * reason: a fact only the browser holds, decided before anything is drawn rather than after.
- *
- * ⚠️ THE SPANS CARRY `data-greet`, NOT `data-daypart`. One name for both was tried and the
- * hide rule matched `<html>` itself, which is the element the boot script stamps: the entire
- * admin rendered as a blank page, on every screen.
- */
-export const DAY_PARTS: DayPart[] = ['greetNight', 'greetMorning', 'greetAfternoon', 'greetEvening']
-
-/** The attribute value for a part of day: the dictionary key without its prefix, lowercased. */
-export const dayPartName = (part: DayPart): string => part.slice('greet'.length).toLowerCase()
 
 /**
  * The admin's one date shape: the day, the month's short NAME and all four digits of the year,

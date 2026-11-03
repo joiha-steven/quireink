@@ -806,18 +806,10 @@ const fr = {
   penSqueakDesc: 'Un feutre crisse sur le papier quand vous surlignez, soulignez ou entourez des mots dans l’éditeur. Généré sur place, sans fichier audio ; suit l’instrument et le volume ci-dessus.',
   autosaveLabel: 'Garder une copie locale toutes les (secondes)',
   autosaveHint: 'Secondes entre deux instantanés pendant la frappe, de 15 à 600 : un gardé sur cet appareil, un sur le serveur. Aucun n’est l’article publié, que seuls Enregistrer et Publier changent. C’est la copie qui survit à un onglet planté ou à un téléphone qui s’est rechargé sous votre pouce.',
-  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
-  // joins one to the name — so a language that puts no comma between them does not get one,
-  // and eleven dictionaries hold five rows instead of eight.
-  greetMorning: 'Bonjour',
-  greetAfternoon: 'Bon après-midi',
-  greetEvening: 'Bonsoir',
-  greetNight: 'Bonne nuit',
-  greetWithName: '{greeting}, {name}',
+  // The home screen's line under its title: when the blog last published, and how to name it.
   greetLastPublished: 'Dernière publication',
   greetNothingYet: 'Rien de publié pour l’instant',
   greetSetName: 'Ajouter votre nom et votre portrait',
-  greetAddPortrait: 'Ajouter un portrait',
   greetToday: 'aujourd’hui',
   statPosts: 'Articles',
   statPages: 'Pages',
