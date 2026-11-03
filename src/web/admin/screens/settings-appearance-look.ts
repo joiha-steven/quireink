@@ -19,6 +19,7 @@
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteSettings } from '@/types'
 import { BUILTIN_THEMES, isBuiltinThemeId, type SiteTheme } from '@/content/themes-builtin'
+import { themeSuggestions } from '@/content/theme-choices'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { buttonClass } from '@/admin-shared/kit'
 import { offerFaces, suggestKey } from '@/web/admin/screens/settings-appearance-offers'
@@ -54,16 +55,15 @@ export const tileFaces = (cls: string): string =>
 /**
  * What pressing the tile moves on the rest of the form, as setting key to value: the island
  * reads it (`applySuggests` in `admin/island/lib/settings-controls.ts`) and holds no table of
- * its own. Only the chrome font today: a reading font drags its tuned type sizes along through
- * its own tile's handler, which a moved choice would skip. Written on every tile, `{}` on one
- * that suggests nothing, because pressing that tile is still what puts back a font the
- * previous tile moved.
+ * its own. What it is comes from `themeSuggestions` (`content/theme-choices.ts`), the rule MCP's
+ * `update_appearance` applies too: only the chrome font. Written on every tile, `{}` on one that
+ * suggests nothing, because pressing that tile is still what puts back a font the previous tile moved.
  */
-const suggestsAttr = (suggests: SiteTheme['suggests']): string =>
-  ` data-suggests="${escapeAttr(JSON.stringify(suggests.chromeFont ? { chromeFont: suggests.chromeFont } : {}))}"`
+const suggestsAttr = (theme: SiteTheme): string =>
+  ` data-suggests="${escapeAttr(JSON.stringify(themeSuggestions(theme).moves))}"`
   // Everything the theme suggests, which the one "use the suggestions" key moves on request
   // (`suggestKey`, `admin/island/lib/settings-offers.ts`); an installed tile carries the same.
-  + ` data-suggested="${escapeAttr(JSON.stringify(suggests))}"`
+  + ` data-suggested="${escapeAttr(JSON.stringify(theme.suggests))}"`
 
 /**
  * The settings keys the theme draws itself, which the island reads to hide those controls
@@ -85,15 +85,17 @@ const TILE_LAYOUT = 'flex flex-col p-3 text-left'
 export function lookPicker(t: AdminStrings, s: SiteSettings, view: InstalledView = NO_INSTALLED): string {
   // Each built-in key in the same two-row cell an installed one has (`installedTile`), its Preview
   // key in the second row, so the keys of a row are one height whichever kinds share it.
-  const builtins = BUILTIN_THEMES.map(({ id, nameKey, hintKey, suggests, ownsSettings }) =>
-    `<div class="row-span-2 grid min-w-0 grid-rows-subgrid">`
-    + `<button type="button" data-choice="${escapeAttr(id)}" aria-pressed="${id === s.theme}"`
-    + suggestsAttr(suggests) + ownsAttr(ownsSettings, t[nameKey])
-    + `${tileFaces(TILE_LAYOUT)} class="${tileClass(id === s.theme, TILE_LAYOUT)}">`
-    + picture({ light: themeShotUrl(id, 'light'), dark: themeShotUrl(id, 'dark') })
-    + `<span class="block text-sm font-semibold leading-tight">${escapeHtml(t[nameKey])}</span>`
-    + `<span class="mt-1 block text-xs font-normal text-neutral-600 dark:text-neutral-300">${escapeHtml(t[hintKey])}</span>`
-    + `</button><div class="flex flex-wrap gap-2 self-start">${previewKey(t, id, t[nameKey])}</div></div>`).join('')
+  const builtins = BUILTIN_THEMES.map((theme) => {
+    const { id, nameKey, hintKey, ownsSettings } = theme
+    return `<div class="row-span-2 grid min-w-0 grid-rows-subgrid">`
+      + `<button type="button" data-choice="${escapeAttr(id)}" aria-pressed="${id === s.theme}"`
+      + suggestsAttr(theme) + ownsAttr(ownsSettings, t[nameKey])
+      + `${tileFaces(TILE_LAYOUT)} class="${tileClass(id === s.theme, TILE_LAYOUT)}">`
+      + picture({ light: themeShotUrl(id, 'light'), dark: themeShotUrl(id, 'dark') })
+      + `<span class="block text-sm font-semibold leading-tight">${escapeHtml(t[nameKey])}</span>`
+      + `<span class="mt-1 block text-xs font-normal text-neutral-600 dark:text-neutral-300">${escapeHtml(t[hintKey])}</span>`
+      + `</button><div class="flex flex-wrap gap-2 self-start">${previewKey(t, id, t[nameKey])}</div></div>`
+  }).join('')
   const installed = view.installed.map((theme) => {
     const on = theme.id === s.theme
     const offer = view.offers?.find((o) => o.id === theme.id)

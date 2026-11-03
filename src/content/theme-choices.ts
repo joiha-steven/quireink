@@ -63,6 +63,31 @@ export const isReadingFontChoice = (theme: SiteTheme, id: unknown): id is string
 export const isChromeFontChoice = (theme: SiteTheme, id: unknown): id is string =>
   isChromeFontId(id) || themeFont(theme, 'chrome', id) !== null
 
+/**
+ * WHAT CHOOSING A THEME SUGGESTS, one answer for every door that chooses one: the admin's theme
+ * tiles (`web/admin/screens/settings-appearance-look.ts` writes `moves` as `data-suggests`, which
+ * `admin/island/lib/settings-controls.ts` moves on screen; the tiles carry the theme's suggestions as
+ * `data-suggested`, which the one "use the suggestions" key takes, `admin/island/lib/settings-offers.ts`)
+ * and MCP `update_appearance`, which until 2026-11-04 moved nothing and offered nothing.
+ *
+ * - `moves`: what choosing the theme moves by itself. A built-in theme's chrome font and nothing else
+ *   (a reading font drags its tuned sizes along through its own tile); an installed theme moves
+ *   nothing, its suggestions wait for the owner. Each door moves nothing when the theme chosen is the
+ *   one already saved, because what is saved was chosen under it (G3).
+ * - `offers`: what the theme suggests that is on its own menu, which that one key takes.
+ */
+export function themeSuggestions(theme: SiteTheme): { moves: { chromeFont?: string }; offers: SiteTheme['suggests'] } {
+  const { palette, readingFont, chromeFont } = theme.suggests
+  return {
+    moves: theme.package === null && chromeFont ? { chromeFont } : {},
+    offers: {
+      ...(isPaletteChoice(theme, palette) ? { palette } : {}),
+      ...(isReadingFontChoice(theme, readingFont) ? { readingFont } : {}),
+      ...(isChromeFontChoice(theme, chromeFont) ? { chromeFont } : {}),
+    },
+  }
+}
+
 export type DrawnFonts = {
   /**
    * The built-in reading font the page declares: the stored one, or the default when the stored

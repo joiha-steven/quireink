@@ -22,7 +22,9 @@ import { THEME_PRESETS } from '@/content/palettes'
 import { FONT_PRESETS, CHROME_FONTS } from '@/content/fonts'
 import { BUILTIN_THEMES, isBuiltinThemeId } from '@/content/themes-builtin'
 import { isLiveInstalledTheme, savedTheme } from '@/content/chosen-theme'
-import { drawnFonts, drawnPalettes, isChromeFontChoice, isPaletteChoice, isReadingFontChoice } from '@/content/theme-choices'
+import {
+  drawnFonts, drawnPalettes, isChromeFontChoice, isPaletteChoice, isReadingFontChoice, themeSuggestions,
+} from '@/content/theme-choices'
 import { nextTheme } from '@/content/settings-save'
 import { logThemeChoice } from '@/content/theme-choice-log'
 import { getCategories } from '@/content/posts'
@@ -43,11 +45,11 @@ const paletteIds = THEME_PRESETS.map((p) => p.id)
 const fontIds = FONT_PRESETS.map((f) => f.id)
 const chromeIds = CHROME_FONTS.map((f) => f.id)
 const themeIds = BUILTIN_THEMES.map((t) => t.id) as [string, ...string[]]
-// What each theme is drawn for, said in the description: a theme switched here never moves the
-// chrome font by itself (the agent decides, as the owner does on the admin form, where the same
-// suggestion is offered and can be refused), so the agent has to know what to send with it.
-const themeSuggestions = BUILTIN_THEMES.filter((t) => t.suggests.chromeFont)
-  .map((t) => `${t.id}: ${t.suggests.chromeFont}`).join(', ')
+// What each built-in theme is drawn for, said in the description: choosing one moves the chrome font
+// to it, as pressing its tile does on the admin form (`themeSuggestions`), so the agent knows what it
+// will get and what to send instead.
+const drawnFor = BUILTIN_THEMES.map((t) => [t.id, themeSuggestions(t).moves.chromeFont] as const)
+  .filter(([, font]) => font).map(([id, font]) => `${id}: ${font}`).join(', ')
 
 export function registerStewardTools(server: ToolHost): void {
   server.registerTool(
@@ -63,9 +65,11 @@ export function registerStewardTools(server: ToolHost): void {
         + 'every option here is one the owner\'s own screens offer. An installed theme\'s palette or font '
         + 'stays stored when another theme is chosen and comes back with that theme; meanwhile the page '
         + 'draws the default. The answer is what the page DRAWS, and `kept` names any stored choice it does '
-        + 'not draw. A value equal to what is stored is no change and is never refused. Changing the theme leaves '
-        + 'the chrome font as it is; send chromeFont with it to give the theme the face it is '
-        + `drawn for (${themeSuggestions}).`,
+        + 'not draw. A value equal to what is stored is no change and is never refused. Choosing a built-in '
+        + `theme other than the saved one also moves the chrome font to the one it is drawn for (${drawnFor}), `
+        + 'as pressing its tile in the admin does; send chromeFont with it to keep another. A theme installed '
+        + 'from a zip moves nothing by itself: the answer names what it suggests under `suggested`, and '
+        + '`useSuggestions: true` takes those, as the admin\'s one key does. A value sent beside it wins.',
       inputSchema: {
         // A string rather than the four: a theme installed from a zip is chosen here too, and which
         // ones are installed is the table's answer, asked below, not the schema's.
@@ -80,9 +84,11 @@ export function registerStewardTools(server: ToolHost): void {
         readingFont: z.string().max(40).optional().describe('A built-in reading font or one of the chosen installed theme’s'),
         chromeFont: z.string().max(40).optional().describe('Header/rail/meta font: a built-in one or one of the chosen installed theme’s'),
         defaultScheme: z.enum(['system', 'light', 'dark']).optional(),
+        useSuggestions: z.boolean().optional()
+          .describe('Take the palette and fonts the chosen theme suggests, for any of the three not sent'),
       },
     },
-    async ({ theme, look, palette, readingFont, chromeFont, defaultScheme }) => {
+    async ({ theme, look, palette, readingFont, chromeFont, defaultScheme, useSuggestions }) => {
       const current = await getSettings()
       // Refused rather than ignored, as an id outside the old enum was: the agent has no eyes, and
       // a save that silently kept the old theme would read to it as done.
@@ -92,14 +98,28 @@ export function registerStewardTools(server: ToolHost): void {
       const partial: Record<string, unknown> = {}
       if (theme !== undefined || look !== undefined) partial.theme = theme ?? look
       // The theme this call leaves chosen, decided as the save will decide it, and what it offers.
-      const wearing = savedTheme({ theme: nextTheme({ theme, look: isBuiltinThemeId(look) ? look : undefined }, current) })
+      const next = nextTheme({ theme, look: isBuiltinThemeId(look) ? look : undefined }, current)
+      const wearing = savedTheme({ theme: next })
       // A value equal to what is stored is not a choice: it is the agent sending back what it read,
       // and what it read may be an id kept for another theme. Refusing that refused the whole call
       // (2026-11-04), so an agent putting a site back could not send the state it had saved.
-      const sent = [theme, look, palette, readingFont, chromeFont, defaultScheme].some((v) => v !== undefined)
+      const sent = [theme, look, palette, readingFont, chromeFont, defaultScheme, useSuggestions].some((v) => v !== undefined)
+      const asked = { palette: palette !== undefined, readingFont: readingFont !== undefined, chromeFont: chromeFont !== undefined }
       if (palette === current.themePreset) palette = undefined
       if (readingFont === current.fontPreset) readingFont = undefined
       if (chromeFont === current.chromeFont) chromeFont = undefined
+      // THE ADMIN'S RULE, from the same function its tiles are drawn from (`themeSuggestions`): a theme
+      // chosen now moves what its tile moves, back on the saved one nothing moves, and the suggestions
+      // the one key takes come in only when asked for. Whatever the agent sent wins, as the owner's press does.
+      const { moves, offers } = themeSuggestions(wearing)
+      const take = (key: 'palette' | 'readingFont' | 'chromeFont', stored: string): string | undefined => {
+        if (asked[key]) return undefined
+        const value = (useSuggestions ? offers[key] : undefined) ?? (next !== current.theme && key === 'chromeFont' ? moves.chromeFont : undefined)
+        return value !== undefined && value !== stored ? value : undefined
+      }
+      palette ??= take('palette', current.themePreset)
+      readingFont ??= take('readingFont', current.fontPreset)
+      chromeFont ??= take('chromeFont', current.chromeFont)
       const offMenu = [
         palette !== undefined && !isPaletteChoice(wearing, palette) ? `palette "${palette}"` : '',
         readingFont !== undefined && !isReadingFontChoice(wearing, readingFont) ? `reading font "${readingFont}"` : '',
@@ -144,11 +164,15 @@ export function registerStewardTools(server: ToolHost): void {
       const kept = Object.fromEntries(([
         ['palette', saved.themePreset], ['readingFont', saved.fontPreset], ['chromeFont', saved.chromeFont],
       ] as const).filter(([k, v]) => drawn[k] !== v))
+      // What the theme worn now suggests and the page does not draw yet: what useSuggestions would take.
+      const suggested = Object.fromEntries(Object.entries(themeSuggestions(drawnTheme).offers)
+        .filter(([k, v]) => drawn[k as keyof typeof drawn] !== v))
       return asJson({
         theme: saved.theme,
         ...drawn,
         defaultScheme: saved.defaultScheme,
         ...(Object.keys(kept).length ? { kept } : {}),
+        ...(Object.keys(suggested).length ? { suggested } : {}),
       })
     },
   )

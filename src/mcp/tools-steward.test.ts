@@ -108,12 +108,46 @@ describe('the steward tools', () => {
     expect(lines.map((l) => l.detail)).toEqual(['Broadsheet (broadsheet)', 'paper'])
   })
 
-  it("update_appearance leaves the chrome font alone when only the theme changes, and says so", async () => {
-    await saveSettings({ chromeFont: 'plex-mono' })
+  // ONE RULE WITH THE ADMIN'S TILES (G3, 1669b73e; `themeSuggestions` in `content/theme-choices.ts`).
+  // Until 2026-11-04 this tool moved nothing when the theme changed, while pressing a built-in
+  // theme's tile on the Appearance tab moves the chrome font to the one it is drawn for, and an
+  // installed theme's suggested palette and fonts, which the admin takes behind one key, had no
+  // way in at all: a blind agent wore a theme in its CSS and not its colours.
+  it('choosing a built-in theme moves the chrome font as its tile does, never back onto the saved theme, and a sent one wins', async () => {
+    await saveSettings({ theme: 'plain', chromeFont: 'plex-mono' })
+    expect(JSON.parse((await call('update_appearance', { theme: 'code' })).text)).toMatchObject({ theme: 'code', chromeFont: 'jetbrains-mono' })
+    expect((await getSettings()).chromeFont).toBe('jetbrains-mono')
+    // The owner's own choice under the saved theme, then the saved theme pressed again: nothing moves.
+    await call('update_appearance', { chromeFont: 'plex-mono' })
     await call('update_appearance', { theme: 'code' })
     expect((await getSettings()).chromeFont).toBe('plex-mono')
-    await call('update_appearance', { theme: 'notes', chromeFont: 'inter' })
+    // Plain suggests the install's own chrome font, as its tile does since G3.
+    await call('update_appearance', { theme: 'plain' })
     expect((await getSettings()).chromeFont).toBe('inter')
+    await call('update_appearance', { theme: 'code', chromeFont: 'plex-mono' })
+    expect((await getSettings()).chromeFont).toBe('plex-mono')
+  })
+
+  it("an installed theme moves nothing by itself, names what it suggests, and useSuggestions takes it, as the admin's one key does", async () => {
+    expect((await installTheme(themeZip({ 'theme.json': RICH }))).ok).toBe(true)
+    await saveSettings({ theme: 'code', themePreset: 'sepia', fontPreset: 'literata', chromeFont: 'inter' })
+    const worn = JSON.parse((await call('update_appearance', { theme: 'broadsheet' })).text)
+    expect(worn).toMatchObject({ theme: 'broadsheet', palette: 'sepia', chromeFont: 'inter', suggested: { palette: 'newsprint' } })
+    expect((await getSettings()).themePreset).toBe('sepia')
+
+    const taken = JSON.parse((await call('update_appearance', { useSuggestions: true })).text)
+    expect(taken).toMatchObject({ theme: 'broadsheet', palette: 'newsprint' })
+    expect(taken.suggested).toBeUndefined()
+    expect(await getSettings()).toMatchObject({ themePreset: 'newsprint' })
+    expect((await getSettings()).enabledPalettes).toContain('newsprint')
+
+    // A value sent beside it wins over the suggestion, as the owner's own press does.
+    await call('update_appearance', { theme: 'code' })
+    await call('update_appearance', { theme: 'broadsheet', useSuggestions: true, palette: 'sepia' })
+    expect((await getSettings()).themePreset).toBe('sepia')
+  })
+
+  it('says the rule in its description', async () => {
     const res = await app.request('/api/mcp', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${token}`, 'sec-fetch-site': 'none' },
@@ -121,8 +155,8 @@ describe('the steward tools', () => {
     })
     const tools = (await res.json() as { result: { tools: { name: string; description: string }[] } }).result.tools
     const description = tools.find((t) => t.name === 'update_appearance')!.description
-    expect(description).toContain('Changing the theme leaves the chrome font as it is')
     expect(description).toContain('code: jetbrains-mono')
+    expect(description).toContain('useSuggestions')
   })
 
   it('refuses a color that is not on the menu', async () => {
@@ -171,7 +205,8 @@ describe('the steward tools', () => {
     const back = await call('update_appearance', { theme: 'code' })
     expect(back.isError).toBe(false)
     expect(JSON.parse(back.text)).toMatchObject({
-      theme: 'code', palette: 'mono', readingFont: 'literata', chromeFont: 'inter',
+      // The chrome font moves to code's, as pressing its tile does (the test after the next).
+      theme: 'code', palette: 'mono', readingFont: 'literata', chromeFont: 'jetbrains-mono',
       kept: { palette: 'newsprint', readingFont: 'body-serif' },
     })
 

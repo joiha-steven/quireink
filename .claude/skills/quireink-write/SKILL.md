@@ -44,7 +44,8 @@ else is refused them, with a message saying so. Do not retry; tell the owner.
 
 **Themes.** `get_theme_guide` (the selectors, variables, rules and a passing example) ·
 `check_theme` · `install_theme` · `list_themes` · `preview_theme` (a link only the owner can
-open) · `rollback_theme`. Installed is not worn: `update_appearance { theme: <id> }` wears it.
+open) · `rollback_theme`. Installed is not worn: `update_appearance { theme: <id>, useSuggestions: true }` wears it with the
+palette and fonts it suggests (without `useSuggestions` only the theme moves).
 Colours go in the manifest's palettes, never in `theme.css`; raise `version` on every edit.
 
 **Media and files.** `add_media_from_url` `list_media` `delete_media` · `import_images`

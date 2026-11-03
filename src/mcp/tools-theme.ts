@@ -253,7 +253,7 @@ export function registerThemeTools(server: ToolHost): void {
       return asJson({
         ok: true, installed: true, id: result.id, version: result.version, changed: result.changed,
         placeholderScreenshot: packed.placeholder,
-        next: `Not on the site yet. preview_theme { id: "${result.id}" } for the owner to look; update_appearance { theme: "${result.id}" } to wear it.`,
+        next: `Not on the site yet. preview_theme { id: "${result.id}" } for the owner to look; update_appearance { theme: "${result.id}", useSuggestions: true } to wear it with the palette and fonts it suggests.`,
       })
     },
   )

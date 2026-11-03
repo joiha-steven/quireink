@@ -321,7 +321,10 @@ makes. A theme the tools accept is one the Look card accepts, with the same find
 | `rollback_theme` | full | as `POST /api/themes/<id>/rollback`, logged `theme.rollback` |
 
 Wearing it is `update_appearance` with `theme` set to its id, as before; going back is the same
-call with the theme the site wore. Raise `version` on each edit so there is a version to roll back to.
+call with the theme the site wore. Choosing it moves nothing else by itself, as pressing its tile
+does not: the answer names what its manifest `suggests` under `suggested`, and `useSuggestions: true`
+takes those, as the Appearance tab's one key does (`themeSuggestions`, `content/theme-choices.ts`, is
+the rule both follow; a value sent beside it wins). Raise `version` on each edit so there is a version to roll back to.
 
 - **The ceiling is the route's.** `/api/mcp` reads at most `MCP_BODY_LIMIT` (16,078,168 bytes: the
   10 MB package limit as base64, plus 2 MiB of JSON, `src/web/admin/mcp-transport.ts`), which is more than a

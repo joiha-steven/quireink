@@ -117,7 +117,11 @@
   palette or font stays stored when another theme is chosen and comes back with it, the page drawing
   the default meanwhile, and the answer names such a stored id under `kept` instead of reporting it as
   worn; a value equal to what is stored is no change and never refused, so an agent can send back what
-  it read (both since 2026-11-04, `tools-steward.test.ts`). **`send_test_newsletter` mails only the owner** — the
+  it read (both since 2026-11-04, `tools-steward.test.ts`). Choosing a theme follows the admin's tiles,
+  by the same function (`themeSuggestions`, `content/theme-choices.ts`): a built-in theme other than
+  the saved one moves the chrome font to its own, an installed one moves nothing and its suggestions
+  are named under `suggested`, and `useSuggestions: true` takes them as the tab's one key does; a value
+  sent beside them wins. **`send_test_newsletter` mails only the owner** — the
   recipient is not a parameter — **and the real broadcast is deliberately not a tool**:
   an email cannot be unsent.
   **The reading half strips identities on purpose:** `get_audience` returns counts and
