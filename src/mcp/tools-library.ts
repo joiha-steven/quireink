@@ -265,6 +265,22 @@ function registerSettingsTools(server: ToolHost): void {
       const before = await getSettings()
       const next = await saveSettings(patch as Partial<SiteSettings>)
       clearCache()
+      // THROWN AWAY IS NOT SAVED. Where the sanitiser cannot use a value it keeps the old one, so
+      // a refused value came back as `{was: x, now: x}`, shaped exactly like a success; an agent
+      // read `themePreset: "mcp-paper"` as done (2026-11-04). Asked and landed differ and nothing
+      // moved: that is a refusal. A clamp that moved the number is still a success, reported below.
+      if (args.path && args.value !== undefined) {
+        const was = getAt(before, args.path)
+        const now = getAt(next, args.path)
+        // Loosely for text: a value the sanitiser only tidied (spaces, case, a trailing slash) and
+        // that is already stored was taken, not thrown away.
+        const loose = (v: unknown): string => JSON.stringify(typeof v === 'string' ? v.trim().toLowerCase().replace(/\/+$/, '') : v)
+        if (JSON.stringify(now) === JSON.stringify(was) && loose(now) !== loose(args.value)) {
+          return asError(`Nothing changed: ${args.path} is still ${JSON.stringify(now)}, because ${JSON.stringify(args.value)} `
+            + 'is not a value it takes. list_settings shows what it holds; update_appearance names the palettes, '
+            + 'fonts and themes a site may choose.')
+        }
+      }
       await logActivity('settings.save', args.path ?? undefined)
       // Report the BEFORE as well: the sanitiser clamps, so what was asked for and what
       // landed are not always the same number, and a tool that only echoes the request hides

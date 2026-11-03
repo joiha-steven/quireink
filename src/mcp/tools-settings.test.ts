@@ -141,6 +141,30 @@ describe('changing one by path', () => {
     expect((await getSettings()).title).toBe('Renamed by a connector')
   })
 
+  // 2026-11-04, from a blind agent putting a site back: `themePreset: "mcp-paper"`, a palette no
+  // menu offers, answered `{was: "mono", now: "mono"}` as a success. The sanitiser had thrown the
+  // value away and kept the old one, and the answer was shaped exactly like one that worked.
+  it('refuses a value the save threw away, rather than answering a success nothing moved for', async () => {
+    await call('update_settings', { path: 'themePreset', value: 'sepia' })
+    const logged = () => (db().query(`select count(*) as n from activity_log where action = 'settings.save'`).get() as { n: number }).n
+    const before = logged()
+    for (const value of ['not-a-palette', 'mcp-paper']) {
+      const out = await call('update_settings', { path: 'themePreset', value })
+      expect(`${value}: ${out.isError}`).toBe(`${value}: true`)
+      expect(out.text).toContain('themePreset is still "sepia"')
+      expect(out.text).toContain(`"${value}"`)
+    }
+    expect((await getSettings()).themePreset).toBe('sepia')
+    expect(logged()).toBe(before)
+  })
+
+  it('a value the setting already holds is not a refusal: asked and landed are the same', async () => {
+    const out = await call('update_settings', { path: 'features.search', value: true })
+    expect(out.isError).toBe(false)
+    expect(JSON.parse(out.text)).toMatchObject({ was: true, now: true })
+    expect((await call('update_settings', { path: 'title', value: `  ${(await getSettings()).title}  ` })).isError).toBe(false)
+  })
+
   it('reports what the SANITISER did, not what was asked for', async () => {
     // Clamped hard. A tool that echoed the request would report a size the site is not set
     // to, which is the one lie an agent has no way to catch.

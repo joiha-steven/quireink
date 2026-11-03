@@ -136,5 +136,8 @@
   `saveSettings`, which sanitises, clamps and refuses exactly as it does for the form — so
   an unusable Site address, author link or source repository is refused with the reason, as on the
   Settings screen, and not saved as empty; nothing reachable here is anything the owner's own screens could not already do.
+  A value the sanitiser throws away (it keeps the old one) is an ERROR naming the value kept, not
+  `{was: x, now: x}`: that answer read as done to an agent setting `themePreset` to a palette no menu
+  offers (2026-11-04). A value only tidied (spaces, case, a trailing slash) into what is stored is not.
   `get_settings` reads all. **A tool that mutates still calls `logActivity`;
   the door itself flushes the cache after every write tool (Invariant 1).**
