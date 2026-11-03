@@ -94,6 +94,13 @@ function keepNewest(dir: string, dbFile: string): void {
  * moves, the rename is atomic, a crash before it leaves the original untouched, and the
  * database is closed first so SQLite retires its `-wal` and `-shm` rather than leaving one
  * beside a file it no longer describes.
+ *
+ * ⚠️ ALONE OR NOT AT ALL (2026-11-04). A process still holding the file — the old one in a deploy
+ * that overlaps — kept writing to the file renamed away and shared the `-wal` and `-shm` with the
+ * new one: measured with a second process committing all along, the reopened file was "database
+ * disk image is malformed" in four runs of five and 7,000 committed rows short in the fifth. So the
+ * connection first takes SQLite's exclusive lock, which another process's connection refuses, and
+ * keeps it until the close, so nothing can be written that the copy would miss.
  */
 export const compactIfMostlyFree: SnapshotPort['compactIfMostlyFree'] = (
   conn, path,
@@ -111,14 +118,22 @@ export const compactIfMostlyFree: SnapshotPort['compactIfMostlyFree'] = (
   const tmp = `${path}.compacting`
   let closed = false
   try {
+    if (!alone(conn)) {
+      console.error(`[WARN] not compacting ${path}: another process has it open`)
+      return false
+    }
     rmSync(tmp, { force: true })
     conn.exec(`vacuum into ${quoted(tmp)}`)
     if (!intact(tmp)) {
       rmSync(tmp, { force: true })
+      share(conn)
       return false
     }
     conn.close()
     closed = true
+    // The copy holds every committed row, the `-wal`'s included, and the lock let nothing in since:
+    // a `-wal` with frames left in it would be replayed onto a file whose pages it does not describe.
+    for (const side of ['-wal', '-shm']) rmSync(`${path}${side}`, { force: true })
     renameSync(tmp, path)
     return true
   } catch (error) {
@@ -127,9 +142,30 @@ export const compactIfMostlyFree: SnapshotPort['compactIfMostlyFree'] = (
     // hear about it.
     rmSync(tmp, { force: true })
     if (closed) throw error
+    share(conn)
     console.error(`[WARN] could not compact ${path}: ${(error as Error).message}`)
     return false
   }
+}
+
+/** Take the file's exclusive lock and keep it; false, lock let go, while another process has it open. */
+function alone(conn: Connection): boolean {
+  conn.exec('pragma locking_mode = exclusive')
+  try {
+    conn.exec('begin exclusive')
+    conn.exec('commit')
+    return true
+  } catch {
+    share(conn)
+    return false
+  }
+}
+
+/** Back to normal locking: the exclusive lock goes at the next read. */
+function share(conn: Connection): void {
+  try { conn.exec('rollback') } catch { /* none open */ }
+  conn.exec('pragma locking_mode = normal')
+  conn.one('select count(*) from sqlite_master')
 }
 
 /**

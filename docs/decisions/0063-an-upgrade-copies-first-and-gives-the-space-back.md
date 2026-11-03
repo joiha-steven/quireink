@@ -46,7 +46,10 @@ history.
 actually ran in this boot, and only when the freelist is over a quarter of the file AND more
 than 64 MB — so an ordinary upgrade on an ordinary blog does nothing at all. `VACUUM INTO` a
 temporary file, `integrity_check` it, close the database so SQLite retires its `-wal` and
-`-shm` cleanly, rename, reopen.
+`-shm` cleanly, rename, reopen. Never while another process has the file open, such as the old
+one in a deploy that overlaps: the boot takes SQLite's exclusive lock first and, refused, goes on
+with the big file (amended 2026-11-04, after a second process writing through the rename left a
+malformed database in four runs of five).
 
 ⚠️ **Rename, and never `VACUUM` in place.** The repository has carried "there is deliberately
 no VACUUM" in `render-cache.ts` since the sweep was written, and the reason is that a VACUUM
