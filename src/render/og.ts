@@ -1,7 +1,8 @@
 // Resolve the OG/Twitter image URL for a post or page, honoring the SEO toggles.
 // - Dynamic OG on  -> a generated /og card (title over featuredImage | fallback | gradient).
 // - Dynamic OG off -> the featured image, else the owner's fallback image, else none.
-import type { SiteSettings } from '@/types'
+import type { SiteLang, SiteSettings } from '@/types'
+import { formatDate } from '@/i18n/i18n'
 
 // One typeface everywhere — incl. the OG image. When the owner uploaded a custom
 // font, pass its URL so the card renders in that face too (the route fetches it,
@@ -39,6 +40,16 @@ export function ogFontsCover(text: string): boolean {
   // declined. CJK still declines here — no CJK face ships, and the fallback below is
   // exactly what makes that honest.
   return !/[^\p{Script=Latin}\p{Script=Cyrillic}\p{Script=Common}\p{Script=Inherited}]/u.test(text)
+}
+
+/**
+ * A post card's date, in the piece's language (ADR 0074): the card is a picture of the piece,
+ * read away from the site's chrome. The site's when the faces cannot draw it (年, 년, 日), since
+ * the card drops a line it cannot draw and the post's card would be left with no foot.
+ */
+export function ogCardDate(date: string, pieceLang: SiteLang, settings: SiteSettings): string {
+  const own = formatDate(date, pieceLang, settings.timezone)
+  return ogFontsCover(own) ? own : formatDate(date, settings.language, settings.timezone)
 }
 
 export function ogImageUrl(

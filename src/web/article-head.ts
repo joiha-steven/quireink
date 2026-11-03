@@ -11,8 +11,7 @@ import type { Sibling } from '@/content/translations'
 import { alternateLinks } from '@/content/translations'
 import { clampExcerpt } from '@/utils'
 import { postName } from '@/content/untitled'
-import { formatDate } from '@/i18n/i18n'
-import { ogImageUrl } from '@/render/og'
+import { ogCardDate, ogImageUrl } from '@/render/og'
 import { blogPostingSchema } from '@/render/schema'
 import { PUBLIC_SHEET } from '@/web/assets'
 
@@ -59,7 +58,7 @@ export function articleHead(a: {
       // of them is the reason it looked thin. An AUTHORED meta description still wins --
       // those are words somebody chose -- and only the derived case runs longer.
       desc: post ? clampExcerpt(post.metaDescription || plainBody(), OG_DESC_MAX) : undefined,
-      date: post ? formatDate(post.date, settings.language, settings.timezone) : undefined,
+      date: post ? ogCardDate(post.date, a.pieceLang, settings) : undefined,
     }),
     ogType: post ? 'article' : 'website',
     // Only a POST, and only when the owner has the setting on. A page (About, Colophon)

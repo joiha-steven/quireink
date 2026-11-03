@@ -94,7 +94,9 @@
   `src/render/og-card.ts`. It reads NO settings and touches no database; the caller
   (`src/render/og.ts`) has already decided what the card says. `ogImageUrl` builds a post's
   URL, `ogCardUrl` + `siteDomain` a listing's; `seo.ogFallbackImage` covers a post with no
-  featured image. `?bg=` and `?font=` are fetched by the SERVER and are therefore restricted
+  featured image. A post's card is dated in the piece's language, the site's when the piece
+  names none or the card's faces cannot draw it (ja, ko, zh), [ADR 0074](decisions/0074-a-share-card-dates-a-piece-in-its-own-language.md);
+  the date rides in the query string, so another language is another card URL. `?bg=` and `?font=` are fetched by the SERVER and are therefore restricted
   to this site's own origin, with `safeFetch` as the backstop — that restriction is the whole
   security story of the route and must not be relaxed.
 - **Canonical:** every indexable page emits its own absolute `<link rel="canonical">`, built
