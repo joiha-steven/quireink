@@ -207,6 +207,20 @@ describe('an archive that is wrong says which way', () => {
       expect((e as ZipError).code).toBe('entry_too_large')
     }
   })
+
+  it('holds the limit on a STORED entry that lies about its size, which no zlib is there to catch', async () => {
+    const lying = bytes(STORED)
+    const at = findRecord(lying, 0x02014b50, 1) // posts/one.html, stored: 60 bytes
+    lying.set([0, 0, 0, 0], at + 24) // uncompressed size: none at all, says the directory
+    for (const [limit, code] of [[8, 'entry_too_large'], [1024, 'corrupt_entry']] as const) {
+      try {
+        await unzip(lying, (n) => n.endsWith('one.html'), limit)
+        throw new Error('a lying stored entry was accepted')
+      } catch (e) {
+        expect((e as ZipError).code).toBe(code)
+      }
+    }
+  })
 })
 
 // The import reads an uploaded archive a slice at a time (`unzipBlob`): the directory from the

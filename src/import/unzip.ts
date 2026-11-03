@@ -209,6 +209,15 @@ async function readEntry(
     throw new ZipError('entry_too_large', `${name} declares ${head.unpacked} bytes`)
   }
 
+  // ⚠️ A STORED ENTRY IS ITS PACKED BYTES, so they are what the cap has to see. Only the DECLARED
+  // size was checked, and deflate alone is capped by zlib: an entry declaring 0 bytes and storing
+  // eight megabytes came back whole, and sixty-four directory records pointing at that one entry
+  // came back as half a gigabyte against a cap of a quarter of one (2026-11-03).
+  if (head.method === STORED) {
+    if (head.packed > limit) throw new ZipError('entry_too_large', `${name} stores ${head.packed} bytes`)
+    if (head.packed !== head.unpacked) throw new ZipError('corrupt_entry', `${name} stores a size it does not declare`)
+  }
+
   const packed = await read(start, end)
   let bytes: Uint8Array
   if (head.method === STORED) {
