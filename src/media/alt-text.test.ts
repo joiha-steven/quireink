@@ -6,7 +6,7 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/test/sqlite'
 import { one } from '@/store/query'
 import { saveIntegrationKeys } from '@/store/integration-keys'
-import { buildRequest, parseAlt, parseModels, describeUpload, DEFAULT_MODELS } from './alt-text'
+import { buildRequest, parseAlt, parseModels, describeUpload, DEFAULT_MODELS, languageName } from './alt-text'
 import { seesImages } from '@/server/ai-provider'
 import { saveSettings } from '@/content/settings'
 
@@ -159,5 +159,21 @@ describe('the per-job switch', () => {
     await describeUpload('media/switched-off.webp', new ArrayBuffer(10), 'image/webp')
     expect(called).toBe(0)
     expect(altOf('media/switched-off.webp')).toBeNull()
+  })
+})
+
+// 2026-11-03. The table named six of the eleven site languages, and every AI job reads it: a French,
+// Spanish, Portuguese, Italian or Russian blog got its alt text and excerpts written in English, and
+// the assistant was told to answer its owner in English.
+describe('the language every AI job is asked to write in', () => {
+  it('is named for every site language, and English only for English', async () => {
+    const { LANG_CODES } = await import('@/locales/langs')
+    const named = LANG_CODES.map((code) => `${code}: ${code === 'en' ? 'English' : languageName(code) === 'English' ? 'English (wrong)' : 'named'}`)
+    expect(named).toEqual(LANG_CODES.map((code) => `${code}: ${code === 'en' ? 'English' : 'named'}`))
+  })
+
+  it('reaches the request that is sent', () => {
+    const req = buildRequest('anthropic', 'claude-haiku-4-5', 'k', 'image/png', 'AA', 'fr')
+    expect(req?.body).toContain('in French')
   })
 })

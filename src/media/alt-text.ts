@@ -16,6 +16,7 @@ import { ask, buildParts, parseText } from '@/server/ai-provider'
 import { liveOnly } from '@/store/db'
 import { mediaKey } from '@/media/media'
 import { bytesOf, sizeOf, type UploadBody } from '@/media/blob'
+import type { SiteLang } from '@/types'
 
 // Compatibility exports: the provider plumbing moved to `server/ai-provider.ts` on
 // 2026-08-23; these keep every existing caller and test honest about where it lives.
@@ -38,11 +39,20 @@ export function parseAlt(provider: string, json: unknown): string | null {
   return parseText(provider, json, 300)
 }
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: 'English', vi: 'Vietnamese', de: 'German', ja: 'Japanese', zh: 'Chinese', ko: 'Korean',
+/**
+ * The language each AI job is asked to write in, by site language.
+ *
+ * KEYED BY `SiteLang`, so a language added to the site without a name here is a compile error. It
+ * was a plain record of six until 2026-11-03, and the fallback below answered the other five: a
+ * French, Spanish, Portuguese, Italian or Russian blog got English alt text and excerpts, and its
+ * owner's assistant answered in English. `pt` and `zh` say which, as the language menu does.
+ */
+const LANGUAGE_NAMES: Record<SiteLang, string> = {
+  en: 'English', vi: 'Vietnamese', de: 'German', ja: 'Japanese', zh: 'Simplified Chinese', ko: 'Korean',
+  fr: 'French', es: 'Spanish', pt: 'Brazilian Portuguese', it: 'Italian', ru: 'Russian',
 }
 
-export const languageName = (code: string): string => LANGUAGE_NAMES[code] ?? 'English'
+export const languageName = (code: string): string => LANGUAGE_NAMES[code as SiteLang] ?? 'English'
 
 const prompt = (language: string): string =>
   `Write alt text for this image in ${languageName(language)}: one factual sentence describing what is visible. `
