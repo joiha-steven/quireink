@@ -1379,6 +1379,22 @@ input[type='color']::-moz-color-swatch {
     height: 44px;
     translate: -50% -50%;
   }
+
+  /* TALLER ONLY, for a key whose neighbours sit close beside it: a switch (44 x 24) and an
+     underlined tab (24 to 38px wide, 16px apart). Grown sideways they would take each other's
+     taps. A tab grows 8px up and only 4px down, because the write pane's filter row starts
+     4px under its hairline: 40px, the most it has without taking that row's taps. Neither
+     helps inside a scroll container, which clips it: the segmented strips stay 32. */
+  .tap-tall { position: relative; }
+  .tap-tall::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: max(100%, 44px);
+    translate: 0 -50%;
+  }
+  .tap-tall.border-b-2::after { top: -8px; bottom: -4px; height: auto; translate: none; }
 }
 
 /* ═══ THE ADMIN MOVES, and until 2026-09-07 it did not. ═══

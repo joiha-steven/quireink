@@ -157,5 +157,11 @@ ${TAP_CSS}
 .comment-reply{padding:.625rem 0;margin:-.125rem 0 -.625rem}
 .post-meta a,.info-terms a,.post-taxo a{padding-block:.75rem;margin-block:-.75rem}
 .skip-link:focus{display:inline-flex;align-items:center;min-height:2.75rem}
+/* The two floating keys (40px) and book mode's close (34px) grow a transparent ring; the
+   pair of size keys stand 2px apart, so they grow in height only. */
+.to-top::before,.book-fab::before,.book-x::before{content:"";position:absolute;inset:-.125rem}
+.book-x::before{inset:-.3125rem}
+.book-x,.book-size{position:relative}
+.book-size::before{content:"";position:absolute;inset-inline:0;top:50%;height:2.75rem;translate:0 -50%}
 }
 `.trim()

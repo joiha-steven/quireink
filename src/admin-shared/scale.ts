@@ -241,6 +241,8 @@ export const TAP = '-my-2 py-2'
  * that also positions it (an overlay key on a tile) states its own and wins by order.
  */
 export const TAP_TOUCH = 'tap-touch'
+/** A finger's 44px in height only, for a key with close neighbours on its row (`admin.css`). */
+export const TAP_TALL = 'tap-tall'
 
 /**
  * How wide a field is.

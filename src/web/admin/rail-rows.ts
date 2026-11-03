@@ -166,7 +166,7 @@ export const chordBadge = (extra = ''): string =>
 /** Search as chrome, on the wordmark's row. */
 export const searchKey = (t: AdminStrings): string =>
   `<button type="button" data-nav-search aria-label="${escapeAttr(t.paletteTitle)}"`
-  + ` class="rail-search-key flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-transparent px-2 text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200">`
+  + ` class="rail-search-key tap-touch flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-transparent px-2 text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200">`
   + `${glyph('searchCentred')}${chordBadge()}</button>`
 
 /** Search as a ROW, for a rail with no wordmark. One control in two dresses. */

@@ -13,7 +13,7 @@ import { CONTROL_CHROME } from '@/admin-shared/kit'
 // for, and the page carries the names (`component.ts`). A face swapped by an island is a pair
 // of NAMES now, which the island reads from this file exactly as it read the lists.
 import { component, utilitiesOf } from '@/admin-shared/component'
-import { TAP_TOUCH } from '@/admin-shared/scale'
+import { TAP_TALL, TAP_TOUCH } from '@/admin-shared/scale'
 
 /**
  * THE SQUARE KEY ON A LIST ROW: rename, remove, move up, move down. Moved here from `kit.ts`
@@ -93,7 +93,7 @@ export const CONTROL_NUM = `${CONTROL_CHROME} ${component('kit-num', 'tabular-nu
 // The state's two colours stay written out beside the name, so the pair below still differs
 // in nothing but the colour — the island swaps whole class strings, and one name for the groove
 // plus two utilities for its fill is the shortest pair that keeps that true.
-const SWITCH_TRACK = component('kit-switch', 'relative h-6 w-11 shrink-0 rounded-full transition-colors'
+const SWITCH_TRACK = `${TAP_TALL} ` + component('kit-switch', 'relative h-6 w-11 shrink-0 rounded-full transition-colors'
   + ' disabled:cursor-not-allowed shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.3)]')
 
 export const SWITCH_ON = `${SWITCH_TRACK} bg-neutral-900 dark:bg-white`

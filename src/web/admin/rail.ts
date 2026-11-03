@@ -120,7 +120,7 @@ export function railHtml({ settings, aiConfigured, path }: RailOptions): string 
     + (top || '<span></span>')
     + `<div class="flex items-center gap-1"><button type="button" data-rail-key="drawer"`
     + ` aria-label="${escapeAttr(t.navMenu)}" aria-expanded="false"`
-    + ` class="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800">`
+    + ` class="tap-touch flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800">`
     // The set's own `menu` and `close`, both in the markup and CSS picks (`[data-rail-open]`), so
     // the button draws at the product's one stroke instead of a pair of paths of its own.
     + `<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="${ICON_STROKE}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">`
