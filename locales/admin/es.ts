@@ -806,7 +806,7 @@ const es = {
   penSqueakLabel: 'El rotulador chirría',
   penSqueakDesc: 'Un rotulador chirría sobre el papel al resaltar, subrayar o rodear palabras en el editor. Generado al momento, sin archivo de audio; sigue el instrumento y el volumen de arriba.',
   autosaveLabel: 'Guardar una copia local cada (segundos)',
-  autosaveHint: 'Segundos entre copias locales mientras escribes, de 15 a 600. Nada viaja al servidor hasta que pulsas Guardar — esta es la copia que sobrevive a una pestaña colgada o a un teléfono que se recargó bajo tu pulgar.',
+  autosaveHint: 'Segundos entre instantáneas mientras escribes, de 15 a 600: una en este dispositivo y otra en el servidor. Ninguna es la entrada publicada, que solo cambian Guardar y Publicar. Es la copia que sobrevive a una pestaña caída o a un teléfono que se recargó bajo tu pulgar.',
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.

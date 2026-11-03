@@ -806,7 +806,7 @@ const en = {
   penSqueakLabel: 'The pen squeaks',
   penSqueakDesc: 'A felt tip squeaks across the paper when you highlight, underline or ring words in the editor. Made on the spot, no sound file; it follows the instrument and volume above.',
   autosaveLabel: 'Keep a local copy every (seconds)',
-  autosaveHint: 'Seconds between local snapshots while you type, from 15 to 600. Nothing is sent to the server until you press Save — this is the copy that survives a crashed tab or a phone that reloaded under your thumb.',
+  autosaveHint: 'Seconds between snapshots while you type, from 15 to 600: one kept on this device, one on the server. Neither is the published post, which only Save and Publish change. This is the copy that survives a crashed tab or a phone that reloaded under your thumb.',
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.

@@ -806,7 +806,7 @@ const zh = {
   penSqueakLabel: '笔会吱吱作响',
   penSqueakDesc: '在编辑器里高亮、下划线或圈出文字时，毡头笔会在纸上发出吱吱声。即时合成，无音频文件；跟随上方的乐器与音量。',
   autosaveLabel: '本机保存间隔（秒）',
-  autosaveHint: '输入时保存到本机的间隔秒数，15 到 600。在你按下保存之前不会向服务器发送任何内容——标签页崩溃或手机自动重载后，留下来的就是这份副本。',
+  autosaveHint: '输入时两次快照之间的秒数，15 到 600：一份留在本设备，一份在服务器上。两份都不是已发布的文章，只有保存和发布才会改变它。这是标签页崩溃、手机在指尖下刷新后仍能留下的副本。',
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.

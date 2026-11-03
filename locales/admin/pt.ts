@@ -807,7 +807,7 @@ const pt = {
   penSqueakLabel: 'A caneta range',
   penSqueakDesc: 'Uma caneta de feltro range no papel quando marca, sublinha ou circula palavras no editor. Gerado na hora, sem arquivo de som; segue o instrumento e o volume acima.',
   autosaveLabel: 'Salvar uma cópia local a cada (segundos)',
-  autosaveHint: 'Segundos entre cópias locais enquanto você digita, de 15 a 600. Nada vai ao servidor até você apertar Salvar — esta é a cópia que sobrevive a uma aba travada ou a um celular que recarregou embaixo do seu polegar.',
+  autosaveHint: 'Segundos entre instantâneos enquanto você digita, de 15 a 600: um neste dispositivo e outro no servidor. Nenhum é o post publicado, que só Salvar e Publicar mudam. É a cópia que sobrevive a uma aba que travou ou a um celular que recarregou sob o seu dedo.',
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.

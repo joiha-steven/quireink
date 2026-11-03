@@ -806,7 +806,7 @@ const it = {
   penSqueakLabel: 'Il pennarello stride',
   penSqueakDesc: 'Un pennarello stride sulla carta quando evidenzi, sottolinei o cerchi le parole nell’editor. Generato al momento, nessun file audio; segue strumento e volume qui sopra.',
   autosaveLabel: 'Tieni una copia locale ogni (secondi)',
-  autosaveHint: 'Secondi tra un salvataggio locale e l’altro mentre scrivi, da 15 a 600. Niente parte verso il server finché non premi Salva — questa è la copia che sopravvive a una scheda bloccata o a un telefono ricaricato sotto il pollice.',
+  autosaveHint: 'Secondi tra un’istantanea e l’altra mentre scrivi, da 15 a 600: una su questo dispositivo, una sul server. Nessuna è l’articolo pubblicato, che cambiano solo Salva e Pubblica. È la copia che sopravvive a una scheda crollata o a un telefono che si è ricaricato sotto il pollice.',
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.

@@ -806,7 +806,7 @@ const ko = {
   penSqueakLabel: '펜이 끽 소리를 냄',
   penSqueakDesc: '편집기에서 형광펜, 밑줄, 동그라미를 칠 때 펠트펜이 종이를 긁는 소리가 납니다. 그 자리에서 합성되며 소리 파일은 없습니다. 위의 악기와 음량을 따릅니다.',
   autosaveLabel: '이 기기에 저장하는 간격(초)',
-  autosaveHint: '입력 중 로컬에 저장하는 간격(초), 15에서 600까지. 저장을 누르기 전에는 서버로 아무것도 보내지 않습니다 — 탭이 죽거나 휴대폰이 새로 고쳐졌을 때 남는 것이 이 사본입니다.',
+  autosaveHint: '입력하는 동안 스냅숏을 찍는 간격(초, 15~600). 하나는 이 기기에, 하나는 서버에 보관합니다. 둘 다 게시된 글이 아니며, 그것은 저장과 게시로만 바뀝니다. 탭이 죽거나 휴대폰이 손가락 아래에서 새로고침되어도 남는 사본입니다.',
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.

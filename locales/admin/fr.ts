@@ -806,7 +806,7 @@ const fr = {
   penSqueakLabel: 'Le feutre crisse',
   penSqueakDesc: 'Un feutre crisse sur le papier quand vous surlignez, soulignez ou entourez des mots dans l’éditeur. Généré sur place, sans fichier audio ; suit l’instrument et le volume ci-dessus.',
   autosaveLabel: 'Garder une copie locale toutes les (secondes)',
-  autosaveHint: 'Secondes entre deux instantanés locaux pendant que vous tapez, de 15 à 600. Rien ne part vers le serveur avant que vous n’appuyiez sur Enregistrer — c’est la copie qui survit à un onglet planté ou à un téléphone rechargé sous votre pouce.',
+  autosaveHint: 'Secondes entre deux instantanés pendant la frappe, de 15 à 600 : un gardé sur cet appareil, un sur le serveur. Aucun n’est l’article publié, que seuls Enregistrer et Publier changent. C’est la copie qui survit à un onglet planté ou à un téléphone qui s’est rechargé sous votre pouce.',
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.

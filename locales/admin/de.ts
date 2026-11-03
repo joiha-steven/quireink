@@ -806,7 +806,7 @@ const de = {
   penSqueakLabel: 'Der Stift quietscht',
   penSqueakDesc: 'Ein Filzstift quietscht über das Papier, wenn Sie im Editor markieren, unterstreichen oder einkreisen. Vor Ort erzeugt, keine Audiodatei; folgt Instrument und Lautstärke oben.',
   autosaveLabel: 'Lokale Kopie sichern alle (Sekunden)',
-  autosaveHint: 'Sekunden zwischen lokalen Schnappschüssen beim Schreiben, von 15 bis 600. Nichts geht an den Server, bis Sie auf Speichern drücken — das ist die Kopie, die einen abgestürzten Tab oder ein neu geladenes Handy überlebt.',
+  autosaveHint: 'Sekunden zwischen zwei Momentaufnahmen beim Tippen, von 15 bis 600: eine auf diesem Gerät, eine auf dem Server. Keine davon ist der veröffentlichte Beitrag, den nur Speichern und Veröffentlichen ändern. Das ist die Kopie, die einen abgestürzten Tab oder ein Handy übersteht, das unter deinem Daumen neu geladen hat.',
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.

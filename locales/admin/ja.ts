@@ -806,7 +806,7 @@ const ja = {
   penSqueakLabel: 'ペンが鳴る',
   penSqueakDesc: 'エディタでマーカー、下線、囲みを引くと、フェルトペンが紙を擦る音がします。その場で合成され、音声ファイルはありません。上の楽器と音量に従います。',
   autosaveLabel: 'この端末に保存する間隔（秒）',
-  autosaveHint: '入力中にローカルへ保存する間隔（秒）。15〜600。保存を押すまでサーバーには何も送りません — タブが落ちたり、スマートフォンが再読み込みされても残るのはこの控えです。',
+  autosaveHint: '入力中にスナップショットを取る間隔（秒、15〜600）。この端末に1つ、サーバーに1つ保存します。どちらも公開中の投稿ではなく、それを変えるのは保存と公開だけです。タブが落ちたり、スマホが指の下で再読み込みしたりしても残るコピーです。',
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.
