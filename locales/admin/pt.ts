@@ -100,7 +100,7 @@ const pt = {
   updateCurrent: 'Em dia',
   siteTimezone: 'Fuso horário',
   siteTimezoneHint: 'O relógio que o site inteiro consulta: a data embaixo de um post, as marcas de mês no arquivo, e o dia em que um gráfico de estatísticas começa.',
-  siteTimezoneServer: 'O que o servidor tiver',
+  siteTimezoneUnset: 'Não escolhido: {zone}',
   tabPosts: 'Posts',
   tabPages: 'Páginas',
   kindPage: 'Página',

@@ -99,7 +99,7 @@ const en = {
   updateCurrent: 'Up to date',
   siteTimezone: 'Timezone',
   siteTimezoneHint: 'The clock the whole site reads: the date under a post, the month markers in the archive, and the day an analytics chart starts on.',
-  siteTimezoneServer: 'Same as the server',
+  siteTimezoneUnset: 'Not chosen: {zone}',
   tabPosts: 'Posts',
   tabPages: 'Pages',
   kindPage: 'Page',

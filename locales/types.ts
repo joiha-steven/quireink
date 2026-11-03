@@ -272,7 +272,7 @@ export type AdminStrings = {
   // Settings -> Site. One zone for the whole site: post dates, month markers, analytics days.
   siteTimezone: string
   siteTimezoneHint: string
-  siteTimezoneServer: string
+  siteTimezoneUnset: string
   // dashboard
   tabPosts: string
   tabPages: string

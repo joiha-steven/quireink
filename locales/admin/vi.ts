@@ -99,7 +99,7 @@ const vi = {
   updateCurrent: 'Đang chạy bản mới nhất',
   siteTimezone: 'Múi giờ',
   siteTimezoneHint: 'Đồng hồ của cả site: ngày dưới mỗi bài, mốc tháng trong kho lưu trữ, và ngày bắt đầu của biểu đồ thống kê.',
-  siteTimezoneServer: 'Theo máy chủ',
+  siteTimezoneUnset: 'Chưa chọn: {zone}',
   tabPosts: 'Bài viết',
   tabPages: 'Trang',
   kindPage: 'Trang',

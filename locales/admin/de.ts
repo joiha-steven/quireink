@@ -99,7 +99,7 @@ const de = {
   updateCurrent: 'Auf dem neuesten Stand',
   siteTimezone: 'Zeitzone',
   siteTimezoneHint: 'Die Uhr der ganzen Website: das Datum unter einem Beitrag, die Monatsmarken im Archiv und der Tag, an dem eine Statistik beginnt.',
-  siteTimezoneServer: 'Wie der Server eingestellt ist',
+  siteTimezoneUnset: 'Nicht gewählt: {zone}',
   tabPosts: 'Beiträge',
   tabPages: 'Seiten',
   kindPage: 'Seite',

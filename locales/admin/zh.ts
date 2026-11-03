@@ -99,7 +99,7 @@ const zh = {
   updateCurrent: '已是最新版本',
   siteTimezone: '时区',
   siteTimezoneHint: '整个网站使用的时钟：文章下方的日期、归档中的月份分隔，以及统计图表一天的起点。',
-  siteTimezoneServer: '跟随服务器设置',
+  siteTimezoneUnset: '未选择：{zone}',
   tabPosts: '文章',
   tabPages: '页面',
   kindPage: '页面',

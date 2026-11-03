@@ -99,7 +99,7 @@ const it = {
   updateCurrent: 'Aggiornato',
   siteTimezone: 'Fuso orario',
   siteTimezoneHint: 'L’orologio che tutto il sito consulta: la data sotto un articolo, i segni dei mesi nell’archivio, e il giorno da cui parte un grafico delle statistiche.',
-  siteTimezoneServer: 'Quello del server, così com’è',
+  siteTimezoneUnset: 'Non scelto: {zone}',
   tabPosts: 'Articoli',
   tabPages: 'Pagine',
   kindPage: 'Pagina',

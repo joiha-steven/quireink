@@ -99,7 +99,7 @@ const ko = {
   updateCurrent: '최신 버전입니다',
   siteTimezone: '시간대',
   siteTimezoneHint: '사이트 전체가 읽는 시계입니다. 글 아래의 날짜, 아카이브의 월 구분, 통계 그래프의 하루 시작점.',
-  siteTimezoneServer: '서버 설정을 따름',
+  siteTimezoneUnset: '선택 안 함: {zone}',
   tabPosts: '게시물',
   tabPages: '페이지',
   kindPage: '페이지',

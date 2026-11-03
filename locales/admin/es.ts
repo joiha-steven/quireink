@@ -99,7 +99,7 @@ const es = {
   updateCurrent: 'Al día',
   siteTimezone: 'Zona horaria',
   siteTimezoneHint: 'El reloj que consulta todo el sitio: la fecha bajo una entrada, las marcas de mes en el archivo, y el día en que empieza una gráfica de estadísticas.',
-  siteTimezoneServer: 'La que tenga el servidor',
+  siteTimezoneUnset: 'Sin elegir: {zone}',
   tabPosts: 'Entradas',
   tabPages: 'Páginas',
   kindPage: 'Página',

@@ -10,6 +10,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteSettings } from '@/types'
 import { SITE_LANGS } from '@/locales/langs'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { siteZone } from '@/i18n/format'
 import { NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { panelCard, settingRow, switchRow, textArea, textField } from '@/web/admin/fields'
 import { pick, pickControl } from '@/web/admin/fields-pick'
@@ -44,8 +45,8 @@ const zones = (): [string, string][] => {
  * The zone list, with whatever this blog ALREADY has in it, even when the runtime never offers
  * that name.
  *
- * A `<select>` whose value matches no option shows its FIRST option instead — here, "the
- * server's own clock" — so a stored zone this engine does not list would be a screen telling
+ * A `<select>` whose value matches no option shows its FIRST option instead — here, the
+ * zone an empty setting means — so a stored zone this engine does not list would be a screen telling
  * the owner something untrue about their own blog, on a control where the only way to find out
  * is to publish something at the wrong hour. Filtering above makes that reachable on purpose;
  * an engine built against an older database, or a value written by an import, makes it
@@ -54,7 +55,11 @@ const zones = (): [string, string][] => {
 const zoneOptions = (t: AdminStrings, current: string): [string, string][] => {
   const known = zones()
   const missing = current !== '' && !known.some(([z]) => z === current)
-  return [['', t.siteTimezoneServer], ...(missing ? [[current, current] as [string, string]] : []), ...known]
+  // The empty choice NAMES the zone it means: ANALYTICS_TZ, then UTC, never the machine's own
+  // (`siteZone`). It said "Same as the server", and a server set to Vietnamese time with this left
+  // empty dated every post in UTC; on Cloudflare there is no server to be the same as (2026-11-03).
+  const unset = t.siteTimezoneUnset.replace('{zone}', siteZone(''))
+  return [['', unset], ...(missing ? [[current, current] as [string, string]] : []), ...known]
 }
 
 function general(t: AdminStrings, s: SiteSettings): string {

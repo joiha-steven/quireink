@@ -99,7 +99,7 @@ const ru = {
   updateCurrent: 'Всё свежее',
   siteTimezone: 'Часовой пояс',
   siteTimezoneHint: 'Часы, по которым живёт весь сайт: дата под записью, метки месяцев в архиве и день, с которого начинается график статистики.',
-  siteTimezoneServer: 'Какой стоит на сервере',
+  siteTimezoneUnset: 'Не выбран: {zone}',
   tabPosts: 'Записи',
   tabPages: 'Страницы',
   kindPage: 'Страница',

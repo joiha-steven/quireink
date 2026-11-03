@@ -99,7 +99,7 @@ const ja = {
   updateCurrent: '最新版です',
   siteTimezone: 'タイムゾーン',
   siteTimezoneHint: 'サイト全体が読む時計です。記事の日付、アーカイブの月区切り、統計グラフの一日の始まり。',
-  siteTimezoneServer: 'サーバーの設定に従う',
+  siteTimezoneUnset: '未選択：{zone}',
   tabPosts: '投稿',
   tabPages: 'ページ',
   kindPage: 'ページ',
