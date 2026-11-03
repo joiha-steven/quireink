@@ -13,7 +13,7 @@ import type { SheetWords } from '@/admin-shared/sheet-wire'
 import type { SiteLang } from '@/types'
 import { dateLocale } from '@/i18n/format'
 import { ICONS, ICON_STROKE } from '@/icons'
-import { formatTyped, parseTyped, toValue } from '@/admin-shared/date-typing'
+import { formatTyped, parseTyped, siteNow, toValue } from '@/admin-shared/date-typing'
 import { el } from '@/admin/components/node-dom'
 import { composing } from '@/admin/components/composing'
 
@@ -68,6 +68,8 @@ export type DateField = {
 export function wireDate(
   root: HTMLElement, t: SheetWords, lang: SiteLang, value: string,
   onPick: (next: string) => void, control: string,
+  /** The site's zone: "now", "today" and "tomorrow" are on its clock, as the value is. */
+  zone: string,
 ): DateField {
   const box = root.querySelector<HTMLInputElement>('[data-date-box]')
   const opener = root.querySelector<HTMLButtonElement>('[data-date-open]')
@@ -75,11 +77,12 @@ export function wireDate(
 
   let held = value
   let pop: HTMLElement | null = null
-  let view = new Date()
+  const now = (): Date => siteNow(zone)
+  let view = now()
 
   const shownDate = (): Date => {
-    const at = held ? new Date(held) : new Date()
-    return Number.isNaN(at.getTime()) ? new Date() : at
+    const at = held ? new Date(held) : now()
+    return Number.isNaN(at.getTime()) ? now() : at
   }
 
   /**
@@ -105,7 +108,7 @@ export function wireDate(
     if (!pop) return
     pop.replaceChildren()
     const picked = shownDate()
-    const today = new Date()
+    const today = now()
 
     const head = el('div', { className: className.head })
     const label = el('span', { className: className.month })
@@ -177,8 +180,8 @@ export function wireDate(
     // and picking tomorrow 9:00 out of the grid is three moves.
     const quicks = el('span', { className: className.quicks })
     for (const [name, make] of [
-      [t.dateTomorrow, () => { const at = new Date(); at.setDate(at.getDate() + 1); at.setHours(9, 0, 0, 0); return at }],
-      [t.dateNow, () => new Date()],
+      [t.dateTomorrow, () => { const at = now(); at.setDate(at.getDate() + 1); at.setHours(9, 0, 0, 0); return at }],
+      [t.dateNow, now],
     ] as const) {
       const key = el('button', { className: className.quick, type: 'button' })
       key.textContent = name
@@ -225,7 +228,7 @@ export function wireDate(
   document.addEventListener('keydown', escape)
 
   box.addEventListener('input', () => {
-    const read = parseTyped(box.value, lang, new Date())
+    const read = parseTyped(box.value, lang, now())
     box.setAttribute('aria-invalid', String(box.value.trim() !== '' && read === null))
     if (!read) return
     const at = new Date(read)

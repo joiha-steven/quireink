@@ -184,7 +184,7 @@ function boot(root: HTMLElement, data: Payload): void {
   // ---- the panel, its fields, and the safety net ----------------------------------------
 
   const panel = wirePanel(root, () => { asking = false; sheetBar.setAttrs(false) })
-  const fields = wireFields(root, t, lang, draft, edit)
+  const fields = wireFields(root, t, lang, draft, edit, timezone)
 
   /**
    * ⚠️ THE BAR IS BUILT BEFORE THE SAFETY NET, and the order is load-bearing rather than

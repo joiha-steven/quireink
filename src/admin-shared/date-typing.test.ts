@@ -4,7 +4,7 @@
 // March in the United States. A field that guesses is a field that publishes three weeks early
 // and says nothing.
 import { describe, expect, it } from 'bun:test'
-import { dayFirst, formatTyped, parseTyped, toValue, typedShape } from './date-typing'
+import { dayFirst, formatTyped, parseTyped, siteNow, toValue, typedShape } from './date-typing'
 
 const NOW = new Date(2026, 8, 15, 12, 0)
 
@@ -110,5 +110,17 @@ describe('writing the value back into the box', () => {
 describe('the stored shape', () => {
   it('is a wall clock with no zone, padded', () => {
     expect(toValue(new Date(2026, 0, 2, 3, 4))).toBe('2026-01-02T03:04')
+  })
+})
+
+// The calendar's "Now" and "Tomorrow 9:00" read the browser's clock while the box is read on the
+// SITE's: on a site in Ho Chi Minh City at 18:46, "Now" from a laptop in Tokyo wrote 20:46 and
+// turned Publish into Schedule, and from London it wrote 11:47 (2026-11-03).
+describe('now, on the site\'s clock', () => {
+  const at = new Date('2026-11-03T11:46:00Z')
+  it('is the wall clock of the site\'s zone, whatever zone this machine is in', () => {
+    expect(toValue(siteNow('Asia/Ho_Chi_Minh', at))).toBe('2026-11-03T18:46')
+    expect(toValue(siteNow('Asia/Tokyo', at))).toBe('2026-11-03T20:46')
+    expect(toValue(siteNow('UTC', at))).toBe('2026-11-03T11:46')
   })
 })

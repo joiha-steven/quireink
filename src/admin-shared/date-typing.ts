@@ -16,6 +16,7 @@
 // that way whatever the language says, because there is no ambiguity to resolve.
 import type { SiteLang } from '@/types'
 import { dateLocale } from '@/i18n/format'
+import { isoToZonedInput } from '@/utils'
 
 const pad = (n: number): string => String(n).padStart(2, '0')
 
@@ -23,6 +24,16 @@ const pad = (n: number): string => String(n).padStart(2, '0')
 export const toValue = (d: Date): string =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
   + `T${pad(d.getHours())}:${pad(d.getMinutes())}`
+
+/**
+ * NOW, AS A DATE WHOSE LOCAL FIELDS ARE THE SITE'S WALL CLOCK. The calendar keeps its values as
+ * local `Date`s and writes them back with `toValue`, which is right for a picked day and wrong for
+ * "Now": `new Date()` is the clock of the machine typing, and the box is read on the SITE's
+ * (`sheet-wire.ts`), so from a laptop two hours east "Now" scheduled the post two hours ahead.
+ */
+export function siteNow(zone: string, at: Date = new Date()): Date {
+  return new Date(isoToZonedInput(at.toISOString(), zone))
+}
 
 /** Does this language write the day before the month? Asked of `Intl`, not tabulated. */
 export function dayFirst(lang: SiteLang): boolean {

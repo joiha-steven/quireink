@@ -30,7 +30,7 @@ beforeEach(() => {
 /** Draw the markup, wire it, and collect every patch the fields send. */
 function wire(markup: string): void {
   root.innerHTML = markup
-  wireFields(root, { removeAria: '' } as never, 'en', emptyDraft(), (patch) => { patches.push(patch) })
+  wireFields(root, { removeAria: '' } as never, 'en', emptyDraft(), (patch) => { patches.push(patch) }, 'UTC')
 }
 
 /** The last value written for a key, or undefined when nothing was. */

@@ -229,7 +229,7 @@ export type PanelFields = {
 
 /** Wire every control on the panel. `edit` is called with the keys that changed, and nothing else. */
 export function wireFields(
-  root: HTMLElement, t: SheetWords, lang: SiteLang, draft: SheetDraft, edit: Edit,
+  root: HTMLElement, t: SheetWords, lang: SiteLang, draft: SheetDraft, edit: Edit, zone: string,
 ): PanelFields {
   wirePlain(root, draft, edit)
   const chips: (() => void)[] = []
@@ -241,7 +241,7 @@ export function wireFields(
 
   const dates: DateField[] = []
   for (const box of root.querySelectorAll<HTMLElement>('[data-date]')) {
-    dates.push(wireDate(box, t, lang, draft.date, (next) => edit({ date: next }), CONTROL))
+    dates.push(wireDate(box, t, lang, draft.date, (next) => edit({ date: next }), CONTROL, zone))
   }
 
   // Drawn and hidden: an order with no series to order is a question about nothing.
