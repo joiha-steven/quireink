@@ -4,7 +4,7 @@
 import { describe, it, expect } from 'bun:test'
 import { parseGhost, looksLikeGhost } from './ghost'
 import { parseSubstack, parseMedium, parseCsv, isSubstack, isMedium, type Entry } from './archive'
-import { cleanImportHtml, cleanImportMarkdown, slugTracker } from './convert'
+import { cleanImportHtml, cleanImportMarkdown, htmlToMarkdown, slugTracker } from './convert'
 
 const NOW = '2026-08-23T00:00:00.000Z'
 
@@ -18,6 +18,19 @@ describe('cleanImportHtml / cleanImportMarkdown', () => {
     expect(out).not.toContain('[gallery')
     expect(out).toContain('https://youtu.be/x')
     expect(out).toContain('[shortcode] syntax') // an unknown code is prose until proven otherwise
+  })
+  // The caption came in glued after the picture, `![X](x.jpg) A caption`, where a figure's
+  // caption is the image's alt here (2026-11-03). Both spellings WordPress has used: the text
+  // after the image, and before 3.4 a `caption=""` attribute.
+  it('makes a [caption] the image with its caption, the way a figure comes in', () => {
+    const U = 'https://old.example/wp-content/uploads/x.jpg'
+    for (const html of [
+      `[caption id="attachment_5" align="aligncenter" width="300"]<img src="${U}" alt="X" width="300" /> A caption[/caption]`,
+      `<p>[caption id="attachment_5" width="300"]<a href="${U}"><img src="${U}" alt="X" /></a> A <em>caption</em>[/caption]</p>`,
+      `[caption id="" align="alignleft" width="300" caption="A caption"]<img src="${U}" alt="X" />[/caption]`,
+    ]) expect(htmlToMarkdown(html)).toBe(`![A caption](${U})`)
+    // No caption at all: the image keeps its own alt.
+    expect(htmlToMarkdown(`[caption id="a" width="300"]<img src="${U}" alt="X" />[/caption]`)).toBe(`![X](${U})`)
   })
   it('collapses blank-line pileups and trailing spaces', () => {
     expect(cleanImportMarkdown('a  \n\n\n\n\nb')).toBe('a\n\nb')

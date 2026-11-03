@@ -72,15 +72,33 @@ export type ImportResult = {
 // ---- deterministic cleanup ----------------------------------------------------------
 
 // Shortcodes WordPress-family sites leave as literal text once the plugin that read
-// them is gone. Conservative on purpose: [caption] unwraps to its inner content (the
-// image is the payload), [embed]url[/embed] unwraps to the URL (the reader renders
+// them is gone. Conservative on purpose: [caption] becomes the figure it stood for
+// (below), [embed]url[/embed] unwraps to the URL (the reader renders
 // known embeds from a bare link), and only KNOWN no-content codes are dropped outright.
 // An unknown [thing] stays: it might be the author writing about shortcodes.
 const DROP_SHORTCODES = /\[\/?(?:gallery|playlist|audio|video|contact-form(?:-7)?|su_[a-z_]+|vc_[a-z_]+|et_pb_[a-z_]+)\b[^\]]*\]/gi
 
+/**
+ * `[caption]` as the `<figure>` it stands for, so its words fold into the alt like any
+ * figcaption: unwrapped to its inner content, they came in glued after the picture,
+ * `![X](x.jpg) A caption` (2026-11-03). The caption is the text after the image (an `<a>` around
+ * it included), or before WordPress 3.4 the `caption` attribute. A paragraph around the whole
+ * code is dropped with it, since a figure inside a `<p>` is read as text. Anything else inside
+ * is unwrapped as before.
+ */
+const CAPTION = /(<p\b[^>]*>\s*)?\[caption\b([^\]]*)\]([\s\S]*?)\[\/caption\](\s*<\/p>)?/gi
+function captionFigure(whole: string, open: string | undefined, attrs: string, inner: string, close: string | undefined): string {
+  const parts = /^\s*((?:<a\b[^>]*>\s*)?<img\b[^>]*>(?:\s*<\/a>)?)([\s\S]*)$/i.exec(inner)
+  if (!parts) return whole.replace(CAPTION_CODE, '')
+  const words = parts[2]!.trim() || (/\bcaption=(["'])([\s\S]*?)\1/i.exec(attrs)?.[2] ?? '').trim()
+  const figure = `<figure>${parts[1]}${words ? `<figcaption>${words}</figcaption>` : ''}</figure>`
+  return open && close ? figure : `${open ?? ''}${figure}${close ?? ''}`
+}
+const CAPTION_CODE = /\[\/?caption\b[^\]]*\]/gi
+
 export function cleanImportHtml(html: string): string {
   return html
-    .replace(/\[caption\b[^\]]*\]([\s\S]*?)\[\/caption\]/gi, '$1')
+    .replace(CAPTION, captionFigure)
     .replace(/\[embed\b[^\]]*\]([\s\S]*?)\[\/embed\]/gi, '$1')
     .replace(DROP_SHORTCODES, '')
     .replace(/\u00a0/g, ' ')
