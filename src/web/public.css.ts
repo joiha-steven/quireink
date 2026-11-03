@@ -330,8 +330,14 @@ footer.site a:hover{color:var(--c-text)}
    #121212 from Shiki's dark theme over whatever palette the reader had chosen -- the same
    defect the light side had (see prose.css.ts), just less visible because a dark theme's
    grey sits closer to a dark palette's ground. The panel is --c-code-panel on both sides
-   now, so all six palettes own their code block in both modes. */
-.dark .shiki,.dark .shiki span{color:var(--shiki-dark)!important}
+   now, so all six palettes own their code block in both modes.
+
+   NOT INSIDE BOOK MODE. The book is printed paper in both modes (book.css.ts), so its code
+   keeps Shiki's light tokens: the dark ones measured 2.12:1 to
+   3.32:1 there, against none under 4.5 with the light ones (2026-11-03). Excluded through
+   :where(), which weighs nothing, so the rule keeps the weight an owner's own !important on
+   .dark .shiki span has to beat (tour: custom CSS's !important beats the base sheet's). */
+.dark .shiki:not(:where(.book-flow .shiki)),.dark .shiki:not(:where(.book-flow .shiki)) span{color:var(--shiki-dark)!important}
 `.trim()
 
 /**
