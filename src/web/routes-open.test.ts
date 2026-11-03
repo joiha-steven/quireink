@@ -63,6 +63,8 @@ const PUBLIC_EXACT = new Set([
   '/api/health', '/api/search', '/api/search/index', '/api/md/bai',
   '/api/comments', '/api/comments/me', '/api/comments/stamp', '/api/pen/me',
   '/api/newsletter/confirm', '/api/newsletter/open', '/api/newsletter/unsubscribe',
+  // The page that asks a commenter whether to stop reply emails; it changes nothing until POSTed.
+  '/api/comments/mute',
   '/.well-known/oauth-authorization-server', '/.well-known/oauth-protected-resource',
   // A passkey challenge for the sign-in page (ADR 0071): a random value and the RP ID, which is
   // the blog's own host. It grants nothing, lasts five minutes, and is capped per address.

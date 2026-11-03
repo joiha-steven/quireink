@@ -155,6 +155,12 @@ export type Dict = {
   replySubject: string
   replyIntro: string
   replyRead: string
+  replyMuteWhy: string
+  replyMuteLink: string
+  replyMuteConfirm: string
+  replyMuteBtn: string
+  replyMuteTitle: string
+  replyMuteBody: string
   notFoundTitle: string
   notFoundText: string
   errorTitle: string

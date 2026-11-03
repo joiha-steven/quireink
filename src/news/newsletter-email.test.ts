@@ -105,11 +105,17 @@ describe('broadcastEmail', () => {
 
 describe('replyEmail', () => {
   it('interpolates name + title and points at the comments anchor', () => {
-    const { subject, html } = replyEmail(en, BRAND, 'my-post', 'The Post', 'Alice', '<p>hi</p>')
+    const { subject, html } = replyEmail(en, BRAND, 'my-post', 'The Post', 'Alice', '<p>hi</p>', 'https://blog.test/api/comments/mute?t=1.x')
     expect(subject).toContain('My Blog')
     expect(html).toContain('Alice')
     expect(html).toContain('The Post')
     expect(html).toContain('https://blog.test/my-post#comments')
     expect(html).toContain('<p>hi</p>')
+  })
+
+  it('says why it arrived and carries the way to stop it', () => {
+    const { html } = replyEmail(en, BRAND, 'my-post', 'The Post', 'Alice', '<p>hi</p>', 'https://blog.test/api/comments/mute?t=1.x')
+    expect(html).toContain('href="https://blog.test/api/comments/mute?t=1.x"')
+    expect(html).toContain(en.replyMuteLink)
   })
 })

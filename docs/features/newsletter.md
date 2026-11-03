@@ -94,10 +94,15 @@
   restored copy cannot resume the list from another machine. **Each claim asks the list again:**
   an address that has unsubscribed or been deleted since the press is dropped from the run (one
   fewer recipient, not a failure), so "You've unsubscribed" holds for a letter already going out.
-- **Comment-reply notifications** (`src/comments/comment-notify.ts` `notifyReply`, awaited from the
-  comment POST route on a reply; it never throws). Emails the parent commenter (their `author_email`) a
-  link to the thread. Best-effort + transactional: skips a self-reply (same email), a deleted
-  parent, and no-ops without SMTP. Never throws.
+- **Comment-reply notifications** (`src/comments/comment-notify.ts` `notifyReply`, run in the
+  background from the comment POST route on a reply, AFTER the spam filter has answered; it never
+  throws). Emails the parent commenter (their `author_email`) a link to the thread. Skips a
+  self-reply (same email), a deleted parent, a reply the filter held, an address that asked not to
+  be told, and no-ops without SMTP. **Every notice says why it came and carries a way out**
+  (`comments/reply-mute.ts`): the address on a hand-written comment is whatever was typed, so
+  without one a stranger could make the blog mail anybody. The link names the parent comment and
+  is signed over its address; GET `/api/comments/mute` asks and POST does it, as unsubscribe does,
+  and `reply_mutes` keeps the address keyed under the server's secret, never in the clear.
 - **Email design** — `src/news/newsletter-email.ts` builds every message (`confirmEmail`,
   `broadcastEmail`, `replyEmail`) through ONE `shell()`, reused by the subscribe route, the manual
   broadcast, the comment route, the admin preview and the test send. It is meant to read like the

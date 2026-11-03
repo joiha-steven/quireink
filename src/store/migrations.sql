@@ -516,3 +516,11 @@ create table if not exists themes (
 );
 create unique index if not exists themes_live_version_idx on themes (theme_id, version) where deleted_at is null;
 create index if not exists themes_hash_idx on themes (hash);
+
+-- migration: 025-reply-mutes
+-- The opt-out a reply notice now carries (`comments/reply-mute.ts`). A new table with nothing to
+-- carry over, copied verbatim from `schema.sql`, where it is explained.
+create table if not exists reply_mutes (
+  who        text primary key,
+  created_at integer not null
+);

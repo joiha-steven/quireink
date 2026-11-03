@@ -26,6 +26,7 @@ const PUBLIC_WRITES = new Map<string, string>([
   ['/comment-auth/signout', 'a reader dropping their commenter cookie. It clears unconditionally, so a forged call signs someone out and can do nothing else.'],
   ['/api/subscribe', 'a reader joining the newsletter. Double opt-in, so a forged call sends one confirmation mail and nothing else.'],
   ['/api/newsletter/unsubscribe', 'the POST half of unsubscribe. The token in the link is the authorisation.'],
+  ['/api/comments/mute', 'the POST half of a commenter\'s "stop emailing me about replies". The signed token in the link is the authorisation, and all it can do is stop emails to the address that comment carries.'],
   ['/api/auth/login', 'the sign-in form. Cannot require a session to create one.'],
   ['/api/auth/2fa', 'the second factor. Authorised by the pending ticket from the step before.'],
   ['/api/auth/2fa/mode', 'switching the second-factor screen between the authenticator and a recovery code. Same pending ticket; it renders a form and grants nothing.'],

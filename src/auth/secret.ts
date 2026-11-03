@@ -27,6 +27,9 @@ export type SecretName =
   // The comment stamp (ADR 0032). Its signature travels in public HTML on every page with a
   // comment form, so it gets its own salt like everything else that leaves the machine.
   | 'comment-stamp'
+  // A commenter's "stop telling me about replies" (`comments/reply-mute.ts`): the link in the
+  // email is signed with it, and the opt-out is stored as an address keyed under it.
+  | 'reply-mute'
 
 // Memoised: these are read on the analytics path, which runs on every public request, and
 // the value cannot change during a process's life.

@@ -70,6 +70,7 @@ import { SPECULATION_PATH, speculationRules } from '@/web/speculation'
 import {
   handleConfirm, handleOpenPixel, handleSubscribe, handleUnsubscribeGet, handleUnsubscribePost,
 } from '@/web/newsletter'
+import { handleReplyMuteGet, handleReplyMutePost } from '@/web/reply-mute'
 import {
   handleLogin, handleLoginPage, handleLogout, handleTwoFactor, handleTwoFactorMode, handleTwoFactorPage,
 } from '@/web/auth-routes'
@@ -200,6 +201,9 @@ export function createApp(): Hono {
   app.get('/api/comments', handleCommentsGet)
   app.get('/api/comments/stamp', handleStampGet)
   app.post('/api/comments', handleCommentsPost)
+  // A commenter's way out of reply emails: GET asks, POST does it, for the reason below.
+  app.get('/api/comments/mute', handleReplyMuteGet)
+  app.post('/api/comments/mute', handleReplyMutePost)
   // Reader sign-in, which is not the owner's: it grants a filled-in name and a skipped
   // captcha, nothing more. Mounted here rather than with `/api/auth` for that reason.
   app.route('/', commentAuthRoutes())

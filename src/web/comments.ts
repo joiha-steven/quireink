@@ -163,15 +163,13 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
   }
 
   await logActivity('comment.create', postSlug)
-  // The spam gate (comments/comment-guard.ts): background, hold-in-Trash, never delete.
-  void guardComment(created.id, name, content, website)
-  // A reply emails the parent commenter. Best-effort and awaited: without SMTP it is a
-  // no-op, and with it the send is fast enough not to be worth deferring past a response
-  // that is already writing to the database.
-  if (parentId !== null) {
-    await notifyReply({
-      parentId, postSlug, replierName: name, replierEmail: email, contentHtml: created.contentHtml,
-    })
-  }
+  // The spam gate (comments/comment-guard.ts): background, hold-in-Trash, never delete. A reply
+  // emails the parent commenter only once the gate has answered, so a reply it holds as spam is
+  // never mailed to anybody (`notifyReply` reads the reply's row again). Both in the background:
+  // the gate may wait on a model, and the reader's comment is already saved.
+  const guarded = guardComment(created.id, name, content, website)
+  void (parentId === null ? guarded : guarded.then(() => notifyReply({
+    parentId, replyId: created.id, postSlug, replierName: name, replierEmail: email, contentHtml: created.contentHtml,
+  })))
   return json({ comment: created })
 }

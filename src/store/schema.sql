@@ -704,3 +704,12 @@ create table if not exists themes (
 );
 create unique index if not exists themes_live_version_idx on themes (theme_id, version) where deleted_at is null;
 create index if not exists themes_hash_idx on themes (hash);
+
+-- An address that asked not to be told about replies to its comments (`comments/reply-mute.ts`).
+-- Kept as a keyed hash of the address, never the address: the table is a list of "no", and a
+-- list of addresses would be one more place that has to be kept from leaking. Rows are never
+-- soft-deleted: a "stop emailing me" that could be put back by a restore of the Trash is not one.
+create table if not exists reply_mutes (
+  who        text primary key,
+  created_at integer not null
+);

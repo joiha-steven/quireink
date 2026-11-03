@@ -186,6 +186,8 @@ export function replyEmail(
   postTitle: string,
   replierName: string,
   contentHtml: string,
+  /** The commenter's way out (`comments/reply-mute.ts`). Every notice carries one. */
+  muteUrl: string,
 ): { subject: string; html: string } {
   const { title: siteTitle, base, theme } = brand
   const url = `${base}/${postSlug}#comments`
@@ -194,5 +196,9 @@ export function replyEmail(
     para(theme, intro) +
     `<blockquote style="margin:0 0 20px;padding:2px 0 2px 16px;border-left:3px solid ${theme.rule};font-family:${FONT};font-size:16px;line-height:1.65;color:${theme.text};">${contentHtml}</blockquote>` +
     button(theme, url, tx.replyRead)
-  return { subject: `${tx.replySubject} — ${siteTitle}`, html: shell(brand, content, '', intro) }
+  // Why this arrived and how to stop it, as a newsletter carries: the address was typed into a
+  // comment box, so the person reading may never have asked for anything (2026-11-03).
+  const footer = `${escapeHtml(tx.replyMuteWhy.replace('{site}', siteTitle))}<br>`
+    + `<a href="${escapeHtml(muteUrl)}" style="color:${theme.meta};text-decoration:underline;">${escapeHtml(tx.replyMuteLink)}</a>`
+  return { subject: `${tx.replySubject} — ${siteTitle}`, html: shell(brand, content, footer, intro) }
 }

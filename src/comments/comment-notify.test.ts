@@ -15,6 +15,8 @@ import { all, run } from '@/store/query'
 import { saveSmtpConfig } from '@/news/mail'
 import { savePost } from '@/content/posts'
 import { notifyReply } from '@/comments/comment-notify'
+import { muteFromToken, muteLink } from '@/comments/reply-mute'
+import { createApp } from '@/web/app'
 
 const DIR = './.tmp/test-comment-notify'
 freshDatabase(DIR)
@@ -46,6 +48,7 @@ const reply = (parentId: number, replierEmail = 'someone@example.com') =>
 
 beforeEach(async () => {
   run(`delete from comments`)
+  run(`delete from reply_mutes`)
   run(`delete from newsletter_sends`)
   run(`delete from posts`)
   await savePost({
@@ -92,6 +95,43 @@ describe('notifyReply', () => {
     await saveSmtpConfig({ host: '', from: '' })
     await reply(parentComment(PARENT))
     expect(attempts()).toEqual([])
+  })
+
+  // The address on a manual comment is whatever was typed, so a reply notice could be aimed at
+  // anybody, carrying words a stranger chose, with no way to make it stop (2026-11-03). It now
+  // waits for the spam filter and carries a link that ends it.
+  it('says nothing when the reply itself was held as spam', async () => {
+    const parent = parentComment(PARENT)
+    run(`insert into comments (post_slug, parent_id, author_name, author_email, content, created_at, deleted_at)
+         values ('a-post', ?, 'Spam', 'x@example.com', 'buy', 1700000000001, 1700000000002)`, parent)
+    const held = all<{ id: number }>(`select id from comments order by id desc limit 1`)[0]!.id
+    await notifyReply({ parentId: parent, replyId: held, postSlug: 'a-post', replierName: 'Spam', replierEmail: 'x@example.com', contentHtml: '<p>buy</p>' })
+    expect(attempts()).toEqual([])
+  })
+
+  it('stops for good once the address asks it to, through the link the notice carries', async () => {
+    const parent = parentComment(PARENT)
+    const link = muteLink('https://blog.example', parent, PARENT)
+    const token = new URL(link).searchParams.get('t')!
+    expect(muteFromToken('1.forged')).toBe(false)
+    expect(muteFromToken(token)).toBe(true)
+    await reply(parent)
+    await reply(parentComment(` ${PARENT.toUpperCase()}`))
+    expect(attempts()).toEqual([])
+  })
+
+  it('asks on GET and acts on POST, so a link scanner cannot mute anybody', async () => {
+    const parent = parentComment(PARENT)
+    const path = new URL(muteLink('https://blog.example', parent, PARENT)).pathname + new URL(muteLink('https://blog.example', parent, PARENT)).search
+    const app = createApp()
+    const asked = await app.request(path)
+    expect(asked.status).toBe(200)
+    expect(await asked.text()).toContain('<form method="post"')
+    await reply(parent)
+    expect(attempts()).toHaveLength(1)
+    expect((await app.request(path, { method: 'POST' })).status).toBe(200)
+    await reply(parent)
+    expect(attempts()).toHaveLength(1)
   })
 
   // Best-effort by contract: the comment POST route awaits this, so a throw here would fail
