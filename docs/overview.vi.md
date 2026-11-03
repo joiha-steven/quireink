@@ -1,6 +1,6 @@
 # Quire Ink, bản đầy đủ
 
-[README](../README.vi.md) là bản ngắn: nó là gì, cài thế nào, đọc tiếp ở đâu. Đây là bản dài — từng
+[README](../README.md) là bản ngắn: nó là gì, cài thế nào, đọc tiếp ở đâu. Đây là bản dài — từng
 phần làm được gì, so với các lựa chọn khác ra sao, vì sao nó nhanh, và bản phát hành này cố ý
 chưa làm gì. [English](overview.md)
 
@@ -10,7 +10,7 @@ Một cái blog bạn viết và đăng, chạy trên máy chủ bạn thuê. N�
 
 Màu, font, cỡ chữ, bố cục trang chủ, menu: đổi hết trong trang quản trị, sau lần đăng nhập của riêng bạn. Không phải sửa code dòng nào, và làm trên điện thoại cũng được. Trang nhẹ, khoảng 120 KB một bài, nên người lạ ở chỗ sóng yếu cầm máy đời cũ vẫn thấy chữ hiện ra gần như tức thì.
 
-Để bắt đầu bạn cần một tên miền và một máy chủ thuê, loại rẻ nhất là đủ. Riêng lần dựng đầu tiên là việc kỹ thuật, nên nhờ người biết về máy chủ, hoặc [giao hẳn cho một AI agent](../README.vi.md#cài-đặt). Đổi lại, bạn tự giữ nhà mình: không ai sao lưu hộ bạn, có sẵn nút tải nguyên cả blog về máy nhưng bấm nó là việc của bạn.
+Để bắt đầu bạn cần một tên miền và một máy chủ thuê, loại rẻ nhất là đủ. Riêng lần dựng đầu tiên là việc kỹ thuật, nên nhờ người biết về máy chủ, hoặc [giao hẳn cho một AI agent](../README.md#install). Đổi lại, bạn tự giữ nhà mình: không ai sao lưu hộ bạn, có sẵn nút tải nguyên cả blog về máy nhưng bấm nó là việc của bạn.
 
 ### Bốn thứ không nơi nào có đủ cùng lúc
 

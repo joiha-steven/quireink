@@ -53,8 +53,8 @@ On any behavior change, update the matching doc in the SAME change:
   (there is no binary: [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "<version> - <tagline>" --notes-file <file>`,
   written to the **shape a release note has to have**, below.
-  The version lives in exactly **eight** tracked places: `package.json`, the version chip
-  right under the wordmark at the top of **both** READMEs (a line that is just `` `<version>` ``
+  The version lives in exactly **seven** tracked places: `package.json`, the version chip
+  right under the wordmark at the top of the README (a line that is just `` `<version>` ``
   and is the text title left when the wordmark image arrived, 2026-08-27), this line, and
   `server.json`, the manifest the MCP registry publishes from (added 2026-08-30, found two
   releases behind at `2.2.1` because nothing had ever named it), and the image pin in
@@ -63,9 +63,9 @@ On any behavior change, update the matching doc in the SAME change:
   `Dockerfile` (added 2026-09-20: until then the image carried the BASE image's nine OCI
   labels unchanged, so a published container said its title was `bun` and its version
   `1.4.2-slim`, which is the field every upgrade notifier reads), plus
-  the CHANGELOG entry heading and each README's release-note paragraph, which is rewritten
+  the CHANGELOG entry heading and the README's release-note paragraph, which is rewritten
   per release anyway.
-  This line has lagged the product three times; `grep -rn '<old>' package.json server.json README.md README.vi.md Dockerfile docs/conventions/releases.md`
+  This line has lagged the product three times; `grep -rn '<old>' package.json server.json README.md Dockerfile docs/conventions/releases.md`
   before tagging, and `check:docs` now fails on a stale pin.
   **The release-note paragraph says what the version CANNOT do, not only what it can.**
   Owner's instruction, 2026-09-01: a reader deciding whether to install this needs the limits

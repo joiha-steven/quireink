@@ -226,17 +226,16 @@ for (const file of files) {
 
 // 7. The version, everywhere it is written down, is the version in package.json.
 //
-// The release checklist's step one is bumping EIGHT tracked places, and
+// The release checklist's step one is bumping SEVEN tracked places, and
 // `docs/conventions/releases.md` records the number going out inconsistent THREE times.
 // A checklist that has failed three times is not a checklist problem, it is a missing
 // guard — the same lesson as every other file in this directory. The chip is the line
-// that is exactly `` `x.y.z` `` near the top of each README; releases.md states it in
+// that is exactly `` `x.y.z` `` near the top of the README; releases.md states it in
 // prose. Rule 6 skips records; this rule must NOT skip releases.md, which is why it names
 // its files directly.
 const pkgVersion = (JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as { version: string }).version
 for (const [file, pattern, what] of [
   ['README.md', `\n\`${pkgVersion}\`\n`, 'the version chip'],
-  ['README.vi.md', `\n\`${pkgVersion}\`\n`, 'the version chip'],
   ['docs/conventions/releases.md', `the version is **\`${pkgVersion}\`**`, 'the versioning rule'],
   // NOT markdown, and that is why it drifted: `server.json` is the manifest the MCP
   // registry publishes from, it carries its own `version`, and nothing on the release

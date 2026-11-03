@@ -9,7 +9,7 @@
 //   I2  every place has its file, is in the README's install table, and is installed by a test;
 //       the compose files run the published image and only the build override builds
 //   I5  the install skill names the default way in for each package
-//   B1  the Deploy to Cloudflare button: both READMEs carry it; every secret it asks for has a
+//   B1  the Deploy to Cloudflare button: the README carries it; every secret it asks for has a
 //       sentence beside it and no value in the public template; wrangler.jsonc has no `build`
 //       and keeps the dashboard's variables; the deploy builds with CI's Bun
 //
@@ -71,13 +71,10 @@ const PLACES: { file: string; test: string; link?: string }[] = [
   { file: 'wrangler.jsonc', test: 'cloudflare-dev', link: 'deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release' },
 ]
 const readme = read('README.md')
-const readmeVi = read('README.vi.md')
 const matrix = read('scripts/ops/matrix.sh')
 for (const p of PLACES) {
   if (!existsSync(join(ROOT, p.file))) faults.push(`I2: ${p.file} is a place to install and does not exist`)
-  for (const [name, text] of [['README.md', readme], ['README.vi.md', readmeVi]] as const) {
-    if (!text.includes(p.link ?? `(./${p.file})`)) faults.push(`I2: ${name}'s install table does not link ${p.link ?? p.file}`)
-  }
+  if (!readme.includes(p.link ?? `(./${p.file})`)) faults.push(`I2: README.md's install table does not link ${p.link ?? p.file}`)
   if (!new RegExp(`^\\s*${p.test}\\)`, 'm').test(matrix)) faults.push(`I2: ${p.file} is installed by the "${p.test}" cell, which scripts/ops/matrix.sh does not have`)
 }
 for (const f of ['docker-compose.yml', 'docker-compose.caddy.yml', 'docker-compose.image.yml']) {
@@ -117,13 +114,11 @@ if (existsSync(join(ROOT, 'docs/self-host-cloudflare.md')) && !installIndex.incl
 
 // ---- B1 (ADR 0066): what the Deploy to Cloudflare button reads ---------------------------------
 
-// The LINK, not Cloudflare's badge image: since 2026-10-04 the READMEs draw their own button in the
+// The LINK, not Cloudflare's badge image: since 2026-10-04 the README draws its own button in the
 // wordmark's ink (docs/brand/button-cloudflare-*.svg, light and dark). What has to stay true is where
 // it goes: the deploy page, for this repository's release branch, never main.
 const DEPLOY = 'https://deploy.workers.cloudflare.com/?url=https://github.com/joiha-steven/quireink/tree/release'
-for (const [name, text] of [['README.md', readme], ['README.vi.md', readmeVi]] as const) {
-  if (!text.includes(`href="${DEPLOY}"`) && !text.includes(`](${DEPLOY})`)) faults.push(`B1: ${name} has no Deploy to Cloudflare link to ${DEPLOY}`)
-}
+if (!readme.includes(`href="${DEPLOY}"`) && !readme.includes(`](${DEPLOY})`)) faults.push(`B1: README.md has no Deploy to Cloudflare link to ${DEPLOY}`)
 const pkg = JSON.parse(read('package.json')) as { scripts: Record<string, string>; cloudflare?: { bindings?: Record<string, { description?: string }> } }
 const described = pkg.cloudflare?.bindings ?? {}
 const secrets = read('.dev.vars.example').split('\n').filter((l) => /^[A-Z]/.test(l))
