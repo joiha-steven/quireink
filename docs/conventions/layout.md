@@ -80,7 +80,10 @@ inside it. In book mode the same break becomes the asterism.
   header menu button (`rail()` in `assets/js/theme.ts`, mobile only — flips `<html data-rail>`; drawer + scrim react
   in CSS; the layout hides the button above the breakpoint via `.rail-toggle`). The rail carries the
   site menu at its top (`SidebarMenu`) — the header has no separate menu dropdown. In the gutter the
-  rail is type on the page: no border, no shadow, no background.
+  rail is type on the page: no border, no shadow, no background. Its place in the SOURCE stays
+  after the article's head (and after a listing's posts), because the band between those widths
+  is in flow there; in the gutter, where it is drawn first, a second skip link, "Skip to menu"
+  (`#rail-menu`), is the page's second tab stop.
 - **Rounded corners are allowed site-wide (public + admin), each side from ONE source.** The old
   global `border-radius: 0` reset is gone. On the public site a box radius is `var(--radius)`,
   which `src/content/settings-shape.ts` emits from the owner's Shape setting (square 0 · soft

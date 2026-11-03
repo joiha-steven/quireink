@@ -56,6 +56,25 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok skip link first, ' + before.length + ' stop(s) it steps over'
     })()`, 600))
 
+  // THE WAY TO THE MENU. The rail is drawn left of the article in the gutter but comes after
+  // the article's head in the source, which keeps the band and the drawer where they are; the
+  // second stop on the page is the way to it. Only in the gutter: below, the menu is a closed
+  // drawer and the header's menu key is the way.
+  // NOTE: a template literal. No backticks.
+  flow('shell: the second key press reaches the rail menu', () => atWidth(1440, '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const focusable = [...document.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')]
+        .filter((el) => el.tabIndex >= 0 && el.offsetParent !== null)
+      const second = focusable[1]
+      if (!second || !second.classList.contains('skip-menu')) {
+        return 'the second tab stop is not the way to the menu: ' + (second ? second.textContent.trim() : 'nothing')
+      }
+      const menu = document.querySelector(second.getAttribute('href'))
+      if (!menu || !menu.closest('.rail')) return 'the menu skip link lands outside the rail'
+      if (!menu.querySelector('a[href]')) return 'the rail menu has no link to land on'
+      return 'ok the menu is the second stop, ' + menu.querySelectorAll('a[href]').length + ' link(s) in it'
+    })()`, 600))
+
   // The contents list's last row, at the width where it was wrong. Above the rail
   // breakpoint the taxonomy under the article is hidden and the gutter panel holds those
   // facts, so the row has to aim there instead; the server cannot know the width, so an

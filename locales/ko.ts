@@ -13,6 +13,7 @@ const ko = {
   figureLabel: '그림',
   tableLabel: '표',
   skipToContent: '본문으로 건너뛰기',
+  skipToMenu: '메뉴로 건너뛰기',
   menu: '메뉴',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
   // is on. Brackets come from the sheet, never from here.

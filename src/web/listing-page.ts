@@ -136,6 +136,7 @@ ${/* The header carries the menu only where there is no rail to hold it, which i
     mailConfigured,
     menuInHeader: noRail || resolveTheme(settings).layout.menu === 'header',
     railMenuOnly: sidebar.menuOnly === true && sidebar.html !== '',
+    skipToMenu: sidebar.html.includes('id="rail-menu"'),
     // ONE h1 per page, and the body gets first refusal. A listing's own heading is either
     // the term's name or its lead card, and the lead card is a switch: with it off the home
     // page had no h1 at all, and neither does a deep page or an empty feed. Asked of the

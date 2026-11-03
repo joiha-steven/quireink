@@ -379,7 +379,7 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
     // lead between them, justified with hyphens once the column is wide enough. It sits on
     // the shell rather than on .prose so the editor and the reading view can share it.
     `${progress}<div class="wrap${settings.features.bookText ? ' book-text' : ''}">
-${siteHeader(settings, { mailConfigured, menuInHeader, railMenuOnly: menuOnly })}
+${siteHeader(settings, { mailConfigured, menuInHeader, railMenuOnly: menuOnly, skipToMenu: menu.includes('id="rail-menu"') })}
 <div class="with-rail"><main id="content">
 <article>
 ${hero}

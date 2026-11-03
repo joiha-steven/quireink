@@ -183,7 +183,7 @@ function singleRailRules(colWidth: number): string {
     `.rail li a{justify-content:flex-end}` +
     `.rail-row{padding-left:0;padding-right:var(--rail-pad)}` +
     `.rail-row[aria-current]::after{left:auto;right:0}` +
-    `.rail-toggle,.rail-scrim,.rail-search{display:none}` +
+    `.rail-toggle,.rail-scrim,.rail-search{display:none}.skip-menu{display:block}` +
     // The post info panel takes the right gutter: the date, the length, the way into book
     // mode and the taxonomy, one fact per line. It is NOT sticky and its inner box does not
     // scroll — it stands at the top of the article and leaves with it. A sticky panel would
@@ -349,7 +349,7 @@ export function listingRailCss(
     // The first block DRAWN leads the column with no space above it: the drawer-only copies
     // and a menu copy the header holds are not drawn here, and the space after them stayed.
     `.rail .rail-inner > :nth-child(1 of :not(.rail-menu-copy,.drawer-only)){margin-top:0}` +
-    `.rail-toggle,.rail-scrim,.rail-search{display:none}` +
+    `.rail-toggle,.rail-scrim,.rail-search{display:none}.skip-menu{display:block}` +
     (opts.shell === false
       ? `.rail.rail-main.rail-drawer{display:none}.with-rail .tl-feed::after,.with-rail .tl-feed .tl-year,.with-rail .tl-feed article .tl-mark{display:none}`
       // A right rail with nothing for the gutter (the menu in the header, no subjects) is the

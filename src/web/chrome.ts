@@ -67,6 +67,12 @@ export type ChromeOptions = {
    */
   railMenuOnly?: boolean
   /**
+   * The page has the site menu in its rail (`#rail-menu`), which the source places after the
+   * article's head or a listing's posts so the band and the drawer stay where they are, while
+   * in the gutter it is drawn to the left of them. A second skip link reaches it from the top.
+   */
+  skipToMenu?: boolean
+  /**
    * Make the site's name the page's `<h1>`.
    *
    * Only for a listing whose body has none. A listing's own h1 is its lead card, which is a
@@ -245,7 +251,8 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   // because this is the first thing both of them render, and the sign-in page (which has one
   // field and nothing to skip) does not call this function at all.
   return `<header class="site">
-<a class="skip-link" href="#content">${escapeHtml(s.skipToContent)}</a>
+<a class="skip-link" href="#content">${escapeHtml(s.skipToContent)}</a>${
+  opts.skipToMenu ? `<a class="skip-link skip-menu" href="#rail-menu">${escapeHtml(s.skipToMenu)}</a>` : ''}
 <div class="site-bar">${siteTitle(settings, opts.titleIsHeading === true)}${opts.menuInHeader ? siteMenu(settings, s.menu) : ''}<div class="site-actions">${actions.join('')}</div></div>${
     settings.showDescription && settings.description
       ? `<p class="tagline">${escapeHtml(settings.description)}</p>` : ''

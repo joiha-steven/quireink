@@ -21,6 +21,7 @@ export type Dict = {
   tableLabel: string
   menu: string
   skipToContent: string
+  skipToMenu: string
   shortSearch: string
   /**
    * The two halves of the theme key's token, and it names WHAT PRESSING GIVES YOU rather than

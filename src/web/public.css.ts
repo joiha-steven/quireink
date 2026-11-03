@@ -156,6 +156,10 @@ main{flex:1;padding:3rem 0 1rem}
 .skip-link:focus{left:.5rem;top:.5rem;padding:.5rem .75rem;background:var(--c-bg);
   border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);color:var(--c-heading);
   text-decoration:none}
+/* The way to the rail's menu, only where the rail stands in the gutter (render/rail-css.ts
+   turns it on there): below that the menu is a closed drawer, and the header's menu key,
+   already early in the tab order, is the way to it. */
+.skip-menu{display:none}
 
 header.site{padding:1.75rem 0}
 /* The site's name is sometimes the page's h1, decided in the listing shell. The wrapper

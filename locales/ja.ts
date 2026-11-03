@@ -13,6 +13,7 @@ const ja = {
   figureLabel: '図',
   tableLabel: '表',
   skipToContent: '本文へスキップ',
+  skipToMenu: 'メニューへ移動',
   menu: 'メニュー',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
   // is on. Brackets come from the sheet, never from here.

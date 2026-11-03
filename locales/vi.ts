@@ -13,6 +13,7 @@ const vi = {
   figureLabel: 'Hình',
   tableLabel: 'Bảng',
   skipToContent: 'Tới nội dung',
+  skipToMenu: 'Tới menu',
   menu: 'Menu',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
   // is on. Brackets come from the sheet, never from here.

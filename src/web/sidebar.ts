@@ -111,7 +111,9 @@ export function menuBlock(items: MenuItem[], label: string, opts: { copy?: boole
     return `<li><a class="rail-row link-accent t-small" href="${escapeAttr(item.href || '/')}"${rel}>`
       + `<span>${escapeHtml(item.label)}</span></a></li>`
   }).join('')
-  return `<nav${opts.copy ? ' class="rail-menu-copy"' : ''} aria-label="${escapeAttr(label)}"><ul>${rows}</ul></nav>`
+  // `rail-menu` on the one menu a page draws in its rail, which the header's second skip link
+  // goes to; the copy of a menu the masthead holds is never its target.
+  return `<nav${opts.copy ? ' class="rail-menu-copy"' : ' id="rail-menu"'} aria-label="${escapeAttr(label)}"><ul>${rows}</ul></nav>`
 }
 
 /**

@@ -13,6 +13,7 @@ const zh = {
   figureLabel: '图',
   tableLabel: '表',
   skipToContent: '跳到内容',
+  skipToMenu: '跳到菜单',
   menu: '菜单',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
   // is on. Brackets come from the sheet, never from here.

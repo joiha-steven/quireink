@@ -14,6 +14,7 @@ const pt = {
   figureLabel: 'Fig.',
   tableLabel: 'Tabela',
   skipToContent: 'Pular para o conteúdo',
+  skipToMenu: 'Pular para o menu',
   menu: 'Menu',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
   // is on. Brackets come from the sheet, never from here.
