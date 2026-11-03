@@ -42,12 +42,12 @@
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		X-Frame-Options "DENY"
-		Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' https://open.spotify.com https://www.youtube-nocookie.com; upgrade-insecure-requests"
+		Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com https://www.tiktok.com https://open.spotify.com https://embed.music.apple.com; upgrade-insecure-requests"
 		-Server
 	}
 
 	# With Turnstile keys in Settings, replace the line above with this one:
-	# Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' https://challenges.cloudflare.com https://open.spotify.com https://www.youtube-nocookie.com; upgrade-insecure-requests"
+	# Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' https://challenges.cloudflare.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.tiktok.com https://open.spotify.com https://embed.music.apple.com; upgrade-insecure-requests"
 
 	# Match the app's own upload ceiling (MAX_UPLOAD_MB, 64 by default) so the two refuse
 	# the same file rather than one of them being the only thing that does.

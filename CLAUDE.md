@@ -14,7 +14,7 @@ it is the PRODUCT and stays — the private deploy script ships `scripts/` and t
 ## Verify
 
 ```
-bun run check:all   # typecheck, all static guards, bun test; ~2 min (src/md, src/render, src/web also run the golden compare)
+bun run check:all   # typecheck, all static guards, bun test; ~2 min (src/md and src/render also run the golden compare)
 bun run tour        # every flow in a real browser + restore-check; seeds its own instance on port 3399, refuses to start if taken
 ```
 

@@ -75,6 +75,9 @@ run by themselves on start, after the usual copy of the database.
   gone, port 25 is refused at once with a word about 587 and 465, and the copy taken before a
   migration is named in the log. The way back in after a lost password is written down and was run
   from end to end.
+- **Embeds under the shipped CSP.** The Caddyfile allowed YouTube and Spotify only, so Vimeo, TikTok
+  and Apple Music were blocked, and the nginx example had no `frame-src` at all, which blocked every
+  embed. Both now name all five players.
 - **Pages.** Code in dark book mode is readable (seven token colours were under 4.5:1, the worst 2.12:1). Korean breaks at
   its spaces. Paragraphs wholly on screen are never faded by the scroll fade. CJK text keeps the
   right face for its language. Newspaper's menu fades at its edge on a phone. Touch targets

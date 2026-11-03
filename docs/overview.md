@@ -132,6 +132,8 @@ The CSS and JavaScript rows are build artefacts, the same bytes on every install
 
 ## Recent releases
 
+**2.2.21** came out of six reviews of the whole product, each measured on a running blog: the server's security, the pages by eye, every feature from a user's side, making a theme as a stranger would, the AI and MCP tools, and the update count. The admin got quieter, with one filled button a screen and no box inside a box. `theme:preview` now says which declaration the browser dropped and what to write instead, and an agent can build and install a theme through MCP. The fixes that matter most: a forged ActivityPub signer refused, DNS rebinding closed, and MCP `update_post` no longer erases a post's series and cover. The [changelog](../CHANGELOG.md) has all of it.
+
 **2.2.16** came out of reading the whole product again, screen by screen and route by route. The [changelog](../CHANGELOG.md) has all of it.
 
 - **The admin speaks your language further.** Help is in all eleven languages and names every screen in the admin's own words; dates follow the admin's language and name the month (Sep 3, 2026 in English, 3. Sept. 2026 in German); German says Sie and Portuguese is Brazilian throughout; counts agree with their nouns.
