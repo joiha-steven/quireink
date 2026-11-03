@@ -15,6 +15,7 @@ import { getPageIndex, getPage, savePage, deletePage, restorePage, getTrashedPag
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { SlugConflictError } from '@/content/slugs'
+import { isPublicallyVisible } from '@/utils'
 import { asText, asJson, asError } from '@/mcp/result'
 import { registerLibraryTools } from '@/mcp/tools-library'
 import { registerInsightTools } from '@/mcp/tools-insight'
@@ -25,13 +26,13 @@ import { registerNoteTools } from '@/mcp/tools-notes'
 const postFields = {
   title: z.string().optional(),
   content: z.string().optional().describe('Markdown body of the post'),
-  status: z.enum(['draft', 'published']).optional().describe("Defaults to 'draft'"),
+  status: z.enum(['draft', 'published']).optional().describe("Defaults to 'draft'. 'published' with a date ahead is SCHEDULED: readers see it from that date on, not before"),
   slug: z.string().optional().describe('URL slug; auto-derived from the title when omitted'),
   excerpt: z.string().optional(),
   categories: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
   featuredImage: z.string().optional().describe('Image URL used only for SEO/social cards, never shown on the page. The visible picture at the top of the post is coverImage'),
-  date: z.string().optional().describe('ISO 8601 publish date; defaults to now'),
+  date: z.string().optional().describe('ISO 8601 publish date with its offset (2026-11-10T09:00:00+07:00); defaults to now. A date ahead with status published schedules the post; list_posts marks it scheduled: true'),
   // These five were missing until 2026-11-03, and because `update_post` REPLACES, a field this
   // shape does not carry was erased by every update: zod strips it, the saver sees undefined.
   series: z.string().optional().describe('Name of the series this post belongs to; an empty string takes it out'),
@@ -48,6 +49,14 @@ const postFields = {
   translationGroup: z.string().optional().describe(
     'A name shared by every translation of this piece. Two pieces with the same group are each other\'s translations.'),
 }
+
+/**
+ * `scheduled: true` on a published post no reader can see yet, by the article route's own test, and
+ * nothing at all otherwise. Scheduling is "published" plus a date ahead, and every read used to
+ * answer `published` for it, so a model that had just scheduled a post could not tell (2026-11-03).
+ */
+const scheduledMark = (p: { status: string; date: string }): { scheduled?: true } =>
+  p.status === 'published' && !isPublicallyVisible(p.status, p.date) ? { scheduled: true } : {}
 
 /** The post fields `update_post` keeps when they are not sent; see the handler for why. */
 const KEPT_ON_UPDATE = ['series', 'seriesOrder', 'metaTitle', 'metaDescription', 'coverImage'] as const
@@ -81,11 +90,11 @@ export function registerTools(server: ToolHost): void {
 function registerPostTools(server: ToolHost): void {
   server.registerTool(
     'list_posts',
-    { readOnly: true, description: 'List all posts (drafts included) with metadata, newest first.', inputSchema: { status: z.enum(['draft', 'published']).optional() } },
+    { readOnly: true, description: 'List all posts (drafts included) with metadata, newest first. A published post dated ahead carries scheduled: true: readers cannot see it until its date.', inputSchema: { status: z.enum(['draft', 'published']).optional() } },
     async ({ status }) => {
       const posts = await getIndex()
       const filtered = status ? posts.filter((p) => p.status === status) : posts
-      return asJson(filtered.map((p) => ({ slug: p.slug, title: p.title, status: p.status, date: p.date, categories: p.categories, tags: p.tags })))
+      return asJson(filtered.map((p) => ({ slug: p.slug, title: p.title, status: p.status, date: p.date, ...scheduledMark(p), categories: p.categories, tags: p.tags })))
     },
   )
 
@@ -94,7 +103,7 @@ function registerPostTools(server: ToolHost): void {
     { readOnly: true, description: 'Get one post by slug, including its Markdown body.', inputSchema: { slug: z.string() } },
     async ({ slug }) => {
       const post = await getPost(slug)
-      return post ? asJson(post) : asError(`Post not found: ${slug}`)
+      return post ? asJson({ ...post, ...scheduledMark(post) }) : asError(`Post not found: ${slug}`)
     },
   )
 

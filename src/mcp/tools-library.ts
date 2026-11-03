@@ -19,6 +19,7 @@ import { getSettings, saveSettings } from '@/content/settings'
 import { SETTING_PATHS, getAt, isSettingPath, patchAt, typeOfPath } from '@/content/settings-path'
 import { refusalText, refusedSetting } from '@/content/settings-refuse'
 import { clearCache } from '@/server/cache'
+import { ADMIN_ONLY_SETTINGS } from '@/mcp/guarded-paths'
 import { logActivity } from '@/server/activity'
 import { safeFetch, BlockedUrlError } from '@/server/safe-fetch'
 import { bringImagesHome, filenameFromUrl } from '@/import/images'
@@ -214,9 +215,10 @@ function registerSettingsTools(server: ToolHost): void {
       description:
         'Change any site setting by path — call list_settings first to find the path. The value '
         + 'is sanitised exactly as the admin\'s own Save does, and everything not named is left '
-        + 'alone. Two are worth naming before you change them because they affect every page a '
-        + 'reader loads: `customCss` and `siteUrl`. The three named arguments are the older '
-        + 'shorthand and still work.',
+        + 'alone. Some need a token minted with custom-code access and are refused to any other: '
+        + `${ADMIN_ONLY_SETTINGS.join(', ')} (every backups.* path among them), because they go into every `
+        + 'public page, move the site, or decide who can open its backups. The three named arguments are '
+        + 'the older shorthand and still work.',
       inputSchema: {
         path: z.string().optional().describe('Dotted path, e.g. features.search or typography.roles.body.size'),
         value: z.union([z.string(), z.number(), z.boolean()]).optional(),

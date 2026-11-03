@@ -125,3 +125,32 @@ describe('the fields a post carries beyond its words', () => {
     expect((await getPost('plain'))?.series).toBeUndefined()
   })
 })
+
+// 2026-11-03. Scheduling is "published" plus a date ahead, and nothing said so: the schema offered
+// draft or published, `date` said "defaults to now", and every read answered `published` for a
+// post no reader can see yet. A model scheduling a post could not confirm it had.
+describe('a scheduled post says so', () => {
+  it('list_posts and get_post mark a published post dated ahead, and only that one', async () => {
+    const ahead = new Date(Date.now() + 7 * 86_400_000).toISOString()
+    await savePost({ title: 'Later', slug: 'later', content: 'x', status: 'published', date: ahead })
+    await savePost({ title: 'Now', slug: 'now', content: 'x', status: 'published', date: '2024-01-01T00:00:00.000Z' })
+    await savePost({ title: 'Draft ahead', slug: 'draft-ahead', content: 'x', status: 'draft', date: ahead })
+    const rows = JSON.parse((await call('list_posts')).text) as { slug: string; scheduled?: boolean }[]
+    expect(Object.fromEntries(rows.map((r) => [r.slug, r.scheduled ?? false]))).toEqual({ later: true, now: false, 'draft-ahead': false })
+    expect((JSON.parse((await call('get_post', { slug: 'later' })).text) as { scheduled?: boolean }).scheduled).toBe(true)
+  })
+
+  it('and the tools that write one say how', async () => {
+    const res = await app.request('/api/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}`, 'sec-fetch-site': 'none' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+    })
+    const tools = (await res.json() as { result: { tools: { name: string; description: string; inputSchema: { properties: Record<string, { description?: string }> } }[] } }).result.tools
+    const create = tools.find((t) => t.name === 'create_post')!
+    expect(create.inputSchema.properties.date?.description).toMatch(/schedul/i)
+    expect(create.inputSchema.properties.status?.description).toMatch(/schedul/i)
+    // The settings a full token is refused are named where it would look before trying them.
+    expect(tools.find((t) => t.name === 'update_settings')!.description).toMatch(/backups/)
+  })
+})
