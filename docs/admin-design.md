@@ -17,16 +17,15 @@ character and none of its typographic rules **except one**, below.
   - **The editor**, because it is WYSIWYG: the writing surface, the title field and the font
     picker's specimen tiles are set in the face the post publishes in — the holders of
     `.reading-font`. `--font-reading` and `spa.ts`'s `fontPresetCss` therefore stay.
-  - **The page title, and exactly that one line per screen** (`PageHeader`, `.page-title-face`).
+  - **The page title, once per screen, and the names of its cards** (`PageHeader`, `.page-title-face`).
     Measured on the home screen 2026-09-07: 129 of 129 text runs were Inter and the title was
-    22px/600 against a card title at 15px/600 — seven pixels and no other difference between
-    the name of the screen and the name of a box on it, so every page opened with nothing that
-    read as its own first line. It is **Literata at a fixed weight, not `--font-reading`**: the
+    22px/600 against a card title at 15px/600, so every page opened with nothing that read as
+    its own first line. It is **Literata at a fixed weight, not `--font-reading`**: the
     reading face is a site setting and a screen's own title is not the owner's to re-letter.
     Literata is already loaded in the admin (`allFontFaceCss`), so this costs no new download.
+    **Since 2026-11-04 a card's or settings group's name wears it too** (`SECTION`, 16px/600); labels, notes, controls and tables stay Inter.
 
-  Both are pinned by `src/admin/components/one-face.test.ts`, which counts the holders of each
-  class: a third file wearing either one re-opens a decision by accident.
+  Both are pinned by `src/admin/components/one-face.test.ts`, which counts the holders of each class.
 - **The admin's chrome face is ITS OWN, and it is Inter.** It is never the site's `chromeFont`:
   a chrome font is a branding choice about what a READER sees, and spent on the tool it put a
   monospace on every label, tab and cell. ⚠️ Do not wire it back; `MONO_TRACKING` and the

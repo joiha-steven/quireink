@@ -123,9 +123,10 @@ describe('the admin wears one face', () => {
   })
 
   it('gives the page-title face to PageHeader and nothing else', () => {
-    // THE SECOND CARVE-OUT, 2026-09-07 — and it is one LINE per screen, not one surface.
-    // ONE file: `scale.ts`, which declares it. `admin/components/kit.tsx` held `PageHeader`
-    // and re-exported the token until the admin stopped being React (ADR 0054, step 6), and
+    // THE SECOND CARVE-OUT, 2026-09-07 — and it is headings, not a surface: the page title
+    // and, since 2026-11-04, `SECTION`, a card's or a settings group's name.
+    // ONE file: `scale.ts`, which declares it and both roles. `admin/components/kit.tsx` held
+    // `PageHeader` and re-exported the token until the admin stopped being React (ADR 0054, step 6), and
     // the server's page headers take it from the declaration. A second file means some other
     // heading has started wearing a serif, which is the exact drift the one-face rule exists
     // to catch: two faces arrive one call site at a time.

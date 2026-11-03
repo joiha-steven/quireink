@@ -12,7 +12,7 @@
 //
 //   30px  FIGURE         a number that IS the content — a stat tile, nothing else
 //   28px  TITLE          the page's own name, once per screen, in Literata
-//   16px  SECTION        a card's title, settings cards included
+//   16px  SECTION        a card's title, settings cards included, in Literata
 //   14px  SETTING_LABEL  the label on one setting
 //   13px  NOTE / UTIL    the sentence explaining a setting · and, at 600 in ink, the eyebrow over a group
 //   12px  META           table heads, counts, timestamps
@@ -82,8 +82,13 @@ export const TITLE = `${PAGE_TITLE_FACE} text-[1.75rem] font-semibold leading-ti
  * hard-typed `text-[13px]` instead of importing this, so the hierarchy ran BACKWARDS:
  * heading 13px/600 above labels at 14px/500 above notes at 13px/400. 15 / 14 / 13 at
  * 600 / 500 / 400 now, each a step down in both.
+ *
+ * In the page title's Literata since 2026-11-04, the second line a screen sets in it: a card's
+ * name is a heading, and in Inter it was one of 119 Inter runs of 120 on the home screen, told
+ * from the label under it by two pixels and a weight. Literata is loaded already, so it costs
+ * nothing, and it is still not the reading face (`PAGE_TITLE_FACE`).
  */
-export const SECTION = 'text-base font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100'
+export const SECTION = `${PAGE_TITLE_FACE} text-base font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100`
 
 /** The label on one setting. One step under SECTION — a peer of the other labels, not a heading. */
 export const SETTING_LABEL = component('kit-label', 'block text-sm font-medium text-neutral-800 dark:text-neutral-200')
