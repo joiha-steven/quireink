@@ -26,11 +26,39 @@ describe('the confirm cooldown', () => {
 
   it('starts no cooldown when the confirm email could not be sent', async () => {
     const first = await post('/api/subscribe', { email: 'retry@example.com' }, '198.51.100.50')
-    expect((await first.json() as { data: { status: string } }).data.status).toBe('pending_no_mail')
-    const row = db().query<{ at: number | null }, []>(`select confirm_sent_at as at from subscribers where email = 'retry@example.com'`).get()
-    expect(row?.at).toBeNull()
+    expect((await first.json() as { data: { status: string } }).data.status).toBe('sent')
+    // The send runs after the answer: the stamp is lifted once the refused connection comes back.
+    const sentAt = () => db().query<{ at: number | null }, []>(`select confirm_sent_at as at from subscribers where email = 'retry@example.com'`).get()?.at
+    for (let i = 0; i < 100 && sentAt() != null; i++) await Bun.sleep(10)
+    expect(sentAt()).toBeNull()
     const again = await post('/api/subscribe', { email: 'retry@example.com' }, '198.51.100.51')
-    expect((await again.json() as { data: { status: string } }).data.status).toBe('pending_no_mail')
+    expect((await again.json() as { data: { status: string } }).data.status).toBe('sent')
+    for (let i = 0; i < 100 && sentAt() != null; i++) await Bun.sleep(10)
+    expect(sentAt()).toBeNull()
+  })
+
+  it('answers a new address without waiting on the relay, as fast as one already on the list', async () => {
+    // An awaited send made a new address wait one SMTP round trip and a confirmed one none, so the
+    // answer's timing said who was subscribed (1.1 ms against 0.1 ms with a relay on this machine).
+    // A relay that holds its 250 makes that round trip as long as the mail timeout.
+    const relay = await startRelay()
+    relay.stallAt(1)
+    await saveSmtpConfig({ host: '127.0.0.1', port: relay.port, from: 'blog@example.com' })
+    try {
+      const started = performance.now()
+      const res = await Promise.race([
+        post('/api/subscribe', { email: 'slow-relay@example.com' }, '198.51.100.52'),
+        Bun.sleep(2_000).then(() => null),
+      ])
+      expect(res).not.toBeNull()
+      expect(performance.now() - started).toBeLessThan(2_000)
+      expect((await res!.json() as { data: { status: string } }).data.status).toBe('sent')
+      await relay.received(1) // and the letter still went out
+      expect(relay.rcpt).toEqual(['slow-relay@example.com'])
+    } finally {
+      relay.close()
+      await saveSmtpConfig({ host: '127.0.0.1', port: 9, from: 'blog@example.com' })
+    }
   })
 
   it('cools down per address: the second sign-up inside the hour sends no second email', async () => {
@@ -39,6 +67,7 @@ describe('the confirm cooldown', () => {
     await saveSmtpConfig({ host: '127.0.0.1', port: relay.port, from: 'blog@example.com' })
     try {
       await post('/api/subscribe', { email: 'eager@example.com' }, '198.51.100.33')
+      await relay.received(1)
       const res = await post('/api/subscribe', { email: 'eager@example.com' }, '198.51.100.34')
       // Same cheerful answer, 'sent': the first link is in the inbox and nothing new was tried.
       expect(res.status).toBe(200)

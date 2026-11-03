@@ -127,13 +127,17 @@ export async function handleSubscribe(c: Context): Promise<Response> {
   const confirmUrl = `${resolveSiteUrl(settings)}/api/newsletter/confirm?token=${encodeURIComponent(token)}`
   const { subject, html } = confirmEmail(tx, emailBrand(settings), confirmUrl)
 
-  // Best-effort. The row is already pending, so an unconfigured mail server costs the
-  // reader their confirm link but the owner can still see the sign-up and act on it.
-  const { sent } = await sendMail({ to: email.trim().toLowerCase(), subject, html, kind: 'confirm' })
-  if (!sent) forgetConfirmSent(email)
-  return sent
-    ? reply('sent', tx.nlSuccess)
-    : reply('pending_no_mail', tx.nlNoMail)
+  // AFTER THE ANSWER (2026-11-04). Awaited, the send was the one thing a new address waited on
+  // and an address already on the list did not, so the reply's timing said which addresses read
+  // this blog: 1.1 ms against 0.1 ms at the median with a relay on the same machine, every one of
+  // 200 pairs told apart, and a real relay is slower still. Now both answer 'sent' before the relay
+  // is spoken to. Best-effort as before: the row is pending, the owner sees it, and a send that
+  // fails lifts the cooldown so the reader's next try sends again.
+  const to = email.trim().toLowerCase()
+  void sendMail({ to, subject, html, kind: 'confirm' })
+    .then(({ sent }) => { if (!sent) forgetConfirmSent(to) })
+    .catch((error) => console.error(`[ERROR] newsletter.confirmSend: ${(error as Error).message}`))
+  return reply('sent', tx.nlSuccess)
 }
 
 export async function handleConfirm(c: Context): Promise<Response> {

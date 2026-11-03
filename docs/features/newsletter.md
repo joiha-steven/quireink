@@ -10,7 +10,8 @@
   so the mail client's own button POSTs the reader's link; `GET /api/newsletter/unsubscribe?token=` →
   unsubscribed. The confirm/unsubscribe routes return a standalone HTML page (`resultPage`) since
   they open from an email. Re-subscribing reuses the row's token; a confirmed address short-
-  circuits (no re-send, no membership leak).
+  circuits (no re-send, no membership leak), and the confirm email goes out after the answer, so
+  a new address does not wait on the relay while a known one answers at once.
 - **Bot defence, three layers, all silent.** The form carries a honeypot (`website`, parked
   off-screen; a value in it is a confession) and a render timestamp (`ts`; only a
   faster-than-hands fill REJECTS — missing or stale passes, because cached pages legitimately
