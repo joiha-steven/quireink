@@ -11,7 +11,11 @@ import { getMedia } from '@/media/media'
 import { collapseBlob } from '@/media/blob'
 import { all } from '@/store/query'
 
-const MEDIA_RE = /media\/[^\s")'#]+/gi
+// Where a name ends: the characters that close a URL in markdown, HTML and CSS, plus `?` (a query
+// is not part of the stored name, as `mediaKey` in `media/media.ts` already says) and a
+// backslash, which ends a name written inside a JSON or CSS string. Read into the name, either
+// one made a used picture a different, unknown key, and the audit named the real one unused.
+const MEDIA_RE = /media\/[^\s"')#?\\<>]+/gi
 
 // All store-relative media pathnames referenced anywhere in a piece of text.
 function refsIn(text: string | undefined): string[] {
@@ -89,9 +93,10 @@ export async function usedMediaKeys(): Promise<Set<string>> {
   //
   // A list of fields is a list that goes stale the next time a setting holds a picture, and
   // nothing would say so — the sweep would simply start naming that one too. `refsIn` already
-  // finds `media/…` anywhere in a string, and JSON puts a quote either side of every value,
-  // which is where the pattern stops. So the rule is the object.
-  add(JSON.stringify(await getSettings()))
+  // finds `media/…` anywhere in a string. So the rule is the object — read as its strings, the way
+  // the rows and the snapshots are: STRINGIFIED, a quote inside a value (custom CSS's
+  // `url("/uploads/media/bg.png")`) arrived as `\"`, and the backslash was read into the name.
+  for (const text of strings(await getSettings())) add(text)
   return used
 }
 

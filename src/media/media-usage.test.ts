@@ -67,6 +67,19 @@ describe('a picture the settings point at', () => {
     expect(await unused()).toEqual(['nobody-wants-me.webp'])
   })
 
+  it('counts a picture in custom CSS or custom head, quoted, and one with a query on it', async () => {
+    for (const f of ['bg.png', 'hero.webp', 'q.jpg', 'orphan.webp']) upload(f)
+    await saveSettings({
+      customCss: 'body { background: url("/uploads/media/bg.png") }',
+      customHead: '<link rel="preload" as="image" href="/uploads/media/hero.webp">',
+    } as Parameters<typeof saveSettings>[0])
+    await savePost({
+      title: 'Bai', slug: 'bai', status: 'published', date: new Date().toISOString(),
+      content: '<img src="/uploads/media/q.jpg?v=2">',
+    } as Parameters<typeof savePost>[0])
+    expect(await unused()).toEqual(['orphan.webp'])
+  })
+
   it('a post body still counts, which is the half that always worked', async () => {
     upload('in-a-post.webp')
     upload('orphan.webp')
