@@ -1,7 +1,6 @@
 // The port contracts, and the platform features shared code leans on, run INSIDE workerd (ADR 0066, rule 3). `bun run test:cf` builds this with
 // `scripts/build-worker.ts`, serves it with `wrangler dev --local`, and asks it to run each suite.
-// Every case gets a Durable Object of its own, so each one starts from an empty database exactly as
-// the Bun side's cases each start from a new file.
+// Every case gets a Durable Object of its own, so each starts from an empty database as each Bun case starts from a new file.
 import { DurableObject } from 'cloudflare:workers'
 import { bind, type CfEnv } from '@/runtime/cf/bindings'
 import { open } from '@/runtime/cf/db'
