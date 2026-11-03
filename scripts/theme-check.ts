@@ -6,10 +6,11 @@
 //
 //   exit 0  accepted: one line with the theme id, version and file count
 //   exit 1  refused: one line per finding, `rule · file:line:col · subject`, and under it the
-//           admin's English sentence for the rule
+//           admin's English sentence for the rule; then where each rule is explained, and a
+//           hint when the zip's shape, not its theme, is what went wrong
 //   exit 2  bad usage, or a path that cannot be read
 import { lstatSync, readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { packageOptions } from '@/content/theme-package-options'
 import { ZipWriter } from '@/import/zip-write'
 import en from '@/locales/admin/en'
@@ -22,7 +23,13 @@ export type CheckOutcome = { code: 0 | 1 | 2; lines: string[] }
 /** The outcome, and when the theme was accepted the zip that was judged and its manifest (`theme:preview` installs it). */
 export type LoadedTheme = { outcome: CheckOutcome; accepted?: { zip: Uint8Array; manifest: ThemeManifest } }
 
-type Walked = { files: { rel: string; size: number }[]; dirs: string[]; violations: Violation[] }
+type Walked = { files: { rel: string; size: number }[]; dirs: string[]; violations: Violation[]; skipped: string[] }
+
+/** What the documented zip commands leave out: hidden names, and the files the OS adds by itself. */
+export function isOsLitter(name: string): boolean {
+  const lower = name.toLowerCase()
+  return name.startsWith('.') || lower === '__macosx' || lower === 'thumbs.db' || lower === 'desktop.ini'
+}
 
 const refusal = (rule: Violation['rule'], file: string, subject: string): Violation => ({ rule, file, line: 0, col: 0, subject })
 
@@ -36,7 +43,7 @@ const MAX_RECORDS = THEME_LIMITS.files + 2
  * directory such as one holding `node_modules` answers at once.
  */
 function walk(root: string): Walked {
-  const out: Walked = { files: [], dirs: [], violations: [] }
+  const out: Walked = { files: [], dirs: [], violations: [], skipped: [] }
   let total = 0
   const visit = (prefix: string): boolean => {
     for (const name of readdirSync(join(root, prefix)).sort()) {
@@ -80,6 +87,80 @@ export function zipDirectory(root: string, walked: Walked): Uint8Array {
 
 const rules = en.themeRules as Record<string, string>
 
+const RULES_DOC = 'docs/themes-css-rules.md'
+
+/** `C1` → `docs/themes-css-rules.md#c1-a-colour-is-written-into-the-sheet`, read from the page's own headings. */
+export function ruleAnchors(doc = readRulesDoc()): Map<string, string> {
+  const out = new Map<string, string>()
+  for (const m of doc.matchAll(/^## (([A-Z]\d)(?: to ([A-Z]\d))?:.*)$/gm)) {
+    const slug = m[1]!.toLowerCase().replace(/[^\p{L}\p{N} -]/gu, '').replace(/ /g, '-')
+    const first = m[2]!
+    const last = m[3]
+    if (last === undefined) out.set(first, `${RULES_DOC}#${slug}`)
+    else {
+      // `A3 to A6`: one heading for the package rules, each with its own section after it.
+      const from = Number(first.slice(1))
+      for (let n = from; n <= Number(last.slice(1)); n++) if (!out.has(`A${n}`)) out.set(`A${n}`, `${RULES_DOC}#${slug}`)
+    }
+  }
+  return out
+}
+
+function readRulesDoc(): string {
+  try {
+    return readFileSync(join(dirname(import.meta.dir), RULES_DOC), 'utf8')
+  } catch {
+    return ''
+  }
+}
+
+/** The folder name every entry shares, when theme.json sits one level down in it. */
+function nestedFolder(names: readonly string[]): string | null {
+  const real = names.filter((n) => !n.split('/').some(isOsLitter))
+  const top = real[0]?.split('/')[0]
+  if (top === undefined || !real.every((n) => n.startsWith(`${top}/`))) return null
+  return real.includes(`${top}/theme.json`) ? top : null
+}
+
+/** One line for a zip whose shape is the problem, which no rule's sentence can say by itself. */
+export function zipHints(names: readonly string[]): string[] {
+  const out: string[] = []
+  const folder = nestedFolder(names)
+  if (folder !== null) {
+    out.push(`hint: everything in this zip is inside the folder "${folder}/". Zip what is inside the folder, not the folder (docs/themes.md, step 4).`)
+  }
+  const litter = names.filter((n) => !n.endsWith('/') && n.split('/').some((part) => isOsLitter(part)))
+  if (litter.length > 0) {
+    out.push(`hint: ${litter.length} entr${litter.length === 1 ? 'y is' : 'ies are'} what macOS or Windows add by themselves (__MACOSX/, .DS_Store, Thumbs.db). Finder's Compress always adds them; make the zip with the command in docs/themes.md, step 4.`)
+  }
+  return out
+}
+
+/** The names a zip declares, read from its central directory without inflating anything. */
+function zipNames(zip: Uint8Array): string[] {
+  const view = new DataView(zip.buffer, zip.byteOffset, zip.byteLength)
+  let eocd = -1
+  for (let i = zip.length - 22; i >= Math.max(0, zip.length - 65557); i--) {
+    if (view.getUint32(i, true) === 0x06054b50) {
+      eocd = i
+      break
+    }
+  }
+  if (eocd < 0) return []
+  const count = view.getUint16(eocd + 10, true)
+  let at = view.getUint32(eocd + 16, true)
+  const names: string[] = []
+  const utf8 = new TextDecoder()
+  for (let n = 0; n < count && at + 46 <= zip.length && view.getUint32(at, true) === 0x02014b50; n++) {
+    const nameLen = view.getUint16(at + 28, true)
+    const extraLen = view.getUint16(at + 30, true)
+    const commentLen = view.getUint16(at + 32, true)
+    names.push(utf8.decode(zip.subarray(at + 46, at + 46 + nameLen)))
+    at += 46 + nameLen + extraLen + commentLen
+  }
+  return names
+}
+
 /** `C1 · theme.css:3:5 · color:red`, the shape the admin's refusal list uses. */
 function findingLine(v: Violation): string {
   const place = v.line > 0 ? `${v.file}:${v.line}:${v.col}` : v.file
@@ -95,28 +176,38 @@ export async function loadThemePath(arg: string | undefined): Promise<LoadedThem
   const path = resolve(arg)
   let zip: Uint8Array
   let early: Violation[] = []
+  let skipped: string[] = []
+  let fromZip = false
   try {
     const st = statSync(path)
     if (st.isDirectory()) {
       const walked = walk(path)
       early = walked.violations
+      skipped = walked.skipped
       zip = early.length > 0 ? new Uint8Array(0) : zipDirectory(path, walked)
     } else if (st.size > THEME_LIMITS.zipBytes) {
       early = [refusal('A5', '', String(st.size))]
       zip = new Uint8Array(0)
     } else {
       zip = new Uint8Array(readFileSync(path))
+      fromZip = true
     }
   } catch (error) {
     const missing = (error as NodeJS.ErrnoException).code === 'ENOENT'
     return { outcome: { code: 2, lines: [`theme:check: ${missing ? 'no such file or directory' : 'cannot read'}: ${arg}${missing ? '' : ` (${(error as Error).message})`}`, USAGE] } }
   }
   const result: PackageResult = early.length > 0 ? { ok: false, violations: early } : await readThemePackage(zip, packageOptions())
+  const leftOut = skipped.length === 0 ? [] : [`left out, as the zip commands in docs/themes.md leave them out: ${skipped.join(', ')}`]
   if (result.ok) {
     const { manifest, files } = result.pkg
-    return { outcome: { code: 0, lines: [`ok · ${manifest.id} ${manifest.version} · ${files.length} files`] }, accepted: { zip, manifest } }
+    return { outcome: { code: 0, lines: [...leftOut, `ok · ${manifest.id} ${manifest.version} · ${files.length} files`] }, accepted: { zip, manifest } }
   }
-  const lines = result.violations.flatMap((v) => [findingLine(v), `    ${rules[v.rule] ?? rules.other}`])
+  const hints = fromZip ? zipHints(zipNames(zip)) : []
+  const lines = [...leftOut, ...hints]
+  lines.push(...result.violations.flatMap((v) => [findingLine(v), `    ${rules[v.rule] ?? rules.other}`]))
+  const anchors = ruleAnchors()
+  const explained = [...new Set(result.violations.map((v) => v.rule))].flatMap((r) => anchors.has(r) ? [`  ${r}  ${anchors.get(r)}`] : [])
+  if (explained.length > 0) lines.push('Each rule, with a refused and a passing example:', ...explained)
   lines.push(`Refused: ${result.violations.length} finding${result.violations.length === 1 ? '' : 's'}. Nothing was installed.`)
   return { outcome: { code: 1, lines } }
 }

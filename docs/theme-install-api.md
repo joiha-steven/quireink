@@ -78,8 +78,11 @@ as the tour finds it ([`scripts/chrome-path.ts`](../scripts/chrome-path.ts)).
    out: a wide table or code block scrolling in its own frame, `line-clamp` and ellipses, book mode's
    other pages, the parked skip link.
 
-Shots go to `.tmp/theme-preview/<id>/`, with `REPORT.txt` and `index.html`, a contact sheet grouped
-by page with each page's findings above its shots. `--out` must be inside `.tmp/` and empty; `--force`
+Shots go to `.tmp/theme-preview/<id>/`, with `REPORT.txt`, `index.html`, a contact sheet grouped
+by page with each page's findings above its shots, and `screenshot.webp`: the tile's picture, 1200 x
+900, cut from the top of the front page (else the post list) at 1440 in the light, ready to copy into
+the theme. A theme folder with no `screenshot.webp` is previewed with a blank one in its place, so a
+theme started from nothing can be looked at before it has a picture; `theme:check` still refuses it. `--out` must be inside `.tmp/` and empty; `--force`
 replaces only a directory theme:preview made (it leaves a `.theme-preview` file in each), so it never
 empties `.tmp/theme-preview` itself or a `theme:matrix` baseline. Exit 0 with no finding, 1 when the
 theme is refused, a finding was made or the run failed, 2 for bad usage. About 70 seconds for one palette.
