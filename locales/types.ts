@@ -1664,6 +1664,8 @@ export type AdminStrings = {
   storageTitle: string
   maxUploadLabel: string
   maxUploadHint: string
+  serverLimit: string
+  serverNoLimit: string
   storageQuotaLabel: string
   storageQuotaHint: string
   // backups, and the envelope

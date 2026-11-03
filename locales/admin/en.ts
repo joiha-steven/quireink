@@ -1383,6 +1383,8 @@ const en = {
   storageTitle: 'Storage',
   maxUploadLabel: 'Largest upload (MB)',
   maxUploadHint: '0 means you set no limit here, so a file can be as large as the server allows. A number here can lower the server’s limit but never raise it, because that limit belongs to whoever runs the server.',
+  serverLimit: 'This server’s own limit: {n}.',
+  serverNoLimit: 'This server sets no limit of its own.',
   storageQuotaLabel: 'Storage limit (GB)',
   storageQuotaHint: 'Counts everything on disk, including the smaller copies made from each image. An upload that would go past it is refused. 0 means you set no limit here; the server’s own limit, if it has one, still applies.',
   backupTitle: 'Backups',

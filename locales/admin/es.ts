@@ -1383,6 +1383,8 @@ const es = {
   storageTitle: 'Almacenamiento',
   maxUploadLabel: 'Subida más grande (MB)',
   maxUploadHint: '0 significa que aquí no pones un límite propio: un archivo puede ser tan grande como permita el servidor. Un número aquí puede bajar el límite del servidor, pero nunca subirlo, porque ese límite es de quien administra el servidor.',
+  serverLimit: 'El límite propio de este servidor: {n}.',
+  serverNoLimit: 'Este servidor no pone un límite propio.',
   storageQuotaLabel: 'Límite de almacenamiento (GB)',
   storageQuotaHint: 'Cuenta todo lo que hay en disco, incluidas las copias reducidas de cada imagen. Una subida que lo sobrepase se rechaza. 0 significa que aquí no pones un límite propio; el del servidor, si lo tiene, sigue valiendo.',
   backupTitle: 'Copias de seguridad',

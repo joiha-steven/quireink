@@ -133,18 +133,28 @@ function upgradeHow(t: AdminStrings): string {
  * The two ceilings, and both only ever NARROW one they cannot raise.
  *
  * `MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` belong to whoever runs the server; 0 here means
- * "whatever they said", which is why the hints name that rather than printing a number this
- * screen cannot know. The dashboard is where the bytes actually in use are shown.
+ * "whatever they said", and the hint prints what they said (`serverLimit`). The dashboard is where the bytes actually in use are shown.
  *
  * `textField` at its own defaults, where React drew two full-width stacked fields: a number is
  * a short answer and sits beside its question (`fields.ts`), and the long hint is exactly the
  * case the row's `flex-wrap` is for. Same two keys, same limits, one less arrangement of a
  * label and a field on a screen that had several.
  */
+/**
+ * The server's own ceiling, as a number. The hint said a file could be "as large as the server
+ * allows" and no more, and on Cloudflare that is 25 MB, which an owner met only as a refusal
+ * (2026-11-03). This screen does know it: it is the environment the process was started with.
+ */
+const serverLimit = (t: AdminStrings, bytes: number, unit: 'MB' | 'GB'): string =>
+  bytes > 0
+    ? t.serverLimit.replace('{n}', `${Math.round(bytes / (unit === 'MB' ? 1024 ** 2 : 1024 ** 3))} ${unit}`)
+    : t.serverNoLimit
+
 const storage = (t: AdminStrings, s: SiteSettings): string =>
   `<div class="${SETTING_GAP}">`
   + textField({
-    k: 'maxUploadMb', label: t.maxUploadLabel, note: t.maxUploadHint, type: 'number',
+    k: 'maxUploadMb', label: t.maxUploadLabel, type: 'number',
+    note: `${t.maxUploadHint} ${serverLimit(t, readEnv().maxUploadBytes, 'MB')}`,
     value: s.maxUploadMb, attrs: 'min="0" max="4096"',
   })
   + textField({

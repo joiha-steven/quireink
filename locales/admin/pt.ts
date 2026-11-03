@@ -1384,6 +1384,8 @@ const pt = {
   storageTitle: 'Armazenamento',
   maxUploadLabel: 'Maior envio (MB)',
   maxUploadHint: '0 quer dizer que você não define um limite aqui: um arquivo pode ser tão grande quanto o servidor permitir. Um número aqui pode baixar o limite do servidor, mas nunca aumentá-lo, porque esse limite é de quem administra o servidor.',
+  serverLimit: 'O limite próprio deste servidor: {n}.',
+  serverNoLimit: 'Este servidor não define um limite próprio.',
   storageQuotaLabel: 'Limite de armazenamento (GB)',
   storageQuotaHint: 'Conta tudo o que está no disco, incluindo as cópias menores de cada imagem. Um envio que passasse do limite é recusado. 0 quer dizer que você não define um limite aqui; o limite do servidor, se houver, continua valendo.',
   backupTitle: 'Backups',

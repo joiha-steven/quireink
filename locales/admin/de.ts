@@ -1383,6 +1383,8 @@ const de = {
   storageTitle: 'Speicher',
   maxUploadLabel: 'Größter Upload (MB)',
   maxUploadHint: '0 heißt, Sie setzen hier keine eigene Grenze: Eine Datei darf so groß sein, wie der Server erlaubt. Ein Wert hier kann die Grenze des Servers senken, aber nie anheben, denn sie gehört dem Betreiber des Servers.',
+  serverLimit: 'Das eigene Limit dieses Servers: {n}.',
+  serverNoLimit: 'Dieser Server setzt kein eigenes Limit.',
   storageQuotaLabel: 'Speichergrenze (GB)',
   storageQuotaHint: 'Zählt alles auf der Festplatte, auch die kleineren Kopien, die aus jedem Bild entstehen. Ein Upload, der darüber hinausgehen würde, wird abgelehnt. 0 heißt, Sie setzen hier keine eigene Grenze; eine Grenze des Servers gilt trotzdem.',
   backupTitle: 'Backups',

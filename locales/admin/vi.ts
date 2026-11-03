@@ -1383,6 +1383,8 @@ const vi = {
   storageTitle: 'Dung lượng',
   maxUploadLabel: 'Tệp tải lên lớn nhất (MB)',
   maxUploadHint: 'Để 0 là bạn không đặt giới hạn riêng: tệp lớn tới đâu là tuỳ máy chủ cho phép. Số đặt ở đây chỉ hạ được giới hạn của máy chủ, không nâng được, vì giới hạn đó thuộc về người vận hành máy chủ.',
+  serverLimit: 'Giới hạn riêng của máy chủ này: {n}.',
+  serverNoLimit: 'Máy chủ này không đặt giới hạn riêng.',
   storageQuotaLabel: 'Giới hạn dung lượng (GB)',
   storageQuotaHint: 'Tính mọi thứ trên đĩa, kể cả các bản nhỏ tạo ra từ mỗi ảnh. Tải lên mà vượt quá thì bị từ chối. Để 0 là bạn không đặt giới hạn riêng; giới hạn của máy chủ (nếu có) vẫn áp dụng.',
   backupTitle: 'Sao lưu',

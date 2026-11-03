@@ -1383,6 +1383,8 @@ const fr = {
   storageTitle: 'Stockage',
   maxUploadLabel: 'Envoi le plus lourd (Mo)',
   maxUploadHint: '0 signifie que vous ne fixez pas de limite ici : un fichier peut être aussi lourd que le serveur l’autorise. Un nombre ici peut abaisser la limite du serveur, jamais la relever, parce qu’elle appartient à qui fait tourner le serveur.',
+  serverLimit: 'La limite propre de ce serveur : {n}.',
+  serverNoLimit: 'Ce serveur ne fixe aucune limite propre.',
   storageQuotaLabel: 'Limite de stockage (Go)',
   storageQuotaHint: 'Compte tout ce qui est sur disque, y compris les copies réduites de chaque image. Un envoi qui la dépasserait est refusé. 0 signifie que vous ne fixez pas de limite ici ; celle du serveur, s’il en a une, s’applique toujours.',
   backupTitle: 'Sauvegardes',

@@ -1383,6 +1383,8 @@ const zh = {
   storageTitle: '存储',
   maxUploadLabel: '单个文件上限（MB）',
   maxUploadHint: '填 0 表示这里不另设上限，文件能多大由服务器决定。这里的数值只能调低服务器的上限，不能调高，因为这个上限由运行服务器的人决定。',
+  serverLimit: '本服务器自身的上限：{n}。',
+  serverNoLimit: '本服务器没有自身的上限。',
   storageQuotaLabel: '存储上限（GB）',
   storageQuotaHint: '统计磁盘上的所有文件，包括由每张图片生成的小尺寸副本。超出上限的上传会被拒绝。填 0 表示这里不另设上限；服务器若有上限，仍然适用。',
   backupTitle: '备份',
