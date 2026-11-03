@@ -186,7 +186,7 @@ export function themeWords(t: AdminStrings): string {
     rolledBack: t.themeRolledBack, removed: t.themeRemoved, failed: t.themeActionFailed,
     askTitle: t.askThemeRemoveTitle, askBody: t.askThemeRemoveBody, yes: t.themeRemove, no: t.askCancel,
     previewMissing: t.themePreviewMissing, previewUnreadable: t.themePreviewUnreadable, pickGone: t.themePreviewPickGone,
-    skippedOs: t.themeSkippedOs,
+    skippedOs: t.themeSkippedOs, replaced: t.themeReplaced,
     rules: t.themeRules,
   }))
 }

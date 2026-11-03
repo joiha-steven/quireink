@@ -133,7 +133,7 @@ PowerShell, with the differences named. Everything runs from inside the product 
 9. **Ship a fix:** raise `version` and install the new zip over the old. The previous version is
    kept: **Roll back to &lt;version&gt;** on the tile removes the current one and brings the earlier
    back. Installing the same version again with changed files replaces it in place, which is handy
-   while you work and leaves nothing to roll back to. **Remove** deletes the theme; a blog wearing
+   while you work and leaves nothing to roll back to; the admin says so when it happens. **Remove** deletes the theme; a blog wearing
    it goes back to Plain paper.
 
 **There is no gallery and no review service.** Quire Ink does not host themes. To share one, hand

@@ -1097,6 +1097,8 @@ export type AdminStrings = {
   themeUnchanged: string
   /** After an install: how many files the operating system had added to the zip, left out. `{n}` */
   themeSkippedOs: string
+  /** After installing a version already installed with other files: replaced, nothing to roll back to. `{theme}` `{version}` */
+  themeReplaced: string
   themeRefusedHead: string
   themeTooBig: string
   themeNetwork: string

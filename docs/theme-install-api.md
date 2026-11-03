@@ -13,7 +13,7 @@ same-origin request, or `401` and `403` before anything runs. Answers are the ad
 
 | Request | Body | Answer |
 |:--|:--|:--|
-| `POST /api/themes` | multipart form, the zip as `file` | `{ id, version, hash, changed }`. `changed: false` when this exact package was already installed as that version |
+| `POST /api/themes` | multipart form, the zip as `file` | `{ id, version, hash, changed, skipped, replaced }`. `changed: false` when this exact package was already installed as that version; `skipped`, how many files the operating system had added that were left out; `replaced: true` when that version was installed with other files, which these replaced, so there is nothing to roll back to |
 | `GET /api/themes` | — | one entry per theme id: `{ id, current, previous, active, reviewed: false, readable, ownsSettings }`, `current` with the version, hash, install time and the manifest's name, author, description, license, homepage, api and screenshot URL; `previous` newest first. `readable: false` when the current manifest does not read (a backup puts rows back unchecked): then `current` has the row's own columns, the id as the name, the other manifest fields empty and `screenshot: ''`. `ownsSettings` is the settings the theme draws itself, as a page wearing it reads them: only keys in `OWNABLE_SETTINGS`, and `[]` when the page could not draw the manifest |
 | `DELETE /api/themes/<id>` | — | `{ id, removed }`, the number of versions. A blog wearing the theme goes back to `plain` |
 | `POST /api/themes/<id>/rollback` | — | `{ id, current, removed }`: the current version removed, the one before it current again |

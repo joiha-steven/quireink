@@ -741,6 +741,7 @@ const ja = {
   themeInstalledOk: '{theme} {version} をインストールしました。',
   themeUnchanged: '{theme} {version} はすでにインストール済みです。何も変わっていません。',
   themeSkippedOs: 'macOS や Windows が自動で加えるファイルを除外しました：{n} 件。',
+  themeReplaced: '{theme} {version} をこのファイルで置き換えました。そのバージョンの以前のファイルは残らず、戻せません。配布する変更のたびに theme.json の version を上げてください。',
   themeRefusedHead: 'インストールしませんでした。チェックで見つかった問題: {n} 件',
   themeTooBig: 'インストールしませんでした。ファイルが 5 MB を超えています。テーマの上限です。',
   themeNetwork: 'インストールしませんでした。ファイルがサーバーに届きませんでした。接続を確認してもう一度お試しください。',

@@ -41,8 +41,12 @@ export { themeBlobPath }
 export const isThemeHash = (value: string): boolean => /^[0-9a-f]{64}$/.test(value)
 
 export type InstallResult =
-  /** `skipped`: how many files the operating system had added to the zip, left out and never stored. */
-  | { ok: true; id: string; version: string; hash: string; changed: boolean; skipped: number }
+  /**
+   * `skipped`: how many files the operating system had added to the zip, left out and never stored.
+   * `replaced`: this version was installed already with other files, and these took its place, so
+   * there is no rolling back to the files it had: the author forgot to raise the version.
+   */
+  | { ok: true; id: string; version: string; hash: string; changed: boolean; skipped: number; replaced: boolean }
   | { ok: false; violations: Violation[] }
 
 type LiveRow = { id: number; hash: string }
@@ -91,7 +95,8 @@ async function installNow(zip: Uint8Array): Promise<InstallResult> {
   if (!result.ok) return result
   const { manifest, hash, files } = result.pkg
   const skipped = result.skipped?.length ?? 0
-  const done = (changed: boolean): InstallResult => ({ ok: true, id: manifest.id, version: manifest.version, hash, changed, skipped })
+  const done = (changed: boolean, replaced = false): InstallResult =>
+    ({ ok: true, id: manifest.id, version: manifest.version, hash, changed, skipped, replaced })
 
   if (liveVersion(manifest.id, manifest.version)?.hash === hash) return done(false)
 
@@ -104,10 +109,12 @@ async function installNow(zip: Uint8Array): Promise<InstallResult> {
   // Asked again inside the transaction, so the row written is decided against the table as it is
   // at the write, not as it was before the files went out. The queue above makes a change in
   // between unlikely; the transaction makes it harmless.
+  let replaced = false
   const changed = tx(() => {
     const now = nowMs()
     const live = liveVersion(manifest.id, manifest.version)
     if (live?.hash === hash) return false
+    replaced = live !== null
     if (live) run(`update themes set deleted_at = ? where id = ?`, now, live.id)
     run(
       `insert into themes (theme_id, version, hash, manifest, files, installed_at) values (?, ?, ?, ?, ?, ?)`,
@@ -116,7 +123,7 @@ async function installNow(zip: Uint8Array): Promise<InstallResult> {
     return true
   })
   if (changed) forgetInstalledTheme()
-  return done(changed)
+  return done(changed, replaced)
 }
 
 type Row = { id: number; theme_id: string; version: string; hash: string; manifest: string; installed_at: number }

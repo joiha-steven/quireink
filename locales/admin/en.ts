@@ -741,6 +741,7 @@ const en = {
   themeInstalledOk: 'Installed {theme} {version}.',
   themeUnchanged: '{theme} {version} was already installed. Nothing changed.',
   themeSkippedOs: 'Files macOS or Windows add by themselves were left out: {n}.',
+  themeReplaced: 'Replaced {theme} {version} with these files. The files that version had before are not kept to roll back to: raise the version in theme.json for every change you hand out.',
   themeRefusedHead: 'Not installed. Problems the check found: {n}',
   themeTooBig: 'Not installed: the file is larger than 5 MB, the most a theme may be.',
   themeNetwork: 'Not installed: the file did not reach the server. Check the connection and try again.',

@@ -741,6 +741,7 @@ const ko = {
   themeInstalledOk: '{theme} {version}을(를) 설치했습니다.',
   themeUnchanged: '{theme} {version}은(는) 이미 설치되어 있습니다. 바뀐 것이 없습니다.',
   themeSkippedOs: 'macOS나 Windows가 스스로 넣는 파일을 뺐습니다: {n}개.',
+  themeReplaced: '{theme} {version}을(를) 이 파일로 바꿨습니다. 그 버전의 이전 파일은 남지 않아 되돌릴 수 없습니다. 내보내는 변경마다 theme.json의 version을 올리세요.',
   themeRefusedHead: '설치하지 않았습니다. 검사에서 찾은 문제: {n}개',
   themeTooBig: '설치하지 않았습니다. 파일이 테마 최대 크기인 5 MB보다 큽니다.',
   themeNetwork: '설치하지 않았습니다. 파일이 서버에 닿지 못했습니다. 연결을 확인하고 다시 시도하세요.',

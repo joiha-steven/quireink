@@ -159,8 +159,9 @@ hiding `.post-info` drops an untitled post's date unless you bring its header ba
 2. A base rule outweighs yours. A handful keep their weight against any theme
    ([themes.md section 6](themes.md#6-the-contract)); a heavier selector wins, a later one does not.
 3. On a blog: you installed the new zip without raising `version`. That works (the same version
-   with other bytes replaces the installed one), but the previous bytes are gone, so there is no
-   **Roll back** to them. Raise the version for anything you hand out.
+   with other bytes replaces the installed one, and the admin says it replaced it), but the
+   previous bytes are gone, so there is no **Roll back** to them. Raise the version for anything
+   you hand out.
 
 **theme:check says it "left out" files, or read the zip "from inside the folder".** A
 `.DS_Store` (Finder writes one into every folder it opens), a `__MACOSX/` copy (Finder adds one per

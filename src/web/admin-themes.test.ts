@@ -53,7 +53,7 @@ const install = (zip: Uint8Array) => asOwner('/api/themes', { method: 'POST', bo
 const installed = async (zip: Uint8Array) => {
   const res = await install(zip)
   expect(res.status).toBe(200)
-  return payload<{ id: string; version: string; hash: string; changed: boolean; skipped: number }>(res)
+  return payload<{ id: string; version: string; hash: string; changed: boolean; skipped: number; replaced: boolean }>(res)
 }
 const list = async () => payload<InstalledTheme[]>(await asOwner('/api/themes'))
 const rows = () => db().query('select theme_id, version, hash, deleted_at from themes order by id').all() as
@@ -117,7 +117,7 @@ describe('installing', () => {
       ...files.map((e) => ({ name: `__MACOSX/Broadsheet/${e.name.replace(/([^/]+)$/, '._$1')}`, data: new Uint8Array(163) })),
       { name: 'Broadsheet/.DS_Store', data: new Uint8Array(8) }]
     const out = await installed(testZip(finder))
-    expect(out).toEqual({ ...clean, changed: true, skipped: files.length + 1 })
+    expect(out).toEqual({ ...clean, changed: true, skipped: files.length + 1, replaced: false })
     expect(stored().every((p) => !p.includes('__MACOSX') && !p.includes('.DS_Store') && !p.includes('/._'))).toBe(true)
     expect(clean.skipped).toBe(0)
   })
@@ -137,13 +137,18 @@ describe('installing', () => {
     expect(one!.previous.map((p) => p.version)).toEqual(['1.0.0'])
   })
 
-  it('the same version with other files replaces that version, and its old files still serve', async () => {
+  it('the same version with other files replaces that version, says so, and its old files still serve', async () => {
     const old = await installed(themeZip())
+    expect(old.replaced).toBe(false)
     const fresh = await installed(themeZip({ 'theme.css': `${CSS}\n.front{color:var(--c-text)}` }))
     expect(fresh.changed).toBe(true)
+    // Nothing is left to roll back to, so the answer says the version took another's place.
+    expect(fresh.replaced).toBe(true)
     expect(rows().map((r) => [r.version, r.hash, r.deleted_at === null])).toEqual([['1.0.0', old.hash, false], ['1.0.0', fresh.hash, true]])
     expect((await list())[0]!.previous).toEqual([])
     expect((await app.request(`/themes/${old.hash}/theme.css`)).status).toBe(200)
+    // A raised version is a new version, not a replacement.
+    expect((await installed(themeZip({ 'theme.json': V2 }))).replaced).toBe(false)
   })
 })
 

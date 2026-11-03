@@ -741,6 +741,7 @@ const fr = {
   themeInstalledOk: '{theme} {version} installé.',
   themeUnchanged: '{theme} {version} était déjà installé. Rien n’a changé.',
   themeSkippedOs: 'Fichiers que macOS ou Windows ajoutent d’eux-mêmes, laissés de côté : {n}.',
+  themeReplaced: '{theme} {version} remplacé par ces fichiers. Les fichiers qu’avait cette version ne sont pas gardés pour y revenir : augmentez la version dans theme.json à chaque changement que vous diffusez.',
   themeRefusedHead: 'Non installé. Problèmes trouvés par la vérification : {n}',
   themeTooBig: 'Non installé : le fichier dépasse 5 Mo, le maximum pour un thème.',
   themeNetwork: 'Non installé : le fichier n’a pas atteint le serveur. Vérifiez la connexion et réessayez.',

@@ -43,7 +43,8 @@ export function themeRoutes() {
     }
     console.log(`theme ${result.id} ${result.version} ${result.changed ? 'installed' : 'already installed'} as ${result.hash}${result.skipped > 0 ? `, ${result.skipped} file(s) the OS added left out` : ''}`)
     if (result.changed) void logActivity('theme.install', `${result.id} ${result.version}`)
-    return json({ id: result.id, version: result.version, hash: result.hash, changed: result.changed, skipped: result.skipped })
+    if (result.replaced) console.log(`theme ${result.id} ${result.version} replaced in place: the version was not raised`)
+    return json({ id: result.id, version: result.version, hash: result.hash, changed: result.changed, skipped: result.skipped, replaced: result.replaced })
   })
 
   router.get('/api/themes', async () => json(await listInstalledThemes()))

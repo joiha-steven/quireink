@@ -741,6 +741,7 @@ const zh = {
   themeInstalledOk: '已安装 {theme} {version}。',
   themeUnchanged: '{theme} {version} 已经安装过，没有任何变化。',
   themeSkippedOs: '已略过 macOS 或 Windows 自动添加的文件：{n} 个。',
+  themeReplaced: '已用这些文件替换 {theme} {version}。该版本原来的文件不会保留，无法回退：每次发布改动都请提高 theme.json 里的 version。',
   themeRefusedHead: '未安装。检查发现的问题：{n} 个',
   themeTooBig: '未安装：文件超过 5 MB，这是主题的上限。',
   themeNetwork: '未安装：文件没有到达服务器。请检查网络连接后重试。',
