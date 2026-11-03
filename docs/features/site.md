@@ -59,7 +59,10 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
 
 - **What:** owner-managed 301 (permanent) / 302 (temporary) redirects, plus an automatic
   301 whenever a post/page slug is renamed (so existing links + search results survive a
-  move). Rows live in the `redirects` table (`source` unique, `destination`, `permanent`).
+  move), and whenever a category, tag or series is renamed to a name with another address
+  (`content/term-rename.ts`, which also moves the front page's strip for that category and any
+  menu item pointing at the old listing). A published post that carries the old name again
+  takes the address back. Rows live in the `redirects` table (`source` unique, `destination`, `permanent`).
 - **Served as a real HTTP 301/302 before any route runs** (`src/web/redirects.ts`, registered
   in `app.ts` as the last middleware before the routes). The lookup is skipped for `/admin`
   and every reserved path (below), and **fails open**: an unreadable table logs and lets the

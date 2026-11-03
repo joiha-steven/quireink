@@ -20,6 +20,7 @@ import { liveOnly, nowMs, fromIso, toIso } from '@/store/db'
 import { clearAutosave } from '@/content/autosave'
 import { renameSends } from '@/news/newsletter-log'
 import { ftsWord } from '@/content/fts-word'
+import { clearTermRedirects, followRename } from '@/content/term-rename'
 
 export type { TermKind }
 // The trash half moved into its own file when this one reached its ceiling. Re-exported so no
@@ -298,6 +299,8 @@ export async function savePost(
   // when `/b → /a` was saved: the loop check refused it and threw, this line never ran, and
   // `/a` went on sending readers to `/b`, which was a 404. The post was unreachable.
   await clearRedirectForPath(`/${post.slug}`)
+  // Its listings are live too, so a term renamed away and now carried again gets its address back.
+  if (post.status === 'published') await clearTermRedirects(post)
   // The 301 is outside the transaction: it validates its own input and can refuse, and a
   // rename with no redirect is still a rename where a half-applied one is two posts.
   if (renaming) await saveRedirect({ source: `/${previousSlug}`, destination: `/${post.slug}`, permanent: true })
@@ -340,7 +343,11 @@ export async function getRelatedPosts(slug: string, limit = 3): Promise<Post[]> 
 // Rename (newName set) or remove (null) a category/tag across EVERY post. Returns posts
 // changed. One UPDATE now, not the frozen tree's read-modify-write over every row.
 export async function updateTerm(kind: TermKind, name: string, newName: string | null): Promise<number> {
-  return tx(() => updateTermRows(kind, name, newName?.trim() || null))
+  const to = newName?.trim() || null
+  const changed = tx(() => updateTermRows(kind, name, to))
+  // The strip, the menu and the old address follow (`term-rename.ts`).
+  if (to && changed > 0) await followRename(kind, name, to)
+  return changed
 }
 
 // Distinct categories across all posts.

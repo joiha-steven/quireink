@@ -8,6 +8,7 @@ import { getPublicPosts, getIndex } from '@/content/posts'
 import { slugify } from '@/utils'
 import { orderSeries, seriesSlug } from '@/content/series-order'
 import { run, tx } from '@/store/query'
+import { followRename } from '@/content/term-rename'
 
 // Re-exported for server callers + tests; defined in the client-safe pure module.
 export { orderSeries, seriesEntries, type SeriesEntry } from '@/content/series-order'
@@ -83,9 +84,11 @@ export async function getAllSeriesNames(): Promise<string[]> {
 // changed. Rename into an existing name just merges (order ties break by date).
 export async function updateSeries(name: string, newName: string | null): Promise<number> {
   const clean = newName?.trim() || null
-  return clean
-    ? run(`update posts set series = ? where series = ?`, clean, name).changes
-    : run(`update posts set series = null, series_order = 0 where series = ?`, name).changes
+  if (!clean) return run(`update posts set series = null, series_order = 0 where series = ?`, name).changes
+  const changed = run(`update posts set series = ? where series = ?`, clean, name).changes
+  // The menu and the old address follow (`term-rename.ts`).
+  if (changed > 0) await followRename('series', name, clean)
+  return changed
 }
 
 // Set series_order to match the given slug order (0-based) for one series. Only rows
