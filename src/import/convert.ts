@@ -13,7 +13,7 @@
 import { toMarkdown } from '@/md/to-markdown'
 import { parseHtml } from './html-parse'
 import { fromHtml } from './html-to-md'
-import { deriveExcerpt } from '@/utils'
+import { deriveExcerpt, slugify, titleSlug } from '@/utils'
 import type { SiteLang } from '@/types'
 
 export type ImportedPost = {
@@ -105,6 +105,16 @@ export function htmlToMarkdown(html: string): string {
 // ---- small shared tools ---------------------------------------------------------------
 
 /** Collision-suffixing slug allocator, one per import run. */
+/**
+ * An imported item's slug: the one the platform gave it, kept whole (it is the address readers
+ * bookmarked, and a redirect follows it either way), else one made from the title and cut the way
+ * the editor cuts one (`titleSlug`). The four importers slugified the title uncut, so a
+ * 150-character draft title became a 150-character address (2026-11-03).
+ */
+export function importSlug(given: string, title: string): string {
+  return slugify(given) || titleSlug(title)
+}
+
 export function slugTracker(): (base: string) => string {
   const used = new Set<string>()
   return (base: string): string => {

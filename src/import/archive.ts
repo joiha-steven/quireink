@@ -7,10 +7,9 @@
 // class names. The owner uploads "my export" and the server works out whose it is.
 
 import {
-  htmlToMarkdown, slugTracker, decodeEntities, deriveExcerpt,
+  htmlToMarkdown, importSlug, slugTracker, decodeEntities, deriveExcerpt,
   type ImportedPost, type ImportResult,
 } from '@/import/convert'
-import { slugify } from '@/utils'
 
 export type Entry = { name: string; text: string }
 
@@ -84,7 +83,7 @@ export function parseSubstack(entries: Entry[], now: string): ImportResult {
     const content = htmlToMarkdown(body)
     const excerpt = decodeEntities((r[subC] ?? '').trim()) || deriveExcerpt(content)
     const d = new Date(r[dateC] ?? '')
-    const publicSlug = slugify(slugPart) || slugify(title)
+    const publicSlug = importSlug(slugPart, title)
     const isPublished = (r[pubC] ?? '').toLowerCase() === 'true'
     posts.push({
       title,
@@ -153,7 +152,7 @@ export function parseMedium(entries: Entry[], now: string): ImportResult {
     const d = new Date(published)
     posts.push({
       title,
-      slug: uniqueSlug(slugify(m[1]!.replace(/^draft_/, '').replace(/_/g, '-').replace(/-[0-9a-f]{8,}$/, '')) || slugify(title)),
+      slug: uniqueSlug(importSlug(m[1]!.replace(/^draft_/, '').replace(/_/g, '-').replace(/-[0-9a-f]{8,}$/, ''), title)),
       date: !isDraft && !Number.isNaN(d.getTime()) ? d.toISOString() : now,
       status: isDraft ? 'draft' : 'published',
       categories: [],

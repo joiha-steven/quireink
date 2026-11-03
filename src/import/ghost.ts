@@ -8,10 +8,9 @@
 // source, but `html` is present on every export and is the one rendering truth.
 
 import {
-  htmlToMarkdown, slugTracker, deriveExcerpt,
+  htmlToMarkdown, importSlug, slugTracker, deriveExcerpt,
   type ImportedPost, type ImportedPage, type ImportResult,
 } from '@/import/convert'
-import { slugify } from '@/utils'
 
 type GhostPost = Record<string, unknown>
 
@@ -77,7 +76,7 @@ export function parseGhost(doc: unknown, now: string): ImportResult {
       continue
     }
     const title = str(p.title).trim() || 'Untitled'
-    const slug = uniqueSlug(slugify(str(p.slug) || title))
+    const slug = uniqueSlug(importSlug(str(p.slug), title))
     // A post Ghost kept only as lexical (`html: null`) imported with an EMPTY body; its words
     // come from the lexical tree when there is no HTML.
     const body = str(p.html) ? htmlToMarkdown(str(p.html)) : lexicalToMarkdown(str(p.lexical))

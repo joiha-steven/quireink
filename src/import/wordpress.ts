@@ -11,10 +11,9 @@
 
 import { parseXml } from '@/import/xml'
 import {
-  htmlToMarkdown, slugTracker, decodeEntities, deriveExcerpt,
+  htmlToMarkdown, importSlug, slugTracker, decodeEntities, deriveExcerpt,
   type ImportedPost, type ImportedPage, type ImportResult,
 } from '@/import/convert'
-import { slugify } from '@/utils'
 
 export type { ImportedPost, ImportedPage }
 export type WxrResult = ImportResult
@@ -77,7 +76,7 @@ export function parseWxr(xml: string, now: string): WxrResult {
       continue
     }
     const title = text(item.title).trim() || 'Untitled'
-    const slug = uniqueSlug(slugify(text(item['wp:post_name']) || title))
+    const slug = uniqueSlug(importSlug(text(item['wp:post_name']), title))
     const html = raw(item['content:encoded'])
     const body = htmlToMarkdown(html)
     const mappedStatus = status === 'publish' || status === 'future' ? 'published' : 'draft'

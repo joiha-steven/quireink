@@ -110,6 +110,16 @@ describe('parseWxr slugs', () => {
     expect(parseWxr(xml, NOW).posts[0]?.slug).toBe('thuong-hieu-den-pin-surefire')
   })
 
+  // The editor cuts a slug it derives from a title at a whole word within 80 characters; the four
+  // importers did not, so a 150-character draft title became a 150-character address (2026-11-03).
+  it('cuts a slug derived from a long title the way the editor does', () => {
+    const long = 'Một tiêu đề rất dài cho một bài nháp chưa bao giờ có địa chỉ, viết cho đến khi vượt quá tám mươi ký tự và hơn thế nữa'
+    const slug = parseWxr(wxr(item({ name: '', title: long, status: 'draft' })), NOW).posts[0]!.slug
+    expect(slug.length).toBeLessThanOrEqual(80)
+    expect(long.length).toBeGreaterThan(80)
+    expect(slug.endsWith('-')).toBe(false)
+  })
+
   it('disambiguates colliding slugs rather than dropping a post', () => {
     const xml = wxr(item({ name: 'same' }) + item({ name: 'same' }) + item({ name: 'same' }))
     expect(parseWxr(xml, NOW).posts.map((p) => p.slug)).toEqual(['same', 'same-2', 'same-3'])
