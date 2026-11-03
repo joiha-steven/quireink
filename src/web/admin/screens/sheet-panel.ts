@@ -12,7 +12,7 @@
 // wide screen and a field that arrives late moves the paragraph somebody is reading.
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { PostStatus, SiteLang } from '@/types'
-import { escapeAttr, escapeHtml } from '@/utils'
+import { EXCERPT_MAX_CHARS, escapeAttr, escapeHtml, fill } from '@/utils'
 import { buttonClass, OVERLAY_LIFT } from '@/admin-shared/kit'
 import { textArea, textField } from '@/web/admin/fields'
 import { ahead } from '@/admin-shared/sheet-state'
@@ -53,6 +53,8 @@ export type PanelPiece = {
    * label because nothing said which, and the rest of the screen shows the viewer's own clock.
    */
   zone: string
+  /** `settings.excerptLength`: how many words an empty excerpt takes, which the field says. */
+  excerptWords: number
 }
 
 export type PanelLists = { categories: string[]; tags: string[]; series: string[]; groups: string[] }
@@ -127,7 +129,9 @@ function postFields(t: AdminStrings, piece: PanelPiece, lists: PanelLists): stri
     })
     + textArea({
       k: 'excerpt', label: t.excerpt, value: piece.excerpt, rows: 3,
-      attrs: `maxlength="200" placeholder="${escapeAttr(t.excerptPlaceholder)}"`,
+      // The SERVER's ceiling and the blog's own word count, not two numbers typed into a sentence:
+      // the box stopped at 200 while the server kept 280, and said 50 whatever the setting was.
+      attrs: `maxlength="${EXCERPT_MAX_CHARS}" placeholder="${escapeAttr(fill(t.excerptPlaceholder, { words: piece.excerptWords, max: EXCERPT_MAX_CHARS }))}"`,
     })
     + pictureField({
       k: 'coverImage', label: t.coverImageLabel, hint: t.coverImageHint, value: piece.coverImage, t,
@@ -140,7 +144,8 @@ function postFields(t: AdminStrings, piece: PanelPiece, lists: PanelLists): stri
     })
     + textArea({
       k: 'metaDescription', label: t.metaDescriptionLabel, value: piece.metaDescription, rows: 2,
-      attrs: `maxlength="200" placeholder="${escapeAttr(t.excerptPlaceholder)}"`,
+      // Empty, the page's description is the excerpt (`article.ts`), not the opening words.
+      attrs: `maxlength="200" placeholder="${escapeAttr(fill(t.metaDescriptionPlaceholder, { max: 200 }))}"`,
     })
     + `</div>`
 }

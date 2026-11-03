@@ -220,6 +220,7 @@ export async function writingFrame(
     // only prints it, because the island holds no dictionary and no list of pieces.
     translations: await groupMembersLine(draft.slug, draft.translationGroup),
     zone,
+    excerptWords: settings.excerptLength,
     scheduledNote: scheduled
       ? `${t.scheduledForPrefix} ${formatWallClock(draft.date, settings.language)}`
       : '',

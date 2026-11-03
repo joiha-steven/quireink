@@ -20,13 +20,26 @@ const piece = (kind: SheetKind, over: Partial<PanelPiece> = {}): PanelPiece => (
   date: kind === 'page' ? '' : '2027-03-04T09:30',
   categories: [], tags: [], series: '', seriesOrder: 0,
   featuredImage: '', coverImage: '', metaTitle: '', metaDescription: '', excerpt: '',
-  sourceUrl: '', sourceTitle: '', quote: '', scheduledNote: '', zone: '',
+  sourceUrl: '', sourceTitle: '', quote: '', scheduledNote: '', zone: '', excerptWords: 50,
   lang: '', translationGroup: '', translations: '',
   ...over,
 })
 
 const draw = (kind: SheetKind, over: Partial<PanelPiece> = {}): string =>
   sheetPanel({ t, lang: 'en', piece: piece(kind, over), lists: LISTS, headerRight: '', bottom: '' })
+
+// The box stopped at 200 while the server keeps 280, and said "the first 50 words" whatever the
+// blog's own excerpt length was (2026-11-03). Both numbers come from where they are kept now.
+describe('the excerpt box', () => {
+  it('takes what the server keeps, and says the blog\'s own word count', () => {
+    const html = draw('post', { excerptWords: 30 })
+    expect(html).toContain('maxlength="280" placeholder="Leave blank to use the first 30 words. At most 280 characters."')
+  })
+
+  it('tells the meta description that empty means the excerpt', () => {
+    expect(draw('post')).toContain('Leave blank to use the excerpt.')
+  })
+})
 
 describe('what every kind has', () => {
   for (const kind of ['post', 'page', 'note'] as const) {

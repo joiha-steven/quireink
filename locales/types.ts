@@ -680,6 +680,7 @@ export type AdminStrings = {
   removeSelection: string
   excerpt: string
   excerptPlaceholder: string
+  metaDescriptionPlaceholder: string
   // multi-select
   multiPlaceholder: string
   removeAria: string
