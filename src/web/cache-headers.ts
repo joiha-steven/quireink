@@ -12,6 +12,7 @@
 import type { MiddlewareHandler } from 'hono'
 import { getSettings } from '@/content/settings'
 import { SPECULATION_HEADER } from '@/web/speculation'
+import { withReadScope } from '@/content/read-scope'
 
 /**
  * 60 seconds, and the edge may keep answering while it refreshes.
@@ -42,7 +43,9 @@ export const OWNER_PATH = /^\/(admin|login|api|setup)(\/|$)/
 
 export function cacheHeaders(): MiddlewareHandler {
   return async (c, next) => {
-    await next()
+    // A read is also one read of the post index, however many parts of the page ask for it
+    // (`content/read-scope.ts`). Never a write, which must read back what it just saved.
+    await (c.req.method === 'GET' || c.req.method === 'HEAD' ? withReadScope(next) : next())
     // A handler that has already said what it wants is left alone: the asset routes are
     // immutable-for-a-year, and the machine surfaces set their own.
     if (c.res.headers.has('cache-control')) return

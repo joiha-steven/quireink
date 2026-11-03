@@ -16,6 +16,7 @@ import { writeExcerpt } from '@/content/ai-excerpt'
 import { writeTerms, updateTermRows, type TermKind } from '@/content/post-terms'
 import { META_COLS, asLang, rowToMeta, type PostRow } from '@/content/post-row'
 import { all, one, run, tx } from '@/store/query'
+import { once } from '@/content/read-scope'
 import { liveOnly, nowMs, fromIso, toIso } from '@/store/db'
 import { clearAutosave } from '@/content/autosave'
 import { renameSends } from '@/news/newsletter-log'
@@ -56,13 +57,19 @@ function projection(p: PostWithContent): string {
   })
 }
 
-// Full metadata list, newest first. The frozen tree wrapped this in `React.cache` to
-// dedupe within one render; there is no render pass to dedupe across here.
+// Full metadata list, newest first. Read once per page (`content/read-scope.ts`), the job
+// `React.cache` did in the frozen tree; each caller gets its own copies, so one part of a page
+// changing a post it was handed does not change it for the next.
+let indexReads = 0
+/** Test seam: how many times the index has come off the database. */
+export const indexReadCount = (): number => indexReads
+
 function readIndex(): Post[] {
   try {
-    return all<PostRow>(
-      `select ${META_COLS} from posts p where ${liveOnly('p')} order by p.date desc`,
-    ).map(rowToMeta)
+    return once('posts.index', () => {
+      indexReads++
+      return all<PostRow>(`select ${META_COLS} from posts p where ${liveOnly('p')} order by p.date desc`).map(rowToMeta)
+    }).map((p) => ({ ...p }))
   } catch (error) {
     // Degrade to empty (DB unreachable) instead of 500ing.
     console.error(`[ERROR] posts.readIndex: ${(error as Error).message}`)
