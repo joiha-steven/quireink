@@ -16,6 +16,7 @@ import { collapseBlob, expandBlob } from '@/media/blob'
 import { clearAutosave } from '@/content/autosave'
 import { isPublicallyVisible, slugify, titleSlug } from '@/utils'
 import { SlugConflictError } from '@/content/slugs'
+import { renameMarks } from '@/server/reader-marks-move'
 import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
 import { all, one, run, tx } from '@/store/query'
 import { fromIso, liveOnly, nowMs, toIso } from '@/store/db'
@@ -179,7 +180,10 @@ export async function saveNote(input: Partial<NoteWithContent>, previousSlug?: s
         now,
       },
     )
-    if (renaming) run(`delete from notes where slug = ?`, previousSlug)
+    if (renaming) {
+      run(`delete from notes where slug = ?`, previousSlug)
+      renameMarks(`/notes/${previousSlug}`, `/notes/${note.slug}`)
+    }
   })
   await clearRedirectForPath(`/notes/${note.slug}`)
   if (renaming) await saveRedirect({ source: `/notes/${previousSlug}`, destination: `/notes/${note.slug}`, permanent: true })
