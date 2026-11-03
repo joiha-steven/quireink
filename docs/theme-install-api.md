@@ -304,10 +304,11 @@ makes. A theme the tools accept is one the Look card accepts, with the same find
 Wearing it is `update_appearance` with `theme` set to its id, as before; going back is the same
 call with the theme the site wore. Raise `version` on each edit so there is a version to roll back to.
 
-- **The ceiling is the route's.** `/api/mcp` takes a bearer token and its body is not capped
-  (`web/body-cap.ts`), so the tool caps it: the files' lengths against the 10 MB expanded limit before
-  anything is decoded, and the zip it makes against the 5 MB `file_too_large` ceiling, both answered as
-  rule `A5` findings.
+- **The ceiling is the route's.** `/api/mcp` reads at most `MCP_BODY_LIMIT` (16,078,168 bytes: the
+  10 MB package limit as base64, plus 2 MiB of JSON, `src/web/admin/mcp-transport.ts`), which is more than a
+  zip upload may carry, so the tool caps the package itself: the files' lengths against the 10 MB expanded
+  limit before anything is decoded, and the zip it makes against the 5 MB `file_too_large` ceiling, both
+  answered as rule `A5` findings.
 - **A missing `screenshot.webp` becomes a blank tile**, a fixed 1200 x 900 WebP of one colour, and the
   answer says `placeholderScreenshot: true`. An agent with a real one sends it as base64.
 - **Scope.** The two writes are absent from a `read` token's door (`src/mcp/scope.test.ts`). In the

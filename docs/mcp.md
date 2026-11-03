@@ -14,6 +14,12 @@
   request, and the connector's first move after `initialize` is exactly such a notification
   (`notifications/initialized`). Symptom when this was wrong: the handshake succeeded, that POST
   never returned, and the client showed a spinner and then "server is currently unavailable".
+- **The body is capped before it is parsed** at `MCP_BODY_LIMIT`, 16,078,168 bytes: the largest honest
+  call, `install_theme` with a package at its 10 MiB limit as base64, plus 2 MiB for the JSON around it
+  (`src/web/admin/mcp-transport.ts`, `src/web/mcp-body-cap.test.ts`). `web/body-cap.ts` leaves a bearer
+  door to the owner, so until 2026-11-03 any token, a read one included, could send a body of any size.
+  A declared length past it is refused unread; a body that declares none is cut off as it passes. The
+  answer is `413` with JSON-RPC error `-32600` naming the number.
 - **Tokens, minted in the admin.** Up to five manual ones, named, shown ONCE, stored as a
   SHA-256 hash in `mcp_tokens` (`src/mcp/tokens.ts`). Each carries a **scope** chosen at mint
   time — `full` (the default), `read`, or `admin`; a `read` token's door registers only the

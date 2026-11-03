@@ -24,6 +24,7 @@ import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { clearCache } from '@/server/cache'
 import { refusalFor } from '@/mcp/guarded-paths'
 import { asError } from '@/mcp/result'
+import { THEME_LIMITS } from '@/theme/types'
 
 /**
  * A transport that carries exactly one exchange.
@@ -67,8 +68,55 @@ class SingleExchange implements Transport {
   }
 }
 
-const jsonRpcError = (id: unknown, code: number, message: string) =>
-  Response.json({ jsonrpc: '2.0', id: id ?? null, error: { code, message } })
+const jsonRpcError = (id: unknown, code: number, message: string, status = 200) =>
+  Response.json({ jsonrpc: '2.0', id: id ?? null, error: { code, message } }, { status })
+
+/**
+ * THE LARGEST BODY THIS DOOR READS: 16,078,168 bytes.
+ *
+ * Nothing else caps it. `web/body-cap.ts` leaves a bearer door's body to the owner, so until
+ * 2026-11-03 any token, a read one included, could post a JSON body of any size and the process
+ * held all of it before parsing it. The number is the largest honest call there is, worked out
+ * rather than guessed: `install_theme` with a package at its expanded limit (`THEME_LIMITS.
+ * totalBytes`, 10 MiB) sent as base64 is ceil(10485760 / 3) × 4 = 13,981,016 bytes, and 2 MiB on
+ * top pays for the JSON around it: up to 66 file entries' names and keys, the envelope, and the
+ * escaping a theme.css or theme.json sent as text costs (a quote or a newline doubles; two 64 KiB
+ * text files at the worst `\uXXXX` rate are 786,432). Derived from the limit, so a package limit
+ * raised later raises this with it.
+ */
+export const MCP_BODY_LIMIT = Math.ceil(THEME_LIMITS.totalBytes / 3) * 4 + 2 * 1024 * 1024
+
+/**
+ * The body as text, or null once it passes `limit`. Read as it arrives, so a body that lies about
+ * its length, or declares none, is stopped at the limit rather than after it.
+ */
+async function readCapped(req: Request, limit: number): Promise<string | null> {
+  if (req.body === null) return ''
+  const reader = req.body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > limit) {
+      await reader.cancel().catch(() => {})
+      return null
+    }
+    chunks.push(value)
+  }
+  const out = new Uint8Array(total)
+  let at = 0
+  for (const c of chunks) {
+    out.set(c, at)
+    at += c.byteLength
+  }
+  return new TextDecoder().decode(out)
+}
+
+/** A refusal a client can read: the HTTP status says too large, the JSON-RPC error says the number. */
+const tooLarge = (): Response =>
+  jsonRpcError(null, -32600, `Request too large: an MCP request body is at most ${MCP_BODY_LIMIT} bytes`, 413)
 
 export async function handleMcp(c: Context): Promise<Response> {
   const settings = await getSettings()
@@ -100,9 +148,16 @@ export async function handleMcp(c: Context): Promise<Response> {
   if (c.req.method === 'DELETE') return new Response(null, { status: 204 })
   if (c.req.method === 'GET') return c.text('Method Not Allowed', 405)
 
+  // BEFORE THE PARSE, and twice: the declared length refuses without reading a byte, and the read
+  // itself stops at the limit for a body that declares none or declares less than it sends.
+  const declared = Number(c.req.header('content-length') ?? '')
+  if (Number.isFinite(declared) && declared > MCP_BODY_LIMIT) return tooLarge()
+  const text = await readCapped(c.req.raw, MCP_BODY_LIMIT)
+  if (text === null) return tooLarge()
+
   let message: JSONRPCMessage
   try {
-    message = await c.req.json() as JSONRPCMessage
+    message = JSON.parse(text) as JSONRPCMessage
   } catch {
     return jsonRpcError(null, -32700, 'Parse error')
   }

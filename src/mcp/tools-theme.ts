@@ -79,9 +79,9 @@ type Packed = { zip: Uint8Array; placeholder: boolean } | { error: string } | { 
  * The agent's files as the zip the installer reads, or why they cannot be one. Directories are
  * records too, as `zip -r` writes them and `theme:check` packs a directory.
  *
- * THE SIZES ARE CAPPED HERE, because nothing else caps them on this door: `web/body-cap.ts` leaves
- * a bearer token's body to the owner, so a JSON call can carry far more than the admin's 5 MB
- * upload. The package's expanded limit is checked from the lengths before anything is decoded, and
+ * THE SIZES ARE CAPPED HERE, because the door's own cap is sized for the call, not the package:
+ * `MCP_BODY_LIMIT` (`web/admin/mcp-transport.ts`) lets through a 10 MiB package as base64, far
+ * more than the admin's 5 MB upload. The package's expanded limit is checked from the lengths before anything is decoded, and
  * the zip this makes is held to the route's own `file_too_large` ceiling, `THEME_LIMITS.zipBytes`.
  */
 function packFiles(files: FileInput[]): Packed {
