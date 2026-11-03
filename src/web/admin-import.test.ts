@@ -105,6 +105,18 @@ describe('the WordPress import', () => {
     expect((await payload<Array<{ slug: string }>>(asOwner('/api/posts'))).map((p) => p.slug)).toEqual(['dated'])
   })
 
+  // Every importer handed the excerpt it had derived to `savePost` as if the writer had written
+  // it, so an imported post's excerpt never followed its body again (2026-11-03).
+  it('leaves an excerpt it derived free to follow the body', async () => {
+    const { getPost, savePost } = await import('@/content/posts')
+    await send(wxr(item('Derived', 'post', 'derived')))
+    const post = (await getPost('derived'))!
+    expect(post.excerptAuto).toBe(true)
+    // What the editor sends for a derived excerpt: the field left empty (`screens/sheet-frame.ts`).
+    await savePost({ ...post, excerpt: '', content: 'Altogether different words now.' }, 'derived')
+    expect((await getPost('derived'))!.excerpt).toContain('Altogether different')
+  })
+
   it('is recorded under the blog it actually came from', async () => {
     // ⚠️ THE KIND IS WHAT THE ACTIVITY LOG PRINTS, and there was one kind for four importers.
     // A Ghost, Substack or Medium import was filed as `import.wordpress`, which the log renders
@@ -276,6 +288,8 @@ describe('a blog leaves and comes back', () => {
 
     const { getNote } = await import('@/content/notes')
     expect((await getNote('cay-but'))!.quote).toBe('every stroke starts wet')
+    // Its excerpt was derived at home, and is derived again here rather than frozen (2026-11-03).
+    expect(back.excerptAuto).toBe(true)
   })
 
   it('does not claim an archive that is not ours', async () => {

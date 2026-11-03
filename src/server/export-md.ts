@@ -79,7 +79,8 @@ export const postFile = (p: Post & { content: string }): string => withBody(fron
   ['title', p.title], ['slug', p.slug], ['date', p.date], ['status', p.status],
   ['categories', p.categories], ['tags', p.tags],
   ['series', p.series], ['seriesOrder', p.series ? p.seriesOrder ?? 0 : undefined],
-  ['excerpt', p.excerpt], ['coverImage', p.coverImage], ['featuredImage', p.featuredImage],
+  // A derived excerpt is left out, so the import derives it again instead of freezing it.
+  ['excerpt', p.excerptAuto ? undefined : p.excerpt], ['coverImage', p.coverImage], ['featuredImage', p.featuredImage],
   ['metaTitle', p.metaTitle], ['metaDescription', p.metaDescription],
   ['readingMinutes', p.readingMinutes], ['updatedAt', p.updatedAt],
   ['lang', p.lang], ['translationGroup', p.translationGroup],

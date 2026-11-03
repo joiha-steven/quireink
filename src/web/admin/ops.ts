@@ -26,6 +26,7 @@ import { storageWritable } from '@/runtime/impl/blob'
 import { APP_VERSION } from '@/version'
 import { maxImportBytes } from '@/web/body-cap'
 import { ownerRouter } from '@/web/guard'
+import { deriveExcerpt } from '@/utils'
 
 
 /** Per-IP cap on the cron tick. See the comment at the route for why it needs one. */
@@ -125,7 +126,11 @@ export function opsRoutes() {
       if (unparseable(rest.date)) { skipped++; continue }
       const here = await getPost(slug)
       if (here && here.title === rest.title && sameDate(here.date, rest.date)) { skipped++; continue }
-      const finalSlug = await saveUnique(slug, (s) => savePost({ ...rest, slug: s }))
+      // An excerpt the PARSER derived is not one the writer wrote: handed over as written, it was
+      // frozen and never followed the body again (2026-11-03). Empty, `savePost` derives it at
+      // this blog's own length and keeps it derived.
+      const excerpt = rest.excerpt === deriveExcerpt(rest.content) ? '' : rest.excerpt
+      const finalSlug = await saveUnique(slug, (s) => savePost({ ...rest, excerpt, slug: s }))
       redirects += await redirectOldPath(path, finalSlug)
       importedPosts += 1
     }
