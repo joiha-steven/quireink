@@ -23,6 +23,8 @@ describe('the list', () => {
       'delete_page',
       'delete_post',
       'import_images',
+      'install_theme',
+      'rollback_theme',
       'send_test_newsletter',
       'update_appearance',
       'update_settings',

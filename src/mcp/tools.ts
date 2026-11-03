@@ -21,6 +21,7 @@ import { registerLibraryTools } from '@/mcp/tools-library'
 import { registerInsightTools } from '@/mcp/tools-insight'
 import { registerStewardTools } from '@/mcp/tools-steward'
 import { registerNoteTools } from '@/mcp/tools-notes'
+import { registerThemeTools } from '@/mcp/tools-theme'
 
 // Shared input shape for create/update of a post (all optional; savePost normalizes).
 const postFields = {
@@ -85,6 +86,7 @@ export function registerTools(server: ToolHost): void {
   registerLibraryTools(server)
   registerInsightTools(server)
   registerStewardTools(server)
+  registerThemeTools(server)
 }
 
 function registerPostTools(server: ToolHost): void {

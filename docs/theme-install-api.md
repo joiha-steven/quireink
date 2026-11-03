@@ -284,6 +284,35 @@ island [`src/admin/island/lib/settings-themes.ts`](../src/admin/island/lib/setti
   installed theme as `Name (id)`, a built-in one as its id, named on the log screen in the
   reader's language.
 
+## Over MCP
+
+An agent connected over MCP ([mcp.md](mcp.md)) makes a theme from files, through the same door
+(`src/mcp/tools-theme.ts`, tests in `src/mcp/tools-theme.test.ts`). It hands over
+`files: [{ path, text | base64 }]`; the tool zips them in memory as `theme:check` zips a directory,
+and the zip goes to `readThemePackage(zip, packageOptions())` and `installTheme`, the calls the route
+makes. A theme the tools accept is one the Look card accepts, with the same findings.
+
+| Tool | Scope | Does |
+|:--|:--|:--|
+| `get_theme_guide` | read | the package table, the manifest fields, every rule code with the admin's English sentence, the contract's selectors (with their surface), attributes and variables, the reserved ids, and a small theme that passes |
+| `list_themes` | read | the built-in ids, and each installed theme: current version, the versions a rollback goes back to, whether the site wears it |
+| `check_theme` | read | the checker, writing nothing: `{ ok, id, version }` or `findings`, one `{ rule, file, line, col, subject, why }` each, `why` being the sentence `theme:check` prints |
+| `install_theme` | full | checks and installs, as `POST /api/themes`; refused, nothing is written. Installed is not worn |
+| `preview_theme` | read | the link `/api/themes/<id>/preview` for the owner to open: it works only in a browser signed in as the owner ([above](#previewing-one)), so the agent hands it over |
+| `rollback_theme` | full | as `POST /api/themes/<id>/rollback`, logged `theme.rollback` |
+
+Wearing it is `update_appearance` with `theme` set to its id, as before; going back is the same
+call with the theme the site wore. Raise `version` on each edit so there is a version to roll back to.
+
+- **The ceiling is the route's.** `/api/mcp` takes a bearer token and its body is not capped
+  (`web/body-cap.ts`), so the tool caps it: the files' lengths against the 10 MB expanded limit before
+  anything is decoded, and the zip it makes against the 5 MB `file_too_large` ceiling, both answered as
+  rule `A5` findings.
+- **A missing `screenshot.webp` becomes a blank tile**, a fixed 1200 x 900 WebP of one colour, and the
+  answer says `placeholderScreenshot: true`. An agent with a real one sends it as base64.
+- **Scope.** The two writes are absent from a `read` token's door (`src/mcp/scope.test.ts`). In the
+  in-admin assistant both ask the owner first (`server/assistant-consent.ts`).
+
 ## Limits
 
 - **Files no row names are not cleaned up.** An install that failed after writing its files, and

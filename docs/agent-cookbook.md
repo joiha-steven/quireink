@@ -85,6 +85,21 @@ owner's own screens offer. `send_test_newsletter` mails **only the owner**; the 
 is not something an agent can choose, and the real broadcast is not available over MCP
 at all. Don't like the look on Monday? One sentence switches it back.
 
+## The theme of its own
+
+```text
+Make the blog a theme of its own: warm paper, a serif to read in, the menu in the masthead.
+Show it to me before it goes live.
+```
+
+`get_theme_guide` first: it lists the selectors and variables a theme may use and carries a
+small theme that passes. Then `check_theme` until it answers `ok` (each finding names the rule,
+the line and why), `install_theme`, and `preview_theme`, whose link only the owner can open. On a
+yes, `update_appearance` with the theme's id. A change later is the same files with a higher
+`version`; `rollback_theme` takes the newest version back. Colours go in the manifest's
+palettes, never in the sheet, and fonts are a choice: a built-in reading font such as
+`literata` needs no file at all.
+
 ## The import polish
 
 ```text

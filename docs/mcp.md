@@ -91,7 +91,9 @@
   notebook, `src/mcp/tools-library.ts` media/files/settings, `src/mcp/tools-insight.ts` the READING half — traffic, audience
   counts, comments, owner search, update status — and `src/mcp/tools-steward.ts` the
   STEWARD half: front-page curation, appearance from the curated menus, per-post traffic,
-  owner replies, the test send, snapshots; results via `src/mcp/result.ts`).
+  owner replies, the test send, snapshots; `src/mcp/tools-theme.ts` THEMES installed from files
+  (`get_theme_guide`, `list_themes`, `check_theme`, `preview_theme` read; `install_theme`, `rollback_theme`
+  write), [theme-install-api.md](theme-install-api.md#over-mcp); results via `src/mcp/result.ts`).
   **The steward half assumes an agent has no eyes**: appearance accepts preset ids only
   (the zod enums are built from `THEME_PRESETS`/`FONT_PRESETS`, so the schema tracks the
   menus), never free-form color. **`send_test_newsletter` mails only the owner** — the

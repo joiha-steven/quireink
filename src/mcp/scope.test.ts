@@ -15,6 +15,8 @@ const READ_ONLY = [
   'list_media', 'list_trashed_media', 'list_files', 'list_trashed_files',
   'get_settings', 'list_settings',
   'get_traffic', 'get_post_traffic', 'get_audience', 'get_update_status', 'list_comments',
+  // Themes (2026-11-03): the guide, the list, the checker and the owner's preview link write nothing.
+  'get_theme_guide', 'list_themes', 'check_theme', 'preview_theme',
 ].sort()
 
 describe('MCP tool scopes', () => {
@@ -30,7 +32,7 @@ describe('MCP tool scopes', () => {
     // Belt to the pin's braces: any tool whose NAME says it writes must not carry the
     // mark, even if someone edits both this file's list and the tool in one commit.
     const tools = await collectTools()
-    for (const t of tools.filter((t) => /^(create|update|delete|restore|patch|compose|send|reply|import|add|draft)/.test(t.name))) {
+    for (const t of tools.filter((t) => /^(create|update|delete|restore|patch|compose|send|reply|import|add|draft|install|rollback|remove)/.test(t.name))) {
       expect(`${t.name}:${t.meta.readOnly ?? false}`).toBe(`${t.name}:false`)
     }
   })

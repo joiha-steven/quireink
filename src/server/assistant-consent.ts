@@ -30,6 +30,10 @@ const NEEDS_CONSENT = new Set([
   // take it off the air (`siteUrl`, `customCss`).
   'update_settings',
   'update_appearance',
+  // A theme's version taken back changes what readers see at once, if the site wears it; an
+  // install adds files written by the model to the blog's store, which the owner should see coming.
+  'install_theme',
+  'rollback_theme',
 
   // Leaves the building: one sends mail, the others fetch from a host the owner did not
   // name in this conversation.

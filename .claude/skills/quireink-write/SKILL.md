@@ -34,11 +34,17 @@ its source sends a Webmention to it when published. `list_mentions` answers two 
 which pages elsewhere link here, and which passages readers keep most.
 
 **The site itself.** `compose_homepage` (the composed front: lead, picks, category rows,
-most-read) · `update_appearance` (palette, fonts, sizes) · `get_settings` ·
-`list_settings` (every setting that can be changed: path, type, value now — call it to FIND
-a path rather than guessing one) · `update_settings` (any of those paths; it wrote three
-fields before 2.2.4). Two are worth naming before you change them, because they affect every
-page a reader loads: `customCss` and `siteUrl`.
+most-read) · `update_appearance` (theme, palette, reading and chrome font, the scheme a first
+visit opens in; no sizes) · `get_settings` · `list_settings` (every setting that can be
+changed: path, type, value now — call it to FIND a path rather than guessing one) ·
+`update_settings` (any of those paths). `customHead`, `customBodyEnd`, `customCss`, `siteUrl`
+and every `backups.*` path need a token the owner minted with custom-code access: anything
+else is refused them, with a message saying so. Do not retry; tell the owner.
+
+**Themes.** `get_theme_guide` (the selectors, variables, rules and a passing example) ·
+`check_theme` · `install_theme` · `list_themes` · `preview_theme` (a link only the owner can
+open) · `rollback_theme`. Installed is not worn: `update_appearance { theme: <id> }` wears it.
+Colours go in the manifest's palettes, never in `theme.css`; raise `version` on every edit.
 
 **Media and files.** `add_media_from_url` `list_media` `delete_media` · `import_images`
 (one batch per call: fetch images still loading from other hosts into the library and
@@ -72,6 +78,13 @@ need one of those, say so and hand it back — do not look for a way around it.
 - **Slugs are the site's memory.** `update_post`, `update_page` and `update_note` keep the slug
   you pass; only `newSlug` renames, and a rename leaves a redirect behind automatically. Do
   not rename slugs in bulk to tidy them. Old links in other people's posts are the point.
+- **Scheduling is `status: "published"` with a `date` ahead**, written with its offset
+  (`2026-11-10T09:00:00+07:00`). Readers see it from that moment; `list_posts` and `get_post`
+  mark it `scheduled: true` until then. A draft is never published by its date.
+- **`coverImage` is the picture at the top of the post; `featuredImage` is only for search and
+  social cards** and is never shown on the page. `series` and `seriesOrder` place a post in a
+  series. `update_post` keeps these, `metaTitle` and `metaDescription` when you leave them out;
+  an empty string clears one.
 - **Excerpt, categories, tags, every time.** They drive the front page, the rails and search.
   An excerpt left blank is derived from the opening and follows the body on every save
   (`excerptAuto: true` on the post); write one when the opening is not a summary. An audit
