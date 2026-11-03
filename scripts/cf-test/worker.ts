@@ -22,6 +22,7 @@ import { identityFromSecret, newIdentity, opener, passphraseRecipient, sealer, u
 import { dropHeld, heldIds, heldParts, holdPart, openKept, readHeld, removeKept, writeKept } from '@/runtime/cf/archive'
 import { PART as OFFSITE_PART, s3Client } from '@/runtime/cf/offsite'
 import { outboxResumes } from './newsletter'
+import { searchFindsStroke } from './search'
 import { imagesFromTheBuffer, uploadPictureWork } from './images'
 import { passkeysVerifyHere } from './passkey'
 import { themeInstallsHere, themeRendersHere } from './themes'
@@ -47,6 +48,7 @@ function collect(): Case[] {
   cases.push({ name: 'archive: the parts of an incoming archive are held in R2 under private/, read back in order, and dropped', body: incomingParts })
   cases.push({ name: 'image: the binding reads the picture in hand, not two copies of it, and answers as it did to the copies', body: imagesFromTheBuffer })
   cases.push({ name: 'newsletter: a send cut off by a restart is settled from the log and resumed, nobody mailed twice', body: () => outboxResumes(smtpPort) })
+  cases.push({ name: 'search: an unaccented query finds the đ, by the grouped OR the object\'s FTS5 has to parse', body: searchFindsStroke })
   cases.push({ name: 'offsite: a 40 MB kept archive leaves for S3 as a multipart upload, 16 MiB at a time', body: offsiteMultipart })
   cases.push({ name: 'passkey: the frozen ES256, EdDSA, RS256 and Chrome vectors verify, and a key stored in the object verifies its own signature (ADR 0071)', body: passkeysVerifyHere })
   cases.push({ name: 'theme: a zip is checked, stored in R2 and the object, installed again as a no-op, rolled back and served; a refused one writes nothing (ADR 0072)', body: themeInstallsHere })

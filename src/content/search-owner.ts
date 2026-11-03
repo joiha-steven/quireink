@@ -11,6 +11,7 @@
 import { all } from '@/store/query'
 import { liveOnly } from '@/store/db'
 import { accentedWords, indexIn, keepsAccents, lanes } from '@/accent'
+import { ftsWord } from '@/content/fts-word'
 
 /**
  * One result. `WritingList` imports this with `import type`, which erases at build time —
@@ -38,8 +39,8 @@ type HitRow = {
 }
 
 /**
- * FTS5 query text from a user's words: every token becomes a quoted phrase, space-joined,
- * which is an implicit AND. Quoting is not tidiness — an apostrophe, a `-`, a stray `"` or
+ * FTS5 query text from a user's words: every token becomes a quoted phrase (with its `đ`
+ * spellings, `fts-word.ts`), AND-ed. Quoting is not tidiness — an apostrophe, a `-`, a stray `"` or
  * a bare `OR` is FTS5 OPERATOR syntax, and an unquoted one throws rather than returning
  * nothing, so a person typing "don't" would get an error page for a search.
  *
@@ -50,8 +51,8 @@ function ftsQuery(input: string): string {
   return input
     .split(/\s+/)
     .filter(Boolean)
-    .map((word) => `"${word.replaceAll('"', '""')}"`)
-    .join(' ')
+    .map(ftsWord)
+    .join(' AND ')
 }
 
 // The body comes back whole rather than as `snippet()`, which is both the correct answer and

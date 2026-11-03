@@ -19,6 +19,7 @@ import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, fromIso, toIso } from '@/store/db'
 import { clearAutosave } from '@/content/autosave'
 import { renameSends } from '@/news/newsletter-log'
+import { ftsWord } from '@/content/fts-word'
 
 export type { TermKind }
 // The trash half moved into its own file when this one reached its ceiling. Re-exported so no
@@ -80,8 +81,9 @@ export async function getPublicPosts(): Promise<Post[]> {
 /**
  * FTS5 query text from a user's words. Every token becomes a quoted phrase, so the string
  * can never be read as FTS5 operator syntax: an apostrophe, a `-`, a stray `"` or a bare
- * `OR` would otherwise throw a syntax error and silently return no results. Space-joined
- * phrases are an implicit AND, matching the `websearch` behaviour this replaces.
+ * `OR` would otherwise throw a syntax error and silently return no results. The words are
+ * AND-ed, matching the `websearch` behaviour this replaces, and each is asked for with its
+ * `đ` spellings too (`fts-word.ts`): the index does not fold that one letter.
  */
 function ftsQuery(input: string): string {
   // Control characters out first: a NUL ends the string SQLite's FTS parser sees, so
@@ -90,8 +92,8 @@ function ftsQuery(input: string): string {
     .replace(/[\u0000-\u001f\u007f]/g, ' ')
     .split(/\s+/)
     .filter(Boolean)
-    .map((word) => `"${word.replaceAll('"', '""')}"`)
-    .join(' ')
+    .map(ftsWord)
+    .join(' AND ')
 }
 
 // Full-text over title + BODY. `remove_diacritics 2` folds accents in the INDEX, so

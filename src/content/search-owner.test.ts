@@ -35,6 +35,12 @@ describe('searchEverything', () => {
     expect(await slugs('chồng hai tầng')).toEqual(['dau-tieng-viet'])
   })
 
+  it('finds đ from a d, which the index does not fold', async () => {
+    await savePost({ title: 'Đọc chậm', status: 'draft', content: 'Để đường dài.' })
+    expect(await slugs('doc cham')).toEqual(['doc-cham'])
+    expect(await slugs('de duong')).toEqual(['doc-cham'])
+  })
+
   // The other half of that rule, and the half the FTS index cannot hold on its own: it is
   // folded, so it answers "lề" with every "lệ", "lê" and "lẻ" in the blog. In Vietnamese
   // those are different words, and the owner typed the one they meant.

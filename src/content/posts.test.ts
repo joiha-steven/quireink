@@ -209,6 +209,22 @@ describe('search', () => {
     expect((await searchPosts('lap trinh')).map((p) => p.slug)).toEqual(['lap-trinh-hang-ngay'])
   })
 
+  // `đ` is a letter of its own, not `d` with a mark, so `remove_diacritics` leaves it alone and
+  // "duong" never found "đường": every word with a đ in it was out of reach of an unaccented
+  // query (2026-11-03). Upper case too, which the index folds to đ.
+  it('finds đ from a d, in the title and in the body, typed in either case', async () => {
+    await publish('Đường về nhà', 'Người đọc lề sách, để lại dấu')
+    await publish('Duong pho', 'nguoi doc khong dau')
+    const find = async (q: string) => (await searchPosts(q)).map((p) => p.slug).sort()
+    expect(await find('duong')).toEqual(['duong-pho', 'duong-ve-nha'])
+    expect(await find('DUONG')).toEqual(['duong-pho', 'duong-ve-nha'])
+    expect(await find('nguoi doc')).toEqual(['duong-pho', 'duong-ve-nha'])
+    expect(await find('de lai dau')).toEqual(['duong-ve-nha'])
+    // Typed WITH the stroke it still means it, as every other accent does.
+    expect(await find('đường')).toEqual(['duong-ve-nha'])
+    expect(await find('Đọc')).toEqual(['duong-ve-nha'])
+  })
+
   // The reader gets the same rule the owner's search follows (`accent.ts`). The index is
   // folded, so on its own it answers "lề" with every "lệ" and "lê" that was ever published.
   it('an accented query means its accents, while an unaccented one still finds everything', async () => {
