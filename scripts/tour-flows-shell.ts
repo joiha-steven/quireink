@@ -339,6 +339,9 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       const sheet = document.querySelector('[data-write-empty]')
       if (!sheet) return 'the write screen has no empty sheet'
       if (!sheet.offsetParent) return 'the sheet is hidden at 1440, where it is meant to show'
+      const h1 = document.querySelector('h1')
+      if (!h1 || h1.textContent.trim() !== 'Write') return 'the write screen has no title of its own'
+      if (h1.getBoundingClientRect().bottom > sheet.getBoundingClientRect().top) return 'the title sits over the sheet'
       if (sheet.querySelector('svg')) return 'the empty sheet still draws a picture'
       const filled = Array.from(document.querySelectorAll('.kit-btn-primary')).filter((b) => b.offsetParent).length
       if (filled !== 1) return filled + ' filled buttons on the screen, where the pane has the one'

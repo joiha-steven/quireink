@@ -19,7 +19,7 @@ import { adminT, type AdminStrings } from '@/i18n/admin-i18n'
 import { escapeHtml } from '@/utils'
 import { postName } from '@/content/untitled'
 import { A, CARD } from '@/admin-shared/kit'
-import { emptyState } from '@/web/admin/kit'
+import { emptyState, pageHeader } from '@/web/admin/kit'
 import { getIndex, getPost } from '@/content/posts'
 import { getPage, getPageIndex } from '@/content/pages'
 import { getNote, getNoteIndex } from '@/content/notes'
@@ -85,7 +85,10 @@ export async function contentScreen(_settings: SiteSettings, query: URLSearchPar
     t, lang: _settings.language, timezone: siteZone(_settings.timezone), items, views,
     needs: needsFrom(query), openKey: '', alone: true, now: Date.now(),
   })
-  return `<div class="flex items-start gap-6">${pane}${blankSheet(items, t, _settings.language, siteZone(_settings.timezone))}</div>`
+  // The screen's name, as every other screen has one; only here, where the list is the page.
+  // Beside an open piece the sheet is the editor and its title is the piece's own.
+  return pageHeader({ title: t.navWrite })
+    + `<div class="flex items-start gap-6">${pane}${blankSheet(items, t, _settings.language, siteZone(_settings.timezone))}</div>`
     + writeDrawers(t, posts)
 }
 
