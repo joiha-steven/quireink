@@ -172,3 +172,28 @@ describe('HTML that was never going to be well formed', () => {
     expect(() => parseHtml('<div>'.repeat(500))).not.toThrow()
   })
 })
+
+// An embedded video, a WordPress video block and an audio player all vanished from an import, with
+// `skipped: 0` and "Imported" on screen (2026-11-03). Each now comes in as its address on a line of
+// its own, which is the shape this blog draws as a player when it knows the host or the file.
+describe('a video, an audio player, an embedded frame', () => {
+  const md = (html: string) => htmlToMarkdown(html)
+  it('keeps a YouTube or Vimeo frame as the address that plays', () => {
+    expect(md('<p>a</p><iframe src="https://www.youtube.com/embed/abc123XYZ_-?feature=oembed"></iframe><p>b</p>'))
+      .toBe('a\n\nhttps://www.youtube.com/watch?v=abc123XYZ_-\n\nb')
+    expect(md('<figure class="wp-block-embed"><div><iframe src="https://player.vimeo.com/video/76979871"></iframe></div></figure>'))
+      .toContain('https://vimeo.com/76979871')
+  })
+
+  it('keeps a video file and an audio file, from src or from their first source', () => {
+    expect(md('<figure class="wp-block-video"><video controls src="https://old.example/clip.mp4"></video></figure>'))
+      .toBe('https://old.example/clip.mp4')
+    expect(md('<audio controls><source src="https://old.example/talk.mp3" type="audio/mpeg">Your browser cannot play this.</audio>'))
+      .toBe('https://old.example/talk.mp3')
+  })
+
+  it('keeps any other frame as a link, and a frame with no address as nothing', () => {
+    expect(md('<iframe src="https://maps.example/embed?x=1"></iframe>')).toBe('https://maps.example/embed?x=1')
+    expect(md('<p>a</p><iframe></iframe>')).toBe('a')
+  })
+})

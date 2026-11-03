@@ -140,6 +140,13 @@ function inlines(nodes: readonly HtmlNode[]): Inline[] {
         }
         break
       }
+      case 'iframe':
+      case 'video':
+      case 'audio': {
+        const link = mediaLink(node)
+        if (link) out.push(link)
+        break
+      }
       case 'sub':
       case 'sup':
         // No Markdown for these, and the text still says what it said.
@@ -150,6 +157,25 @@ function inlines(nodes: readonly HtmlNode[]): Inline[] {
     }
   }
   return out
+}
+
+/**
+ * An embedded frame, a video or an audio player, as its ADDRESS: a link whose words are the URL,
+ * which on a line of its own is the shape this blog draws as a player when it knows the host
+ * (`render/video.ts`) or the file. All three vanished from every import, with "Imported" on screen
+ * and nothing counted (2026-11-03). A YouTube or Vimeo frame is written as the page that plays it,
+ * the address a person would paste; fallback text inside a player is the browser's, not the post's.
+ */
+const MEDIA = ['iframe', 'video', 'audio'] as const
+function mediaLink(node: Element): Inline | null {
+  const source = find(node.children, 'source')
+  const raw = node.attrs.src ?? node.attrs['data-src']
+    ?? (source?.type === 'element' ? source.attrs.src : undefined) ?? ''
+  if (!/^https?:\/\//i.test(raw)) return null
+  const yt = /youtube(?:-nocookie)?\.com\/embed\/([\w-]{11})/.exec(raw)?.[1]
+  const vimeo = /player\.vimeo\.com\/video\/(\d+)/.exec(raw)?.[1]
+  const url = yt ? `https://www.youtube.com/watch?v=${yt}` : vimeo ? `https://vimeo.com/${vimeo}` : raw
+  return { type: 'link', url, children: [{ type: 'text', value: url }] }
 }
 
 const altOf = (alt: string): Inline[] => {
@@ -167,7 +193,7 @@ function isBlock(node: HtmlNode): boolean {
 }
 
 const BLOCK_TAGS = new Set([
-  'p', 'ul', 'ol', 'blockquote', 'pre', 'hr', 'table', 'figure', 'dl', 'li',
+  'p', 'ul', 'ol', 'blockquote', 'pre', 'hr', 'table', 'figure', 'dl', 'li', ...MEDIA,
 ])
 
 /**
@@ -231,6 +257,12 @@ function oneBlock(node: HtmlNode): Block[] {
       return [table(node)]
     case 'figure':
       return figure(node)
+    case 'iframe':
+    case 'video':
+    case 'audio': {
+      const link = mediaLink(node)
+      return link ? [{ type: 'paragraph', children: [link] }] : []
+    }
     default:
       return blocks(kids)
   }

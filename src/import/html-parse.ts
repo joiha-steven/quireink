@@ -26,7 +26,7 @@ const VOID = new Set([
 ])
 
 /** Their content is not text. A `<script>` in an exported post is tracking, not writing. */
-const DROPPED = new Set(['script', 'style', 'noscript', 'template', 'iframe'])
+const DROPPED = new Set(['script', 'style', 'noscript', 'template'])
 
 /** Opening one of these closes an open `<p>`, which is how most exports spell a paragraph end. */
 const BLOCK = new Set([
@@ -159,7 +159,10 @@ export function parseHtml(html: string): HtmlNode[] {
       continue
     }
 
-    if (DROPPED.has(tag)) {
+    if (DROPPED.has(tag) || tag === 'iframe') {
+      // An `<iframe>` is KEPT, its address and nothing inside it (fallback text for a browser that
+      // has no frames): an embedded video vanished from every import (2026-11-03).
+      if (tag === 'iframe') top().children.push(element({ tag, attrs: attributes(body, tag.length), children: [] }))
       // Skip to the matching close rather than parsing the contents: a `<style>` body is CSS,
       // and `a > b` inside it would otherwise be read as a tag.
       const close = html.toLowerCase().indexOf(`</${tag}`, end)
