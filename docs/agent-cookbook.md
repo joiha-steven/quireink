@@ -8,8 +8,8 @@ Connect Claude (or any MCP client) to your blog — the README's [MCP section](.
 shows the two steps — and these are prompts that do a real job, not demos. Every one goes
 through the same code the admin uses: same slug rules, same revisions, same trash.
 
-The tool surface has two halves. The **writing half**: posts, pages, taxonomy, media,
-files, a safe slice of settings. The **reading half**: traffic, audience counts, comments,
+The tool surface has two halves. The **writing half**: posts, pages, notes, taxonomy, media,
+files, settings, themes. The **reading half**: traffic, audience counts, comments,
 full-text search over your own archive, and whether a newer release is out. Two things are
 deliberately NOT reachable over MCP, ever: subscriber email addresses, and commenters'
 emails and IPs. An agent stewarding your blog needs counts and words, not identities.
@@ -127,8 +127,9 @@ calling the client) and the job repeats:
 ## Where the lines are
 
 - **Secrets are not settings.** `update_settings` takes any path `list_settings` names except
-  the palette definitions (`themes.*`); SMTP, keys and tokens are not settings at all and stay
-  in the admin.
+  the palette definitions (`themes.*`), and `customHead`, `customBodyEnd`, `customCss`, `siteUrl`
+  and `backups.*` need a token minted with custom-code access; SMTP, keys and tokens are not
+  settings at all and stay in the admin.
 - **Deletes are soft.** Posts, pages, media, comments — everything goes to the Trash first.
 - **Every action is logged.** The activity log shows the agent's work the same way it shows
   yours, and revoking the token in the admin stops it mid-sentence.

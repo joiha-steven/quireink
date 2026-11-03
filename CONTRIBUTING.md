@@ -51,7 +51,7 @@ bunx @puppeteer/browsers install chrome-headless-shell@stable --path "$HOME/chro
 ## Definition of done
 
 **`bun run check:all` exits 0.** It builds the island bundles and the admin SPA, typechecks
-all three projects, runs the nine static guards in `scripts/checks/`, then the test suite. It
+all four projects, runs the nineteen static guards in `scripts/checks/`, then the test suite. It
 touches no network, needs no credentials and starts no services, so there is no excuse for
 opening a pull request without it.
 
