@@ -317,6 +317,22 @@ describe('trash', () => {
     expect(left).toEqual(['media/on-a-page.jpg'])
   })
 
+  it('refuses to purge an attachment a live post still links, as it refuses a picture', async () => {
+    const path = 'files/menu.pdf'
+    const url = blobUrl(path)
+    db().run(`insert into files (url, filename, size, content_type, uploaded_at, deleted_at) values (?, ?, 1, ?, ?, ?)`,
+      [path, 'menu.pdf', 'application/pdf', Date.now(), Date.now()])
+    await newPost({ title: 'Has a file', content: `[The menu](${url})`, status: 'published' })
+
+    for (const action of ['purge', 'empty'] as const) {
+      const refused = await post('/api/trash', { kind: 'files', action, ids: [url] })
+      expect(refused.status).toBe(409)
+      expect(await refused.json()).toMatchObject({ error: 'in_use:1', inUse: ['menu.pdf'], total: 1 })
+    }
+    expect((await post('/api/trash', { kind: 'files', action: 'purge', ids: [url], force: true })).status).toBe(200)
+    expect(db().query<{ n: number }, []>(`select count(*) as n from files`).get()!.n).toBe(0)
+  })
+
   it('lets an unreferenced image be purged without force', async () => {
     const url = blobUrl('media/orphan.jpg')
     db().run(`insert into media (path, filename, uploaded_at, deleted_at) values (?, ?, ?, ?)`,

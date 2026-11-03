@@ -16,11 +16,13 @@ import { all } from '@/store/query'
 // backslash, which ends a name written inside a JSON or CSS string. Read into the name, either
 // one made a used picture a different, unknown key, and the audit named the real one unused.
 const MEDIA_RE = /media\/[^\s"')#?\\<>]+/gi
+/** The same, for an attachment in the files library, which a post links rather than shows. */
+const FILES_RE = /files\/[^\s"')#?\\<>]+/gi
 
-// All store-relative media pathnames referenced anywhere in a piece of text.
-function refsIn(text: string | undefined): string[] {
+// All store-relative pathnames under one prefix referenced anywhere in a piece of text.
+function refsIn(text: string | undefined, re: RegExp): string[] {
   if (!text) return []
-  return [...collapseBlob(text).matchAll(MEDIA_RE)].map((m) => m[0])
+  return [...collapseBlob(text).matchAll(re)].map((m) => m[0])
 }
 
 /** Every string anywhere inside a row or a parsed snapshot, however deeply it sits. */
@@ -45,9 +47,17 @@ function strings(value: unknown, out: string[] = []): string[] {
  * back out of the trash with a hole in it. The trash is somewhere a piece comes back FROM,
  * which is the same argument the revision snapshots already won here.
  */
-export async function usedMediaKeys(): Promise<Set<string>> {
+export const usedMediaKeys = (): Promise<Set<string>> => usedKeys(MEDIA_RE)
+
+/**
+ * The same walk for `files/…`. Emptying the files trash took the bytes of a PDF a live post still
+ * linked, with nothing asked, where the media trash had refused the same thing since 2026-09.
+ */
+export const usedFileKeys = (): Promise<Set<string>> => usedKeys(FILES_RE)
+
+async function usedKeys(re: RegExp): Promise<Set<string>> {
   const used = new Set<string>()
-  const add = (text?: string | null) => refsIn(text ?? undefined).forEach((r) => used.add(r))
+  const add = (text?: string | null) => refsIn(text ?? undefined, re).forEach((r) => used.add(r))
 
   // ⚠️ THE WHOLE ROW, not the columns somebody remembered — the same rule the settings block
   // below already learned, applied to the tables. Naming columns missed three live references
@@ -81,7 +91,7 @@ export async function usedMediaKeys(): Promise<Set<string>> {
     try {
       for (const text of strings(JSON.parse(r.data))) add(text)
     } catch (error) {
-      console.error(`[ERROR] media-usage.usedMediaKeys revision: ${(error as Error).message}`)
+      console.error(`[ERROR] media-usage.usedKeys revision: ${(error as Error).message}`)
     }
   }
   // ⚠️ THE WHOLE SETTINGS OBJECT, not a list of the fields somebody remembered. It read

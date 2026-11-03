@@ -23,9 +23,9 @@ import { restoreNote, purgeNote, emptyNotesTrash } from '@/content/notes'
 import {
   restoreMediaBatch, purgeMediaBatch, emptyMediaTrash, getTrashedMedia,
 } from '@/media/media'
-import { usedMediaKeys } from '@/media/media-usage'
+import { usedFileKeys, usedMediaKeys } from '@/media/media-usage'
 import { collapseBlob } from '@/media/blob'
-import { restoreFilesBatch, purgeFilesBatch, emptyFilesTrash } from '@/media/files'
+import { restoreFilesBatch, purgeFilesBatch, emptyFilesTrash, getTrashedFiles } from '@/media/files'
 import { restoreComment, purgeComment, emptyCommentsTrash } from '@/comments/comments'
 import { restoreSubscriber, purgeSubscriber, emptySubscribersTrash } from '@/news/subscribers'
 import { getRedirects, saveRedirect, deleteRedirect, RedirectInputError } from '@/server/redirects'
@@ -260,19 +260,24 @@ export function siteRoutes() {
         else if (action === 'purge') await Promise.all(ids.map(purgeNote))
         else count = await emptyNotesTrash()
         break
-      case 'media': {
-        if (action === 'restore') { await restoreMediaBatch(ids); break }
-        // Refuse to PERMANENTLY delete an image a live post, page, revision or setting
-        // still references, unless the caller confirms. Without this a purge silently
-        // breaks a published page. `in_use:<n>` is what lets the admin re-ask with force.
+      case 'media':
+      case 'files': {
+        const media = kind === 'media'
+        if (action === 'restore') { await (media ? restoreMediaBatch(ids) : restoreFilesBatch(ids)); break }
+        const purge = (urls: string[]) => (media ? purgeMediaBatch(urls) : purgeFilesBatch(urls))
+        // Refuse to PERMANENTLY delete an image a live post, page, revision or setting still
+        // references — or an attachment one still links — unless the caller confirms. Without this
+        // a purge silently breaks a published page. `in_use:<n>` is what lets the admin re-ask with
+        // force; the trash screen asks it of either kind.
         if (!force) {
-          const targets = action === 'purge' ? ids : (await getTrashedMedia()).map((m) => m.url)
-          const used = targets.length > 0 ? await usedMediaKeys() : new Set<string>()
+          const trashed = action === 'purge' ? null : media ? await getTrashedMedia() : await getTrashedFiles()
+          const targets = trashed === null ? ids : trashed.map((m) => m.url)
+          const used = targets.length > 0 ? await (media ? usedMediaKeys() : usedFileKeys()) : new Set<string>()
           const inUse = targets.filter((url) => used.has(collapseBlob(url)))
           if (skipUsed) {
             // Only the free ones go; the ones still on the site stay in the trash.
             const free = targets.filter((url) => !used.has(collapseBlob(url)))
-            if (free.length > 0) await purgeMediaBatch(free)
+            if (free.length > 0) await purge(free)
             count = free.length
             break
           }
@@ -286,15 +291,10 @@ export function siteRoutes() {
             }, 409)
           }
         }
-        if (action === 'purge') await purgeMediaBatch(ids)
-        else count = await emptyMediaTrash()
+        if (action === 'purge') await purge(ids)
+        else count = await (media ? emptyMediaTrash() : emptyFilesTrash())
         break
       }
-      case 'files':
-        if (action === 'restore') await restoreFilesBatch(ids)
-        else if (action === 'purge') await purgeFilesBatch(ids)
-        else count = await emptyFilesTrash()
-        break
       case 'comments':
         if (action === 'restore') await Promise.all(ids.map((id) => restoreComment(Number(id))))
         else if (action === 'purge') await Promise.all(ids.map((id) => purgeComment(Number(id))))
