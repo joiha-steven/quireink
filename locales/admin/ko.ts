@@ -773,7 +773,7 @@ const ko = {
   themeRules: {
     C1: '시트에 색이 직접 적혀 있습니다. 색은 팔레트에서만 옵니다. var(--c-text) 같은 팔레트 변수나 그것들의 color-mix()를 쓰세요. 직접 만든 색은 theme.json의 팔레트에 넣습니다.',
     T1: '시트에 글자 크기가 직접 적혀 있습니다. 크기는 타입 스케일에서만 옵니다. var(--fs-body) 같은 --fs-* 크기, em, %, 또는 --fs-*를 쓴 calc()를 쓰세요.',
-    F1: '시트에 글꼴 이름이 직접 적혀 있거나, body, html, *, .wrap에 var(--font-sans)가 아닌 글꼴이 지정되어 주인이 외관에서 고른 사이트 글꼴을 덮어씁니다. var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display) 중 하나만, 바꾸려는 부분에 쓰세요. body, html, *, .wrap에는 var(--font-sans)만 쓰고, 사이트 전체의 글꼴은 사이트 글꼴 설정에 맡깁니다. 직접 넣는 글꼴은 theme.json에 선언합니다.',
+    F1: '시트에 글꼴 이름이 적혀 있습니다. 글꼴은 글꼴 설정에서만 옵니다. var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display) 중 하나만 쓰세요. 직접 넣는 글꼴은 theme.json에 선언합니다.',
     P1: '!important는 쓸 수 없습니다. 소유자의 설정이 계속 우선해야 합니다. 빼세요. 이것 없이도 테마 규칙은 기본 스타일 대부분을 이깁니다.',
     S1: '선택자가 테마 API가 유지를 약속하지 않은 것을 가리킵니다. 요소 이름, 또는 외관 계약에 있는 class·id·data-* 이름을 쓰세요.',
     S2: '시트는 블로그와 첫 페이지를 모두 꾸며야 하는데, 하나가 빠져 있습니다. 말한 쪽에 규칙을 더하세요. 블로그는 .post-list나 .prose, 첫 페이지는 .front나 .fc입니다.',

@@ -18,7 +18,7 @@ import { asciiLower, tokenizeCss } from '@/theme/css-tokens'
 import { ALLOWED_AT_RULES } from '@/theme/css-names'
 import {
   buildTree, type CssBlockNode, type CssNode, type CssRule, isToken, meaningful,
-  parseDeclarations, parseRules, splitOnCommas, varName,
+  parseDeclarations, parseRules, varName,
 } from '@/theme/css-tree'
 import { checkDeclaration } from '@/theme/check-values'
 import { Findings } from '@/theme/findings'
@@ -149,7 +149,7 @@ function checkRuleList(rules: readonly CssRule[], where: Where, ctx: Ctx): void 
       if (junk) f.add('X1', junk.start, r.preludeEnd)
       checkSelector(r.prelude, ctx)
     }
-    checkDeclarationList(r.block, ctx, where !== 'keyframes' && holdsChrome(r.prelude))
+    checkDeclarationList(r.block, ctx)
   }
 }
 
@@ -160,10 +160,10 @@ const isKeyframeSelectorPart = (n: CssNode) =>
   n.kind === 'token' && (n.token.type === 'percentage' || n.token.type === 'comma' ||
     (n.token.type === 'ident' && KEYFRAME_WORDS.has(asciiLower(n.token.value))))
 
-function checkDeclarationList(block: CssBlockNode, ctx: Ctx, chrome = false): void {
+function checkDeclarationList(block: CssBlockNode, ctx: Ctx): void {
   for (const item of parseDeclarations(block.children)) {
     if (item.kind === 'declaration') {
-      checkDeclaration(item.decl, ctx.f, chrome)
+      checkDeclaration(item.decl, ctx.f)
       continue
     }
     // CSS nesting (a rule inside a rule) is not part of theme api 1; an ident with no colon is
@@ -174,76 +174,6 @@ function checkDeclarationList(block: CssBlockNode, ctx: Ctx, chrome = false): vo
       ctx.f.add('A1', item.start, item.end)
     }
   }
-}
-
-// F1 on what holds the chrome ─────────────────────────────────────────────────
-
-/**
- * Whether a rule reaches every element the chrome inherits its face from: `html`, `:root`,
- * `body`, `.wrap` or `*` on its own, alone or under one another (`html[data-theme=x] body`,
- * `body *`), or inside `:is()`/`:where()`. Measured 2026-11-03 with the owner's chrome font on IBM
- * Plex Mono: `body`, `*` or `.wrap{font-family:var(--font-reading)}` set the menu, the footer, the
- * rail and every date in the reading face, and `body{font-family:inherit}` set them in Times. A
- * rule on anything narrower (`.prose *`, `body .deck`, `h1`) is the theme choosing a face for a
- * piece of the page, which F1 lets it do.
- */
-export function holdsChrome(prelude: readonly CssNode[]): boolean {
-  return splitOnCommas(prelude).some((selector) => {
-    const parts = compoundsOf(selector)
-    return parts.length > 0 && parts.every(isChromeHolder)
-  })
-}
-
-/** A selector's compounds, split on its combinators (whitespace, `>`, `+`, `~`). */
-function compoundsOf(selector: readonly CssNode[]): CssNode[][] {
-  const out: CssNode[][] = []
-  let cur: CssNode[] = []
-  for (const n of selector) {
-    const combinator = isToken(n, 'whitespace') || ['>', '+', '~'].includes(delimOf(n))
-    if (!combinator) {
-      cur.push(n)
-      continue
-    }
-    if (cur.length > 0) out.push(cur)
-    cur = []
-  }
-  if (cur.length > 0) out.push(cur)
-  return out
-}
-
-const HOLDER_TYPES: ReadonlySet<string> = new Set(['html', 'body'])
-
-function isChromeHolder(compound: readonly CssNode[]): boolean {
-  let holder = false
-  let star = false
-  let narrowed = false
-  for (let k = 0; k < compound.length; k++) {
-    const n = compound[k]!
-    const next = compound[k + 1]
-    if (n.kind === 'block') continue // an attribute selector narrows nothing a theme can rely on
-    if (n.kind === 'function') {
-      narrowed = true
-      continue
-    }
-    const t = n.token
-    if (t.type === 'ident') {
-      if (HOLDER_TYPES.has(asciiLower(t.value))) holder = true
-      else narrowed = true
-    } else if (t.type === 'delim' && t.value === '*') star = true
-    else if (t.type === 'delim' && t.value === '.' && next?.kind === 'token' && next.token.type === 'ident') {
-      if (next.token.value === 'wrap') holder = true
-      else narrowed = true
-      k += 1
-    } else if (t.type === 'hash') narrowed = true
-    else if (t.type === 'colon') {
-      // `::before` is another element; `:root` is html; `:is(body)` and `:where(body)` are body.
-      if (next?.kind === 'token' && next.token.type === 'colon') return false
-      if (next?.kind === 'token' && next.token.type === 'ident' && asciiLower(next.token.value) === 'root') holder = true
-      else if (next?.kind === 'function' && ['is', 'where'].includes(asciiLower(next.name)) && holdsChrome(next.children)) holder = true
-      k += 1
-    }
-  }
-  return holder || (star && !narrowed)
 }
 
 // S1, S2 ──────────────────────────────────────────────────────────────────────

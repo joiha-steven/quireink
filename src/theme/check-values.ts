@@ -40,8 +40,7 @@ function withoutImportant(nodes: readonly CssNode[]): CssNode[] {
   return [...nodes]
 }
 
-/** `chrome`: the rule reaches what the chrome inherits its face from (`holdsChrome` in check-css). */
-export function checkDeclaration(decl: CssDeclaration, f: Findings, chrome = false): void {
+export function checkDeclaration(decl: CssDeclaration, f: Findings): void {
   const custom = decl.name.startsWith('--')
   // Custom property names are case-sensitive; every other property name is ASCII-insensitive
   // and is read without any vendor prefix, so `-webkit-hyphenate-character` meets the same
@@ -61,7 +60,7 @@ export function checkDeclaration(decl: CssDeclaration, f: Findings, chrome = fal
     const m = meaningful(value)
     if (!(m.length === 1 && isIdent(m[0], 'inherit'))) f.add('T1', decl.start, decl.end)
   }
-  if (prop === 'font-family') checkFontFamily(value, decl, f, chrome)
+  if (prop === 'font-family') checkFontFamily(value, decl, f)
 
   if (prop === 'content') checkText(value, f, 'content')
   // A custom property's string can reach a reader through `var()` in any text property, so it
@@ -233,17 +232,13 @@ function checkFontSize(value: readonly CssNode[], decl: CssDeclaration, f: Findi
   if (!ok) f.add('T1', p.start, p.end)
 }
 
-/**
- * One engine variable, or `inherit`. On what holds the chrome (`chrome`), only `var(--font-sans)`:
- * any other face there takes the owner's chrome-font setting away from the header, the footer, the
- * rail and the dates, and `inherit` on body drops them to the browser's default.
- */
-function checkFontFamily(value: readonly CssNode[], decl: CssDeclaration, f: Findings, chrome: boolean): void {
+function checkFontFamily(value: readonly CssNode[], decl: CssDeclaration, f: Findings): void {
   const m = meaningful(value)
   const p = m[0]
-  const variable = p?.kind === 'function' && fnName(p) === 'var' && meaningful(p.children).length === 1 ? varName(p) ?? '' : ''
-  const ok = m.length === 1 && (chrome
-    ? variable === '--font-sans'
-    : isIdent(p, 'inherit') || FONT_FAMILY_VARS.has(variable))
+  const ok =
+    m.length === 1 &&
+    (isIdent(p, 'inherit') ||
+      (p?.kind === 'function' && fnName(p) === 'var' && meaningful(p.children).length === 1 &&
+        FONT_FAMILY_VARS.has(varName(p) ?? '')))
   if (!ok) f.add('F1', decl.valueStart, decl.end)
 }

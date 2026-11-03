@@ -773,7 +773,7 @@ const zh = {
   themeRules: {
     C1: '样式表里直接写了颜色。颜色只能来自调色板。请用 var(--c-text) 这类调色板变量，或它们的 color-mix()；自己的颜色请加到 theme.json 的调色板里。',
     T1: '样式表里直接写了字号。字号只能来自字号比例。请用 var(--fs-body) 或其他 --fs-* 字号、em、%，或基于 --fs-* 的 calc()。',
-    F1: '样式表里直接写了字体名，或给 body、html、* 或 .wrap 设了 var(--font-sans) 以外的字体，这会盖过站长在外观里选的网站字体。只能单独写 var(--font-reading)、var(--font-sans)、var(--font-mono)、var(--font-display) 之一，写在要改的部分上；body、html、* 和 .wrap 上只能用 var(--font-sans)，整站字体交给网站字体设置。自己的字体在 theme.json 里声明。',
+    F1: '样式表里写了字体名称。字体只能来自字体设置。只能单独写 var(--font-reading)、var(--font-sans)、var(--font-mono)、var(--font-display) 之一；自己的字体在 theme.json 里声明。',
     P1: '不允许使用 !important：博主的设置必须始终优先。去掉它：即使没有它，主题的规则也能胜过基础样式的大部分。',
     S1: '选择器指向了主题 API 没有承诺保留的东西。请用元素名，或外观约定里列出的 class、id、data-* 名称。',
     S2: '样式表必须同时装饰博客和首页，但缺少其中之一。为提到的那一边加一条规则：博客用 .post-list 或 .prose，首页用 .front 或 .fc。',

@@ -773,7 +773,7 @@ const vi = {
   themeRules: {
     C1: 'Tệp kiểu ghi thẳng một màu. Màu chỉ được lấy từ bảng màu. Dùng biến của bảng màu như var(--c-text), hoặc color-mix() của chúng; màu riêng thì thêm vào một bảng màu trong theme.json.',
     T1: 'Tệp kiểu ghi thẳng cỡ chữ. Cỡ chữ chỉ được lấy từ thang chữ. Dùng var(--fs-body) hoặc một cỡ --fs-* khác, em, %, hoặc calc() trên một cỡ --fs-*.',
-    F1: 'Tệp kiểu ghi tên một họ phông, hoặc đặt cho body, html, * hay .wrap một phông khác var(--font-sans), đè lên ô Font của trang mà chủ blog chọn ở phần Giao diện. Chỉ ghi một trong var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display), đặt lên đúng phần cần đổi; trên body, html, * và .wrap chỉ được var(--font-sans), phông của trang để ô Font của trang quyết định. Phông riêng khai báo trong theme.json.',
+    F1: 'Tệp kiểu ghi tên một họ phông. Phông chỉ được lấy từ phần cài đặt phông. Chỉ ghi một trong var(--font-reading), var(--font-sans), var(--font-mono), var(--font-display); phông riêng khai báo trong theme.json.',
     P1: 'Không được dùng !important: cài đặt của chủ blog phải luôn thắng. Hãy bỏ nó: không cần nó, quy tắc của theme vẫn thắng phần lớn tệp kiểu gốc.',
     S1: 'Bộ chọn nhắm vào thứ mà API theme không hứa giữ lại. Dùng tên thẻ, hoặc tên class, id, data-* có trong hợp đồng giao diện.',
     S2: 'Tệp kiểu phải trang trí cả blog lẫn trang chủ, và đang thiếu một trong hai. Thêm một quy tắc cho phần được nêu tên: .post-list hoặc .prose cho blog, .front hoặc .fc cho trang chủ.',

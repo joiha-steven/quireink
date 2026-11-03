@@ -387,9 +387,10 @@ must be one of yours or a built-in id of that kind.
   named in the contract.) Prefer contract names; where you cannot, put a
   comment on the rule saying what it depends on (the starter does) so the next update's breakage
   is easy to find.
-- **A face set on `body`, `html`, `*` or `.wrap` took the owner's Site font away** (the menu,
-  footer, rail and dates followed it; `inherit` on `body` put them in Times). F1 refuses anything
-  but `var(--font-sans)` there now. Set a face on the pieces you mean (`.title`, `.deck`).
+- **A face set on `body`, `*` or `.wrap` passes F1 and breaks the owner's chrome-font control.**
+  Measured with the owner on IBM Plex Mono: `body{font-family:var(--font-reading)}` puts the menu,
+  footer, rail and dates in the reading face, and `body{font-family:inherit}` puts them in Times.
+  Set a face on the pieces you mean (`.title`, `.deck`), not on what holds the chrome.
 - **`theme:preview` measures five things**: a page wider than the window, a box past the window's
   edge, text cut by `overflow: hidden`, an image that did not load, a font file that did not load.
   It leaves out what a page does on purpose (a wide table scrolling in its frame, `line-clamp`).
