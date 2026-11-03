@@ -185,8 +185,10 @@ export function peoplePanel(
     + pagerHtml
 
   const tools = `<div class="flex flex-wrap items-center gap-3 border-b border-neutral-100 px-5 py-3 dark:border-neutral-800">`
+    // A FULL ROW BELOW sm, as Trash and Library give theirs: squeezed beside the other tools a
+    // phone left this field 114px for 146px of words at 375, and the placeholder was cut (2026-11-03).
     + `<input type="search" data-sub-search placeholder="${escapeAttr(t.nlSearchPlaceholder)}"`
-    + ` aria-label="${escapeAttr(t.nlSearchPlaceholder)}" class="${CONTROL_SM} min-w-0 flex-1">`
+    + ` aria-label="${escapeAttr(t.nlSearchPlaceholder)}" class="${CONTROL_SM} w-full min-w-0 sm:w-auto sm:flex-1">`
     // EVERY MATCH, on every page (2026-09-30): the export takes ticked rows only, and 500
     // subscribers was 500 boxes to tick by hand.
     + `<label class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300">`

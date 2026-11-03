@@ -162,8 +162,11 @@ export async function logScreen(settings: SiteSettings): Promise<string> {
       value: '0',
       attrs: 'data-log-days',
     })
+    // A FULL ROW BELOW md, as Trash and Library give theirs below sm: squeezed beside the count,
+    // two selects and Clear log, this field had 59px for 107px of words at 375 and 60px for 81px
+    // at 640, and the placeholder was cut (2026-11-03).
     + `<input type="search" data-log-search placeholder="${escapeAttr(t.logSearch)}" aria-label="${escapeAttr(t.logSearch)}"`
-    + ` class="h-8 min-w-0 flex-1 rounded-md border border-neutral-300 bg-white px-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100">`
+    + ` class="h-8 w-full min-w-0 md:w-auto md:flex-1 rounded-md border border-neutral-300 bg-white px-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100">`
     + (entries.length > 0
       ? `<button type="button" data-log-clear class="${SHEET_TOOL_DANGER}">${escapeHtml(t.logClear)}</button>`
       : '')

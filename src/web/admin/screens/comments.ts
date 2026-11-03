@@ -164,9 +164,11 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
     // search or the age filter leaves fewer than the band's totals.
     + `<span data-comment-tally class="${SHEET_TOOL}" hidden>`
     + `${escapeHtml(commentTally(tally, rows.length, by.size, settings.language, n))}</span>`
+    // A FULL ROW BELOW sm, as Trash and Library give theirs: squeezed beside the other tools a
+    // phone left this field a fixed 134px for 148px of words, at every width under 640, and the placeholder was cut (2026-11-03).
     + `<input type="search" data-comment-search placeholder="${escapeAttr(t.commentsSearch)}"`
     + ` aria-label="${escapeAttr(t.commentsSearch)}"`
-    + ` class="h-8 w-40 rounded-md border border-neutral-200 bg-white px-3 text-sm shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:placeholder:text-neutral-500">`
+    + ` class="h-8 w-full sm:w-40 rounded-md border border-neutral-200 bg-white px-3 text-sm shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:placeholder:text-neutral-500">`
 
   // The two words the island can need to say, plus the sentence it recomputes. Everything else
   // on this screen is already written above.

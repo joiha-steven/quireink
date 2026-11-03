@@ -2785,6 +2785,9 @@
     .sm\:table-cell {
       display: table-cell;
     }
+    .sm\:w-40 {
+      width: calc(var(--spacing) * 40);
+    }
     .sm\:w-48 {
       width: calc(var(--spacing) * 48);
     }
@@ -2855,6 +2858,12 @@
     }
   }
   @media (width >= 48rem) {
+    .md\:w-auto {
+      width: auto;
+    }
+    .md\:flex-1 {
+      flex: 1;
+    }
     .md\:grid-cols-4 {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
