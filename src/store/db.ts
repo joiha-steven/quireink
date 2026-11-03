@@ -55,7 +55,9 @@ function open(
   // something is not a copy of before (ADR 0063).
   if (!fresh) {
     const step = firstPending(db, migrations, LEDGER[kind])
-    if (step) copyBeforeMigrating(db, path, step)
+    // Named in the log: on Cloudflare the copy is a bookmark id, and nothing else keeps it.
+    const copy = step ? copyBeforeMigrating(db, path, step) : null
+    if (copy) console.log(`[INFO] before ${step}: ${copy}`)
   }
   db.transaction(() => db.exec(schema))
   return { db, fresh }

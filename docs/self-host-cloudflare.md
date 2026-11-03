@@ -97,10 +97,10 @@ refused at once, with the reason under the Email card. Use the provider's port 5
 ## Upgrading
 
 The database migrates when the blog next starts, after the blog has taken a Durable Object bookmark
-of the moment before; its id is in the Worker's log, as `bookmark:<id>`, for 30 days. **This release
-cannot restore to it**: Cloudflare restores a bookmark only from code inside the object
-(`onNextSessionRestoreBookmark`), not from the dashboard, and the blog has no door for that yet. The
-backup to fall back on is the one you download before upgrading (Settings → Server → Backups).
+of the moment before; its id is in the Worker's log, as `[INFO] before <step>: bookmark:<id>`, and
+Cloudflare keeps the point for 30 days. **This release cannot restore to it**: Cloudflare restores a
+bookmark only from code inside the object (`onNextSessionRestoreBookmark`), not from the dashboard,
+and the blog has no door for that yet. The backup to fall back on is the one you download before upgrading (Settings → Server → Backups).
 
 **Installed with the button:** Cloudflare deploys whatever reaches your copy's `main` branch, so an
 upgrade is bringing the newer release into the copy, and a workflow in the copy does it. **Cloudflare's

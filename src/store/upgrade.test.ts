@@ -1,5 +1,5 @@
 // An upgrade copies before it changes, and gives the space back after (ADR 0063).
-import { expect, test, afterEach } from 'bun:test'
+import { expect, test, afterEach, spyOn } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -56,6 +56,17 @@ test('an existing database is copied before a migration touches it', () => {
   expect(copy.query(`select count(*) as n from sqlite_master where name = 'body_cache'`).get())
     .toEqual({ n: 0 })
   copy.close()
+})
+
+// Where the copy is goes to the log. On Cloudflare it is a bookmark id and nothing else holds it:
+// it was taken before every migration and dropped, and the docs said to find it in the log.
+test('the copy taken before a migration is named in the log', () => {
+  const backups = aDatabaseOneReleaseBehind()
+  const said: string[] = []
+  const log = spyOn(console, 'log').mockImplementation((...a: unknown[]) => { said.push(a.join(' ')) })
+  try { openDatabases(DIR) } finally { log.mockRestore() }
+  const made = copies(backups)[0]!
+  expect(said.filter((l) => l.includes(made))).toEqual([`[INFO] before 019-body-cache: ${join(backups, made)}`])
 })
 
 test('a fresh install copies nothing, having nothing to protect', () => {
