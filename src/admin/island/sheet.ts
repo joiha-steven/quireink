@@ -38,6 +38,7 @@ import { wirePanel } from './lib/sheet-open'
 import { wireSafety, type Snapshot } from './lib/sheet-safety'
 import { reopenNew } from './lib/sheet-tab'
 import { wireHistory } from './lib/sheet-history'
+import { draftFromRevision } from './lib/sheet-revision'
 import { sayStanding } from './lib/sheet-standing'
 import { liveSave } from './lib/sheet-live'
 import { moveToTrash, openPreview, uploadInline } from './lib/sheet-errands'
@@ -368,10 +369,9 @@ function boot(root: HTMLElement, data: Payload): void {
     say(t.revisionLoaded)
   }
 
-  /** An overwritten version back into the editor. The slug, the date and the STATUS stay current. */
+  /** An overwritten version back into the editor (`sheet-revision.ts`). */
   function loadRevision(rev: PostRevision): void {
-    const { title, categories, tags } = rev
-    load({ ...draft, title, categories, tags, excerpt: rev.excerpt ?? '', featuredImage: rev.featuredImage ?? '' }, rev.content)
+    load(draftFromRevision(draft, rev), rev.content)
     say(t.revisionLoaded)
   }
 
