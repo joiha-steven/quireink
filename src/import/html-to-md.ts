@@ -131,9 +131,7 @@ function inlines(nodes: readonly HtmlNode[]): Inline[] {
         break
       }
       case 'img': {
-        // `data-src` as well: every lazy-loading plugin moves the real URL there and leaves a
-        // placeholder in `src`, and importing the placeholder imports a grey square.
-        const url = node.attrs.src ?? node.attrs['data-src'] ?? ''
+        const url = imageSrc(node)
         const title = node.attrs.title
         if (url) {
           out.push({ type: 'image', url, ...(title ? { title } : {}), alt: altOf(node.attrs.alt ?? '') })
@@ -176,6 +174,18 @@ function mediaLink(node: Element): Inline | null {
   const vimeo = /player\.vimeo\.com\/video\/(\d+)/.exec(raw)?.[1]
   const url = yt ? `https://www.youtube.com/watch?v=${yt}` : vimeo ? `https://vimeo.com/${vimeo}` : raw
   return { type: 'link', url, children: [{ type: 'text', value: url }] }
+}
+
+/**
+ * Where an `<img>` really points. Every lazy-loading plugin moves the real URL to `data-src` or
+ * `data-lazy-src` and leaves a placeholder in `src`, often a `data:` 1×1 GIF, and the placeholder
+ * is what came in while `src` was read first (2026-11-03). A `data:` source with nothing behind it
+ * is left as written.
+ */
+function imageSrc(img: Element): string {
+  const { src } = img.attrs
+  const real = img.attrs['data-lazy-src'] ?? img.attrs['data-src']
+  return (!src || /^\s*data:/i.test(src) ? real ?? src : src) ?? ''
 }
 
 const altOf = (alt: string): Inline[] => {
@@ -339,14 +349,8 @@ function figure(node: Element): Block[] {
     (node.attrs.class ?? '').includes('gallery') || every(node.children, 'img').length > 1
   if (gallery) {
     const images = every(node.children, 'img').flatMap((img) =>
-      img.type === 'element' && (img.attrs.src ?? img.attrs['data-src'])
-        ? [
-            {
-              type: 'image' as const,
-              url: `${img.attrs.src ?? img.attrs['data-src']}#grid`,
-              alt: altOf(img.attrs.alt ?? ''),
-            },
-          ]
+      img.type === 'element' && imageSrc(img)
+        ? [{ type: 'image' as const, url: `${imageSrc(img)}#grid`, alt: altOf(img.attrs.alt ?? '') }]
         : [],
     )
     return images.length ? [{ type: 'paragraph', children: images }] : blocks(node.children)
@@ -354,7 +358,7 @@ function figure(node: Element): Block[] {
 
   const img = find(node.children, 'img')
   if (!img || img.type !== 'element') return blocks(node.children)
-  const url = img.attrs.src ?? img.attrs['data-src'] ?? ''
+  const url = imageSrc(img)
   if (!url) return blocks(node.children)
   // The caption folds INTO the alt, because a figure caption here is rendered from the alt.
   // Left alone it became a separate italic paragraph under the picture.

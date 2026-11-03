@@ -141,6 +141,16 @@ describe('the shapes a platform actually exports', () => {
     expect(md).toContain('3.jpg#grid')
   })
 
+  // A lazy-loading plugin's placeholder, `src="data:…"` beside the real `data-src`, came in as
+  // the placeholder: a 1×1 GIF in place of the picture (2026-11-03).
+  it('takes the real picture over a lazy-load placeholder, in a paragraph, a figure and a gallery', () => {
+    const lazy = (attr: string, alt: string) => `<img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" ${attr}="${alt}.jpg" alt="${alt}">`
+    expect(htmlToMarkdown(`<p>${lazy('data-src', 'a')}</p>`)).toBe('![a](a.jpg)')
+    expect(htmlToMarkdown(`<figure>${lazy('data-lazy-src', 'b')}</figure>`)).toBe('![b](b.jpg)')
+    expect(htmlToMarkdown(`<figure class="wp-block-gallery"><figure>${lazy('data-src', 'c')}</figure>`
+      + `<figure>${lazy('data-lazy-src', 'd')}</figure></figure>`)).toBe('![c](c.jpg#grid)![d](d.jpg#grid)')
+  })
+
   it('drops an anchor that goes nowhere', () => {
     expect(htmlToMarkdown('<p><a name="top"></a><a href="#x">x</a> here</p>')).toBe('x here')
   })

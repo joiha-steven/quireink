@@ -371,7 +371,7 @@ card, a link) it is called by its first words; see
   itself names (an attachment URL, `-scaled` included, or the image's `srcset`), `<figure><figcaption>` (and the old `[caption]` shortcode, read as one) folded INTO the image alt (Quire Ink
   renders captions from alt). A **gallery** (`figure.wp-block-gallery`, which nests one `<figure><img>` per photo)
   emits EVERY nested image, each tagged `#grid` so `groupGalleries` rebuilds it as a grid —
-  reading only the first nested image drops the rest of the gallery on the floor. An `<iframe>`, `<video>` or `<audio>` comes in as its address alone on a line, which plays when the host or file is known (`render/video.ts`).
+  reading only the first nested image drops the rest of the gallery on the floor. An `<iframe>`, `<video>` or `<audio>` comes in as its address alone on a line, which plays when the host or file is known (`render/video.ts`). A lazy-loaded image comes in as its `data-lazy-src`/`data-src`, not the `data:` placeholder in `src`.
   Categories/tags split by `@_domain`, `Uncategorized` dropped; dates via `wp:post_date_gmt`
   **falling back to `wp:post_date`** (WordPress leaves the GMT date as `0000-00-00` on anything
   never published, so drafts would otherwise all import dated today) and then to `now`;
