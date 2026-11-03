@@ -32,7 +32,18 @@ function wrap(socket: Socket, encrypted: boolean): TextSocket {
   }
 }
 
+/**
+ * ⚠️ PORT 25 IS REFUSED HERE, before a connection. Cloudflare blocks it and local workerd does not,
+ * so a relay on 25 — common on a server, where it sits next door — worked under `wrangler dev` and
+ * failed after the move, as a timeout that named no cause. `could not reach` is what `smtp.ts` turns
+ * into the card's connection error, so the sentence below is what the owner reads (2026-11-03).
+ */
+const BLOCKED_PORT = 25
+
 export const openSocket: SocketPort['openSocket'] = async (opts, timeoutMs) => {
+  if (opts.port === BLOCKED_PORT) {
+    throw new Error(`could not reach ${opts.host}:25: Cloudflare blocks outgoing mail on port 25; use your provider's port 587 or 465`)
+  }
   const socket = connect({ hostname: opts.host, port: opts.port }, { secureTransport: opts.secure ? 'on' : 'starttls', allowHalfOpen: false })
   let timer: ReturnType<typeof setTimeout> | undefined
   const late = new Promise<never>((_, reject) => {

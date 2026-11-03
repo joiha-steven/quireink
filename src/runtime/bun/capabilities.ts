@@ -12,5 +12,6 @@ export const CAPABILITIES: Capabilities = {
   clientAddress: 'peer',
   bodyLimits: 'machine',
   staticFiles: 'origin',
+  mailPorts: 'any',
   outboundFetch: 'pinned',
 }

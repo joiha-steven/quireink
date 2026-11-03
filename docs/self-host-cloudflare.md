@@ -91,6 +91,9 @@ Settings → Server has no **Cloudflare cache** card here: a Worker's answers do
 CDN cache, so there is nothing of this blog's to purge, and a purge would empty the cache of
 everything else on the zone. A blog on a server behind Cloudflare keeps the card.
 
+The newsletter's mail cannot leave on port 25, which Cloudflare blocks: a relay set to 25 is
+refused at once, with the reason under the Email card. Use the provider's port 587 or 465.
+
 ## Upgrading
 
 The database migrates when the blog next starts, after Cloudflare has bookmarked the moment before

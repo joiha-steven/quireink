@@ -351,9 +351,8 @@ export type SatoriPort = {
 }
 
 /**
- * `capabilities.ts`: every way the two runtimes DIFFER, by name (ADR 0066, rule 2). A difference that
- * is not here is a bug; one that is here has a row in `docs/runtimes.md`, which
- * `check:install-matrix` holds to this list key for key.
+ * `capabilities.ts`: every way the two runtimes DIFFER, by name (ADR 0066, rule 2). A difference not
+ * here is a bug; one here has a row in `docs/runtimes.md`, which `check:install-matrix` holds to it.
  */
 export type Capabilities = {
   /** Who compresses responses. */
@@ -396,4 +395,5 @@ export type Capabilities = {
    * its answer between the check and the connection is NOT caught by this code.
    */
   outboundFetch: 'pinned' | 'by-name'
+  mailPorts: 'any' | 'not-25' // `not-25`: the platform blocks it, so it is refused untried (`cf/socket.ts`)
 }

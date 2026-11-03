@@ -44,6 +44,7 @@ function collect(): Case[] {
   cases.push({ name: 'archive: an X25519 seal (ADR 0060) opens with its identity and not with another', body: sealRoundTrip })
   cases.push({ name: 'archive: a passphrase recipient derives (scrypt, N=65536 r=8: 64 MB)', body: () => { passphraseRecipient('correct horse battery staple') } })
   cases.push({ name: 'smtp: STARTTLS lets go of the plain streams and reaches the TLS handshake', body: smtpReachesHandshake })
+  cases.push({ name: 'smtp: port 25, which Cloudflare blocks, is refused at once and says to use 587 or 465', body: smtpPort25Refused })
   cases.push({ name: 'archive: a kept archive past the old 64 MB ceiling is handed out as its size and a stream (G4)', body: keptAsStream })
   cases.push({ name: 'archive: the parts of an incoming archive are held in R2 under private/, read back in order, and dropped', body: incomingParts })
   cases.push({ name: 'image: the binding reads the picture in hand, not two copies of it, and answers as it did to the copies', body: imagesFromTheBuffer })
@@ -94,6 +95,24 @@ async function smtpTwoMessages(): Promise<void> {
   await session.send({ from: 'blog@blog.test', to: 'a@reader.test', body: 'Subject: one\r\n\r\nfirst\r\n.a line that starts with a dot\r\n' })
   await session.send({ from: 'blog@blog.test', to: 'b@reader.test', body: 'Subject: two\r\n\r\nsecond\r\n' })
   await session.close()
+}
+
+/**
+ * Cloudflare blocks outgoing connections to port 25, and local workerd does not, so a relay on 25 —
+ * common on a server, where the mail relay sits next door — failed only after the move, as a
+ * timeout. It is refused before any connection, with what to use instead (2026-11-03).
+ */
+async function smtpPort25Refused(): Promise<void> {
+  const started = Date.now()
+  try {
+    await SmtpSession.open({ host: '127.0.0.1', port: 25, secure: false, timeoutMs: 5000 })
+  } catch (error) {
+    const said = (error as Error).message
+    if (!/587/.test(said) || !/465/.test(said)) throw new Error(`refused without saying what to use: ${said}`)
+    if (Date.now() - started > 1000) throw new Error('refused only after waiting for it')
+    return
+  }
+  throw new Error('a connection to port 25 was opened')
 }
 
 /**

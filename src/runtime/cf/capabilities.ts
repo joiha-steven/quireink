@@ -12,5 +12,6 @@ export const CAPABILITIES: Capabilities = {
   clientAddress: 'edge',
   bodyLimits: 'isolate',
   staticFiles: 'edge',
+  mailPorts: 'not-25',
   outboundFetch: 'by-name',
 }
