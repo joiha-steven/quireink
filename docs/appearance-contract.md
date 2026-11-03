@@ -21,12 +21,12 @@ attributes), with one line of explanation each; clicking one writes it where you
   /* Colour — every one of these already changes with the palette, so set them only
      when you want something the six palettes do not offer. */
   --c-bg:      #fcfcfc;  /* page background */
-  --c-text:    #2e2e2e;  /* body text */
-  --c-heading: #121212;  /* headings */
-  --c-meta:    #6d6d6d;  /* dates, counts, small print */
-  --c-link:    #121212;  /* links */
-  --c-accent:  #121212;  /* the one accent: active states, markers */
-  --c-rule:    #ebebeb;  /* hairlines and dividers */
+  --c-text:    #30302f;  /* body text */
+  --c-heading: #1a1919;  /* headings */
+  --c-meta:    #6d6c6c;  /* dates, counts, small print */
+  --c-link:    #1a1919;  /* links */
+  --c-accent:  #1a1919;  /* the one accent: active states, markers */
+  --c-rule:    #e3e2e2;  /* hairlines and dividers */
 
   /* Shape */
   --radius:      .5rem;  /* corner radius (Shape sets this; override for a value between) */
@@ -35,7 +35,7 @@ attributes), with one line of explanation each; clicking one writes it where you
   --density:     1;      /* multiplies every gap; Shape sets .82 / 1 / 1.22 */
 
   /* Measure */
-  --shell-w:      672px; /* the reading column (Content width sets this) */
+  --shell-w:      672px; /* the reading column (Site width sets this) */
   --sp:           1rem;  /* the spacing unit every gap is a multiple of */
   --rail-gap:     40px;  /* the gap between the sidebar and the reading column, where a sidebar stands beside it */
 

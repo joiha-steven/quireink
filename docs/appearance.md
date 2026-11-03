@@ -25,10 +25,10 @@ knobs, ending with the escape hatch for anything they do not cover.
 | **Corner radius** | Appearance → Shape | Square, soft, or round. Avatars and pills keep their own shape |
 | **Headline weight** | Appearance → Shape | Light, normal or bold. Moves the post title and the card title together |
 | **Tables** | Posts → Tables | Seven knobs for how a table is drawn: header row, which lines, line weight, banded rows, first column, cell padding, and what happens on a phone. **The header row is tinted by default** — see below |
-| **Post hero** | Posts → Pictures | Whether a post's own picture appears above the headline. **Off by default** — see below |
+| **Cover on the post** | Posts → Pictures | Whether a post's own picture appears above the headline. **Off by default** — see below |
 | **List thumbnail** | Home & menu → Post list | Whether that picture appears on list rows, as a small square or a large 3:2. **Off by default** — see below |
 | Figure frame | Posts → Pictures | The frame every in-body picture wears unless it says otherwise |
-| Content width | Home & menu → Layout & menu | How wide the reading column runs |
+| Site width | Home & menu → Layout & menu | How wide the reading column runs |
 | Sidebar | Home & menu → Layout & menu | One rail or two, and whether there is a rail at all. With one rail (the default), a wide screen puts the menu and the subjects on the left and, in a sticky column on the right, an index of years with their post counts (the year in view lit, and an *All posts* link), then Most viewed and Featured; the infinite-scroll timeline gives way to that index there. Two rails keeps discovery on the left and everything else on the right. Switching it off leaves the rail carrying the owner's MENU alone: that switch owns the discovery blocks, never the site's navigation. On a phone the rail is a drawer that opens from the left in the page's own palette, with a search box on top when Search is on |
 | Archive in the sidebar | Home & menu → Post list | The years, as a block in the rail (with one rail, the year index on the right; each year links to its first post on the page when it is there, else to `/archive`). Separate from the `/archive` PAGE switch — the block can leave while the page stays reachable |
 | Series in the sidebar | Home & menu → Post list | The series list, each linking to its own page |
@@ -42,7 +42,7 @@ knobs, ending with the escape hatch for anything they do not cover.
 | Footer | Home & menu → Footer | Your own line, with `{year}` and `{title}` tokens |
 | **The reader's pen** | Posts → What is on a post | Readers select words on a post and highlight, underline, ring or note them; marks live in their browser only and are drawn with the site's own pen. **On by default.** Off removes the bar and leaves the quote-copy gesture ([ADR 0043](decisions/0043-the-reader-gets-a-pen.md)) |
 | **Hand-drawn lists** | Posts → What is on a post | Bullets become ink dots and level dashes, and a numbered list counts in a handwritten numeral (Kalam, ten digits, 1.4 KB). **On by default.** Off restores the browser's disc and decimal; a list that starts past 1 and a task list keep the browser's marker either way |
-| Feature switches | Posts → What is on a post | Table of contents, progress bar, book mode, related posts, reading time, the scroll fade, and a dozen more |
+| Feature switches | Posts → What is on a post | Table of contents, progress bar, book mode, related posts, reading time, and a dozen more. The scroll fade is one switch for both screens, under Home & menu → Post list |
 
 **Two of those read differently on a phone, and neither is a setting.** The reading-progress
 bar is desktop-only: the scrollbar already answers how far in you are, and a scroll-driven
@@ -99,7 +99,7 @@ short columns sideways when it fits a phone comfortably today.
 **Every ground is mixed from your palette, never named.** The header wash is 6% of your text
 colour stirred into your page colour, so it darkens the paper in a light theme and lightens
 it in a dark one, in all six palettes, from one declaration. Measured on the default
-palette: page and header are 13 steps of grey apart in light mode and 12 in dark, which is a
+palette: page and header are 12 steps of grey apart in light mode and in dark, which is a
 band you can see without being told it is there.
 
 ### A theme's own choices
@@ -257,6 +257,7 @@ Honest list, so you do not spend an evening trying:
 - **Fonts fetched from a third party.** Uploading a face is supported; loading one from
   Google's servers is not, and the site's own content policy blocks it
   ([conventions/type.md](conventions/type.md)).
-- **A seventh palette.** You can repaint all six; you cannot add one.
+- **A seventh built-in palette.** You can repaint all six; you cannot add one here. A theme from a
+  zip can bring its own, which are offered while that theme is chosen.
 - **Per-post appearance.** Settings are site-wide by design. A single post can override its
   figure frame and gallery shape from the image fragment, and nothing else.
