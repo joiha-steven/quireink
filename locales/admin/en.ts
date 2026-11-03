@@ -205,6 +205,7 @@ const en = {
   selectNone: 'None',
   backToDraft: 'Draft',
   publishedMany: '{n} published',
+  scheduledMany: '{n} scheduled',
   draftedMany: '{n} moved to drafts',
   bulkPartial: 'Some pieces could not be changed',
   trashPartial: 'Some pieces could not be moved',

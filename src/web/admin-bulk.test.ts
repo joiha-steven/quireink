@@ -54,7 +54,7 @@ const bulk = (body: unknown) =>
     body: JSON.stringify(body),
   })
 
-type Answer = { done: BulkPiece[]; failed: (BulkPiece & { reason: string })[] }
+type Answer = { done: BulkPiece[]; failed: (BulkPiece & { reason: string })[]; scheduled?: BulkPiece[] }
 
 describe('several pieces, one request', () => {
   it('bins posts, pages and notes together, and they leave the live lists', async () => {
@@ -95,6 +95,20 @@ describe('several pieces, one request', () => {
     expect(down.done).toHaveLength(1)
     expect((await getPost('nhap'))!.status).toBe('draft')
     expect((await getPost('da-dang'))!.status).toBe('published')
+  })
+
+  // A piece dated ahead goes up when its day comes, not now, and the toast said "Published" over a
+  // post that was still a 404 (2026-11-03). The answer names those, so the column can say so.
+  it('names the pieces that were scheduled rather than published', async () => {
+    const ahead = new Date(Date.now() + 86_400_000).toISOString()
+    await savePost({ title: 'Tomorrow', content: 'x', status: 'draft', date: ahead })
+    await savePost({ title: 'Now', content: 'x', status: 'draft', date: PAST })
+    await saveNote({ title: 'Later note', content: 'x', status: 'draft', date: ahead })
+    const up = await payload<Answer>(await bulk({ action: 'publish', pieces: [
+      { kind: 'post', slug: 'tomorrow' }, { kind: 'post', slug: 'now' }, { kind: 'note', slug: 'later-note' },
+    ] }))
+    expect(up.done).toHaveLength(3)
+    expect(up.scheduled).toEqual([{ kind: 'post', slug: 'tomorrow' }, { kind: 'note', slug: 'later-note' }])
   })
 
   it('changes a page and a note too, and leaves everything else on them alone', async () => {

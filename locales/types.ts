@@ -393,6 +393,7 @@ export type AdminStrings = {
   selectNone: string
   backToDraft: string
   publishedMany: string
+  scheduledMany: string
   draftedMany: string
   bulkPartial: string
   trashPartial: string

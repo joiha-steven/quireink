@@ -205,6 +205,7 @@ const ru = {
   selectNone: 'Снять',
   backToDraft: 'Черновик',
   publishedMany: 'Опубликовано: {n}',
+  scheduledMany: 'Запланировано: {n}',
   draftedMany: 'В черновики: {n}',
   bulkPartial: 'Часть записей не изменилась',
   trashPartial: 'Некоторые записи переместить не удалось',

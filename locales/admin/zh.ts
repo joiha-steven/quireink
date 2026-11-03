@@ -205,6 +205,7 @@ const zh = {
   selectNone: '取消',
   backToDraft: '草稿',
   publishedMany: '已发布 {n} 项',
+  scheduledMany: '已定时 {n} 项',
   draftedMany: '已把 {n} 项改回草稿',
   bulkPartial: '有些项没有改动',
   trashPartial: '部分条目没能移动',

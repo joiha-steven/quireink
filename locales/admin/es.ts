@@ -205,6 +205,7 @@ const es = {
   selectNone: 'Ninguno',
   backToDraft: 'Borrador',
   publishedMany: '{n} publicados',
+  scheduledMany: '{n} programados',
   draftedMany: '{n} pasados a borrador',
   bulkPartial: 'Algunos elementos no cambiaron',
   trashPartial: 'Algunos elementos no se pudieron mover',

@@ -205,6 +205,7 @@ const it = {
   selectNone: 'Nessuno',
   backToDraft: 'Bozza',
   publishedMany: '{n} pubblicati',
+  scheduledMany: '{n} programmati',
   draftedMany: '{n} riportati a bozza',
   bulkPartial: 'Alcuni elementi non sono cambiati',
   trashPartial: 'Alcuni elementi non sono stati spostati',

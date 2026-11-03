@@ -205,6 +205,7 @@ const vi = {
   selectNone: 'Bỏ chọn',
   backToDraft: 'Về nháp',
   publishedMany: 'Đã đăng {n}',
+  scheduledMany: 'Đã hẹn giờ {n}',
   draftedMany: 'Đã chuyển {n} về nháp',
   bulkPartial: 'Có mục không đổi được',
   trashPartial: 'Một số mục không chuyển được',

@@ -205,6 +205,7 @@ const ja = {
   selectNone: '解除',
   backToDraft: '下書き',
   publishedMany: '{n} 件を公開',
+  scheduledMany: '{n} 件を予約',
   draftedMany: '{n} 件を下書きに',
   bulkPartial: '変えられなかったものがあります',
   trashPartial: '一部の項目を移動できませんでした',

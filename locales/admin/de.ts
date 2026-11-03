@@ -205,6 +205,7 @@ const de = {
   selectNone: 'Keine',
   backToDraft: 'Entwurf',
   publishedMany: '{n} veröffentlicht',
+  scheduledMany: '{n} geplant',
   draftedMany: '{n} zu Entwürfen gemacht',
   bulkPartial: 'Einige Stücke blieben unverändert',
   trashPartial: 'Einige Beiträge konnten nicht verschoben werden',

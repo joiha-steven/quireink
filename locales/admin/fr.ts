@@ -205,6 +205,7 @@ const fr = {
   selectNone: 'Aucun',
   backToDraft: 'Brouillon',
   publishedMany: '{n} publiés',
+  scheduledMany: '{n} programmés',
   draftedMany: '{n} repassés en brouillon',
   bulkPartial: 'Certains éléments n’ont pas changé',
   trashPartial: 'Certains éléments n’ont pas pu être déplacés',

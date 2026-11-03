@@ -29,7 +29,7 @@ import { BULK_MAX } from '@/admin-shared/write'
 export type PickWords = Partial<Record<string, string>>
 
 type Piece = { kind: string; slug: string }
-type BulkAnswer = { done: Piece[]; failed: (Piece & { reason?: string })[] }
+type BulkAnswer = { done: Piece[]; failed: (Piece & { reason?: string })[]; scheduled?: Piece[] }
 
 /** `kind:slug`, the shape the ticks carry and the bulk route takes. */
 const split = (key: string): Piece => {
@@ -180,6 +180,7 @@ export function wirePicking(pane: HTMLElement, rows: HTMLElement[], after: () =>
     // six hundred. SEQUENTIAL, because each run is a write and they queue on one writer anyway.
     const gone: string[] = []
     let broke = false
+    let later = 0
     let homePage = false
     for (let at = 0; at < picked.length; at += BULK_MAX) {
       const run = picked.slice(at, at + BULK_MAX)
@@ -196,6 +197,7 @@ export function wirePicking(pane: HTMLElement, rows: HTMLElement[], after: () =>
       // stops the rest: whatever is wrong will be wrong for them too.
       if (!res?.ok || !answer?.success || !answer.data) { broke = true; break }
       gone.push(...answer.data.done.map(join))
+      later += answer.data.scheduled?.length ?? 0
       if (answer.data.failed.some((f) => f.reason === 'home_page')) homePage = true
     }
     busy(false)
@@ -209,9 +211,14 @@ export function wirePicking(pane: HTMLElement, rows: HTMLElement[], after: () =>
       // back rather than being patched into a shape only half of it believes. The sentence
       // travels with it (`say-across.ts`), because a toast dies with the page.
       if (gone.length === 0) { say(words.bulkPartial ?? '', 'error'); return }
-      const said = (action === 'publish' ? words.published : words.drafted) ?? ''
+      // A piece dated ahead was SCHEDULED, not published: it goes up on its day, and "Published"
+      // over a post that is still a 404 sends the owner looking for a fault (2026-11-03).
+      const count = (template: string | undefined, n: number) => (template ?? '').replace('{n}', String(n))
+      const parts = action === 'publish'
+        ? [gone.length - later > 0 ? count(words.published, gone.length - later) : '', later > 0 ? count(words.scheduled, later) : '']
+        : [count(words.drafted, gone.length)]
       sayAcross({
-        message: said.replace('{n}', String(gone.length))
+        message: parts.filter(Boolean).join(' · ')
           + (short ? ` · ${words.bulkPartial ?? ''}` : ''),
       })
       location.reload()

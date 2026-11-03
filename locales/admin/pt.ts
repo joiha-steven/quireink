@@ -206,6 +206,7 @@ const pt = {
   selectNone: 'Nenhum',
   backToDraft: 'Rascunho',
   publishedMany: '{n} publicados',
+  scheduledMany: '{n} agendados',
   draftedMany: '{n} de volta a rascunho',
   bulkPartial: 'Alguns itens não mudaram',
   trashPartial: 'Alguns itens não puderam ser movidos',

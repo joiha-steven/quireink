@@ -205,6 +205,7 @@ const ko = {
   selectNone: '해제',
   backToDraft: '초안',
   publishedMany: '{n}개 공개',
+  scheduledMany: '{n}개 예약됨',
   draftedMany: '{n}개를 초안으로',
   bulkPartial: '바뀌지 않은 항목이 있습니다',
   trashPartial: '일부 항목을 옮기지 못했습니다',

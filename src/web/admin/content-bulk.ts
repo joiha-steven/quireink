@@ -77,24 +77,31 @@ async function bin(piece: BulkPiece): Promise<void> {
  * three identical copies of the current body with the word "draft" in them and the actual
  * earlier drafts gone. The body did not change; there is nothing to keep.
  */
-async function setStatus(piece: BulkPiece, status: 'published' | 'draft'): Promise<boolean> {
+async function setStatus(piece: BulkPiece, status: 'published' | 'draft'): Promise<Moved> {
   if (piece.kind === 'post') {
     const post = await getPost(piece.slug)
-    if (!post) return false
+    if (!post) return 'missing'
     if (post.status !== status) await savePost({ ...post, status }, piece.slug, { revision: false })
-    return true
+    return status === 'published' && dated(post.date) ? 'scheduled' : 'moved'
   }
   if (piece.kind === 'page') {
     const page = await getPage(piece.slug)
-    if (!page) return false
+    if (!page) return 'missing'
     if (page.status !== status) await savePage({ ...page, status }, piece.slug)
-    return true
+    return 'moved'
   }
   const note = await getNote(piece.slug)
-  if (!note) return false
+  if (!note) return 'missing'
   if (note.status !== status) await saveNote({ ...note, status }, piece.slug)
-  return true
+  return status === 'published' && dated(note.date) ? 'scheduled' : 'moved'
 }
+
+/**
+ * Published, but dated ahead: it goes up when its day comes, not now. Said apart, because the
+ * toast said "Published" over a post that was still a 404 (2026-11-03). A page has no date.
+ */
+type Moved = 'moved' | 'scheduled' | 'missing'
+const dated = (date: string | undefined): boolean => !!date && Date.parse(date) > Date.now()
 
 /**
  * The pieces, as the OBJECT of the log's sentence — `page:about, post:on-ligatures +38`.
@@ -137,6 +144,7 @@ export function bulkRoutes() {
 
     const action = input.action
     const done: BulkPiece[] = []
+    const scheduled: BulkPiece[] = []
     const failed: BulkFailure[] = []
     for (const piece of pieces) {
       try {
@@ -144,9 +152,12 @@ export function bulkRoutes() {
           await bin(piece)
           done.push(piece)
         } else {
-          const found = await setStatus(piece, action === 'publish' ? 'published' : 'draft')
-          if (found) done.push(piece)
-          else failed.push({ ...piece, reason: 'not_found' })
+          const moved = await setStatus(piece, action === 'publish' ? 'published' : 'draft')
+          if (moved === 'missing') failed.push({ ...piece, reason: 'not_found' })
+          else {
+            done.push(piece)
+            if (moved === 'scheduled') scheduled.push(piece)
+          }
         }
       } catch (error) {
         // ONE PIECE, NOT THE REQUEST. Nineteen of twenty moved is nineteen the owner does not
@@ -160,7 +171,7 @@ export function bulkRoutes() {
     // ONE ROW, and only when something actually moved: a press that found nothing is not an
     // event in the blog's history. The flush is the gate's, on the way out of this handler.
     if (done.length > 0) void logActivity(ACTIONS[action], detailLine(done))
-    return json({ done, failed })
+    return json({ done, failed, scheduled })
   })
 
   return router
