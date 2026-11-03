@@ -22,3 +22,18 @@ describe('the timezone left empty', () => {
     expect(empty()).toBe('Not chosen: Asia/Tokyo')
   })
 })
+
+// V8 lists only the zones of places, so on Cloudflare the list had no UTC to pick, the one zone that
+// is never wrong; a saved UTC still showed only because a stored value is always offered (2026-11-03).
+describe('the zone list', () => {
+  it('offers UTC on an engine that leaves it out', () => {
+    const real = Intl.supportedValuesOf
+    Intl.supportedValuesOf = ((key: 'timeZone') => real(key).filter((z) => z !== 'UTC')) as typeof real
+    try {
+      const html = blogTab(adminT('en'), { ...DEFAULT_SETTINGS, timezone: 'Asia/Tokyo' })
+      expect(html).toContain('<option value="UTC"')
+    } finally {
+      Intl.supportedValuesOf = real
+    }
+  })
+})

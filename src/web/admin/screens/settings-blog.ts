@@ -35,7 +35,9 @@ import { COL, GRID } from '@/web/admin/screens/settings-shell'
  */
 const zones = (): [string, string][] => {
   try {
-    return Intl.supportedValuesOf('timeZone').filter((z) => !z.startsWith('Etc/GMT')).map((z) => [z, z])
+    const listed = Intl.supportedValuesOf('timeZone').filter((z) => !z.startsWith('Etc/GMT'))
+    // V8 lists only the zones of places, so workerd had no UTC to offer: it goes first wherever it is missing.
+    return (listed.includes('UTC') ? listed : ['UTC', ...listed]).map((z) => [z, z])
   } catch {
     return [['UTC', 'UTC']]
   }
