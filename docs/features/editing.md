@@ -397,4 +397,4 @@ card, a link) it is called by its first words; see
   owner's checklist before the old hosting lapses. Logged as `import.images`.
 - Max upload 100MB (`MAX_IMPORT_BYTES` in `src/web/body-cap.ts`); non-WXR files are rejected. A
   ZIP export (Substack, Medium, a Quire Ink bundle) is also capped once unpacked: 64 MB an entry
-  and 256 MB for all of them together (`src/import/unzip.ts`).
+  and 256 MB for all of them together (`src/import/unzip.ts`); the Medium reader finds its tags in time linear in the file.
