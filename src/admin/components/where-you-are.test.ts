@@ -109,6 +109,10 @@ describe('the mark cannot be painted over', () => {
     // base, which has no hover at all. That is why this asserts an ABSENCE.
     expect(SIDEBAR_NAV_QUIET).not.toContain('hover:')
     expect(SIDEBAR_NAV_ACTIVE).not.toContain('hover:')
+    // The same absence for the INK: the base named the resting grey, the active row its ink,
+    // and the grey was emitted later, so the current page read #6b6b6b on the pen (4.41:1).
+    expect(SIDEBAR_NAV_QUIET).not.toMatch(/(^|\s)(dark:)?text-neutral-\d/)
+    expect(SIDEBAR_NAV).toContain('text-neutral-500')
     // The inactive row still has one — it is the only feedback that a row is a link.
     // `neutral-200/70`, because the rail sits on the paper canvas and neutral-100 was
     // invisible against it.
