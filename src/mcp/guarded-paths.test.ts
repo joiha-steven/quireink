@@ -8,9 +8,19 @@ import { describe, expect, it } from 'bun:test'
 import { ADMIN_ONLY_SETTINGS, isAdminOnlyPath, refusalFor } from '@/mcp/guarded-paths'
 
 describe('the guarded settings paths', () => {
-  it('names the four that put markup on a public page or move the site', () => {
+  it('names the four that put markup on a public page or move the site, and the backups', () => {
     expect([...ADMIN_ONLY_SETTINGS].sort())
-      .toEqual(['customBodyEnd', 'customCss', 'customHead', 'siteUrl'])
+      .toEqual(['backups', 'customBodyEnd', 'customCss', 'customHead', 'siteUrl'])
+  })
+
+  it('covers every backup setting, because the key decides who can open the archive', () => {
+    // Measured 2026-11-03 on a `full` token: `backups.pubKey` set to a key made elsewhere answered
+    // `{ was: <owner's>, now: <other> }`, and `backups.encrypt` false sealed nothing after it.
+    for (const p of ['backups.pubKey', 'backups.passPub', 'backups.passSalt', 'backups.encrypt',
+                     'backups.keep', 'backups.enabled', 'backups.intervalDays']) {
+      expect(`${p}: ${isAdminOnlyPath(p)}`).toBe(`${p}: true`)
+      expect(refusalFor('update_settings', { path: p, value: false })).toContain('Do not retry')
+    }
   })
 
   it('matches a guarded path and anything under it', () => {

@@ -1369,7 +1369,7 @@ const vi = {
   mcpReadOnly: 'Chỉ đọc',
   mcpReadOnlyHint: 'Token tạo tiếp theo chỉ đọc — liệt kê và tìm nội dung, không sửa được gì.',
   mcpCustomCode: 'Mã tuỳ chỉnh',
-  mcpCustomCodeHint: 'Cho phép token kế tiếp đặt cả CSS riêng, HTML chèn vào head và cuối body, và địa chỉ site. Những thứ đó nằm trong mọi trang công khai, nên token có quyền này chạy được script trên máy người đọc.',
+  mcpCustomCodeHint: 'Cho phép token kế tiếp đặt cả CSS riêng, HTML chèn vào head và cuối body, và địa chỉ site. Những thứ đó nằm trong mọi trang công khai, nên token có quyền này chạy được script trên máy người đọc. Token này cũng đổi được phần cài đặt sao lưu, tức là quyết định ai mở được bản sao lưu của bạn.',
   storageTitle: 'Dung lượng',
   maxUploadLabel: 'Tệp tải lên lớn nhất (MB)',
   maxUploadHint: 'Để 0 là bạn không đặt giới hạn riêng: tệp lớn tới đâu là tuỳ máy chủ cho phép. Số đặt ở đây chỉ hạ được giới hạn của máy chủ, không nâng được, vì giới hạn đó thuộc về người vận hành máy chủ.',

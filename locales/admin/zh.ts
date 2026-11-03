@@ -1369,7 +1369,7 @@ const zh = {
   mcpReadOnly: '只读',
   mcpReadOnlyHint: '下一个令牌仅可读取 — 只能列出和搜索内容，不能修改。',
   mcpCustomCode: '自定义代码',
-  mcpCustomCodeHint: '同时允许下一个令牌设置自定义 CSS、head 与 body 末尾的 HTML，以及站点地址。这些会出现在每个公开页面上，因此持有该权限的令牌可以在读者的浏览器中运行脚本。',
+  mcpCustomCodeHint: '同时允许下一个令牌设置自定义 CSS、head 与 body 末尾的 HTML，以及站点地址。这些会出现在每个公开页面上，因此持有该权限的令牌可以在读者的浏览器中运行脚本。它还能修改备份设置，而备份设置决定了谁能打开你的备份。',
   storageTitle: '存储',
   maxUploadLabel: '单个文件上限（MB）',
   maxUploadHint: '填 0 表示这里不另设上限，文件能多大由服务器决定。这里的数值只能调低服务器的上限，不能调高，因为这个上限由运行服务器的人决定。',

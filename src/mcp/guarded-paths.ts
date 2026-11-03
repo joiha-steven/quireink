@@ -1,12 +1,12 @@
 // The settings a token may not reach unless the owner said so when they minted it.
 //
-// WHY THESE FOUR AND NOTHING ELSE. `update_settings` takes a dotted path and a value, and
+// WHY THESE AND NOTHING ELSE. `update_settings` takes a dotted path and a value, and
 // the whole argument for letting it reach every path is that the value goes through
 // `saveSettings` — the same sanitiser, clamp and refusal the owner's own Save button uses,
 // so nothing reachable over MCP is anything the owner's screens could not already do
 // (`tools-library.ts` carries that reasoning).
 //
-// It holds for every setting path but the four below. It does not hold for these, because for them the
+// It holds for every setting path but the ones below. It does not hold for these, because for them the
 // sanitiser's job is to keep the text INTACT: they exist to put the owner's own markup on
 // their own pages, and `customHead` and `customBodyEnd` are written verbatim into the
 // `<head>` and before `</body>` of every public page (`web/layout.ts`). Same origin as the
@@ -14,12 +14,18 @@
 // owner opens their own site. `customCss` can take the site off the air, and `siteUrl`
 // decides what every canonical, feed and newsletter link points at.
 //
+// AND THE BACKUPS (2026-11-03), for a different reason: not what a reader sees but who can open the
+// archive. `backups.pubKey` and `backups.passPub` name the keys every later snapshot is sealed to, so
+// changing them changes who can read the owner's password hash, TOTP secret and integration keys;
+// `backups.encrypt` false seals nothing at all, and `keep` and `enabled` decide whether there is
+// anything to go back to. Measured on a `full` token: a key made elsewhere went in with a clean
+// `{ was, now }`. Choosing who opens the archive is the owner's act, so the whole prefix is guarded.
+//
 // So the difference is not "write" versus "read". It is: a token that publishes for you,
 // against a token that can put code on your readers' screens. Those are different grants and
 // were the same one.
 //
-// EXISTING TOKENS NARROW. A `full` token minted before this stays `full` and loses these
-// four, which is the direction a security change has to fail in. The owner mints an `admin`
+// EXISTING TOKENS NARROW. A `full` token minted before this stays `full` and loses these, which is the direction a security change has to fail in. The owner mints an `admin`
 // token when they actually want a connector editing custom code, which is rare enough that
 // nobody should be holding the grant by default.
 
@@ -29,7 +35,7 @@
  * A PREFIX match, so `typography.customCss` would not be caught by accident and a future
  * `customHead.something` would. Flat today; the shape is what keeps it honest.
  */
-export const ADMIN_ONLY_SETTINGS = ['customHead', 'customBodyEnd', 'customCss', 'siteUrl']
+export const ADMIN_ONLY_SETTINGS = ['customHead', 'customBodyEnd', 'customCss', 'siteUrl', 'backups']
 
 /** True when a dotted settings path is one of the guarded ones, or sits under it. */
 export function isAdminOnlyPath(path: string): boolean {
@@ -52,7 +58,7 @@ export function refusalFor(tool: string, args: Record<string, unknown>): string 
   const path = typeof args.path === 'string' ? args.path : ''
   if (!path || !isAdminOnlyPath(path)) return null
   return `This token may not change \`${path}\`. It is one of ${ADMIN_ONLY_SETTINGS.join(', ')}, `
-    + 'which are written straight into every public page or decide where the site lives, so '
-    + 'they need a token minted with custom-code access. Do not retry: tell the owner, who can '
+    + 'which are written straight into every public page, decide where the site lives, or decide '
+    + 'who can open its backups, so they need a token minted with custom-code access. Do not retry: tell the owner, who can '
     + 'either make the change in Settings themselves or mint a token that carries it.'
 }

@@ -19,9 +19,12 @@
   time — `full` (the default), `read`, or `admin`; a `read` token's door registers only the
   tools marked `readOnly`, so write tools are ABSENT from its `tools/list` rather than refused
   (`src/mcp/registry.ts`, pinned by `src/mcp/scope.test.ts`). **`admin` is `full` plus four
-  settings**, `customHead`, `customBodyEnd`, `customCss` and `siteUrl`: the first three are
+  settings and the backups**, `customHead`, `customBodyEnd`, `customCss`, `siteUrl` and every `backups.*` path: the first three are
   written verbatim into every public page, so a token that can set them can run script on the
-  owner's own origin, and the fourth decides where every canonical and newsletter link points.
+  owner's own origin, the fourth decides where every canonical and newsletter link points, and
+  the backups decide who can open the archive (`pubKey`/`passPub` are the keys every later
+  snapshot is sealed to, `encrypt` false seals none, `keep` and `enabled` decide whether there is
+  one to go back to; guarded since 2026-11-03).
   A `full` token is refused those paths at the door (`src/mcp/guarded-paths.ts`) with a message
   that names the fix. Existing `full` tokens NARROW on upgrade rather than keeping the grant.
   The OAuth flow never mints `admin`: a connector negotiating a scope string is not the owner

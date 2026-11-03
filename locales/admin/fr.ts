@@ -1369,7 +1369,7 @@ const fr = {
   mcpReadOnly: 'Lecture seule',
   mcpReadOnlyHint: 'Le prochain jeton ne peut que lire — lister et chercher le contenu, jamais le modifier.',
   mcpCustomCode: 'Code personnalisé',
-  mcpCustomCodeHint: 'Autorise aussi le prochain jeton à définir le CSS personnalisé, le HTML de l’en-tête et de fin de page, et l’adresse du site. Tout cela figure sur chaque page publique : un jeton qui le détient peut exécuter du script chez vos lecteurs.',
+  mcpCustomCodeHint: 'Autorise aussi le prochain jeton à définir le CSS personnalisé, le HTML de l’en-tête et de fin de page, et l’adresse du site. Tout cela figure sur chaque page publique : un jeton qui le détient peut exécuter du script chez vos lecteurs. Il peut aussi modifier les réglages de sauvegarde, qui décident de qui peut ouvrir vos sauvegardes.',
   storageTitle: 'Stockage',
   maxUploadLabel: 'Envoi le plus lourd (Mo)',
   maxUploadHint: '0 signifie que vous ne fixez pas de limite ici : un fichier peut être aussi lourd que le serveur l’autorise. Un nombre ici peut abaisser la limite du serveur, jamais la relever, parce qu’elle appartient à qui fait tourner le serveur.',

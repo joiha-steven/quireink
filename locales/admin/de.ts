@@ -1369,7 +1369,7 @@ const de = {
   mcpReadOnly: 'Nur Lesen',
   mcpReadOnlyHint: 'Das nächste Token kann nur lesen — Inhalte auflisten und durchsuchen, nie ändern.',
   mcpCustomCode: 'Eigener Code',
-  mcpCustomCodeHint: 'Erlaubt dem nächsten Token außerdem eigenes CSS, eigenes HTML in Head und Body sowie die Adresse der Website zu setzen. Das landet auf jeder öffentlichen Seite, also kann ein Token damit Skripte bei Ihren Lesern ausführen.',
+  mcpCustomCodeHint: 'Erlaubt dem nächsten Token außerdem eigenes CSS, eigenes HTML in Head und Body sowie die Adresse der Website zu setzen. Das landet auf jeder öffentlichen Seite, also kann ein Token damit Skripte bei Ihren Lesern ausführen. Außerdem kann er die Einstellungen der Sicherung ändern und damit bestimmen, wer Ihre Sicherungen öffnen kann.',
   storageTitle: 'Speicher',
   maxUploadLabel: 'Größter Upload (MB)',
   maxUploadHint: '0 heißt, Sie setzen hier keine eigene Grenze: Eine Datei darf so groß sein, wie der Server erlaubt. Ein Wert hier kann die Grenze des Servers senken, aber nie anheben, denn sie gehört dem Betreiber des Servers.',

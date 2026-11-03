@@ -1369,7 +1369,7 @@ const es = {
   mcpReadOnly: 'Solo lectura',
   mcpReadOnlyHint: 'El próximo token solo puede leer: listar y buscar contenido, nunca modificarlo.',
   mcpCustomCode: 'Código personalizado',
-  mcpCustomCodeHint: 'También permite que el próximo token defina el CSS propio, el HTML del head y del final del body, y la dirección del sitio. Eso va en todas las páginas públicas, así que un token con este permiso puede ejecutar scripts en tus lectores.',
+  mcpCustomCodeHint: 'También permite que el próximo token defina el CSS propio, el HTML del head y del final del body, y la dirección del sitio. Eso va en todas las páginas públicas, así que un token con este permiso puede ejecutar scripts en tus lectores. También puede cambiar los ajustes de las copias de seguridad, que deciden quién puede abrirlas.',
   storageTitle: 'Almacenamiento',
   maxUploadLabel: 'Subida más grande (MB)',
   maxUploadHint: '0 significa que aquí no pones un límite propio: un archivo puede ser tan grande como permita el servidor. Un número aquí puede bajar el límite del servidor, pero nunca subirlo, porque ese límite es de quien administra el servidor.',

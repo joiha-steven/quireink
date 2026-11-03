@@ -1369,7 +1369,7 @@ const en = {
   mcpReadOnly: 'Read-only',
   mcpReadOnlyHint: 'The next token can only read — list and search content, never change it.',
   mcpCustomCode: 'Custom code',
-  mcpCustomCodeHint: 'Also lets the next token set custom CSS, custom head and body HTML, and the site address. Those go into every public page, so a token holding this can run script on your readers.',
+  mcpCustomCodeHint: 'Also lets the next token set custom CSS, custom head and body HTML, and the site address. Those go into every public page, so a token holding this can run script on your readers. It can also change the backup settings, which decide who is able to open your backups.',
   storageTitle: 'Storage',
   maxUploadLabel: 'Largest upload (MB)',
   maxUploadHint: '0 means you set no limit here, so a file can be as large as the server allows. A number here can lower the server’s limit but never raise it, because that limit belongs to whoever runs the server.',
