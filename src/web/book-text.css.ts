@@ -45,6 +45,15 @@ export const BOOK_TEXT_CSS = `
    other gesture turns the page. Wrapping shows every character; break-word is for the one
    long unbroken token (a path, a URL) that no space can fold. */
 .book-flow.prose pre{white-space:pre-wrap;overflow-wrap:break-word;overflow-x:visible}
+/* ...and the folded part HANGS: a continuation starts 4.25ch + 1px in, the width of the
+   line numbers the code look gives a block (look-code.css.ts: a 2ch counter, 1ch of padding,
+   a hairline, 1.25ch of margin). There the first row's number sits in that hang; under the
+   other looks it is an ordinary hanging indent, which is how a wrapped line of code says it is
+   a continuation. Before, the fold started at the block's left edge, under the numbers
+   (2026-11-03). Each line is a box of its own for this, the negative indent putting its first
+   row back where it was. No look selector: this sheet is the one every blog downloads. */
+.book-flow.prose pre.shiki .line{display:inline-block;width:100%;
+  padding-left:calc(4.25ch + 1px);text-indent:calc(-4.25ch - 1px)}
 
 /* THE BASELINE GRID, which is the thing a printed book has and a column of HTML does not.
    Two columns of a spread only read as one page if their lines sit at the same heights, and
