@@ -44,17 +44,28 @@
     --color-amber-950: oklch(27.9% 0.077 45.635);
     --color-emerald-500: oklch(69.6% 0.17 162.48);
     --color-emerald-600: oklch(59.6% 0.145 163.225);
-    --color-neutral-50: oklch(98.5% 0 none);
-    --color-neutral-100: oklch(97% 0 none);
-    --color-neutral-200: oklch(92.2% 0 none);
-    --color-neutral-300: oklch(87% 0 none);
-    --color-neutral-400: oklch(70.8% 0 none);
-    --color-neutral-500: oklch(55.6% 0 none);
-    --color-neutral-600: oklch(43.9% 0 none);
-    --color-neutral-700: oklch(37.1% 0 none);
-    --color-neutral-800: oklch(26.9% 0 none);
-    --color-neutral-900: oklch(20.5% 0 none);
-    --color-neutral-950: oklch(14.5% 0 none);
+    --color-neutral-50: oklch(98.5% 0.002 85);
+    --color-neutral-100: oklch(97% 0.003 85);
+    --color-neutral-200: oklch(92.2% 0.004 85);
+    --color-neutral-300: oklch(87% 0.005 85);
+    --color-neutral-400: oklch(70.8% 0.006 85);
+    --color-neutral-500: oklch(55.6% 0.007 85);
+    --color-neutral-600: oklch(43.9% 0.007 85);
+    --color-neutral-700: oklch(37.1% 0.007 85);
+    --color-neutral-800: oklch(26.9% 0.006 85);
+    --color-neutral-900: oklch(20.5% 0.006 85);
+    --color-neutral-950: oklch(14.5% 0.005 85);
+    /* THREE INKS (2026-11-03), and the greys above are the PAPER's: hue 85 at a chroma of 0.002
+       to 0.007, where they were Tailwind's neutral at chroma 0. The text utilities below map
+       eleven steps onto three: the ink (700-950), the quiet ink (500, 600) and the faint one
+       (300, 400), mirrored in dark. --ink-2 is the one value not on the scale: 5.3:1 on the
+       paper canvas and 5.7:1 on a white sheet, where neutral-500 measured 4.39 on paper. */
+    --ink-1: var(--color-neutral-900);
+    --ink-2: oklch(51% 0.008 80);
+    --ink-3: var(--color-neutral-400);
+    --ink-1-dark: var(--color-neutral-100);
+    --ink-2-dark: var(--color-neutral-400);
+    --ink-3-dark: var(--color-neutral-500);
     --color-black: #000;
     --color-white: #fff;
     --spacing: 0.25rem;
@@ -1993,28 +2004,28 @@
     color: var(--color-amber-700);
   }
   .text-neutral-300 {
-    color: var(--color-neutral-300);
+    color: var(--ink-3);
   }
   .text-neutral-400 {
-    color: var(--color-neutral-400);
+    color: var(--ink-3);
   }
   .text-neutral-500 {
-    color: var(--color-neutral-500);
+    color: var(--ink-2);
   }
   .text-neutral-600 {
-    color: var(--color-neutral-600);
+    color: var(--ink-2);
   }
   .text-neutral-700 {
-    color: var(--color-neutral-700);
+    color: var(--ink-1);
   }
   .text-neutral-800 {
-    color: var(--color-neutral-800);
+    color: var(--ink-1);
   }
   .text-neutral-900 {
-    color: var(--color-neutral-900);
+    color: var(--ink-1);
   }
   .text-neutral-950 {
-    color: var(--color-neutral-950);
+    color: var(--ink-1);
   }
   .text-transparent {
     color: transparent;
@@ -3158,28 +3169,28 @@
     color: var(--color-amber-500);
   }
   .dark\:text-neutral-50:where(.dark, .dark *) {
-    color: var(--color-neutral-50);
+    color: var(--ink-1-dark);
   }
   .dark\:text-neutral-100:where(.dark, .dark *) {
-    color: var(--color-neutral-100);
+    color: var(--ink-1-dark);
   }
   .dark\:text-neutral-200:where(.dark, .dark *) {
-    color: var(--color-neutral-200);
+    color: var(--ink-1-dark);
   }
   .dark\:text-neutral-300:where(.dark, .dark *) {
-    color: var(--color-neutral-300);
+    color: var(--ink-2-dark);
   }
   .dark\:text-neutral-400:where(.dark, .dark *) {
-    color: var(--color-neutral-400);
+    color: var(--ink-2-dark);
   }
   .dark\:text-neutral-500:where(.dark, .dark *) {
-    color: var(--color-neutral-500);
+    color: var(--ink-3-dark);
   }
   .dark\:text-neutral-600:where(.dark, .dark *) {
-    color: var(--color-neutral-600);
+    color: var(--ink-3-dark);
   }
   .dark\:text-neutral-700:where(.dark, .dark *) {
-    color: var(--color-neutral-700);
+    color: var(--ink-3-dark);
   }
   .dark\:text-neutral-900:where(.dark, .dark *) {
     color: var(--color-neutral-900);

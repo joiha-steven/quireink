@@ -100,12 +100,12 @@ export const NOTE_SIZE = 'text-[0.8125rem]'
  * `space-y` stack need not re-type the list to be rid of one `mt-1` — thirty-eight screens
  * did, and twenty-five drifted to a lighter grey.
  *
- * ⚠️ ITALIC is the only axis left for "quieter". Dimmer is not available: measured `#737373`
- * on white is **4.74:1** against the 4.5:1 a 13px line must clear, and the next neutral step
- * is **2.58:1**. Size cannot give way either — these were once the smallest text on screen,
- * which was the wrong way round. Slant costs no contrast and reads as an aside.
+ * ⚠️ UPRIGHT since 2026-11-03. Italic was the axis "quieter" took when the only greys were the
+ * framework's (`#737373` 4.74:1 on white, the next step 2.58:1), and a slanted grey sentence
+ * under every field is half of what made the admin read as generated. The note is quieter by
+ * its INK now, `--ink-2` (5.3:1 on paper, 5.7:1 on white), and by its 13px; the slant went.
  */
-const NOTE_SHAPE = `${NOTE_SIZE} italic leading-[1.55]`
+const NOTE_SHAPE = `${NOTE_SIZE} leading-[1.55]`
 /**
  * `admin-note` is a HANDLE, not a style — it declares nothing and exists so one CSS rule in
  * `admin.css` can put every explanation on the settings screen out of sight at once.

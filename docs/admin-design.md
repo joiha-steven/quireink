@@ -47,18 +47,18 @@ character and none of its typographic rules **except one**, below.
 - `font-size-adjust: from-font` and a per-role `letter-spacing: normal` were both tried against
   the mixed-face symptoms and both removed: the source was one line in `adminStyles`.
 - **The canvas is PAPER** (`#f7f6f4`), and a card is a SHEET on it: a hairline edge, a 10px
-  radius, and no shadow at all. It was a flat neutral gray (`#f5f5f5`) under `rounded-2xl`
-  white cards carrying a 1px drop shadow, and on 2026-08-15 that was rejected as looking
-  cheap and beneath the product. The diagnosis was not workmanship: gray canvas +
-  rounded white card + soft shadow + tinted pill tabs is the costume every generated dashboard
-  wears, and **nothing in it came from this product**. The reading site next door is one sheet
-  of paper with hairlines ruled across it and nothing floating anywhere, so the tool is now
-  built from the same three things — paper, a rule, and space.
-  ⚠️ The **font** was not part of this. The admin's chrome face stays Inter and the site's
-  monospace chrome font stays out (see above, and the two rejected mechanisms). What the 2026-08-14
-  pass got wrong was treating "not the mono font" as the whole answer: the face came out and
-  nothing went in, so the admin fell back to the framework's defaults. A typeface and a visual
-  language are different questions.
+  radius, and no shadow at all. It was a flat neutral gray (`#f5f5f5`) under `rounded-2xl` white
+  cards with a 1px drop shadow, rejected on 2026-08-15 as cheap: gray canvas + rounded white
+  card + soft shadow + tinted pill tabs is the costume every generated dashboard wears, and
+  **nothing in it came from this product**. The reading site is one sheet of paper with hairlines
+  ruled across it, so the tool is built from the same three things — paper, a rule, and space.
+  **Its greys are the paper's** (2026-11-03): the eleven `--color-neutral-*` steps sit at hue 85,
+  chroma ≤ 0.007, where Tailwind's were 0, and text takes **three inks** whatever step a call
+  site names: `--ink-1` for 700–950, `--ink-2` for 500–600 (5.3:1 on paper), `--ink-3` for
+  300–400, mirrored in dark. A hint is quieter by its ink and 13px, never by a slant.
+  ⚠️ The **font** was not part of this: the chrome face stays Inter and the site's monospace stays
+  out (above). The 2026-08-14 pass took "not the mono font" for the whole answer, so the face came
+  out, nothing went in, and the admin fell back to the framework's defaults.
 - **Hierarchy comes from spacing and rules, not decoration.** Cards are for genuinely
   independent data; shadows are for overlays, and `check:admin-kit` now fails a raised white
   surface that is not `sticky` or `fixed` — the control-scale relief below is 1–2px of edge,

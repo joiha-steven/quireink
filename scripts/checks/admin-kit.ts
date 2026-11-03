@@ -107,15 +107,15 @@ const RULES: Rule[] = [
     // size and the leading, which is still the difference between a readable hint and the
     // smallest text on the screen.
     what: 'the hint text style',
-    // `italic` since 2026-08-29, and the signature moved with it — a hint is set apart from
-    // its label by SLANT because it cannot be set apart by shade: measured at 4.74:1 on a
-    // white card against the 4.5:1 floor, with `neutral-400` two steps down at 2.58:1.
+    // UPRIGHT since 2026-11-03, and the signature moved with it: the hint is set apart by its
+    // ink (`--ink-2`, 5.3:1 on paper) and its 13px, no longer by slant. It was italic from
+    // 2026-08-29, when the only greys were the framework's and none cleared 4.5 a step down.
     //
     // The SHAPE without the colour, since 2026-08-31: a note that has to be noticed keeps the
-    // size, the slant and the leading and swaps the ink (`NOTE_ALERT`), and a signature that
-    // still named the grey would have been a rule this kit could no longer satisfy.
-    signature: 'text-[0.8125rem] italic leading-[1.55]',
-    homeText: '${NOTE_SIZE} italic leading-[1.55]',
+    // size and the leading and swaps the ink (`NOTE_ALERT`), and a signature that still named
+    // the grey would have been a rule this kit could no longer satisfy.
+    signature: 'text-[0.8125rem] leading-[1.55]',
+    homeText: '${NOTE_SIZE} leading-[1.55]',
     home: 'src/admin-shared/scale.ts',
     instead: 'import NOTE_TEXT from @/admin-shared/scale — or pass `note` to settingRow / textField in web/admin/fields',
   },

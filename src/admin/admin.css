@@ -619,10 +619,10 @@ dialog :focus-visible,
    length, so the style has to be taken back. */
 .md-mirror i {
   font-style: normal;
-  color: #a3a3a3;
+  color: var(--ink-3);
 }
 .dark .md-mirror i {
-  color: #6b6b6b;
+  color: var(--ink-3-dark);
 }
 
 /* The typing layer. Its own text is invisible — the mirror is what you read — while the
@@ -887,22 +887,15 @@ input[type='color']::-moz-color-swatch {
    neutral-500 gives 3.76 on the track and 4.2 between the labels; neutral-600 gives 6.2 and
    2.53 — each step passes one test and fails the other. #656565 reads 4.63 on the track and
    3.40 between the labels, which is the only band that clears both, and there is no Tailwind
-   step inside it. Dark is untouched: on the dark track neutral-400 already measures 6.94. */
-.seg-off { color: #656565; }
+   step inside it. It is `--ink-2` since the greys were warmed (2026-11-03): 4.55 on the warm
+   track and 3.13 from the chosen label, so the strip needs no fourth grey. Dark is untouched:
+   on the dark track neutral-400 already measures 6.94. */
+.seg-off { color: var(--ink-2); }
 .dark .seg-off { color: var(--color-neutral-400, #a3a3a3); }
 
-/* LIGHT-MODE SMALL PRINT. `text-neutral-500` (#737373) measures 4.39:1 on the paper canvas
-   (#f7f6f4) at 12-13px, which is where the kit note (`kit-note`), the meta lines and the
-   quiet links all sit. One step darker, to #6b6b6b (5.0:1 on paper, 5.3:1 on a white card),
-   is the smallest move that clears 4.5 and is done HERE rather than at each call site so
-   every use is fixed at once. It lives INSIDE `@layer utilities`, after the utility it adjusts:
-   an unlayered rule would beat every layered utility and flatten `hover:text-*` on the same
-   element. `:where()` keeps it at one class, so it wins over `.text-neutral-500` by order and
-   loses to a hover or `dark:` variant at (0,2,0). Dark needs nothing: neutral-400 on #0f0f0f
-   is above 7:1. */
-@layer utilities {
-  :where(html:not(.dark)) .text-neutral-500 { color: #6b6b6b; }
-}
+/* LIGHT-MODE SMALL PRINT was lifted here to #6b6b6b, because `text-neutral-500` measured 4.39:1
+   on the paper canvas. It is `--ink-2` now (utilities.css, the three inks), 5.3:1 on paper and
+   5.7:1 on a white sheet, so the patch went with the scale it patched (2026-11-03). */
 
 /* A ROW CHECKBOX is drawn 16px and must be hit at 24px on a phone or any coarse pointer.
 
