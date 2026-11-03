@@ -158,10 +158,17 @@ describe('the four questions after the account', () => {
     expect(await getSettings()).toMatchObject({ theme: 'notes', chromeFont: 'plex-mono' })
   })
 
-  it('leaves the chrome font alone for plain, an unknown theme, or no answer', async () => {
+  it("sets plain's own font too, so a monospace from before is not carried into it", async () => {
     const cookie = await session()
-    await saveSettings({ chromeFont: 'plex-mono' })
-    for (const form of [{ theme: 'plain' }, { theme: 'broadsheet' }, { theme: '<x>' }, {}] as Record<string, string>[]) {
+    await saveSettings({ chromeFont: 'jetbrains-mono' })
+    await asOwner('/setup/look', { theme: 'plain' })(cookie)
+    expect((await getSettings()).chromeFont).toBe('inter')
+  })
+
+  it('leaves the chrome font alone for an unknown theme, or no answer', async () => {
+    const cookie = await session()
+    for (const form of [{ theme: 'broadsheet' }, { theme: '<x>' }, {}] as Record<string, string>[]) {
+      await saveSettings({ chromeFont: 'plex-mono', setupDone: false })
       await asOwner('/setup/look', form)(cookie)
       expect({ form, chromeFont: (await getSettings()).chromeFont }).toEqual({ form, chromeFont: 'plex-mono' })
     }

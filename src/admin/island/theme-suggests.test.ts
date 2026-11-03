@@ -34,11 +34,11 @@ const partial = () => partialOf(fieldsIn(root))
 beforeEach(() => draw())
 
 describe('a theme tile and the chrome font', () => {
-  it("carries the theme's suggestion in its markup, and plain an empty one", () => {
+  it("carries the theme's suggestion in its markup, plain's the install's own font", () => {
     const tile = (id: string) => root.querySelector<HTMLElement>(`[data-k="theme"] [data-choice="${id}"]`)!
     expect(JSON.parse(tile('code').dataset.suggests!)).toEqual({ chromeFont: 'jetbrains-mono' })
     expect(JSON.parse(tile('notes').dataset.suggests!)).toEqual({ chromeFont: 'inter' })
-    expect(JSON.parse(tile('plain').dataset.suggests!)).toEqual({})
+    expect(JSON.parse(tile('plain').dataset.suggests!)).toEqual({ chromeFont: 'inter' })
   })
 
   it('moves the chrome font on screen, unsaved, so one Save sends both', () => {
@@ -62,6 +62,16 @@ describe('a theme tile and the chrome font', () => {
   it('puts back the saved font when the owner tries a theme and moves to one with no suggestion', () => {
     press('theme', 'code')
     press('theme', 'plain')
+    expect(chrome()).toBe('inter')
+    expect(partial()).toEqual({})
+  })
+
+  it('suggests nothing on the saved theme, so leaving it and coming back leaves the form as it was', () => {
+    draw('code', 'inter')
+    press('theme', 'plain')
+    expect(chrome()).toBe('inter')
+    press('theme', 'notes')
+    press('theme', 'code')
     expect(chrome()).toBe('inter')
     expect(partial()).toEqual({})
   })

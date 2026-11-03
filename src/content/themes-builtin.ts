@@ -15,7 +15,7 @@
 import type { SiteLook } from '@/types'
 import type { ThemeFont, ThemePalette } from '@/theme'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { DISPLAY_SLUG } from '@/content/fonts'
+import { DEFAULT_CHROME_FONT, DISPLAY_SLUG } from '@/content/fonts'
 import { LOOK_CODE_RAIL_ASIDE_CSS, LOOK_CODE_RAIL_BAND_CSS } from '@/web/look-code-rail.css'
 
 /** A key of the admin's strings whose value is one string (some are tables of them). */
@@ -137,7 +137,9 @@ export type BuiltinTheme = SiteTheme & { id: BuiltinThemeId }
 const PLAIN: BuiltinTheme = {
   id: 'plain', nameKey: 'lookPlain', hintKey: 'lookStepPlainHint',
   sheet: null, dataLook: '', layout: { menu: 'rail', deepenMetaInk: false }, display: null, chromeFace: 'setting', rail: null,
-  suggests: {}, legacyChromeFont: null, ownsSettings: [], package: null,
+  // The install's own chrome font, named rather than left out: suggesting nothing kept the font
+  // of the theme before, so Source code then Plain paper left the header and dates monospace.
+  suggests: { chromeFont: DEFAULT_CHROME_FONT }, legacyChromeFont: null, ownsSettings: [], package: null,
 }
 
 /** In the order the admin and the setup step offer them. */

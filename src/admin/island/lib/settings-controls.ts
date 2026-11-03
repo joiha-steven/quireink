@@ -68,7 +68,9 @@ export function wireControls(root: HTMLElement, moved: OnMove): void {
       mirror(root, track, (twin) => pickChoice(twin, value))
       // The owner's own hand, which a theme's suggestion never moves until the next save.
       markPicked(root, track, 'owner')
-      if (seg.hasAttribute('data-suggests')) applySuggests(root, seg.dataset.suggests ?? '')
+      // Back on the saved theme nothing is suggested: what is saved was chosen under it, so
+      // trying another theme and coming back leaves the form as it was.
+      if (seg.hasAttribute('data-suggests')) applySuggests(root, value === track.dataset.was ? '{}' : seg.dataset.suggests ?? '')
       applyGates(root)
       moved()
     }
