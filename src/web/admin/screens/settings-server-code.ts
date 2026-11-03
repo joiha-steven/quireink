@@ -157,18 +157,29 @@ export function siteCard(t: AdminStrings, s: SiteSettings): string {
  * from the template, which keeps every WORD on the server where the locales are and stops the
  * island holding a second copy of this markup that drifts from it in silence.
  */
+/**
+ * A path or URL, escaped, with a break allowed after each slash but the first: a line may end
+ * there. Not after a LEADING slash, which left a lone "/" at the end of a line, the path's own
+ * name on the next.
+ */
+const pathSeams = (p: string): string => escapeHtml(p).replace(/(?<=.)\//g, '/<wbr>')
+
 function redirectRow(t: AdminStrings, r?: Redirect): string {
   const code = r ? (r.permanent ? '301' : '302') : ''
   return `<li class="flex items-center gap-3 py-2 text-sm" data-redirect`
     + `${r ? ` data-redirect-id="${escapeAttr(String(r.id))}"` : ''}>`
     // WRAPPED, not cut (FIXLIST 7.9): the target is the half of the row being checked, and it was
-    // the half cut off, at 1280 as well as on a phone. A path breaks anywhere.
-    + `<span class="min-w-0 flex-1 break-all">`
+    // the half cut off, at 1280 as well as on a phone. A path breaks at its own seams, after a
+    // slash or a hyphen, and inside a word only when a piece cannot fit: `break-all` printed
+    // "/col / ophon" and "https://git / hub.com" (2026-11-03, 375 and 1440).
+    + `<span class="min-w-0 flex-1 break-words">`
     + `<code class="text-neutral-800 dark:text-neutral-200" data-redirect-from>`
-    + `${escapeHtml(r?.source ?? '')}</code>`
-    + `<span class="mx-1.5 text-neutral-500 dark:text-neutral-400">→</span>`
+    + `${pathSeams(r?.source ?? '')}</code>`
+    // ...and after the arrow, which sits between the two by margin alone, so source, arrow and
+    // target were one unbroken run and "/colophon" was cut in two to make it fit.
+    + `<span class="mx-1.5 text-neutral-500 dark:text-neutral-400">→</span><wbr>`
     + `<code class="text-neutral-600 dark:text-neutral-400" data-redirect-to>`
-    + `${escapeHtml(r?.destination ?? '')}</code></span>`
+    + `${pathSeams(r?.destination ?? '')}</code></span>`
     + `<span class="shrink-0 rounded-md border border-neutral-200 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400" data-redirect-code>`
     + `${code}</span>`
     // ⚠️ `ICON_KEY`, WHICH GIVES IT A BOX. This was a bare 16px glyph with no key around it —
