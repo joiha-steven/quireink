@@ -136,3 +136,15 @@ describe('a picture a TABLE points at, in any column', () => {
     expect(await unused()).toEqual(['orphan.webp'])
   })
 })
+
+// A picture put into a post nobody has saved yet is held only by that browser's draft, which the
+// server cannot read, so the audit named it unused and the delete it invites left a hole in the
+// draft (2026-11-03). A picture from the last day is not named: it may be in such a draft.
+describe('a picture uploaded in the last day', () => {
+  it('is not named, as it may sit in a draft not saved yet', async () => {
+    upload('old-orphan.webp')
+    db().run(`insert into media (path, filename, size, uploaded_at, variants) values (?, ?, 1, ?, 0)`,
+      ['media/just-now.webp', 'just-now.webp', Date.now() - 60_000])
+    expect(await unused()).toEqual(['old-orphan.webp'])
+  })
+})

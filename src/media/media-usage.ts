@@ -110,11 +110,20 @@ async function usedKeys(re: RegExp): Promise<Set<string>> {
   return used
 }
 
+/**
+ * How long a new picture is left out of the audit. One put into a post nobody has saved yet is
+ * held only by that browser's draft (`island/lib/sheet-tab.ts`), which no table here can read, and
+ * the audit named it unused — the delete it invites took a picture out of the writing (2026-11-03).
+ */
+const GRACE_MS = 86_400_000
+
 // Absolute URLs of media items referenced by no post, page, setting, or
-// revision. `getMedia()` already returns expanded URLs (same form the client
-// holds), so we hand those straight back for an exact match in the grid.
-export async function findUnusedMedia(): Promise<string[]> {
+// revision, uploaded before the last day (`GRACE_MS`). `getMedia()` already returns expanded URLs
+// (same form the client holds), so we hand those straight back for an exact match in the grid.
+export async function findUnusedMedia(now: number = Date.now()): Promise<string[]> {
   const used = await usedMediaKeys()
   const media = await getMedia()
-  return media.filter((m) => !used.has(collapseBlob(m.url))).map((m) => m.url)
+  return media
+    .filter((m) => !used.has(collapseBlob(m.url)) && now - Date.parse(m.uploadedAt) >= GRACE_MS)
+    .map((m) => m.url)
 }

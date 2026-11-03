@@ -172,6 +172,8 @@ describe('the unused audit', () => {
   // Non-destructive by design: it returns what nothing references so the owner can review.
   it('reports an unreferenced image and never deletes it', async () => {
     const a = await payload<Array<{ url: string }>>(upload('/api/media/upload', [['lonely.png', 'image/png']]))
+    // A day old: a picture from the last day may sit in a draft nobody has saved (`GRACE_MS`).
+    db().run(`update media set uploaded_at = 1`)
     const unused = await payload<string[]>(asOwner('/api/media/unused'))
     expect(unused.length).toBe(1)
     // Still there.
