@@ -147,8 +147,8 @@ is a download that can fail where a 30 MB one cannot.
 the data directory and the site URL, all of which are reconstructed by following
 [`self-host.md`](./self-host.md). The two secrets it used to hold are not there any more —
 the session signing secret is generated INTO the database (`auth/secret.ts`) and the SMTP
-password lives in Settings, so both are inside the snapshot already. A restore therefore
-brings its own sessions and its own mail server back with it.
+password lives in Settings, so both are inside the snapshot already. A restore brings back its mail server and its MCP tokens
+(the setup screen and the activity log count them), never its sign-ins: `sessions` stays empty (`server/archive-rows.ts`).
 
 > The names below match [`self-host.md`](./self-host.md): service `quire`, data
 > `/var/lib/quire`. If you named your service something else, everything here is an

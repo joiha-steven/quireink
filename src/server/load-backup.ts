@@ -88,7 +88,7 @@ async function bytesOf(body: AsyncIterable<Uint8Array>, size: number, pathname: 
  * claimed by the account in the archive; on any failure every table this touched is emptied
  * again and every upload it wrote removed, and the error is thrown.
  */
-export async function loadBackupIntoEmptyBlog(source: AsyncIterable<Uint8Array>, keys: ArchiveKeys): Promise<RowsReport & { version: string }> {
+export async function loadBackupIntoEmptyBlog(source: AsyncIterable<Uint8Array>, keys: ArchiveKeys): Promise<Loaded> {
   if (holder !== null) throw new LoadRefusal('busy')
   holder = 'load'
   try {
@@ -108,7 +108,14 @@ export async function loadBackupIntoEmptyBlog(source: AsyncIterable<Uint8Array>,
   }
 }
 
-async function loadOpened(items: AsyncGenerator<TarItem>): Promise<RowsReport & { version: string }> {
+/**
+ * What a load brought: the report, the version that wrote it, and how many MCP tokens came back,
+ * which the owner is told on the screen and in the log. A token in a backup still works, so a
+ * backup somebody else made can carry a connection nobody here ever approved.
+ */
+export type Loaded = RowsReport & { version: string; mcpTokens: number }
+
+async function loadOpened(items: AsyncGenerator<TarItem>): Promise<Loaded> {
   const kind = await classify(items)
   if (kind.format !== 'rows') throw new LoadRefusal('old-format')
   const { manifest } = kind
@@ -147,7 +154,8 @@ async function loadOpened(items: AsyncGenerator<TarItem>): Promise<RowsReport & 
     })
     load.finish()
     if (noUsersYet()) throw new ArchiveFault('no-owner')
-    return { ...report, version: manifest.version }
+    const mcpTokens = report.tables.find((t) => t.kind === 'content' && t.name === 'mcp_tokens')?.rows ?? 0
+    return { ...report, version: manifest.version, mcpTokens }
   } catch (error) {
     load.abort()
     for (const pathname of written) await deleteByPathname(pathname).catch(() => undefined)
@@ -164,6 +172,6 @@ async function loadOpened(items: AsyncGenerator<TarItem>): Promise<RowsReport & 
 }
 
 /** Said in the activity log, which is the archive's own now. */
-export function logLoaded(version: string): void {
-  logAuthEvent('auth.owner.claimed', `from a backup written by ${version}`)
+export function logLoaded(loaded: Loaded): void {
+  logAuthEvent('auth.owner.claimed', `from a backup written by ${loaded.version}: ${loaded.mcpTokens} MCP token(s) loaded with it, no sign-in carried over`)
 }

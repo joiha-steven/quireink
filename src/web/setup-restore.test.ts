@@ -13,6 +13,7 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/test/sqlite'
 import { createApp } from '@/web/app'
 import { createUser, noUsersYet } from '@/auth/users'
+import { createSession } from '@/auth/sessions'
 import { savePost } from '@/content/posts'
 import { getSettings, saveSettings } from '@/content/settings'
 import { DEFAULT_BACKUPS } from '@/content/settings-defaults'
@@ -41,6 +42,13 @@ process.env.STORAGE_LOCAL_DIR = join(ROOT, 'source-uploads')
 mkdirSync(join(ROOT, 'source-uploads', 'media'), { recursive: true })
 writeFileSync(join(ROOT, 'source-uploads', 'media', 'photo.webp'), new Uint8Array(5000).map((_, i) => i & 0xff))
 await createUser({ username: 'owner', email: 'owner@example.com', password: 'wandering violet cassette' })
+// A device signed in to the old blog, and two MCP connections it had approved: what a restore must
+// NOT bring back, and what it must say it did.
+createSession((db().query('select id from users').get() as { id: number }).id)
+for (const n of [1, 2]) {
+  db().run(`insert into mcp_tokens (name, token_hash, prefix, created_at, expires_at) values (?, ?, 'vbmcp_x', 1, 9999999999999)`,
+    [`Connector ${n}`, `hash-${n}`])
+}
 for (let i = 0; i < 12; i++) {
   await savePost({ title: `Ngày thứ ${i}`, slug: `day-${i}`, content: `Body ${i}`, status: 'published',
     date: '2020-01-01T00:00:00.000Z', tags: ['diary'] })
@@ -134,8 +142,8 @@ describe('the door', () => {
 describe('a backup loaded into an empty blog', () => {
   it('brings every post, the owner, the settings and the pictures, and ends at the sign-in', async () => {
     const res = await load(PLAIN)
-    expect(res.status).toBe(303)
-    expect(res.headers.get('location')).toBe('/login')
+    expect(res.status).toBe(200)
+    expect(await res.text()).toContain('action="/login"')
     expect(count('posts')).toBe(SOURCE_POSTS)
     expect((db().query('select username from users').get() as { username: string }).username).toBe('owner')
     expect((await getSettings()).title).toBe('The moved blog')
@@ -155,13 +163,30 @@ describe('a backup loaded into an empty blog', () => {
     const wrong = await load(SEALED, { passphrase: 'not it at all, sadly' })
     expect(wrong.status).toBe(422)
     const right = await load(SEALED, { passphrase: PASS })
-    expect(right.status).toBe(303)
+    expect(right.status).toBe(200)
     expect(count('posts')).toBe(SOURCE_POSTS)
   }, 20_000)
 
   it('also opens it with the key from the key file', async () => {
-    expect((await load(SEALED, { identity: identity.secret })).status).toBe(303)
+    expect((await load(SEALED, { identity: identity.secret })).status).toBe(200)
     expect(noUsersYet()).toBe(false)
+  })
+})
+
+describe('what a load leaves behind, and says', () => {
+  it('signs nobody in: the old blog\'s sessions do not come with it', async () => {
+    expect((await load(PLAIN)).status).toBe(200)
+    expect(count('sessions')).toBe(0)
+    expect(noUsersYet()).toBe(false)
+  })
+
+  it('says how many MCP tokens came with it, on the screen and in the activity log', async () => {
+    const done = await (await load(PLAIN)).text()
+    expect(count('mcp_tokens')).toBe(2)
+    expect(done).toContain('2 MCP tokens came with it')
+    expect(done).toContain('No sign-in came across with it')
+    const logged = db().query(`select detail from activity_log where action = 'auth.owner.claimed'`).get() as { detail: string }
+    expect(logged.detail).toContain('2 MCP token(s) loaded')
   })
 })
 
@@ -217,7 +242,7 @@ describe('what it refuses', () => {
     expect(noUsersYet()).toBe(true)
     expect(existsSync(join(process.env.STORAGE_LOCAL_DIR!, 'media', 'photo.webp'))).toBe(false)
     // And the door is still open: the right archive goes in afterwards.
-    expect((await load(PLAIN)).status).toBe(303)
+    expect((await load(PLAIN)).status).toBe(200)
   })
 })
 
@@ -231,6 +256,6 @@ describe('a claim and a load, never both', () => {
     expect(seen).toEqual({ second: null, loaded: 'busy' })
     expect(count('posts')).toBe(0)
     // Released: the load goes in now.
-    expect((await load(PLAIN)).status).toBe(303)
+    expect((await load(PLAIN)).status).toBe(200)
   })
 })

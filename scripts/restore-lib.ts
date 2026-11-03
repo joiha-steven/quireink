@@ -24,7 +24,7 @@ import { Database } from 'bun:sqlite'
 import { open } from '@/runtime/impl/db'
 import type { Connection } from '@/runtime/ports'
 import { classify, openArchive, ArchiveFault, type ArchiveKeys } from '@/server/archive-open'
-import { readRows, uploadPath, type RowsReport } from '@/server/archive-rows'
+import { NOT_LOADED, readRows, uploadPath, type RowsReport } from '@/server/archive-rows'
 import type { TarItem } from '@/server/tar'
 import { digestTable, loadTable, planFor } from '@/store/rows'
 import type { Kind } from '@/store/db'
@@ -199,6 +199,8 @@ async function rows(
       if (broken.length > 0) throw new ArchiveFault(`${FILES[kind]}: ${broken.length} row(s) point at a row that is not there (first in ${broken[0]!.table})`)
       // Dumped again from the file just built: what a restore GOT, not what it was handed.
       for (const t of manifest.databases[kind].tables) {
+        // A table no load puts back (`sessions`) is empty here on purpose, not short.
+        if (NOT_LOADED.has(t.name)) continue
         const noRowid = conn.one<{ sql: string }>('select sql from sqlite_master where name = ?', t.name)
         const again = digestTable(conn, planFor(conn, t.name, /without\s+rowid\s*$/i.test(noRowid?.sql ?? '')))
         if (again.sha256 !== t.sha256) throw new ArchiveFault(`${FILES[kind]}: ${t.name} does not dump back to the manifest's digest`)

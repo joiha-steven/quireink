@@ -20,7 +20,8 @@ import { noUsersYet } from '@/auth/users'
 import { clientIp, overLimit, recordHit } from '@/server/rate-limit'
 import { setupTokenMatches, forgetSetupToken, setupCodeConfigured } from '@/server/setup-token'
 import { ArchiveFault } from '@/server/archive-open'
-import { LoadRefusal, loadBackupIntoEmptyBlog, logLoaded } from '@/server/load-backup'
+import { LoadRefusal, loadBackupIntoEmptyBlog, logLoaded, type Loaded } from '@/server/load-backup'
+import { plural } from '@/i18n/plural'
 import { errorBox, fillTemplate, loginShell } from '@/web/login-page'
 import { claimedScreen } from '@/web/setup-claim-page'
 import { boundaryOf, fieldText, multipart, type Part } from '@/web/multipart'
@@ -78,6 +79,27 @@ ${tokenField}
 <button type="submit" class="login-submit">${escapeHtml(s.setupRestoreGo)}</button>
 <p class="login-hint" data-restore-status aria-live="polite" hidden></p>
 </form>`, scriptTag('login') + scriptTag('setup-restore'))
+}
+
+/**
+ * What the owner is told once a backup is in: the sign-ins did not come with it, and how many MCP
+ * tokens did. The parts upload shows the same sentence, which is why it is built apart from the page.
+ */
+export function loadedSentence(settings: SiteSettings, loaded: Loaded): string {
+  const s = adminT(settings.language)
+  const tokens = loaded.mcpTokens === 0
+    ? s.setupRestoreDoneNoTokens
+    : fillTemplate(plural(s.setupRestoreDoneTokens, loaded.mcpTokens, settings.language), { where: s.tabServer })
+  return `${s.setupRestoreDone} ${tokens}`
+}
+
+/** The restore screen once the load is done, with the way in. */
+export function loadedScreen(settings: SiteSettings, loaded: Loaded): string {
+  const s = adminT(settings.language)
+  return loginShell(settings, s.setupRestoreDoneTitle, `
+<h1>${escapeHtml(s.setupRestoreDoneTitle)}</h1>
+<p class="login-lede" data-restore-done>${escapeHtml(loadedSentence(settings, loaded))}</p>
+<form method="get" action="/login" class="login-form"><button type="submit" class="login-submit">${escapeHtml(s.authSignIn)}</button></form>`, scriptTag('login'))
 }
 
 /** `GET /setup/restore`. */
@@ -169,10 +191,11 @@ async function decide(c: Context, parts: AsyncGenerator<Part> | null): Promise<R
       identity: fields.identity || undefined, passphrase: fields.passphrase || undefined,
     })
     forgetSetupToken()
-    logLoaded(report.version)
-    console.log(`[INFO] setup.restore: ${report.tables.length} tables, ${report.uploads} uploads, from ${clientIp(c)}`)
-    // Into the sign-in, as the archive's owner: their password and authenticator came with it.
-    return c.redirect('/login', 303)
+    logLoaded(report)
+    console.log(`[INFO] setup.restore: ${report.tables.length} tables, ${report.uploads} uploads, ${report.mcpTokens} MCP tokens, from ${clientIp(c)}`)
+    // What came and what did not, then the sign-in, as the archive's owner: their password and
+    // authenticator came with it. It was a 303 straight to `/login`, which said neither.
+    return html(loadedScreen(settings, report))
   } catch (error) {
     if (error instanceof LoadRefusal && error.code === 'claimed') return refusal(claimedScreen(settings), 409)
     const { status, message } = verdict(error, s)

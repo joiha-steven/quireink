@@ -79,6 +79,26 @@ describe('the backup form', () => {
     expect(went).toEqual(['/login'])
   }, 10_000)
 
+  it('says what the load brought, and turns the button into the way in, rather than leaving at once', async () => {
+    stubFetch((url, init) => {
+      if (init?.method === 'POST' && url.endsWith('/parts')) return { success: true, data: { id: 'up3', partBytes: 64 } }
+      if (url.endsWith('/load')) {
+        return { success: true, data: { location: '/login', message: 'Loaded. 2 MCP tokens came with it.', signIn: 'Sign in' } }
+      }
+      return { success: true, data: {} }
+    })
+    const { form, went } = await ready(11)
+    submit(form)
+    await settle()
+    expect(went).toEqual([])
+    expect(document.querySelector('[data-restore-status]')?.textContent).toBe('Loaded. 2 MCP tokens came with it.')
+    const way = form.querySelector<HTMLButtonElement>('button')!
+    expect(way.textContent).toBe('Sign in')
+    expect(way.disabled).toBe(false)
+    way.click()
+    expect(went).toEqual(['/login'])
+  })
+
   it('shows the blog\'s refusal and gives the button back', async () => {
     stubFetch((url, init) => (init?.method === 'POST' && url.endsWith('/parts')
       ? new Response(JSON.stringify({ success: false, code: 'not-empty', error: 'This blog is not empty.' }), { status: 409 })

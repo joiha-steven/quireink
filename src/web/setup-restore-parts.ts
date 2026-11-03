@@ -28,7 +28,7 @@ import {
 } from '@/server/restore-parts'
 import { firstNonEmptyTable } from '@/store/archive-load'
 import { TRIES, TRIES_WINDOW, tries } from '@/web/setup-routes'
-import { verdict } from '@/web/setup-restore'
+import { loadedSentence, verdict } from '@/web/setup-restore'
 
 type Strings = ReturnType<typeof adminT>
 
@@ -136,10 +136,14 @@ export async function handlePartsLoad(c: Context): Promise<Response> {
   try {
     const report = await loadBackupIntoEmptyBlog(await assembled(p), { identity: text(keys.identity), passphrase: text(keys.passphrase) })
     forgetSetupToken()
-    logLoaded(report.version)
+    logLoaded(report)
     await dropParts(p).catch(() => undefined)
-    console.log(`[INFO] setup.restore: ${report.tables.length} tables, ${report.uploads} uploads, ${p.size} bytes in parts, from ${clientIp(c)}`)
-    return ok({ loaded: true, location: '/login', version: report.version, tables: report.tables.length, uploads: report.uploads })
+    console.log(`[INFO] setup.restore: ${report.tables.length} tables, ${report.uploads} uploads, ${report.mcpTokens} MCP tokens, ${p.size} bytes in parts, from ${clientIp(c)}`)
+    const settings = await getSettings()
+    return ok({
+      loaded: true, location: '/login', version: report.version, tables: report.tables.length, uploads: report.uploads,
+      mcpTokens: report.mcpTokens, message: loadedSentence(settings, report), signIn: adminT(settings.language).authSignIn,
+    })
   } catch (error) {
     // The parts stay: a wrong passphrase or key is put right and loaded again without sending the
     // archive a second time. The sweep takes them a day after the upload began.

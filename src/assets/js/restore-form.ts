@@ -98,7 +98,7 @@ function wire(form: HTMLFormElement, go: (url: string) => void): void {
     }
 
     say(d.loading ?? '')
-    const loaded = await call<{ location: string }>(`/${id}/load`, {
+    const loaded = await call<{ location: string; message?: string; signIn?: string }>(`/${id}/load`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ identity: field('identity'), passphrase: field('passphrase') }),
     })
@@ -110,6 +110,16 @@ function wire(form: HTMLFormElement, go: (url: string) => void): void {
       return fail(loaded.body.error ?? '')
     }
     try { sessionStorage.removeItem(memo) } catch { /* as above */ }
-    go(loaded.body.data.location)
+    // What came with it and what did not (no sign-in, how many MCP tokens), said before the way in,
+    // as the form's own answer says it: going straight to the sign-in said neither.
+    const { location: to, message, signIn } = loaded.body.data
+    if (!message) return go(to)
+    say(message)
+    if (!button) return
+    // The form's own button becomes the way in, so it looks like every other button on these pages.
+    button.textContent = signIn ?? to
+    button.type = 'button'
+    button.disabled = false
+    button.addEventListener('click', () => go(to), { once: true })
   }
 }

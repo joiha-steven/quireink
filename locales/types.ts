@@ -1925,6 +1925,13 @@ export type AdminStrings = {
   setupRestoreLoading: string
   setupRestoreRetrying: string
   setupRestoreStopped: string
+  /** The restore screen once a backup is in. */
+  setupRestoreDoneTitle: string
+  /** That everything loaded and that no sign-in came with it. */
+  setupRestoreDone: string
+  /** How many MCP tokens came with it, plural forms by `|`; `{where}` is the Server & connections tab. */
+  setupRestoreDoneTokens: string
+  setupRestoreDoneNoTokens: string
   // ----- first run, after the account: the two questions worth asking ------------
   // Deliberately only two screens. Palettes, fonts, book mode and the feature switches are
   // NOT here: nobody can judge them before the site has a single post, and a choice made

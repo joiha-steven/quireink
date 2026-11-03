@@ -127,6 +127,11 @@ describe('a backup in parts', () => {
     const loaded = await api(`/${id}/load`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ passphrase: PASS }) })
     expect(loaded.status).toBe(200)
     expect(count('posts')).toBe(SOURCE_POSTS)
+    // The same sentence the form's answer carries, for the page's script to show before the way in.
+    const { data } = await loaded.json() as { data: { mcpTokens: number; message: string; location: string } }
+    expect(data.location).toBe('/login')
+    expect(data.mcpTokens).toBe(0)
+    expect(data.message).toContain('No sign-in came across with it')
   }, 30_000)
 })
 

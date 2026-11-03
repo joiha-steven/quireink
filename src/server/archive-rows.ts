@@ -70,6 +70,15 @@ export function checkedSchema(sql: string): string {
   return sql
 }
 
+/**
+ * Tables an archive carries that no load puts back, on the setup screen or from the shell.
+ *
+ * `sessions`: a restored blog starts with nobody signed in. Loaded, every device that held a cookie
+ * of the old blog was signed in to the new one, including a session the owner had revoked after
+ * the backup was taken, and on a blog that changed hands with its backup, the old owner's devices.
+ */
+export const NOT_LOADED: ReadonlySet<string> = new Set(['sessions'])
+
 /** Everything after the manifest, in order, into `target`. Throws on the first thing that is wrong. */
 export async function readRows(items: AsyncGenerator<TarItem>, manifest: Manifest, target: RowsTarget): Promise<RowsReport> {
   const report: RowsReport = { tables: [], uploads: 0, bytes: 0 }
@@ -88,6 +97,10 @@ export async function readRows(items: AsyncGenerator<TarItem>, manifest: Manifes
     const table = expected.get(name)
     if (kind && table) {
       if (!seenSchema.has(kind)) throw new ArchiveFault(`out-of-order: ${name} before ${kind}/schema.sql`)
+      if (NOT_LOADED.has(table.name)) {
+        expected.delete(name)
+        continue
+      }
       const got = await target.table(kind, table, item.body())
       expected.delete(name)
       if (got === null) continue

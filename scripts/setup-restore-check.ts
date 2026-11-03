@@ -118,8 +118,9 @@ try {
   const wrong = await post('not-the-setup-code-at-all')
   say(wrong.status === 403, `a wrong setup code is refused (${wrong.status})`)
   const loaded = await post(code)
-  say(loaded.status === 303 && loaded.headers.get('location') === '/login',
-    `the archive loads and hands over to the sign-in (${loaded.status} → ${loaded.headers.get('location')})`)
+  const done = loaded.status === 200 ? await loaded.text() : ''
+  say(done.includes('data-restore-done') && done.includes('action="/login"'),
+    `the archive loads, says what came with it, and hands over to the sign-in (${loaded.status})`)
   const again = await post(code)
   say(again.status === 409, `a second load into the now-claimed blog is refused (${again.status})`)
   say((await fetch(`${second}/setup`)).status === 404, 'its setup screen now says the blog has an owner')
