@@ -7,8 +7,9 @@
 
 `2.2.21`
 
-**Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
-Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc. Tên bạn trên đó, không phải tên chúng tôi.
+**Một blog của riêng bạn. AI trông coi hộ được.**
+Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
+Bài viết của bạn là hai file trên ổ đĩa của bạn, trong một tiến trình nhỏ, không cần tài khoản đám mây. Không muốn thuê máy chủ thì có Cloudflare.
 
 <br/>
 
@@ -30,23 +31,33 @@ Không thuật toán, không quảng cáo, không nền tảng nào đứng gi�
 
 ## Nó là gì
 
-Một blog để viết và đăng bài, chạy trên máy chủ bạn thuê. Có đủ thứ thường thấy — trang chủ, bài viết, chuyên mục, tìm kiếm, bình luận, bản tin gửi đi mỗi khi đăng bài — và không có thuật toán nào quyết định ai được đọc bạn, không quảng cáo chen giữa bài, không công ty nào đổi luật vào năm sau.
+Quire Ink là blog cho một người muốn viết lâu dài. Bạn viết ngay trên trình duyệt, bấm đăng, và bài đi tới site của bạn, feed, hộp thư người đăng ký, cả Mastodon nếu bạn bật.
 
-Màu, chữ, bố cục trang chủ và menu đều là cài đặt trong trang quản trị, và làm được từ điện thoại. Dựng lần đầu là việc kỹ thuật — nhờ người biết về máy chủ, hoặc giao cho một AI agent. Sau đó bạn chỉ việc viết, và chỉ lúc nâng cấp mới phải mở terminal.
+Không ai quyết định ai được đọc bạn, không quảng cáo chen giữa bài, không công ty nào đổi luật vào năm sau. Bài nằm trên máy chủ bạn thuê, và một nút bấm là ra một thư mục Markdown mở được bằng trình soạn thảo nào cũng được.
+
+Dựng lần đầu là việc kỹ thuật, nên hãy nhờ người biết về máy chủ, hoặc giao cho một AI agent. Sau đó bạn chỉ việc viết, trên máy tính hay điện thoại, và chỉ lúc nâng cấp mới phải mở terminal.
 
 **Làm cho** một người, một máy chủ, một blog muốn giữ lâu. **Không làm cho** một nhóm cần phân quyền, duyệt bài và hàng đợi biên tập.
 
-## Điểm nổi bật
+## Vì sao chọn nó
 
-- **Trình soạn Markdown thật**, có bảng, chú thích, hộp ghi chú, công thức, bộ ảnh và video. Tự lưu khi gõ, giữ các bản cũ, hẹn giờ đăng.
-- **Bốn kiểu giao diện có sẵn và mọi theme bạn cài từ file zip ([tự viết theme](docs/themes.md)), sáu bảng màu, bốn font đọc**, sáng và tối, và chế độ sách dàn bài thành hai cột như trang giấy.
-- **Cây bút cho bạn và cho người đọc**: tô năm màu mực, gạch chân, khoanh chữ — vẽ tay, không nét nào giống nét nào.
-- **Đăng nhập bằng passkey** (vân tay, khuôn mặt hoặc mã PIN của máy) bên cạnh mật khẩu và mã xác thực, không thay chúng.
-- **Thống kê không dùng cookie**, theo từng bài và cả site, và bản tin gửi bằng máy chủ mail của bạn.
-- **Dọn vào và dọn ra**: nhận WordPress, Ghost, Substack hay Medium; xuất ra một ZIP Markdown.
-- **Một AI agent trông được nó.** Máy chủ MCP có sẵn cho trợ lý viết nháp, đăng bài, đọc số liệu và dọn dẹp, theo đúng luật mà trang quản trị theo.
-- **Nhanh trên máy nhỏ.** Một tiến trình Bun, hai file SQLite, không máy chủ cơ sở dữ liệu, không cần tài khoản đám mây nào.
-- **Mười một thứ tiếng**, trong trang quản trị và trên site.
+**Trang đọc là sản phẩm.** Giấy trơn, mã nguồn, tờ báo hay sổ tay, sáu bảng màu sáng tối, bốn font đọc. Bài nào cũng mở được thành sách, dàn hai cột như trang giấy. Cỡ chữ, màu và khoảng cách đều là cài đặt, và ai viết tay một con số vào stylesheet thì bản build đỏ ngay.
+
+**Cây bút trông như vẽ thật.** Tô năm màu mực, gạch chân bút chì, khoanh chữ bút bi, không nét nào giống nét nào. Người đọc cũng có bút, ngay trong trình duyệt của họ, không cần tài khoản, chỉ tốn 4,5 KB trên trang bài.
+
+**AI trông được cả blog, không chỉ viết hộ.** Máy chủ MCP có sẵn. Trợ lý viết nháp, hẹn giờ, đăng bài, đọc số liệu, dọn spam, xếp lại trang chủ, và tự dựng rồi cài được cả theme. Nó đi qua đúng những lớp kiểm mà trang quản trị đi qua, và token chỉ đọc thì chỉ đọc được.
+
+**Ai cũng làm được theme.** Theme là CSS, font và ảnh trong một file zip, không có code. Bộ công cụ kiểm tra theme của bạn, chụp nó trên mọi trang ở ba khổ màn hình, và chỉ đúng dòng sai cùng cách viết lại. [Bắt đầu ở đây](docs/themes.md).
+
+**Dọn vào hôm nay, dọn đi lúc nào cũng được.** WordPress, Ghost, Substack và Medium sang được cùng ảnh, link cũ vẫn chạy. Ra thì một nút bấm. Mỗi bản phát hành đều khôi phục thử một bản sao lưu thật, từng bảng, từng file, trước khi ra mắt, vì bản sao lưu chưa ai khôi phục thì chưa phải bản sao lưu.
+
+**Nhỏ tới mức quên luôn là nó đang chạy.** Một tiến trình, hai file SQLite, không máy chủ cơ sở dữ liệu. Chạy trong 256 MB bộ nhớ, và người đọc chỉ tải vài KB JavaScript. Máy chủ rẻ nhất bạn thuê được là đủ.
+
+**Không theo dõi người đọc.** Thống kê không dùng cookie, bình luận không cần tài khoản và không qua bên thứ ba, bản tin gửi bằng máy chủ mail của bạn. Đăng nhập được bằng passkey, bên cạnh mật khẩu và mã xác thực, không thay chúng.
+
+**Trình soạn thật, mười một thứ tiếng.** Bảng, chú thích, hộp ghi chú, công thức, bộ ảnh và video trên nền Markdown. Tự lưu khi gõ, giữ các bản cũ, hẹn giờ đăng. Trang quản trị và site nói được mười một thứ tiếng, và mỗi bài có thể ghi ngôn ngữ riêng của nó.
+
+**Kiểm kỹ thật.** Gần 6.000 test và hơn 300 luồng trên trình duyệt thật ở mỗi lần push. Mỗi bản phát hành được cài mới và nâng cấp trên từng cách cài ở trang này trước khi công bố.
 
 Từng phần, chi tiết và so với các lựa chọn khác: [**Quire Ink, bản đầy đủ**](./docs/overview.vi.md).
 
