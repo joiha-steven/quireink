@@ -36,7 +36,10 @@ export function verifyPreview(slug: string, token: string | undefined): boolean 
   if (!Number.isFinite(exp) || exp < Date.now()) return false
   // The signature covers slug AND expiry, so the date in the URL cannot be edited forward.
   const expected = sign(slug, exp)
-  const given = token.slice(0, dot)
-  if (given.length !== expected.length) return false
-  return timingSafeEqual(Buffer.from(given), Buffer.from(expected))
+  // Compared as BYTES, lengths included. The lengths were compared as strings, and a key of
+  // twenty-four `é` is twenty-four characters and forty-eight bytes: `timingSafeEqual` threw,
+  // and a stranger's made-up link was a 500 and an error row in the activity log.
+  const given = Buffer.from(token.slice(0, dot))
+  const want = Buffer.from(expected)
+  return given.length === want.length && timingSafeEqual(given, want)
 }

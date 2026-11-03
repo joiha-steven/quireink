@@ -78,9 +78,12 @@ export function setupCodeIgnored(): boolean {
  */
 export function setupTokenMatches(given: string): boolean {
   if (token === null) return false
-  const g = fromCode ? fold(given) : given
-  if (g.length !== token.length) return false
-  return timingSafeEqual(Buffer.from(g), Buffer.from(token))
+  // As BYTES, lengths included: a guess with a non-ASCII character in it has more bytes than
+  // characters, so a string-length check let it through to `timingSafeEqual`, which threw
+  // before the claim route could charge the guess to its rate limit.
+  const g = Buffer.from(fromCode ? fold(given) : given)
+  const want = Buffer.from(token)
+  return g.length === want.length && timingSafeEqual(g, want)
 }
 
 /**

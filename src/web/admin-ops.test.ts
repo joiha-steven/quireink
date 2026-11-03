@@ -255,6 +255,15 @@ describe('the preview link', () => {
     // tokens never expired, so they all expire at once.
     expect(verifyPreview('a-draft', sig)).toBe(false)
   })
+
+  it('answers a made-up key with characters wider than a byte as not found, not as a failure', async () => {
+    const res = await asOwner('/api/preview-link?slug=a-draft')
+    const { token } = await payload<{ token: string }>(res)
+    const [sig, exp] = token.split('.')
+    const wide = `${'é'.repeat(sig!.length)}.${exp}`
+    expect(verifyPreview('a-draft', wide)).toBe(false)
+    expect((await app.request(`/preview/a-draft?key=${encodeURIComponent(wide)}`)).status).toBe(404)
+  })
 })
 
 describe('the manual archive', () => {

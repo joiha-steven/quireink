@@ -108,6 +108,12 @@ describe('claiming', () => {
     expect(noUsersYet()).toBe(true)
   })
 
+  it('refuses a wrong token with characters wider than a byte, rather than failing', async () => {
+    const token = setupToken()
+    expect((await claim({ token: 'é'.repeat(token.length) })).status).toBe(403)
+    expect(noUsersYet()).toBe(true)
+  })
+
   it('refuses once an owner exists, whatever the token says', async () => {
     await createUser({ username: 'taken', email: 't@example.com', password: PASSWORD })
     expect((await claim()).status).toBe(409)
