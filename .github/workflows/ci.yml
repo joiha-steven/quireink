@@ -264,9 +264,20 @@ jobs:
       # run on 2026-09-04 went red with `ConnectionClosed: audit request failed` and not one
       # advisory in it; on the Monday schedule that is a red mail about nothing. A real
       # advisory fails all three tries the same way, so nothing real is retried away.
+      #
+      # IGNORED since 2026-11-03: GHSA-wx4j-mvgx-mqwp (satori, moderate: attribute values and
+      # inline-SVG children written into the SVG unescaped). UNREACHABLE: the only satori caller
+      # is the share card (`render/og-card.ts`), whose tree is built here from fixed styles; what
+      # a visitor sends to `/og` (title, desc, date, site) only ever becomes a text node, which
+      # 0.29 already escaped, and the one attribute fed from outside, the `bg` image's
+      # content-type, is read from our own origin. UNFIXABLE for now: 0.33.5, the first patched
+      # release, shapes text with harfbuzzjs, which compiles WASM from bytes at setup, and
+      # workerd refuses that, so the card fails on every Cloudflare install
+      # (`scripts/cf-test/og.ts` is red on 0.33.5). Drop the ignore when a satori release
+      # renders in that case.
       - run: |
           for try in 1 2 3; do
-            bun audit && exit 0
+            bun audit --ignore=GHSA-wx4j-mvgx-mqwp && exit 0
             [ "$try" -lt 3 ] && echo "audit did not complete (try $try), retrying in 20s" && sleep 20
           done
           exit 1

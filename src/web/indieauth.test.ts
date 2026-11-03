@@ -131,6 +131,9 @@ describe('the sign-in-only exchange', () => {
 
 describe('what the head advertises', () => {
   it('names the endpoints while the switch is on, and only the webmention one when it is off', async () => {
+    // The page cache lives in the process, and bun runs every test file in one: without this
+    // the first `/` can be another file's home page, drawn with the switch off.
+    clearCache()
     const on = await (await app.request('/')).text()
     expect(on).toContain('rel="webmention" href="/webmention"')
     expect(on).toContain('rel="indieauth-metadata"')
