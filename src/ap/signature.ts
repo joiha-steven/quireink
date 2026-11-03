@@ -168,6 +168,10 @@ export function verifySignature(args: {
   // request and replayed against every other route on this server, forever.
   if (!parsed.headers.includes('date')) return 'missing-header'
   if (!parsed.headers.includes('(request-target)')) return 'missing-header'
+  // ...and a request with a BODY must sign its digest. Without it the signature covers the
+  // envelope and not the letter: anybody holding one signed delivery could keep its headers and
+  // put any activity they liked under them, for as long as its date is within the skew.
+  if (args.body.length > 0 && !parsed.headers.includes('digest')) return 'missing-header'
   for (const name of parsed.headers) {
     if (name !== '(request-target)' && args.headers[name] === undefined) return 'missing-header'
   }

@@ -5,7 +5,7 @@
 // below is a refusal somebody else's server would hand back as a silent 401 — which is exactly
 // why they are asserted here rather than discovered in production.
 import { describe, expect, it } from 'bun:test'
-import { generateKeyPairSync } from 'node:crypto'
+import { createSign, generateKeyPairSync } from 'node:crypto'
 import {
   digestOf, parseSignature, signingString, signRequest, verifySignature,
 } from '@/ap/signature'
@@ -112,6 +112,23 @@ describe('a request this blog refuses', () => {
       }
       expect(verifySignature({ ...req, headers })).toBe('missing-header')
     }
+  })
+
+  it('refuses a body whose digest the signature does not cover, however well the rest is signed', () => {
+    // A real signature, by the right key, over the date, the target and the host: everything but
+    // the body. Kept as it is, its headers will carry any activity anybody puts under them.
+    const req = incoming()
+    const names = ['(request-target)', 'host', 'date']
+    const signature = createSign('sha256')
+      .update(signingString(names, 'POST', req.path, req.headers))
+      .sign(privateKey, 'base64')
+    const headers = {
+      ...req.headers,
+      signature: `keyId="${KEY_ID}",algorithm="rsa-sha256",headers="${names.join(' ')}",signature="${signature}"`,
+    }
+    expect(verifySignature({ ...req, headers, body: '{"type":"Undo"}' })).toBe('missing-header')
+    // The same signature on a request with no body is complete: there is nothing to bind.
+    expect(verifySignature({ ...req, headers, body: '' })).toBeNull()
   })
 
   it('refuses a request with no signature at all', () => {
