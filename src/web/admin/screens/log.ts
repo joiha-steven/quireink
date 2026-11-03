@@ -206,11 +206,11 @@ export async function logScreen(settings: SiteSettings): Promise<string> {
     + `${escapeHtml(t.logDisabled.replace('{tab}', t.tabAccount))}</p>`
 
   // THREE STATES, all three drawn, and CSS picks — the rail's trick again. "Nothing has
-  // happened yet" and "nothing matched what you typed" are different facts, and the DRAWING is
-  // what tells them apart before the sentence is read; the lens is not the blank page.
+  // happened yet" and "nothing matched what you typed" are different facts, and each
+  // sentence says which one this is.
   const body = entries.length === 0
-    ? emptyState({ title: t.logEmpty, description: t.logEmptyHint, glyph: 'blankPage' })
-    : `${emptyState({ title: t.logNoMatch, glyph: 'lens', hidden: true, attrs: 'data-log-nomatch' })}`
+    ? emptyState({ title: t.logEmpty, description: t.logEmptyHint })
+    : `${emptyState({ title: t.logNoMatch, hidden: true, attrs: 'data-log-nomatch' })}`
       + `<ul data-log-list class="admin-stagger">${entries.map((e: NamedEntry, i: number) => row(t, lang, siteZone(settings.timezone), e, i)).join('')}</ul>`
       + `<div data-log-more class="px-5 py-3"${entries.length > PAGE ? '' : ' hidden'}>`
       + `<button type="button" class="${SHEET_TOOL}">${escapeHtml(t.logShowMore.replace('{n}', String(PAGE)))}</button></div>`

@@ -212,7 +212,7 @@ export async function analyticsScreen(settings: SiteSettings, query: URLSearchPa
       // The index is handed what the table above just drew, so it can open on the rest.
       + pieceIndex(t, lang, pieces, titles, range, new Set(summary.topPages.map((p) => p.path)))
       + columns(t, lang, summary)
-    : `<div class="flex flex-1 items-center justify-center p-10">${emptyState({ title: t.analyticsNoData, description: t.analyticsNoDataHint })}</div>`
+    : `<div class="flex-1">${emptyState({ title: t.analyticsNoData, description: t.analyticsNoDataHint })}</div>`
 
   return `<div data-screen="analytics" data-lang="${escapeAttr(lang)}">`
     + pageHeader({ title: t.analyticsTitle })

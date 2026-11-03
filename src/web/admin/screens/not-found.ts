@@ -29,8 +29,8 @@ export async function notFoundScreen(settings: SiteSettings): Promise<string> {
   // The SEARCH is the palette, not a second box: it already reaches posts, pages, settings and
   // every screen by name, and a 404 that grew a search field of its own would be a fourth place
   // to type a title into. It is drawn in the shell, so this only asks for it.
-  const keys = `<div class="flex flex-col items-center">`
-    + `<div class="flex flex-wrap items-center justify-center gap-2">`
+  const keys = `<div class="flex flex-col">`
+    + `<div class="flex flex-wrap items-center gap-2">`
     + `<button type="button" data-open-palette class="${escapeAttr(buttonClass())}">`
     + `${escapeHtml(t.paletteTitle)}</button>`
     + `<a href="/admin" class="${escapeAttr(buttonClass('secondary'))}">${escapeHtml(t.navHome)}</a>`
@@ -40,7 +40,7 @@ export async function notFoundScreen(settings: SiteSettings): Promise<string> {
 
   return `<div class="min-w-0 flex-1" data-admin-404>`
     + emptyState({
-      glyph: 'compass', title: t.notFoundTitle, description: t.notFoundBody, actionHtml: keys,
+      title: t.notFoundTitle, description: t.notFoundBody, actionHtml: keys,
     })
     + `</div>`
 }

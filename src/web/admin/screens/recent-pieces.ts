@@ -22,7 +22,7 @@ export function recentPieces(items: WriteItem[], t: AdminStrings, lang: SiteLang
   // Nothing written yet: draw NOTHING. A heading over an empty list, on a screen whose whole
   // message is "there is nothing here", is a second empty state inside the first one.
   if (shown.length === 0) return ''
-  return `<div class="mt-8 w-full max-w-sm text-left">`
+  return `<div class="mt-8 w-full max-w-xl">`
     + `<p class="${escapeAttr(UTIL)}">${escapeHtml(t.recentlyEdited)}</p>`
     + `<ul class="mt-1.5">`
     + shown.map((it) =>

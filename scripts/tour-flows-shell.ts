@@ -297,21 +297,22 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
 
   // A DEAD END IS THE PLACE A LINK IS WORTH MOST, and the admin's own miss was the emptiest
   // screen it had: the number 404 in small grey type and one link home. It now carries a
-  // drawing, a sentence saying what probably went wrong, the search, and the three pieces
-  // touched last — which is the list somebody who mistyped an address most often wanted.
+  // sentence saying what probably went wrong, the search, and the three pieces touched last —
+  // which is the list somebody who mistyped an address most often wanted. As a page reads, from
+  // the left, with no drawing: the 96px picture it wore until 2026-11-03 was the loudest thing
+  // on the screen and said only that there was nothing here.
   //
   // NOTE: this body is a template literal. No backticks.
-  flow('admin: a miss offers a picture, the search and what was touched last', () => expect('/admin/no-such-screen', `
+  flow('admin: a miss offers a sentence, the search and what was touched last', () => expect('/admin/no-such-screen', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
       const box = document.querySelector('[data-admin-404]')
       if (!box) return 'the admin router did not report a miss'
-      const glyph = box.querySelector('svg')
-      if (!glyph) return 'the empty state has no drawing'
-      // 96 is the rule; the assertion is loose on purpose, because what would break it is a
-      // glyph rendered at icon size, not a pixel of rounding.
-      const size = Math.round(glyph.getBoundingClientRect().width)
-      if (size < 80) return 'the drawing is ' + size + 'px, which is an icon and not a glyph'
+      const drawn = Array.from(box.querySelectorAll('svg')).filter((s) => s.getBoundingClientRect().width > 40)
+      if (drawn.length) return 'the miss still draws a ' + Math.round(drawn[0].getBoundingClientRect().width) + 'px picture'
+      const title = box.querySelector('p')
+      const off = Math.round(title.getBoundingClientRect().left - box.getBoundingClientRect().left)
+      if (off > 40) return 'the sentence starts ' + off + 'px in: centred, not a line of the page'
       if (!box.querySelector('button')) return 'no way to search'
       if (!box.querySelector('a[href="/admin"]')) return 'no way home'
       // The recent list arrives with the content view, so it is polled rather than read once.
@@ -322,12 +323,14 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       }
       if (recent.length === 0) return 'nothing recently edited was offered'
       if (recent.length > 3) return recent.length + ' pieces offered: a 404 is not the Write screen'
-      return 'ok ' + size + 'px glyph, search, home and ' + recent.length + ' recent piece(s)'
+      return 'ok ' + off + 'px in, no picture, search, home and ' + recent.length + ' recent piece(s)'
     })()`, 900))
 
   // The other dead end. The sheet beside the write list offered one grey sentence and two
   // buttons that both start something NEW, to a screen most often reached by somebody coming
-  // back to something old. 1440 because the sheet only exists beside the pane.
+  // back to something old. Now the pieces touched last are the page, under the three ways to
+  // start as words: the pane's New post is the screen's one filled button. 1440 because the
+  // sheet only exists beside the pane.
   //
   // NOTE: this body is a template literal. No backticks.
   flow('admin: the empty write sheet offers what was touched last', () => atWidth(1440, '/admin/content', `
@@ -336,14 +339,20 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       const sheet = document.querySelector('[data-write-empty]')
       if (!sheet) return 'the write screen has no empty sheet'
       if (!sheet.offsetParent) return 'the sheet is hidden at 1440, where it is meant to show'
-      if (!sheet.querySelector('svg')) return 'the empty sheet has no drawing'
+      if (sheet.querySelector('svg')) return 'the empty sheet still draws a picture'
+      const filled = Array.from(document.querySelectorAll('.kit-btn-primary')).filter((b) => b.offsetParent).length
+      if (filled !== 1) return filled + ' filled buttons on the screen, where the pane has the one'
+      if (sheet.querySelector('.kit-btn-primary, .kit-btn-secondary')) return 'the sheet draws a button beside the one in the pane'
+      for (const href of ['/admin/editor', '/admin/note-editor', '/admin/page-editor']) {
+        if (!sheet.querySelector('a[href="' + href + '"]')) return 'the way to ' + href + ' is gone'
+      }
       let recent = []
       for (let i = 0; i < 40 && recent.length === 0; i++) {
         recent = Array.from(sheet.querySelectorAll('a[href*="/admin/editor/"], a[href*="/admin/page-editor/"]'))
         if (recent.length === 0) await sleep(150)
       }
       if (recent.length === 0) return 'nothing recently edited was offered'
-      return 'ok a drawing and ' + recent.length + ' recent piece(s) beside the two new-piece buttons'
+      return 'ok one filled button on the screen, three words and ' + recent.length + ' recent piece(s)'
     })()`, 900))
 
 

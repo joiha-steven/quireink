@@ -18,7 +18,7 @@ import type { Post, SiteLang, SiteSettings } from '@/types'
 import { adminT, type AdminStrings } from '@/i18n/admin-i18n'
 import { escapeHtml } from '@/utils'
 import { postName } from '@/content/untitled'
-import { CARD, buttonClass } from '@/admin-shared/kit'
+import { A, CARD } from '@/admin-shared/kit'
 import { emptyState } from '@/web/admin/kit'
 import { getIndex, getPost } from '@/content/posts'
 import { getPage, getPageIndex } from '@/content/pages'
@@ -47,19 +47,26 @@ async function paneData(): Promise<{
   return { items: writeItems(posts, pages, notes), views, posts }
 }
 
-/** The empty paper: the invitation, and what was touched last. */
+/**
+ * The empty paper: what was touched last, as the page, under the three ways to start.
+ *
+ * WORDS, not buttons. Three equal buttons asked which of three kinds to start before anything
+ * said what was already there, and the pane's own New post sits filled 400px to the left: the
+ * screen's one solid button is that one, and a second copy of it here made two.
+ */
 function blankSheet(items: WriteItem[], t: ReturnType<typeof adminT>, lang: SiteLang, tz: string): string {
-  const keys = `<div class="flex flex-col items-center">`
-    + `<div class="flex items-center gap-2">`
-    + `<a href="/admin/note-editor" class="${buttonClass('secondary')}">${escapeHtml(t.newNote)}</a>`
-    + `<a href="/admin/page-editor" class="${buttonClass('secondary')}">${escapeHtml(t.newPage)}</a>`
-    + `<a href="/admin/editor" class="${buttonClass('primary')}">${escapeHtml(t.newPost)}</a>`
-    + `</div>${recentPieces(items, t, lang, tz)}</div>`
+  const word = `${A} text-sm hit-24`
+  const start = `<div class="flex flex-wrap items-center gap-x-4 gap-y-2">`
+    + `<a href="/admin/editor" class="${word}">${escapeHtml(t.newPost)}</a>`
+    + `<a href="/admin/note-editor" class="${word}">${escapeHtml(t.newNote)}</a>`
+    + `<a href="/admin/page-editor" class="${word}">${escapeHtml(t.newPage)}</a>`
+    + `</div>`
   // Hidden where the pane takes the whole width — the list IS the screen there.
   return `<div data-write-empty class="hidden min-w-0 flex-1 xl:block ${CARD} lg:min-h-[calc(100vh-1.5rem)]">`
-    + `<div class="flex min-h-[calc(100vh-1.5rem)] flex-col items-center justify-center">`
+    + `<div class="max-w-xl p-3">`
     + emptyState({
-      glyph: 'blankPage', title: t.writeNothingOpen, description: t.writeEmpty, actionHtml: keys,
+      title: t.writeNothingOpen, description: t.writeEmpty,
+      actionHtml: start + recentPieces(items, t, lang, tz, 8),
     })
     + `</div></div>`
 }

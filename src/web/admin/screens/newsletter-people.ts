@@ -115,7 +115,7 @@ export function peoplePanel(
 
   if (subscribers.length === 0) {
     return `<div data-nl-panel="people"${open ? '' : ' hidden'}>${band}`
-      + `<div class="p-8">${emptyState({ glyph: 'letter', title: t.nlNoSubs, description: t.nlNoSubsHint })}</div>`
+      + emptyState({ title: t.nlNoSubs, description: t.nlNoSubsHint })
       + `</div>`
   }
 
@@ -212,6 +212,6 @@ export function peoplePanel(
     + `</span></div>`
 
   return `<div data-nl-panel="people"${open ? '' : ' hidden'}>${band}${tools}`
-    + `<div data-sub-nomatch class="p-8" hidden>${emptyState({ glyph: 'lens', title: t.nlNoMatch })}</div>`
+    + `<div data-sub-nomatch hidden>${emptyState({ title: t.nlNoMatch })}</div>`
     + `<div data-sub-rows>${table}</div>${paging}</div>`
 }

@@ -145,7 +145,7 @@ function trashKey(t: AdminStrings, kind: SheetKind, slug: string): string {
 function missing(t: AdminStrings): string {
   return `<div class="admin-enter min-w-0 flex-1" data-admin-404>`
     + emptyState({
-      glyph: 'compass', title: t.notFoundTitle, description: t.notFoundBody,
+      title: t.notFoundTitle, description: t.notFoundBody,
       actionHtml: `<a href="/admin/content" class="${escapeAttr(buttonClass('secondary'))}">`
         + `${escapeHtml(t.navWrite)}</a>`,
     })

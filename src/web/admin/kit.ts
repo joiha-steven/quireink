@@ -15,7 +15,7 @@
 // screen needs it, with its reasoning; a speculative port of all forty would be forty class
 // lists nobody has looked at on a screen.
 import { escapeAttr, escapeHtml } from '@/utils'
-import { GLYPHS, GLYPH_STROKE, iconSvg, type GlyphName, type IconName } from '@/icons'
+import { iconSvg, type IconName } from '@/icons'
 import {
   CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOOL, SHEET_TOOL_DANGER, SHEET_TOP,
   TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, buttonClass, type LampState,
@@ -65,18 +65,18 @@ export const sheet = (body: string, attrs = ''): string => `<div class="${SHEET}
 export const sheetTop = (body: string): string => `<div class="${SHEET_TOP}">${body}</div>`
 
 /**
- * Empty / zero state: a picture, what the state is, and why.
+ * Empty / zero state: what the state is, why, and a way out, as a line of text where the list
+ * would be.
  *
- * The drawing is two steps lighter than the sentence under it. A 96px drawing at text ink would
- * be the loudest thing on the screen, and what it has to say is that there is nothing here.
+ * Left-aligned, at the list's own left edge, with no picture: a 96px drawing centred in a card
+ * was the loudest thing on six screens, and what it had to say was that there is nothing here.
  *
  * `hidden` rather than left out, at the caller's option: a screen whose emptiness depends on a
  * filter draws every state once and lets CSS pick, the same way the rail does.
  */
-export function emptyState({ title, description = '', glyph, actionHtml = '', hidden = false, attrs = '' }: {
+export function emptyState({ title, description = '', actionHtml = '', hidden = false, attrs = '' }: {
   title: string
   description?: string
-  glyph?: GlyphName
   /** One thing to do about it, already markup: the chips the assistant offers to ask for you. */
   actionHtml?: string
   hidden?: boolean
@@ -90,27 +90,13 @@ export function emptyState({ title, description = '', glyph, actionHtml = '', hi
    */
   attrs?: string
 }): string {
-  return `<div class="flex flex-col items-center justify-center px-6 py-16 text-center"`
+  return `<div class="min-w-0 px-5 py-6"`
     + `${attrs ? ` ${attrs}` : ''}${hidden ? ' hidden' : ''}>`
-    + (glyph
-      ? `<div class="mb-5 text-neutral-300 dark:text-neutral-700">`
-        // 48 units, not 24: the stroke has to stay a LINE at 96px, and the small set's 1.8 of
-        // 24 would be 7.2px of ink here. `GLYPH_STROKE` (1.1 of 48 = 2.2px at 96) is the set's
-        // own weight for these drawings, not a number of this screen's.
-        + `<svg viewBox="0 0 48 48" class="h-24 w-24" fill="none" stroke="currentColor" stroke-width="${GLYPH_STROKE}"`
-        + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPHS[glyph]}</svg></div>`
-      : '')
     // The title is a STATE ("Nothing yet"), which is the machine talking, so it keeps the
     // chrome font. The description explains it in a sentence and takes the other face.
     + `<p class="text-sm font-medium text-neutral-700 dark:text-neutral-300">${escapeHtml(title)}</p>`
-    + (description ? `<p class="${NOTE_TEXT} mt-1.5 max-w-sm">${escapeHtml(description)}</p>` : '')
-    // ⚠️ `w-full min-w-0`, OR THE PHONE SCROLLS SIDEWAYS. This is a flex item in a centred
-    // column, so with `min-width: auto` it takes its content's width and the column centres
-    // whatever that is — and the content includes `recentPieces`, which is `max-w-sm`: 384px
-    // laid into the 343 a 375px phone leaves after the shell's padding, hanging 4.5px off each
-    // edge. Measured at 375: document scrollWidth 388 on /admin/write and on the 404, both of
-    // which are the two screens a phone is most likely to arrive at by accident.
-    + (actionHtml ? `<div class="mt-4 w-full min-w-0">${actionHtml}</div>` : '')
+    + (description ? `<p class="${NOTE_TEXT} mt-1 max-w-prose">${escapeHtml(description)}</p>` : '')
+    + (actionHtml ? `<div class="mt-4 min-w-0">${actionHtml}</div>` : '')
     + `</div>`
 }
 

@@ -84,9 +84,8 @@ function contextMeter(w: AssistantWords, context: number): string {
 }
 
 /**
- * Centred in the sheet rather than pinned to its top corner: with the composer fixed to the
- * bottom edge, an empty state at the top leaves the screen looking like a page that failed to
- * load the rest of itself.
+ * In the composer's own column (`max-w-3xl`, centred), so the sentence starts where the reply
+ * will and the chips sit over the box they fill.
  *
  * The outer box carries the `hidden`, and it has no display class on it — a `hidden` attribute
  * on an element that also says `flex` loses the tie and shows anyway (`docs/admin-one-dom.md`).
@@ -97,7 +96,7 @@ const HIT = 'hit-24'
 function emptyBlock(t: AdminStrings, configured: boolean, open: boolean): string {
   const tabbed = (s: string) => s.replace('{tab}', t.tabServer)
   const chips = configured
-    ? `<div class="flex flex-wrap justify-center gap-2">`
+    ? `<div class="flex flex-wrap gap-2">`
       + [t.assistantEg1, t.assistantEg2, t.assistantEg3].map((eg) =>
         `<button type="button" data-ai-eg class="${CHIP} ${HIT} transition hover:border-neutral-400`
         + ` hover:text-neutral-900 dark:hover:border-neutral-500 dark:hover:text-neutral-100">`
@@ -108,9 +107,8 @@ function emptyBlock(t: AdminStrings, configured: boolean, open: boolean): string
       + `${escapeHtml(tabbed(t.assistantOpenAi))}</a>`
 
   return `<div class="h-full" data-ai-empty${open ? ' hidden' : ''}>`
-    + `<div class="flex h-full items-center justify-center">`
+    + `<div class="mx-auto max-w-3xl">`
     + emptyState({
-      glyph: 'pen',
       title: configured ? t.assistantEmpty : t.assistantNoModel,
       description: tabbed(configured ? t.assistantIntro : t.assistantNeedsModel),
       actionHtml: chips,

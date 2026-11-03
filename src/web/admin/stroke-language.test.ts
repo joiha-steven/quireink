@@ -12,11 +12,11 @@
 import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { ECHO_STROKE, GLYPH_ECHO_STROKE, GLYPH_STROKE, ICON_STROKE } from '@/icons'
+import { ECHO_STROKE, ICON_STROKE } from '@/icons'
 
 const SRC = new URL('../../', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
 
-const ALLOWED = new Set<number>([ICON_STROKE, ECHO_STROKE, GLYPH_STROKE, GLYPH_ECHO_STROKE])
+const ALLOWED = new Set<number>([ICON_STROKE, ECHO_STROKE])
 
 /**
  * Not glyphs, so not bound to the set: a check tick is a 16-unit mark drawn heavier so it stays
@@ -104,6 +104,6 @@ describe('stroke language', () => {
 
   test('the set itself carries only its own echo weights', () => {
     const icons = readFileSync(join(SRC, 'icons.ts'), 'utf8')
-    expect([...new Set(literalStrokes(icons))].sort()).toEqual([GLYPH_ECHO_STROKE, ECHO_STROKE].sort())
+    expect([...new Set(literalStrokes(icons))].sort()).toEqual([ECHO_STROKE])
   })
 })

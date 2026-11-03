@@ -110,17 +110,16 @@ both in [`web/admin/kit-figures.ts`](../src/web/admin/kit-figures.ts) — two sh
 is a copy. Home draws neither since 2026-11-03 (its traffic is one line of ink). `emptyState` ([`web/admin/kit.ts`](../src/web/admin/kit.ts)) existed and two files
 used it while five hand-rolled a message in three styles.
 
-**An empty state is a picture, a state, a sentence and a way out.** `emptyState` takes a
-`glyph` — a NAME from `GLYPHS` in `src/icons.ts`, not a node — drawn at 96px two ink steps
-below the text. The prop is closed to a name on purpose: it took an arbitrary `icon` node
-before 2026-09-07 and nothing ever passed one, so thirteen empty states in eleven files each
-showed a single grey sentence in the middle of a large blank card, which is what a page that
-FAILED to load also looks like. `GLYPHS` is its own 48-unit board because the icon set's 1.8-of-24 stroke renders
-at 7.2px this size, and because a mark drawn to survive at 20px throws away what a 96px
-picture has room for — `page` carries ruled lines, `blankPage` carries none, and the second
-one is the whole message. The two dead ends, the admin 404 and the empty Write sheet, also
-carry `recentPieces()`: the three pieces touched last, read off the same `writeItems` sort
-the write pane uses, so both screens name the same piece first.
+**An empty state is a line of the page: a state, a sentence and a way out.** `emptyState`
+draws them left-aligned where the list would start, with no picture. Until 2026-11-03 it took a
+`glyph` from a 48-unit `GLYPHS` board and drew it at 96px centred in the card, on six screens;
+it was the loudest thing on each and said only that nothing was there, so the board and its two
+stroke weights went with it. A "nothing matched" state is the same line inside the list. The
+two dead ends, the admin 404 and the empty Write sheet, also carry `recentPieces()`: the pieces
+touched last (three on the 404, eight on Write, where they are the page), read off the same
+`writeItems` sort the write pane uses, so both screens name the same piece first. The Write
+sheet starts a post, a note or a page with three words: the pane beside it carries the screen's
+one filled button.
 
 **A button is a fixed object; the text beside it gives way.** `buttonClass()` carries
 `whitespace-nowrap shrink-0` for that reason: without them a button in a flex row beside

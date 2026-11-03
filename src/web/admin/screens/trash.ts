@@ -154,7 +154,7 @@ function subscriberRows(t: AdminStrings, lang: SiteLang, tz: string, rows: { id:
     + `<p class="${NOTE_TEXT}">${escapeHtml(label[s.status] ?? s.status)}</p>`)).join('')
 }
 
-/** One kind's panel: its rows, or the drawing that says this kind has nothing in it. */
+/** One kind's panel: its rows, or the line that says this kind has nothing in it. */
 /**
  * How many rows of one kind the Trash draws at once. Smaller than the library's 200 because a
  * trash row is a line of text rather than a picture, and because nobody browses their bin: they
@@ -168,16 +168,15 @@ const panel = (t: AdminStrings, kind: Kind, open: Kind, rows: string, pagerHtml 
     // ⚠️ THE THIRD FACE, which this screen did not have until 2026-09-16. The search above hides
     // rows that do not match, so a word matching none left a blank panel with no sentence in it
     // — the one state a list must never be silent about, because "nothing here" and "nothing
-    // matched what you typed" are different facts. The lens rather than the empty box, the way
-    // the activity log, the comments queue and the library all draw it.
-    ? `${emptyState({ title: t.filterEmpty, glyph: 'lens', hidden: true, attrs: `data-trash-nomatch="${kind}"` })}`
+    // matched what you typed" are different facts, so the sentence says which.
+    ? `${emptyState({ title: t.filterEmpty, hidden: true, attrs: `data-trash-nomatch="${kind}"` })}`
       // ONE COLUMN, since 2026-09-23. The trash is a list in time order, and newspaper columns
       // read down the left and then down the right: a single deleted post sat in the left half
       // of an empty sheet with its divider stopping mid-card, and a long list read out of order.
       + `<ul>${rows}</ul>`
     // ONE sentence of explanation: the foot of the sheet already says what the trash keeps and
     // that emptying it cannot be undone, so the empty state adds only its title.
-    : `<div class="p-8">${emptyState({ title: t.trashEmpty, glyph: 'emptyBox' })}</div>`)
+    : emptyState({ title: t.trashEmpty }))
   + pagerHtml
   + `</div>`
 

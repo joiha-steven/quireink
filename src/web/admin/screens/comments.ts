@@ -115,7 +115,7 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
   if (rows.length === 0) {
     return `<div data-screen="comments">`
       + pageHeader({ title: t.commentsNavTitle })
-      + emptyState({ title: t.commentsEmpty, description: t.commentsEmptyHint, glyph: 'letter' })
+      + emptyState({ title: t.commentsEmpty, description: t.commentsEmptyHint })
       + `</div>`
   }
 

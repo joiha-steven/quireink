@@ -6,9 +6,7 @@ applies; this holds the measured rules for glyphs and for the rail they stand in
 ## Icons
 
 - **One stroke language.** Every glyph is drawn from `src/icons.ts` at its own weights and a
-  wrapper never types one: `iconSvg()` for markup, `ICON_STROKE` for a DOM builder, `GLYPH_STROKE`
-  for the 48-unit empty-state drawings (1.1 of 48 is the 2.2px a 96px picture needs where 1.8 of 24
-  would be 7.2px). The same glyph size therefore always carries the same ink: 1.5px at 20, 1.35 at
+  wrapper never types one: `iconSvg()` for markup, `ICON_STROKE` for a DOM builder. The same glyph size therefore always carries the same ink: 1.5px at 20, 1.35 at
   the rail's 18, 1.2 at 16. A glyph the set lacks is added to the set, in its style, before it is
   drawn (the sign-in eye and key were at 1.7 on a copy of their own until then).
   `src/web/admin/stroke-language.test.ts` fails on any other literal weight under the admin or the
