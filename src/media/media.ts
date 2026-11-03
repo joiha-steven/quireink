@@ -295,8 +295,11 @@ export async function restoreMediaBatch(urls: string[]): Promise<MediaItem[]> {
   return getMedia()
 }
 
-// Hard delete (irreversible, Trash UI only): remove DB rows first (source of
-// truth), then best-effort delete blobs.
+// Hard delete (irreversible, Trash UI only): the bytes first, then the rows whose bytes all went.
+// The rows went first and a failed blob delete was swallowed, so the bytes stayed with nothing
+// pointing at them: counted against the quota by the store walk, listed nowhere, and out of reach
+// of a second purge (2026-11-04). A row kept stays in the Trash, and purging it again finishes;
+// deleting bytes already gone is a no-op on both runtimes.
 export async function purgeMediaBatch(urls: string[]): Promise<void> {
   const keys = mediaKeys(urls)
   if (keys.length === 0) return
@@ -308,21 +311,26 @@ export async function purgeMediaBatch(urls: string[]): Promise<void> {
   )
   if (removed.length === 0) return
 
-  run(`delete from media where path in (select value from json_each(?)) and deleted_at is not null`, keyList(keys))
-
-  // Clean up EVERY blob (original + thumb + all variants). Variant paths attempted
-  // for any raster regardless of the flag — deletes are idempotent, so nothing orphans.
-  const paths = new Set<string>()
-  for (const row of removed) {
-    paths.add(row.path)
+  // EVERY blob (original + thumb + all variants). Variant paths attempted for any raster
+  // regardless of the flag — deletes are idempotent, so nothing orphans.
+  const blobsOf = (row: MediaRow): string[] => {
+    const paths = new Set([row.path])
     if (row.thumb && row.thumb !== row.path) paths.add(row.thumb)
     if (/\.(jpe?g|png)$/i.test(row.path)) {
       const stem = row.path.replace(/\.[^.]+$/, '')
       paths.add(`${stem}-thumb.webp`)
       for (const w of SIZES) { paths.add(`${stem}-${w}.webp`); paths.add(`${stem}-${w}.avif`) }
     }
+    return [...paths]
   }
-  await Promise.all([...paths].map((p) => deleteByPathname(p).catch(() => {})))
+  const gone = await Promise.all(removed.map(async (row) => {
+    const results = await Promise.allSettled(blobsOf(row).map((p) => deleteByPathname(p)))
+    return results.every((r) => r.status === 'fulfilled') ? row.path : null
+  }))
+  const purged = gone.filter((p): p is string => p !== null)
+  if (purged.length > 0) {
+    run(`delete from media where path in (select value from json_each(?)) and deleted_at is not null`, keyList(purged))
+  }
 }
 
 // Trashed media (most-recently-deleted first) for the Trash view.

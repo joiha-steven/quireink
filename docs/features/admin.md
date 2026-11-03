@@ -25,7 +25,7 @@
   revisions + settings); if any target image is still referenced it returns `in_use:<n>` (409) and
   the island re-asks with a stronger confirm, retrying with `force:true`. Stops a purge silently
   breaking a live page.
-- Per kind the lib exports `restoreX`, `purgeX` (hard delete of a TRASHED row only: row + revisions/blobs), `getTrashedX`,
+- Per kind the lib exports `restoreX`, `purgeX` (hard delete of a TRASHED row only: row + revisions/blobs; media and files take the blobs first and keep a row whose blobs did not all go), `getTrashedX`,
   `emptyXTrash`. `screens/trash.ts` draws all seven lists and `island/trash.ts` acts via **`POST /api/trash`**
   `{ kind, action: restore|purge|empty, ids? }` (owner-gated) then reloads, which is why the kind is in the
   address as `?tab=media`: a kind held only in the page put the owner back on Posts after emptying the picture

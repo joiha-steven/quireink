@@ -267,15 +267,19 @@ export async function restoreFilesBatch(urls: string[]): Promise<FileItem[]> {
   return listFiles()
 }
 
-// Hard delete (Trash UI only): row delete first, then best-effort blob cleanup.
+// Hard delete (Trash UI only): the bytes first, then the rows whose bytes went, as `purgeMediaBatch`
+// does and for its reason: a swallowed failure after the row left the bytes counted and unreachable.
 export async function purgeFilesBatch(urls: string[]): Promise<void> {
   // Only trashed rows, and only their bytes: see `purgePost`.
   const trashed = all<{ url: string }>(
     `select url from files where url in (select value from json_each(?)) and deleted_at is not null`, keyList(deletableKeys(urls)),
   ).map((r) => r.url)
   if (trashed.length === 0) return
-  run(`delete from files where url in (select value from json_each(?))`, keyList(trashed))
-  await Promise.all(trashed.map((k) => deleteByPathname(k).catch(() => {})))
+  const gone = await Promise.all(trashed.map((k) => deleteByPathname(k).then(() => k, () => null)))
+  const purged = gone.filter((k): k is string => k !== null)
+  if (purged.length > 0) {
+    run(`delete from files where url in (select value from json_each(?)) and deleted_at is not null`, keyList(purged))
+  }
 }
 
 // Trashed library files (most-recently-deleted first) for the Trash view.
