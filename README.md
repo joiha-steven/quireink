@@ -21,7 +21,7 @@ Your writing is two files on your own disk, in one small process that needs no c
 
 <br/>
 
-<img src="docs/demo.jpg" alt="A composed front page with a lead story and section rows, beside the same site's article page with a contents rail, pen marks and a mounted letter facsimile" width="960">
+<img src="docs/demo.jpg" alt="The Newspaper theme: a composed front page with a lead story, a Featured row of three illustrated pieces and a Typography row with Polish, Japanese and English headlines, beside a post opening on a drop cap, with pen marks in the text and a scanned Van Gogh letter below" width="960">
 
 <sub>**[demo.quireink.com](https://demo.quireink.com)** is the real thing. No sign-up, nothing to fill in. The bar at the bottom jumps between the front page, the list, an article, book mode, light and dark, and the admin. That bar is the only thing added, and it lives outside the code, so the demo is always the latest build.</sub>
 
@@ -61,33 +61,33 @@ Every part in detail, and against the alternatives: [**Quire Ink, in full**](./d
 
 ## A look around
 
-<img src="docs/demo-looks.jpg" alt="The same post in the four looks: plain paper; source code, with the headline in a bold monospace and bracketed dates; newspaper, with a masthead, the sections under it and a drop cap; and notebook, on dot-grid paper beside an index card" width="960">
+<img src="docs/demo-looks.jpg" alt="The same post in the four themes: plain paper; source code, with the headline in a bold monospace and brackets round the dates; newspaper, with a masthead, the sections under it and a drop cap; and notebook, on a dot-grid sheet beside a square index card" width="960">
 
-<sub>**Four looks, one setting.** The same post as plain paper, source code, a newspaper and a notebook. A look sets shape, type and marks; the colour always comes from the palette.</sub>
+<sub>**Four themes, one click.** The same post as plain paper, source code, a newspaper and a notebook. A theme sets shape, type and marks, and the colour always comes from the palette.</sub>
 
-<img src="docs/demo-reading.jpg" alt="Book mode, opening on its title page with the category, headline, standfirst and byline, then the post set in two columns like a printed page with a drop cap, beside the same site in the dark theme scrolled to a four-painting gallery" width="960">
+<img src="docs/demo-reading.jpg" alt="Book mode on paper, a title page on the left and the post set as a printed page with a drop cap on the right, beside the dark theme with a two-by-two gallery of Van Gogh paintings and their captions" width="960">
 
 <sub>**Book mode and the dark theme.** Any post opens as a paginated book that starts on a title page; every palette is drawn twice, once for light and once for dark.</sub>
 
-<img src="docs/demo-code.jpg" alt="Three panels: a formula rendered as MathML in the reading face, a highlighted code block beside a table, and a paragraph marked with the pen in several inks" width="960">
+<img src="docs/demo-code.jpg" alt="Three panels: a sum set in MathML between paragraphs of serif text with a Tip callout below, a numbered highlighted shell command above a plain block, and a passage on the pen with a sentence in each of five inks" width="960">
 
 <sub>**Maths, code and the pen.** Formulas are real MathML, code is highlighted on the server, and the pen highlights, underlines and rings words by hand.</sub>
 
-<img src="docs/demo-reader-pen.jpg" alt="Left: a reader's highlight and pencil underline on a post, with the pen bar open over a selected sentence. Right: the card over a highlight, with a note box and a code that keeps the marks on every device" width="960">
+<img src="docs/demo-reader-pen.jpg" alt="Left: a reader's yellow highlight and pencil underline on a post, with the pen bar open over a selected phrase offering five inks, underline, ring, note and copy quote. Right: the card over the highlight, with a note box, Send to my notebook, Remove mark and a twenty-character code that keeps the marks on every device" width="960">
 
 <sub>**Readers get the pen too.** Their marks stay in their own browser, and travel between their devices only if they ask.</sub>
 
-<img src="docs/demo-mobile.jpg" alt="Four phone screens: the post list with the category above each headline and a thumbnail beside it, a post with its series box and progress bar, book mode on a phone, and the menu drawer with its search box on top" width="960">
+<img src="docs/demo-mobile.jpg" alt="Four phone screens: the post list with a thumbnail beside the headline and a Chinese post below it, a post with its series box, book mode opening on a title page, and the menu drawer with a search box, the site menu and the post's contents" width="960">
 
 <sub>**On a phone,** the list, a post with its series bar, book mode and the menu drawer with search on top.</sub>
 
-<img src="docs/demo-admin.jpg" alt="The admin: a post open in the editor with the toolbar, pen marks and the saved state in its header, beside the Appearance settings with the four looks drawn as tiles, the picked one marked, the fonts and the custom CSS box" width="960">
+<img src="docs/demo-admin.jpg" alt="Four admin screens: Home with what was last edited, traffic and the most viewed posts; Write with the list of pieces beside what was recently edited; the editor with a post open and its pen marks; and Settings, Appearance, with the four themes drawn as previews beside the reading and site fonts" width="960">
 
-<sub>**The admin.** The editor on the left, and on the right the settings that decide how the site looks: all of it a setting, none of it code.</sub>
+<sub>**The admin.** Home, the writing list, the editor and the settings that decide how the site looks. All of it a setting, none of it code.</sub>
 
-<img src="docs/demo-setup.jpg" alt="Three setup screens: claiming the blog with a language, username, email and password; naming the site with its time zone and address; and choosing the front page" width="960">
+<img src="docs/demo-setup.jpg" alt="Three setup screens: claiming the blog with a language, username, email and password; naming the site with its time zone and address; and the last step, choosing one of the four themes from small previews" width="960">
 
-<sub>**Setting up** is seven short screens in the browser, and the last one drops you in the editor.</sub>
+<sub>**Setting up** is seven short screens in the browser, ending on the theme, and then you are in the editor.</sub>
 
 ## Install
 
