@@ -83,7 +83,7 @@ export function canonicalPath(): MiddlewareHandler {
     }
     // After the slash rule, not before: `PAGE_ONE` anchors on the end, so `/page/1/` has to
     // lose its slash first. That makes it a two-hop chain, both permanent, which a crawler
-    // follows without penalty — the same pair `userRedirects` already produces.
+    // follows without penalty. An owner's redirect is not: it answers before this middleware.
     const pageOne = PAGE_ONE.exec(pathname)
     // The settings read happens ONLY on a path that already matched, so the hot path — every
     // page, every asset, every image byte — still costs one regex and nothing else.

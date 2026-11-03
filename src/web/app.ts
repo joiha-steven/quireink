@@ -140,6 +140,9 @@ export function createApp(): Hono {
   // three above so the bar it adds is compressed and tagged like any page. See `web/theme-preview.ts`.
   app.use('*', themePreview())
 
+  // A URL the owner MOVED answers first, trailing slash and all: one 301, not two. `web/redirects.ts`.
+  app.use('*', userRedirects())
+
   // A trailing slash is the same page, not a miss. See `web/canonical-path.ts`.
   //
   // ⚠️ BELOW THE THREE ABOVE, and that placement is the whole point. Registered first, it was
@@ -153,9 +156,6 @@ export function createApp(): Hono {
   // from `cacheHeaders`, which is what `/favicon.ico`'s redirect already gets for the same
   // reason: a pointer that can change must not be kept.
   app.use('*', canonicalPath())
-
-  // A URL the owner MOVED answers before any route sees it. See `web/redirects.ts`.
-  app.use('*', userRedirects())
 
   // A reader arriving is what triggers the once-a-day update check, and this is the only
   // line of it on the request path. See `web/update-ping.ts` for why it is a reader rather

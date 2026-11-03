@@ -383,7 +383,7 @@ card, a link) it is called by its first words; see
   a post already here with the same slug, title and date (a page: slug, title and body), or at the slug the redirect from its old path names, is
   counted as skipped, and so is an item whose date will not parse; a date the parser made up for
   an undated item never counts as the same. An excerpt the parser derived is saved as derived, so it follows the body. One `clearCache()` at the end; logged as
-  `import.wordpress`. **A published item's old path becomes a 301** in the
+  `import.wordpress`. **A published item's old path becomes a 301** (one hop, trailing slash and all) in the
   owner's redirects table (WXR `<link>`, Substack `/p/<slug>`; refused when it would shadow
   live content, because the redirect middleware answers before the router — ADR 0034 — and
   never over a redirect the owner already has at that path).

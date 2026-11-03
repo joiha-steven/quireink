@@ -64,7 +64,8 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
   menu item pointing at the old listing). A published post that carries the old name again
   takes the address back. Rows live in the `redirects` table (`source` unique, `destination`, `permanent`).
 - **Served as a real HTTP 301/302 before any route runs** (`src/web/redirects.ts`, registered
-  in `app.ts` as the last middleware before the routes). The lookup is skipped for `/admin`
+  in `app.ts` ahead of the trailing-slash rule, so `/old/` reaches its destination in one 301
+  rather than two: every imported WordPress link ends in a slash). The lookup is skipped for `/admin`
   and every reserved path (below), and **fails open**: an unreadable table logs and lets the
   request through rather than taking the site down. `Location` is the destination **exactly as
   stored** — a path stays relative, an absolute URL stays absolute — and the request's query

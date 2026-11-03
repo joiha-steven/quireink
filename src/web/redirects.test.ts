@@ -61,14 +61,13 @@ describe('redirects are served', () => {
     expect(location.startsWith('http://')).toBe(false)
   })
 
-  it('matches through the trailing-slash canonicalisation rather than around it', async () => {
+  it('takes a trailing slash in the same one hop', async () => {
     await saveRedirect({ source: '/old-slug', destination: '/new-slug' })
-    // `canonicalPath` strips the slash first, so this is two hops, and the second one is
-    // the redirect. Both are 301s, so a crawler follows the pair without penalty.
+    // The redirect answers before `canonicalPath`, so the slash costs no second 301: an imported
+    // WordPress link, which always ends in one, went to `/old-slug` first (2026-11-03).
     const first = await get('/old-slug/')
     expect(first.status).toBe(301)
-    expect(first.headers.get('location')).toBe('/old-slug')
-    expect((await get('/old-slug')).status).toBe(301)
+    expect(first.headers.get('location')).toBe('/new-slug')
   })
 
   it('renaming a slug leaves a redirect that actually works', async () => {

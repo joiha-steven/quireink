@@ -171,11 +171,12 @@ describe('the WordPress import', () => {
     const result = await payload<{ redirects: number }>(send(wxr(dated)))
     expect(result.redirects).toBe(1)
 
-    // Without the trailing slash: WITH it, the canonical-path middleware answers first
-    // (strip the slash, 301), and THEN this table answers — two hops, both real.
-    const res = await app.request('/2020/05/hello')
-    expect(res.status).toBe(301)
-    expect(res.headers.get('location')).toBe('/hello')
+    // In ONE hop, from the link as WordPress wrote it, trailing slash and all: it went through
+    // the slash rule first (to /2020/05/hello) and only then here (2026-11-03).
+    for (const old of ['/2020/05/hello/', '/2020/05/hello']) {
+      const res = await app.request(old)
+      expect(`${old} ${res.status} ${res.headers.get('location')}`).toBe(`${old} 301 /hello`)
+    }
   })
 
   it('never lets an old path shadow live content', async () => {
