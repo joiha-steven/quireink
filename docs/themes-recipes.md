@@ -124,10 +124,15 @@ the grid, as the reader's own grid view does, and keep the year and month marks 
   html:not([data-list=grid]) .tl-yr{display:contents}
   html:not([data-list=grid]) .tl-yr article{margin-top:0}
   .post-list :is(.tl-year-tag,.tl-mark),.post-list article[data-lead]{grid-column:1 / -1}
+  /* Half a 672px column leaves a title beside a full-size picture about 150px: break-a-word narrow. */
+  html:not([data-list=grid]) .post-list article[data-thumb=side]{grid-template-columns:minmax(0,1fr) 64px}
+  html:not([data-list=grid]) .post-list article[data-thumb=side] .card-thumb{width:64px}
 }
 ```
 
-`html:not([data-list=grid])` leaves the reader's own grid button alone.
+`html:not([data-list=grid])` leaves the reader's own grid button alone; the last two rules shrink a
+row's side picture as that grid view does, because at half the column a title beside a full-size
+one breaks inside its words (the preview does not report that; the contact sheet shows it).
 
 **Hiding the excerpt on list rows.** A post with no title (`data-short`) has nothing but its
 excerpt to show, so hiding every `.card-exc` leaves that row as a bare date. Keep it there:

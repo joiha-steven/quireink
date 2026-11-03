@@ -70,9 +70,9 @@ PowerShell, with the differences named. Everything runs from inside the product 
    eyes catch, is in [section 8](#8-pitfalls-that-happened); stuck on something specific, see
    [the recipes](themes-recipes.md).
 
-4. **The picture.** Each full `theme:preview` run also writes `screenshot.webp` beside the
-   shots, 1200 x 900, the top of your front page at 1440 in the light, which is what the tile
-   shows. Copy it in when it looks right:
+4. **The picture.** A `theme:preview` run that takes the front page at 1440 (a full run, or the
+   quick one above) also writes `screenshot.webp` beside the shots, 1200 x 900, the top of your
+   front page in the light, which is what the tile shows. Copy it in when it looks right:
 
    ```
    cp .tmp/theme-preview/<id>/screenshot.webp ../quireink-theme-starter/theme/
