@@ -156,6 +156,39 @@ describe('the steward tools', () => {
     expect(await getSettings()).toMatchObject({ theme: 'code', themePreset: 'sepia', fontPreset: 'literata', chromeFont: 'inter' })
   })
 
+  // 2026-11-04, from a blind agent taking a theme back off: an installed theme's palette and font
+  // stay STORED when another theme is chosen and are drawn again with it (`content/theme-choices.ts`),
+  // the page meanwhile drawing the default. The tool answered what was stored, so back on `code` it
+  // said `palette: <the theme's>` and the agent believed the site still wore it; and sending back the
+  // values it had just read was refused whole, because one of them was such a kept id.
+  it('update_appearance answers what the page DRAWS, names what is kept for another theme, and takes back what is stored', async () => {
+    expect((await installTheme(themeZip({ 'theme.json': RICH }))).ok).toBe(true)
+    await saveSettings({ theme: 'code', themePreset: 'sepia', fontPreset: 'literata', chromeFont: 'inter' })
+    const worn = JSON.parse((await call('update_appearance', { theme: 'broadsheet', palette: 'newsprint', readingFont: 'body-serif' })).text)
+    expect(worn).toMatchObject({ theme: 'broadsheet', palette: 'newsprint', readingFont: 'body-serif' })
+    expect(worn.kept).toBeUndefined()
+
+    const back = await call('update_appearance', { theme: 'code' })
+    expect(back.isError).toBe(false)
+    expect(JSON.parse(back.text)).toMatchObject({
+      theme: 'code', palette: 'mono', readingFont: 'literata', chromeFont: 'inter',
+      kept: { palette: 'newsprint', readingFont: 'body-serif' },
+    })
+
+    // What get_settings says now, sent straight back: not a change, so not refused.
+    const s = await getSettings()
+    const again = await call('update_appearance', { theme: s.theme, palette: s.themePreset, readingFont: s.fontPreset, chromeFont: s.chromeFont })
+    expect(again.isError).toBe(false)
+    expect(JSON.parse(again.text)).toMatchObject({ palette: 'mono', kept: { palette: 'newsprint' } })
+
+    // A kept id is still not a CHOICE under another theme, and the refusal says what is.
+    await call('update_appearance', { palette: 'sepia' })
+    const refused = await call('update_appearance', { palette: 'newsprint' })
+    expect(refused.isError).toBe(true)
+    expect(refused.text).toContain('Not on the menu of the theme "code"')
+    expect(refused.text).toContain('sepia')
+  })
+
   it('compose_homepage pins a lead, replaces strips, and flags an empty category', async () => {
     await savePost({ title: 'Pinned', content: 'Body.', status: 'published', slug: 'pinned', date: '2020-01-01T00:00:00.000Z', categories: ['Letters'] })
     const { text } = await call('compose_homepage', {

@@ -35,7 +35,8 @@ which pages elsewhere link here, and which passages readers keep most.
 
 **The site itself.** `compose_homepage` (the composed front: lead, picks, category rows,
 most-read) · `update_appearance` (theme, palette, reading and chrome font, the scheme a first
-visit opens in; no sizes) · `get_settings` · `list_settings` (every setting that can be
+visit opens in; no sizes; it answers what the page draws, and `kept` names a theme's palette or
+font stored for when that theme is worn again) · `get_settings` · `list_settings` (every setting that can be
 changed: path, type, value now — call it to FIND a path rather than guessing one) ·
 `update_settings` (any of those paths). `customHead`, `customBodyEnd`, `customCss`, `siteUrl`
 and every `backups.*` path need a token the owner minted with custom-code access: anything

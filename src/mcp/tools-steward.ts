@@ -22,7 +22,7 @@ import { THEME_PRESETS } from '@/content/palettes'
 import { FONT_PRESETS, CHROME_FONTS } from '@/content/fonts'
 import { BUILTIN_THEMES, isBuiltinThemeId } from '@/content/themes-builtin'
 import { isLiveInstalledTheme, savedTheme } from '@/content/chosen-theme'
-import { isChromeFontChoice, isPaletteChoice, isReadingFontChoice } from '@/content/theme-choices'
+import { drawnFonts, drawnPalettes, isChromeFontChoice, isPaletteChoice, isReadingFontChoice } from '@/content/theme-choices'
 import { nextTheme } from '@/content/settings-save'
 import { logThemeChoice } from '@/content/theme-choice-log'
 import { getCategories } from '@/content/posts'
@@ -60,7 +60,10 @@ export function registerStewardTools(server: ToolHost): void {
         + `(${chromeIds.join(', ')}), and what a first-time visitor opens in. While a theme installed `
         + 'from a zip is the one this call leaves chosen, its own palettes and its reading and chrome '
         + 'fonts are on the menu too, by id. Free-form colors are not accepted — '
-        + 'every option here is one the owner\'s own screens offer. Changing the theme leaves '
+        + 'every option here is one the owner\'s own screens offer. An installed theme\'s palette or font '
+        + 'stays stored when another theme is chosen and comes back with that theme; meanwhile the page '
+        + 'draws the default. The answer is what the page DRAWS, and `kept` names any stored choice it does '
+        + 'not draw. A value equal to what is stored is no change and is never refused. Changing the theme leaves '
         + 'the chrome font as it is; send chromeFont with it to give the theme the face it is '
         + `drawn for (${themeSuggestions}).`,
       inputSchema: {
@@ -90,14 +93,24 @@ export function registerStewardTools(server: ToolHost): void {
       if (theme !== undefined || look !== undefined) partial.theme = theme ?? look
       // The theme this call leaves chosen, decided as the save will decide it, and what it offers.
       const wearing = savedTheme({ theme: nextTheme({ theme, look: isBuiltinThemeId(look) ? look : undefined }, current) })
+      // A value equal to what is stored is not a choice: it is the agent sending back what it read,
+      // and what it read may be an id kept for another theme. Refusing that refused the whole call
+      // (2026-11-04), so an agent putting a site back could not send the state it had saved.
+      const sent = [theme, look, palette, readingFont, chromeFont, defaultScheme].some((v) => v !== undefined)
+      if (palette === current.themePreset) palette = undefined
+      if (readingFont === current.fontPreset) readingFont = undefined
+      if (chromeFont === current.chromeFont) chromeFont = undefined
       const offMenu = [
         palette !== undefined && !isPaletteChoice(wearing, palette) ? `palette "${palette}"` : '',
         readingFont !== undefined && !isReadingFontChoice(wearing, readingFont) ? `reading font "${readingFont}"` : '',
         chromeFont !== undefined && !isChromeFontChoice(wearing, chromeFont) ? `chrome font "${chromeFont}"` : '',
       ].filter(Boolean)
-      // Refused, not ignored, for the reason an unknown theme is.
+      // Refused, not ignored, for the reason an unknown theme is; and the menu said, so the next call can be right.
       if (offMenu.length > 0) {
-        return asError(`Not on the menu of the theme "${wearing.id}": ${offMenu.join(', ')}`)
+        const own = wearing.package?.palettes.map((p) => p.id) ?? []
+        return asError(`Not on the menu of the theme "${wearing.id}": ${offMenu.join(', ')}. Its palettes are `
+          + `${[...paletteIds, ...own].join(', ')}. A palette or font of another installed theme is drawn only `
+          + 'while that theme is worn; leave it out and the page draws the default.')
       }
       if (palette !== undefined) {
         partial.themePreset = palette
@@ -111,18 +124,31 @@ export function registerStewardTools(server: ToolHost): void {
       if (readingFont !== undefined) partial.fontPreset = readingFont
       if (chromeFont !== undefined) partial.chromeFont = chromeFont
       if (defaultScheme !== undefined) partial.defaultScheme = defaultScheme
-      if (Object.keys(partial).length === 0) return asError('Nothing to change')
-      const saved = await saveSettings(partial)
-      clearCache()
-      await logActivity('settings.save', 'appearance (MCP)')
-      // The same line the settings screen writes when the theme moves (`content/theme-choice-log.ts`).
-      await logThemeChoice(current, saved)
+      if (!sent) return asError('Nothing to change')
+      // Everything sent was what is stored: nothing to save, nothing to log, and nothing wrong with the call.
+      const saved = Object.keys(partial).length ? await saveSettings(partial) : current
+      if (saved !== current) {
+        clearCache()
+        await logActivity('settings.save', 'appearance (MCP)')
+        // The same line the settings screen writes when the theme moves (`content/theme-choice-log.ts`).
+        await logThemeChoice(current, saved)
+      }
+      // What the page draws, by the rules the renderer draws by, and what is stored but not drawn.
+      const drawnTheme = savedTheme(saved)
+      const fonts = drawnFonts(saved, drawnTheme)
+      const drawn = {
+        palette: drawnPalettes(saved, drawnTheme).themePreset,
+        readingFont: fonts.reading?.id ?? fonts.readingPreset,
+        chromeFont: fonts.chromeFont,
+      }
+      const kept = Object.fromEntries(([
+        ['palette', saved.themePreset], ['readingFont', saved.fontPreset], ['chromeFont', saved.chromeFont],
+      ] as const).filter(([k, v]) => drawn[k] !== v))
       return asJson({
         theme: saved.theme,
-        palette: saved.themePreset,
-        readingFont: saved.fontPreset,
-        chromeFont: saved.chromeFont,
+        ...drawn,
         defaultScheme: saved.defaultScheme,
+        ...(Object.keys(kept).length ? { kept } : {}),
       })
     },
   )

@@ -113,7 +113,11 @@
   write), [theme-install-api.md](theme-install-api.md#over-mcp); results via `src/mcp/result.ts`).
   **The steward half assumes an agent has no eyes**: appearance accepts preset ids only
   (the zod enums are built from `THEME_PRESETS`/`FONT_PRESETS`, so the schema tracks the
-  menus), never free-form color. **`send_test_newsletter` mails only the owner** — the
+  menus), never free-form color. `update_appearance` answers what the page DRAWS: an installed theme's
+  palette or font stays stored when another theme is chosen and comes back with it, the page drawing
+  the default meanwhile, and the answer names such a stored id under `kept` instead of reporting it as
+  worn; a value equal to what is stored is no change and never refused, so an agent can send back what
+  it read (both since 2026-11-04, `tools-steward.test.ts`). **`send_test_newsletter` mails only the owner** — the
   recipient is not a parameter — **and the real broadcast is deliberately not a tool**:
   an email cannot be unsent.
   **The reading half strips identities on purpose:** `get_audience` returns counts and
