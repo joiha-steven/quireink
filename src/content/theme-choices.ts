@@ -124,7 +124,7 @@ export function drawnFonts(settings: Pick<SiteSettings, 'fontPreset' | 'chromeFo
 export const themeFamily = (font: ThemeFont): string => `'theme-${font.id}'`
 
 /** The face a theme's chrome font falls back to: the engine's own chrome default. */
-const CHROME_FALLBACK = `'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif`
+const CHROME_FALLBACK = `'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', var(--cjk-sans, sans-serif)`
 
 /**
  * The variables a theme's fonts set, after the engine's own font rules so it wins them, and

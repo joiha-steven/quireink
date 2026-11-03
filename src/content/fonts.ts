@@ -190,7 +190,7 @@ const CJK_ANY: CjkTail = {
 const CJK_SERIF = CJK_ANY.serif
 const CJK_SANS = CJK_ANY.sans
 
-const CJK_BY_LANG: Record<string, CjkTail> = { zh: CJK_ZH, ja: CJK_JA, ko: CJK_KO }
+export const CJK_BY_LANG: Record<string, CjkTail> = { zh: CJK_ZH, ja: CJK_JA, ko: CJK_KO }
 
 /**
  * Re-point the reading and chrome faces at ONE language's CJK tail, on `:lang()`.
@@ -355,8 +355,8 @@ export type ChromeFont = {
 export const CHROME_FONTS: ChromeFont[] = [
   { id: 'inter', name: 'Inter', sans: null, slug: 'inter' },
   { id: 'reading', name: 'Reading font', sans: 'var(--font-reading)', slug: null },
-  { id: 'plex-mono', name: 'IBM Plex Mono', slug: 'plexmono-400', preload: true, sans: `'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace` },
-  { id: 'jetbrains-mono', name: 'JetBrains Mono', slug: 'jetbrainsmono', preload: true, sans: `'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace` },
+  { id: 'plex-mono', name: 'IBM Plex Mono', slug: 'plexmono-400', preload: true, sans: `'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, var(--cjk-mono, monospace)` },
+  { id: 'jetbrains-mono', name: 'JetBrains Mono', slug: 'jetbrainsmono', preload: true, sans: `'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, var(--cjk-mono, monospace)` },
 ]
 
 // INTER, not the monospace, since 2026-09-13. The default used to be JetBrains Mono, which

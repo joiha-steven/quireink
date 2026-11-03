@@ -9,6 +9,7 @@
 import type { GallerySettings, FigureSettings, SiteSettings, FeatureSettings, InkSettings, SiteLang } from '@/types'
 import { fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
+import { cjkRoleCss } from '@/content/cjk-roles'
 import { typographyToCss, fontToCss, shapeToCss, tableToCss } from '@/content/settings'
 import { DEFAULT_RAIL_WIDTH, railHoldCss, railThemeCss, singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, monoTracking } from '@/render/font-faces'
@@ -160,7 +161,7 @@ export function deepenMetaInkCss(theme: SiteTheme): string {
     + `${root} body{--c-meta:var(--meta-deepened)}`
 }
 
-export function pageStyles(settings: SiteSettings, extra = ''): string {
+export function pageStyles(settings: SiteSettings, extra = '', lang: string = settings.language): string {
   const theme = resolveTheme(settings)
   // What is DRAWN, which is what is stored unless it names a font or palette no longer on offer
   // (an installed theme's, under another theme): then the default, and the row keeps the id.
@@ -176,9 +177,9 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // choice, which is a different question from what a fenced block is set in.
     // --font-display is the theme's headline face, and the reading face where the theme has
     // none: a sheet may name it on any theme and gets a face either way.
-    `:root{--font-sans:'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;`
+    `:root{--font-sans:'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', var(--cjk-sans, sans-serif);`
     + `--font-reading:var(--font-sans);`
-    + `--font-mono:'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;`
+    + `--font-mono:'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, var(--cjk-mono, monospace);`
     + `--font-display:${displayFontValue(theme, fonts)}}`,
     // The reading column, from the owner's setting. A two-rail listing narrows it by
     // overriding this later in the sheet, which is why it is a variable and not baked in.
@@ -221,6 +222,8 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // machine happens to have installed first (`content/fonts.ts`). Inert on a site whose
     // language is none of the three — no selector matches, and it is ~700 bytes.
     cjkLangCss(fonts.readingPreset, fonts.reading ? themeFamily(fonts.reading) : null),
+    // The other three stacks' tail, for the page's own language only (`content/cjk-roles.ts`).
+    cjkRoleCss(lang),
     chromeFontCss(fonts.chromeFont),
     // An installed theme's reading or chrome font, when the owner chose it: after the engine's
     // own rules above, so it wins them, and before the uploaded font, which still wins.

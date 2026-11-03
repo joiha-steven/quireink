@@ -374,7 +374,7 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
       settings, site, item, post, canonicalPath, description, plainBody,
       selfPath, pieceLang, siblings,
     }),
-    pageStyles(settings, toc ? articleBandCss(settings.contentWidth) : ''),
+    pageStyles(settings, toc ? articleBandCss(settings.contentWidth) : '', pieceLang),
     // `book-text` is the owner's book-typography switch: indented paragraphs, a tighter
     // lead between them, justified with hyphens once the column is wide enough. It sits on
     // the shell rather than on .prose so the editor and the reading view can share it.

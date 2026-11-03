@@ -155,11 +155,12 @@ export const BUILTIN_THEMES: readonly BuiltinTheme[] = [
   {
     id: 'paper', nameKey: 'lookPaper', hintKey: 'lookStepPaperHint',
     sheet: 'look-paper', dataLook: 'paper', layout: { menu: 'header', deepenMetaInk: false },
-    // The stack the newspaper's sheet named by hand before `--font-display` existed, to the
-    // character, so its headlines resolve to the same faces they always did.
+    // The stack the newspaper's sheet named by hand before `--font-display` existed, so its
+    // Latin headlines resolve to the same faces they always did; the generic keyword is the
+    // page's CJK serif tail on a page in Chinese, Japanese or Korean (`content/cjk-roles.ts`).
     display: {
       slug: DISPLAY_SLUG,
-      stack: "'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',Georgia,'Times New Roman',serif",
+      stack: "'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',Georgia,'Times New Roman',var(--cjk-serif, serif)",
     },
     // `own`: the sheet sets the chrome in the reading face, and only its labels (kickers,
     // dates, section heads) in the chrome font.
