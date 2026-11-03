@@ -2,9 +2,9 @@
 
 ## Editor (Admin → editor) — `src/admin/island/sheet.ts`
 
-- Twenty-one nodes and eight marks: paragraph, heading, quote, fence, rule, hard break, the
+- Twenty-two nodes and eight marks: paragraph, heading, quote, fence, rule, hard break, the
   three lists (GFM `- [ ]` among them), captioned image, GFM tables, video, inline and display
-  maths; bold, italic, strike, inline code, link, and the pen's three. `md/from-editor.ts`
+  maths, a verbatim HTML block; bold, italic, strike, inline code, link, and the pen's three. `md/from-editor.ts`
   serializes all of them (ADR 0052).
 - **The schema is [`editor/schema.ts`](../../src/admin/editor/schema.ts)**, written out, since
   ADR 0054's step 7 took `@tiptap/*` out. It is ONE schema for the whole admin and every editor
@@ -36,9 +36,9 @@
   re-rendered on every transaction so that `isActive()` stayed live, which means every keystroke
   rebuilt the tree to decide whether Bold looks pressed.
 - **Writing shell:** the sheet carries its own chrome — the action line (back link · save state ·
-  word count · Markdown/Attributes · Preview/View post/Save/Publish) is the card's first row and the toolbar
-  sticks under it, full-width, groups centred, WRAPPING on a narrow window rather than scrolling
-  (three owner verdicts, 2026-08-17). The title grows instead of clipping (`screens/sheet.ts`,
+  word count · a "⋯" holding Markdown, Attributes and Focus · Preview/View post/Save/Publish) is the card's first row and the toolbar
+  sticks under it, full-width, groups centred, one row at every width
+  ([admin-editor.md](../admin-editor.md)). The title grows instead of clipping (`screens/sheet.ts`,
   reading face). The write pane — the list of everything written — rides beside the sheet from
   1640px up (measured, not chosen: `screens/content-pane.ts`).
   Icon actions keep localized accessible names. Focusing prose must not draw a black outline
@@ -46,7 +46,7 @@
 - **Key feedback, as a choice of instrument:** `settings.motion.keys` — `woody`, `crisp`,
   `deep`, `off`, older spellings migrated on read — draws the caret this product owns and plays a
   synthesized filtered-noise click (no audio file), at `settings.motion.keyVolume` out of 100.
-  Applying a highlight, underline or ring draws the stroke in over 200ms and, with
+  Applying a highlight, underline or ring draws the stroke in over 160 to 240ms and, with
   `settings.motion.penSqueak` on, squeaks like a felt tip (ADR 0049).
   The master `settings.motion.enabled` and `prefers-reduced-motion` still gate the visual half;
   `off` makes the editor standard and silent, and a volume of 0 keeps the caret without the
@@ -78,7 +78,7 @@
   land at the drop point, not at the stale cursor — and **pasting**. Paste was silence until
   2026-08-28: `handlePaste` read `text/plain`, found no video URL and handed back to
   ProseMirror, which has no parse rule for a file, so a pasted screenshot vanished with no
-  message. It now goes through `insertImageFiles`, the same path a drop uses, so alt text,
+  message. It now goes through `insertImages`, the same path a drop uses, so alt text,
   ordering and the caption default are identical whichever gesture you used.
 - **Images and galleries** (`CaptionedImage.ts`, a plain ProseMirror node view; the fragment grammar it shares with the renderer is `image-frag.ts`): placement rides on the src fragment
   (a Markdown image whose src ends `#right-wide`) and the caption is the alt, so the node still serializes to plain
@@ -113,12 +113,12 @@
   rather than wrap, so most of them — every crop ratio and frame weight, which is to say every
   actual choice — were cut off and unclickable. Taken out of flow it lays out against the writing
   column, above the picture whose crop is being chosen.
-- **Gallery defaults, site-wide** (*Settings → Posts → Galleries*, `screens/settings-post.ts`): the shape
+- **Gallery defaults, site-wide** (*Settings → Posts → Pictures*, `screens/settings-post.ts`): the shape
   and caption state every gallery follows when it has no opinion of its own. Each option is
   THREE-valued and the third value is silence: no token means "follow Settings", which is what lets
   one screen restyle a whole imported archive, and `asis` / `cap` exist so a gallery can disagree
   with a non-default site setting out loud. **The default is applied as CSS, never as markup**
-  (`galleryCss` in `web/layout.ts` emits `--gallery-ratio` / `--gallery-w` / `--gallery-cap` on
+  (`galleryCss` in `web/layout-styles.ts` emits `--gallery-ratio` / `--gallery-w` / `--gallery-cap` on
   `:root`; `public.css.ts` reads them with the old behaviour as the `var()` fallback). That is not
   a style preference: a rendered body is kept under a hash of its INPUT (`body_cache`), so a
   default that changed the HTML without changing that input would leave every already-rendered
@@ -129,7 +129,7 @@
   (`none` | `thin` | `medium` | `thick`) and a mat colour (paper or ink). **`none` at install**, on
   the owner's instruction: a frame is a decision about a site's voice, and arriving with one already
   made is a default nobody asked for. Same three-valued shape and the same CSS-not-markup rule as
-  the gallery defaults above (`figureCss` in `web/layout.ts` emits `--fig-default-pad` /
+  the gallery defaults above (`figureCss` in `web/layout-styles.ts` emits `--fig-default-pad` /
   `--fig-default-mat` / `--fig-default-line` on `:root`, and emits NOTHING while the answer is
   `none`), and for the identical reason — a default that rewrote HTML would leave every
   already-rendered post wearing the old frame until something unrelated evicted the cache entry.
@@ -140,7 +140,7 @@
   wrong one. Overridable in BOTH directions — a frame token on a picture overrides upward,
   `#noframe` overrides downward, which is the half that only matters once a site default exists.
 - **BubbleBar:** a floating bar (`editor/bubble.ts`) over a text selection or with the
-  cursor in a link — bold/italic/underline/strike/code + link edit/remove. `shouldShow` skips node
+  cursor in a link — bold/italic, headings, underline/ring/strike/code, the inks, link edit/remove. `shouldShow` skips node
   selections (image/video) so it never covers their own controls.
 - **Tables:** insert is a 3×3 with a header row; a contextual toolbar row (shown only when the
   cursor is in a table) adds/removes columns + rows or deletes the table. The header row + left
@@ -166,7 +166,7 @@
     Restoring keeps the live slug and date; the snapshot's are not carried over.
   A successful server save clears the snapshot. **The interval alone lost work**:
   an over-scroll at the top of the editor on a phone triggers pull-to-refresh and the page
-  RELOADS, and `beforeunload` does not reliably fire there — so `useLocalAutosave` also flushes on
+  RELOADS, and `beforeunload` does not reliably fire there — so `wireSafety` also flushes on
   `pagehide`, on a `visibilitychange` to hidden, and on unmount. `beforeunload` remains the
   courtesy warning on top, not the safety net.
 - Gallery insert adds all picked images in ONE `insertContent` (a per-image loop leaves only the
@@ -227,7 +227,7 @@ all from one parse. Four libraries used to answer those five questions separatel
 - **This blog's own notation on top**: the pen's three gestures (`==ink==`, `++underline++`,
   `@@ring@@`, each with an optional `#colour`), maths in four delimiters, footnotes, and
   callouts.
-- **What a host may change is six rules** (`md/html-rules.ts`), all defaulting to the spec:
+- **What a host may change is seven rules** (`md/html-rules.ts`), all defaulting to the spec:
   raw HTML passed, filtered or escaped; a soft break as a wrap or a line break; unsafe link
   schemes rewritten; a body `#` demoted; heading anchors; `scope` on a table header; and the
   function that turns TeX into markup. What this blog answers is `render/page-rules.ts`.
@@ -318,11 +318,11 @@ card, a link) it is called by its first words; see
   total count + size, a name **search**, and a **sort** (newest / name / size); each tile keeps a
   compact `dims · size · shortdate` caption and its copy / download / delete actions **overlay the
   thumbnail** (revealed on hover, always on touch) so they add no layout height. The grid is 5-across
-  at desktop so the caption never truncates. Videos are ordinary attachments in the shared `files` store
+  at `lg` and 6 from `xl` so the caption never truncates. Videos are ordinary attachments in the shared `files` store
   (same upload route `/api/files/attach`, same soft-delete) — `isVideoAttachment`
   (MIME `video/*`, extension fallback) splits them between the Videos tab (grid of
   native `<video controls preload="metadata">` players + copy URL) and the Files tab.
-  No schema change; `FileUploader` takes `accept`/`label` for the video dropzone.
+  No schema change; `dropWell` takes `label`/`accept` for the video dropzone.
 - **ONE PAGE AT A TIME** (`MEDIA_PAGE = 200`, [`views-media.ts`](../../src/web/admin/views-media.ts)):
   each tab draws 200 and a pager under the grid links to the next (`?tab=<kind>&page=<n>` — the
   link carries its own kind, because switching tabs is an attribute rather than a navigation and
@@ -364,7 +364,7 @@ card, a link) it is called by its first words; see
 ## WordPress import — `src/import/wordpress.ts`, Admin → Settings → Server & connections
 
 - **One-click import** from a WordPress export (`Tools → Export → All content` = a WXR `.xml`).
-  `ImportFields` uploads the file (multipart) to owner-gated `POST /api/import/wordpress`.
+  `importCard` (`island/lib/settings-import.ts`) uploads the file (multipart) to owner-gated `POST /api/import/wordpress`.
 - **`parseWxr(xml, now)` is PURE** (no I/O; unit-tested in `src/import/wordpress.test.ts`): each `item`
   with `wp:post_type` post/page and a live status → a post/page. HTML `content:encoded` → Markdown
   (`src/import/html-to-md.ts`), a resized copy (`photo-1024x683.jpg`) swapped for the original the export

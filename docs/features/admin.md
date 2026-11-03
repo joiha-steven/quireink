@@ -8,14 +8,14 @@
   (index/search/getPost, page index/getPage, media/file lists, the finalize sweeps) so trashed
   items leave the site, lists, search, sitemap/feed/llms and the libraries at once.
 - **The way IN is the editor's Attributes panel** (`screens/sheet-frame.ts` draws it,
-  `island/lib/sheet-errands.ts` acts on it), beside History and View post, and only for a saved
+  `island/lib/sheet-errands.ts` acts on it), beside History and Analytics, and only for a saved
   piece. It went missing 2026-08-17 to 2026-08-30: the old content table's row actions carried the
   trash icon and the `DELETE /api/{posts,pages}/:slug` behind it, and neither was rebuilt when the
   Write screen became two panes (`b4459b4`). Thirteen days and four releases with `/admin/trash`
   reachable and no way to put anything in it, reported from outside as issue #60. **Every tour
   flow that touched the trash called the endpoint directly**, which is why 2,100 green tests and
-  a 61-flow tour all missed it; one clicks the control now. The confirmation says the piece can
-  be brought back, because this delete is soft: `confirmDeletePost`/`confirmDeletePage` had said
+  a 61-flow tour all missed it; one clicks the control now. The note above the key says the piece can
+  be brought back, and the key asks nothing, because this delete is soft: `confirmDeletePost`/`confirmDeletePage` had said
   it could not be undone, which was never true of this endpoint.
 - **Media/file soft delete KEEPS the blob** — a published post linking a trashed image keeps
   rendering; the blob is removed only on purge. So `/api/media/delete` no longer purges the page
@@ -45,7 +45,7 @@
   The index is kept in the same order the sections render, so a chip's position predicts where it
   lands.
 - Sections are laid out in **CSS columns, not a grid**: the cards differ wildly in height and a
-  grid aligns rows, leaving a dead gap under every short one. Each `Anchor` carries
+  grid aligns rows, leaving a dead gap under every short one. Each `anchored()` section carries
   `break-inside-avoid` so a card is never sliced across the column break.
 - The tables are the reason the page is worth opening: **Markdown** (the syntax beyond CommonMark —
   callouts, footnotes, embeds) and **Troubleshooting** (symptom → fix, e.g. the 465-vs-587 TLS pair
@@ -58,49 +58,49 @@
 ## Admin UI kit — `src/admin-shared/kit.ts` and `src/web/admin/kit.ts`
 
 - ONE source of truth for shared admin chrome so no page hand-rolls its own (radius /
-  padding / shadow / header size used to drift): `Card` (canonical `CARD` surface, plus a
-  `panel` mode for a card living INSIDE a sheet), `PageHeader`, `Tabs` (`lg` underline +
-  `sm` segments, with a `dense` modifier), `StatCard`, `EmptyState`, and table tokens
-  (`TableFrame` / `THEAD` / `TROW`). The one-sheet page itself lives in
+  padding / shadow / header size used to drift): `card()` (canonical `CARD` surface), `panelCard()` (a
+  card living INSIDE a sheet), `pageHeader()`, `tabs()` (`lg` underline +
+  `sm` segments, with a `dense` modifier), `statCard()`, `emptyState()`, and table tokens
+  (`TABLE_FRAME` / `THEAD` / `TROW`). The one-sheet page itself lives in
   `admin-shared/kit.ts` — `SHEET`, `SHEET_TOP`, `SHEET_TOOL` —
   with `.paper-cols` (two newspaper columns) in `admin.css`; see "One sheet per page" in
   `docs/admin-design.md`. Admin is monochrome plus the product's own PEN BOX, and each ink
   keeps the meaning it has on paper: highlighter marks where you are (the rail's current row,
   the active tab) and search hits; red ballpoint dresses what destroys something and nothing
-  else. A selected VALUE is not a place, so it stays on the ink pill — `where-you-are.test.ts`
+  else. A selected VALUE is not a place, so it takes the sunken key — `where-you-are.test.ts`
   fails a chooser that reaches for the highlighter. The kit uses the neutral scale, not public
   theme tokens.
 - **Admin canvas:** `<main>` in the admin layout carries `.admin-canvas` (`src/admin/admin.css`) — a flat,
   quiet neutral surface (one fill per light/dark mode); the sidebar + cards sit on solid surfaces
   above it. (The editorial redesign replaced the old dotted-grid canvas — see
   `docs/admin-design.md`.)
-- **Sidebar (`AdminSidebar`):** four destinations + "Manage" (which remembers an
+- **Sidebar (`railHtml`, `web/admin/rail.ts`):** four destinations + "Manage" (which remembers an
   explicit open/close across sessions) by default; the owner can drag any row between the
   three zones, hide the wordmark and the search button, and the order follows them between
   machines as a site setting (`src/content/nav-order.ts`, [admin-design.md](../admin-design.md)). Two registers that must not dress alike: nav rows
-  wear `SIDEBAR_NAV`, the footer's CONTROLS (theme, Clear cache, Sign out) wear the
-  smaller `SIDEBAR_UTIL`. The collapse/expand control sits at the TOP next to the
-  wordmark (a compact chrome button, NOT a nav row) so it can't be mistaken for Sign out;
-  Sign out sits alone under its own divider. The "Show icons" switch (bottom of
-  Manage) governs the whole rail's glyphs. Palette selection was REMOVED from
-  the admin chrome — it lives on the public site now; the admin only toggles light/dark,
+  wear `SIDEBAR_NAV`, the foot's controls are glyph keys in one strip, `SIDEBAR_ICON`.
+  The collapse/expand control is a key in the foot strip
+  (a compact chrome button, NOT a nav row) so it can't be mistaken for Sign out;
+  Sign out closes the owner's menu, under its own divider. The "Show icons" switch (in the
+  owner's menu) governs the whole rail's glyphs. Palette selection was REMOVED from
+  the admin chrome — it lives on the public site now; the admin only offers light, dark, system or by time,
   and that menu opens upward inside the rail (the rail carries `z-30`: `sticky` makes it
   a stacking context the content would otherwise paint over).
 
 ## The Write screen (Admin → content)
 
 - `/admin/content` IS the two-pane Write screen (ADR 0024; the Writing Desk mock): the
-  write pane — one stream of posts and pages, most recently touched first — beside an
+  write pane — one stream of posts, pages and notes, most recently touched first — beside an
   empty sheet inviting the next piece. Opening a row swaps the sheet for that piece's
-  editor; the pane rides along on both editor pages from 1640px up (measured, `screens/content-pane.ts`).
+  editor; the pane rides along on all three editor pages from 1640px up (measured, `screens/content-pane.ts`).
 - `screens/content-pane.ts` draws it, `island/content.ts` owns the stream: title+terms filtering, the
   debounced body search (`/api/admin/search`, hits and passage marked with the pen, accents
   folded one way only — typed WITH them they are meant, `src/accent.ts`), and two filters
   that STACK — a kind row (All · Posts · Pages · Notes, words on a hairline, the pane's own
   short `scope*` strings measured to one line in all eleven languages) and, on the small-print
-  line under it, two status lamps (Drafts, Published: press one to keep only those, press it
-  again for everything; the lamp is the one each row wears) beside the sort cycle
-  (last-updated / date-created). They were one segmented row of six until 2026-09-09, and
+  line under it, status lamps (Drafts, Published, and Scheduled while anything is: press one to keep only those, press it
+  again for everything; a pressed lamp lights in ink). The sort cycle
+  (last-updated / date-created) rides the tools row. They were one segmented row of six until 2026-09-09, and
   six segments in 288px broke their labels over two lines in every language. The date beside
   "Published" is the PUBLICATION date; a draft's only honest date is its save.
 - **A PAGE OF ROWS AT A TIME** (`WRITE_PAGE`, `src/admin-shared/write.ts`): the server draws the
@@ -108,8 +108,8 @@
   list scrolls in. A REVEAL, not a fetch — every piece stays in the page, so search, filters and
   sort remain node moves and the box still reaches a piece six hundred rows down. The limit is
   inside `applyAll` (one reason per hidden row) and its count is how many MATCH, not how many show.
-- Taxonomy and Series open as right-hand `SlideOver`s from the pane's tool line —
-  `TaxonomyManager`: rename (merge) / remove terms across all posts → `updateTerm`.
+- Taxonomy and Series open as right-hand drawers (`screens/content-drawers.ts`) from the pane's tool line:
+  rename (merge) / remove terms across all posts → `updateTerm`.
 
 ## Activity log + Overview (Admin)
 
@@ -128,18 +128,17 @@
 - **Error log (same table):** `errorHandler()` in `src/web/api.ts` — the one handler every route
   falls through to — calls `logActivityError("METHOD /path", message)`, recording an
   `error`-action entry (gated by the same toggle). So unexpected server failures show up in the
-  log, rendered as the inverted (ink-on-ink) chip by `screens/log.ts` — the admin is
-  monochrome, so "error" is the one chip printed in reverse. Only genuine errors land here
+  log, rendered as the one sentence set `font-medium` in the ink by `screens/log.ts` — the admin is
+  monochrome, so "error" is the one line set heavier. Only genuine errors land here
   (validation 400s use `fail()`).
-- **Overview (`screens/dashboard.ts`, data from `src/web/admin/views-home.ts`):** the admin home, in the
+- **Home (`screens/dashboard.ts`, data from `src/web/admin/views-home.ts`):** the admin home, in the
   owner's question order ([ADR 0024](../decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6,
-  [admin-design.md](../admin-design.md)). A header with a **New post** action, a first-run checklist
-  that takes itself off once done, the **Traffic** strip full width (30-day views, visitors, dwell,
-  read-through, sparkline), then **Pick up where you left off** (`recentPieces` in `screens/recent-pieces.ts`: the
-  four newest unfinished pieces, each opening the editor), then a 2×2 from `screens/dashboard-cards.ts`: **Needs
+  [admin-design.md](../admin-design.md)). A **Home** title with a **New post** action, **Pick up where you left off** (`pickUp`: the
+  four newest unfinished pieces, each opening the editor), a first-run checklist
+  that takes itself off once done, the **Traffic** line (30-day views, visitors, dwell,
+  read-through, sparkline), then a 2×2 from `screens/dashboard-cards.ts`: **Needs
   attention** (published posts with no excerpt or no share image, each row a filter into the write pane), **Most
-  viewed**, **Sources** and **Recent activity** (gated by `features.activityLog`). The five counts (Posts / Pages /
-  Comments / Images / Storage) come LAST as a `statBand` (`web/admin/kit-figures.ts`), then the system line.
+  viewed**, **Sources** and **Recent activity** (gated by `features.activityLog`), then the system line.
 - **The editorial redesign** removed the old home-page duplicate cards (SEO health, traffic sources,
   quick-actions row, taxonomy breakdown, and the rich system panel) — that data lives on its own pages
   now; only the compact footer remains. See `docs/admin-design.md`.
@@ -151,17 +150,17 @@
   Direct/Search/Social/Referral + top external referrers), **audience** (countries + **device /
   browser / OS**), and the **read-depth distribution**. Referrers/countries/channels/facets count
   **distinct visitors** (one person = 1, not page views). **Per-page drill-down** (`?path=`,
-  `AnalyticsPageDetail`) repeats the trend + sources + depth for a single URL. (A **CSV export** of
+  `screens/analytics-detail.ts`) repeats the trend + sources + depth for a single URL. (A **CSV export** of
   the daily series sat in the page header until 2026-08-30. It went because nobody wanted the file:
   a chart is the artefact here, and a two-column dump of it is not.)
-  - **Every piece, not the busiest ten** (`PieceIndex`, 2026-08-30). The top-pages table stays the
+  - **Every piece, not the busiest ten** (`pieceIndex`, 2026-08-30). The top-pages table stays the
     screen's default face — it answers "what is doing well" — and underneath it sits the complete
     index: one row per post and page, filterable, each linking to that piece's drill-down. Until it
     existed the ONLY door into a piece's own figures was a row in the top ten, so the fortieth piece
     could not be looked at even though its screen and its numbers were already built. Deliberately
-    unranked and **uncapped** (a "top 50" would put the same wall one row lower); capped in HEIGHT
-    only. Pieces with no views in the window are listed at zero — read by nobody is an answer — which
-    is why `pieces` is joined to `titles` on the client rather than on the server. There is a second
+    not a ranking and **uncapped** (a "top 50" would put the same wall one row lower): ten rows and
+    Show all, no scroll box of its own. Pieces with no views in the window are listed at zero — read by nobody is an answer — which
+    is why `rowsOf` joins `pieces` to `titles`. There is a second
     door in the editor itself (the panel's header line), on the same condition as View post.
   - **Left quickly** — on the drill-down, the share of measured leaves that were a glance: under ten
     seconds, **or** under a quarter read (`QUICK_MS` / `QUICK_DEPTH`, the latter deliberately the
@@ -284,8 +283,8 @@
   row carries the CONTEXT: how big the conversation has become, which is what the next question
   will be charged for again rather than a running total. Past 60k it turns amber, because that
   is the point at which starting a fresh conversation is the cheaper answer.
-- **The rail follows the key.** With a model configured the assistant moves out of "Everything
-  else" and sits under Home; with none it stays behind the fold, because a door onto a refusal
+- **The rail follows the key.** With a model configured the assistant moves out of
+  "Manage" and sits under Home; with none it stays behind the fold, because a door onto a refusal
   has no business taking a quarter of the rail.
 - **It is the owner acting.** Tools run on the server under the owner's session and are logged
   like every other admin action, and deletes go to the Trash.
@@ -340,20 +339,20 @@ are a scroll container behaving as one.
 
 - **ONE form, SEVEN tabs grouped by the owner's question** (`blog | home | post | appearance |
   people | server | account`; tab state not persisted, but `?tab=` deep-links, and the eight
-  old ids still resolve to whichever tab holds those keys). Each tab prints its question under
-  itself — [ADR 0041](../decisions/0041-settings-by-the-owners-question.md) is the argument,
+  old ids still resolve to whichever tab holds those keys). Each tab answers one question and does not
+  print it ([ADR 0073](../decisions/0073-a-settings-tab-no-longer-prints-its-question.md)) — [ADR 0041](../decisions/0041-settings-by-the-owners-question.md) is the argument,
   superseding the grouping in [0011](../decisions/0011-settings-regrouped-into-seven.md). The
   sheet's Save stores every ordinary settings key waiting on the screen and names how many
-  (one `useState<SiteSettings>` → one PUT `/api/settings`); the cards on the last three tabs
+  (every `data-k` → one PUT `/api/settings`); the cards on the last three tabs
   own their keys as well and each carries its own key, because a card that reaches an SMTP
   host or a Cloudflare zone TESTS what it just stored, which no page-level key can do.
 - **The AI card** (Server & connections) — the provider (Anthropic / OpenAI / Gemini / DeepSeek), the key, the model, and which jobs
-  the model does on its own: `ai.altText` (describe an uploaded image), `ai.excerpt` (write the
-  excerpt when a post publishes with the field blank), `ai.commentGuard` (hold spam in the
+  the model does on its own: `ai.altText` (describe an uploaded image) and `ai.excerpt` (write the
+  excerpt when a post publishes with the field blank) follow the key with no switch on the card, and `ai.commentGuard` (hold spam in the
   Trash — NOTE: this one sends a READER'S comment text to the configured provider, which the
   other two jobs never do; the toggle says so in the UI, and an owner who enables it should
   say so in their privacy policy). **The key is the master switch**: with none stored, every job is off whatever its own
-  toggle says. A text-only MODEL greys `ai.altText` and says why, because that job is the only
+  toggle says. A text-only MODEL says pictures cannot be described and why, because alt text is the only
   one that shows the model a picture — and seeing is a property of the model, not the
   provider: DeepSeek sells both kinds under one key. Like the other credentials it is written and never read back. The model list is
   the provider's own, with a measured default per provider (`DEFAULT_MODELS` in
@@ -370,8 +369,8 @@ are a scroll container behaving as one.
   `home.mode=front`), listing (with the list thumbnail); **Posts** (`settings-post.ts`) one card
   of four groups (head, body, end — with the comments switch — and reach), pictures (hero,
   figure, gallery), tables, inks; **Appearance** `lookPicker` (**Theme**, four tiles pictured by `bun run theme:tiles`
-  → `settings.theme`, first: the coarsest decision) + shape + `palettes` (**Default appearance**,
-  then the grid) left, fonts / font upload / custom CSS right, type sizes full width under
+  → `settings.theme`, first: the coarsest decision) + `palettes` (**Default appearance**,
+  then the grid) left, fonts / font upload / shape / custom CSS right, type sizes full width under
   both; **Comments & mail** (`settings-people.ts`) the comments switch again, comment keys,
   newsletter SMTP; **Server & connections** `installCard` (cache, updates, storage), AI, ActivityPub, backups, off-site, import, then the shut **Advanced** band: `siteCard` (crawlers + custom code), MCP, API, Cloudflare, Run on Cloudflare,
   redirects; **Account**
@@ -380,7 +379,7 @@ are a scroll container behaving as one.
   feedback** → `motion.keys` / `keyVolume`, the pen squeak, the autosave interval).
   Every credential on those cards is written to the server and never read back, which is why they
   show status rather than values. `src/admin-shared/settings-index.ts` (⌘⇧K's index) reaches them all.
-  `McpFields` is the EXCEPTION to "no own state/save": the MCP enable toggle flows through the
+  `mcpCard` is the EXCEPTION to "no own state/save": the MCP enable toggle flows through the
   settings form, but its token manager has its own `/api/mcp/tokens` API (plaintext shown once).
 - **Palette is FRONTEND-ONLY now** — the admin chrome no longer carries a `PaletteToggle` (only the
   light/dark toggle). The Appearance tab still sets the site's **default palette** + which palettes
