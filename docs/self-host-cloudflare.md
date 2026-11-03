@@ -162,12 +162,16 @@ Durable Object's own, no tool outside the Worker reads or writes it, and `SETUP_
 `/setup` only while the blog has no owner. The way back goes through a backup:
 
 1. In the dashboard, R2 → the blog's bucket → `private/backups/`: download the newest
-   `quire-….tar.gz` (a `.tar.gz.enc` one needs the key or passphrase you saved when you sealed them).
+   `quire-….tar.gz`, scheduled or `-manual` alike (a `.tar.gz.enc` one is opened in step 2 with
+   `--identity key.txt` or `--passphrase`, the key you saved when you sealed them).
 2. On any machine with Bun and this release's source: `bun scripts/restore.ts <archive> --data-dir
    ./back/data --uploads-dir ./back/uploads`, then `DATA_DIR=./back/data bun run user set-password
-   --username you` (or `reset-2fa`).
-3. Start it there (`DATA_DIR=./back/data STORAGE_LOCAL_DIR=./back/uploads bun src/index.ts`), sign
-   in, and Settings → Server & connections → Backups → *Download archive*.
+   --username you` for the password and `DATA_DIR=./back/data bun run user reset-2fa --username you`
+   for the phone; both, when both are gone.
+3. Start it there (`DATA_DIR=./back/data STORAGE_LOCAL_DIR=./back/uploads bun src/index.ts`) and
+   sign in. After `reset-2fa` it asks you to set up an authenticator and hands you new recovery
+   codes; they travel in the archive. Then Settings → Server & connections → Backups → *Download
+   archive*.
 4. Deploy a new Quire Ink here under another Worker and bucket name (the old object has an owner
    and takes no backup), open `/setup` with its `SETUP_CODE`, choose *Start from a backup* and give
    it that archive. Move the custom domain to the new Worker, then delete the old one and its bucket.
