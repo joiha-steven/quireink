@@ -50,7 +50,8 @@ function wordsOf(picker: HTMLElement | null): ThemeWords {
 
 /** One finding as two lines: what the rule asks, then where, the code first. */
 export function violationLines(v: Violation, w: ThemeWords): { what: string; where: string } {
-  const what = w.rules?.[v.rule] ?? w.rules?.other ?? v.rule
+  // A required file the package lacks is A3 too, but `missing` has a sentence of its own (`theme/check-files.ts`).
+  const what = (v.rule === 'A3' && v.subject === 'missing' ? w.rules?.missing : undefined) ?? w.rules?.[v.rule] ?? w.rules?.other ?? v.rule
   const place = v.file ? v.file + (v.line > 0 ? `:${v.line}${v.col > 0 ? `:${v.col}` : ''}` : '') : ''
   return { what, where: [v.rule, place, v.subject].filter(Boolean).join(' · ') }
 }

@@ -785,6 +785,7 @@ const es = {
     A6: 'A theme.json le falta un campo, o un campo tiene la forma equivocada. La ruta mostrada nombra el campo, como palettes[0].light.meta.',
     X1: 'CSS que un navegador descartaría o leería de otra forma de como está escrito. Casi siempre falta un dos puntos o una llave, o hay una regla anidada dentro de otra.',
     other: 'Una regla que esta versión de la administración no conoce. Su código aparece abajo.',
+    missing: 'Falta un archivo que todo tema necesita. theme.json, theme.css y screenshot.webp van en la raíz del zip; theme:preview crea un screenshot.webp para copiar dentro.',
   },
   motionLabel: 'Animaciones',
   motionDesc: 'Animaciones sutiles en el sitio + admin (fundidos de página, hover/pulsación, aparición al hacer scroll). Apagado = instantáneo. La preferencia de «reducir movimiento» se respeta siempre.',

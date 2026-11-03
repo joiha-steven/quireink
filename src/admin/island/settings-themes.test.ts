@@ -162,12 +162,13 @@ describe('installing from a file', () => {
       { rule: 'C1', file: 'theme.css', line: 3, col: 5, subject: 'color:red' },
       { rule: 'S2', file: 'theme.css', line: 0, col: 0, subject: 'front' },
       { rule: 'Z9', file: '', line: 0, col: 0, subject: 'from a later build' },
+      { rule: 'A3', file: 'screenshot.webp', line: 0, col: 0, subject: 'missing' },
     ]
     replies['POST /api/themes'] = { status: 422, body: { success: false, error: 'theme_refused', violations } }
     choose()
     await settle()
     expect(visible('[data-theme-refusal]')).toBe(true)
-    expect($('[data-theme-refusal-head]')!.textContent).toBe('Not installed. Problems the check found: 3')
+    expect($('[data-theme-refusal-head]')!.textContent).toBe('Not installed. Problems the check found: 4')
     const lines = [...screen.querySelectorAll('[data-theme-violations] li')].map((li) => [
       li.querySelector('[data-theme-violation-what]')!.textContent, li.querySelector('[data-theme-violation-where]')!.textContent,
     ])
@@ -175,6 +176,8 @@ describe('installing from a file', () => {
       [t.themeRules.C1, 'C1 · theme.css:3:5 · color:red'],
       [t.themeRules.S2, 'S2 · theme.css · front'],
       [t.themeRules.other, 'Z9 · from a later build'],
+      // A required file the package lacks is said as missing, not as a file it may not hold.
+      [t.themeRules.missing, 'A3 · screenshot.webp · missing'],
     ])
     expect($('[data-theme-cell="broadsheet"]')).toBeNull()
   })

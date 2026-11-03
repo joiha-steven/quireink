@@ -14,6 +14,8 @@ import { THEME_LIMITS, type ThemeRule, type Violation } from '@/theme/types'
 export type ThemeFileEntry = { path: string; size: number; isSymlink?: boolean; bytes?: Uint8Array }
 
 const REQUIRED = ['theme.json', 'theme.css', 'screenshot.webp'] as const
+/** The subject of an A3 for a required file the package does not hold. */
+export const MISSING = 'missing'
 /** The admin draws the preview at this size; a screenshot of any other size is stretched. */
 export const SCREENSHOT_SIZE = { width: 1200, height: 900 } as const
 const IMAGE_EXT = /\.(webp|png|jpg|jpeg|avif|svg)$/
@@ -85,7 +87,8 @@ export function checkThemeFiles(entries: readonly ThemeFileEntry[]): Violation[]
   if (files > THEME_LIMITS.files) fail('A3', '', String(files))
   if (total > THEME_LIMITS.totalBytes) fail('A5', '', String(total))
   for (const name of REQUIRED) {
-    if (!entries.some((e) => e.path === name && !e.isSymlink)) fail('A3', name, name)
+    // `missing`, not the name: the file field already names it, and the admin says a sentence of its own for it.
+    if (!entries.some((e) => e.path === name && !e.isSymlink)) fail('A3', name, MISSING)
   }
   return out
 }

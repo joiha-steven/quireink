@@ -785,6 +785,7 @@ const fr = {
     A6: 'Il manque un champ dans theme.json, ou un champ n’a pas la bonne forme. Le chemin affiché nomme le champ, par exemple palettes[0].light.meta.',
     X1: 'Du CSS qu’un navigateur ignorerait, ou lirait autrement qu’il n’est écrit. Le plus souvent un deux-points ou une accolade manquants, ou une règle imbriquée dans une autre.',
     other: 'Une règle que cette version de l’administration ne connaît pas. Son code figure ci-dessous.',
+    missing: 'Il manque un fichier dont tout thème a besoin. theme.json, theme.css et screenshot.webp sont à la racine du zip ; theme:preview crée un screenshot.webp à y copier.',
   },
   motionLabel: 'Animations',
   motionDesc: 'Animations discrètes sur le site + l’admin (fondus de page, survol/appui, apparition au défilement). Désactivé = instantané. La préférence « réduire les animations » est toujours respectée.',

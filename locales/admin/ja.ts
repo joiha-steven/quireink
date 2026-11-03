@@ -785,6 +785,7 @@ const ja = {
     A6: 'theme.json の項目が足りないか、形が間違っています。表示されたパスがフィールドを示します。例: palettes[0].light.meta。',
     X1: 'ブラウザが捨てる、または書かれたとおりに読まない CSS です。たいていはコロンや波かっこの抜け、またはルールの入れ子です。',
     other: 'この管理画面のバージョンが知らないルールです。コードを下に示します。',
+    missing: 'どのテーマにも必要なファイルが足りません。theme.json、theme.css、screenshot.webp は zip の最上位に置きます。theme:preview がコピーできる screenshot.webp を作ります。',
   },
   motionLabel: 'モーション',
   motionDesc: 'サイト全体と管理画面の控えめなアニメーション（ページのフェード、ホバー/押下、スクロール表示）。オフで即時。reduced-motion は常に尊重します。',

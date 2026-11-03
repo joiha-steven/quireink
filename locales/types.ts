@@ -1132,7 +1132,8 @@ export type AdminStrings = {
   /** On a font tile whose face the browser could not load. */
   themeFontUnloaded: string
   /** One line per rule code of the theme checker (`theme/types.ts`), and `other` for a code this build does not know. */
-  themeRules: Record<ThemeRuleCode | 'other', string>
+  /** One sentence per rule code; `missing` is said instead of A3's for a required file the package lacks. */
+  themeRules: Record<ThemeRuleCode | 'other' | 'missing', string>
   motionLabel: string
   motionDesc: string
   keyFeedbackLabel: string

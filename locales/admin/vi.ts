@@ -785,6 +785,7 @@ const vi = {
     A6: 'theme.json thiếu một trường, hoặc một trường sai dạng. Đường dẫn kèm theo là tên trường, như palettes[0].light.meta.',
     X1: 'CSS mà trình duyệt sẽ bỏ qua, hoặc hiểu khác với cách nó được viết. Thường là thiếu dấu hai chấm hoặc dấu ngoặc nhọn, hoặc một quy tắc lồng trong quy tắc khác.',
     other: 'Quy tắc mà bản quản trị này chưa biết. Mã của nó ghi ở dưới.',
+    missing: 'Thiếu một tệp mà theme nào cũng cần. theme.json, theme.css và screenshot.webp nằm ngay tầng trên cùng của tệp zip; theme:preview tạo sẵn một screenshot.webp để chép vào.',
   },
   motionLabel: 'Chuyển động',
   motionDesc: 'Một công tắc cho mọi chuyển động trên site, trang đăng nhập và admin này: hover và bấm, menu và hộp thoại hiện ra, hiện dần khi cuộn, cuộn mượt. Tắt = mọi thứ tức thì. Thiết bị của người đọc yêu cầu giảm chuyển động thì cũng được như vậy, bất kể công tắc này.',

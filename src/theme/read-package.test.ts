@@ -91,7 +91,7 @@ describe('refused before anything is inflated', () => {
   })
 
   it('a missing theme.json (A3)', async () => {
-    expect(await refusals(themeZip({ 'theme.json': null }))).toEqual(['A3 theme.json theme.json'])
+    expect(await refusals(themeZip({ 'theme.json': null }))).toEqual(['A3 theme.json missing'])
   })
 })
 

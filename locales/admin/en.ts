@@ -785,6 +785,7 @@ const en = {
     A6: 'theme.json is missing a field, or a field has the wrong shape. The path shown names the field, such as palettes[0].light.meta.',
     X1: 'CSS a browser would drop, or read differently from how it is written. Usually a missing colon or brace, or a rule nested inside another.',
     other: 'A rule this version of the admin does not know. Its code is shown below.',
+    missing: 'A file every theme needs is missing. theme.json, theme.css and screenshot.webp sit at the top of the zip; theme:preview writes a screenshot.webp you can copy in.',
   },
   motionLabel: 'Motion',
   motionDesc: 'One switch for every movement on the site, the sign-in page and this admin: hovers and presses, menus and dialogs arriving, the scroll reveal, smooth scrolling. Off = everything is instant. A reader whose device asks for reduced motion gets the same, whatever this says.',

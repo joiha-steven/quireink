@@ -785,6 +785,7 @@ const de = {
     A6: 'In theme.json fehlt ein Feld, oder ein Feld hat die falsche Form. Der angezeigte Pfad nennt das Feld, etwa palettes[0].light.meta.',
     X1: 'CSS, das ein Browser verwerfen oder anders lesen würde, als es geschrieben ist. Meist fehlt ein Doppelpunkt oder eine Klammer, oder eine Regel steht in einer anderen.',
     other: 'Eine Regel, die diese Version der Verwaltung nicht kennt. Ihr Code steht unten.',
+    missing: 'Eine Datei fehlt, die jedes Theme braucht. theme.json, theme.css und screenshot.webp liegen ganz oben im Zip; theme:preview legt ein screenshot.webp zum Hineinkopieren an.',
   },
   motionLabel: 'Bewegung',
   motionDesc: 'Dezente Animationen auf Website + Admin (Seiten-Fades, Hover/Klick, Scroll-Einblendung). Aus = sofort. Reduced-Motion wird stets beachtet.',

@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { checkThemePath } from '../../scripts/theme-check'
 import { CSS, MANIFEST, testZip, themeFiles, themeZip } from '@/theme/test-zip'
+import en from '@/locales/admin/en'
 
 const SCRIPT = resolve(import.meta.dir, '../../scripts/theme-check.ts')
 const root = mkdtempSync(join(tmpdir(), 'theme-check-'))
@@ -59,6 +60,13 @@ describe('theme:check', () => {
     const out = await checkThemePath(themeDir('hidden', { '.DS_Store': 'x' }))
     expect(out.code).toBe(1)
     expect(out.lines[0]).toBe('A3 · .DS_Store · .DS_Store')
+  })
+
+  it('says a missing required file is missing, with the sentence the admin says for it', async () => {
+    const out = await checkThemePath(themeDir('nopicture', { 'screenshot.webp': null }))
+    expect(out.code).toBe(1)
+    expect(out.lines[0]).toBe('A3 · screenshot.webp · missing')
+    expect(out.lines[1]).toBe(`    ${en.themeRules.missing}`)
   })
 
   it('lets an empty subdirectory through, as the installer does with the directory record zip -r writes', async () => {

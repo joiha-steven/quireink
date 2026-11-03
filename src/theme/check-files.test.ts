@@ -46,8 +46,8 @@ describe('A3: package paths', () => {
     )).toEqual([])
   })
 
-  it('refuses each missing required file by name', () => {
-    expect(checkThemeFiles([BASE[1]!]).map((v) => `${v.rule} ${v.subject}`)).toEqual(['A3 theme.json', 'A3 screenshot.webp'])
+  it('refuses each missing required file, named in the file field with the subject missing', () => {
+    expect(checkThemeFiles([BASE[1]!]).map((v) => `${v.rule} ${v.file} ${v.subject}`)).toEqual(['A3 theme.json missing', 'A3 screenshot.webp missing'])
   })
 
   it('refuses climbing, rooted, backslashed, drive-lettered and NUL paths', () => {

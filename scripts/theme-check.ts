@@ -15,6 +15,7 @@ import { packageOptions } from '@/content/theme-package-options'
 import { ZipWriter } from '@/import/zip-write'
 import en from '@/locales/admin/en'
 import { readThemePackage, THEME_LIMITS, type PackageResult, type ThemeManifest, type Violation } from '@/theme'
+import { MISSING } from '@/theme/check-files'
 
 export const USAGE = 'usage: bun run theme:check <theme directory | theme.zip>'
 
@@ -86,6 +87,12 @@ export function zipDirectory(root: string, walked: Walked): Uint8Array {
 }
 
 const rules = en.themeRules as Record<string, string>
+
+/** The admin's sentence for a finding: a missing required file has its own, as in the admin's list. */
+function sentenceFor(v: Violation): string {
+  if (v.rule === 'A3' && v.subject === MISSING) return rules.missing ?? rules.A3 ?? rules.other ?? ''
+  return rules[v.rule] ?? rules.other ?? ''
+}
 
 const RULES_DOC = 'docs/themes-css-rules.md'
 
@@ -204,7 +211,7 @@ export async function loadThemePath(arg: string | undefined): Promise<LoadedThem
   }
   const hints = fromZip ? zipHints(zipNames(zip)) : []
   const lines = [...leftOut, ...hints]
-  lines.push(...result.violations.flatMap((v) => [findingLine(v), `    ${rules[v.rule] ?? rules.other}`]))
+  lines.push(...result.violations.flatMap((v) => [findingLine(v), `    ${sentenceFor(v)}`]))
   const anchors = ruleAnchors()
   const explained = [...new Set(result.violations.map((v) => v.rule))].flatMap((r) => anchors.has(r) ? [`  ${r}  ${anchors.get(r)}`] : [])
   if (explained.length > 0) lines.push('Each rule, with a refused and a passing example:', ...explained)

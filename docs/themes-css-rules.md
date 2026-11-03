@@ -256,7 +256,9 @@ A3 · .DS_Store · .DS_Store
 A3 · screenshot.webp · 6e6f7420616e20696d616765
 # refused: the folder was zipped, not its contents
 A3 · folder/theme.json · folder/theme.json
-A3 · theme.json · theme.json     (missing at the top of the zip)
+A3 · theme.json · missing     (not at the top of the zip)
+# refused: no screenshot yet (the admin says this one in a sentence of its own)
+A3 · screenshot.webp · missing
 ```
 
 The rewrite: remove the file (keep the licence beside the zip), re-export the screenshot at

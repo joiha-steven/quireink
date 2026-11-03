@@ -785,6 +785,7 @@ const ko = {
     A6: 'theme.json에 항목이 빠졌거나 항목의 형식이 틀렸습니다. 표시된 경로가 필드를 가리킵니다. 예: palettes[0].light.meta.',
     X1: '브라우저가 버리거나 적힌 것과 다르게 읽을 CSS입니다. 대개 콜론이나 중괄호가 빠졌거나, 규칙이 다른 규칙 안에 들어 있습니다.',
     other: '이 관리자 버전이 모르는 규칙입니다. 코드는 아래에 있습니다.',
+    missing: '모든 테마에 필요한 파일이 없습니다. theme.json, theme.css, screenshot.webp는 zip 맨 위에 둡니다. theme:preview가 복사해 넣을 screenshot.webp를 만들어 줍니다.',
   },
   motionLabel: '모션',
   motionDesc: '사이트와 관리자 전반의 은은한 애니메이션(페이지 페이드, 호버/누름, 스크롤 표시). 끄면 즉시. reduced-motion은 항상 존중합니다.',

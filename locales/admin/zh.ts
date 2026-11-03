@@ -785,6 +785,7 @@ const zh = {
     A6: 'theme.json 缺少字段，或某个字段的形式不对。显示的路径就是字段名，例如 palettes[0].light.meta。',
     X1: '浏览器会丢弃、或会按与写法不同的方式读取的 CSS。通常是少了冒号或花括号，或把一条规则嵌套在另一条里。',
     other: '这个版本的后台不认识的规则。代码显示在下方。',
+    missing: '缺少每个主题都需要的文件。theme.json、theme.css 和 screenshot.webp 放在 zip 的最上层；theme:preview 会生成一个可以复制进去的 screenshot.webp。',
   },
   motionLabel: '动效',
   motionDesc: '全站与后台的细微动画（页面淡入、悬停/按压、滚动显现）。关闭即即时。始终遵循 reduced-motion。',
