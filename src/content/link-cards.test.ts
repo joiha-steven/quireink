@@ -5,6 +5,7 @@
 // render — and the ONE property the whole feature turns on: nothing appears until it is known,
 // and the switch being off is the same thing as not knowing.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
+import { rmSync } from 'node:fs'
 import { dropDatabase, freshDatabase } from '@/test/db'
 import { getSettings, saveSettings } from '@/content/settings'
 import { addFilesBatch } from '@/media/files'
@@ -15,8 +16,18 @@ import { sweepLinkCards } from '@/server/link-fetch'
 import { run } from '@/store/query'
 
 const DIR = './.tmp/test-link-cards'
+// ITS OWN UPLOADS TREE, under `.tmp/`: the files this adds go to the blob store, which is
+// `STORAGE_LOCAL_DIR || './uploads'`, and unset that is the repository's root (2026-11-04).
+const STORE = `${DIR}-uploads`
+const storeBefore = process.env.STORAGE_LOCAL_DIR
+process.env.STORAGE_LOCAL_DIR = STORE
 freshDatabase(DIR)
-afterAll(() => dropDatabase(DIR))
+afterAll(() => {
+  if (storeBefore === undefined) delete process.env.STORAGE_LOCAL_DIR
+  else process.env.STORAGE_LOCAL_DIR = storeBefore
+  rmSync(STORE, { recursive: true, force: true })
+  dropDatabase(DIR)
+})
 
 const SITE = 'https://blog.example'
 const AT = 'https://elsewhere.test/a/piece'

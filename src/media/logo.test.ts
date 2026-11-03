@@ -6,13 +6,24 @@
 // stored an empty `logoRenderUrl`. Nothing failed, nothing logged: the header just served
 // the untouched original and the newsletter masthead fell back to text.
 import { describe, it, expect, afterAll } from 'bun:test'
+import { rmSync } from 'node:fs'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { uploadFile } from '@/media/blob'
 import { renderLogo } from '@/media/files'
 
 const DIR = './.tmp/test-logo'
+// ITS OWN UPLOADS TREE, under `.tmp/`: the files this adds go to the blob store, which is
+// `STORAGE_LOCAL_DIR || './uploads'`, and unset that is the repository's root (2026-11-04).
+const STORE = `${DIR}-uploads`
+const storeBefore = process.env.STORAGE_LOCAL_DIR
+process.env.STORAGE_LOCAL_DIR = STORE
 freshDatabase(DIR)
-afterAll(() => dropDatabase(DIR))
+afterAll(() => {
+  if (storeBefore === undefined) delete process.env.STORAGE_LOCAL_DIR
+  else process.env.STORAGE_LOCAL_DIR = storeBefore
+  rmSync(STORE, { recursive: true, force: true })
+  dropDatabase(DIR)
+})
 
 const rectangle = async (w: number, h: number): Promise<Buffer> => {
   const { default: sharp } = await import('sharp')
