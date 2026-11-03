@@ -74,8 +74,8 @@ between a line here and the running software is either a bug or an unrecorded `�
 - `⚠` **Vietnamese IME (Telex) must be tested explicitly.** Toolbar and autosave must not
   interfere mid-composition. `scripts/typing-check.ts` drives both kinds (composing, and
   backspace-based like EVKey) in Chrome; a real EVKey or OpenKey install is still the last word
-- Title grows instead of clipping; toolbar sticky (`✂` it wraps in 2.0, by owner verdict,
-  [editing.md](../features/editing.md)); focusing prose draws no black outline
+- Title grows instead of clipping; toolbar sticky (`✂` one row in 2.x, what does not fit behind
+  More: [admin-editor.md](../admin-editor.md)); focusing prose draws no black outline
 
 ## 12. Settings
 

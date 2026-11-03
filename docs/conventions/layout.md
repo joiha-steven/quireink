@@ -42,10 +42,10 @@ inside it. In book mode the same break becomes the asterism.
   import the same string so they can't drift. Admin nav is a **collapsible left sidebar**
   (drawn by [`web/admin/rail.ts`](../../src/web/admin/rail.ts) and wired by
   [`admin/island/rail.ts`](../../src/admin/island/rail.ts)): each item has an icon + label; a toggle collapses the rail
-  to icon-only (persisted in localStorage; it publishes its width as `--admin-nav-w` so the fixed
-  settings/editor save bars offset past it). Nav links use `SIDEBAR_NAV` from
+  to icon-only (persisted in localStorage; it publishes its width as `--admin-nav-w`, which nothing
+  reads since the fixed save bar went). Nav links use `SIDEBAR_NAV` from
   [`admin-shared/rail.ts`](../../src/admin-shared/rail.ts) (active
-  links add `SIDEBAR_NAV_ACTIVE`); the footer holds the **light/dark toggle + Clear cache + Sign out**
+  links add `SIDEBAR_NAV_ACTIVE`); the footer holds the **theme key (light, dark, system, by time) + Clear cache + Sign out**
   (palette selection moved to the public site); on mobile
   it's a hamburger drawer (always icon+label).
   By default it lists **four destinations** and puts the rest behind one "Manage" button
@@ -57,8 +57,8 @@ inside it. In book mode the same break becomes the asterism.
   glyph keys through `icon()` in [`web/admin/kit.ts`](../../src/web/admin/kit.ts). Adding an item
   = reuse the constant, never copy a class list.
 - **Never put `overflow-hidden` on the editor frame:** it creates a scroll container and
-  prevents the toolbar from sticking to the viewport. (The toolbar wraps by owner verdict,
-  2026-08-17: [features/editing.md](../features/editing.md).)
+  prevents the toolbar from sticking to the viewport. (The toolbar is one row, what does not fit behind
+  More: [admin-editor.md](../admin-editor.md).)
 - **Admin rows align by a fixed-height box, never by baseline.** `SIDEBAR_NAV`
   ([`admin-shared/rail.ts`](../../src/admin-shared/rail.ts)) is a fixed-height `items-center` box
   laid out as a row; an item that opts out of the box, or a larger wordmark aligned by
@@ -79,7 +79,7 @@ inside it. In book mode the same break becomes the asterism.
   keeps the rail hidden for longer. Below it the SAME DOM becomes a slide-out drawer opened by the
   header menu button (`rail()` in `assets/js/theme.ts`, mobile only — flips `<html data-rail>`; drawer + scrim react
   in CSS; the layout hides the button above the breakpoint via `.rail-toggle`). The rail carries the
-  site menu at its top (`SidebarMenu`) — the header has no separate menu dropdown. In the gutter the
+  site menu at its top (`menuBlock`, `web/sidebar.ts`) — the header has no separate menu dropdown. In the gutter the
   rail is type on the page: no border, no shadow, no background. Its place in the SOURCE stays
   after the article's head (and after a listing's posts), because the band between those widths
   is in flow there; in the gutter, where it is drawn first, a second skip link, "Skip to menu"

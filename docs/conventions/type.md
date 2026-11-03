@@ -29,7 +29,7 @@
 - **Where applied:** `.prose` (h1–h5/pre/code/figcaption/table) read the role vars; titles/UI
   OUTSIDE `.prose` use `.fs-h1…fs-h5` (titles) + `.t-small` (secondary text) + `.t-body`
   (body-role text outside prose: card excerpts, footer). H1 = single post/page titles +
-  category/tag headings + draft preview; list cards (`PostCard`) = H2; brand wordmark = `.fs-h4`.
+  category/tag headings + draft preview; list cards (`web/listing.ts`) = H2; brand wordmark = `.fs-h4`.
   Two fixed sizes remain, both on purpose: the sign-in page's 15px body (`login.css.ts`, the one
   sheet `check:type` skips, because no `--fs-*` is defined there) and the `max(16px,1em)` FLOOR on
   form controls in `mobile.css.ts`, which stops iOS Safari zooming the page on focus.
@@ -102,7 +102,7 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   whatever `ui-monospace` meant on that machine. Declaring the face costs a page with no
   code nothing: `unicode-range` means the browser fetches a file only when a glyph needs it
   (measured 2026-07-29 — 30 KB on a post with code, 0 KB on one without). A custom font (`settings.customFont` =
-  family + `faces[]` per weight 400/500/600/700, uploaded via `FontUpload` → `/api/files/font`,
+  family + `faces[]` per weight 400/500/600/700, uploaded via `fontUpload()` → `/api/files/font`,
   stored at `files/font-<weight>-<ms>`, store-relative) overrides `--font-reading` —
   one `@font-face` per weight because faux-bold is disabled (`font-synthesis-weight: none`).
   `/og` renders Inter + the custom font (`src/web/og.ts` `?font=`). Empty = bundled Inter.

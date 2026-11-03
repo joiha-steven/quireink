@@ -37,7 +37,7 @@ four values for three intents.
   reported three times over five weeks and patched three times at the geometry end. The fill
   buys nothing either way: a `view()` range is bounded by visibility at both ends, so its fill
   only ever describes the page in a state nobody can see, and a `scroll()` animation on the
-  default range has no before or after phase to fill. `check:motion-drift` holds the rule with
+  default range has no before or after phase to fill. `check:motion` holds the rule with
   no exemption list, and `scripts/tour-flows-reading.ts` reproduces the late frame in a browser.
 - **ONE switch gates ALL motion, on both sides.** `<html data-motion>` is server-rendered from
   `settings.motion.enabled` (no flash, no client JS) on the reading site, the sign-in page and
@@ -76,7 +76,7 @@ four values for three intents.
   bars scale rather than widen.
 - **THE CLICK is the one motion that is deliberately NOT symmetric.** A pressable control
   travels 1px and takes its carved shadow **instantly** — `active:translate-y-px
-  active:duration-0` on `ui/Button`'s `SHAPE`, `transition-duration:0s` on the engine's list of
+  active:duration-0` on `SHAPE` in `admin-shared/kit.ts`, `transition-duration:0s` on the engine's list of
   the reading site's pressables — and only the RELEASE is sprung, on the inherited transition.
   A control that eases both ways feels like a screen; a key that drops now and springs back is
   what a hand expects of a pressed thing. Behind either gate the surface change stays and the
