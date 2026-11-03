@@ -82,6 +82,12 @@ h1,h2,h3,h4,h5,h6,p,figure,blockquote,ol,ul,dl,dd,pre{margin:0}
    Tables and code are left to scroll in their own boxes. */
 h1,h2,h3,h4,h5,h6{overflow-wrap:anywhere}
 p,li,blockquote,figcaption,dd,dt{overflow-wrap:break-word}
+/* KOREAN BREAKS AT ITS SPACES. Hangul sets its words with spaces, as Latin does, but a
+   browser's default lets a line end between any two syllables, so "알파벳과" printed as
+   "알 / 파벳과": measured 2026-11-03 in a grid title on all four themes and in post titles
+   and paragraphs at 375 and 768. keep-all leaves Chinese and Japanese (no spaces) as they
+   were, and the overflow-wrap above still breaks a run that cannot fit. */
+:lang(ko){word-break:keep-all}
 /* The SECOND thing the frozen tree got free from Tailwind's preflight, and the second one
    to go missing. A form control does not inherit its font: left alone, every button on the
    site paints in the browser's UI face at the browser's size, not in the owner's typeface
