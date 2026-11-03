@@ -107,7 +107,6 @@ const es = {
   readerPenNotebookBad: 'Escribe la dirección de tu blog, empezando por https://',
   previewNotice: 'Vista previa: esta página no es pública y no se indexa.',
   nlInvalid: 'Eso no parece una dirección de correo.',
-  nlNoMail: 'Inscripción registrada. El correo no está configurado, así que no se envió confirmación.',
   copyCode: 'Copiar',
   copiedCode: 'Copiado',
   nlHeading: 'Suscríbete al boletín',

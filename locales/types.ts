@@ -127,7 +127,6 @@ export type Dict = {
   readerPenNotebookBad: string
   previewNotice: string
   nlInvalid: string
-  nlNoMail: string
   copyCode: string
   copiedCode: string
   nlHeading: string

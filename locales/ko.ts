@@ -107,7 +107,6 @@ const ko = {
   readerPenNotebookBad: 'https://로 시작하는 블로그 주소를 입력하세요',
   previewNotice: '미리보기: 이 페이지는 공개되지 않으며 색인되지 않습니다.',
   nlInvalid: '이메일 주소 형식이 아닙니다.',
-  nlNoMail: '등록되었습니다. 이메일이 설정되지 않아 확인 메일을 보내지 못했습니다.',
   copyCode: '복사',
   copiedCode: '복사됨',
   nlHeading: '뉴스레터 구독',

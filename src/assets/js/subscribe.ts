@@ -11,7 +11,7 @@
 // own copy of the form, and this does the same: same markup as `subscribeCard`, same
 // handler, built on first open.
 
-import { el, label, payload } from './dom'
+import { el, label } from './dom'
 
 /** Wire a form's submit to the API, so the reader never leaves the page. */
 function enhance(form: HTMLFormElement): void {
@@ -39,7 +39,6 @@ function enhance(form: HTMLFormElement): void {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email, website: typeof website === 'string' ? website : '' }),
       })
-      const data = await payload<{ status?: string }>(res).catch(() => ({} as { status?: string }))
       if (!res.ok) {
         // 400 is a malformed address; anything else is the server's problem, not the
         // reader's, and saying "check your address" for a 500 sends them looking for a
@@ -49,8 +48,8 @@ function enhance(form: HTMLFormElement): void {
       }
       // "Already subscribed" deliberately reads the same as a fresh sign-up. The server
       // does not distinguish them either, so that the endpoint cannot be used to test
-      // whether a given address reads this blog.
-      status.textContent = data.status === 'pending_no_mail' ? label('nlNoMail') : label('nlSuccess')
+      // whether a given address reads this blog: every sign-up it takes answers `sent`.
+      status.textContent = label('nlSuccess')
       form.reset()
     } catch {
       status.textContent = label('nlError')

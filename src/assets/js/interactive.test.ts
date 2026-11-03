@@ -28,7 +28,7 @@ describe('subscribe', () => {
     <p class="subscribe-status"></p>
   </section>`
 
-  const LABELS = { nlSuccess: 'Check your inbox.', nlNoMail: 'No mail configured.', nlInvalid: 'Bad address.', nlError: 'Something broke.', nlHeading: 'Newsletter', nlPlaceholder: 'you@example.com', nlButton: 'Subscribe' }
+  const LABELS = { nlSuccess: 'Check your inbox.', nlInvalid: 'Bad address.', nlError: 'Something broke.', nlHeading: 'Newsletter', nlPlaceholder: 'you@example.com', nlButton: 'Subscribe' }
 
   /** Stand in for the network, and record what was sent. */
   function stubFetch(status: number, body: unknown): { calls: RequestInit[] } {
@@ -359,7 +359,7 @@ describe('subscribe overlay', () => {
   const header = '<a class="icon-btn" href="#subscribe" data-subscribe-open>mail</a>'
   const LABELS = {
     nlHeading: 'Newsletter', nlPlaceholder: 'you@example.com', nlButton: 'Subscribe',
-    nlSuccess: 'Check your inbox.', nlNoMail: 'x', nlInvalid: 'x', nlError: 'x',
+    nlSuccess: 'Check your inbox.', nlInvalid: 'x', nlError: 'x',
   }
 
   const click = () => {

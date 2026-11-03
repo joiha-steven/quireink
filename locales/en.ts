@@ -107,7 +107,6 @@ const en = {
   readerPenNotebookBad: 'Type the address of your blog, starting with https://',
   previewNotice: 'Preview: this page is not public and is not indexed.',
   nlInvalid: 'That does not look like an email address.',
-  nlNoMail: 'Signed up. Email is not configured, so no confirmation was sent.',
   copyCode: 'Copy',
   copiedCode: 'Copied',
   nlHeading: 'Subscribe to the newsletter',

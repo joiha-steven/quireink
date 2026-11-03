@@ -107,7 +107,6 @@ const zh = {
   readerPenNotebookBad: '请输入以 https:// 开头的博客地址',
   previewNotice: '预览：此页面未公开，也不会被索引。',
   nlInvalid: '这似乎不是一个邮箱地址。',
-  nlNoMail: '已订阅。邮件服务未配置，因此没有发送确认信。',
   copyCode: '复制',
   copiedCode: '已复制',
   nlHeading: '订阅邮件通讯',

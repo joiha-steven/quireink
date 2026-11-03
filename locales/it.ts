@@ -107,7 +107,6 @@ const it = {
   readerPenNotebookBad: 'Scrivi l’indirizzo del tuo blog, che inizia con https://',
   previewNotice: 'Anteprima: questa pagina non è pubblica e non viene indicizzata.',
   nlInvalid: 'Non sembra un indirizzo email.',
-  nlNoMail: 'Iscrizione registrata. L’email non è configurata, quindi non è stata inviata alcuna conferma.',
   copyCode: 'Copia',
   copiedCode: 'Copiato',
   nlHeading: 'Iscriviti alla newsletter',

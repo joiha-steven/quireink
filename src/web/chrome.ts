@@ -363,7 +363,6 @@ export function chromeLabels(settings: SiteSettings): Record<string, string> {
     // unregister a worker an earlier visit installed — see `assets/js/offline.ts`.
     ...(settings.features.offline ? { sw: SW_PATH } : {}),
     nlSuccess: s.nlSuccess,
-    nlNoMail: s.nlNoMail,
     nlInvalid: s.nlInvalid,
     nlError: s.nlError,
     // The header's sign-up overlay builds its own form, because the in-page card only

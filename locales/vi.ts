@@ -107,7 +107,6 @@ const vi = {
   readerPenNotebookBad: 'Hãy gõ địa chỉ blog của bạn, bắt đầu bằng https://',
   previewNotice: 'Bản xem trước: trang này không công khai và không được lập chỉ mục.',
   nlInvalid: 'Địa chỉ email không hợp lệ.',
-  nlNoMail: 'Đã đăng ký. Email chưa được cấu hình nên chưa gửi thư xác nhận.',
   copyCode: 'Sao chép',
   copiedCode: 'Đã chép',
   nlHeading: 'Đăng ký nhận bản tin',
