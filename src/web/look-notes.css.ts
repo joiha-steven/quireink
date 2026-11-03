@@ -110,6 +110,13 @@ html[data-look=notes] .post-list{background:var(--c-bg);
    follows another it would only close the gap between the two to 19px. A desk with two
    pages on it shows some desk between them. */
 html[data-look=notes] main > #comments{margin-top:calc(var(--t-sheet-inset) * 1.75)}
+/* A FEED THAT DOES NOT FOLLOW ITS HEADING DIRECTLY - the search page, whose result count sits
+   between the two - takes the heading's 2rem less the sheet's pull, instead of the pull alone:
+   the paper began 21px above the count's last pixel (2026-11-03, every width). Now the sheet
+   starts the same 11px (19 on a phone) below the count as below a tag or category heading.
+   Named by contract classes only, so a theme copying this rule stays inside the contract. */
+html[data-look=notes] .listing-head ~ .post-list:not(.listing-head + .post-list){
+  margin-top:calc(2rem - 1px - var(--t-sheet-inset))}
 
 /* Below 46rem the only side space is the page's own padding, 25px, and a 20px sheet left
    FOUR pixels of desk showing at each edge, which is not a margin, it is a near miss. */
