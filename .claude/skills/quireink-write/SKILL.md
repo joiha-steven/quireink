@@ -14,10 +14,12 @@ Tool internals: [`docs/mcp.md`](../../../docs/mcp.md). Worked prompts:
 
 ## Before the first call
 
-MCP is **off until the owner turns it on** (Admin → Settings → Server & connections → MCP) and
-issues a token. Tokens are shown once, hashed after that, and **expire 180 days after
-creation**. A 401 on every call usually means one of those two things, not a bug worth
-debugging: ask the owner to check the toggle and the token's age.
+MCP is **off until the owner turns it on** (Admin → Settings → Server & connections → Advanced
+→ MCP server) and issues a token. Tokens are shown once, hashed after that, and **expire 180 days
+after creation**. A 404 on every call means the switch is off, and a 401 means the token is wrong
+or past its date. Neither is a bug worth debugging: ask the owner to check the toggle and the
+token's age. A 429 is a limit (600 calls a minute per token, 20 wrong tokens from one address in
+fifteen minutes): wait for its `retry-after`, do not loop on it.
 
 ## The surface, in the order you will reach for it
 

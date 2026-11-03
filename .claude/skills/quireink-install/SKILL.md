@@ -183,4 +183,5 @@ volumes and is untouched by either.
   software refuses it by design. The way back in is the recovery codes, or the user CLI run
   at the machine (`set-password`, `reset-2fa`, `rename`, `list`), always with `DATA_DIR` set:
   [`docs/account.md`](../../../docs/account.md). Hand those commands to the owner to run;
-  `set-password` reads the new password from their keyboard.
+  `set-password` reads the new password from their keyboard. On Cloudflare there is no machine:
+  the way back goes through a backup, [`docs/self-host-cloudflare.md`](../../../docs/self-host-cloudflare.md#locked-out).
