@@ -4,7 +4,7 @@ import { describe, expect, it } from 'bun:test'
 import { layoutFindings, type ClipBox, type EdgeBox, type Measurement } from '../../scripts/theme-preview-layout'
 import { groupFindings, indexHtml, reportText, type ShotRecord } from '../../scripts/theme-preview-report'
 
-const clean: Measurement = { viewport: 375, scrollWidth: 375, theme: 'broadsheet', edges: [], clips: [], brokenImages: [], failedFonts: [] }
+const clean: Measurement = { viewport: 375, scrollWidth: 375, theme: 'broadsheet', edges: [], clips: [], brokenImages: [], failedFonts: [], brokenWords: [] }
 const edge = (over: Partial<EdgeBox> = {}): EdgeBox => ({
   where: 'article > div#post-body.prose', left: 0, right: 420, width: 420, height: 300,
   insideClip: false, parentPast: false, clipped: false, ...over,
@@ -69,6 +69,16 @@ describe('layoutFindings', () => {
       { kind: 'font-failed', detail: 'theme-broad-text 400 normal failed to load' },
     ])
   })
+
+  it('reports a word split across two lines, showing where it splits', () => {
+    expect(layoutFindings({ ...clean, brokenWords: [{ where: 'div.card > p.card-exc', word: 'impressions', split: 10 }] })).toEqual([
+      { kind: 'broken-word', detail: 'div.card > p.card-exc splits "impressions" as "impression / s"' },
+    ])
+  })
+
+  it('does not report a split that leaves the whole word on one side', () => {
+    expect(kinds({ brokenWords: [{ where: 'p', word: 'word', split: 0 }, { where: 'p', word: 'word', split: 4 }] })).toEqual([])
+  })
 })
 
 describe('the report', () => {
@@ -83,6 +93,13 @@ describe('the report', () => {
     expect(grouped).toEqual([{ page: 'post-all-blocks', width: 375, kind: 'overflow', detail: wide.detail, where: ['light', 'dark'] }])
     expect(reportText(info, [shot('light', [wide]), shot('dark', [wide])])).toContain(
       'post-all-blocks @ 375px [light, dark] overflow · the page is 747px wide in a 375px viewport')
+  })
+
+  it('says once under the list what splits a word, however many were split', () => {
+    const split = { kind: 'broken-word' as const, detail: 'p.card-exc splits "impressions" as "impression / s"' }
+    const text = reportText(info, [shot('light', [split, { ...split, detail: 'h2 splits "matter" as "mat / ter"' }])])
+    expect(text.split('broken-word: A word is split across two lines with no hyphen.')).toHaveLength(2)
+    expect(reportText(info, [shot('light', [wide])])).not.toContain('broken-word:')
   })
 
   it('says so when there is nothing to report', () => {

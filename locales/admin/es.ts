@@ -762,6 +762,7 @@ const es = {
     droppedColon: 'Faltan los dos puntos después de {property}, así que el navegador descarta esta declaración y no hace nada.',
     droppedInstead: 'Escribe {fix} en su lugar.',
     droppedNoGuess: 'Escribe el nombre y el valor como los escribe la página de la propiedad en MDN: theme:check no lee nombres ni valores de CSS, el navegador sí.',
+    brokenWord: 'Una palabra está partida en dos líneas sin guion. word-break: break-all y overflow-wrap: anywhere parten cualquier palabra que llega al borde de su caja: quítalos, o da a la caja sitio para sus palabras; escribe hyphens: auto donde quieras un corte con guion.',
   },
   motionLabel: 'Animaciones',
   motionDesc: 'Animaciones sutiles en el sitio + admin (fundidos de página, hover/pulsación, aparición al hacer scroll). Apagado = instantáneo. La preferencia de «reducir movimiento» se respeta siempre.',

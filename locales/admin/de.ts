@@ -762,6 +762,7 @@ const de = {
     droppedColon: 'Nach {property} fehlt ein Doppelpunkt, also verwirft der Browser diese Deklaration, und sie bewirkt nichts.',
     droppedInstead: 'Schreiben Sie stattdessen {fix}.',
     droppedNoGuess: 'Schreiben Sie Name und Wert so, wie die Seite der Eigenschaft auf MDN sie schreibt: theme:check liest keine CSS-Namen und -Werte, der Browser schon.',
+    brokenWord: 'Ein Wort ist ohne Bindestrich auf zwei Zeilen getrennt. word-break: break-all und overflow-wrap: anywhere trennen jedes Wort, das an den Rand seiner Box stößt: nehmen Sie sie heraus oder geben Sie der Box Platz für ihre Wörter; schreiben Sie hyphens: auto, wo eine Trennung mit Bindestrich gewollt ist.',
   },
   motionLabel: 'Bewegung',
   motionDesc: 'Dezente Animationen auf Website + Admin (Seiten-Fades, Hover/Klick, Scroll-Einblendung). Aus = sofort. Reduced-Motion wird stets beachtet.',

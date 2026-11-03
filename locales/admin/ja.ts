@@ -762,6 +762,7 @@ const ja = {
     droppedColon: '{property} の後にコロンがないため、この宣言は捨てられ、何も起きません。',
     droppedInstead: '代わりに {fix} と書いてください。',
     droppedNoGuess: '名前と値は MDN のそのプロパティのページの綴りどおりに書いてください。theme:check は CSS の名前や値を読みません。読むのはブラウザーです。',
+    brokenWord: '単語がハイフンなしで二行に分かれています。word-break: break-all と overflow-wrap: anywhere は箱の端に届いた単語をどれでも分けます。外すか、箱に単語が入る幅を与えてください。ハイフン付きで分けたい所には hyphens: auto と書きます。',
   },
   motionLabel: 'モーション',
   motionDesc: 'サイト全体と管理画面の控えめなアニメーション（ページのフェード、ホバー/押下、スクロール表示）。オフで即時。reduced-motion は常に尊重します。',

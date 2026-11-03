@@ -762,6 +762,7 @@ const en = {
     droppedColon: 'A colon is missing after {property}, so the browser drops this declaration and it does nothing.',
     droppedInstead: 'Write {fix} instead.',
     droppedNoGuess: 'Write the name and the value the way the property’s page on MDN spells them: theme:check does not read CSS names and values, the browser does.',
+    brokenWord: 'A word is split across two lines with no hyphen. word-break: break-all and overflow-wrap: anywhere split any word that reaches the edge of its box: take them off, or give the box room for its words; write hyphens: auto where a break with a hyphen is wanted.',
   },
   motionLabel: 'Motion',
   motionDesc: 'One switch for every movement on the site, the sign-in page and this admin: hovers and presses, menus and dialogs arriving, the scroll reveal, smooth scrolling. Off = everything is instant. A reader whose device asks for reduced motion gets the same, whatever this says.',

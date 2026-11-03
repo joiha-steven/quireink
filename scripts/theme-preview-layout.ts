@@ -14,6 +14,11 @@
 //    the visually-hidden pattern, and not text in CSS columns (book mode's pages beside the one shown).
 //  - broken-image: an `<img>` that loaded nothing.
 //  - font-failed: a face in `document.fonts` that the browser tried and failed to load.
+//  - broken-word: a word split across two lines with no hyphen ("impressio / n"), which
+//    `word-break: break-all`, `overflow-wrap: anywhere` or a column narrower than a word does.
+//    Not under `hyphens: auto` (the break is drawn with a hyphen), not in a script written without
+//    spaces between words (Han, kana, Hangul, Thai, Lao, Khmer, Myanmar), where a line may end
+//    anywhere, and one word per text node, the first, since one rule breaks them all.
 
 export type EdgeBox = {
   /** `tag#id.class` of the element and its parent, enough to find it in the markup. */
@@ -44,6 +49,13 @@ export type ClipBox = {
   text: string
 }
 
+export type BrokenWord = {
+  where: string
+  word: string
+  /** How many UTF-16 units of the word stay on the first line. */
+  split: number
+}
+
 export type Measurement = {
   viewport: number
   scrollWidth: number
@@ -53,10 +65,11 @@ export type Measurement = {
   clips: ClipBox[]
   brokenImages: string[]
   failedFonts: string[]
+  brokenWords: BrokenWord[]
 }
 
 /** `http-status` is added by the runner, not by `layoutFindings`: a page that answered with the wrong status. */
-export type FindingKind = 'overflow' | 'past-edge' | 'clipped-text' | 'broken-image' | 'font-failed' | 'http-status'
+export type FindingKind = 'overflow' | 'past-edge' | 'clipped-text' | 'broken-image' | 'font-failed' | 'broken-word' | 'http-status'
 export type LayoutFinding = { kind: FindingKind; detail: string }
 
 /** Sub-pixel rounding is not a finding: a box at 375.4 in a 375 viewport draws nothing outside it. */
@@ -86,6 +99,10 @@ export function layoutFindings(m: Measurement): LayoutFinding[] {
   }
   for (const src of m.brokenImages) out.push({ kind: 'broken-image', detail: `${src} did not load` })
   for (const face of m.failedFonts) out.push({ kind: 'font-failed', detail: `${face} failed to load` })
+  for (const b of m.brokenWords) {
+    if (b.split <= 0 || b.split >= b.word.length) continue
+    out.push({ kind: 'broken-word', detail: `${b.where} splits "${b.word}" as "${b.word.slice(0, b.split)} / ${b.word.slice(b.split)}"` })
+  }
   return out
 }
 
@@ -168,15 +185,47 @@ export const MEASURE = `(() => {
   for (const sheet of document.styleSheets) { try { walk(sheet.cssRules); } catch { /* another origin's sheet */ } }
   const failedFonts = [...document.fonts].filter((f) => f.status === 'error' && fetched.has(f.family.replace(/["']/g, '').trim()))
     .map((f) => f.family.replace(/["']/g, '') + ' ' + f.weight + ' ' + f.style);
+  const brokenWords = [];
+  const spaceless = /[\\p{Script=Han}\\p{Script=Hiragana}\\p{Script=Katakana}\\p{Script=Hangul}\\p{Script=Thai}\\p{Script=Lao}\\p{Script=Khmer}\\p{Script=Myanmar}]/u;
+  const lines = (range) => [...range.getClientRects()].filter((r) => r.width > 0);
+  const texts = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let t = texts.nextNode(); t && brokenWords.length < 50; t = texts.nextNode()) {
+    const el = t.parentElement;
+    if (!el || t.textContent.length < 2 || !el.checkVisibility({ visibilityProperty: true })) continue;
+    const whole = document.createRange();
+    whole.selectNodeContents(t);
+    // A text node on one line has no word to split; most of a page is skipped here, cheaply.
+    if (lines(whole).length < 2 || getComputedStyle(el).hyphens === 'auto') continue;
+    for (const m of t.textContent.matchAll(/[\\p{L}\\p{M}\\p{N}]+/gu)) {
+      if (m[0].length < 2 || spaceless.test(m[0])) continue;
+      const r = document.createRange();
+      r.setStart(t, m.index);
+      r.setEnd(t, m.index + m[0].length);
+      const rs = lines(r);
+      // Two boxes side by side are one line in two runs (a fallback face); a break puts the second below.
+      if (rs.length < 2 || !rs.slice(1).some((x) => x.top >= rs[0].bottom - 1)) continue;
+      let split = 1;
+      for (; split < m[0].length; split++) {
+        const c = document.createRange();
+        c.setStart(t, m.index + split);
+        c.setEnd(t, m.index + split + 1);
+        const box = c.getClientRects()[0];
+        if (box && box.top >= rs[0].bottom - 1) break;
+      }
+      brokenWords.push({ where: where(el), word: m[0], split });
+      break;
+    }
+  }
   return { viewport: vw, scrollWidth: Math.max(html.scrollWidth, document.body.scrollWidth), theme: html.dataset.theme || '',
-    edges, clips, brokenImages, failedFonts };
+    edges, clips, brokenImages, failedFonts, brokenWords };
 })()`
 
 /** A value the page answered, held to the shape `layoutFindings` reads, or an error saying what is off. */
 export function asMeasurement(value: unknown): Measurement {
   const v = value as Partial<Measurement> | null
   if (!v || typeof v.viewport !== 'number' || typeof v.scrollWidth !== 'number' || !Array.isArray(v.edges)
-    || !Array.isArray(v.clips) || !Array.isArray(v.brokenImages) || !Array.isArray(v.failedFonts) || typeof v.theme !== 'string') {
+    || !Array.isArray(v.clips) || !Array.isArray(v.brokenImages) || !Array.isArray(v.failedFonts) || !Array.isArray(v.brokenWords)
+    || typeof v.theme !== 'string') {
     throw new Error(`the layout measurement came back in an unexpected shape: ${JSON.stringify(value).slice(0, 200)}`)
   }
   return v as Measurement

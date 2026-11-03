@@ -77,10 +77,13 @@ as the tour finds it ([`scripts/chrome-path.ts`](../scripts/chrome-path.ts)).
    a tag, a series, the archive, search results, the notebook and one note, and the 404. Each at
    every width, light and dark, once per palette the theme declares (the site's default when none).
 4. Every shot is measured ([`scripts/theme-preview-layout.ts`](../scripts/theme-preview-layout.ts)):
-   a page wider than the window, a box past the window's edge, text cut by `overflow: hidden`, an
-   image that did not load, a font file that did not load. What the page does on purpose is left
-   out: a wide table or code block scrolling in its own frame, `line-clamp` and ellipses, book mode's
-   other pages, the parked skip link.
+   a page wider than the window, a box past the window's edge, text cut by `overflow: hidden`, a
+   word split across two lines with no hyphen (what `word-break: break-all`, `overflow-wrap: anywhere`
+   or a column narrower than the word does), an image that did not load, a font file that did not
+   load. What the page does on purpose is left out: a wide table or code block scrolling in its own
+   frame, `line-clamp` and ellipses, book mode's other pages, the parked skip link, a break under
+   `hyphens: auto` (drawn with a hyphen), and a script written without spaces between words (Han,
+   kana, Hangul, Thai), where a line may end anywhere.
 
 Before the pages, every declaration in `theme.css` is put to the same browser
 ([`scripts/theme-preview-dropped.ts`](../scripts/theme-preview-dropped.ts)), the CSSOM parse a sheet goes

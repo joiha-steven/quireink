@@ -53,6 +53,11 @@ function droppedLines(dropped: readonly DroppedFinding[]): string[] {
   ]
 }
 
+/** The sentence for a kind of layout finding that has one, said once under the list, however many there are. */
+function kindSentences(grouped: readonly GroupedFinding[]): string[] {
+  return grouped.some((g) => g.kind === 'broken-word') ? [`broken-word: ${words.brokenWord}`] : []
+}
+
 export function reportText(info: RunInfo, shots: readonly ShotRecord[], dropped: readonly DroppedFinding[] = []): string {
   const grouped = groupFindings(shots)
   const head = [
@@ -63,7 +68,7 @@ export function reportText(info: RunInfo, shots: readonly ShotRecord[], dropped:
   ]
   if (grouped.length === 0) return [...head, 'no layout findings', ''].join('\n')
   const lines = grouped.map((g) => `${g.page} @ ${g.width}px [${g.where.join(', ')}] ${g.kind} · ${g.detail}`)
-  return [...head, `${grouped.length} layout finding${grouped.length === 1 ? '' : 's'}:`, ...lines, ''].join('\n')
+  return [...head, `${grouped.length} layout finding${grouped.length === 1 ? '' : 's'}:`, ...lines, ...kindSentences(grouped), ''].join('\n')
 }
 
 const esc = (s: string): string =>
@@ -83,6 +88,7 @@ export function indexHtml(info: RunInfo, shots: readonly ShotRecord[], dropped: 
     const found = grouped.filter((g) => g.page === page.id)
     const list = found.length
       ? `<ul class="findings">${found.map((g) => `<li><b>${esc(g.kind)}</b> at ${g.width}px (${esc(g.where.join(', '))}): ${esc(g.detail)}</li>`).join('')}</ul>`
+        + kindSentences(found).map((line) => `<p>${esc(line)}</p>`).join('')
       : '<p class="clean">No layout findings.</p>'
     const figures = mine.map((s) => `<figure><a href="${esc(s.file)}"><img src="${esc(s.file)}" loading="lazy" alt="${esc(`${page.id} at ${s.width}px, ${s.scheme}`)}"></a>`
       + `<figcaption>${s.width}px · ${esc(s.scheme)}${s.palette ? ` · ${esc(s.palette)}` : ''}${s.findings.length ? ` · ${s.findings.length} finding${s.findings.length === 1 ? '' : 's'}` : ''}</figcaption></figure>`).join('')

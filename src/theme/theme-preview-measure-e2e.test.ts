@@ -24,6 +24,9 @@ body{margin:0;font:16px/1.4 sans-serif}
 .pages{width:200px;height:44px;overflow:hidden}.pages div{columns:1;column-fill:auto;height:44px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .chips{width:150px;overflow-x:auto;overflow-y:hidden;white-space:nowrap}
+.split{width:60px;word-break:break-all}
+.hyphen{width:60px;hyphens:auto;overflow-wrap:anywhere}
+.han{width:40px}
 </style></head><body>
 <a class="skip" href="#main">Skip to the content</a>
 <div class="wide">wide</div>
@@ -34,6 +37,9 @@ body{margin:0;font:16px/1.4 sans-serif}
 <div class="pages"><div>${LONG} ${LONG} ${LONG} ${LONG} ${LONG} ${LONG}</div></div>
 <span class="sr">${LONG}</span>
 <nav class="chips">${LONG}</nav>
+<p class="split">first impressions</p>
+<p class="hyphen">extraordinarily</p>
+<p class="han" lang="ja">日本語の文章はどこでも改行できます</p>
 <img src="/missing.png" alt="missing" width="20" height="20">
 <p style="font-family:planted-missing">missing face</p>
 <p style="font-family:planted-local">local face</p>
@@ -88,7 +94,11 @@ describe.skipIf(!enabled)('MEASURE in a real browser', () => {
     expect(of('font-failed')).toEqual(['planted-missing normal normal failed to load'])
   })
 
+  it('finds the word split with no hyphen, and not the one hyphens:auto splits or the Japanese a line may end anywhere in', () => {
+    expect(of('broken-word')).toEqual([expect.stringMatching(/^p\.split splits "impressions" as "\w+ \/ \w+"$/)])
+  })
+
   it('reports nothing else: the parked skip link, the scroll boxes, clamp, ellipsis, columns and the hidden text are on purpose', () => {
-    expect(found.map((f) => f.kind).sort()).toEqual(['broken-image', 'clipped-text', 'font-failed', 'overflow', 'past-edge'])
+    expect(found.map((f) => f.kind).sort()).toEqual(['broken-image', 'broken-word', 'clipped-text', 'font-failed', 'overflow', 'past-edge'])
   })
 })

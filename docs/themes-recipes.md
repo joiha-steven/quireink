@@ -115,9 +115,9 @@ that setting away from the owner. Leave it, or read it: `calc(var(--shell-w) * 1
 ## Layout
 
 **The home page as a grid.** The blog home's feed groups its rows by year, inside `.tl-yr`, so a
-grid on `.post-list` alone puts each year in one cell and the page reads as one narrow column. The
-theme:preview finds nothing wrong with that; only the contact sheet shows it. Let the rows join
-the grid, as the reader's own grid view does, and keep the year and month marks across it:
+grid on `.post-list` alone puts each year in one cell, and titles and excerpts break inside their
+words (`theme:preview` reports each as `broken-word`, `"impressio / ns"`). Let the rows join the
+grid, as the reader's own grid view does, and keep the year and month marks across it:
 
 ```css
 @media (min-width:48rem){
@@ -133,7 +133,7 @@ the grid, as the reader's own grid view does, and keep the year and month marks 
 
 `html:not([data-list=grid])` leaves the reader's own grid button alone; the last two rules shrink a
 row's side picture as that grid view does, because at half the column a title beside a full-size
-one breaks inside its words (the preview does not report that; the contact sheet shows it).
+one breaks inside its words (the preview reports it as `broken-word`).
 
 **Hiding the excerpt on list rows.** A post with no title (`data-short`) has nothing but its
 excerpt to show, so hiding every `.card-exc` leaves that row as a bare date. Keep it there:

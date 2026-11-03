@@ -1110,9 +1110,10 @@ export type AdminStrings = {
   /**
    * What `theme:preview` says under a finding the checker cannot make: a declaration the browser
    * dropped (`Property`, `Value`, `Empty`, a missing `Semicolon` or `Colon`, then `Instead` with
-   * the guess the browser kept, or `NoGuess`), or a property this browser lacks (`Unknown`, alone).
+   * the guess the browser kept, or `NoGuess`), or a property this browser lacks (`Unknown`, alone);
+   * and, once under the layout findings, what splits a word across two lines (`brokenWord`).
    */
-  themePreviewFindings: Record<'droppedProperty' | 'droppedUnknown' | 'droppedValue' | 'droppedEmpty' | 'droppedSemicolon' | 'droppedColon' | 'droppedInstead' | 'droppedNoGuess', string>
+  themePreviewFindings: Record<'droppedProperty' | 'droppedUnknown' | 'droppedValue' | 'droppedEmpty' | 'droppedSemicolon' | 'droppedColon' | 'droppedInstead' | 'droppedNoGuess' | 'brokenWord', string>
   motionLabel: string
   motionDesc: string
   keyFeedbackLabel: string

@@ -762,6 +762,7 @@ const ko = {
     droppedColon: '{property} 뒤에 콜론이 없어서 브라우저가 이 선언을 버리고, 선언은 아무 일도 하지 않습니다.',
     droppedInstead: '대신 {fix}(이)라고 쓰세요.',
     droppedNoGuess: '이름과 값은 MDN의 그 속성 페이지에 적힌 대로 쓰세요. theme:check는 CSS 이름과 값을 읽지 않고, 브라우저가 읽습니다.',
+    brokenWord: '단어가 하이픈 없이 두 줄로 나뉘었습니다. word-break: break-all과 overflow-wrap: anywhere는 상자 가장자리에 닿은 단어를 무엇이든 나눕니다. 빼거나 상자에 단어가 들어갈 자리를 주세요. 하이픈을 넣어 나누고 싶은 곳에는 hyphens: auto라고 씁니다.',
   },
   motionLabel: '모션',
   motionDesc: '사이트와 관리자 전반의 은은한 애니메이션(페이지 페이드, 호버/누름, 스크롤 표시). 끄면 즉시. reduced-motion은 항상 존중합니다.',

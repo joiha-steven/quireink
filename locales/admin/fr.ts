@@ -762,6 +762,7 @@ const fr = {
     droppedColon: 'Il manque deux-points après {property}, le navigateur abandonne donc cette déclaration, qui ne fait rien.',
     droppedInstead: 'Écrivez plutôt {fix}.',
     droppedNoGuess: 'Écrivez le nom et la valeur comme la page de la propriété sur MDN les écrit : theme:check ne lit pas les noms et valeurs CSS, le navigateur si.',
+    brokenWord: 'Un mot est coupé sur deux lignes sans trait d’union. word-break: break-all et overflow-wrap: anywhere coupent tout mot qui touche le bord de sa boîte : retirez-les, ou donnez à la boîte la place de ses mots ; écrivez hyphens: auto là où une coupure avec trait d’union est voulue.',
   },
   motionLabel: 'Animations',
   motionDesc: 'Animations discrètes sur le site + l’admin (fondus de page, survol/appui, apparition au défilement). Désactivé = instantané. La préférence « réduire les animations » est toujours respectée.',

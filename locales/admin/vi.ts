@@ -762,6 +762,7 @@ const vi = {
     droppedColon: 'Thiếu dấu hai chấm sau {property}, nên trình duyệt bỏ khai báo này và nó không có tác dụng gì.',
     droppedInstead: 'Hãy viết {fix}.',
     droppedNoGuess: 'Viết tên và giá trị đúng như trang của thuộc tính đó trên MDN: theme:check không đọc tên và giá trị CSS, trình duyệt mới đọc.',
+    brokenWord: 'Một từ bị cắt sang hai dòng mà không có gạch nối. word-break: break-all và overflow-wrap: anywhere cắt bất kỳ từ nào chạm mép hộp: bỏ chúng đi, hoặc cho hộp đủ chỗ cho từ; viết hyphens: auto ở chỗ muốn ngắt có gạch nối.',
   },
   motionLabel: 'Chuyển động',
   motionDesc: 'Một công tắc cho mọi chuyển động trên site, trang đăng nhập và admin này: hover và bấm, menu và hộp thoại hiện ra, hiện dần khi cuộn, cuộn mượt. Tắt = mọi thứ tức thì. Thiết bị của người đọc yêu cầu giảm chuyển động thì cũng được như vậy, bất kể công tắc này.',

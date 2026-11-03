@@ -762,6 +762,7 @@ const zh = {
     droppedColon: '{property} 后面缺少冒号，所以浏览器丢弃了这条声明，它不起任何作用。',
     droppedInstead: '请改写为 {fix}。',
     droppedNoGuess: '名称和值请照 MDN 上该属性页面的写法来写：theme:check 不读 CSS 的名称和值，浏览器才读。',
+    brokenWord: '有个单词被拆到两行，且没有连字符。word-break: break-all 和 overflow-wrap: anywhere 会拆开任何碰到盒子边缘的单词：去掉它们，或给盒子留够放单词的宽度；需要带连字符断行的地方写 hyphens: auto。',
   },
   motionLabel: '动效',
   motionDesc: '全站与后台的细微动画（页面淡入、悬停/按压、滚动显现）。关闭即即时。始终遵循 reduced-motion。',

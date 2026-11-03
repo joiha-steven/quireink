@@ -762,6 +762,7 @@ const it = {
     droppedColon: 'Mancano i due punti dopo {property}, quindi il browser scarta questa dichiarazione, che non fa nulla.',
     droppedInstead: 'Scrivi invece {fix}.',
     droppedNoGuess: 'Scrivi il nome e il valore come li scrive la pagina della proprietà su MDN: theme:check non legge nomi e valori CSS, il browser sì.',
+    brokenWord: 'Una parola è spezzata su due righe senza trattino. word-break: break-all e overflow-wrap: anywhere spezzano ogni parola che arriva al bordo del suo riquadro: toglili, o dai al riquadro spazio per le sue parole; scrivi hyphens: auto dove vuoi un a capo con trattino.',
   },
   motionLabel: 'Animazioni',
   motionDesc: 'Animazioni discrete su sito + admin (dissolvenze di pagina, hover/pressione, comparsa allo scorrimento). Spento = istantaneo. La preferenza «riduci il movimento» è sempre rispettata.',

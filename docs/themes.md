@@ -384,17 +384,17 @@ must be one of yours or a built-in id of that kind.
   is not promised), `display:contents` plus grid placement of an element's children, positional
   selectors such as `article > :first-child`, `body:has(.toc) .prose`. Each depends on structure
   the engine may change. (A list page's heading is not one of these: it is `.listing-head h1`,
-  named in the contract.) Prefer contract names; where you cannot, put a
-  comment on the rule saying what it depends on (the starter does) so the next update's breakage
-  is easy to find.
+  named in the contract.) Prefer contract names; where you cannot, put a comment on the rule
+  saying what it depends on (the starter does) so the next update's breakage is easy to find.
 - **A face set on `body`, `html`, `*` or `.wrap` overrides the owner's Site font**: the menu,
   footer, rail and dates follow it instead, as on the built-in Newspaper, which does it on purpose.
   The checker allows an engine variable there and refuses `inherit`, `initial` and `unset`
   (`inherit` on `body` put them all in Times). Unless your theme is about its chrome's face, set a
   face on the pieces you mean (`.title`, `.deck`).
-- **`theme:preview` measures six things**: a declaration the browser drops (`colour:`, a missing `;`),
-  a page wider than the window, a box past its edge, text cut by `overflow: hidden`, an image or a
-  font file that did not load. It leaves out what a page does on purpose (`line-clamp`, a table that scrolls).
+- **`theme:preview` measures seven things**: a declaration the browser drops (`colour:`, a missing `;`),
+  a page wider than the window, a box past its edge, text cut by `overflow: hidden`, a word split
+  over two lines with no hyphen ("impressio / n"), an image or a font file that did not load. It
+  leaves out what a page does on purpose (`line-clamp`, a table that scrolls, `hyphens: auto`).
   It does **not** catch uneven spacing, misalignment, overlap that fits in the window, low contrast
   of text you placed on a ground of your own (only palettes are contrast-checked), hover and focus
   states, print, or a missing date like the one above. Look at the contact sheet.
