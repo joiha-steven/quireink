@@ -1386,7 +1386,7 @@ const fr = {
   serverLimit: 'La limite propre de ce serveur : {n}.',
   serverNoLimit: 'Ce serveur ne fixe aucune limite propre.',
   storageQuotaLabel: 'Limite de stockage (Go)',
-  storageQuotaHint: 'Compte tout ce qui est sur disque, y compris les copies réduites de chaque image. Un envoi qui la dépasserait est refusé. 0 signifie que vous ne fixez pas de limite ici ; celle du serveur, s’il en a une, s’applique toujours.',
+  storageQuotaHint: 'Compte tout ce qui est stocké, y compris les copies réduites de chaque image. Un envoi qui la dépasserait est refusé. 0 signifie que vous ne fixez pas de limite ici ; celle du serveur, s’il en a une, s’applique toujours.',
   backupTitle: 'Sauvegardes',
   offsiteTitle: 'Copie hors du serveur',
   offsiteHelp: 'Chaque instantané planifié est aussi expédié vers un bucket compatible S3 — Cloudflare R2, Amazon S3, MinIO — et élagué à la même rétention. Laissez l’endpoint vide pour AWS ; R2 colle le sien.',

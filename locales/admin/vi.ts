@@ -1386,7 +1386,7 @@ const vi = {
   serverLimit: 'Giới hạn riêng của máy chủ này: {n}.',
   serverNoLimit: 'Máy chủ này không đặt giới hạn riêng.',
   storageQuotaLabel: 'Giới hạn dung lượng (GB)',
-  storageQuotaHint: 'Tính mọi thứ trên đĩa, kể cả các bản nhỏ tạo ra từ mỗi ảnh. Tải lên mà vượt quá thì bị từ chối. Để 0 là bạn không đặt giới hạn riêng; giới hạn của máy chủ (nếu có) vẫn áp dụng.',
+  storageQuotaHint: 'Tính mọi thứ đang lưu, kể cả các bản nhỏ tạo ra từ mỗi ảnh. Tải lên mà vượt quá thì bị từ chối. Để 0 là bạn không đặt giới hạn riêng; giới hạn của máy chủ (nếu có) vẫn áp dụng.',
   backupTitle: 'Sao lưu',
   offsiteTitle: 'Bản sao ngoài máy',
   offsiteHelp: 'Mỗi bản chụp theo lịch cũng được gửi lên một bucket chuẩn S3 — Cloudflare R2, Amazon S3, MinIO — và xén theo cùng số bản giữ. Endpoint để trống nếu dùng AWS; R2 thì dán endpoint của nó vào.',

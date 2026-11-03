@@ -157,8 +157,10 @@ const storage = (t: AdminStrings, s: SiteSettings): string =>
     note: `${t.maxUploadHint} ${serverLimit(t, readEnv().maxUploadBytes, 'MB')}`,
     value: s.maxUploadMb, attrs: 'min="0" max="4096"',
   })
+  // On Cloudflare too: the 5 GB applies to R2, where there is no disk to fill, and said nowhere.
   + textField({
-    k: 'storageQuotaGb', label: t.storageQuotaLabel, note: t.storageQuotaHint, type: 'number',
+    k: 'storageQuotaGb', label: t.storageQuotaLabel, type: 'number',
+    note: `${t.storageQuotaHint} ${serverLimit(t, readEnv().storeQuotaBytes, 'GB')}`,
     value: s.storageQuotaGb, attrs: 'min="0" max="4096"',
   })
   + `</div>`

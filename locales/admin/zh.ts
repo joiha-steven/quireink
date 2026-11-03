@@ -1386,7 +1386,7 @@ const zh = {
   serverLimit: '本服务器自身的上限：{n}。',
   serverNoLimit: '本服务器没有自身的上限。',
   storageQuotaLabel: '存储上限（GB）',
-  storageQuotaHint: '统计磁盘上的所有文件，包括由每张图片生成的小尺寸副本。超出上限的上传会被拒绝。填 0 表示这里不另设上限；服务器若有上限，仍然适用。',
+  storageQuotaHint: '统计存储中的所有文件，包括由每张图片生成的小尺寸副本。超出上限的上传会被拒绝。填 0 表示这里不另设上限；服务器若有上限，仍然适用。',
   backupTitle: '备份',
   offsiteTitle: '服务器之外的副本',
   offsiteHelp: '每个按计划生成的快照也会送往一个 S3 兼容的存储桶——Cloudflare R2、Amazon S3、MinIO——并按同样的保留数量清理。用 AWS 就把 Endpoint 留空；R2 则粘贴它自己的。',

@@ -1386,7 +1386,7 @@ const ko = {
   serverLimit: '이 서버 자체의 한도: {n}.',
   serverNoLimit: '이 서버에는 자체 한도가 없습니다.',
   storageQuotaLabel: '저장 공간 한도(GB)',
-  storageQuotaHint: '이미지마다 만들어지는 작은 사본까지 포함해 디스크에 있는 모든 것을 계산합니다. 한도를 넘기는 업로드는 거부됩니다. 0이면 여기서 따로 한도를 두지 않지만, 서버에 한도가 있으면 그 한도는 그대로 적용됩니다.',
+  storageQuotaHint: '이미지마다 만들어지는 작은 사본까지 포함해 저장된 모든 것을 계산합니다. 한도를 넘기는 업로드는 거부됩니다. 0이면 여기서 따로 한도를 두지 않지만, 서버에 한도가 있으면 그 한도는 그대로 적용됩니다.',
   backupTitle: '백업',
   offsiteTitle: '서버 밖 사본',
   offsiteHelp: '예약 스냅숏은 S3 호환 버킷(Cloudflare R2, Amazon S3, MinIO)에도 보내지고, 같은 보관 개수로 정리됩니다. AWS라면 엔드포인트를 비워 두고, R2는 자기 것을 붙여 넣으세요.',

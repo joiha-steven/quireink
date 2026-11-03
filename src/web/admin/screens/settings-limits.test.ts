@@ -28,3 +28,12 @@ describe('the largest upload', () => {
     expect(installCard(t, DEFAULT_SETTINGS, none)).toContain(t.serverNoLimit)
   })
 })
+
+// The 5 GB the store may hold applies on Cloudflare too, to R2, where there is no disk to fill, and
+// nothing on the screen or in the Cloudflare guide said so (2026-11-03).
+describe('the store\'s size', () => {
+  it('names the 5 GB ceiling, on Cloudflare as elsewhere', () => {
+    process.env.QUIREINK_PACKAGE = 'cloudflare'
+    expect(installCard(t, DEFAULT_SETTINGS, none)).toContain(t.serverLimit.replace('{n}', '5 GB'))
+  })
+})

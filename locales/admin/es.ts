@@ -1386,7 +1386,7 @@ const es = {
   serverLimit: 'El límite propio de este servidor: {n}.',
   serverNoLimit: 'Este servidor no pone un límite propio.',
   storageQuotaLabel: 'Límite de almacenamiento (GB)',
-  storageQuotaHint: 'Cuenta todo lo que hay en disco, incluidas las copias reducidas de cada imagen. Una subida que lo sobrepase se rechaza. 0 significa que aquí no pones un límite propio; el del servidor, si lo tiene, sigue valiendo.',
+  storageQuotaHint: 'Cuenta todo lo guardado, incluidas las copias reducidas de cada imagen. Una subida que lo sobrepase se rechaza. 0 significa que aquí no pones un límite propio; el del servidor, si lo tiene, sigue valiendo.',
   backupTitle: 'Copias de seguridad',
   offsiteTitle: 'Copia fuera del servidor',
   offsiteHelp: 'Cada copia programada se envía también a un bucket compatible con S3 — Cloudflare R2, Amazon S3, MinIO — y se poda con la misma retención. Deja el endpoint vacío para AWS; R2 pega el suyo.',

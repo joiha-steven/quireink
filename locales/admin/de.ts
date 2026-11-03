@@ -1386,7 +1386,7 @@ const de = {
   serverLimit: 'Das eigene Limit dieses Servers: {n}.',
   serverNoLimit: 'Dieser Server setzt kein eigenes Limit.',
   storageQuotaLabel: 'Speichergrenze (GB)',
-  storageQuotaHint: 'Zählt alles auf der Festplatte, auch die kleineren Kopien, die aus jedem Bild entstehen. Ein Upload, der darüber hinausgehen würde, wird abgelehnt. 0 heißt, Sie setzen hier keine eigene Grenze; eine Grenze des Servers gilt trotzdem.',
+  storageQuotaHint: 'Zählt alles Gespeicherte, auch die kleineren Kopien, die aus jedem Bild entstehen. Ein Upload, der darüber hinausgehen würde, wird abgelehnt. 0 heißt, Sie setzen hier keine eigene Grenze; eine Grenze des Servers gilt trotzdem.',
   backupTitle: 'Backups',
   offsiteTitle: 'Kopie außerhalb des Servers',
   offsiteHelp: 'Jeder geplante Snapshot wird zusätzlich in einen S3-kompatiblen Bucket geliefert — Cloudflare R2, Amazon S3, MinIO — und auf dieselbe Aufbewahrung gekürzt. Endpoint leer lassen für AWS; R2 bringt seinen eigenen mit.',

@@ -1387,7 +1387,7 @@ const pt = {
   serverLimit: 'O limite próprio deste servidor: {n}.',
   serverNoLimit: 'Este servidor não define um limite próprio.',
   storageQuotaLabel: 'Limite de armazenamento (GB)',
-  storageQuotaHint: 'Conta tudo o que está no disco, incluindo as cópias menores de cada imagem. Um envio que passasse do limite é recusado. 0 quer dizer que você não define um limite aqui; o limite do servidor, se houver, continua valendo.',
+  storageQuotaHint: 'Conta tudo o que está guardado, incluindo as cópias menores de cada imagem. Um envio que passasse do limite é recusado. 0 quer dizer que você não define um limite aqui; o limite do servidor, se houver, continua valendo.',
   backupTitle: 'Backups',
   offsiteTitle: 'Cópia fora do servidor',
   offsiteHelp: 'Cada snapshot agendado também é enviado a um bucket compatível com S3 — Cloudflare R2, Amazon S3, MinIO — e podado com a mesma retenção. Deixe o endpoint vazio para AWS; no R2, cole o dele.',

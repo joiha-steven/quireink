@@ -1386,7 +1386,7 @@ const en = {
   serverLimit: 'This server’s own limit: {n}.',
   serverNoLimit: 'This server sets no limit of its own.',
   storageQuotaLabel: 'Storage limit (GB)',
-  storageQuotaHint: 'Counts everything on disk, including the smaller copies made from each image. An upload that would go past it is refused. 0 means you set no limit here; the server’s own limit, if it has one, still applies.',
+  storageQuotaHint: 'Counts everything stored, including the smaller copies made from each image. An upload that would go past it is refused. 0 means you set no limit here; the server’s own limit, if it has one, still applies.',
   backupTitle: 'Backups',
   offsiteTitle: 'Off-server copy',
   offsiteHelp: 'Every scheduled snapshot is also shipped to an S3-compatible bucket — Cloudflare R2, Amazon S3, MinIO — and pruned to the same retention. Leave the endpoint empty for AWS; R2 pastes its own.',
