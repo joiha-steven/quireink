@@ -22,7 +22,7 @@ import { say } from './media-bridge'
 import { show, type ListWords } from './list-dom'
 
 /** `notes` arrives only from a Quire Ink bundle; no other export has the kind (ADR 0044). */
-type Imported = { posts: number; pages: number; notes?: number; skipped: number; already?: number; redirects: number; locked?: number }
+type Imported = { posts: number; pages: number; notes?: number; skipped: number; already?: number; redirects: number; locked?: number; uploads?: number }
 /** What `/api/import/images` answers. `remaining` COUNTS FAILURES, which is what ends the loop. */
 type Images = { found: number; moved: number; remaining: number; failed: { url: string; reason: string }[] }
 
@@ -105,9 +105,10 @@ async function run(screen: HTMLElement, file: File, key: HTMLButtonElement, w: L
   const skipped = json.data.skipped > 0 ? ` · ${(w.importSkipped ?? '').replace('{n}', String(json.data.skipped))}` : ''
   // Already here from an earlier run, said apart: it is not something wrong with the file.
   const already = (json.data.already ?? 0) > 0 ? ` · ${(w.importAlready ?? '').replace('{n}', String(json.data.already))}` : ''
+  const uploads = (json.data.uploads ?? 0) > 0 ? ` · ${(w.importUploads ?? '').replace('{n}', String(json.data.uploads))}` : ''
   // Locked where they came from, so drafts here: said, or the owner finds them by chance.
   const locked = (json.data.locked ?? 0) > 0 ? ` · ${(w.importLocked ?? '').replace('{n}', String(json.data.locked))}` : ''
-  say(`${w.importDone ?? ''}: ${json.data.posts} + ${json.data.pages}` + (notes > 0 ? ` + ${notes}` : '') + skipped + already + locked)
+  say(`${w.importDone ?? ''}: ${json.data.posts} + ${json.data.pages}` + (notes > 0 ? ` + ${notes}` : '') + uploads + skipped + already + locked)
   await bringImagesHome(screen, key, w)
 }
 

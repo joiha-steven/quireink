@@ -1610,6 +1610,7 @@ export type AdminStrings = {
   importSkipped: string
   importAlready: string
   importLocked: string
+  importUploads: string
   importWrongKind: string
   importTooBig: string
   importImages: string

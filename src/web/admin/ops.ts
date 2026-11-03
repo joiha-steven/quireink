@@ -256,7 +256,14 @@ export function opsRoutes() {
     // OURS FIRST, because its sniff is the most specific of the three: a `site.json` beside
     // Markdown under `posts/`. Substack and Medium carry neither, so the order is not what
     // keeps them apart — it is that the most exact test should not be the last one asked.
-    if (isQuireInk(entries)) return json(await persist(parseQuireInk(entries, now), 'quireink', now))
+    if (isQuireInk(entries)) {
+      const report = await persist(parseQuireInk(entries, now), 'quireink', now)
+      // Its pictures and files too, which the writing points at (`import/bundle-uploads.ts`).
+      const { bringBundleUploads } = await import('@/import/bundle-uploads')
+      const uploads = await bringBundleUploads(file, unzipBlob)
+      if (uploads > 0) clearCache()
+      return json({ ...report, uploads })
+    }
     if (isSubstack(entries)) return json(await persist(parseSubstack(entries, now), 'substack', now))
     if (isMedium(entries)) return json(await persist(parseMedium(entries, now), 'medium', now))
     return fail(c, 'not_a_recognised_export', 400)

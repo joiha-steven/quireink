@@ -98,7 +98,7 @@ function words(t: AdminStrings): string {
     // that did not take, and there is no key of its own for it — see OPEN_QUESTIONS.
     importDone: t.importDone, importImagesDone: t.importImagesDone,
     importImagesFailed: t.importImagesFailed, importFailed: t.uploadFailed,
-    importSkipped: t.importSkipped, importAlready: t.importAlready, importLocked: t.importLocked, importWrongKind: t.importWrongKind, importTooBig: t.importTooBig,
+    importSkipped: t.importSkipped, importAlready: t.importAlready, importLocked: t.importLocked, importUploads: t.importUploads, importWrongKind: t.importWrongKind, importTooBig: t.importTooBig,
     // The footer's link key asks for an address in the product's own dialog, not the browser's.
     linkTitle: t.tbLink, promptLink: t.promptLink, linkSave: t.save,
     // Why a value was refused. Six sentences that had no reader left after ADR 0054, on a screen

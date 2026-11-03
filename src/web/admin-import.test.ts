@@ -281,6 +281,35 @@ describe('a blog leaves and comes back', () => {
   // recognised as ours at all, and whether what is recognised is then saved. Both are wiring,
   // both are invisible to a parser test, and either one missing turns "your writing can come
   // home" into a 400 nobody discovers until they try it.
+  // The bundle carries `uploads/`, and the import read only its text: on another blog every
+  // picture and file the writing pointed at was a 404 (2026-11-03).
+  it('brings the bundle\'s pictures and files home with the writing', async () => {
+    const { savePost } = await import('@/content/posts')
+    const { addMediaBatch } = await import('@/media/media')
+    const { addFilesBatch } = await import('@/media/files')
+    const { buildExportZip } = await import('@/server/export-md')
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64')
+    const [pic] = await addMediaBatch([{ filename: 'dot.png', body: new File([png], 'dot.png'), contentType: 'image/png' }])
+    const [doc] = await addFilesBatch([{ filename: 'notes.txt', body: new File(['hello'], 'notes.txt'), contentType: 'text/plain' }])
+    await savePost({ title: 'With a picture', content: `![](${pic!.url})\n\n[notes](${doc!.url})`, status: 'published', date: '2020-01-01T00:00:00.000Z' })
+    const bytes = await new Response(buildExportZip()).arrayBuffer()
+
+    // ANOTHER blog: no rows, and an empty store.
+    for (const t of ['posts', 'pages', 'notes', 'post_terms', 'media', 'files']) db().run(`delete from ${t}`)
+    rmSync(UPLOADS, { recursive: true, force: true })
+    mkdirSync(UPLOADS, { recursive: true })
+
+    const form = new FormData()
+    form.set('file', new File([bytes], 'export.zip', { type: 'application/zip' }))
+    const res = await asOwner('/api/import/archive', { method: 'POST', body: form })
+    expect(res.status).toBe(200)
+    expect(await payload<{ posts: number; uploads: number }>(res)).toMatchObject({ posts: 1, uploads: 2 })
+    expect((await app.request(pic!.url)).status).toBe(200)
+    expect((await app.request(doc!.url)).status).toBe(200)
+    expect(db().query('select count(*) as n from media').get()).toEqual({ n: 1 })
+    expect(db().query('select count(*) as n from files').get()).toEqual({ n: 1 })
+  })
+
   it('exports the writing and imports it back through /api/import/archive', async () => {
     const { savePost } = await import('@/content/posts')
     const { savePage } = await import('@/content/pages')

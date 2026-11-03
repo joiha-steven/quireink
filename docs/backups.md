@@ -389,7 +389,7 @@ counter-test that a value which *should* be there is found by the same search.
 
 **It comes back.** [`src/import/quireink.ts`](../src/import/quireink.ts) reads the bundle and is
 wired into `POST /api/import/archive` as a fourth recognised shape, sniffed structurally
-(`site.json` beside Markdown under `posts/`) like the Substack and Medium ones. That reader
+(`site.json` beside Markdown under `posts/`) like the Substack and Medium ones; its `uploads/` are written to the store where nothing is yet (`import/bundle-uploads.ts`), and `site.json` is not applied. That reader
 exists so that "everything survives the round trip" is a test rather than a hope: a field added
 to a post is a field the writer starts emitting, and without a reader nothing notices it cannot
 be read back.
