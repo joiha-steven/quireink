@@ -33,11 +33,14 @@ const KINDS: readonly Kind[] = ['content', 'analytics']
 /**
  * A blob-store path as the archive names it, refused if it could land anywhere but inside the
  * store: the archive may have come from anywhere, and a `../` in a tar is the oldest trick there is.
+ *
+ * A backslash and a colon too: on Windows each is a separator or a drive, so `..\..\x` passed the
+ * split on `/` and `path.join` took it out of the store. The store refuses a colon in a name anyway.
  */
 export function uploadPath(name: string): string | null {
   if (!name.startsWith('uploads/')) return null
   const path = name.slice('uploads/'.length)
-  if (path === '' || path.startsWith('/') || path.split('/').some((p) => p === '..' || p === '.' || p === '')) {
+  if (path === '' || path.startsWith('/') || /[\\:]/.test(path) || path.split('/').some((p) => p === '..' || p === '.' || p === '')) {
     throw new ArchiveFault(`unsafe-path: ${name}`)
   }
   return path
