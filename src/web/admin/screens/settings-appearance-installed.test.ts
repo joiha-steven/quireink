@@ -119,12 +119,12 @@ describe('the installed tiles', () => {
     expect(html).toContain('<template data-theme-violation>')
   })
 
-  it('carries a line for every rule code of the checker in the island’s words', () => {
+  it('carries a line for every rule code of the checker in the island’s words, and the one for a missing file', () => {
     const html = lookPicker(t, DEFAULT_SETTINGS)
     const raw = html.match(/data-theme-words="([^"]+)"/)![1]!.replaceAll('&quot;', '"').replaceAll('&amp;', '&')
     const words = JSON.parse(raw) as { rules: Record<string, string> }
     expect(Object.keys(words.rules).sort()).toEqual(
-      ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'C1', 'F1', 'P1', 'S1', 'S2', 'S3', 'T1', 'V1', 'X1', 'other'])
+      ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'C1', 'F1', 'P1', 'S1', 'S2', 'S3', 'T1', 'V1', 'X1', 'missing', 'other'])
   })
 })
 
