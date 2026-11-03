@@ -148,9 +148,13 @@ export async function saveNote(input: Partial<NoteWithContent>, previousSlug?: s
     throw new SlugConflictError(note.slug)
   }
   const now = nowMs()
-  const existing = one<{ created_at: number }>(
-    `select created_at from notes where slug = ?`, previousSlug ?? note.slug,
+  const existing = one<{ created_at: number; date: number }>(
+    `select created_at, date from notes where slug = ?`, previousSlug ?? note.slug,
   )
+  // The date box holds minutes: a save in the stored minute keeps its seconds, as `savePost` does.
+  if (existing && Math.floor(existing.date / 60_000) === fromIso(note.date) / 60_000) {
+    note.date = new Date(existing.date).toISOString()
+  }
   // One transaction for a rename, and the live slug's redirects cleared before the rename's
   // own is saved — both for the reasons written in `savePost`.
   const renaming = !!previousSlug && previousSlug !== note.slug && !!existing

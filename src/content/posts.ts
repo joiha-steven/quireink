@@ -230,6 +230,12 @@ export async function savePost(
   const existing = one<PostRow & { created_at: number }>(
     `select ${META_COLS}, p.content, p.created_at from posts p where p.slug = ?`, overwriting,
   )
+  // THE DATE BOX HOLDS MINUTES, so a save from the editor names `…:00`: one in the stored minute is
+  // the stored instant, seconds and all. Taken as sent, every save moved the date, two posts of one
+  // minute could swap places, and an untouched date read as a change (2026-11-03).
+  if (existing && Math.floor(existing.date / 60_000) === fromIso(post.date) / 60_000) {
+    post.date = new Date(existing.date).toISOString()
+  }
   if (existing && opts.revision !== false) {
     const prev: PostWithContent = { ...rowToMeta(existing), content: expandBlob(existing.content ?? '') }
     if (projection(prev) !== projection({ ...post, slug: prev.slug })) {
