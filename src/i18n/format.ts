@@ -206,9 +206,27 @@ export function formatMonth(iso: string, lang: SiteLang, tz = ''): string {
 export function formatWallClock(value: string, lang: SiteLang): string {
   const at = new Date(`${value}Z`)
   if (Number.isNaN(at.getTime())) return value
-  return new Intl.DateTimeFormat(DATE_LOCALE[lang] ?? 'en-US', {
-    dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC',
-  }).format(at)
+  const tag = DATE_LOCALE[lang] ?? 'en-US'
+  const write = (o: Intl.DateTimeFormatOptions): string => new Intl.DateTimeFormat(tag, { ...o, timeZone: 'UTC' }).format(at)
+  return joinDayClock(write({ dateStyle: 'medium' }), write({ timeStyle: 'short' }),
+    write({ dateStyle: 'medium', timeStyle: 'short' }), true)
+}
+
+/**
+ * A day and a clock as one string: the language's own joint when it is punctuation or a space,
+ * else a comma. ⚠️ THE TWO RUNTIMES DISAGREED ON THE JOINT. Bun's ICU writes the "at" pattern
+ * (`Oct 19, 2026 at 9:00 AM`, `19 oct. 2026 à 09:00`) and workerd's V8 a comma, so one admin read
+ * two ways on the two installs; a joint with a letter in it is the word, and it is dropped.
+ */
+export function joinDayClock(day: string, clock: string, both: string, clockFirst = false): string {
+  const roomy = both.length > day.length + clock.length
+  // Vietnamese writes the clock first (`09:00 19 thg 10, 2026`), in both runtimes; kept only where
+  // the caller allows it, as a column of dates does not (`formatDateTimeShort`).
+  const turned = clockFirst && roomy && both.startsWith(clock) && both.endsWith(day)
+  const [first, last] = turned ? [clock, day] : [day, clock]
+  const fits = roomy && both.startsWith(first) && both.endsWith(last)
+  const joint = fits ? both.slice(first.length, both.length - last.length) : ''
+  return joint && !/\p{L}/u.test(joint) ? both : `${day}, ${clock}`
 }
 
 /**

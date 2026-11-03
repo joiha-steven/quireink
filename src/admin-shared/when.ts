@@ -14,7 +14,7 @@
 // must never collapse four minutes and nineteen hours into the same word, because that is the
 // difference between "it just came back" and "it has been fine all day".
 import type { SiteLang } from '@/types'
-import { dateLocale } from '@/i18n/format'
+import { dateLocale, joinDayClock } from '@/i18n/format'
 
 const MIN = 60_000
 const HOUR = 60
@@ -208,9 +208,7 @@ export function formatDateTimeShort(at: string | number, lang: SiteLang, seconds
   const clock = { ...clockOptions(lang, seconds), timeZone: 'UTC' }
   const time = formatter(`clock|${seconds}`, lang, clock)?.format(d)
   if (!time) return `${day} ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}${seconds ? `:${pad2(d.getUTCSeconds())}` : ''}`
-  const both = formatter(`both|${seconds}`, lang, { ...NAMED_DAY, ...clock })?.format(d) ?? ''
-  if (both.startsWith(day) && both.endsWith(time) && both.length > day.length + time.length) return both
-  return `${day}, ${time}`
+  return joinDayClock(day, time, formatter(`both|${seconds}`, lang, { ...NAMED_DAY, ...clock })?.format(d) ?? '')
 }
 
 /**
