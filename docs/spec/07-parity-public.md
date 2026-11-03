@@ -44,7 +44,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
   with a future date. `isPublicallyVisible` hides it; `isScheduled` is its exact complement
 - Editor cue for a future date: button reads "Schedule", toast says "Scheduled", a
   "Scheduled for &lt;local time&gt;" note appears, the "View post" link is hidden
-- `⚠` `sweepScheduled` publishes on time via `/api/cron?publish=1` (5 min, short lookback)
+- `⚠` `sweepScheduled` publishes on time from the minute tick (6-minute lookback, `/api/cron?publish=1` for an external scheduler)
   plus an hourly ~65-minute backstop. No watermark is stored; an overlapping purge is an
   idempotent superset
 - The cron publishes but **never emails**. Scheduled going live sends nothing
@@ -92,7 +92,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - CommonMark + GFM through the engine in `src/md` (ADR 0052), measured against both specs' own examples: 648 of 652 and 24 of 24
 - `⚠` Raw HTML in markdown is **escaped, never executed**; `safeHref` drops
   `javascript:` / `data:` / `vbscript:`
-- Headings H1 to H6; ToC built from them
+- Headings H1 to H6; ToC built from H2 and H3
 - `⚠` Heading ids are de-duped (second `foo` becomes `foo-2`) by the SAME counter in
   `dedupeHeadingIds` and `extractHeadings`. Change one, change both or the ToC anchors break
 - Footnotes `text[^1]` + `[^1]: note`: numbered by first reference, back-links, a ref in a
@@ -101,13 +101,13 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - Callouts: `> [!NOTE|TIP|WARNING|IMPORTANT|CAUTION]` becomes a labelled box; an unknown
   `[!FOO]` and a plain quote are untouched; monochrome, no semantic colours
 - Fenced code highlighted by Shiki, server side, zero client JS. Grammars load when a fence
-  asks for one, so a blog pays for the languages it writes and can name any of the 346 Shiki
+  asks for one, so a blog pays for the languages it writes and can name any of the 242 Shiki
   ships. A fence naming something that is not a language degrades to a plain block and is
   never guessed at; a fence naming nothing is guessed at by `detect-lang.ts`
 - Copy button on every code block
 - Tables with alignment; task lists; underline; inline code; blockquote; hr
 - YouTube / Vimeo / TikTok URL alone in a paragraph becomes a responsive iframe embed
-- Spotify / Apple Music URL becomes a 175px audio embed, plain iframe, no third-party script
+- Spotify / Apple Music URL becomes a 9.25rem audio embed, plain iframe, no third-party script
 - A direct video file URL (`.mp4/.m4v/.webm/.mov`) becomes a native `<video>`, column width
 - `✂` X / Instagram / gist embeds stay unsupported (third-party widget scripts + CSP)
 - `<picture>` with AVIF/WebP sources emitted **only when variants exist**
@@ -119,12 +119,12 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 
 - Home listing with pagination at `/page/[n]`, page 1 at the bare path
 - Category, tag and series listings, each paginated the same way
-- Feature flags, all default on except `bookText` and `infiniteScroll`: `search`, `toc`,
+- Feature flags, all default on except `infiniteScroll` and `offline`; `bookText` is on for a new blog only: `search`, `toc`,
   `related`, `readingTime`, `progressBar`, `activityLog`, `sidebar`, `leadPost`,
   `categoryLabel`, `deck`, `bookText`, `infiniteScroll`, `gridView`
 - `⚠` A feature turned off ships **zero client JS** for it, not a hidden element
 - Lead post: newest post on home page 1 takes the `h1` role, the rest stay `h2`
-- Sidebar `single` layout: one left rail, all blocks stacked
+- Sidebar `single` layout: a rail on each side, one left rail when the right has nothing
 - Sidebar `two` layout: two gutter rails, narrower reading column, geometry emitted only in
   this mode
 - Left rail: most viewed (top N by all-time views, `0` hides it) + featured (owner-curated
@@ -144,20 +144,20 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
   the OS puts its own callout above. Never drawn where `navigator.clipboard` is missing
   (any plain-http page), and it is not a share button: no third party, no account, no
   network call at all
-- Post and page views show ONLY the ToC, in a single left rail
+- Post and page views show ONLY the menu and the ToC, in a single left rail
 - ToC shows when a post has headings or an in-page jump, otherwise renders nothing
 - ToC mixed-level styling (`.rail-lead` with a dot, `.rail-sub` without); uniform when all
   one level
 - ToC sticky and capped to the viewport with internal scroll; collapsible on every viewport
-- ToC header: clickable "Tiêu đề" when there are headings, plain "Mục lục" when not; the
-  line under it joins present tags/categories/comments and jumps to the first existing section
-- Infinite scroll: whole published list handed to the client as light metadata, first chunk
-  server-rendered for SEO, `/page/[n]` 404s
+- ToC header: `tocIndex`, the `<summary>` of an open `<details>`; the first row is the post's title, and the
+  last joins present tags/categories/comments and jumps to the first existing section
+- Infinite scroll: three chunks on a page and a real link to the next, which the island
+  follows; `/page/[n]` exists, `noindex, follow`
 - `⚠` Infinite-scroll date timeline: sticky year tag, per-month dot in the gutter, spine
   hairline, a year's own first month skipped. **No JS and no measurement**, pure CSS sticky
 - Timeline hidden below its breakpoint and in grid view, where year groups dissolve
-- Grid/list toggle, remembered in `localStorage`, honoured pre-paint by the no-FOUC script
-- `gridView` off hides the button AND makes the no-FOUC script ignore a stored `list=grid`
+- Grid/list toggle, remembered in `localStorage`, applied by `listing.ts`
+- `gridView` off hides the button AND makes `listing.ts` ignore a stored `list=grid`
 - Search: local index (instant, accent-insensitive) merged with server FTS over title + body
   (unaccented query folds, accented query means its accents — `src/accent.ts`)
 - Search overlay from the header, plus the `/search` route for deep links and no-JS
@@ -179,7 +179,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 ## 5. Media and files
 
 - Drag-and-drop upload in the editor and the Library
-- AVIF + WebP variants at 1024 and 1600 plus a thumbnail; the original is always kept
+- AVIF + WebP variants at 512, 1024 and 1600 plus a thumbnail; the original is always kept
 - `⚠` Heavy variants are deferred and swept by cron; a valid original never fails the
   upload because dims and thumbs are best-effort
 - `⚠` The original is written with an EXCLUSIVE (`O_EXCL`) write, so two concurrent uploads
@@ -241,7 +241,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - `⚠` `sendMail` is the ONE choke point that writes the send log: one row per email, every
   kind, success or failure. No path can email an address without it showing up
 - Send log is keyed by ADDRESS, not a subscriber FK, because reply notices go to commenters
-  who never subscribed. Deleting a subscriber clears their rows
+  who never subscribed. Purging a subscriber clears their rows
 - `⚠` A failed send is not counted as sent, and the open-rate denominator is successful
   BROADCASTS only
 - Sending is **always manual**. Nothing is emailed automatically, not even a scheduled post
@@ -300,11 +300,10 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - `⚠` Referrers, countries, channels and facets count **distinct visitors**, not page views
 - Per-page drill-down repeats trend + sources + depth for one URL
 - `✂` CSV export of the daily series (removed 2026-08-30)
-- `⚠` Buckets truncated in `ANALYTICS_TZ` so days line up with local midnight. Port the
+- `⚠` Buckets truncated in the site's timezone (`settings.timezone`, then `ANALYTICS_TZ`) so days line up with local midnight. Port the
   existing timezone test cases FIRST
 - View totals column on the content tables
-- `✂` Search ranking changes from none to BM25, and the index folds accents (parity
-  exception 2). 1.x was accent-SENSITIVE underneath; `src/accent.ts` keeps that half by
+- `✂` The index folds accents (parity exception 2); ranking stays by date. 1.x was accent-SENSITIVE underneath; `src/accent.ts` keeps that half by
   narrowing the folded index with the accents a query actually carries
 
 ## 9. SEO, feeds, agent surface
@@ -330,4 +329,4 @@ Stated so nobody reads this inventory as proof of completeness:
 - Performance budgets live in [04-frontend.md](04-frontend.md), not here.
 - The 61 API routes are covered only through the behaviours they serve. A route with no
   user-visible behaviour (health, internal sweeps) may be missed.
-- i18n completeness is one line here and is really 11 languages across 22 files under `locales/`.
+- i18n completeness is one line here and is really 11 languages across 33 files under `locales/`.

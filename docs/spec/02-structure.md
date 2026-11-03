@@ -36,7 +36,7 @@ src/
   auth/                 password, TOTP, sessions, recovery codes (06-auth.md)
   mcp/                  MCP server, tokens, OAuth DCR
   store/
-    db.ts               the two connections + PRAGMAs
+    db.ts               the two connections
     schema.sql          embedded, applied at boot
     schema-analytics.sql
     migrations.sql      one file per database (+ migrations-analytics.sql), not a directory
@@ -49,7 +49,7 @@ src/
                         the tabs, the chords, the settings index. Imported by the server that
                         draws the markup AND by the island that wires it
   assets/
-    js/                 core, post, login, book-mode, comment-thread, sw, and since ADR 0043 reader-pen (scripts/build-assets.ts)
+    js/                 core, post, login, setup-restore, book-mode, comment-thread, sw, and since ADR 0043 reader-pen (scripts/build-assets.ts)
     static/             fonts and icons
   i18n/                 dates and the locale table; the 11 languages live in locales/ at the root
 scripts/                build, checks/, ops/, user.ts, drive.ts, shot.ts
@@ -75,8 +75,8 @@ In Quire 2.0 it is one in-process `Map` of rendered HTML, and **every write clea
 of it**:
 
 ```ts
-export const cache = new Map<string, CachedPage>()
-export function clearCache() { cache.clear() }   // called after every write, unconditionally
+export const pageCache = new PageCache()   // one Map, under a size budget
+export function clearCache() { ... }   // called after every write, unconditionally
 ```
 
 Invariant 1 becomes structurally unbreakable rather than test-enforced. Re-rendering a
@@ -189,4 +189,4 @@ Same as the frozen tree, because they worked: **400 lines per file maximum**, no
 context, comments explain why rather than what.
 
 English for code, comments, identifiers, filenames, commits and docs. Vietnamese only in
-`src/i18n` locale data and user-facing strings.
+`locales/` locale data and user-facing strings.

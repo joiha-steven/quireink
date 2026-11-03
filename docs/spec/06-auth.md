@@ -100,8 +100,7 @@ SHA-1, 30-second step, 6 digits. About 80 lines using `crypto.createHmac`, no li
 - Cookie: `__Host-quire_session`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`.
 - Sliding expiry: 30 days from last use, absolute maximum 90 days. The row moves at most once an hour, and the owner response that moves it sends the cookie again with the new `Max-Age` (the browser kept the sign-in one until 2026-09-30).
 - `last_seen_at` is written at most once per hour to avoid a write per request.
-- Revocable: Settings lists active sessions (coarse device, approximate location by IP
-  hash bucket, last seen) with per-session revoke and a "sign out everywhere" button.
+- Revocable: Settings lists active sessions (coarse device, last seen) with per-session revoke and a "sign out everywhere" button.
 - Changing the password revokes every session except the current one.
 
 ## CSRF
@@ -161,7 +160,7 @@ their own edits, which is a different want.
 
 ## Bootstrap
 
-There is no sign-up. The first owner is created by the CLI:
+There is no public sign-up. The first owner claims the blog at `/setup` with the one-time link ([account.md](../account.md)), or is created by the CLI:
 
 ```
 quire user create --username <username> --email <email>
@@ -220,9 +219,10 @@ The brief is "looks trustworthy", so the details are the point.
   browser keeps.
 - No "remember me" checkbox. The session is already 30 days.
 
-**First-run enrolment:** the password already exists (the CLI set it), so the browser flow
+**First-run enrolment:** an owner made by the CLI has a password already, so the browser flow
 is TWO steps, not three — scan the QR and confirm one code, then save the recovery codes —
-with a "Step n of 2" indicator so it is obvious it has an end.
+with a "Step n of 2" indicator so it is obvious it has an end (a claim counts them as steps 2
+and 3 of seven).
 
 Two properties of that flow are load-bearing, and both were found by running it rather
 than by reading it:

@@ -6,7 +6,7 @@ rewrite, the exceptions that are intentional, and the risks that were accepted.
 
 Decisions are in [`../decisions/`](../decisions/README.md): [0005](../decisions/0005-rewrite-in-bun-hono-sqlite.md)
 is why Bun rather than Go, [0006](../decisions/0006-admin-stays-react-spa.md) is why the
-admin stayed React, [0008](../decisions/0008-hand-written-css-no-tailwind-public.md) is why
+admin stayed React until [0054](../decisions/0054-the-admin-is-pages-again.md), [0008](../decisions/0008-hand-written-css-no-tailwind-public.md) is why
 the public CSS is hand-written.
 
 ## The measurement that ended Next.js
@@ -73,7 +73,7 @@ documents: append, never renumber.**
    accent-SENSITIVE underneath: a folded index answers "lề" with every "lệ", "lê" and "lẻ"
    as well, and in Vietnamese those are different words. `src/accent.ts` narrows the folded
    index's candidates with the accents that were actually typed — word by word, so one box
-   still answers both kinds of typing. Ranking changed from "none" to BM25.
+   still answers both kinds of typing. Ranking stayed by date: BM25 is an allowed exception that was not taken.
 3. **Cache invalidation is total instead of targeted.** See [02-structure.md](02-structure.md).
 4. **Sessions did not survive cutover. MCP tokens did**, deliberately: an MCP token that
    silently stops working takes AI publishing down with no error anywhere.

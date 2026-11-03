@@ -2,15 +2,13 @@
 
 Replaces the Go plan's frontend spec. Two frontends with opposite budgets.
 
-- **Public**: server-rendered HTML, no framework, no bundler, **zero JavaScript on an
-  article page**.
+- **Public**: server-rendered HTML, no framework, a small hand-written island per feature.
 - **Admin**: server-rendered HTML with plain-TS islands, like the reading site. It was the
   existing React SPA, built once and embedded, until ADR 0054 — see the section below.
 
 ## Budgets
 
-**The gate is per BUNDLE, in raw bytes, in `scripts/build-assets.ts`** — `core.js` 11,000,
-`post.js` 7,400, `book-mode.js` 7,600, `comment-thread.js` 6,700, `login.js` 1,500, each with
+**The gate is per BUNDLE, in raw bytes, in `scripts/build-assets.ts`**, each with
 the reason it last moved written beside it, and `bun run build:assets` fails the build when
 any is passed. That file is the authority;
 this section is the intent behind it.
@@ -74,7 +72,7 @@ reasoning is in [`../performance.md`](../performance.md) "CSS — one hashed she
 
 Conventions from `docs/conventions/` carry over unchanged and are now easier to hold:
 theme tokens only, one typeface, no hardcoded sizes, one divider style, all-caps only in the
-two roles [layout.md](../conventions/layout.md) names.
+one role [layout.md](../conventions/layout.md) names.
 
 ## Fonts: DONE 2026-07-27, 51 KB off the critical path
 
@@ -123,7 +121,7 @@ this section originally specified — the public site ships no inline script, an
 rules block is governed by `script-src` like any other. See
 [`../performance.md`](../performance.md) and [`src/web/speculation.ts`](../../src/web/speculation.ts).
 
-`moderate` (hover) is the eagerness; `eager` prerenders everything merely in the viewport,
+`moderate` (hover) is the prerender's eagerness, and prefetch is `eager`; an `eager` prerender takes everything merely in the viewport,
 which on a listing page is every card. Tune against real analytics.
 
 **View Transitions.** ❌ Not shipped. Cross-document transitions via
@@ -194,8 +192,8 @@ a measurement, not an assumption.
 
 ## Comments rendered on the server
 
-Today the tree is fetched as JSON and rebuilt by React. In Quire 2.0 the lazy fetch
-returns **rendered HTML** and the client inserts it. This removes the client-side tree
+Today the tree is fetched as JSON and rebuilt by React. In Quire 2.0 the server builds
+the tree and the island draws it from JSON, with each body as `contentHtml`. This removes the client-side tree
 rebuild, the orphan re-rooting and the tombstone logic from the browser, since all three
 already exist on the server.
 
@@ -253,8 +251,8 @@ picture of numbers the server already has, and drawing it in the browser buys no
 
 ## Building
 
-- **Public JS: `bun run build:assets`.** Six entry points (`core`, `post`, `login`, `book-mode`,
-  `comment-thread`, `sw`; a seventh, `reader-pen`, since ADR 0043, noted 2026-09-10) built
+- **Public JS: `bun run build:assets`.** Eight entry points (`core`, `post`, `login`, `setup-restore`, `book-mode`,
+  `comment-thread`, `reader-pen`, `sw`) built
   from `src/assets/js/` as minified **IIFE** bundles — not ESM: they are injected as classic
   `<script src defer>`, so three ESM bundles put every top-level declaration on the global
   scope and stamped on each other. Each bundle has a byte BUDGET the build fails on.

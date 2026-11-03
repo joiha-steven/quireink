@@ -25,7 +25,7 @@ NULL stays NULL for optional timestamps (`deleted_at`, `confirmed_at`, `opened_a
 
 ### Booleans: INTEGER 0/1
 
-`media.variants`, `redirects.permanent`, `newsletter_sends.ok`,
+`redirects.permanent`, `newsletter_sends.ok`,
 `integration_keys.smtp_secure`. CHECK constraints pin them to (0,1).
 
 ### Identity columns: INTEGER PRIMARY KEY AUTOINCREMENT

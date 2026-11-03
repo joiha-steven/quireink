@@ -24,7 +24,7 @@ This is strictly stronger than what the Go plan could have achieved, and it is c
 
 | Layer | Comparison | Strictness |
 |---|---|---|
-| Rendered article body | byte-for-byte after normalisation | **Must be identical.** No exceptions file |
+| Rendered article body | byte-for-byte after normalisation | **Must be identical**, except a fixture named in `SAME_PAGE` or `DIVERGED`, each with its reason |
 | Code blocks | byte-for-byte | Identical: same Shiki, same theme, except token colours under 4.5:1, which `render/code-ink.ts` moves; the test passes the 1.x reference through the same `readable()` first |
 | `<head>` metadata (title, description, OG, canonical, JSON-LD) | field by field | Strict on values, not on attribute order |
 | Feeds, sitemap, robots, llms.txt | entry set and per-entry fields | Strict on values |
@@ -41,10 +41,12 @@ golden/
   capture-corpus.ts   renders each fixture with the FROZEN renderer, writes v1/corpus/
   corpus/             hand-written markdown edge cases
   v1/corpus/          captured reference HTML (git-tracked, it is the contract)
+  v2/corpus/          what this tree prints for a fixture named in DIVERGED
+  editor/             what an excused fixture publishes after one pass through the editor
 ```
 
 The gate itself is [`src/render/golden.test.ts`](../../src/render/golden.test.ts): every
-fixture, byte-identical, in `bun test`. The crawl-and-diff half described below —
+fixture, byte-identical to v1 or named in `DIVERGED` or `SAME_PAGE`, in `bun test`. The crawl-and-diff half described below —
 `capture.ts` against a running 1.x instance, `compare.ts`, `accepted.yaml`, `report.html`
 — was **planned and not built**; the corpus gate replaced them, and the URL crawl was never
 needed.
@@ -117,7 +119,7 @@ expected-HTML sibling, covering at minimum:
 - An image with a title, and consecutive images that must group into a grid
 - Very long lines, CRLF line endings, a BOM, a file with no trailing newline
 
-Around 60 fixtures. Every one of them should pass on day one. Any that does not is a
+45 fixtures. Every one of them should pass on day one. Any that does not is a
 porting bug in the surrounding pipeline, not a parser difference.
 
 ## Highlighting moved off the read path
@@ -138,9 +140,8 @@ porting bug in the surrounding pipeline, not a parser difference.
 
 Stated plainly, because it is where feature loss actually happens:
 
-- **The admin.** 8,578 lines, 66 components, roughly 20 feature areas, zero coverage
-  here. Its defence is the M0.5 feature inventory plus the 30-flow headless tour in the
-  M3 gate.
+- **The admin.** Zero coverage here. Its defence is the inventory in 07-parity-admin.md and
+  `bun run tour`.
 - **The 61 API routes** beyond what public pages exercise.
 - **Newsletter, backup, MCP** round trips. Each has its own gate in M3.
 

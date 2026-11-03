@@ -88,8 +88,8 @@ with the accents the person typed — per word, so an unaccented word still asks
 question, and it asks for a WHOLE word: as a substring `lê` sits inside `lên` and filtered
 nothing. No second index and nothing to reindex.
 
-Additional gains, free: `bm25()` ranking (today there is no ranking), and `snippet()`
-/ `highlight()` for result excerpts (today the excerpt is derived by hand).
+Available and not taken: `bm25()` ranking (order stays by date) and `snippet()`, which the
+owner's search dropped on measurement.
 
 This is parity exception #2 in 00-rationale.md. Search results will be **better** but not
 identical, so the golden harness must exclude `/search` from strict comparison and use
@@ -98,12 +98,12 @@ a hand-written expectation set instead.
 ### Query shape
 
 ```sql
-select p.slug, bm25(posts_fts) as rank
+select p.slug
 from posts_fts
 join posts p on p.rowid = posts_fts.rowid
 where posts_fts match ?
-  and p.status = 'published' and p.deleted_at is null
-order by rank
+  and p.status = 'published' and p.deleted_at is null and p.date <= ?
+order by p.date desc
 limit ?;
 ```
 
@@ -205,17 +205,9 @@ the screens keep a minute; the numbers and the reasons are in
 ### `restore_tables(payload jsonb, table_names text[])`
 
 The plpgsql version is 40 lines of dynamic SQL wrestling with identity columns,
-generated columns, and sequence resetting. In SQLite this is:
-
-```
-BEGIN IMMEDIATE
-  for each table: DELETE FROM t
-  for each table: INSERT the rows verbatim (ids included, no sequence to fix)
-COMMIT
-```
-
-`posts_fts` is rebuilt afterwards with `INSERT INTO posts_fts(posts_fts) VALUES
-('rebuild')`. `post_terms` is repopulated from the restored posts payload.
+generated columns, and sequence resetting. A backup loads into an empty blog only, in
+batches (`store/archive-load.ts`, ADR 0067). `post_terms` is a table in the archive like any
+other, and the FTS triggers rebuild the indexes as the rows go back in.
 
 No identity sequences exist to advance, because SQLite's `AUTOINCREMENT` counter lives
 in `sqlite_sequence` and is updated automatically by the inserts. Verify this in a
