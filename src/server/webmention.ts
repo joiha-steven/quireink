@@ -118,12 +118,17 @@ export function receiveWebmention(source: string, target: string, site: string):
   if (!isHttp(source) || !isHttp(target) || source === target) return 'invalid'
   if (!site || !(target === site || target.startsWith(`${site}/`))) return 'invalid'
   const now = nowMs()
+  // ⚠️ ONE ROW PER SOURCE AND TARGET, and a verified one stays verified on being sent again. It was
+  // one row per source: re-sent with another target, a verified mention was overwritten and set
+  // back to pending, failed its check against the new target, and was swept a month later — by
+  // anybody, since this door is open by protocol. A row that never verified waits for its check.
   run(
     `insert into webmentions (source, target, status, received_at) values (?, ?, 'pending', ?)
-     on conflict(source) do update set target = excluded.target, status = 'pending', received_at = excluded.received_at, verified_at = null`,
+     on conflict(source, target) do update set received_at = excluded.received_at,
+       status = case when status = 'verified' then status else 'pending' end`,
     source, target, now,
   )
-  return one<{ id: number }>(`select id from webmentions where source = ?`, source)!.id
+  return one<{ id: number }>(`select id from webmentions where source = ? and target = ?`, source, target)!.id
 }
 
 /** The passage a Quire Ink clip kept, read off its page; '' for any other source. */
@@ -150,18 +155,27 @@ export async function verifyMention(id: number, fetcher: Fetcher = safeFetch): P
   if (!row) return null
   let status: Mention['status'] = 'failed'
   let quote = ''
+  // Whether the source ANSWERED: a page without the link, or 410 Gone, which is how the protocol
+  // says a mention is withdrawn. Anything else (a timeout, a 5xx, a 404 from a site mid-move) says
+  // nothing about the link, and a mention already verified keeps that, since the check is one
+  // anybody can set off by sending the mention again.
+  let answered = false
   try {
     const res = await fetcher(row.source, { headers: { accept: 'text/html' } })
     if (res.ok) {
+      answered = true
       const html = await readTextCapped(res, MAX_PAGE_BYTES)
       if (html.includes(row.target)) {
         status = 'verified'
         quote = keptPassage(html)
       }
+    } else if (res.status === 410) {
+      answered = true
     }
   } catch {
     status = 'failed'
   }
+  if (!answered && row.status === 'verified') return rowToMention(row)
   run(`update webmentions set status = ?, quote = ?, verified_at = ? where id = ?`,
     status, quote || null, status === 'verified' ? nowMs() : null, id)
   return rowToMention(one<Row>(`select * from webmentions where id = ?`, id)!)

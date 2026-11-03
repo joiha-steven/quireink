@@ -176,6 +176,33 @@ const columnsAdded = (sql: string): { table: string; column: string }[] =>
   [...sql.matchAll(/alter\s+table\s+(\w+)\s+add\s+column\s+(\w+)/gi)]
     .map((m) => ({ table: m[1]!, column: m[2]! }))
 
+test('webmentions move to one row per source and target, every row kept (027)', () => {
+  const dir = `${DIR}-mentions`
+  rmSync(dir, { recursive: true, force: true })
+  mkdirSync(dir, { recursive: true })
+  // The table as 013 made it: unique on the source alone. Every older table is made by
+  // `schema.sql` at its final shape; this one is what the migration under test has to rebuild.
+  const old = new Database(join(dir, 'quire.db'), { create: true })
+  old.run(`create table webmentions (
+             id integer primary key autoincrement, source text not null unique, target text not null,
+             quote text, status text not null default 'pending' check (status in ('pending','verified','failed')),
+             received_at integer not null, verified_at integer)`)
+  old.run(`insert into webmentions (source, target, status, received_at, verified_at)
+           values ('https://b.example/a', 'https://blog.example/p', 'verified', 1, 2)`)
+  old.run(`create table schema_migrations (name text primary key, applied_at integer not null)`)
+  for (const name of parseMigrations(migrations).map((m) => m.name).filter((n) => n < '027')) {
+    old.run(`insert into schema_migrations (name, applied_at) values (?, 1)`, [name])
+  }
+  old.close()
+
+  const { db } = openSqlite(dir)
+  expect(db.query(`select id, status, verified_at from webmentions`).all()).toEqual([{ id: 1, status: 'verified', verified_at: 2 }])
+  db.run(`insert into webmentions (source, target, received_at) values ('https://b.example/a', 'https://blog.example/q', 3)`)
+  expect(() => db.run(`insert into webmentions (source, target, received_at) values ('https://b.example/a', 'https://blog.example/q', 4)`)).toThrow()
+  closeDatabases()
+  rmSync(dir, { recursive: true, force: true })
+})
+
 test('a FRESH database already has every column a migration would add', () => {
   // ⚠️ THE ONE FAILURE THE FIXTURE ABOVE CANNOT SEE, and the one this file's own header
   // warns about: a schema change is TWO edits, and doing only the migration leaves a fresh

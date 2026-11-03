@@ -197,14 +197,17 @@ end;
 -- A page elsewhere said it links here. Kept small: the two URLs, when, whether the link was
 -- confirmed by fetching the source, and — when the source is a Quire Ink clip — the passage
 -- it kept, so the owner can ask which sentence readers keep most. Never shown to readers.
+-- One row per source AND target (migration 027): a page may link several of ours, and keyed on the
+-- source alone, a stranger re-sending a verified source with another target wiped the first.
 create table if not exists webmentions (
   id          integer primary key autoincrement,
-  source      text not null unique,
+  source      text not null,
   target      text not null,
   quote       text,
   status      text not null default 'pending' check (status in ('pending','verified','failed')),
   received_at integer not null,
-  verified_at integer
+  verified_at integer,
+  unique (source, target)
 );
 create index if not exists webmentions_target_idx on webmentions (target);
 

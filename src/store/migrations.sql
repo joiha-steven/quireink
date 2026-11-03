@@ -524,3 +524,25 @@ create table if not exists reply_mutes (
   who        text primary key,
   created_at integer not null
 );
+
+-- migration: 027-webmention-pairs
+-- A mention is a source AND a target. Keyed on the source alone, a page linking two of ours kept
+-- one row, and anybody re-sending a verified source with another target overwrote it: back to
+-- pending, then failed, then swept. SQLite cannot drop a UNIQUE, so the table is rebuilt with the
+-- pair as its key; every row keeps its id, and no two rows can share a pair, since no two shared a
+-- source.
+create table if not exists webmentions_new (
+  id          integer primary key autoincrement,
+  source      text not null,
+  target      text not null,
+  quote       text,
+  status      text not null default 'pending' check (status in ('pending','verified','failed')),
+  received_at integer not null,
+  verified_at integer,
+  unique (source, target)
+);
+insert into webmentions_new (id, source, target, quote, status, received_at, verified_at)
+  select id, source, target, quote, status, received_at, verified_at from webmentions;
+drop table webmentions;
+alter table webmentions_new rename to webmentions;
+create index if not exists webmentions_target_idx on webmentions (target);

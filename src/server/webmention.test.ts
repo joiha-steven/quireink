@@ -70,6 +70,29 @@ describe('receiving', () => {
     expect(listMentions()[0]?.status).toBe('pending')
   })
 
+  it('keeps a verified mention when a stranger sends its source again with another target', async () => {
+    const linked = `<a href="${SITE}/the-reed-pen">x</a>`
+    const id = receiveWebmention('https://b.example/a', `${SITE}/the-reed-pen`, SITE) as number
+    await verifyMention(id, async () => page(linked))
+    // The same source, another of our pages, which it does not link: its own row, and it fails alone.
+    const other = receiveWebmention('https://b.example/a', `${SITE}/another`, SITE) as number
+    expect(other).not.toBe(id)
+    await verifyMention(other, async () => page(linked))
+    const rows = listMentions().map((m) => [m.target, m.status]).sort()
+    expect(rows).toEqual([[`${SITE}/another`, 'failed'], [`${SITE}/the-reed-pen`, 'verified']])
+  })
+
+  it('keeps a verified mention sent again while its source cannot be reached, and lets 410 withdraw it', async () => {
+    const id = receiveWebmention('https://b.example/a', `${SITE}/p`, SITE) as number
+    await verifyMention(id, async () => page(`<a href="${SITE}/p">x</a>`))
+    expect(receiveWebmention('https://b.example/a', `${SITE}/p`, SITE)).toBe(id)
+    expect(listMentions()[0]?.status).toBe('verified')
+    for (const down of [async () => { throw new Error('timeout') }, async () => new Response('', { status: 503 })]) {
+      expect((await verifyMention(id, down))?.status).toBe('verified')
+    }
+    expect((await verifyMention(id, async () => new Response('', { status: 410 })))?.status).toBe('failed')
+  })
+
   it('counts which passage readers keep most, from verified clips only', async () => {
     const keep = async (source: string, quote: string) => {
       const id = receiveWebmention(source, `${SITE}/p`, SITE) as number
