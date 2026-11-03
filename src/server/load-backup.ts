@@ -24,6 +24,7 @@ import { deleteByPathname, uploadFile, readBlob } from '@/media/blob'
 import { beginLiveLoad, firstNonEmptyTable, liveColumns, liveLedgers } from '@/store/archive-load'
 import type { Kind } from '@/store/db'
 import { APP_VERSION } from '@/version'
+import { readEnv } from '@/env'
 
 /** Why a load was refused, named so the setup screen can say it in the reader's language. */
 export class LoadRefusal extends Error {
@@ -63,8 +64,15 @@ const sameList = (a: string[], b: string[]): boolean =>
  * Every byte of one upload, which the blob store takes whole. Gathered as it arrives rather than
  * allocated from the size the tar header states: that number is the archive's word, and a header
  * claiming 8 GiB in front of three bytes would otherwise cost 8 GiB before anything noticed.
+ *
+ * ⚠️ AND NOT ONE BYTE OF AN UPLOAD THE STORE WOULD REFUSE. The header's size is still the most the
+ * tar reader hands over, and it may be 8 GiB of zeros that gzip squeezed to almost nothing: a
+ * 534 KB archive declaring 512 MiB drove the process 1 GiB over its baseline, and only THEN did
+ * `put` say the file was over the ceiling (2026-11-03). The same ceiling, asked before the read.
  */
-async function bytesOf(body: AsyncIterable<Uint8Array>, size: number): Promise<Buffer> {
+async function bytesOf(body: AsyncIterable<Uint8Array>, size: number, pathname: string): Promise<Buffer> {
+  const ceiling = readEnv().maxUploadBytes
+  if (ceiling > 0 && size > ceiling) throw new ArchiveFault(`too-large: ${pathname} is ${size} bytes, over MAX_UPLOAD_MB (${ceiling})`)
   const pieces: Uint8Array[] = []
   let at = 0
   for await (const piece of body) {
@@ -125,7 +133,7 @@ async function loadOpened(items: AsyncGenerator<TarItem>): Promise<RowsReport & 
       schema: () => {},
       table: (k, entry, lines) => load.table(k, entry.name, entry.columns, lines),
       upload: async (pathname, size, body) => {
-        const bytes = await bytesOf(body, size)
+        const bytes = await bytesOf(body, size, pathname)
         try {
           await uploadFile(pathname, bytes, '', { exclusive: true })
           written.push(pathname)

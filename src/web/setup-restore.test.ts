@@ -91,6 +91,24 @@ const count = (table: string): number => (db().query(`select count(*) as n from 
 
 beforeEach(freshInstall)
 
+describe('a gzip bomb', () => {
+  it('is refused before an upload larger than the store takes is read into memory', async () => {
+    // 128 MiB of zeros in place of the picture: a few hundred kilobytes once gzipped, and twice the
+    // default ceiling. It was gathered whole, and concatenated, before the store said no.
+    const MiB = 1024 * 1024
+    const bomb = await rewritten((name, bytes) => (name.endsWith('photo.webp') ? new Uint8Array(128 * MiB) : bytes))
+    Bun.gc(true)
+    const base = process.memoryUsage().rss
+    let peak = base
+    const timer = setInterval(() => { peak = Math.max(peak, process.memoryUsage().rss) }, 5)
+    const res = await load(bomb)
+    clearInterval(timer)
+    expect(res.status).toBe(422)
+    expect(noUsersYet()).toBe(true)
+    expect(Math.round((Math.max(peak, process.memoryUsage().rss) - base) / MiB)).toBeLessThan(64)
+  })
+})
+
 describe('the door', () => {
   it('is offered on the unclaimed screen and the claim screen, and closed once there is an owner', async () => {
     expect(await (await app.request('/setup')).text()).toContain('href="/setup/restore"')
