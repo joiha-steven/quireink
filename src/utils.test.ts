@@ -292,6 +292,16 @@ describe('the site clock', () => {
     }
   })
 
+  // New York answered 02:30 on its spring-forward night as 01:30 and Berlin as 03:30, and in the
+  // repeated autumn hour New York took the first 01:30 and Berlin the second (2026-11-03). One
+  // rule now, a calendar's: a time that does not exist is the hour after, a repeated one the first.
+  it('reads a time the clock skips as the hour after, and a repeated one as the first, in every zone', () => {
+    expect(isoToZonedInput(zonedInputToIso('2027-03-14T02:30', 'America/New_York'), 'America/New_York')).toBe('2027-03-14T03:30')
+    expect(isoToZonedInput(zonedInputToIso('2027-03-28T02:30', 'Europe/Berlin'), 'Europe/Berlin')).toBe('2027-03-28T03:30')
+    expect(zonedInputToIso('2026-11-01T01:30', 'America/New_York')).toBe('2026-11-01T05:30:00.000Z')
+    expect(zonedInputToIso('2026-10-25T02:30', 'Europe/Berlin')).toBe('2026-10-25T00:30:00.000Z')
+  })
+
   it('falls back rather than throwing on a zone nobody has heard of', () => {
     expect(isoToZonedInput('2026-09-10T02:00:00.000Z', 'Mars/Olympus_Mons')).toBe('2026-09-10T02:00')
     expect(zonedInputToIso('2026-09-10T02:00', 'Mars/Olympus_Mons')).toBe('2026-09-10T02:00:00.000Z')
