@@ -39,6 +39,13 @@ every client of this endpoint is somebody else's code.
 - **Markdown, never rendered HTML** ([ADR 0052](decisions/0052-one-markdown-engine-of-our-own.md)).
   One engine, whose output is cached under a hash of its input and rendered against settings a
   client cannot see.
+- **Every URL to this blog's own files is absolute**, built on the Site address: `coverImage`,
+  `featuredImage`, and in `content` every picture or file of the media and files libraries
+  (`![…](https://blog.example/uploads/media/…)`, in a Markdown image or link, a reference
+  definition, or a `src`/`href`). A front end on another origin can render the body as it comes.
+  A link to another post stays site-rooted (a path such as `/other-post`): it is a route of the blog, which a
+  second front end maps to its own. Until 2026-11-03 body pictures came back as `/uploads/…` and
+  broke anywhere but on the blog itself.
 - **`status`, `deletedAt`, `metaTitle`, `metaDescription` and `translationGroup` never travel.**
   `src/web/api-v1-shape.ts` names every field it emits; nothing spreads a stored row. Its test
   asserts the KEY SET against pieces filled in FULL, including the fields that must stay behind,

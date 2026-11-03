@@ -171,3 +171,11 @@ describe('paging', () => {
     expect(paginate([])).toEqual({ items: [], total: 0, page: 1, per: PER_DEFAULT, pages: 1 })
   })
 })
+
+describe('a body names this store absolutely', () => {
+  it('in a reference definition and a src the editor wrote, as in a Markdown image', () => {
+    const p = { ...fullPost(), content: '[ref]: /uploads/media/a.jpg\n<img src="/uploads/files/b.pdf">\n![x](/uploads/media/c.jpg)\n[y](/uploads/2024/old.jpg)' }
+    expect(apiPostFull(p, SITE, []).content).toBe(
+      `[ref]: ${SITE}/uploads/media/a.jpg\n<img src="${SITE}/uploads/files/b.pdf">\n![x](${SITE}/uploads/media/c.jpg)\n[y](/uploads/2024/old.jpg)`)
+  })
+})

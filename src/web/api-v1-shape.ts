@@ -62,6 +62,27 @@ const absolute = (site: string, url: string | undefined): string | undefined =>
   url === undefined || url === '' ? undefined : (url.startsWith('/') ? `${site}${url}` : url)
 
 /**
+ * A body as something a client on another machine can render: every reference to THIS store's
+ * files made absolute, by the rule `absolute` applies to the cover.
+ *
+ * A body reads back with its pictures site-rooted (`![…](/uploads/media/…)`, `media/blob.ts`
+ * expands the stored form that way), while `coverImage` and `featuredImage` came out absolute, so
+ * a front end on another origin drew the cover and broke every picture inside the post
+ * (2026-11-03). Only the two namespaces the store serves, in the three places a body can name one:
+ * a Markdown link or image, a reference definition, and a `src`/`href` the editor wrote. A link to
+ * another post (`](/other-post)`) stays site-rooted on purpose: it is a route of this blog, which
+ * a second front end maps to its own, not a file it has to fetch from here.
+ */
+const STORE_REF = String.raw`\/uploads\/(?=(?:media|files)\/)`
+const BODY_REFS = [
+  new RegExp(String.raw`(\]\()${STORE_REF}`, 'g'),
+  new RegExp(String.raw`(^\s{0,3}\[[^\]\n]+\]:\s*<?)${STORE_REF}`, 'gm'),
+  new RegExp(String.raw`((?:src|href)=["'])${STORE_REF}`, 'gi'),
+]
+const absoluteBody = (site: string, body: string): string =>
+  BODY_REFS.reduce((text, re) => text.replace(re, (_m, lead: string) => `${lead}${site}/uploads/`), body)
+
+/**
  * One sibling, as the article's own hreflang set already names it.
  *
  * `siblingsOf` answers root-relative paths, like every internal link this blog writes; the same
@@ -114,7 +135,7 @@ export function apiPost(p: Post, site: string): Record<string, unknown> {
  * claims to be a copy of. `/api/md/:slug` has served the same source since the port.
  */
 export function apiPostFull(p: PostWithContent, site: string, siblings: Sibling[]): Record<string, unknown> {
-  return { ...apiPost(p, site), content: p.content, translations: siblings.map((s) => translation(s, site)) }
+  return { ...apiPost(p, site), content: absoluteBody(site, p.content), translations: siblings.map((s) => translation(s, site)) }
 }
 
 /** A page: no date, no taxonomy, and never in a feed. */
@@ -130,7 +151,7 @@ export function apiPage(p: Page, site: string): Record<string, unknown> {
 }
 
 export function apiPageFull(p: PageWithContent, site: string, siblings: Sibling[]): Record<string, unknown> {
-  return { ...apiPage(p, site), content: p.content, translations: siblings.map((s) => translation(s, site)) }
+  return { ...apiPage(p, site), content: absoluteBody(site, p.content), translations: siblings.map((s) => translation(s, site)) }
 }
 
 /**
@@ -157,5 +178,5 @@ export function apiNote(n: Note, site: string): Record<string, unknown> {
 }
 
 export function apiNoteFull(n: NoteWithContent, site: string): Record<string, unknown> {
-  return { ...apiNote(n, site), content: n.content }
+  return { ...apiNote(n, site), content: absoluteBody(site, n.content) }
 }

@@ -227,3 +227,33 @@ describe('the answer does not depend on who asked', () => {
     expect(res.headers.get('access-control-allow-methods')).toBe('GET, OPTIONS')
   })
 })
+
+// 2026-11-03. `featuredImage` and `coverImage` came back absolute while a picture in the body came
+// back site-rooted (`/uploads/media/…`), so a front end on another origin drew the cover and broke
+// every image inside the post. A client parsing this somewhere else has no base to resolve against.
+describe('every URL to this store is absolute, in the body as well', () => {
+  const BODY = [
+    'Opening.', '', '![The letter](/uploads/media/letter.jpg#frame)', '',
+    'The [report](/uploads/files/report.pdf) and [another post](/other-post).', '',
+    '![Hosted elsewhere](https://cdn.example.org/uploads/media/x.png)',
+  ].join('\n')
+
+  it('posts, pages and notes', async () => {
+    await openDoor(true)
+    await savePost({ title: 'Ảnh', slug: 'anh', content: BODY, status: 'published', date: ago(3_600_000), categories: [], tags: [], featuredImage: '/uploads/media/letter.jpg' } as Parameters<typeof savePost>[0])
+    await savePage({ title: 'Trang ảnh', slug: 'trang-anh', content: BODY, status: 'published' })
+    await saveNote({ title: 'Ghi ảnh', slug: 'ghi-anh', content: BODY, status: 'published', date: ago(3_600_000) })
+    clearCache()
+    for (const path of ['/api/v1/posts/anh', '/api/v1/pages/trang-anh', '/api/v1/notes/ghi-anh']) {
+      const content = String((await body(path)).content)
+      expect(`${path}: ${content.includes(`](${SITE}/uploads/media/letter.jpg#frame)`)}`).toBe(`${path}: true`)
+      expect(`${path}: ${content.includes(`](${SITE}/uploads/files/report.pdf)`)}`).toBe(`${path}: true`)
+      expect(content).not.toContain('](/uploads/')
+      // Only this store: another host's `/uploads/` and a link to a post are left as written.
+      expect(content).toContain('](https://cdn.example.org/uploads/media/x.png)')
+      expect(content).toContain('](/other-post)')
+    }
+    expect((await body('/api/v1/posts/anh')).featuredImage).toBe(`${SITE}/uploads/media/letter.jpg`)
+    await openDoor(false)
+  })
+})
