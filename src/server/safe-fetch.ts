@@ -8,6 +8,7 @@
 
 import { lookup } from 'node:dns/promises'
 import { isIP } from '@/server/ip'
+import { fetchAt } from '@/runtime/impl/outbound'
 
 // Thrown when a URL is rejected by the SSRF guard (scheme or address). Typed so
 // callers can distinguish a policy block from a network/HTTP failure.
@@ -140,10 +141,15 @@ export function isBlockedUrl(parsed: URL): boolean {
 //
 // DNS rebinding: we resolve ALL addresses for the host up front and reject if
 // ANY is blocked, so a host that returns both a public and an internal record
-// can't slip through. (A fully airtight defence would pin the socket to the
-// validated IP; Node's `fetch` has no per-request address pin, so we
-// validate-then-fetch — the resolution-time records are the ones checked.)
+// can't slip through — and `safeFetch` then connects to the address checked
+// here rather than resolving the name again (Bun; Cloudflare cannot, see
+// `runtime/cf/outbound.ts`).
 export async function assertUrlAllowed(url: string): Promise<URL> {
+  return (await checkUrl(url)).parsed
+}
+
+/** The guard, and the address it checked: the one `safeFetch` connects to (null for a literal IP). */
+async function checkUrl(url: string): Promise<{ parsed: URL; address: string | null }> {
   let parsed: URL
   try {
     parsed = new URL(url)
@@ -155,15 +161,16 @@ export async function assertUrlAllowed(url: string): Promise<URL> {
   }
   const host = parsed.hostname.replace(/^\[|\]$/g, '')
   // Literal-IP hosts were already validated by isBlockedUrl; only resolve names.
-  if (!isIP(host)) {
-    const records = await lookup(host, { all: true })
-    for (const { address } of records) {
-      if (isBlockedAddress(address)) {
-        throw new BlockedUrlError(`Blocked URL (resolves to internal address ${address}): ${url}`)
-      }
+  if (isIP(host)) return { parsed, address: null }
+  const records = await lookup(host, { all: true })
+  for (const { address } of records) {
+    if (isBlockedAddress(address)) {
+      throw new BlockedUrlError(`Blocked URL (resolves to internal address ${address}): ${url}`)
     }
   }
-  return parsed
+  const first = records[0]
+  if (!first) throw new BlockedUrlError(`Blocked URL (resolves to nothing): ${url}`)
+  return { parsed, address: first.address }
 }
 
 const MAX_REDIRECT_HOPS = 5
@@ -200,8 +207,12 @@ export async function safeFetch(url: string, init?: RequestInit): Promise<Respon
   // the call they made.
   const signal = init?.signal ?? AbortSignal.timeout(DEFAULT_TIMEOUT_MS)
   for (let hop = 0; hop <= MAX_REDIRECT_HOPS; hop++) {
-    const parsed = await assertUrlAllowed(current)
-    const res = await fetch(current, { ...init, signal, redirect: 'manual' })
+    const { parsed, address } = await checkUrl(current)
+    // ⚠️ CONNECTED TO THE ADDRESS JUST CHECKED, not to the name: a fetch by name resolves it again,
+    // and a name with no cache life can answer a public address to the check and 127.0.0.1 to the
+    // connection (DNS rebinding). On Bun the request goes to `address`; Cloudflare cannot pin and
+    // says so (`runtime/cf/outbound.ts`, `outboundFetch` in `docs/runtimes.md`).
+    const res = await fetchAt(parsed, address, { ...init, signal, redirect: 'manual' })
     const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
     if (!location) return res // not a redirect (or no target) → final response
     // Resolve a possibly-relative Location against the current URL; the next

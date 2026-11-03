@@ -65,6 +65,17 @@ export type CompressPort = {
 }
 
 /**
+ * `outbound.ts`: one request to a URL somebody else chose, after `server/safe-fetch.ts` checked every
+ * address its name resolves to. `address` is the one checked (null for a literal IP). Bun connects to
+ * it, the name in `Host` and the TLS handshake, so the certificate is still checked against the name
+ * and no second lookup can point it elsewhere (DNS rebinding); Cloudflare fetches by name
+ * (`outboundFetch`). The answer's `url` is the URL asked for on both.
+ */
+export type OutboundPort = {
+  fetchAt: (url: URL, address: string | null, init: RequestInit) => Promise<Response>
+}
+
+/**
  * `socket.ts`: a text connection to a mail server, for `news/smtp.ts`, whose protocol stays ONE
  * implementation on both runtimes. Bun opens it with `node:net`/`node:tls`; Cloudflare with
  * `connect()` from `cloudflare:sockets` and its `startTls()` (ports 587 and 465; 25 is blocked).
@@ -379,4 +390,10 @@ export type Capabilities = {
    * routes still answer what the edge has no file for (a chosen ink's sheet, a stale hash).
    */
   staticFiles: 'origin' | 'edge'
+  /**
+   * How a fetch to an address somebody else chose connects (`outbound.ts`). `pinned`: to the address
+   * the SSRF guard checked. `by-name`: the platform resolves the name again, and a name that changes
+   * its answer between the check and the connection is NOT caught by this code.
+   */
+  outboundFetch: 'pinned' | 'by-name'
 }

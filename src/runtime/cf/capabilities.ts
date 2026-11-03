@@ -12,4 +12,5 @@ export const CAPABILITIES: Capabilities = {
   clientAddress: 'edge',
   bodyLimits: 'isolate',
   staticFiles: 'edge',
+  outboundFetch: 'by-name',
 }

@@ -160,3 +160,39 @@ describe('safeFetch redirect re-validation', () => {
     await expect(safeFetch('https://example.com/r')).rejects.toBeInstanceOf(BlockedUrlError)
   })
 })
+
+/**
+ * DNS REBINDING. The guard is told `localhost` is a public address (the mocked lookup above), and
+ * the real resolver still says 127.0.0.1: the exact shape of a name with no cache life that answers
+ * the check one way and the connection another. A fetch by name followed the second answer into a
+ * server on this machine; a fetch pinned to the checked address never reaches it.
+ */
+describe('safeFetch connects to the address it checked', () => {
+  it('does not follow a name that resolves somewhere else when the connection opens', async () => {
+    let hits = 0
+    const inside = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => { hits++; return new Response('secret') } })
+    try {
+      const got = await safeFetch(`http://localhost:${inside.port}/`, { signal: AbortSignal.timeout(1500) })
+        .then((r) => r.status, () => 'refused')
+      expect(hits).toBe(0)
+      expect(got).not.toBe(200)
+    } finally {
+      inside.stop(true)
+    }
+  })
+
+  it('sends the name it was asked for, in the URL a caller reads back', async () => {
+    const fetchMock = vi.fn(async () => new Response('ok'))
+    vi.stubGlobal('fetch', fetchMock)
+    try {
+      const res = await safeFetch('https://example.com/a?b=1')
+      const [target, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit & { tls?: { serverName?: string } }]
+      expect(String(target)).toBe('https://93.184.216.34/a?b=1')
+      expect(new Headers(init.headers).get('host')).toBe('example.com')
+      expect(init.tls?.serverName).toBe('example.com')
+      expect(res.url).toBe('https://example.com/a?b=1')
+    } finally {
+      vi.restoreAllMocks()
+    }
+  })
+})
