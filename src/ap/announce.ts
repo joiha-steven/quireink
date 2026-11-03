@@ -14,7 +14,7 @@ import { langOf } from '@/content/translations'
 import { actorOf } from '@/ap/actor'
 import { createOf, deleteOf, noteOf, updateOf } from '@/ap/objects'
 import {
-  announced, digestOfNote, enqueue, forgetAnnounced, inboxesToReach, rememberAnnounced,
+  announced, currentIdOf, digestOfNote, enqueue, inboxesToReach, pageOf, rememberAnnounced, withdrawAnnounced,
 } from '@/ap/store'
 
 /**
@@ -45,35 +45,40 @@ export function pendingAnnouncements(args: {
   site: string
   since: number
   posts: Awaited<ReturnType<typeof getPublicPosts>>
-}): { note: Record<string, unknown> | null; activity: Record<string, unknown>; kind: Announcement['kind']; objectId: string; slug: string; digest: string }[] {
+}): { note: Record<string, unknown> | null; activity: Record<string, unknown>; kind: Announcement['kind']; objectId: string; slug: string; digest: string; replaces?: string }[] {
   const { settings, site, since, posts } = args
   const actor = actorOf(site, settings.activitypub.handle)
-  const seen = new Map(announced().map((a) => [a.objectId, a]))
+  // By PAGE, not by object id: a post back from the Trash has a new id (`ap/store.ts`), and its
+  // withdrawn row is what says which.
+  const ledger = new Map(announced().map((a) => [pageOf(a.objectId), a]))
   const out: ReturnType<typeof pendingAnnouncements> = []
 
   for (const post of posts) {
     if (new Date(post.date).getTime() < since) continue
-    const note = noteOf({ post, site, actor, lang: langOf(post, settings.language) })
-    const objectId = note.id as string
+    const url = `${site}/${post.slug}`
+    const row = ledger.get(url)
+    ledger.delete(url)
+    const objectId = currentIdOf(url, row)
+    const note = noteOf({ post, site, actor, lang: langOf(post, settings.language), id: objectId })
     const digest = digestOfNote(note)
-    const already = seen.get(objectId)
-    seen.delete(objectId)
-    if (!already) {
-      out.push({ note, activity: createOf(note, actor), kind: 'Create', objectId, slug: post.slug, digest })
-    } else if (already.digest !== digest) {
+    if (!row || row.withdrawn) {
+      out.push({ note, activity: createOf(note, actor), kind: 'Create', objectId, slug: post.slug, digest, replaces: row?.objectId })
+    } else if (row.digest !== digest) {
       const at = post.updatedAt ?? new Date().toISOString()
       out.push({ note, activity: updateOf(note, actor, at), kind: 'Update', objectId, slug: post.slug, digest })
     }
   }
 
-  // ⚠️ WHAT IS LEFT IN `seen` IS WHAT IS GONE, and "gone" covers more than the trash: a post
+  // ⚠️ WHAT IS LEFT IN THE LEDGER IS WHAT IS GONE, and "gone" covers more than the trash: a post
   // moved back to draft, a slug renamed (the old URL is a different object), a purge. All of
   // them mean the same thing to a follower's timeline, and all of them reach it the same way.
-  for (const [objectId] of seen) {
+  // A row already withdrawn has been said, and stays quiet.
+  for (const row of ledger.values()) {
+    if (row.withdrawn) continue
     const at = new Date().toISOString()
     out.push({
-      note: null, activity: deleteOf(objectId, actor, at), kind: 'Delete',
-      objectId, slug: '', digest: '',
+      note: null, activity: deleteOf(row.objectId, actor, at), kind: 'Delete',
+      objectId: row.objectId, slug: '', digest: '',
     })
   }
   return out
@@ -104,8 +109,8 @@ export async function sweepAnnounce(args: {
   const done: Announcement[] = []
   for (const item of work) {
     if (inboxes.length > 0) enqueue(JSON.stringify(item.activity), inboxes)
-    if (item.kind === 'Delete') forgetAnnounced(item.objectId)
-    else rememberAnnounced(item.objectId, item.slug, item.digest)
+    if (item.kind === 'Delete') withdrawAnnounced(item.objectId)
+    else rememberAnnounced(item.objectId, item.slug, item.digest, item.replaces)
     done.push({ kind: item.kind, objectId: item.objectId })
   }
   return done

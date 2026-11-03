@@ -44,6 +44,8 @@ export function noteOf(args: {
   site: string
   actor: Actor
   lang: SiteLang
+  /** The object's id when it is not the page's: a post back from the Trash (`ap/store.ts`). */
+  id?: string
 }): Json {
   const { post, site, actor, lang } = args
   const url = `${site}/${post.slug}`
@@ -53,7 +55,7 @@ export function noteOf(args: {
     `<p><a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>`,
   ].join('')
   return {
-    id: url,
+    id: args.id ?? url,
     type: 'Note',
     attributedTo: actor.id,
     published: post.date,

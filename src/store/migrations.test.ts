@@ -203,6 +203,27 @@ test('webmentions move to one row per source and target, every row kept (027)', 
   rmSync(dir, { recursive: true, force: true })
 })
 
+test('the ActivityPub ledger keeps its rows and learns which were withdrawn (029)', () => {
+  const dir = `${DIR}-ap-sent`
+  rmSync(dir, { recursive: true, force: true })
+  mkdirSync(dir, { recursive: true })
+  // `ap_sent` as 018 made it, with a row: the shape every blog with ActivityPub has today.
+  const old = new Database(join(dir, 'quire.db'), { create: true })
+  old.run(`create table ap_sent (object_id text primary key, slug text not null, digest text not null, sent_at integer not null)`)
+  old.run(`insert into ap_sent (object_id, slug, digest, sent_at) values ('https://blog.example/p', 'p', 'abc', 5)`)
+  old.run(`create table schema_migrations (name text primary key, applied_at integer not null)`)
+  for (const name of parseMigrations(migrations).map((m) => m.name).filter((n) => n < '029')) {
+    old.run(`insert into schema_migrations (name, applied_at) values (?, 1)`, [name])
+  }
+  old.close()
+
+  const { db } = openSqlite(dir)
+  expect(db.query(`select object_id, slug, digest, sent_at, withdrawn_at from ap_sent`).all())
+    .toEqual([{ object_id: 'https://blog.example/p', slug: 'p', digest: 'abc', sent_at: 5, withdrawn_at: null }])
+  closeDatabases()
+  rmSync(dir, { recursive: true, force: true })
+})
+
 test('a FRESH database already has every column a migration would add', () => {
   // ⚠️ THE ONE FAILURE THE FIXTURE ABOVE CANNOT SEE, and the one this file's own header
   // warns about: a schema change is TWO edits, and doing only the migration leaves a fresh

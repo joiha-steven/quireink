@@ -551,3 +551,24 @@ create index if not exists webmentions_target_idx on webmentions (target);
 -- A redirect lookup that misses its exact spelling asks again ignoring case (`findRedirect`), and
 -- that second read needs an index in the same collation or it scans the table on every 404.
 create index if not exists redirects_source_nocase_idx on redirects (source collate nocase);
+
+-- migration: 029-ap-sent-withdrawn
+-- A post that comes back from the Trash is announced under an object id of its own (ADR 0059):
+-- Mastodon keeps a Tombstone for every id it was told is deleted and refuses a `Create` for it
+-- again, for good. So a `Delete` no longer drops the ledger row; it marks it, and the row is what
+-- says which id the next return takes. Rows withdrawn before this step were already dropped.
+--
+-- ⚠️ A REBUILD, NOT `add column`. On a database older than 018, `schema.sql` creates `ap_sent` at
+-- boot in its final shape, column included, and an `add column` here is then "duplicate column".
+-- Copying the four columns by name works on either shape; the one that already has the fifth is
+-- that empty table, so nothing is lost.
+create table ap_sent_029 (
+  object_id    text primary key,
+  slug         text not null,
+  digest       text not null,
+  sent_at      integer not null,
+  withdrawn_at integer
+);
+insert into ap_sent_029 (object_id, slug, digest, sent_at) select object_id, slug, digest, sent_at from ap_sent;
+drop table ap_sent;
+alter table ap_sent_029 rename to ap_sent;

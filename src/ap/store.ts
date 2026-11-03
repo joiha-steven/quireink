@@ -57,26 +57,60 @@ export const inboxesToReach = (): string[] =>
 // What has already been said
 // ---------------------------------------------------------------------------
 
-export type Announced = { objectId: string; slug: string; digest: string }
+export type Announced = { objectId: string; slug: string; digest: string; withdrawn: boolean }
 
-type SentRow = { object_id: string; slug: string; digest: string }
+type SentRow = { object_id: string; slug: string; digest: string; withdrawn_at: number | null }
 
 export const announced = (): Announced[] =>
-  all<SentRow>(`select object_id, slug, digest from ap_sent`)
-    .map((r) => ({ objectId: r.object_id, slug: r.slug, digest: r.digest }))
+  all<SentRow>(`select object_id, slug, digest, withdrawn_at from ap_sent`)
+    .map((r) => ({ objectId: r.object_id, slug: r.slug, digest: r.digest, withdrawn: r.withdrawn_at !== null }))
 
-export function rememberAnnounced(objectId: string, slug: string, digest: string): void {
+/** Said, or said again: `replaces` is the withdrawn row of the same page, which this one takes over. */
+export function rememberAnnounced(objectId: string, slug: string, digest: string, replaces?: string): void {
+  if (replaces && replaces !== objectId) run(`delete from ap_sent where object_id = ?`, replaces)
   run(
-    `insert into ap_sent (object_id, slug, digest, sent_at) values (?, ?, ?, ?)
+    `insert into ap_sent (object_id, slug, digest, sent_at, withdrawn_at) values (?, ?, ?, ?, null)
      on conflict(object_id) do update set slug = excluded.slug, digest = excluded.digest,
-       sent_at = excluded.sent_at`,
+       sent_at = excluded.sent_at, withdrawn_at = null`,
     objectId, slug, digest, nowMs(),
   )
 }
 
-export const forgetAnnounced = (objectId: string): void => {
-  run(`delete from ap_sent where object_id = ?`, objectId)
+/** Its `Delete` is queued. The row stays: it is what gives the next return its id. */
+export const withdrawAnnounced = (objectId: string): void => {
+  run(`update ap_sent set withdrawn_at = ? where object_id = ?`, nowMs(), objectId)
 }
+
+// ---------------------------------------------------------------------------
+// The id an object has, and the one it takes when it comes back
+// ---------------------------------------------------------------------------
+
+/**
+ * ⚠️ A POST THAT COMES BACK FROM THE TRASH NEEDS AN ID IT HAS NEVER HAD (2026-11-04). Mastodon
+ * keeps a `Tombstone` for every object id it is told is deleted, with no expiry, and
+ * `Create#create_status` refuses any object whose id has one (`tombstone_exists?`); an `Update`
+ * finds no status and falls through to that same `Create`. So the first announcement is the page
+ * address, as every object already federated has it, and the n-th return is `<url>?r=<n>`, with
+ * `url` still the page. `/{slug}?r=<n>` is the same page to a browser, and the same object to a
+ * server only while `n` is the id it has now.
+ */
+const RETURN = /\?r=([1-9]\d*)$/
+
+/** The page an object id belongs to. */
+export const pageOf = (objectId: string): string => objectId.replace(RETURN, '')
+
+/** Which return an object id is: 0 for the page address itself. */
+export const returnOf = (objectId: string): number => Number(RETURN.exec(objectId)?.[1] ?? 0)
+
+export const idAt = (url: string, n: number): string => (n === 0 ? url : `${url}?r=${n}`)
+
+/** The ledger row of the page at `url`: there is at most one. */
+export const ledgerOf = (url: string, rows: Announced[] = announced()): Announced | undefined =>
+  rows.find((r) => pageOf(r.objectId) === url)
+
+/** The id the object at `url` has now, or is about to be announced under. */
+export const currentIdOf = (url: string, row: Announced | undefined): string =>
+  !row ? url : row.withdrawn ? idAt(url, returnOf(row.objectId) + 1) : row.objectId
 
 /**
  * What a note SAYS, as one short string.

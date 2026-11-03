@@ -675,10 +675,12 @@ create table if not exists ap_followers (
   followed_at  integer not null
 );
 create table if not exists ap_sent (
-  object_id text primary key,
-  slug      text not null,
-  digest    text not null,
-  sent_at   integer not null
+  object_id    text primary key,
+  slug         text not null,
+  digest       text not null,
+  sent_at      integer not null,
+  -- When its `Delete` was queued (029-ap-sent-withdrawn); null while the object is out there.
+  withdrawn_at integer
 );
 create table if not exists ap_queue (
   id         integer primary key autoincrement,

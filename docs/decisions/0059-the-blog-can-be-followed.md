@@ -66,6 +66,23 @@ posts to every follower who arrives that afternoon, in one timeline, permanently
 the moment the keypair was made — which is the moment the feature first became ready — and
 `announce.test.ts` proves it with a post dated four hundred days ago.
 
+**A post that comes back takes an object id it has never had** (amended 2026-11-04). A
+`Delete` makes Mastodon keep a `Tombstone` for that object id, with no expiry, and
+`Create#create_status` refuses any object whose id has one (`tombstone_exists?`); an `Update` finds
+no status and falls through to that same `Create`. So a post restored from the Trash, announced
+again under its old id, never reappeared, and its `#create` and `#delete` activity ids repeated on
+every round. The first announcement is the page address, as before; the n-th return is
+`<url>?r=<n>`, with `url` still the page. A `Delete` therefore no longer drops the ledger row: it
+marks it withdrawn (`ap_sent.withdrawn_at`, migration 029), the next return replaces it, and a page
+keeps one row however often it goes and comes back. The rows that stay are one per address ever
+announced, which is also what a new post at a reused address needs. At `/{slug}`, a server asking
+for the page address or the current `?r=<n>` gets the object under its current id; one asking for
+an id that was withdrawn gets 410 and a `Tombstone` (ActivityPub §6.4); an `r` the ledger never
+gave is a 404. A browser gets the one page whatever `r` says, canonical to the page, and the page
+cache gains no key. ⚠️ **A post withdrawn before this release has no row left**, so it comes back
+under its bare address and stays hidden on Mastodon; nothing on this side remembers that it was
+ever said. Checked against Mastodon's source, not yet against a running server.
+
 **The ledger is written when an activity is QUEUED, not when it is delivered.** A delivery can
 fail for one server and succeed for three hundred, so "has this been announced" is a fact about
 this blog rather than about any one of them. A ledger written on delivery would re-announce the

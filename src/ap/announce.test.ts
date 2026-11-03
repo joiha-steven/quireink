@@ -118,7 +118,7 @@ describe('the comparison', () => {
       const work = await sweepAnnounce({ settings: await settingsWith(), site: SITE, since })
       expect(work.map((a) => a.kind)).toEqual(['Delete'])
       expect(work[0]!.objectId).toBe(`${SITE}/${slug}`)
-      // ...and it is said once. The ledger row is gone, so there is nothing left to compare.
+      // ...and it is said once: the ledger row is marked withdrawn, which a later pass leaves alone.
       expect(await sweepAnnounce({ settings: await settingsWith(), site: SITE, since })).toEqual([])
     }
   })

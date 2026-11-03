@@ -13,7 +13,9 @@ import { clientIp, rateLimited } from '@/server/rate-limit'
 import { logActivity } from '@/server/activity'
 import { actorDocument, actorOf, AP, AP_TYPE, apReady, keyIdOf, webfingerFor } from '@/ap/actor'
 import { acceptOf, createOf, noteOf } from '@/ap/objects'
-import { addFollower, enqueue, followerCount, removeFollower } from '@/ap/store'
+import {
+  addFollower, announced, currentIdOf, enqueue, followerCount, idAt, ledgerOf, removeFollower, returnOf,
+} from '@/ap/store'
 import { fetchActor } from '@/ap/deliver'
 import { ensureKeys } from '@/ap/keys'
 import { verifySignature, parseSignature } from '@/ap/signature'
@@ -75,14 +77,34 @@ export async function handleActivityObject(c: Context, slug: string): Promise<Re
   const settings = await getSettings()
   if (!apReady(settings)) return null
   const site = resolveSiteUrl(settings)
+  const url = `${site}/${slug}`
+  // `?r=<n>`: the n-th return of a post from the Trash (`ap/store.ts`). Only a server asking for
+  // the object reads it; the page ignores it, and the page cache is keyed by path.
+  const r = c.req.query('r')
+  if (r !== undefined && !/^[1-9]\d*$/.test(r)) return ap(c, { error: 'Not found' }, 404)
+  const asked = r === undefined ? 0 : Number(r)
+  const row = ledgerOf(url)
   const post = (await getPublicPosts()).find((p) => p.slug === slug)
-  if (!post) return null
-  const actor = actorOf(site, settings.activitypub.handle)
-  return ap(c, {
-    '@context': 'https://www.w3.org/ns/activitystreams',
-    ...noteOf({ post, site, actor, lang: langOf(post, settings.language) }),
-  })
+  if (post) {
+    const id = currentIdOf(url, row)
+    // The page address answers with the id the object has now, which a server then fetches
+    // again by that id and keeps (Mastodon's `FetchResourceService` does exactly that).
+    if (asked === 0 || asked === returnOf(id)) {
+      const actor = actorOf(site, settings.activitypub.handle)
+      return ap(c, {
+        '@context': 'https://www.w3.org/ns/activitystreams',
+        ...noteOf({ post, site, actor, lang: langOf(post, settings.language), id }),
+      })
+    }
+    return asked < returnOf(id) ? gone(c, idAt(url, asked)) : ap(c, { error: 'Not found' }, 404)
+  }
+  // Withdrawn: every id up to the last one it had. ActivityPub §6.4 asks for 410 and a Tombstone.
+  if (row && asked <= returnOf(row.objectId)) return gone(c, idAt(url, asked))
+  return r === undefined ? null : ap(c, { error: 'Not found' }, 404)
 }
+
+const gone = (c: Context, id: string): Response =>
+  ap(c, { '@context': 'https://www.w3.org/ns/activitystreams', id, type: 'Tombstone', formerType: 'Note' }, 410)
 
 export function registerApRoutes(app: Hono): void {
   /**
@@ -147,8 +169,11 @@ export function registerApRoutes(app: Hono): void {
     const site = resolveSiteUrl(settings)
     const actor = actorOf(site, settings.activitypub.handle)
     const posts = (await getPublicPosts()).slice(0, 40)
-    const items = posts.map((post) =>
-      createOf(noteOf({ post, site, actor, lang: langOf(post, settings.language) }), actor))
+    const ledger = announced()
+    const items = posts.map((post) => createOf(noteOf({
+      post, site, actor, lang: langOf(post, settings.language),
+      id: currentIdOf(`${site}/${post.slug}`, ledgerOf(`${site}/${post.slug}`, ledger)),
+    }), actor))
     return ap(c, {
       '@context': 'https://www.w3.org/ns/activitystreams',
       id: `${site}${AP.outbox}`,
