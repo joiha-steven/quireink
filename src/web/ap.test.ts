@@ -218,6 +218,24 @@ describe('one post, two representations at one address', () => {
     expect(reader.headers.get('cache-control')).toContain('s-maxage')
   })
 
+  it('says the reader\'s page varies by Accept too, because a shared cache may keep it', async () => {
+    // The HTML is the copy a CDN holds for sixty seconds. Without `Vary: Accept` on it, a cache
+    // keyed by URL handed that page to the next server asking for the object.
+    const reader = await get('/on-setting-type', { accept: 'text/html' })
+    expect(reader.headers.get('vary') ?? '').toMatch(/(^|,\s*)Accept(\s*,|$)/)
+    // ...and once it is in the page cache, the copy served from there says the same.
+    const again = await get('/on-setting-type', { accept: 'text/html' })
+    expect(again.headers.get('vary') ?? '').toMatch(/(^|,\s*)Accept(\s*,|$)/)
+  })
+
+  it('never puts the object into the page cache, whoever asks first', async () => {
+    await get('/on-setting-type', { accept: 'application/activity+json' })
+    await get('/on-setting-type', { accept: 'text/markdown' })
+    const reader = await get('/on-setting-type', { accept: 'text/html' })
+    expect(reader.headers.get('content-type')).toContain('text/html')
+    expect(await reader.text()).toContain('<article')
+  })
+
   it('does not hand out a draft to a server either', async () => {
     await savePost({
       title: 'Not yet', slug: 'not-yet', content: 'x', status: 'draft',

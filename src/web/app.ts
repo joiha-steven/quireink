@@ -31,7 +31,7 @@ import { handleSearch, handleSearchIndex } from '@/web/search-api'
 import { handleSearchPage } from '@/web/search-page'
 import { canonicalPath } from '@/web/canonical-path'
 import { userRedirects } from '@/web/redirects'
-import { cacheHeaders } from '@/web/cache-headers'
+import { cacheHeaders, variesByAccept } from '@/web/cache-headers'
 import { handlePreviewLeave, themePreview } from '@/web/theme-preview'
 import { LEAVE_PATH } from '@/web/theme-preview-paths'
 import { securityHeaders } from '@/web/security-headers'
@@ -392,7 +392,7 @@ export function createApp(): Hono {
       const object = await handleActivityObject(c, slug)
       if (object) return object
     }
-    return cached(`/${slug}`, () => renderArticle(slug))()
+    return variesByAccept(await cached(`/${slug}`, () => renderArticle(slug))())
   })
 
   return app

@@ -76,3 +76,13 @@ export function cacheHeaders(): MiddlewareHandler {
     }
   }
 }
+
+/**
+ * Mark an article's page as one of several answers at its address. The Markdown and ActivityPub
+ * answers there carry `Vary: Accept`; the HTML is the copy a shared cache keeps (`PUBLIC` above),
+ * and without it a CDN keyed by URL handed that page to the next server asking for the object.
+ */
+export function variesByAccept(res: Response): Response {
+  if (res.status === 200) res.headers.append('vary', 'Accept')
+  return res
+}
