@@ -13,7 +13,7 @@ import { db } from '@/test/sqlite'
 import { startRelay, type Relay } from '@/test/relay'
 import { savePost } from '@/content/posts'
 import { getSettings } from '@/content/settings'
-import { addSubscriber, confirmSubscriber } from '@/news/subscribers'
+import { addSubscriber, confirmSubscriber, deleteSubscriber, unsubscribeByToken } from '@/news/subscribers'
 import { emailBrand } from '@/news/email-brand'
 import { broadcastRun, resetBroadcastRun, resumeBroadcast } from '@/news/broadcast'
 import { INTERRUPTED, openRun } from '@/news/outbox'
@@ -78,6 +78,24 @@ describe('resuming a send', () => {
     expect(broadcastRun()).toMatchObject({ recipients: 5, sent: 4, failed: 1, done: true })
     const stamped = db().query(`select broadcast_at from posts where slug = ?`).get(post.slug) as { broadcast_at: number | null }
     expect(stamped.broadcast_at).toBeGreaterThan(0)
+  })
+
+  // The list is taken at the press and a send can run for many minutes, across a restart: a reader
+  // who unsubscribed meanwhile had seen "You've unsubscribed" and still got the letter, and so did
+  // an address the owner deleted (2026-11-03).
+  it('does not mail an address that unsubscribed or was deleted after the press', async () => {
+    const post = await savePost({ title: 'A letter', content: 'x '.repeat(200), status: 'published', date: PAST })
+    const subs = await everyone()
+    const letter = JSON.stringify({ posts: [{ slug: post.slug, title: post.title }], brand: emailBrand(await getSettings()), lang: 'en' })
+    openRun({ slugs: [post.slug], letter, subs, now: Date.now() })
+    await unsubscribeByToken(subs[2]!.token)
+    const d = db().query(`select id from subscribers where email = 'd@example.com'`).get() as { id: number }
+    await deleteSubscriber(d.id)
+
+    await resumeBroadcast()
+
+    expect(perAddress()).toEqual({ 'a@example.com': 1, 'b@example.com': 1, 'c@example.com': 0, 'd@example.com': 0, 'e@example.com': 1 })
+    expect(broadcastRun()).toMatchObject({ recipients: 3, sent: 3, failed: 0, done: true })
   })
 
   it('waits for a runner still holding its lease, and takes over once the lease lapses', async () => {

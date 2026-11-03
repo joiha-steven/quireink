@@ -88,7 +88,9 @@
   token is there — and otherwise logged as failed `interrupted` and NOT sent again: at most one
   address per restart may miss the letter, and none gets it twice. A second press while a run is
   open is refused (`already_running`), restart or not. The tables are left out of backups, so a
-  restored copy cannot resume the list from another machine.
+  restored copy cannot resume the list from another machine. **Each claim asks the list again:**
+  an address that has unsubscribed or been deleted since the press is dropped from the run (one
+  fewer recipient, not a failure), so "You've unsubscribed" holds for a letter already going out.
 - **Comment-reply notifications** (`src/comments/comment-notify.ts` `notifyReply`, awaited from the
   comment POST route on a reply; it never throws). Emails the parent commenter (their `author_email`) a
   link to the thread. Best-effort + transactional: skips a self-reply (same email), a deleted

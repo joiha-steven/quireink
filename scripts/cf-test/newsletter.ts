@@ -20,6 +20,10 @@ export async function outboxResumes(smtpPort: number): Promise<void> {
   openDatabases('./data')
   await saveSmtpConfig({ host: '127.0.0.1', port: smtpPort, secure: false, from: 'blog@blog.test', user: 'u', pass: 'p' })
   const subs = ['a', 'b', 'c', 'd', 'e'].map((x) => ({ email: `${x}@reader.test`, token: `t-${x}` }))
+  // On the list, as a real run's addresses are: each claim asks the list again (`claimNext`).
+  for (const s of subs) {
+    run(`insert into subscribers (email, status, token, created_at, confirmed_at) values (?, 'confirmed', ?, ?, ?)`, s.email, s.token, Date.now(), Date.now())
+  }
   const letter = JSON.stringify({ posts: [{ slug: 'a-letter', title: 'A letter' }], brand: emailBrand(await getSettings()), lang: 'en' })
   if (!openRun({ slugs: ['a-letter'], letter, subs, now: Date.now() })) throw new Error('a run was already open in a new object')
 

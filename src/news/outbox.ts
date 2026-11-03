@@ -26,6 +26,7 @@
 // SERVER-ONLY.
 
 import { all, one, run, tx } from '@/store/query'
+import { liveOnly } from '@/store/db'
 import { newOpenToken } from '@/news/newsletter-log'
 
 /** How long a runner that stopped renewing is waited for before another takes the send over. */
@@ -135,6 +136,18 @@ export function claimNext(owner: string, now: number = Date.now()): Step {
     if (job.lease_owner !== owner && job.lease_until > now) return { kind: 'busy' }
     const slugs = JSON.parse(job.slugs) as string[]
     const interrupted = job.lease_owner === owner ? [] : settle(job.id).map((email) => ({ email, slugs }))
+    // OFF THE LIST SINCE THE PRESS, and asked at every claim. The list is taken when the owner
+    // presses Send and a run can last many minutes, across a restart: a reader who unsubscribed
+    // in that window had been told "You've unsubscribed" and was mailed anyway, and so was an
+    // address the owner deleted (2026-11-03). Dropped rather than failed, so the counts read as
+    // the list it became: one fewer recipient, not one more failure.
+    const gone = run(
+      `delete from broadcast_outbox where run_id = ? and state = 'owed' and not exists (
+         select 1 from subscribers where subscribers.email = broadcast_outbox.email
+            and subscribers.status = 'confirmed' and ${liveOnly('subscribers')})`,
+      job.id,
+    ).changes
+    if (gone) run(`update broadcast_runs set recipients = recipients - ? where id = ?`, gone, job.id)
     const next = one<{ id: number; email: string; token: string }>(
       `select id, email, token from broadcast_outbox where run_id = ? and state = 'owed' order by id limit 1`, job.id,
     )
