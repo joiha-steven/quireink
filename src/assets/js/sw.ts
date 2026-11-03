@@ -30,7 +30,7 @@
 
 /// <reference lib="webworker" />
 
-import { keepsOffline } from './sw-keep'
+import { keepsOffline, keptCopy } from './sw-keep'
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -94,7 +94,7 @@ async function page(request: Request): Promise<Response> {
   try {
     const fresh = await fetch(request)
     if (keepsOffline(fresh)) {
-      const copy = fresh.clone()
+      const copy = keptCopy(fresh.clone())
       const cache = await caches.open(PAGES)
       await cache.put(request, copy)
       await trim(PAGES, KEEP_PAGES)

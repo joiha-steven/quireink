@@ -1,7 +1,7 @@
 // What the service worker keeps as a page's offline copy (`sw-keep.ts`): a reader's page, and
 // never a theme preview, an error or an answer the server marked private.
 import { describe, expect, it } from 'bun:test'
-import { keepsOffline } from './sw-keep'
+import { keepsOffline, keptCopy } from './sw-keep'
 
 const page = (status: number, cacheControl?: string): Response =>
   new Response('<html></html>', { status, headers: cacheControl === undefined ? {} : { 'cache-control': cacheControl } })
@@ -25,5 +25,15 @@ describe('the offline copy of a page', () => {
   it('never keeps an error', () => {
     expect(keepsOffline(page(404, 'private, no-store'))).toBe(false)
     expect(keepsOffline(page(500))).toBe(false)
+  })
+})
+
+describe('the copy that is kept', () => {
+  it('is found by a look-up with any Accept, or none, because it no longer says it varies', async () => {
+    const res = new Response('<html>page</html>', { headers: { vary: 'Accept, Accept-Encoding', 'content-type': 'text/html' } })
+    const kept = keptCopy(res)
+    expect(kept.headers.get('vary')).toBeNull()
+    expect(kept.headers.get('content-type')).toBe('text/html')
+    expect(await kept.text()).toBe('<html>page</html>')
   })
 })

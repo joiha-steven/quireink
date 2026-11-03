@@ -13,3 +13,17 @@ export function keepsOffline(res: Response): boolean {
   const cacheControl = (res.headers.get('cache-control') ?? '').toLowerCase()
   return !/(^|[\s,])private([\s,=]|$)/.test(cacheControl)
 }
+
+/**
+ * The copy that is kept: the page as it came, without its `Vary`.
+ *
+ * An article's page says `Vary: Accept`, because the same address answers Markdown and an
+ * ActivityPub object as well. A cache honours that against the request it is asked with, so a
+ * page kept from one navigation was not found by a look-up carrying another `Accept`, or none.
+ * Only navigated pages are kept here, so the copy can only ever be the page.
+ */
+export function keptCopy(res: Response): Response {
+  const headers = new Headers(res.headers)
+  headers.delete('vary')
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers })
+}
