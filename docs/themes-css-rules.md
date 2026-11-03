@@ -44,7 +44,10 @@ If you need a colour that is not one of the seven, add a palette in `theme.json`
 
 `font-size` may be `var(--fs-*)` (h1 to h5, body, small, caption, code), `em`, `%`, `inherit`, or
 `calc()`, `min()`, `max()`, `clamp()` over a `--fs-*`. `px` and `rem` are refused, as is the `font`
-shorthand (except `font: inherit`), `zoom`, `text-size-adjust` and `font-size-adjust`.
+shorthand (except `font: inherit`), `zoom`, `text-size-adjust` and `font-size-adjust`. Every term
+inside those functions is a `--fs-*`, `em` or `%`, so a `vw`, `px` or `rem` inside one is T1 too: a
+fluid size between two steps is written with a `--fs-*` in the middle as well. The keywords
+`smaller` and `larger` are refused; write `80%` or `1.2em`.
 
 ```css
 /* refused: T1 · theme.css:1:17 · 20px */
@@ -52,11 +55,15 @@ shorthand (except `font: inherit`), `zoom`, `text-size-adjust` and `font-size-ad
 /* refused: T1 */
 .card-exc{font-size:1.1rem}
 .deck{font:italic 20px serif}
+.prose h2{font-size:clamp(var(--fs-h3), 3vw, var(--fs-h2))}
+.prose small{font-size:smaller}
 
 /* passes */
 .deck{font-size:var(--fs-h4)}
 .card-exc{font-size:1.1em}
 .deck{font-style:italic;font-size:calc(var(--fs-body) * 1.1)}
+.prose h2{font-size:clamp(var(--fs-h3), calc(var(--fs-h3) * 1.2), var(--fs-h2))}
+.prose small{font-size:80%}
 ```
 
 When you change a size, change its leading and tracking with it from the same role
@@ -69,11 +76,15 @@ When you change a size, change its leading and tracking with it from the same ro
 `font-family` may be `inherit` or exactly one of `var(--font-reading)`, `var(--font-sans)`,
 `var(--font-mono)`, `var(--font-display)`. Your own face is declared in `theme.json`
 ([fonts](themes.md#7-palettes-fonts-and-layout-switches)) and reaches the page through those
-variables.
+variables. No fallback list after the variable: each variable already ends in its own fallbacks.
+A system face such as Georgia cannot be named; ship it as a woff2 in `fonts/` if its licence
+allows, or suggest one of the built-in reading fonts ([recipes](themes-recipes.md#which-fonts-can-a-theme-use)).
 
 ```css
 /* refused: F1 · theme.css:1:20 · Georgia,serif */
 .prose{font-family:Georgia,serif}
+/* refused: F1 · theme.css:1:20 · var(--font-reading),serif */
+.prose{font-family:var(--font-reading),serif}
 
 /* passes */
 .prose{font-family:var(--font-reading)}
@@ -330,6 +341,14 @@ inside `@keyframes`, `<!--` and `-->` in a selector.
 
 An unclosed brace swallows everything after it, so it also tends to show up as S2 or S1 further
 down: fix the X1 first and run the checker again.
+
+**What X1 does not catch.** The checker reads the shape of the sheet, not the meaning of each
+property. A misspelt property or a value the property does not take is dropped by the browser and
+passes the checker, so these all pass and do nothing: `colour:var(--c-text)`, `display:gird`,
+`text-wrap:balanced`, `border-radius:999` (no unit), `margin:1rem 2rem 3rem 4rem 5rem`, and
+`color:var(--c-text) font-weight:700` (a missing `;` between two declarations, which turns both into
+one value). When a rule seems to do nothing, open the preview page in a browser and look at the rule
+in the developer tools: a struck-through declaration is one the browser dropped.
 
 A file keeps at most 200 findings. Past that the list ends with one more line,
 `X1 · theme.css · truncated`: nobody fixes 200 things at once, so fix these and run it again.

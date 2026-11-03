@@ -6,7 +6,8 @@
 > [ADR 0072](decisions/0072-a-theme-is-a-checked-skin-over-the-one-markup.md); the owner's side
 > (installing, choosing) is in [appearance.md](appearance.md) and
 > [theme-install-api.md](theme-install-api.md). One page per refusal, with a refused and a passing
-> example for each, is [themes-css-rules.md](themes-css-rules.md).
+> example for each, is [themes-css-rules.md](themes-css-rules.md); recipes, the variables you can
+> read and the questions that come up are [themes-recipes.md](themes-recipes.md).
 
 ## 1. What a theme is, and is not
 
@@ -31,59 +32,105 @@ optionally woff2 fonts and images.
 
 ## 2. Start
 
-Copy the [starter](https://github.com/joiha-steven/quireink-theme-starter): it is a complete,
-passing theme written to be changed. Its README walks the same steps.
+The whole round, from nothing to a theme on a blog, as it was timed on a laptop: about ten minutes
+of commands, the rest is your CSS. Commands are for macOS and Linux; on Windows the same ones run in
+PowerShell, with the differences named. Everything runs from inside the product clone.
 
-1. Clone the starter, and clone and install the product once (the checker and the preview live
-   there). You need [Bun](https://bun.sh) and, for the preview, a headless Chrome:
+1. **Get the tools, once.** [Bun](https://bun.sh) 1.3 or newer, git, and for the preview a
+   Chrome or Chromium (if none is found the preview says how to install one, or set `CHROME` to
+   its path). Then the product, which holds the checker and the preview, and the starter:
 
    ```
    git clone https://github.com/joiha-steven/quireink.git
+   git clone https://github.com/joiha-steven/quireink-theme-starter.git
    cd quireink && bun install
    ```
 
-2. In the starter's `theme/theme.json` change `id`, `name`, `author`, `homepage`, `description`;
-   start `version` at `1.0.0`. The id is lowercase letters, digits and single hyphens, at most 40
-   characters, and not `plain`, `code`, `paper` or `notes`.
-3. Loop: edit `theme/theme.css`, then, from inside the product clone:
+2. **Name it.** In the starter's `theme/theme.json` change `id`, `name`, `author`, `homepage` and
+   `description`, and start `version` at `1.0.0` ([section 4](#4-themejson)). The id is lowercase
+   letters, digits and single hyphens, at most 40 characters, not `plain`, `code`, `paper` or
+   `notes`. Starting from an empty folder works too: it needs `theme.json` and `theme.css`, and
+   the picture comes from step 4.
+
+3. **The loop: edit `theme/theme.css`, check, look.**
 
    ```
-   bun run theme:check /path/to/quireink-theme-starter/theme
-   bun run theme:preview /path/to/quireink-theme-starter/theme
+   bun run theme:check ../quireink-theme-starter/theme
+   bun run theme:preview ../quireink-theme-starter/theme --force --pages home-list,front-image,post-all-blocks --widths 1440
    ```
 
    `theme:check` writes nothing. It prints `ok · <id> <version> · <n> files` and exits 0, or one
-   line per finding as `rule · file:line:col · subject` with the admin's sentence for the rule
-   under it, and exits 1. `theme:preview` checks first, then photographs the theme on every kind of
-   page, at 375, 768 and 1440 wide, light and dark, once per palette, into
-   `.tmp/theme-preview/<id>/` (open `index.html`, the contact sheet). About a minute per palette;
-   `--pages`, `--widths` and `--force` are in
-   [theme-install-api.md](theme-install-api.md#preview-before-installing). The starter's
-   `check.sh` and `check.ps1` run both in one go.
-4. **Zip the folder's contents, not the folder.** `theme.json` must be at the top of the zip.
-   Finder's Compress and Explorer's "Send to compressed folder" on the folder itself nest everything
-   one level down and the install refuses that. Hidden files are refused too (`.DS_Store`,
-   `Thumbs.db`, `__MACOSX/`).
+   line per finding as `rule · file:line:col · subject` with the rule's sentence under it, the page
+   that explains each rule, and exits 1. `theme:preview` checks first, then photographs the
+   theme into `.tmp/theme-preview/<id>/` (open `index.html` there, the contact sheet). With
+   `--pages` and `--widths` as above it takes about five seconds; without them it takes every
+   kind of page at 375, 768 and 1440, light and dark, once per palette, about a minute per palette,
+   which is the run to do before you ship. `--force` lets it replace its own last output. The
+   starter's `check.sh` and `check.ps1` run both in one go. What it measures, and what only your
+   eyes catch, is in [section 8](#8-pitfalls-that-happened); stuck on something specific, see
+   [the recipes](themes-recipes.md).
+
+4. **The picture.** Each full `theme:preview` run also writes `screenshot.webp` beside the
+   shots, 1200 x 900, the top of your front page at 1440 in the light, which is what the tile
+   shows. Copy it in when it looks right:
 
    ```
-   # macOS / Linux, from inside the theme folder
+   cp .tmp/theme-preview/<id>/screenshot.webp ../quireink-theme-starter/theme/
+   # Windows PowerShell
+   Copy-Item .tmp\theme-preview\<id>\screenshot.webp ..\quireink-theme-starter\theme\
+   ```
+
+   Until a folder has one, the preview uses a blank picture in its place and the check refuses
+   the theme (A3). The starter's own `screenshot.webp` is the starter's: replace it, or every
+   blog shows your theme with the starter's picture.
+
+5. **Zip the folder's contents, not the folder.** `theme.json` must be at the top of the zip.
+   Finder's Compress and Explorer's "Send to compressed folder" on the folder itself nest everything
+   one level down, and Finder on current macOS also adds a `__MACOSX/` copy of every file: the
+   install refuses both. Use the command, from inside the theme folder:
+
+   ```
+   # macOS / Linux
    zip -r ../my-theme.zip . -x '.*' '*/.*' '__MACOSX/*'
 
-   # Windows PowerShell, from inside the theme folder (the built-in bsdtar, not Compress-Archive,
-   # which writes backslashes in names on Windows PowerShell 5)
-   & "$env:SystemRoot\System32\tar.exe" -a -cf ..\my-theme.zip --exclude Thumbs.db --exclude .DS_Store (Get-ChildItem -Name)
+   # Windows PowerShell (the built-in bsdtar, not Compress-Archive, which writes backslashes in
+   # names on Windows PowerShell 5)
+   & "$env:SystemRoot\System32\tar.exe" -a -cf ..\my-theme.zip --exclude Thumbs.db --exclude desktop.ini --exclude .DS_Store (Get-ChildItem -Name)
    ```
 
-   Then `bun run theme:check /path/to/my-theme.zip` on the zip itself.
-5. **Install:** Settings → Appearance → Theme → **Install from a file**. The admin answers
+   Then `bun run theme:check ../my-theme.zip` on the zip itself. A zip made the wrong way gets a
+   `hint:` line saying so above its findings. Checking the folder refuses a hidden file in it,
+   such as the `.DS_Store` Finder writes into every folder it opens: delete it, or check the zip.
+
+6. **Try it on a blog of your own** (or skip to 7 on a blog you already run). From the product
+   clone, a throwaway blog on your machine:
+
+   ```
+   bun run build
+   DATA_DIR=.tmp/try/data STORAGE_LOCAL_DIR=.tmp/try/uploads PORT=3000 bun run start
+   # Windows PowerShell
+   $env:DATA_DIR='.tmp\try\data'; $env:STORAGE_LOCAL_DIR='.tmp\try\uploads'; $env:PORT='3000'; bun run start
+   ```
+
+   It prints a link: open it, make the owner account, and at the two-factor step choose
+   *Set this up later* (offered while no site address is set, [account.md](account.md)); on the
+   next screen empty the *Site address* box, or the next sign-in asks for two-factor again. Ctrl-C
+   stops it; deleting `.tmp/try` starts over.
+
+7. **Install:** Settings → Appearance → Theme → **Install from a file**. The admin answers
    installed, already installed, or refused with one line per finding. The tile shows your
    screenshot, name, version, author and an **Unreviewed** badge, on every installed theme: nothing
    but the engine's checks has looked at it.
-6. **Preview in the admin:** **Preview** under the tile opens the site in a new tab wearing the
-   theme, changing nothing; **Choose this theme** there, then Save, puts it on the blog.
-7. **Ship a fix:** raise `version` and install the new zip over the old. The previous version is
+
+8. **Wear it:** **Preview** under the tile opens the site in a new tab wearing the theme, changing
+   nothing. Choosing the tile, then **Save**, puts it on the blog; **Use this theme's suggested
+   palette and fonts** switches on what `suggests` names.
+
+9. **Ship a fix:** raise `version` and install the new zip over the old. The previous version is
    kept: **Roll back to &lt;version&gt;** on the tile removes the current one and brings the earlier
-   back. **Remove** deletes the theme; a blog wearing it goes back to Plain paper.
+   back. Installing the same version again with changed files replaces it in place, which is handy
+   while you work and leaves nothing to roll back to. **Remove** deletes the theme; a blog wearing
+   it goes back to Plain paper.
 
 **There is no gallery and no review service.** Quire Ink does not host themes. To share one, hand
 over the zip (a release on your repository is a good place); whoever installs it sees it as
@@ -204,7 +251,8 @@ Each has the admin's sentence, a refused example and the passing rewrite in
 ## 6. The contract
 
 [appearance-contract.md](appearance-contract.md) is the list of names the product promises to
-keep. It has three kinds of name, and the checker holds you to all three:
+keep (the variables you can read, grouped, are also in [the recipes](themes-recipes.md#the-variables-a-theme-reads)).
+It has three kinds of name, and the checker holds you to all three:
 
 - **Variables** (`--c-bg`, `--fs-h2`, `--font-display`, `--sp`, ...): you **read** them with
   `var()`; you never set one. Setting any custom property that is not `--t-*` is V1, so a theme
@@ -331,9 +379,10 @@ must be one of yours or a built-in id of that kind.
   named in the contract.) Prefer contract names; where you cannot, put a
   comment on the rule saying what it depends on (the starter does) so the next update's breakage
   is easy to find.
-- **A sheet that sets `body{font-family: var(--font-reading)}` passes F1 and breaks the owner's
-  chrome-font control**, because the chrome (header, footer, rail, dates) stops following it. Set
-  a face on the specific pieces you mean (`.title`, `.deck`), not on `body`.
+- **A face set on `body`, `*` or `.wrap` passes F1 and breaks the owner's chrome-font control.**
+  Measured with the owner on IBM Plex Mono: `body{font-family:var(--font-reading)}` puts the menu,
+  footer, rail and dates in the reading face, and `body{font-family:inherit}` puts them in Times.
+  Set a face on the pieces you mean (`.title`, `.deck`), not on what holds the chrome.
 - **`theme:preview` measures five things**: a page wider than the window, a box past the window's
   edge, text cut by `overflow: hidden`, an image that did not load, a font file that did not load.
   It leaves out what a page does on purpose (a wide table scrolling in its frame, `line-clamp`).
