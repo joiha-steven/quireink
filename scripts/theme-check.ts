@@ -121,6 +121,9 @@ function readRulesDoc(): string {
   }
 }
 
+/** Where the guide says how to make the zip; a test holds the anchor and the step's words to the doc. */
+export const ZIP_STEP = 'docs/themes.md#2-start, step 5 (Zip the folder\'s contents)'
+
 /** The folder name every entry shares, when theme.json sits one level down in it. */
 function nestedFolder(names: readonly string[]): string | null {
   const real = names.filter((n) => !n.split('/').some(isOsLitter))
@@ -134,11 +137,11 @@ export function zipHints(names: readonly string[]): string[] {
   const out: string[] = []
   const folder = nestedFolder(names)
   if (folder !== null) {
-    out.push(`hint: everything in this zip is inside the folder "${folder}/". Zip what is inside the folder, not the folder (docs/themes.md, step 4).`)
+    out.push(`hint: everything in this zip is inside the folder "${folder}/". Zip what is inside the folder, not the folder (${ZIP_STEP}).`)
   }
   const litter = names.filter((n) => !n.endsWith('/') && n.split('/').some((part) => isOsLitter(part)))
   if (litter.length > 0) {
-    out.push(`hint: ${litter.length} entr${litter.length === 1 ? 'y is' : 'ies are'} what macOS or Windows add by themselves (__MACOSX/, .DS_Store, Thumbs.db). Finder's Compress always adds them; make the zip with the command in docs/themes.md, step 4.`)
+    out.push(`hint: ${litter.length} entr${litter.length === 1 ? 'y is' : 'ies are'} what macOS or Windows add by themselves (__MACOSX/, .DS_Store, Thumbs.db). Finder's Compress always adds them; make the zip with the command in ${ZIP_STEP}.`)
   }
   return out
 }

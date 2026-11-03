@@ -48,6 +48,32 @@ describe.skipIf(!enabled)('theme:preview, end to end', () => {
     expect(existsSync(join(out, 'logs'))).toBe(false)
   }, 300000)
 
+  // A theme made from nothing has no picture yet. The preview runs on a stand-in, and the check still
+  // refuses the folder until the picture the preview made is copied in, so nobody is told it is done early.
+  it('previews a folder with no screenshot.webp, the check still refusing it until the one it wrote is copied in', () => {
+    const theme = join(work, 'no-picture')
+    for (const f of themeFiles({ 'screenshot.webp': null })) {
+      mkdirSync(dirname(join(theme, f.name)), { recursive: true })
+      writeFileSync(join(theme, f.name), f.data)
+    }
+    const check = () => Bun.spawnSync([process.execPath, 'scripts/theme-check.ts', theme], { cwd: REPO, stdout: 'pipe', stderr: 'pipe' })
+    const before = check()
+    expect(before.exitCode).toBe(1)
+    expect(before.stderr.toString()).toContain('A3 · screenshot.webp · missing')
+    const out = join(work, 'out-picture')
+    const p = Bun.spawnSync([process.execPath, 'scripts/theme-preview.ts', theme, '--pages', 'front-image', '--widths', '1440', '--out', out],
+      { cwd: REPO, stdout: 'pipe', stderr: 'pipe' })
+    const said = `${p.stdout}\n${p.stderr}`
+    expect(p.exitCode, said).toBe(0)
+    expect(said).toContain('no screenshot.webp yet: previewing with a blank one; theme:check refuses the theme until it has one')
+    expect(said).toContain('screenshot.webp (1200 x 900, from front-image__default__1440__light.png)')
+    expect(check().exitCode).toBe(1)
+    writeFileSync(join(theme, 'screenshot.webp'), readFileSync(join(out, 'screenshot.webp')))
+    const after = check()
+    expect(after.exitCode, `${after.stdout}${after.stderr}`).toBe(0)
+    expect(readdirSync(join(REPO, '.tmp')).some((f) => f.startsWith('theme-preview-src-'))).toBe(false)
+  }, 300000)
+
   it('stops and deletes what it started when the run fails part way, and says why without a stack trace', () => {
     const theme = join(work, 'theme')
     const count = () => readdirSync(join(REPO, '.tmp')).filter((f) => f.startsWith('theme-preview-work-')).length

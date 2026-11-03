@@ -1,10 +1,10 @@
 // `bun run theme:check` (scripts/theme-check.ts): a directory and its zip must read the same,
 // and the exit code must say what happened.
 import { afterAll, describe, expect, it } from 'bun:test'
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
-import { checkThemePath } from '../../scripts/theme-check'
+import { checkThemePath, ruleAnchors, ZIP_STEP } from '../../scripts/theme-check'
 import { CSS, MANIFEST, testZip, themeFiles, themeZip } from '@/theme/test-zip'
 import en from '@/locales/admin/en'
 
@@ -22,6 +22,25 @@ function themeDir(name: string, over: Parameters<typeof themeFiles>[0] = {}): st
   return dir
 }
 
+
+const REPO = resolve(import.meta.dir, '../..')
+
+/** The anchors a markdown page answers to: GitHub's slug of each heading, and every `<a id>`. */
+function anchorsOf(doc: string): Set<string> {
+  const text = readFileSync(join(REPO, doc), 'utf8')
+  const out = new Set<string>()
+  for (const m of text.matchAll(/^#{1,6} (.+)$/gm)) out.add(m[1]!.trim().toLowerCase().replace(/[^\p{L}\p{N} -]/gu, '').replace(/ /g, '-'))
+  for (const m of text.matchAll(/<a id="([^"]+)">/g)) out.add(m[1]!)
+  return out
+}
+
+/** `docs/x.md#y` in `line` points at a heading or an `<a id>` that exists. */
+function pointsAtSomething(line: string): boolean {
+  const m = /(docs\/[\w-]+\.md)#([\w-]+)/.exec(line)
+  return m !== null && anchorsOf(m[1]!).has(m[2]!)
+}
+
+const X = new TextEncoder().encode('x')
 const BAD_CSS = `${CSS}\n.prose a{color:#ff0000}`
 
 describe('theme:check', () => {
@@ -67,6 +86,39 @@ describe('theme:check', () => {
     expect(out.code).toBe(1)
     expect(out.lines[0]).toBe('A3 · screenshot.webp · missing')
     expect(out.lines[1]).toBe(`    ${en.themeRules.missing}`)
+  })
+
+  it('says in one line when the zip holds the folder rather than its contents', async () => {
+    const zipPath = join(root, 'nested.zip')
+    writeFileSync(zipPath, testZip(themeFiles().map((f) => ({ ...f, name: `my-theme/${f.name}` }))))
+    const out = await checkThemePath(zipPath)
+    expect(out.code).toBe(1)
+    expect(out.lines[0]).toBe(`hint: everything in this zip is inside the folder "my-theme/". Zip what is inside the folder, not the folder (${ZIP_STEP}).`)
+  })
+
+  it('says in one line how many entries of a zip macOS or Windows added', async () => {
+    const zipPath = join(root, 'finder.zip')
+    writeFileSync(zipPath, testZip([...themeFiles(), { name: '__MACOSX/._theme.css', data: X }, { name: 'Thumbs.db', data: X }]))
+    const out = await checkThemePath(zipPath)
+    expect(out.code).toBe(1)
+    expect(out.lines[0]).toStartWith('hint: 2 entries are what macOS or Windows add by themselves')
+  })
+
+  it('names the page that explains each rule it reports, once per rule', async () => {
+    const out = await checkThemePath(themeDir('explained', { 'theme.css': `${BAD_CSS}\n.deck{color:#00ff00}` }))
+    expect(out.lines.filter((l) => l.startsWith('  C1  '))).toEqual(['  C1  docs/themes-css-rules.md#c1-a-colour-is-written-into-the-sheet'])
+    expect(out.lines.at(-1)).toStartWith('Refused: 2 findings.')
+  })
+
+  // The command prints these; a heading renamed in the docs would leave them pointing nowhere.
+  it('points only at anchors that exist: every rule\'s section, and the step that says how to zip', () => {
+    const codes = Object.keys(en.themeRules).filter((k) => k !== 'other' && k !== 'missing')
+    const anchors = ruleAnchors()
+    expect(codes.filter((c) => !anchors.has(c))).toEqual([])
+    for (const [code, where] of anchors) expect(pointsAtSomething(where), `${code} → ${where}`).toBe(true)
+    expect(pointsAtSomething(ZIP_STEP)).toBe(true)
+    const guide = readFileSync(join(REPO, 'docs/themes.md'), 'utf8')
+    expect(guide).toMatch(/^5\. \*\*Zip the folder's contents, not the folder\.\*\*/m)
   })
 
   it('lets an empty subdirectory through, as the installer does with the directory record zip -r writes', async () => {

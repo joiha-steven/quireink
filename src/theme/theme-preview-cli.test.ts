@@ -7,7 +7,11 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { checkedOut } from '../../scripts/theme-matrix-instance'
 import { cellsFor, fontsOf, parseArgs, PREVIEW_PAGES, shotName } from '../../scripts/theme-preview-plan'
-import { MANIFEST, themeFiles } from '@/theme/test-zip'
+import { tilePicture } from '../../scripts/theme-preview'
+import sharp from 'sharp'
+import { packageOptions } from '@/content/theme-package-options'
+import { readThemePackage } from '@/theme'
+import { MANIFEST, themeFiles, themeZip } from '@/theme/test-zip'
 import type { ThemeManifest } from '@/theme'
 
 const REPO = resolve(import.meta.dir, '../..')
@@ -102,6 +106,16 @@ describe('cells, fonts and names', () => {
     expect(fontsOf({ ...m, fonts })).toEqual({ reading: 'r1', chrome: 'c1' })
     expect(fontsOf({ ...m, fonts, suggests: { readingFont: 'r2' } })).toEqual({ reading: 'r2', chrome: 'c1' })
     expect(fontsOf(m)).toEqual({ reading: null, chrome: null })
+  })
+
+  // The picture the preview makes is the one file every theme needs; it has to be one the install takes.
+  it('makes a screenshot.webp the install accepts, from a tall shot or a short one', async () => {
+    for (const height of [3000, 800]) {
+      const png = await sharp({ create: { width: 1440, height, channels: 3, background: { r: 240, g: 236, b: 228 } } }).png().toBuffer()
+      const webp = new Uint8Array(await tilePicture(png))
+      const r = await readThemePackage(themeZip({ 'screenshot.webp': webp }), packageOptions())
+      expect(r.ok, r.ok ? '' : JSON.stringify(r.violations)).toBe(true)
+    }
   })
 
   it('names a shot by page, palette, width and scheme', () => {
