@@ -741,6 +741,7 @@ const pt = {
   themeInstalling: 'Instalando…',
   themeInstalledOk: '{theme} {version} instalado.',
   themeUnchanged: '{theme} {version} já estava instalado. Nada mudou.',
+  themeSkippedOs: 'Arquivos que o macOS ou o Windows adicionam sozinhos, deixados de fora: {n}.',
   themeRefusedHead: 'Não instalado. Problemas encontrados pela verificação: {n}',
   themeTooBig: 'Não instalado: o arquivo tem mais de 5 MB, o máximo para um tema.',
   themeNetwork: 'Não instalado: o arquivo não chegou ao servidor. Verifique a conexão e tente de novo.',

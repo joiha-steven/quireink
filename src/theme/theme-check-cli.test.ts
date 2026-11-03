@@ -75,12 +75,6 @@ describe('theme:check', () => {
     expect(out).toEqual({ code: 0, lines: ['ok · broadsheet 1.0.0 · 11 files'] })
   })
 
-  it('refuses a hidden file, as a zip of the folder carries it too', async () => {
-    const out = await checkThemePath(themeDir('hidden', { '.DS_Store': 'x' }))
-    expect(out.code).toBe(1)
-    expect(out.lines[0]).toBe('A3 · .DS_Store · .DS_Store')
-  })
-
   it('says a missing required file is missing, with the sentence the admin says for it', async () => {
     const out = await checkThemePath(themeDir('nopicture', { 'screenshot.webp': null }))
     expect(out.code).toBe(1)
@@ -88,20 +82,47 @@ describe('theme:check', () => {
     expect(out.lines[1]).toBe(`    ${en.themeRules.missing}`)
   })
 
-  it('says in one line when the zip holds the folder rather than its contents', async () => {
-    const zipPath = join(root, 'nested.zip')
-    writeFileSync(zipPath, testZip(themeFiles().map((f) => ({ ...f, name: `my-theme/${f.name}` }))))
-    const out = await checkThemePath(zipPath)
-    expect(out.code).toBe(1)
-    expect(out.lines[0]).toBe(`hint: everything in this zip is inside the folder "my-theme/". Zip what is inside the folder, not the folder (${ZIP_STEP}).`)
+  it('leaves out of a folder what macOS or Windows added, from the installer\'s own list, and says which', async () => {
+    const out = await checkThemePath(themeDir('litter', { '.DS_Store': X, 'fonts/.DS_Store': X, 'Thumbs.db': X, 'desktop.ini': X, 'fonts/._body.woff2': X }))
+    expect(out).toEqual({ code: 0, lines: [
+      'left out what macOS or Windows add by themselves, as the zip commands in docs/themes.md do: .DS_Store, Thumbs.db, desktop.ini, fonts/.DS_Store, fonts/._body.woff2',
+      'ok · broadsheet 1.0.0 · 5 files',
+    ] })
   })
 
-  it('says in one line how many entries of a zip macOS or Windows added', async () => {
+  it('leaves any other hidden file out of a folder with a warning that a zip carrying it is refused, as it is', async () => {
+    const dir = themeDir('hidden', { '.htaccess': X })
+    mkdirSync(join(dir, '.git'))
+    writeFileSync(join(dir, '.git', 'HEAD'), 'ref')
+    const out = await checkThemePath(dir)
+    expect(out).toEqual({ code: 0, lines: [
+      'warning: left out .git: the zip commands in docs/themes.md leave hidden files out, but a zip that carries one is refused (A3)',
+      'warning: left out .htaccess: the zip commands in docs/themes.md leave hidden files out, but a zip that carries one is refused (A3)',
+      'ok · broadsheet 1.0.0 · 5 files',
+    ] })
+    // What the warning says the install does: the same file in a zip is refused.
+    const zipPath = join(root, 'htaccess.zip')
+    writeFileSync(zipPath, themeZip({ '.htaccess': X }))
+    expect((await checkThemePath(zipPath)).lines[0]).toBe('A3 · .htaccess · .htaccess')
+  })
+
+  it('reads a zip of the folder from inside it and leaves out what macOS added, saying both, as the install does', async () => {
     const zipPath = join(root, 'finder.zip')
-    writeFileSync(zipPath, testZip([...themeFiles(), { name: '__MACOSX/._theme.css', data: X }, { name: 'Thumbs.db', data: X }]))
+    const inFolder = themeFiles().map((f) => ({ ...f, name: `My Theme/${f.name}` }))
+    writeFileSync(zipPath, testZip([...inFolder, { name: '__MACOSX/My Theme/._theme.css', data: X }, { name: 'My Theme/fonts/.DS_Store', data: X }]))
+    expect(await checkThemePath(zipPath)).toEqual({ code: 0, lines: [
+      'read from inside the folder "My Theme/", as the install does',
+      'left out 2 files macOS or Windows add by themselves (__MACOSX/, .DS_Store, Thumbs.db, desktop.ini), as the install does',
+      'ok · broadsheet 1.0.0 · 5 files',
+    ] })
+  })
+
+  it('says in one line where theme.json is when it is further in than one folder', async () => {
+    const zipPath = join(root, 'deep.zip')
+    writeFileSync(zipPath, testZip(themeFiles().map((f) => ({ ...f, name: `a/b/${f.name}` }))))
     const out = await checkThemePath(zipPath)
     expect(out.code).toBe(1)
-    expect(out.lines[0]).toStartWith('hint: 2 entries are what macOS or Windows add by themselves')
+    expect(out.lines[0]).toBe(`hint: theme.json is at "a/b/theme.json". It must be at the top of the zip, or in one folder at the top (${ZIP_STEP}).`)
   })
 
   it('names the page that explains each rule it reports, once per rule', async () => {
@@ -118,7 +139,7 @@ describe('theme:check', () => {
     for (const [code, where] of anchors) expect(pointsAtSomething(where), `${code} → ${where}`).toBe(true)
     expect(pointsAtSomething(ZIP_STEP)).toBe(true)
     const guide = readFileSync(join(REPO, 'docs/themes.md'), 'utf8')
-    expect(guide).toMatch(/^5\. \*\*Zip the folder's contents, not the folder\.\*\*/m)
+    expect(guide).toMatch(/^5\. \*\*Zip the theme folder\.\*\*/m)
   })
 
   it('lets an empty subdirectory through, as the installer does with the directory record zip -r writes', async () => {

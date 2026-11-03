@@ -140,3 +140,78 @@ describe('refused for what is inside', () => {
     expect(FONT.length).toBe(64)
   })
 })
+
+// What Finder and Explorer make by default (measured 2026-11-03): the folder zipped rather than its
+// contents, and, on macOS 15 and later, a `__MACOSX/._<name>` copy of every file plus `.DS_Store`.
+describe('what the operating system adds, and one folder around the package', () => {
+  const inFolder = (folder: string, entries = themeFiles()): TestEntry[] =>
+    [{ name: `${folder}/`, data: new Uint8Array(0) }, ...entries.map((e) => ({ ...e, name: `${folder}/${e.name}` }))]
+  const appleDouble = (names: readonly string[]): TestEntry[] =>
+    [{ name: '__MACOSX/', data: new Uint8Array(0) }, ...names.map((n) => ({ name: `__MACOSX/${n.replace(/([^/]+)$/, '._$1')}`, data: new Uint8Array(163) }))]
+
+  it('reads a Finder zip of the folder: the folder taken off, __MACOSX and .DS_Store left out and named', async () => {
+    const files = themeFiles()
+    const finder = [...inFolder('My Theme', files), ...appleDouble(files.map((f) => `My Theme/${f.name}`)),
+      { name: 'My Theme/.DS_Store', data: new Uint8Array(8) }, { name: 'My Theme/fonts/.DS_Store', data: new Uint8Array(8) }]
+    const r = await read(testZip(finder))
+    const clean = await read(themeZip())
+    if (!r.ok || !clean.ok) throw new Error(JSON.stringify(r))
+    // The same package, to the byte: the same hash as the zip made the documented way.
+    expect(r.pkg.hash).toBe(clean.pkg.hash)
+    expect(r.pkg.files.map((f) => f.path)).toEqual(clean.pkg.files.map((f) => f.path))
+    expect(r.folder).toBe('My Theme')
+    expect(r.skipped).toHaveLength(files.length + 2)
+    expect(r.skipped).toContain('My Theme/fonts/.DS_Store')
+    expect(clean.skipped).toBeUndefined()
+    expect(clean.folder).toBeUndefined()
+  })
+
+  it('reads a Finder zip of the contents, Thumbs.db and desktop.ini in any case left out too', async () => {
+    const files = themeFiles()
+    const r = await read(testZip([...files, ...appleDouble(files.map((f) => f.name)),
+      { name: 'THUMBS.DB', data: new Uint8Array(4) }, { name: 'fonts/Desktop.ini', data: new Uint8Array(4) }]))
+    if (!r.ok) throw new Error(JSON.stringify(r.violations))
+    expect(r.folder).toBeUndefined()
+    expect(r.skipped).toHaveLength(files.length + 2)
+  })
+
+  it('never inflates what it leaves out: an entry of the operating system\'s that is not deflate at all does not matter', async () => {
+    const r = await read(testZip([...themeFiles(), garbage('__MACOSX/._theme.css', 4096), garbage('fonts/.DS_Store', 6148)]))
+    expect(r.ok).toBe(true)
+  })
+
+  it('still counts what it leaves out against the package\'s ceiling', async () => {
+    const big = { name: '__MACOSX/._screenshot.webp', data: new Uint8Array(THEME_LIMITS.totalBytes), deflate: true }
+    const r = await read(testZip([...themeFiles(), big]))
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.violations.map((v) => v.rule)).toContain('A5')
+    expect(r.skipped).toEqual(['__MACOSX/._screenshot.webp'])
+  })
+
+  it('still refuses any other hidden file: nobody\'s operating system wrote .htaccess', async () => {
+    expect(await refusals(themeZip({ '.htaccess': 'x' }))).toEqual(['A3 .htaccess .htaccess'])
+  })
+
+  it('takes off only ONE folder, and only one that holds theme.json itself', async () => {
+    // Two levels down, two folders at the top, a folder whose theme.json is one level further in.
+    const deep = await refusals(testZip(inFolder('a', inFolder('b'))))
+    expect(deep).toContain('A3 theme.json missing')
+    expect(deep).toContain('A3 a/b/theme.json a/b/theme.json')
+    const two = await refusals(testZip([...inFolder('a'), ...inFolder('b')]))
+    expect(two).toContain('A3 a/theme.json a/theme.json')
+    expect((await read(testZip([...inFolder('a'), { name: 'loose.css', data: new Uint8Array(1) }]))).ok).toBe(false)
+  })
+
+  it('judges every path after the folder is taken off: no .. or rooted name gets in through it', async () => {
+    const files = themeFiles()
+    // A `..` hidden behind the folder comes out as `../x` and is refused as one.
+    const behind = await refusals(testZip([...inFolder('t', files), { name: 't/../evil.css', data: new Uint8Array(1) }]))
+    expect(behind).toContain('A3 ../evil.css ../evil.css')
+    // A folder that is itself `..`, `.`, rooted, a drive or a backslashed name is never taken off.
+    for (const folder of ['..', '.', '', 'C:', 'a\\..']) {
+      const r = await read(testZip(files.map((e) => ({ ...e, name: `${folder}/${e.name}` }))))
+      expect(r.ok, folder).toBe(false)
+      expect(r.folder, folder).toBeUndefined()
+    }
+  })
+})

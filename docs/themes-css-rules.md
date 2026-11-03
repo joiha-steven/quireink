@@ -242,7 +242,9 @@ the zip, or a `var()` inside `url()` is refused.
 > A file that is missing, that a package may not hold, or whose content is not what its name says. theme.json, theme.css and screenshot.webp sit at the top of the zip, with only fonts/ and images/ beside them: zip the folder’s contents, not the folder.
 
 Covers the package's paths and kinds ([themes.md section 3](themes.md#3-the-package)): a path not
-on the list, a hidden file, a link, a nested folder, a missing required file, more than 64 files,
+on the list, a hidden file other than what the operating system adds (that is left out,
+[themes.md section 3](themes.md#3-the-package)), a link, `theme.json` further in than one folder, a
+missing required file, more than 64 files,
 a screenshot that is not a 1200 x 900 WebP (the subject is its size, for example `1000x750`), a
 file whose first bytes do not match its extension (the subject is the first bytes in hex), a text
 file that is not plain UTF-8, a zip that is not a zip (`not_a_zip`).
@@ -250,13 +252,13 @@ file that is not plain UTF-8, a zip that is not a zip (`not_a_zip`).
 ```
 # refused: a licence text inside fonts/
 A3 · fonts/OFL.txt · fonts/OFL.txt
-# refused: a hidden file
-A3 · .DS_Store · .DS_Store
+# refused: a hidden file nobody's operating system wrote (a .DS_Store is left out instead)
+A3 · .htaccess · .htaccess
 # refused: screenshot.webp holding text (the subject is its first bytes in hex)
 A3 · screenshot.webp · 6e6f7420616e20696d616765
-# refused: the folder was zipped, not its contents
-A3 · folder/theme.json · folder/theme.json
-A3 · theme.json · missing     (not at the top of the zip)
+# refused: the package two folders down (one folder around it is read from inside)
+A3 · a/b/theme.json · a/b/theme.json
+A3 · theme.json · missing
 # refused: no screenshot yet (the admin says this one in a sentence of its own)
 A3 · screenshot.webp · missing
 ```

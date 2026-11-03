@@ -740,6 +740,7 @@ const de = {
   themeInstalling: 'Wird installiert…',
   themeInstalledOk: '{theme} {version} installiert.',
   themeUnchanged: '{theme} {version} war bereits installiert. Nichts wurde geändert.',
+  themeSkippedOs: 'Dateien, die macOS oder Windows von selbst hinzufügen, wurden weggelassen: {n}.',
   themeRefusedHead: 'Nicht installiert. Von der Prüfung gefundene Probleme: {n}',
   themeTooBig: 'Nicht installiert: Die Datei ist größer als 5 MB, das Maximum für ein Theme.',
   themeNetwork: 'Nicht installiert: Die Datei hat den Server nicht erreicht. Prüfen Sie die Verbindung und versuchen Sie es erneut.',

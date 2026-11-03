@@ -41,7 +41,8 @@ export { themeBlobPath }
 export const isThemeHash = (value: string): boolean => /^[0-9a-f]{64}$/.test(value)
 
 export type InstallResult =
-  | { ok: true; id: string; version: string; hash: string; changed: boolean }
+  /** `skipped`: how many files the operating system had added to the zip, left out and never stored. */
+  | { ok: true; id: string; version: string; hash: string; changed: boolean; skipped: number }
   | { ok: false; violations: Violation[] }
 
 type LiveRow = { id: number; hash: string }
@@ -89,7 +90,8 @@ async function installNow(zip: Uint8Array): Promise<InstallResult> {
   const result = await readThemePackage(zip, packageOptions())
   if (!result.ok) return result
   const { manifest, hash, files } = result.pkg
-  const done = (changed: boolean): InstallResult => ({ ok: true, id: manifest.id, version: manifest.version, hash, changed })
+  const skipped = result.skipped?.length ?? 0
+  const done = (changed: boolean): InstallResult => ({ ok: true, id: manifest.id, version: manifest.version, hash, changed, skipped })
 
   if (liveVersion(manifest.id, manifest.version)?.hash === hash) return done(false)
 

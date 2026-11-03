@@ -1095,6 +1095,8 @@ export type AdminStrings = {
   themeInstalling: string
   themeInstalledOk: string
   themeUnchanged: string
+  /** After an install: how many files the operating system had added to the zip, left out. `{n}` */
+  themeSkippedOs: string
   themeRefusedHead: string
   themeTooBig: string
   themeNetwork: string

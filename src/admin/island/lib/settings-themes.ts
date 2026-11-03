@@ -28,7 +28,7 @@ type Violation = { rule: string; file: string; line: number; col: number; subjec
 type ThemeWords = Partial<Record<
   'fallback' | 'installedOk' | 'unchanged' | 'refusedHead' | 'tooBig' | 'network' | 'serverError'
   | 'rolledBack' | 'removed' | 'failed' | 'reload' | 'askTitle' | 'askBody' | 'yes' | 'no'
-  | 'previewMissing' | 'previewUnreadable' | 'pickGone', string>>
+  | 'previewMissing' | 'previewUnreadable' | 'pickGone' | 'skippedOs', string>>
   & { rules?: Record<string, string> }
 
 /** The screen this card is drawn on, fetched again after a write to redraw the picker. */
@@ -155,7 +155,7 @@ function refused(screen: HTMLElement, violations: Violation[], w: ThemeWords): v
 const isViolation = (v: unknown): v is Violation =>
   typeof v === 'object' && v !== null && typeof (v as Violation).rule === 'string'
 
-type Installed = { id: string; version: string; changed: boolean }
+type Installed = { id: string; version: string; changed: boolean; skipped?: number }
 
 /** Send the zip, and say what came of it. */
 export async function install(screen: HTMLElement, file: File): Promise<void> {
@@ -169,10 +169,12 @@ export async function install(screen: HTMLElement, file: File): Promise<void> {
   const json = await res.json().catch(() => null) as
     { success?: boolean; data?: Installed; error?: string; violations?: unknown } | null
   if (res.ok && json?.success && json.data) {
-    const { id, version, changed } = json.data
+    const { id, version, changed, skipped } = json.data
     const drawn = await refresh(screen, id)
     const name = listIn(screen)?.querySelector<HTMLElement>(`[data-choice="${CSS.escape(id)}"]`)?.dataset.name ?? id
-    const done = fill(changed ? w.installedOk : w.unchanged, { theme: name, version })
+    // What the operating system had added to the zip is said, not left out in silence.
+    const left = typeof skipped === 'number' && skipped > 0 ? ` ${fill(w.skippedOs, { n: String(skipped) })}` : ''
+    const done = fill(changed ? w.installedOk : w.unchanged, { theme: name, version }) + left
     // Installed, but the tiles could not be drawn again: the owner is told where to look.
     return answer(screen, 'data-theme-status', drawn ? done : `${done} ${w.reload ?? ''}`)
   }

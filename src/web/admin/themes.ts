@@ -41,9 +41,9 @@ export function themeRoutes() {
       console.log(`theme refused: ${result.violations.length} finding(s), first ${result.violations[0]?.rule ?? '-'}`)
       return c.json({ success: false, error: 'theme_refused', violations: result.violations }, 422)
     }
-    console.log(`theme ${result.id} ${result.version} ${result.changed ? 'installed' : 'already installed'} as ${result.hash}`)
+    console.log(`theme ${result.id} ${result.version} ${result.changed ? 'installed' : 'already installed'} as ${result.hash}${result.skipped > 0 ? `, ${result.skipped} file(s) the OS added left out` : ''}`)
     if (result.changed) void logActivity('theme.install', `${result.id} ${result.version}`)
-    return json({ id: result.id, version: result.version, hash: result.hash, changed: result.changed })
+    return json({ id: result.id, version: result.version, hash: result.hash, changed: result.changed, skipped: result.skipped })
   })
 
   router.get('/api/themes', async () => json(await listInstalledThemes()))

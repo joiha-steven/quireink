@@ -81,13 +81,17 @@ PowerShell, with the differences named. Everything runs from inside the product 
    ```
 
    Until a folder has one, the preview uses a blank picture in its place and the check refuses
-   the theme (A3). The starter's own `screenshot.webp` is the starter's: replace it, or every
+   the theme (A3). The four built-in tiles beside yours show the same kind of picture, so a
+   picture of something else reads as the one tile with nothing to show. The starter's own `screenshot.webp` is the starter's: replace it, or every
    blog shows your theme with the starter's picture.
 
-5. **Zip the folder's contents, not the folder.** `theme.json` must be at the top of the zip.
-   Finder's Compress and Explorer's "Send to compressed folder" on the folder itself nest everything
-   one level down, and Finder on current macOS also adds a `__MACOSX/` copy of every file: the
-   install refuses both. Use the command, from inside the theme folder:
+5. **Zip the theme folder.** `theme.json` goes at the top of the zip, or inside one folder at the
+   top: Finder's Compress and Explorer's "Send to compressed folder" both work, on the folder or on
+   what is in it. The install reads a package from inside that one folder, and leaves out what
+   macOS and Windows add by themselves (`__MACOSX/`, `.DS_Store`, `Thumbs.db`, `desktop.ini`; since
+   macOS 15 Finder adds a `__MACOSX/` copy of every file), never storing it and saying how many it
+   left out. Any other hidden file (`.htaccess`, `.git/`) is refused. The commands, from inside
+   the theme folder, make the smallest zip:
 
    ```
    # macOS / Linux
@@ -98,9 +102,9 @@ PowerShell, with the differences named. Everything runs from inside the product 
    & "$env:SystemRoot\System32\tar.exe" -a -cf ..\my-theme.zip --exclude Thumbs.db --exclude desktop.ini --exclude .DS_Store (Get-ChildItem -Name)
    ```
 
-   Then `bun run theme:check ../my-theme.zip` on the zip itself. A zip made the wrong way gets a
-   `hint:` line saying so above its findings. Checking the folder refuses a hidden file in it,
-   such as the `.DS_Store` Finder writes into every folder it opens: delete it, or check the zip.
+   Then `bun run theme:check ../my-theme.zip` on the zip itself: it says what the install will
+   read from inside and leave out. Checking a folder leaves out the same files, and warns about
+   any other hidden one, which a zip must not carry.
 
 6. **Try it on a blog of your own** (or skip to 7 on a blog you already run). From the product
    clone, a throwaway blog on your machine:
@@ -153,7 +157,11 @@ Whole package: at most **64 files**, **10485760 bytes (10 MiB)** once expanded, 
 [`src/theme/types.ts`](../src/theme/types.ts) and
 [`src/theme/check-files.ts`](../src/theme/check-files.ts).
 
-- Hidden files, other names, other folders, a link, two names that differ only in case, a name
+- What the operating system adds is left out, not refused: `__MACOSX/` at the top, and any
+  `.DS_Store`, `Thumbs.db`, `desktop.ini` or `._<name>` file (one list,
+  [`src/theme/os-litter.ts`](../src/theme/os-litter.ts)); its declared size still counts against
+  the 10 MiB. A package inside one folder at the top, holding `theme.json`, is read from inside it.
+- Other hidden files, other names, other folders, a link, two names that differ only in case, a name
   with `..` or a backslash, and a file whose bytes are not what its extension says (a `.webp` that
   is not a WebP, a `.woff2` that does not start `wOF2`) are refused. Text files are UTF-8 without a
   byte order mark.
@@ -389,7 +397,3 @@ must be one of yours or a built-in id of that kind.
   It does **not** catch uneven spacing, misalignment, overlap that fits in the window, low contrast
   of text you placed on a ground of your own (only palettes are contrast-checked), hover and focus
   states, print, or a missing date like the one above. Look at the contact sheet.
-- **A theme can only be as good as its screenshot is honest.** The tile shows
-  `screenshot.webp`, cropped from the top; make it from the preview's shots of your own theme at
-  exactly 1200 x 900. The four built-in tiles beside it show the same kind of picture, the front
-  page at the top, so a sheet of grey bars would read as the one tile with nothing to show.

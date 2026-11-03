@@ -740,6 +740,7 @@ const en = {
   themeInstalling: 'Installing…',
   themeInstalledOk: 'Installed {theme} {version}.',
   themeUnchanged: '{theme} {version} was already installed. Nothing changed.',
+  themeSkippedOs: 'Files macOS or Windows add by themselves were left out: {n}.',
   themeRefusedHead: 'Not installed. Problems the check found: {n}',
   themeTooBig: 'Not installed: the file is larger than 5 MB, the most a theme may be.',
   themeNetwork: 'Not installed: the file did not reach the server. Check the connection and try again.',

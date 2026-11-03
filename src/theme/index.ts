@@ -18,7 +18,8 @@ export { decodeThemeText } from '@/theme/file-content'
 export type { ThemeFileEntry } from '@/theme/check-files'
 export { THEME_LIMITS } from '@/theme/types'
 export { packageHash, readThemePackage, themeFileType } from '@/theme/read-package'
-export type { PackageOptions, PackageResult, ThemePackage, ThemePackageFile } from '@/theme/read-package'
+export { isOsLitterName, isOsLitterPath, OS_LITTER_FOLDERS, OS_LITTER_NAMES, OS_LITTER_PREFIX } from '@/theme/os-litter'
+export type { PackageOptions, PackageReading, PackageResult, ThemePackage, ThemePackageFile } from '@/theme/read-package'
 export type {
   ThemeContract, ThemeFont, ThemeFontFace, ThemeManifest, ThemePalette, ThemePaletteColors,
   ThemeRule, ThemeSurface, Violation,

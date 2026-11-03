@@ -740,6 +740,7 @@ const vi = {
   themeInstalling: 'Đang cài…',
   themeInstalledOk: 'Đã cài {theme} {version}.',
   themeUnchanged: '{theme} {version} đã được cài từ trước. Không có gì thay đổi.',
+  themeSkippedOs: 'Đã bỏ qua các tệp do macOS hoặc Windows tự thêm vào: {n}.',
   themeRefusedHead: 'Chưa cài. Số lỗi bước kiểm tìm thấy: {n}',
   themeTooBig: 'Chưa cài: tệp lớn hơn 5 MB, mức tối đa cho một theme.',
   themeNetwork: 'Chưa cài: tệp không tới được máy chủ. Hãy kiểm tra kết nối rồi thử lại.',

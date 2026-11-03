@@ -10,6 +10,14 @@
 // theme.json, then theme.css. `import/unzip.ts` does not refuse `..` or an absolute name: it is a
 // reader, and this is where a theme's names are judged (`checkThemeFiles`, `package-path.ts`).
 //
+// Two things a zip may hold that the package does not, both of them what Finder and Explorer make
+// by default (measured 2026-11-03): what the operating system adds by itself (`os-litter.ts`),
+// which is LEFT OUT, never inflated and never stored, its declared size still counted against the
+// package's ceiling; and one folder around the whole package, which is READ FROM INSIDE when it is
+// the only thing at the top and holds `theme.json`. Every path check runs on the path as it is
+// after that folder is taken off, so the folder can never carry a `..` or a rooted name past them.
+// Both are said in the result (`skipped`, `folder`), so nothing is left out without a word.
+//
 // Pure apart from `node:zlib` and `node:crypto`, which both runtimes have, so the install route
 // runs the same code on Bun and in a Worker.
 
@@ -19,6 +27,7 @@ import { checkThemeCss } from '@/theme/check-css'
 import { checkThemeFiles, type ThemeFileEntry } from '@/theme/check-files'
 import { checkThemeManifest, type ManifestOptions } from '@/theme/check-manifest'
 import { decodeThemeText } from '@/theme/file-content'
+import { isOsLitterPath } from '@/theme/os-litter'
 import { subjectOf } from '@/theme/findings'
 import { THEME_LIMITS, type ThemeContract, type ThemeManifest, type Violation } from '@/theme/types'
 
@@ -35,7 +44,13 @@ export type ThemePackage = {
 
 export type PackageOptions = Omit<ManifestOptions, 'packageFiles'> & { contract: ThemeContract }
 
-export type PackageResult = { ok: true; pkg: ThemePackage } | { ok: false; violations: Violation[] }
+/**
+ * What was read around the package, on either answer: the entries left out as the operating
+ * system's (`skipped`, in archive order), and the one folder the package was read from inside.
+ */
+export type PackageReading = { skipped?: string[]; folder?: string }
+
+export type PackageResult = ({ ok: true; pkg: ThemePackage } | { ok: false; violations: Violation[] }) & PackageReading
 
 /**
  * The content type each file is served with, by extension. A closed list: `checkThemeFiles`
@@ -60,6 +75,27 @@ export const themeFileType = (path: string): string =>
  * as directory entries, which is all `zip -r` adds. Counted before anything else is read.
  */
 const MAX_RECORDS = THEME_LIMITS.files + 2
+/**
+ * Records a zip may hold in all, the operating system's included: Finder writes a `._` copy of
+ * every file and a record for every folder under `__MACOSX/`, so up to twice the package and its
+ * folders again. Past this the zip is refused before anything is judged.
+ */
+const MAX_LISTED = MAX_RECORDS * 3
+
+/** A folder name that, taken off the front of every path, can only ever have been a folder name. */
+const PLAIN_FOLDER = /^(?!\.{1,2}$)[^\\/:\0-\x1f\x7f]{1,200}$/
+
+/**
+ * The one folder every entry sits in, when that folder holds `theme.json` itself; null otherwise.
+ * Its name is thrown away, so it is only held to being one plain segment; what is left of each
+ * path after it is judged in full by `checkThemeFiles`, as any path is.
+ */
+function wrappingFolder(names: readonly string[]): string | null {
+  const top = names[0]?.split('/')[0]
+  if (top === undefined || !PLAIN_FOLDER.test(top)) return null
+  if (!names.every((n) => n.startsWith(`${top}/`))) return null
+  return names.includes(`${top}/theme.json`) ? top : null
+}
 
 /** One refusal with no place in a file. */
 const refusal = (rule: Violation['rule'], file: string, subject: string): Violation =>
@@ -95,31 +131,50 @@ export async function readThemePackage(zip: Uint8Array, opts: PackageOptions): P
   } catch (error) {
     return { ok: false, violations: [zipFault(error)] }
   }
-  if (listing.length > MAX_RECORDS) return { ok: false, violations: [refusal('A3', '', String(listing.length))] }
-  const declared: ThemeFileEntry[] = listing.map((e) => ({ path: e.name, size: e.size, isSymlink: e.isSymlink }))
+  if (listing.length > MAX_LISTED) return { ok: false, violations: [refusal('A3', '', String(listing.length))] }
+  const litter = listing.filter((e) => isOsLitterPath(e.name))
+  const kept = listing.filter((e) => !isOsLitterPath(e.name))
+  const folder = wrappingFolder(kept.map((e) => e.name))
+  const reading: PackageReading = {
+    ...(litter.some((e) => !e.name.endsWith('/')) ? { skipped: litter.filter((e) => !e.name.endsWith('/')).map((e) => subjectOf(e.name)) } : {}),
+    ...(folder !== null ? { folder: subjectOf(folder) } : {}),
+  }
+  const refused = (violations: Violation[]): PackageResult => ({ ok: false, violations, ...reading })
+  if (kept.length > MAX_RECORDS) return refused([refusal('A3', '', String(kept.length))])
+  /** The path the package means: with the wrapping folder taken off, before any check reads it. */
+  const inside = (name: string): string => (folder === null ? name : name.slice(folder.length + 1))
+  const declared: ThemeFileEntry[] = kept
+    .filter((e) => folder === null || e.name !== `${folder}/`)
+    .map((e) => ({ path: inside(e.name), size: e.size, isSymlink: e.isSymlink }))
   // Every entry here comes without bytes, which `checkThemeFiles` reports for each; those findings
   // are the only ones this pass expects, and the bytes are judged in the pass after inflating.
   const early = checkThemeFiles(declared).filter((v) => !(v.rule === 'A3' && v.subject === 'no bytes'))
-  if (early.length > 0) return { ok: false, violations: early }
+  // What is left out still weighs: its declared size counts against the package's ceiling.
+  const declaredTotal = listing.reduce((n, e) => n + (Number.isSafeInteger(e.size) && e.size > 0 ? e.size : 0), 0)
+  if (declaredTotal > THEME_LIMITS.totalBytes && !early.some((v) => v.rule === 'A5' && v.file === '')) {
+    early.push(refusal('A5', '', String(declaredTotal)))
+  }
+  if (early.length > 0) return refused(early)
 
   // 2. Inflated, never past one image per entry or the package's total, whatever is declared.
   let inflated: Awaited<ReturnType<typeof unzip>>
   try {
-    inflated = await unzip(zip, () => true, THEME_LIMITS.imageBytes, THEME_LIMITS.totalBytes)
+    // The operating system's entries are never decompressed: `unzip` asks before it inflates.
+    inflated = await unzip(zip, (name) => !isOsLitterPath(name), THEME_LIMITS.imageBytes, THEME_LIMITS.totalBytes)
   } catch (error) {
-    return { ok: false, violations: [zipFault(error)] }
+    return refused([zipFault(error)])
   }
-  const listed = listing.filter((e) => !e.name.endsWith('/'))
+  const listed = kept.filter((e) => !e.name.endsWith('/'))
   const violations: Violation[] = []
   const entries: ThemeFileEntry[] = inflated.map((e, i) => {
     const said = listed[i]
     // A file that came out a different size from the one its record states is a lying record:
     // the checksum matched what was stored, the directory did not.
-    if (said?.name !== e.name || said.size !== e.bytes.length) violations.push(refusal('A5', e.name, String(e.bytes.length)))
-    return { path: e.name, size: e.bytes.length, isSymlink: said?.isSymlink, bytes: e.bytes }
+    if (said?.name !== e.name || said.size !== e.bytes.length) violations.push(refusal('A5', inside(e.name), String(e.bytes.length)))
+    return { path: inside(e.name), size: e.bytes.length, isSymlink: said?.isSymlink, bytes: e.bytes }
   })
   violations.push(...checkThemeFiles(entries))
-  if (violations.length > 0) return { ok: false, violations }
+  if (violations.length > 0) return refused(violations)
 
   // 3. theme.json, then theme.css, both through the one decoder the checker trusts.
   const byPath = new Map(entries.map((e) => [e.path, e.bytes!]))
@@ -127,22 +182,22 @@ export async function readThemePackage(zip: Uint8Array, opts: PackageOptions): P
   const manifestText = decodeThemeText(byPath.get('theme.json')!, 'theme.json')
   const cssText = decodeThemeText(byPath.get('theme.css')!, 'theme.css')
   // checkThemeFiles already refused text that does not decode; these are for the type checker.
-  if (typeof manifestText !== 'string') return { ok: false, violations: [manifestText] }
-  if (typeof cssText !== 'string') return { ok: false, violations: [cssText] }
+  if (typeof manifestText !== 'string') return refused([manifestText])
+  if (typeof cssText !== 'string') return refused([cssText])
   let raw: unknown
   try {
     raw = JSON.parse(manifestText)
   } catch {
-    return { ok: false, violations: [refusal('A6', 'theme.json', 'not json')] }
+    return refused([refusal('A6', 'theme.json', 'not json')])
   }
   const manifest = checkThemeManifest(raw, { ...opts, packageFiles })
   const cssFindings = checkThemeCss(cssText, opts.contract, packageFiles)
   if (!manifest.ok || cssFindings.length > 0) {
-    return { ok: false, violations: [...(manifest.ok ? [] : manifest.violations), ...cssFindings] }
+    return refused([...(manifest.ok ? [] : manifest.violations), ...cssFindings])
   }
 
   const files = entries
     .map((e) => ({ path: e.path, size: e.bytes!.length, type: themeFileType(e.path), bytes: e.bytes! }))
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
-  return { ok: true, pkg: { manifest: manifest.manifest, hash: packageHash(files), files } }
+  return { ok: true, pkg: { manifest: manifest.manifest, hash: packageHash(files), files }, ...reading }
 }

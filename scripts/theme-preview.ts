@@ -24,7 +24,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, statSync, writeFile
 import { basename, join, resolve } from 'node:path'
 import sharp from 'sharp'
 import { SCREENSHOT_SIZE, THEME_LIMITS } from '@/theme'
-import { isOsLitter, loadThemePath } from './theme-check'
+import { leftOutOfFolder, loadThemePath } from './theme-check'
 import { Browser, OPEN_BOOK } from './theme-matrix-browser'
 import {
   assertPortFree, CLOCK_ISO, CLOCK_PRELOAD, defaultBrowser, freePort, instanceEnv, run, seedPristine,
@@ -82,7 +82,7 @@ async function withStandInPicture(theme: string): Promise<string | null> {
   if (!isDir || existsSync(join(dir, 'screenshot.webp'))) return null
   mkdirSync(resolve('.tmp'), { recursive: true })
   const copy = mkdtempSync(join(resolve('.tmp'), 'theme-preview-src-'))
-  cpSync(dir, copy, { recursive: true, filter: (src) => src === dir || !isOsLitter(basename(src)) })
+  cpSync(dir, copy, { recursive: true, filter: (src) => src === dir || !leftOutOfFolder(basename(src)) })
   const blank = await sharp({ create: { ...SCREENSHOT_SIZE, channels: 3, background: { r: 200, g: 200, b: 200 } } }).webp().toBuffer()
   writeFileSync(join(copy, 'screenshot.webp'), blank)
   return copy

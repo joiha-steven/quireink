@@ -41,10 +41,14 @@ with more than 66 entries or a file past its limit is refused from the sizes alo
 - No argument, or a path that is missing or cannot be read: a message and the usage line
   (`usage: bun run theme:check <theme directory | theme.zip>`), exit 2.
 
-**Zip the folder's CONTENTS, not the folder.** `theme.json` must be at the top of the zip. Finder's
-Compress and Explorer's "Send to compressed folder" on the folder itself nest everything one level down,
-and the install refuses that. Hidden files are refused too (`.DS_Store`, `Thumbs.db`, `__MACOSX/`), so
-leave them out:
+**`theme.json` at the top of the zip, or in one folder at the top.** A zip whose every entry sits in one
+folder holding `theme.json` is read from inside it, which is what Finder's Compress and Explorer's "Send
+to compressed folder" make of the folder; the folder's name is dropped, and every path is judged after
+it is. What the operating system adds by itself is left out without being inflated or stored:
+`__MACOSX/` at the top and any `.DS_Store`, `Thumbs.db`, `desktop.ini` or `._<name>`
+([`src/theme/os-litter.ts`](../src/theme/os-litter.ts)), its declared size still counted against the
+package's ceiling. Both are in the answer: `POST /api/themes` returns `skipped`, the number left out,
+and the admin says it. Any other hidden file is refused. The smallest zip comes from:
 
 ```
 # macOS / Linux, from inside the theme folder
@@ -52,7 +56,7 @@ zip -r ../my-theme.zip . -x '.*' '*/.*' '__MACOSX/*'
 
 # Windows PowerShell, from inside the theme folder (the built-in bsdtar, not Compress-Archive,
 # which writes backslashes in names on Windows PowerShell 5)
-& "$env:SystemRoot\System32\tar.exe" -a -cf ..\my-theme.zip --exclude Thumbs.db --exclude .DS_Store (Get-ChildItem -Name)
+& "$env:SystemRoot\System32\tar.exe" -a -cf ..\my-theme.zip --exclude Thumbs.db --exclude desktop.ini --exclude .DS_Store (Get-ChildItem -Name)
 ```
 
 ## Preview before installing

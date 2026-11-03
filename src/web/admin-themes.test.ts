@@ -53,7 +53,7 @@ const install = (zip: Uint8Array) => asOwner('/api/themes', { method: 'POST', bo
 const installed = async (zip: Uint8Array) => {
   const res = await install(zip)
   expect(res.status).toBe(200)
-  return payload<{ id: string; version: string; hash: string; changed: boolean }>(res)
+  return payload<{ id: string; version: string; hash: string; changed: boolean; skipped: number }>(res)
 }
 const list = async () => payload<InstalledTheme[]>(await asOwner('/api/themes'))
 const rows = () => db().query('select theme_id, version, hash, deleted_at from themes order by id').all() as
@@ -104,6 +104,22 @@ describe('installing', () => {
     const again = await installed(testZip(themeFiles().reverse().map((e) => ({ ...e, deflate: false }))))
     expect(again).toEqual({ ...first, changed: false })
     expect(rows()).toHaveLength(1)
+  })
+
+  // What Finder makes by default: the folder zipped, and on macOS 15 and later a __MACOSX copy of
+  // every file. The install reads it as the same package, stores none of the operating system's
+  // files, and says how many it left out.
+  it('installs a Finder zip of the folder as the same package, storing nothing macOS added and saying how much it left out', async () => {
+    const clean = await installed(themeZip())
+    db().run(`delete from themes`)
+    const files = themeFiles()
+    const finder = [...files.map((e) => ({ ...e, name: `Broadsheet/${e.name}` })),
+      ...files.map((e) => ({ name: `__MACOSX/Broadsheet/${e.name.replace(/([^/]+)$/, '._$1')}`, data: new Uint8Array(163) })),
+      { name: 'Broadsheet/.DS_Store', data: new Uint8Array(8) }]
+    const out = await installed(testZip(finder))
+    expect(out).toEqual({ ...clean, changed: true, skipped: files.length + 1 })
+    expect(stored().every((p) => !p.includes('__MACOSX') && !p.includes('.DS_Store') && !p.includes('/._'))).toBe(true)
+    expect(clean.skipped).toBe(0)
   })
 
   it('two requests installing the same package at once leave one row', async () => {

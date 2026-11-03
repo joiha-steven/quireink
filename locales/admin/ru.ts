@@ -740,6 +740,7 @@ const ru = {
   themeInstalling: 'Установка…',
   themeInstalledOk: '{theme} {version} установлена.',
   themeUnchanged: '{theme} {version} уже была установлена. Ничего не изменилось.',
+  themeSkippedOs: 'Пропущены файлы, которые macOS или Windows добавляют сами: {n}.',
   themeRefusedHead: 'Не установлено. Найдено проблем: {n}',
   themeTooBig: 'Не установлено: файл больше 5 МБ, а это предел для темы.',
   themeNetwork: 'Не установлено: файл не дошёл до сервера. Проверьте соединение и попробуйте ещё раз.',

@@ -162,14 +162,15 @@ hiding `.post-info` drops an untitled post's date unless you bring its header ba
    with other bytes replaces the installed one), but the previous bytes are gone, so there is no
    **Roll back** to them. Raise the version for anything you hand out.
 
-**My zip was refused with one A3 line per file.** It was made from the folder, not its contents,
-or by Finder, which on current macOS adds a `__MACOSX/` copy of every file. `theme:check` on the
-zip says which, in a `hint:` line above the findings. Make it with the command in
-[themes.md step 5](themes.md#2-start).
+**theme:check says it "left out" files, or read the zip "from inside the folder".** A
+`.DS_Store` (Finder writes one into every folder it opens), a `__MACOSX/` copy (Finder adds one per
+file), `Thumbs.db` or `desktop.ini`: the install leaves them out the same way, and reads a zip of
+the folder from inside it. Nothing to fix. A `warning:` about another hidden file (`.htaccess`) is
+different: a zip that carries it is refused.
 
-**theme:check refuses `fonts/.DS_Store` in my folder.** Finder writes a `.DS_Store` into every
-folder it opens. The zip commands in the guide leave it out, so the zip is fine; delete the file
-(`find . -name .DS_Store -delete`) to check the folder.
+**My zip was refused with `hint: theme.json is at …`.** The package is further in than one folder
+(a folder inside a folder). Zip the folder that holds `theme.json`, or use the command in
+[themes.md step 5](themes.md#2-start).
 
 **theme:preview takes a minute.** That is every page, at three widths, light and dark, per palette.
 While you work on one thing, photograph only that:
