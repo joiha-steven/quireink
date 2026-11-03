@@ -23,6 +23,7 @@ import { REPO } from '@/admin-shared/help'
 import { pageHeader, sheet } from '@/web/admin/kit'
 import { band, trafficCard, widgets } from '@/web/admin/screens/dashboard-cards'
 import { dashboardView } from '@/web/admin/views-home'
+import { namedDetails, titlesFor } from '@/web/admin/screens/log'
 import { siteZone } from '@/analytics/types'
 
 /** Where an owner with no name on the blog sets one: the tab that holds it (ADR 0041's `?tab=`). */
@@ -184,6 +185,11 @@ function systemLine(t: AdminStrings, settings: SiteSettings, d: Awaited<ReturnTy
     + `</div>`
 }
 
+const named = (entries: Awaited<ReturnType<typeof dashboardView>>['recent']) => {
+  const { holders, ambiguous } = titlesFor(entries)
+  return namedDetails(entries, holders, ambiguous)
+}
+
 export async function dashboardScreen(settings: SiteSettings): Promise<string> {
   const t = adminT(settings.language)
   const d = await dashboardView()
@@ -198,7 +204,9 @@ export async function dashboardScreen(settings: SiteSettings): Promise<string> {
     // zeroes is the least useful thing a new owner can be shown first.
     + firstRun(t, d.firstRunDone, d.setup as unknown as Record<string, boolean>)
     + trafficCard(t, lang, d.dashboard.traffic)
-    + widgets(t, lang, tz, d.dashboard, d.recent, d.activityEnabled)
+    // THE SAME NAMES AS THE LOG: a stored slug printed as the piece's title under the Log's own
+    // rule, so "Wrote “the-golden-canon-…”" here does not sit beside a title there (2026-11-03).
+    + widgets(t, lang, tz, d.dashboard, named(d.recent), d.activityEnabled)
 
   return `<div data-screen="dashboard">`
     + header(t, settings, d.author, d.lastPublishedAt)
