@@ -94,5 +94,18 @@ export async function seedActivity(origin: number, now: number): Promise<number>
     const row = one<{ id: number }>(`select max(id) as id from activity_log`)
     if (row?.id != null) run(`update activity_log set at = ? where id = ?`, at, row.id)
   }
+  // A PIECE EXISTS FROM ITS FIRST ENTRY ON. The store layer stamps `created_at` with the
+  // seeder's own clock, so every piece looked minutes old against a timeline months long, and
+  // the Log screen, which names a slug by its title only for entries written after that piece
+  // was created (an older entry may name a slug somebody else held), printed every one as a
+  // slug: "Wrote “the-golden-canon-and-its-arithmetic”" (measured 2026-11-03).
+  for (const [action, detail, at] of rows) {
+    const table = PIECE_TABLES[action.split('.')[0] ?? '']
+    // Table names from the closed set above; every value is bound.
+    if (table) run(`update ${table} set created_at = min(created_at, ?) where slug = ?`, at, detail)
+  }
   return rows.length
 }
+
+/** The families whose log entries name a piece by slug, and the table that piece lives in. */
+const PIECE_TABLES: Record<string, string | undefined> = { post: 'posts', page: 'pages', note: 'notes' }
