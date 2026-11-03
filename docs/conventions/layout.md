@@ -65,15 +65,13 @@ inside it. In book mode the same break becomes the asterism.
   `items-baseline`, is the drift this rule exists for. The public bar's rule is above.
 - **One divider style site-wide:** the global `<hr>` (full width, faint). Never bespoke
   `border-t`/`border-b` as content dividers.
-- **ALL-CAPS in exactly two roles, each from one source** (rule rewritten 2026-09-30 to match
-  what ships; it said "never" while both roles below had shipped for weeks). The admin's
-  eyebrow, `UTIL` in [`admin-shared/scale.ts`](../../src/admin-shared/scale.ts): two or three
-  words naming a group of rows, never a sentence, because 12px capitals are the slowest thing
-  the admin sets. And the Paper look's kickers in
+- **ALL-CAPS in exactly one role, from one source**: the Paper look's kickers in
   [`look-paper.css.ts`](../../src/web/look-paper.css.ts) and `look-paper-shelf.css.ts` (the rail
   headings, the section over a piece, the series head), which is that look's newspaper voice.
-  No other label gets `uppercase`: one that wants capitals is either one of those two roles or
-  it is not capitals. (A hex colour typed in a field is data, not a label.)
+  The admin's eyebrow (`UTIL` in [`admin-shared/scale.ts`](../../src/admin-shared/scale.ts)) was
+  the second role until 2026-11-03, 12px tracked capitals in grey; it is 13px/600 in the ink, in
+  ordinary case, now. No other label gets `uppercase`: one that wants capitals is that role or it
+  is not capitals. (A hex colour typed in a field is data, not a label.)
 - **The sidebar rail never moves the reading column.** `.rail` is absolutely placed inside
   `.with-rail` (which wraps the content, not the header, so the rail's first line is level with
   the article's first line) and sticks on scroll. Its breakpoint is COMPUTED from `contentWidth`

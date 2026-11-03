@@ -1187,6 +1187,12 @@ input[type='color']::-moz-color-swatch {
 :root[data-mac='1'] .chord-other { display: none; }
 /* A phone has no keyboard to press the chord on: the badge is noise there (2026-09-30). */
 @media (hover: none) and (pointer: coarse) { .rail-chord { display: none; } }
+/* BESIDE THE WORDMARK THE CHORD APPEARS WHEN ASKED FOR (2026-11-03): on the pointer reaching the
+   search key, or the keyboard landing on it. Printed at rest it sat by the logo on every screen,
+   a third mark in the brand's row. Faded, not removed: it is still the key's text for a screen
+   reader, and the badge in the palette and on the editor's keys is unchanged. */
+.rail-search-key .rail-chord { opacity: 0; transition: opacity 120ms ease-out; }
+.rail-search-key:hover .rail-chord, .rail-search-key:focus-visible .rail-chord { opacity: 1; }
 
 /* The wordmark is `Q.` at 72px and `quireINK` above it: the same logo at the size where the
    word would be a smear. Both are in the markup; this picks. */

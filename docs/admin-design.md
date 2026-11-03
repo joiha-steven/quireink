@@ -176,8 +176,8 @@ character and none of its typographic rules **except one**, below.
   settings screen. A thing a person picks — a theme, a palette, a font tile — keeps a frame,
   because it is an object; `PANEL` and `INSET` are passages and get rules. The three ranks are
   **card** (`panelCard` in [`web/admin/fields.ts`](../src/web/admin/fields.ts): its name on a
-  ruled header row at 16px/600, the rows under it, no edge), **group** (`group` in the same file: one rule and a 12px
-  `UTIL` eyebrow, no box — a box inside a card is the arrangement above, one level further in)
+  ruled header row at 16px/600, the rows under it, no edge), **group** (`group` in the same file: one rule and a
+  13px/600 `UTIL` eyebrow in the ink and ordinary case since 2026-11-03, no box — a box inside a card is the arrangement above, one level further in)
   and **list** (`PANEL_LIST` in
   [`web/admin/fields-box.ts`](../src/web/admin/fields-box.ts): the card's full width,
   `-mx-4` against the body's `p-4`, the rows keeping their padding so their labels land on the
@@ -185,8 +185,8 @@ character and none of its typographic rules **except one**, below.
   **A rank is set by type, never by decoration.** Until 2026-09-07 a settings card wore a 17px
   title, a tinted header band and a grey dot, all three bought to separate it from the groups
   inside it — which were set at 16px/600, one point below. Dropping the group to an eyebrow
-  makes the distance four points and two weights, and all three marks came off with nothing
-  lost. The same reasoning took the list's own top and bottom rules away: a group's rule or the
+  (12px capitals then, 13px/600 now: three points and a rule) let all three marks come off with
+  nothing lost. The same reasoning took the list's own top and bottom rules away: a group's rule or the
   card's header already sits above the first row and the card's edge below the last.
 - **Admin is monochrome plus two inks and the version dot, each with a named role. The accent is the product's highlighter** (the Writing
   Desk mock's `--pen`, 2026-08-17). Its roles are named and closed — where you are (above), a

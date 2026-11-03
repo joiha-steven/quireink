@@ -326,9 +326,12 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       const cs = parseFloat(c.fontSize), gs = parseFloat(g.fontSize)
       if (cs !== 16) return 'a card title is ' + cs + 'px, not 16'
       if (Number(c.fontWeight) < 600) return 'a card title is weight ' + c.fontWeight
-      if (gs !== 12) return 'a group title is ' + gs + 'px, not 12'
-      if (g.textTransform !== 'uppercase') return 'a group title is not an eyebrow: ' + g.textTransform
-      if (cs - gs < 4) return 'only ' + (cs - gs) + 'px between a card and a group'
+      // Since 2026-11-03 the eyebrow is 13px/600 in the ink and in ordinary case; it was 12px
+      // capitals in grey. The rank is the step under the card's 16px and the rule above it.
+      if (gs !== 13) return 'a group title is ' + gs + 'px, not 13'
+      if (Number(g.fontWeight) < 600) return 'a group title is weight ' + g.fontWeight
+      if (g.textTransform === 'uppercase') return 'a group title is still set in capitals'
+      if (cs - gs < 3) return 'only ' + (cs - gs) + 'px between a card and a group'
       // No mark opens the header row except a lamp, which carries a name. A bare decorative
       // dot is what this replaced, and it is the thing most likely to come back.
       const marks = Array.from(card.querySelectorAll('span')).filter((n) => {
@@ -337,7 +340,7 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       })
       const unnamed = marks.filter((n) => !n.getAttribute('aria-label') && !n.querySelector('[aria-label]'))
       if (unnamed.length) return unnamed.length + ' unnamed mark(s) still open a card title'
-      return 'ok card ' + cs + '/' + c.fontWeight + ', group ' + gs + ' uppercase, ' + marks.length + ' mark(s)'
+      return 'ok card ' + cs + '/' + c.fontWeight + ', group ' + gs + '/' + g.fontWeight + ', ' + marks.length + ' mark(s)'
     })()`, 900))
 
   // ITEM 16: THE HEADER ROW SURVIVES A LANGUAGE THAT IS NOT ENGLISH. Seven tabs, the save key

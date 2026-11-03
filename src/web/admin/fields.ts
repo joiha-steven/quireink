@@ -327,8 +327,8 @@ export function panelCard(c: {
  *
  * A group draws ONE hairline above its title and no box: a box inside a card at the card's own
  * radius is the arrangement that made the innermost frame shout loudest. An EYEBROW, not a
- * heading: 12px uppercase against a 16px/600 card title is four points and two weights, which
- * is the whole job, and the decoration the card used to need comes off.
+ * heading: 13px/600 in the ink (12px capitals until 2026-11-03) under a 16px/600 card title,
+ * three points and the rule above it, which is the whole job.
  *
  * `first` drops the rule, because a rule directly under the card's own header row is two lines
  * with nothing between them.

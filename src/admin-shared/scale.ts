@@ -14,15 +14,15 @@
 //   28px  TITLE          the page's own name, once per screen, in Literata
 //   16px  SECTION        a card's title, settings cards included
 //   14px  SETTING_LABEL  the label on one setting
-//   13px  NOTE           the sentence explaining a setting
-//   12px  META / UTIL    table heads, counts, timestamps · and the eyebrow over a group
+//   13px  NOTE / UTIL    the sentence explaining a setting · and, at 600 in ink, the eyebrow over a group
+//   12px  META           table heads, counts, timestamps
 //
 // ⚠️ A SEVENTH STEP WAS REMOVED ON 2026-09-07. `GROUP_TITLE` set a settings card's title at
 // 17px, bought on 2026-09-04 because 15/600 over 14/500 left the owner unable to pick a group
 // title out of a column of thirty-seven. What that bought was one point of size for the outer
 // box while the stretches INSIDE it stayed at 16/600 — so the extra point was being spent on
-// the smaller of the two distances. The groups are now a 12px eyebrow (`UTIL`), which makes
-// the distance four points and two weights and leaves nothing for a step of its own to do. A
+// the smaller of the two distances. The groups are now an eyebrow (`UTIL`, 13px/600 since
+// 2026-11-03, 12px capitals before), three points under the card, and that leaves nothing for a step of its own to do. A
 // size worn by exactly one component is not a step in a scale; it is that component's opinion.
 //
 // ⚠️ THE PAGE TITLE WENT UP, 22px to 28px, on 2026-09-07 — reversing the 26.4→22 change
@@ -148,17 +148,15 @@ export const META = 'text-xs text-neutral-500 dark:text-neutral-400'
 export const GLYPH = component('kit-glyph', 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0')
 
 /**
- * THE EYEBROW: a name over a stretch of other things, at the same size as `META` and in a
- * different voice — 500 rather than 400, uppercase, and opened up 0.04em so the caps do not
- * set solid.
+ * THE EYEBROW: a name over a stretch of other things — 13px, 600, in the ink, in ordinary case
+ * (2026-11-03). It was 12px uppercase, tracked 0.04em, in grey: the label every generated
+ * settings screen hangs over its groups. The rank is said by the rule above it and by the step
+ * between 13px/600 here and the card's 16px/600; capitals added nothing but slower reading.
  *
- * ⚠️ NOT FOR A SENTENCE, and the tracking is why: uppercase at 12px is slower to read than
- * anything else this admin sets, which is fine for two words naming a group and wrong for a
- * line somebody has to take in. A note is `NOTE`; this is the label ON the box the note is in.
- * `docs/admin-design.md` bans ALL-CAPS on the public side and this is the admin, where the
- * job is scanning rather than reading.
+ * ⚠️ STILL NOT FOR A SENTENCE: a few words naming a group. A note is `NOTE`; this is the label
+ * ON the box the note is in.
  */
-export const UTIL = 'text-xs font-medium uppercase tracking-[0.04em] text-neutral-500 dark:text-neutral-400'
+export const UTIL = `${NOTE_SIZE} font-semibold text-neutral-900 dark:text-neutral-100`
 
 /**
  * The same small print, one notch darker, for text on the CANVAS rather than in a card.
