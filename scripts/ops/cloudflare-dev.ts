@@ -99,16 +99,13 @@ const seeded = spawnSync(process.execPath, ['scripts/seed-showcase.ts', data], {
 })
 const session = /^QUIRE_SESSION=(.+)$/m.exec(`${seeded.stdout}\n${seeded.stderr}`)?.[1]?.trim() ?? ''
 if (seeded.status !== 0 || !session) fail(`the showcase seeder failed or printed no session\n${seeded.stderr.slice(-800)}`)
-// The worker is signed in to as a person would, so the owner needs a password this script knows and
-// the authenticator the seeder enrolled; both travel in the archive.
-const password = randomBytes(18).toString('base64url')
+// The worker is signed in to as a person would, with the seeder's password and the authenticator it
+// enrolled; both travel in the archive. The SAME password the tour types: FULL_TOUR's passkey and
+// two-factor flows ask for it, and a random one set here failed six of them on the release matrix.
+const password = 'quartz-lantern-47-thicket'
 const user = new Database(join(data, 'quire.db'), { readonly: true })
 const { username, totp_secret: totpSecret } = user.query('select username, totp_secret from users').get() as { username: string; totp_secret: string }
 user.close()
-const setPassword = spawnSync(process.execPath, ['scripts/user.ts', 'set-password', '--username', username], {
-  cwd: ROOT, encoding: 'utf8', input: `${password}\n${password}\n`, env: { ...process.env, DATA_DIR: data },
-})
-if (setPassword.status !== 0) fail(`set-password on the showcase failed\n${setPassword.stderr.slice(-800)}`)
 
 // BIG: random bytes, which gzip cannot shrink, in 4 MB files — well under MAX_UPLOAD_MB, so each
 // is an ordinary upload on both runtimes, and together past what one request may carry.
