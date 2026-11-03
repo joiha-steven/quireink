@@ -16,7 +16,7 @@ To start you need a domain and a rented server, and the cheapest tier is enough.
 
 **An agent can run the blog, not just write in it.** The MCP server is built in and goes through the same code the admin does. An assistant drafts, tags, schedules and publishes; it also reads your traffic, counts subscribers without ever seeing an address, sweeps spam into the trash rather than out of existence, recomposes the front page around what people actually read, and takes a snapshot before anything big. Plenty of blogs let a robot post. This one hands it the desk.
 
-**Your readers get the pen too.** Select a sentence and a bar offers five inks, a pencil underline, a ballpoint ring, a note and the quote, drawn with the site's own hand. Marks anchor to the words rather than to a position, live in the reader's browser, and travel between devices by a twenty-character code rather than an account. It costs a reader 4.5 KB, only on a post, and one switch turns it off.
+**Your readers get the pen too.** Select a sentence and a bar offers five inks, a pencil underline, a ballpoint ring, a note and the quote, drawn with the site's own hand. Marks anchor to the words rather than to a position, live in the reader's browser, and travel between devices by a twenty-character code rather than an account. It costs a reader about 5 KB, only on a post, and one switch turns it off.
 
 **The reading page is the product.** Type, colour, size, spacing and layout are settings, not code. Not one size or colour is written into the reader's stylesheet, and the build fails if somebody puts one there.
 
@@ -26,7 +26,7 @@ To start you need a domain and a rented server, and the cheapest tier is enough.
 <summary><b>Against the usual alternatives</b></summary>
 
 - **Instead of a hosted platform.** Your writing is two SQLite files on your own disk, and one button turns it into a folder of Markdown any editor can read. No account, no plan, no export you have to hope still works in five years.
-- **Instead of WordPress.** No PHP, no MySQL, no plugins to keep patched. One process, and readers get single-digit kilobytes of JavaScript.
+- **Instead of WordPress.** No PHP, no MySQL, no plugins to keep patched. One process, and readers get about 4 KB of JavaScript on a listing and 16 to 18 KB on a post.
 - **Instead of a static site generator.** You get a real admin: write, upload a photo, schedule and publish from a laptop or a phone, with search, comments, a newsletter and stats already there. No rebuild, no deploy, no git push to fix a typo.
 - **Instead of writing your own.** The boring half is done and tested: sign-in with TOTP, sessions, image resizing, feeds, OG images, redirects, an undo for deletes, revisions, backups, importers for WordPress, Ghost, Substack and Medium, eleven languages.
 
@@ -47,10 +47,10 @@ bun --smol src/index.ts
 | 🎨&nbsp;**Looks** | Four: plain paper, source code, a newspaper that numbers its own sections, a notebook on dot-grid paper. Over that, six palettes in light and dark and four reading fonts. Every size comes from a role, so one change moves the whole page |
 | 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint, from a seeded hand that inks unevenly so no two strokes share a shape. Any site may link `/pen.css` and write with your inks |
 | 📓&nbsp;**Notebook** | Notes and clips as a third kind of writing, keeping where a passage came from. Speaks IndieAuth, Micropub and Webmention. [How it works](./features/notes.md) |
-| 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. 346 languages loaded on demand. A fence naming nothing is guessed at timidly, so program output stays plain |
+| 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. 242 languages loaded on demand. A fence naming nothing is guessed at timidly, so program output stays plain |
 | 🔍&nbsp;**Reading** | Search that answers as you type and respects the accents you typed. A rail with your menu and subjects on one side and a year index with post counts on the other, subject chips on a tablet, or the contents of the post. Related posts, reading time, a progress bar. Book mode opens on a title page, sets a post in two columns and keeps your place |
 | 📈&nbsp;**Numbers** | Analytics without cookies: who read what, how far they got, where they came from, per post as well as per site. Nothing is ever deleted. Plus an activity log and a trash you can undo |
-| 💬&nbsp;**Comments** | Readers comment without an account. The page signs its own spam challenge, so no third party sees them; Turnstile takes over only if you add its keys |
+| 💬&nbsp;**Comments** | Readers comment without an account. The page signs its own spam challenge, so no third party sees them; Turnstile takes over only if you add its keys and turn on its toggle |
 | 🔎&nbsp;**Search&nbsp;engines** | Sitemap, `robots.txt`, `llms.txt`, and an OG image drawn per post. RSS and JSON Feed, for the blog and for the notebook. Rename a slug and the old URL keeps working |
 | 🔌&nbsp;**Read&nbsp;by&nbsp;a&nbsp;program** | A read-only JSON API at `/api/v1`: posts, pages, notes and your categories, each with the Markdown it was written in — enough to build a second front end, a search index or a static export without scraping pages. Off until you switch it on, and it shows only what is already public. [How it works](./content-api.md) |
 | 🐘&nbsp;**Followable** | People can follow your blog from Mastodon and anywhere else that speaks ActivityPub, and new posts land in their timeline. Off until you switch it on and choose a handle — that handle plus your address are your identity out there, so it asks you to choose once. It publishes; replies and likes are not comments yet. [How it works](./fediverse.md) |
@@ -60,7 +60,7 @@ bun --smol src/index.ts
 | 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and one more is one file. A post or a page can also name the language IT is written in and point at its own translations, so one English essay on a Vietnamese blog is announced as English. No CJK webfont ships, because they run to megabytes, but each of the three names its own face |
 | 🔐&nbsp;**Sign-in** | Username and password hashed with argon2id, an authenticator code every time, ten recovery codes, every signed-in device listed with a button to end it. A passkey as a one-step door beside them, never in place of them. No Google in the login path |
 | 🤖&nbsp;**Assistant** | Your own model key: Claude, GPT, Gemini or DeepSeek. Answers arrive as they are written, conversations are kept, each carries a receipt of what it cost. It also writes alt text and sorts spam into the trash |
-| ⌨️&nbsp;**The&nbsp;admin** | Server-rendered HTML with islands of hand-written JavaScript, no framework. ⌘⇧K finds any named setting and jumps to it. Nine chords in the editor, find and replace among them. Series, drafts, scheduling, and it all works from a phone |
+| ⌨️&nbsp;**The&nbsp;admin** | Server-rendered HTML with islands of hand-written JavaScript, no framework. ⌘⇧K finds any named setting and jumps to it. Ten chords of its own in the editor, find and replace among them. Series, drafts, scheduling, and it all works from a phone |
 
 **Made for** one person, one server, one blog they mean to keep.
 **Not made for** a team that needs roles, approvals and an editorial queue. It has one owner on purpose.
@@ -98,9 +98,9 @@ Off the network, first visit, nothing cached. It is what a stranger on a phone a
 | | Home | A post | Turning those two off |
 |:---|---:|---:|:---|
 | **Requests** | 10 | 16 | 14 |
-| **Total&nbsp;transferred** | **118.9&nbsp;KB** | **122.8&nbsp;KB** | 114.9&nbsp;KB |
-| **JavaScript** | **3.7&nbsp;KB** | **15.9&nbsp;KB** | **8.7&nbsp;KB**; written by hand, no framework |
-| **CSS** | 12.4&nbsp;KB | 31.9&nbsp;KB | unchanged: the two pen sheets ride where the author's own marks are |
+| **Total&nbsp;transferred** | **120.8&nbsp;KB** | **123.7&nbsp;KB** | 114.6&nbsp;KB |
+| **JavaScript** | **4.4&nbsp;KB** | **18.4&nbsp;KB** | **10.0&nbsp;KB**; written by hand, no framework |
+| **CSS** | 13.6&nbsp;KB | 30.3&nbsp;KB | unchanged: the two pen sheets ride where the author's own marks are |
 | **Fonts** | 91.5&nbsp;KB | 65.3&nbsp;KB | cut per script, so this is the one row your own content decides: the demo's titles run to three alphabets |
 | **Third&#8209;party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
 | **Coming&nbsp;back** | **0&nbsp;bytes** | **0&nbsp;bytes** | the same page answers `304` |
@@ -130,7 +130,7 @@ The CSS and JavaScript rows are build artefacts, the same bytes on every install
 
 </div>
 
-## This release
+## Recent releases
 
 **2.2.16** came out of reading the whole product again, screen by screen and route by route. The [changelog](../CHANGELOG.md) has all of it.
 
