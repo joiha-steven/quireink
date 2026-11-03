@@ -5,7 +5,7 @@
 
 import type { NoteWithContent } from '@/types'
 import { readPiece } from '@/web/admin/piece-input'
-import { savedSince } from '@/web/admin/stale'
+import { refusedSave } from '@/web/admin/stale'
 import { getNoteIndex, getNote, saveNote, deleteNote } from '@/content/notes'
 import { getAutosave, putAutosave } from '@/content/autosave'
 import { SlugConflictError, saveNew } from '@/content/slugs'
@@ -59,7 +59,8 @@ export function noteRoutes() {
     const read = await readPiece<NoteWithContent & { baseSavedAt: number }>(c)
     if (typeof read === 'string') return fail(c, read, 400)
     const input = read
-    if (savedSince('note', slug, input.baseSavedAt)) return fail(c, 'stale', 409)
+    const refused = refusedSave('note', slug, input.baseSavedAt)
+    if (refused) return fail(c, refused, 409)
     try {
       const meta = await saveNote(input, slug)
       void finalizeContentMedia(input.content ?? '')

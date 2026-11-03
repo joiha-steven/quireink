@@ -232,6 +232,7 @@ const it = {
   saveFailed: 'Salvataggio non riuscito',
   slugTaken: 'Quello slug è già preso, scegline un altro',
   staleSave: 'Salvato altrove dopo l’apertura. Ricarica per vedere quella versione; il tuo testo resta su questo dispositivo.',
+  trashedSave: 'Spostato nel cestino da un altro posto dopo l’apertura, quindi non è stato salvato nulla. Ripristinalo dal cestino per continuare; il tuo testo resta su questo dispositivo.',
   needTitle: 'Serve un titolo per pubblicare',
   needTitleNote: 'Serve un titolo o una fonte per pubblicare',
   noteSourceUrlHint: 'Si conservano solo indirizzi http:// e https://.',

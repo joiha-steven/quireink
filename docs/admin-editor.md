@@ -179,6 +179,11 @@ that file first; this one only adds what is true here.
   tab, another device, MCP — answers **409 `stale`**. The editor keeps its text on the device and
   says to reload; until 2.2.15 the second tab won and the first tab's words survived only in the
   revision history. Callers that send no `baseSavedAt` (MCP, the API, imports) are not checked.
+  **No live row under the slug is a change too** (2026-11-03): a piece in the Trash answers
+  **409 `trashed`** ("Restore it from the Trash"), and one renamed or deleted for good from
+  another tab answers `stale`. Until then a tab opened before the bin took the save and said
+  "Published" from inside the Trash, and a save to the address a rename had left created a second
+  public copy there and cleared the rename's redirect.
 - **A slug nobody typed is not the writer's to defend.** A new piece whose slug was derived
   from its title or opening sends `slugDerived`, and the create route takes the next free
   `-2`, `-3`… when it is taken; a slug the writer typed is still refused as taken.

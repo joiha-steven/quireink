@@ -232,6 +232,7 @@ const fr = {
   saveFailed: 'L’enregistrement a échoué',
   slugTaken: 'Ce slug est déjà pris, choisissez-en un autre',
   staleSave: 'Enregistré ailleurs depuis l’ouverture. Rechargez pour voir cette version ; votre texte reste sur cet appareil.',
+  trashedSave: 'Placé dans la corbeille depuis un autre endroit après l’ouverture : rien n’a été enregistré. Restaurez-le depuis la corbeille pour continuer ; votre texte reste sur cet appareil.',
   needTitle: 'Un titre est nécessaire pour publier',
   needTitleNote: 'Un titre ou une source est nécessaire pour publier',
   noteSourceUrlHint: 'Seules les adresses http:// et https:// sont conservées.',

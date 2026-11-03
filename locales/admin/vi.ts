@@ -232,6 +232,7 @@ const vi = {
   saveFailed: 'Lưu thất bại',
   slugTaken: 'Đường dẫn (slug) đã tồn tại, chọn đường dẫn khác',
   staleSave: 'Bài đã được lưu từ nơi khác sau khi mở trang này. Tải lại để xem bản đó; chữ của bạn vẫn giữ trên máy này.',
+  trashedSave: 'Bài đã được chuyển vào Thùng rác từ nơi khác sau khi mở trang này, nên chưa có gì được lưu. Khôi phục bài từ Thùng rác để viết tiếp; chữ của bạn vẫn giữ trên máy này.',
   needTitle: 'Cần tiêu đề để đăng bài',
   needTitleNote: 'Cần tiêu đề hoặc nguồn để đăng',
   noteSourceUrlHint: 'Chỉ giữ địa chỉ bắt đầu bằng http:// hoặc https://.',

@@ -232,6 +232,7 @@ const de = {
   saveFailed: 'Speichern fehlgeschlagen',
   slugTaken: 'Dieser Slug ist bereits vergeben, bitte einen anderen wählen',
   staleSave: 'Seit dem Öffnen woanders gespeichert. Neu laden, um diese Fassung zu sehen; Ihr Text bleibt auf diesem Gerät.',
+  trashedSave: 'Seit dem Öffnen woanders in den Papierkorb verschoben, daher wurde nichts gespeichert. Stellen Sie es aus dem Papierkorb wieder her, um weiterzuschreiben; Ihr Text bleibt auf diesem Gerät.',
   needTitle: 'Zum Veröffentlichen ist ein Titel erforderlich',
   needTitleNote: 'Zum Veröffentlichen ist ein Titel oder eine Quelle erforderlich',
   noteSourceUrlHint: 'Nur http://- und https://-Adressen werden gespeichert.',

@@ -232,6 +232,7 @@ const es = {
   saveFailed: 'No se pudo guardar',
   slugTaken: 'Ese slug ya está ocupado, elige otro',
   staleSave: 'Se guardó desde otro lugar después de abrir esto. Recarga para ver esa versión; tu texto se queda en este dispositivo.',
+  trashedSave: 'Se movió a la papelera desde otro lugar después de abrir esto, así que no se guardó nada. Restáuralo desde la papelera para seguir; tu texto se queda en este dispositivo.',
   needTitle: 'Hace falta un título para publicar',
   needTitleNote: 'Hace falta un título o una fuente para publicar',
   noteSourceUrlHint: 'Solo se guardan direcciones http:// y https://.',

@@ -19,7 +19,7 @@ const app = createApp()
 let cookie = ''
 
 beforeEach(async () => {
-  for (const table of ['sessions', 'users', 'posts', 'pages', 'post_terms', 'activity_log', 'server_secrets']) {
+  for (const table of ['sessions', 'users', 'posts', 'pages', 'notes', 'redirects', 'post_terms', 'activity_log', 'server_secrets']) {
     db().run(`delete from ${table}`)
   }
   resetSecretCache()
@@ -64,6 +64,40 @@ describe('a save from an older copy', () => {
     expect((await put('A again', Date.parse((await payload<{ updatedAt: string }>(a)).updatedAt))).status).toBe(200)
   })
 
+
+  // The row's stamp alone said nothing about a piece trashed or renamed from another tab: a
+  // trashed one took the save and answered "Published" from inside the Trash, and a save to the
+  // old address of a renamed one created a SECOND public copy there and dropped the rename's
+  // redirect (2026-11-03). Posts, pages and notes alike.
+  for (const kind of ['post', 'page', 'note'] as const) {
+    const base = `/api/${kind}s`
+    const fresh = async (title: string) =>
+      payload<{ slug: string; updatedAt: string }>(await post(base, { title, content: 'v1', status: 'draft' }))
+    const putFrom = (slug: string, opened: number, extra: Record<string, unknown> = {}) =>
+      asOwner(`${base}/${slug}`, {
+        method: 'PUT',
+        body: JSON.stringify({ title: 'Edited', content: 'from the old tab', slug, status: 'published', baseSavedAt: opened, ...extra }),
+      })
+
+    it(`refuses a ${kind} save from a tab opened before the ${kind} went to the Trash`, async () => {
+      const meta = await fresh(`Binned ${kind}`)
+      expect((await asOwner(`${base}/${meta.slug}`, { method: 'DELETE' })).status).toBe(200)
+      const res = await putFrom(meta.slug, Date.parse(meta.updatedAt))
+      expect(res.status).toBe(409)
+      expect(await res.json()).toEqual({ success: false, error: 'trashed' })
+    })
+
+    it(`refuses a ${kind} save to the address another tab renamed it away from`, async () => {
+      const meta = await fresh(`Moved ${kind}`)
+      const opened = Date.parse(meta.updatedAt)
+      expect((await putFrom(meta.slug, opened, { slug: `${meta.slug}-new` })).status).toBe(200)
+      const old = await putFrom(meta.slug, opened)
+      expect(old.status).toBe(409)
+      expect(await old.json()).toEqual({ success: false, error: 'stale' })
+      const table = kind === 'post' ? 'posts' : kind === 'page' ? 'pages' : 'notes'
+      expect(db().query(`select count(*) as n from ${table} where slug = ?`).get(meta.slug)).toEqual({ n: 0 })
+    })
+  }
 
   it('is not asked of a caller that sends no copy stamp (MCP, the API, imports)', async () => {
     const meta = await payload<{ slug: string }>(await post('/api/posts', { title: 'Plain', content: 'v1' }))

@@ -232,6 +232,7 @@ const zh = {
   saveFailed: '保存失败',
   slugTaken: '该别名已被占用，请选择其他别名',
   staleSave: '打开后已在别处保存。请重新加载查看那个版本；你的文字仍保留在此设备上。',
+  trashedSave: '打开后已在别处移入回收站，因此没有保存。请从回收站恢复后继续；你的文字仍保留在此设备上。',
   needTitle: '发布前需要填写标题',
   needTitleNote: '发布前需要填写标题或来源',
   noteSourceUrlHint: '只保存 http:// 和 https:// 地址。',

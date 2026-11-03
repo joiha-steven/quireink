@@ -416,6 +416,7 @@ export type AdminStrings = {
   saveFailed: string
   slugTaken: string
   staleSave: string
+  trashedSave: string
   needTitle: string
   /** A note publishes with a title OR a source title. */
   needTitleNote: string

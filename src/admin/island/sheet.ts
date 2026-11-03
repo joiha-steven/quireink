@@ -270,7 +270,8 @@ function boot(root: HTMLElement, data: Payload): void {
     try {
       const res = await savePiece(kind, slug, payloadOf(kind, draft, text, timezone, status), baseSavedAt)
       if (!res.ok) {
-        say(res.reason === 'slug_taken' ? t.slugTaken : res.reason === 'stale' ? t.staleSave : t.saveFailed, 'error')
+        const why = { slug_taken: t.slugTaken, stale: t.staleSave, trashed: t.trashedSave, failed: t.saveFailed }
+        say(why[res.reason], 'error')
         return false
       }
       slug = res.slug

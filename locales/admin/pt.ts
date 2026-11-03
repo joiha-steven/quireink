@@ -233,6 +233,7 @@ const pt = {
   saveFailed: 'Não foi possível salvar',
   slugTaken: 'Esse slug já está em uso, escolha outro',
   staleSave: 'Foi salvo em outro lugar depois que isto foi aberto. Recarregue para ver essa versão; seu texto fica neste dispositivo.',
+  trashedSave: 'Foi movido para a lixeira em outro lugar depois que isto foi aberto, então nada foi salvo. Restaure pela lixeira para continuar; seu texto fica neste dispositivo.',
   needTitle: 'É preciso um título para publicar',
   needTitleNote: 'É preciso um título ou uma fonte para publicar',
   noteSourceUrlHint: 'Só endereços http:// e https:// são salvos.',

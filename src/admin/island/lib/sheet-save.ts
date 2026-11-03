@@ -115,7 +115,7 @@ export function nameEnough(kind: SheetKind, draft: SheetDraft, content: string):
 
 export type SaveResult =
   | { ok: true; slug: string; savedAt: number | null }
-  | { ok: false; reason: 'slug_taken' | 'stale' | 'failed' }
+  | { ok: false; reason: 'slug_taken' | 'stale' | 'trashed' | 'failed' }
 
 /**
  * Write the piece.
@@ -137,9 +137,10 @@ export async function savePiece(
   const json = await res.json().catch(() => null) as
     { success?: boolean; data?: { slug?: string; updatedAt?: string }; error?: string } | null
   if (!res.ok || !json?.success) {
-    // Two refusals worth their own words: two pieces cannot share an address, and another tab
-    // saved first. "Could not save" sends somebody looking for a network fault.
-    const reason = json?.error === 'slug_taken' || json?.error === 'stale' ? json.error : 'failed'
+    // Refusals worth their own words: two pieces cannot share an address, another tab saved
+    // first, and another tab sent the piece to the Trash. "Could not save" sends somebody
+    // looking for a network fault.
+    const reason = json?.error === 'slug_taken' || json?.error === 'stale' || json?.error === 'trashed' ? json.error : 'failed'
     return { ok: false, reason }
   }
   const savedAt = json.data?.updatedAt ? Date.parse(json.data.updatedAt) : null

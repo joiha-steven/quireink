@@ -18,7 +18,7 @@
 
 import type { Context } from 'hono'
 import { readPiece } from '@/web/admin/piece-input'
-import { savedSince } from '@/web/admin/stale'
+import { refusedSave } from '@/web/admin/stale'
 import type { PageWithContent, PostWithContent } from '@/types'
 import { getIndex, getPost, savePost, deletePost } from '@/content/posts'
 import { getPageIndex, getPage, savePage, deletePage, HomePageError } from '@/content/pages'
@@ -107,7 +107,8 @@ export function contentRoutes() {
     const read = await readPiece<PostWithContent & { baseSavedAt: number }>(c)
     if (typeof read === 'string') return fail(c, read, 400)
     const input = read
-    if (savedSince('post', slug, input.baseSavedAt)) return fail(c, 'stale', 409)
+    const refused = refusedSave('post', slug, input.baseSavedAt)
+    if (refused) return fail(c, refused, 409)
     try {
       const meta = await savePost(input, slug)
       finalizeAfterResponse(input.content ?? '', input.featuredImage ?? undefined)
@@ -199,7 +200,8 @@ export function contentRoutes() {
     const read = await readPiece<PageWithContent & { baseSavedAt: number }>(c)
     if (typeof read === 'string') return fail(c, read, 400)
     const input = read
-    if (savedSince('page', slug, input.baseSavedAt)) return fail(c, 'stale', 409)
+    const refused = refusedSave('page', slug, input.baseSavedAt)
+    if (refused) return fail(c, refused, 409)
     try {
       const meta = await savePage(input, slug)
       finalizeAfterResponse(input.content ?? '')

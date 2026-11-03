@@ -232,6 +232,7 @@ const en = {
   saveFailed: 'Save failed',
   slugTaken: 'That slug is already taken, choose another',
   staleSave: 'Saved from somewhere else since this opened. Reload to see that version; your text stays on this device.',
+  trashedSave: 'Moved to the Trash from somewhere else since this opened, so nothing was saved. Restore it from the Trash to go on; your text stays on this device.',
   needTitle: 'A title is required to publish',
   needTitleNote: 'A title or a source is required to publish',
   noteSourceUrlHint: 'Only http:// and https:// addresses are kept.',
