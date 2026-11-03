@@ -15,6 +15,7 @@
 
 import type { SiteSettings } from '@/types'
 import { FEED_MAX, type FeedChannel, type FeedItem } from '@/web/feeds'
+import { escapeHtml } from '@/utils'
 
 /** RFC 3339, which is what `date_published` takes. */
 const rfc3339 = (iso: string) => new Date(iso).toISOString()
@@ -61,6 +62,9 @@ export function renderJsonFeed(
       // had nothing at all (2026-09-30). Still no body here, by design above; the summary is
       // the item's text, and where there is none the title stands in.
       content_text: e.summary || e.title,
+      // The same words as HTML (2026-11-03), for the reader's app that reads only that field.
+      // Escaped and still the summary: RSS sends no body either, and the two must agree.
+      content_html: `<p>${escapeHtml(e.summary || e.title)}</p>`,
       date_published: rfc3339(e.date),
       ...(e.summary ? { summary: e.summary } : {}),
     })),

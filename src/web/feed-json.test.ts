@@ -233,3 +233,21 @@ describe('every item carries a body field', () => {
     }
   })
 })
+
+// `content_html` beside `content_text` (2026-11-03): a reader's app that prefers the HTML field
+// found none. It carries what RSS's `<description>` carries, the summary, escaped: both feeds are
+// summary-only (`feeds.ts`), and the JSON one saying more than the RSS one would be two answers.
+describe('content_html', () => {
+  it('is the summary as escaped HTML, never the body', async () => {
+    await savePost({
+      title: 'Ampersands', content: 'The whole body, which stays on the site.', excerpt: 'Fish & <chips>',
+      status: 'published', date: PAST,
+    })
+    await saveNote({ title: 'A bare note', content: '', status: 'published', date: PAST })
+    const post = (await json('/feed.json')).items.find((i) => i.title === 'Ampersands') as Record<string, unknown>
+    expect(post.content_html).toBe('<p>Fish &amp; &lt;chips&gt;</p>')
+    expect(post.content_text).toBe('Fish & <chips>')
+    const note = (await json('/notes/feed.json')).items[0] as Record<string, unknown>
+    expect(note.content_html).toBe('<p>A bare note</p>')
+  })
+})

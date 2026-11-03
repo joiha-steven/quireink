@@ -33,6 +33,10 @@
   The per-archive feeds stay RSS-only, because JSON Feed earns its place on a document a
   reader's app subscribes to and sixty tag feeds in two formats is a hundred and twenty
   documents to keep in step for a format nothing polls.
+  **Both formats are summary-only**: RSS's `<description>` is the excerpt, and a JSON Feed item
+  carries the same words as `content_text` and, since 2026-11-03, as `content_html` (one escaped
+  `<p>`), because a reader's app that reads only the HTML field found nothing. Neither sends the
+  body; the writing itself is the site's, or the content API's when the owner switches it on.
   **`escapeXml` sweeps the characters XML forbids; the JSON builder does not and must not** —
   JSON forbids none of them, `JSON.stringify` escapes a lone surrogate since ES2019, and a
   sweep here would make the two feeds disagree about what the owner actually wrote.
