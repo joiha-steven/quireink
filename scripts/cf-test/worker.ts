@@ -26,7 +26,7 @@ import { searchFindsStroke } from './search'
 import { imagesFromTheBuffer, uploadPictureWork } from './images'
 import { passkeysVerifyHere } from './passkey'
 import { themeInstallsHere, themeRendersHere } from './themes'
-import { ogCardRendersHere } from './og'
+import { ogCardDatesHere, ogCardRendersHere } from './og'
 
 type Case = { name: string; body: () => void | Promise<void> }
 
@@ -54,6 +54,7 @@ function collect(): Case[] {
   cases.push({ name: 'passkey: the frozen ES256, EdDSA, RS256 and Chrome vectors verify, and a key stored in the object verifies its own signature (ADR 0071)', body: passkeysVerifyHere })
   cases.push({ name: 'theme: a zip is checked, stored in R2 and the object, installed again as a no-op, rolled back and served; a refused one writes nothing (ADR 0072)', body: themeInstallsHere })
   cases.push({ name: 'og: a share card is laid out by satori and its own WebAssembly, and comes back a 1200x630 PNG', body: ogCardRendersHere })
+  cases.push({ name: 'og: a post card is dated in its own language by V8\'s ICU, and keeps the site\'s date where the faces have no kanji (ADR 0074)', body: ogCardDatesHere })
   cases.push({ name: 'theme: the chosen installed theme is drawn on the next render, a built-in one previewed is for the owner alone and private, a new version links its own sheet, and removed it is plain (ADR 0072)', body: themeRendersHere })
   return cases
 }
