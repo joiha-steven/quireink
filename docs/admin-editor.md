@@ -163,8 +163,14 @@ that file first; this one only adds what is true here.
   toast carries **Undo**, as the trash's does; the copy on offer is read into memory at the
   click — the server's by a fetch started then — because the next autosave writes the screen
   over both keys, and a save while the toast is up does not drop it (`island/lib/sheet-safety.ts`).
-  ⚠️ **The key follows the PIECE, not the screen** — `quire:draft:post:new` until the piece has
-  a row, then its own slug. Fixed at the value it had when the editor mounted (until
+  ⚠️ **The key follows the PIECE, not the screen** — `quire:draft:post:new:<id>` until the piece
+  has a row, then its own slug. **Each unsaved sheet has an id of its own** (`island/lib/sheet-tab.ts`),
+  kept in `sessionStorage` so a reload of the same tab reopens its own words. There was one `new`
+  key for every unsaved piece of a kind until 2026-11-03: a second "New post" tab opened with the
+  first one's words in it, and with both closed only the last one's were left anywhere. A new tab
+  takes over only a copy NO open tab holds — each open sheet renews a lease in `localStorage` and
+  drops it on `pagehide` — and of those, the newest; the others wait for the next blank sheet. A
+  copy under the old shared key is moved onto a key of its own the first time a sheet opens. Fixed at the value it had when the editor mounted (until
   2026-09-07), everything typed after a new post's first save went on being written under
   `new`, where the editor that reopens that post never looks and the next blank sheet reopens
   it as a piece of its own.

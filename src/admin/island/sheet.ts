@@ -15,7 +15,7 @@
 import { redrawColumn } from './content'
 import type { PostRevision } from '@/types'
 import {
-  draftKey, emptyDraft, SHEET_PATH,
+  emptyDraft, SHEET_PATH,
   type SheetData, type SheetDraft, type SheetWords,
 } from '@/admin-shared/sheet-wire'
 import { saveStatusLine } from '@/admin-shared/draft-keep'
@@ -36,6 +36,7 @@ import { wireBar } from './lib/sheet-bar'
 import { wireFields, askForPicture } from './lib/sheet-fields'
 import { wirePanel } from './lib/sheet-open'
 import { wireSafety, type Snapshot } from './lib/sheet-safety'
+import { claimNewSheet } from './lib/sheet-tab'
 import { wireHistory } from './lib/sheet-history'
 import { sayStanding } from './lib/sheet-standing'
 import { liveSave } from './lib/sheet-live'
@@ -81,8 +82,12 @@ function boot(root: HTMLElement, data: Payload): void {
    * There is no row and so no server copy; the only record of a crash mid-draft is on this
    * device, and a blank sheet over the top of it is the work gone. Read before the editor is
    * built, so it opens with the words already in it rather than putting them in afterwards.
+   *
+   * ITS OWN copy, or one no open tab is holding (`sheet-tab.ts`): a second "New post" tab is a
+   * second post, not the first one's words.
    */
-  const reopened = slug ? null : readSnapshot<Snapshot>(draftKey(kind, ''))
+  const fresh = slug ? null : claimNewSheet(kind)
+  const reopened = fresh?.adopted ? readSnapshot<Snapshot>(fresh.key) : null
   if (reopened) {
     Object.assign(draft, reopened.data)
     content = reopened.data.content
@@ -231,6 +236,7 @@ function boot(root: HTMLElement, data: Payload): void {
   const safety = wireSafety({
     kind,
     slug,
+    newKey: fresh?.key,
     serverAt: data.autosaveAt,
     rowSavedAt: data.rowSavedAt,
     dirty: () => dirty,

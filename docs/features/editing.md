@@ -154,7 +154,7 @@
   2026-08-30), on the `autosaveSeconds` tick while dirty. Neither is the published body — only
   Save/Publish moves `content`, so editing a *published* post still cannot push half-finished
   text live. What happens on return depends on whether the piece has a row:
-  - **Never saved** (the `:new` key): the snapshot is the ONLY copy there is, so it is REOPENED
+  - **Never saved** (a `:new:<id>` key, one per tab, `admin-editor.md` says how a new tab picks one): the snapshot is the ONLY copy there is, so it is REOPENED
     into the editor rather than offered, read synchronously so the editor mounts with it, and the
     snapshot stays in storage until a real save clears it. Until 2026-09-07 it was offered
     instead, which meant a writer who typed, left without pressing Save and came back met an

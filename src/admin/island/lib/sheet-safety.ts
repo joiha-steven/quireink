@@ -35,6 +35,8 @@ export type SafetyHooks = {
   kind: SheetKind
   /** Empty until the piece has a row. */
   slug: string
+  /** Where an unsaved piece keeps its device copy: this sheet's own key (`sheet-tab.ts`). */
+  newKey?: string
   /** `autosave_at` on the row, in ms: a snapshot waiting from another session or machine. */
   serverAt: number | null
   /** The row's own last real save, in ms. A snapshot older than it has been superseded. */
@@ -69,7 +71,7 @@ export type Safety = {
 
 export function wireSafety(hooks: SafetyHooks): Safety {
   let slug = hooks.slug
-  let key = draftKey(hooks.kind, slug)
+  let key = slug ? draftKey(hooks.kind, slug) : (hooks.newKey ?? draftKey(hooks.kind, ''))
   let keptAt: number | null = snapshotAt(key)
   let sentAt: number | null = null
   let dismissed = false
