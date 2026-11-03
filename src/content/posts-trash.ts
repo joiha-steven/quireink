@@ -9,6 +9,7 @@ import type { Post } from '@/types'
 import { PostRow, META_COLS, rowToMeta } from '@/content/post-row'
 import { deleteRevisions } from '@/content/revisions'
 import { deleteCommentsForPost } from '@/comments/comments'
+import { renameSends } from '@/news/newsletter-log'
 import { clearRedirectForPath } from '@/server/redirects'
 import { all, run, tx } from '@/store/query'
 import { nowMs, toIso } from '@/store/db'
@@ -42,6 +43,9 @@ export async function purgePost(slug: string): Promise<void> {
     if (changes === 0) return
     deleteRevisions(slug)
     deleteCommentsForPost(slug)
+    // Off the slug, not out of the log: each reader's own count still holds the email they were
+    // sent, and a new post given this address is not refused as already sent. `~` is in no slug.
+    renameSends(slug, `${slug}~${nowMs()}`)
   })
 }
 
