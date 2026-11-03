@@ -93,10 +93,9 @@
   few big markers over quieter children; the dot is inline so it flows for both rail orientations. An
   all-H2 or all-H3 ToC stays uniform. In the gutter rail the ToC is sticky (`.rail-inner`); `railCss`
   caps it to the viewport with `overflow-y:auto`, so a ToC longer than the screen scrolls inside its own
-  box instead of pinning its tail off-screen (the drawer already scrolls via `.rail`). Header: clickable **"Tiêu đề"** (`tocTitle`) that scrolls to top when there
-  ARE headings, else a plain non-clickable **"Mục lục"** (`tocIndex`). One line under it joins the
-  present tags/categories/comments labels (comments prefixed with their server-rendered count) and
-  jumps to the first existing section via `TOC_ANCHORS` + `scroll-mt-24` targets. Collapsible on
+  box instead of pinning its tail off-screen (the drawer already scrolls via `.rail`). Header: **"Mục lục"** (`tocIndex`), the
+  `<summary>` of an open `<details>`; the first row is the post's title, a jump to the top. The last row joins the present
+  tags/categories/comments labels, with no count, and jumps to the first existing section via `TOC_ANCHORS` + `scroll-mt-24` targets. Collapsible on
   every viewport — pinned in the desktop gutter, and on mobile it shares the sidebar drawer (opened
   from the header menu button, mobile only), outside-tap/Escape-dismissable. Solid page background;
   `post-content.ts` assigns slug ids. Phones get wider side gutters for the reading text.
