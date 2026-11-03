@@ -95,5 +95,8 @@ docker exec -it quire docker-entrypoint.sh bun run user reset-2fa --username you
 
 Only the phone lost? Nothing to run: on the code screen, choose *Use a recovery code instead*.
 
+**On Cloudflare** there is no machine to run these at; the way back goes through a backup, step by
+step in [self-host-cloudflare.md](self-host-cloudflare.md#locked-out).
+
 ⚠ Set `DATA_DIR` when running any CLI command. Without it the CLI opens `./data`, which is
 a *different, empty* database, and it will cheerfully tell you there are no accounts.

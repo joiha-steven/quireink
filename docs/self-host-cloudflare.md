@@ -144,6 +144,26 @@ Domain of the Worker in the dashboard. Then stop the old server. Your password i
 because the move copies every account, and because it re-hashes the password at today's strength,
 which a Worker can verify within its memory.
 
+## Locked out
+
+A forgotten password, or a lost phone together with the recovery codes, is undone on a server by
+the CLI at the machine ([account.md](account.md)). Here there is no machine: the database is the
+Durable Object's own, no tool outside the Worker reads or writes it, and `SETUP_CODE` opens
+`/setup` only while the blog has no owner. The way back goes through a backup:
+
+1. In the dashboard, R2 → the blog's bucket → `private/backups/`: download the newest
+   `quire-….tar.gz` (a `.tar.gz.enc` one needs the key or passphrase you saved when you sealed them).
+2. On any machine with Bun and this release's source: `bun scripts/restore.ts <archive> --data-dir
+   ./back/data --uploads-dir ./back/uploads`, then `DATA_DIR=./back/data bun run user set-password
+   --username you` (or `reset-2fa`).
+3. Start it there (`DATA_DIR=./back/data STORAGE_LOCAL_DIR=./back/uploads bun src/index.ts`), sign
+   in, and Settings → Server & connections → Backups → *Download archive*.
+4. Deploy a new Quire Ink here under another Worker and bucket name (the old object has an owner
+   and takes no backup), open `/setup` with its `SETUP_CODE`, choose *Start from a backup* and give
+   it that archive. Move the custom domain to the new Worker, then delete the old one and its bucket.
+
+Passkeys come along with the backup and keep working once the blog is back at its own address.
+
 ## Leaving Cloudflare
 
 Settings → Server → Advanced → Cloudflare → *Leaving Cloudflare*. Download a backup first: it is the only way
