@@ -167,6 +167,9 @@ export function isPublicAddress(siteUrl: string): boolean {
   // Reserved by RFC 6761/8375 and RFC 2606 for exactly the machines that are not on the
   // internet: a NAS on `.local`, a container on `.internal`, a fixture on `.test`.
   if (/\.(local|localdomain|internal|home|lan|test|example|invalid)$/.test(host)) return false
+  // RFC 2606 §3 keeps these three for documentation, and they are the address every install
+  // page here prints for the reader to replace: a command pasted as it stands is a trial.
+  if (/(^|\.)example\.(com|net|org)$/.test(host)) return false
   if (isBlockedAddress(host)) return false
   // A bare name with no dot in it is a hostname on somebody's own network, not a domain.
   return host.includes('.')

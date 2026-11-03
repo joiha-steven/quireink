@@ -97,6 +97,12 @@ describe('the pure parts', () => {
     expect(isPublicAddress('http://blog.internal')).toBe(false)
     expect(isPublicAddress('http://myserver')).toBe(false)
     expect(isPublicAddress('not a url')).toBe(false)
+    // The address the install docs print for the reader to replace. A copy-pasted command
+    // runs a blog nobody can reach, and it must land on the trial line, not in "blogs alive".
+    expect(isPublicAddress('https://example.com')).toBe(false)
+    expect(isPublicAddress('https://blog.example.org/')).toBe(false)
+    expect(isPublicAddress('https://www.example.net')).toBe(false)
+    expect(isPublicAddress('https://myexample.com')).toBe(true)
   })
 
   it('compares versions as numbers, so 2.1.10 is newer than 2.1.9', () => {
