@@ -16,7 +16,7 @@ import { run } from '@/store/query'
 import { ensureKeys } from '@/ap/keys'
 import { signRequest } from '@/ap/signature'
 import { setApFetcher, forgetRemoteActors } from '@/ap/deliver'
-import { followers } from '@/ap/store'
+import { addFollower, followers } from '@/ap/store'
 
 const DIR = './.tmp/test-ap-routes'
 freshDatabase(DIR)
@@ -276,6 +276,41 @@ describe('the inbox', () => {
     expect(followers()).toHaveLength(1)
     await post(signedFollow({ type: 'Undo', object: { type: 'Follow' } }))
     expect(followers()).toEqual([])
+  })
+
+  it('does not take a document on one site as an actor of another', async () => {
+    // The impostor's key, on the impostor's site, in documents that name the victim.
+    const K = 'https://impostor.test/k'
+    const ME = 'https://impostor.test/a'
+    const key = (id: string, owner: string) => ({ id, owner, publicKeyPem: them.publicKey })
+    const docs: Record<string, unknown> = {
+      // Unfollowing as the victim: the key's own document says it IS the victim.
+      [K]: { ...VICTIM_ACTOR, publicKey: key(`${K}#main`, VICTIM_ID) },
+      // Following as the victim, to a stolen inbox: a key that is honestly the impostor's, whose
+      // Follow names an actor document that then claims to be the victim.
+      [`${K}2`]: { id: ME, inbox: `${ME}/inbox`, publicKey: key(`${K}2#main`, ME) },
+      [ME]: { ...VICTIM_ACTOR, inbox: 'https://impostor.test/stolen' },
+    }
+    setApFetcher(async (url) => {
+      const doc = docs[url.split('#')[0] ?? '']
+      return doc ? new Response(JSON.stringify(doc)) : new Response('no', { status: 404 })
+    })
+    const send = (body: string, keyId: string) => app.request('/ap/inbox', {
+      method: 'POST', body,
+      headers: signRequest({ method: 'POST', url: `${SITE}/ap/inbox`, body, keyId, privateKeyPem: them.privateKey }).headers,
+    })
+    try {
+      await on()
+      addFollower({ actor: VICTIM_ID, inbox: VICTIM_ACTOR.inbox, sharedInbox: null })
+      await send(JSON.stringify({ type: 'Undo', actor: VICTIM_ID, object: { type: 'Follow' } }), `${K}#main`)
+      await send(JSON.stringify({ type: 'Follow', actor: ME, object: `${SITE}/ap/actor` }), `${K}2#main`)
+      expect(followers().map((f) => [f.actor, f.inbox])).toEqual([[VICTIM_ID, VICTIM_ACTOR.inbox]])
+    } finally {
+      setApFetcher(async (url) => {
+        const doc = ({ [THEIR_ID]: THEIR_ACTOR, [VICTIM_ID]: VICTIM_ACTOR } as Record<string, unknown>)[url.split('#')[0] ?? '']
+        return doc ? new Response(JSON.stringify(doc)) : new Response('no', { status: 404 })
+      })
+    }
   })
 
   it('accepts and drops a verb it does not implement', async () => {

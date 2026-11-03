@@ -68,14 +68,20 @@ export const forgetRemoteActors = (): void => { keyCache.clear() }
 let fetcher: Fetcher = safeFetch
 export const setApFetcher = (f: Fetcher | null): void => { fetcher = f ?? safeFetch }
 
+const sameOrigin = (a: string, b: string): boolean => {
+  try { return new URL(a).origin === new URL(b).origin } catch { return false }
+}
+
 /** Read the fields this blog needs out of somebody else's actor document. */
 export function readActor(json: unknown): RemoteActor | null {
   const o = json as Record<string, unknown> | null
   if (!o || typeof o.id !== 'string') return null
-  const key = o.publicKey as { publicKeyPem?: unknown } | undefined
+  const key = o.publicKey as { publicKeyPem?: unknown; owner?: unknown } | undefined
   const endpoints = o.endpoints as { sharedInbox?: unknown } | undefined
   const inbox = typeof o.inbox === 'string' ? o.inbox : ''
   if (!inbox || typeof key?.publicKeyPem !== 'string') return null
+  // A key that says it belongs to somebody else is not this actor's key.
+  if (typeof key.owner === 'string' && key.owner !== o.id) return null
   return {
     id: o.id,
     inbox,
@@ -104,7 +110,13 @@ export async function fetchActor(
     const res = await using(clean, { headers: signed?.headers ?? { accept: 'application/activity+json' } })
     if (!res.ok) return null
     const actor = readActor(JSON.parse(await readTextCapped(res, MAX_ACTOR_BYTES)) as unknown)
-    if (actor) remember(clean, actor)
+    // ⚠️ THE DOCUMENT MAY ONLY SPEAK FOR ITS OWN SITE. Its `id` is who the inbox takes the signer
+    // to be, and nothing else tied that `id` to the address the document came from: a key served
+    // at `evil.example/k` with `"id": "https://victim.example/users/a"` passed the signature, then
+    // the signer-is-the-actor check, and unfollowed or followed as the victim. Same origin, not
+    // the same URL, because a key may live at its own address beside the actor (`…/main-key`).
+    if (!actor || !sameOrigin(actor.id, clean)) return null
+    remember(clean, actor)
     return actor
   } catch {
     return null
