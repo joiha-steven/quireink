@@ -167,6 +167,7 @@ const zh = {
   askEmptyTrashBody: '“{tab}”里的东西全部消失，一样都回不来。',
   askPurgeInUseTitle: '{n} 项仍在使用：{names}',
   askPurgeInUseBody: '删掉后，用到它的地方会留下坏图。仍然删除？',
+  askPurgeInUseBodyFile: '删掉后，链接到它的地方都会失效。仍然删除？',
   askPurgeSomeInUseBody: '只删除没有用到的，把这些留在回收站？',
   askPurgeUnusedOnly: '删除未使用的',
   askDeleteUnusedTitle: '删除所有没用到的图片？',

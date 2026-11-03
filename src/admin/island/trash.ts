@@ -190,7 +190,8 @@ if (root) {
     if ((r.total ?? names.length) > names.length) {
       return await ask(title, words.someInUseBody, words.unusedOnly) ? act(kind, action, ids, false, true) : null
     }
-    return await ask(title, words.inUseBody) ? act(kind, action, ids, true) : null
+    // A picture breaks where it is shown; a file breaks every link to it. The question says which.
+    return await ask(title, kind === 'files' ? words.inUseFileBody : words.inUseBody) ? act(kind, action, ids, true) : null
   }
 
   /** A write that landed reloads the page; one that did not says so and leaves the screen. */

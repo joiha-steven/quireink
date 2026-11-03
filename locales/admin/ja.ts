@@ -167,6 +167,7 @@ const ja = {
   askEmptyTrashBody: '「{tab}」の中身はすべて消え、どれも戻りません。',
   askPurgeInUseTitle: '{n} 件がまだ使われています：{names}',
   askPurgeInUseBody: '削除すると、使われている場所に壊れた画像が残ります。それでも削除しますか？',
+  askPurgeInUseBodyFile: '削除すると、リンクしている場所のリンクが切れます。それでも削除しますか？',
   askPurgeSomeInUseBody: '使われていないものだけを削除し、これらはゴミ箱に残しますか？',
   askPurgeUnusedOnly: '未使用を削除',
   askDeleteUnusedTitle: '使われていない画像をすべて削除しますか？',

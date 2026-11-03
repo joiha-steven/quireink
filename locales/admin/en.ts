@@ -167,6 +167,7 @@ const en = {
   askEmptyTrashBody: 'Everything under “{tab}” goes, and none of it comes back.',
   askPurgeInUseTitle: '{n} still in use: {names}',
   askPurgeInUseBody: 'Deleting them leaves a broken picture wherever they appear. Delete anyway?',
+  askPurgeInUseBodyFile: 'Deleting them breaks every link that points to them. Delete anyway?',
   askPurgeSomeInUseBody: 'Delete only the ones nothing uses, and leave these in the trash?',
   askPurgeUnusedOnly: 'Delete the unused',
   askDeleteUnusedTitle: 'Delete every unused image?',

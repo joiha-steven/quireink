@@ -167,6 +167,7 @@ const ko = {
   askEmptyTrashBody: '“{tab}”에 있는 것이 모두 사라지고, 아무것도 돌아오지 않습니다.',
   askPurgeInUseTitle: '아직 쓰이고 있는 항목 {n}개: {names}',
   askPurgeInUseBody: '지우면 쓰이던 자리에 깨진 이미지가 남습니다. 그래도 지울까요?',
+  askPurgeInUseBodyFile: '지우면 이 파일로 가는 링크가 모두 끊어집니다. 그래도 지울까요?',
   askPurgeSomeInUseBody: '쓰이지 않는 항목만 지우고 이 항목들은 휴지통에 남길까요?',
   askPurgeUnusedOnly: '안 쓰는 것만 삭제',
   askDeleteUnusedTitle: '쓰이지 않는 이미지를 모두 지울까요?',

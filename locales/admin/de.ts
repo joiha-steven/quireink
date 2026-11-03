@@ -167,6 +167,7 @@ const de = {
   askEmptyTrashBody: 'Alles unter „{tab}“ geht, und nichts davon kommt zurück.',
   askPurgeInUseTitle: '{n} noch in Gebrauch: {names}',
   askPurgeInUseBody: 'Beim Löschen bleibt überall ein kaputtes Bild zurück. Trotzdem löschen?',
+  askPurgeInUseBodyFile: 'Beim Löschen führt jeder Link darauf ins Leere. Trotzdem löschen?',
   askPurgeSomeInUseBody: 'Nur die ungenutzten löschen und diese im Papierkorb lassen?',
   askPurgeUnusedOnly: 'Ungenutzte löschen',
   askDeleteUnusedTitle: 'Alle ungenutzten Bilder löschen?',

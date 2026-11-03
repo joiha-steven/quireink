@@ -168,6 +168,7 @@ const pt = {
   askEmptyTrashBody: 'Vai tudo o que está em «{tab}», e nada volta.',
   askPurgeInUseTitle: '{n} ainda em uso: {names}',
   askPurgeInUseBody: 'Apagá-las deixa uma imagem quebrada onde elas apareciam. Apagar mesmo assim?',
+  askPurgeInUseBodyFile: 'Apagá-los deixa quebrado cada link que aponta para eles. Apagar mesmo assim?',
   askPurgeSomeInUseBody: 'Apagar só as que não são usadas e deixar estas na lixeira?',
   askPurgeUnusedOnly: 'Apagar as não usadas',
   askDeleteUnusedTitle: 'Apagar todas as imagens sem uso?',

@@ -350,6 +350,8 @@ export type AdminStrings = {
   askEmptyTrashBody: string
   askPurgeInUseTitle: string
   askPurgeInUseBody: string
+  /** The same question for an attachment, which a post links rather than shows. */
+  askPurgeInUseBodyFile: string
   /** When only SOME of the targets are in use: delete the rest, keep these. */
   askPurgeSomeInUseBody: string
   askPurgeUnusedOnly: string

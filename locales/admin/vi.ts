@@ -167,6 +167,7 @@ const vi = {
   askEmptyTrashBody: 'Mọi thứ trong “{tab}” mất hết, không lấy lại được.',
   askPurgeInUseTitle: 'Còn {n} mục đang được dùng: {names}',
   askPurgeInUseBody: 'Xoá đi thì chỗ nào dùng nó sẽ thành ảnh vỡ. Vẫn xoá chứ?',
+  askPurgeInUseBodyFile: 'Xoá đi thì mọi liên kết tới nó sẽ hỏng. Vẫn xoá chứ?',
   askPurgeSomeInUseBody: 'Chỉ xoá những mục không còn dùng, và để lại các mục này trong thùng rác?',
   askPurgeUnusedOnly: 'Xoá mục không dùng',
   askDeleteUnusedTitle: 'Xoá hết ảnh không ai dùng?',

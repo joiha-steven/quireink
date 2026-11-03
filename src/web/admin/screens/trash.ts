@@ -250,7 +250,7 @@ export async function trashScreen(settings: SiteSettings, query: URLSearchParams
   const ask = escapeAttr(JSON.stringify({
     purgeTitle: t.askPurgeTitle, noUndo: t.askNoUndo,
     emptyTitle: t.askEmptyTrashTitle, emptyBody: t.askEmptyTrashBody,
-    inUseTitle: t.askPurgeInUseTitle, inUseBody: t.askPurgeInUseBody,
+    inUseTitle: t.askPurgeInUseTitle, inUseBody: t.askPurgeInUseBody, inUseFileBody: t.askPurgeInUseBodyFile,
     someInUseBody: t.askPurgeSomeInUseBody, unusedOnly: t.askPurgeUnusedOnly,
     yes: t.askDeleteForever, no: t.askCancel,
     restored: t.restored, restoreFailed: t.restoreFailed,

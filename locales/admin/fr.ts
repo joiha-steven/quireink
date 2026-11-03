@@ -167,6 +167,7 @@ const fr = {
   askEmptyTrashBody: 'Tout ce qui est dans «{tab}» part, et rien ne revient.',
   askPurgeInUseTitle: '{n} encore utilisée(s) : {names}',
   askPurgeInUseBody: 'Les supprimer laisse une image cassée là où elles apparaissent. Supprimer quand même ?',
+  askPurgeInUseBodyFile: 'Les supprimer casse chaque lien qui y mène. Supprimer quand même ?',
   askPurgeSomeInUseBody: 'Supprimer seulement celles qui ne servent plus, et laisser celles-ci dans la corbeille ?',
   askPurgeUnusedOnly: 'Supprimer les inutilisées',
   askDeleteUnusedTitle: 'Supprimer toutes les images inutilisées ?',
