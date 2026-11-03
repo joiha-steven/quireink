@@ -20,6 +20,17 @@
   door to the owner, so until 2026-11-03 any token, a read one included, could send a body of any size.
   A declared length past it is refused unread; a body that declares none is cut off as it passes. The
   answer is `413` with JSON-RPC error `-32600` naming the number.
+- **Three rate limits, each keyed the way its abuse is** (since 2026-11-04, `src/web/mcp-rate-limit.test.ts`;
+  until then only `/register` had one, five a minute). Wrong bearers on `/api/mcp`: `MCP_AUTH_FAILURES`,
+  20 per address in fifteen minutes, failures only, then `429` with `retry-after`; asked AFTER the lookup,
+  so a right token from that address still gets in (refusing first let one stale client looping on a
+  revoked token lock the owner's working one out for fifteen minutes). The token's 192 bits are what stop
+  guessing; this tells a looping client to back off. Calls: `MCP_CALLS_PER_MINUTE`, 600
+  per TOKEN, so a runaway connector stops and the owner's other ones do not; `429` with JSON-RPC error
+  `-32000` naming the number. Code exchanges: `MCP_EXCHANGES_PER_MINUTE`, 10 per address on `/token` and
+  IndieAuth's exchange at `/authorize` together, `429` `too_many_requests` with `retry-after: 60`, exposed to
+  a browser connector by `access-control-expose-headers`. All three use the in-memory
+  limiter (`src/server/rate-limit.ts`): per process, reset by a restart.
 - **Tokens, minted in the admin.** Up to five manual ones, named, shown ONCE, stored as a
   SHA-256 hash in `mcp_tokens` (`src/mcp/tokens.ts`). Each carries a **scope** chosen at mint
   time — `full` (the default), `read`, or `admin`; a `read` token's door registers only the

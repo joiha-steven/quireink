@@ -25,6 +25,7 @@ import { clearCache } from '@/server/cache'
 import { refusalFor } from '@/mcp/guarded-paths'
 import { asError } from '@/mcp/result'
 import { THEME_LIMITS } from '@/theme/types'
+import { clientIp, overLimit, rateLimited, recordHit } from '@/server/rate-limit'
 
 /**
  * A transport that carries exactly one exchange.
@@ -118,6 +119,36 @@ async function readCapped(req: Request, limit: number): Promise<string | null> {
 const tooLarge = (): Response =>
   jsonRpcError(null, -32600, `Request too large: an MCP request body is at most ${MCP_BODY_LIMIT} bytes`, 413)
 
+/**
+ * WRONG BEARERS ONE ADDRESS MAY SEND IN FIFTEEN MINUTES: 20.
+ *
+ * Until 2026-11-04 nothing counted them: 500 wrong bearers answered 401 in 75 ms. A 192-bit token
+ * is not guessed at any rate, so this is not what keeps a token secret; it is what tells a script,
+ * or a client holding a revoked token in a retry loop, to back off (`retry-after`) instead of being
+ * answered 401 forever. Failures only, like the sign-in lockout, so an agent working is never charged
+ * for working.
+ *
+ * ASKED AFTER THE LOOKUP, never before it. Refusing a locked address before looking was tried first
+ * and measured against a running instance: one stale client looping on a revoked token locked a
+ * working client on the same address out for fifteen minutes, which on the owner's own laptop is the
+ * owner. A right token always gets in; only a wrong one is answered 429.
+ */
+export const MCP_AUTH_FAILURES = 20
+const AUTH_WINDOW_MS = 15 * 60_000
+
+/**
+ * CALLS ONE TOKEN MAY MAKE IN A MINUTE: 600, ten a second.
+ *
+ * An agent waiting on a model between calls makes a few a minute; a script tagging an archive makes
+ * one per post as fast as the server answers, and this leaves that room. What it stops is the loop
+ * nobody is watching: 300 calls measured at 1.9 s were all answered. Keyed by the token rather than
+ * the address, so a runaway connector is stopped and the owner's other connections are not.
+ */
+export const MCP_CALLS_PER_MINUTE = 600
+
+const tooMany = (body: unknown, retryAfterSec: number): Response =>
+  Response.json(body, { status: 429, headers: { 'retry-after': String(retryAfterSec) } })
+
 export async function handleMcp(c: Context): Promise<Response> {
   const settings = await getSettings()
   // The owner's switch. Off means the endpoint is not there, rather than there and
@@ -139,7 +170,17 @@ export async function handleMcp(c: Context): Promise<Response> {
   const auth = c.req.header('authorization') ?? ''
   const token = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : ''
   const verified = token ? await verifyMcpToken(token) : undefined
-  if (!verified) return unauthorized()
+  if (!verified) {
+    const failures = `mcp-auth:${clientIp(c)}`
+    if (overLimit(failures, MCP_AUTH_FAILURES, AUTH_WINDOW_MS)) {
+      return tooMany({ error: 'too_many_requests' }, AUTH_WINDOW_MS / 1000)
+    }
+    recordHit(failures, AUTH_WINDOW_MS)
+    return unauthorized()
+  }
+  if (rateLimited(`mcp-call:${verified.clientId}`, MCP_CALLS_PER_MINUTE)) {
+    return tooMany({ jsonrpc: '2.0', id: null, error: { code: -32000, message: `Too many requests: a token makes at most ${MCP_CALLS_PER_MINUTE} calls a minute` } }, 60)
+  }
   const readOnlyDoor = !verified.scopes.includes('full') && !verified.scopes.includes('admin')
   const adminDoor = verified.scopes.includes('admin')
 

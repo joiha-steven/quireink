@@ -35,6 +35,33 @@ const corsJson = (data: unknown, status = 200): Response =>
     headers: { ...CORS, 'content-type': 'application/json; charset=utf-8' },
   })
 
+/**
+ * CODE EXCHANGES ONE ADDRESS MAY ATTEMPT IN A MINUTE: 10, on `/token` and IndieAuth's exchange at
+ * `/authorize` together.
+ *
+ * A connector exchanges one code per authorization, so ten a minute is room for a person retrying
+ * by hand and nothing like a script. Until 2026-11-04 these two were the only public OAuth doors
+ * without a limit (`/register` has had five a minute): fifty made-up codes were fifty
+ * `invalid_grant`s. The code is an HMAC and is not guessed; what the limit stops is the hammering.
+ * One key for both doors, so alternating between them buys nothing.
+ */
+export const MCP_EXCHANGES_PER_MINUTE = 10
+
+const exchangeLimited = (c: Context): boolean => rateLimited(`mcp-exchange:${clientIp(c)}`, MCP_EXCHANGES_PER_MINUTE)
+
+/**
+ * The refusal, with when to come back. `retry-after` is not a CORS-safelisted response header, so a
+ * connector running in a browser is only allowed to read it when the answer says it may.
+ */
+const exchangeRefused = (): Response =>
+  new Response(JSON.stringify({ error: 'too_many_requests' }), {
+    status: 429,
+    headers: {
+      ...CORS, 'content-type': 'application/json; charset=utf-8',
+      'retry-after': '60', 'access-control-expose-headers': 'Retry-After',
+    },
+  })
+
 /** OAuth parameters from a query string (GET) or a form body (the approve POST). */
 function parseParams(src: URLSearchParams): {
   params: OAuthParams
@@ -203,6 +230,7 @@ export function mcpOAuthRoutes(): Hono {
     // in, and no token, redeems the code here and gets the profile URL back. Same code,
     // same single use, no token minted.
     if (String(form.get('grant_type') ?? '') === 'authorization_code') {
+      if (exchangeLimited(c)) return exchangeRefused()
       const ok = await verifyCode(String(form.get('code') ?? ''), String(form.get('redirect_uri') ?? ''),
         String(form.get('code_verifier') ?? ''))
       if (!ok) return corsJson({ error: 'invalid_grant' }, 400)
@@ -250,6 +278,7 @@ export function mcpOAuthRoutes(): Hono {
 
   app.post('/api/mcp/token', async (c) => {
     if (!(await mcpEnabled())) return corsJson({ error: 'temporarily_unavailable' }, 503)
+    if (exchangeLimited(c)) return exchangeRefused()
     const form = await c.req.formData().catch(() => null)
     if (form === null) return corsJson({ error: 'invalid_request' }, 400)
 
