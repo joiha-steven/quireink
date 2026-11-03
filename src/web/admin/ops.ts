@@ -141,6 +141,9 @@ export function opsRoutes() {
     let importedNotes = 0
     let redirects = 0
     let skipped = result.skipped
+    // Already here, from an earlier run: said apart from what was left out, because "left out"
+    // over a re-run read as a file with something wrong in it (2026-11-03).
+    let already = 0
     // Read BEFORE anything is written. One unparseable date in a bundle threw half-way through,
     // and running the file again then made `-2` copies of everything already in (2026-09-30).
     // A date that will not parse skips its item; an item already here, same slug and same
@@ -150,10 +153,10 @@ export function opsRoutes() {
     for (const { slug, path, ...rest } of result.posts) {
       if (unparseable(rest.date)) { skipped++; continue }
       const here = await getPost(slug)
-      if (here && here.title === rest.title && sameDate(here.date, rest.date)) { skipped++; continue }
+      if (here && here.title === rest.title && sameDate(here.date, rest.date)) { already++; continue }
       const before = await broughtBefore(path)
       const there = before && before !== slug ? await getPost(before) : null
-      if (there && there.title === rest.title && sameDate(there.date, rest.date)) { skipped++; continue }
+      if (there && there.title === rest.title && sameDate(there.date, rest.date)) { already++; continue }
       // An excerpt the PARSER derived is not one the writer wrote: handed over as written, it was
       // frozen and never followed the body again (2026-11-03). Empty, `savePost` derives it at
       // this blog's own length and keeps it derived.
@@ -164,10 +167,10 @@ export function opsRoutes() {
     }
     for (const { slug, path, ...rest } of result.pages) {
       const here = await getPage(slug)
-      if (here && here.title === rest.title && here.content === rest.content) { skipped++; continue }
+      if (here && here.title === rest.title && here.content === rest.content) { already++; continue }
       const before = await broughtBefore(path)
       const there = before && before !== slug ? await getPage(before) : null
-      if (there && there.title === rest.title && there.content === rest.content) { skipped++; continue }
+      if (there && there.title === rest.title && there.content === rest.content) { already++; continue }
       const finalSlug = await saveUnique(slug, (s) => savePage({ ...rest, slug: s }))
       redirects += await redirectOldPath(path, finalSlug)
       importedPages += 1
@@ -178,7 +181,7 @@ export function opsRoutes() {
     for (const { slug, ...rest } of result.notes ?? []) {
       if (unparseable(rest.date)) { skipped++; continue }
       const here = await getNote(slug)
-      if (here && here.content === rest.content && sameDate(here.date, rest.date)) { skipped++; continue }
+      if (here && here.content === rest.content && sameDate(here.date, rest.date)) { already++; continue }
       await saveUnique(slug, (s) => saveNote({ ...rest, slug: s }))
       importedNotes += 1
     }
@@ -194,7 +197,7 @@ export function opsRoutes() {
     )
     return {
       posts: importedPosts, pages: importedPages, notes: importedNotes,
-      skipped, redirects, locked: result.locked ?? 0,
+      skipped, already, redirects, locked: result.locked ?? 0,
     }
   }
 

@@ -101,7 +101,9 @@ describe('the WordPress import', () => {
   it('does not import the same dated item a second time', async () => {
     const dated = item('Dated', 'post', 'dated').replace('<wp:status>', '<wp:post_date_gmt>2020-05-01 10:00:00</wp:post_date_gmt>\n  <wp:status>')
     expect(await payload<{ posts: number }>(await send(wxr(dated)))).toMatchObject({ posts: 1 })
-    expect(await payload<{ posts: number; skipped: number }>(await send(wxr(dated)))).toMatchObject({ posts: 0, skipped: 1 })
+    // Counted as ALREADY HERE, apart from what was left out: "left out" over a re-run read as a
+    // file with something wrong in it (2026-11-03).
+    expect(await payload<{ posts: number; skipped: number; already: number }>(await send(wxr(dated)))).toMatchObject({ posts: 0, skipped: 0, already: 1 })
     expect((await payload<Array<{ slug: string }>>(asOwner('/api/posts'))).map((p) => p.slug)).toEqual(['dated'])
   })
 
