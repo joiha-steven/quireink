@@ -4,6 +4,7 @@
 // back by matching. Slugify is lossy, so the route finds the term whose slug
 // matches and shows its real name.
 
+import { dropWide } from '@/transliterate'
 import { slugify } from '@/utils'
 
 type Taxo = 'categories' | 'tags'
@@ -77,4 +78,27 @@ export function resolveTerm<T extends HasTaxo>(posts: T[], kind: Taxo, slug: str
     }),
   )
   return { name, posts: matched }
+}
+
+/**
+ * The slug a name had BEFORE `slugify` folded ß and full-width Latin (2026-11-03), when that is
+ * not its slug now: `/tag/strae` for "Straße", `/tag/Ｆｕｌｌ` for "Ｆｕｌｌ". Returns the new slug.
+ *
+ * A term's or a series' slug is derived on every request, so the fold moved those archives; this
+ * is what lets the old address 301 instead of 404. Asked only once an exact match has missed
+ * (`term-routes.ts`), so a tag that really is spelled `strae` keeps its own page. Null when no name
+ * ever had that slug. Terms and series share it because they share the fallback to the raw name.
+ */
+export function movedSlug(names: Iterable<string>, slug: string): string | null {
+  let raw = slug
+  try {
+    raw = decodeURIComponent(slug)
+  } catch {
+    /* malformed encoding → compare against the literal slug */
+  }
+  for (const name of names) {
+    const old = dropWide(name)
+    if (old !== name && (slugify(old) || name) === raw) return termSlug(name)
+  }
+  return null
 }

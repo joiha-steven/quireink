@@ -5,7 +5,7 @@ import { INK_SYNTAX_GLOBAL, RING_SYNTAX_GLOBAL, UNDER_SYNTAX_GLOBAL } from '@/pe
 // module, and `render/math.ts` imports Temml: three regexes cost every admin screen 212 KB of
 // LaTeX engine until this line pointed one file to the left (`math-syntax.ts`).
 import { MATH_SYNTAX_GLOBAL, mathOf, isDisplayMatch } from '@/md/math-syntax'
-import { toLatin } from '@/transliterate'
+import { foldWide, toLatin } from '@/transliterate'
 
 /** TeX source -> the letters and numbers in it: control words, braces, `&` and `\\` go. */
 const stripTex = (tex: string) =>
@@ -39,10 +39,10 @@ export function escapeHtml(s: string): string {
  */
 export const escapeAttr = escapeHtml
 
-// Convert arbitrary text to a URL-safe slug (Vietnamese diacritics, Cyrillic and Greek:
-// `transliterate.ts`).
+// Convert arbitrary text to a URL-safe slug (Vietnamese diacritics, Cyrillic, Greek, ß and
+// full-width Latin: `transliterate.ts`).
 export function slugify(input: string): string {
-  return toLatin(input
+  return toLatin(foldWide(input)
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // strip diacritic marks
     .replace(/đ/g, 'd')

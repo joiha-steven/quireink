@@ -29,3 +29,21 @@ const LATIN: Record<string, string> = { ...CYRILLIC, ...GREEK }
 /** Every Cyrillic or Greek lowercase letter in the text, in Latin letters. */
 export const toLatin = (text: string): string =>
   text.replace(/[α-ωа-яё]/g, (c) => LATIN[c] ?? '')
+
+// ß AND FULL-WIDTH LATIN, which `slugify` used to drop: "Straße" slugged to `strae` and a title in
+// full-width letters ("Ｆｕｌｌ") to nothing at all (2026-11-03). ß and ẞ are spelled `ss`; the
+// full-width ASCII block and the Latin ligatures (ﬁ, ﬂ) go through NFKC one character at a time.
+// Not NFKC over the whole title: that would also turn `™` into `tm` and `²` into `2`, moving slugs
+// that come out right today. Escapes, not literal characters, for the reason `admin-shared/fold.ts`
+// records.
+const WIDE = /[ßẞﬀ-ﬆ！-～]/g
+
+/** ß, ẞ, the Latin ligatures and full-width ASCII, spelled in plain letters. */
+export const foldWide = (text: string): string =>
+  text.replace(WIDE, (c) => (c === 'ß' || c === 'ẞ' ? 'ss' : c.normalize('NFKC')))
+
+/**
+ * The same characters REMOVED, which is what `slugify` did with them before 2026-11-03: the
+ * slug a term or series had then, so its old address can 301 to the new one (`taxonomy.ts`).
+ */
+export const dropWide = (text: string): string => text.replace(WIDE, '')

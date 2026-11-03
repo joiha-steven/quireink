@@ -127,6 +127,14 @@ percent-encoded one, because `resolveTerm`/`resolveSeries` decode before matchin
 `term-routes.ts` encodes once when it redirects; the sitemap encodes at the point of emission,
 where a `<loc>` wants the URL as it would be fetched.
 
+**`slugify` spells ß as `ss` and full-width Latin as ASCII** (2026-11-03; it had dropped both, so
+"Straße" was `strae` and "Ｆｕｌｌ" was nothing). Only those characters and the Latin ligatures go
+through NFKC, never the whole title, so every slug that came out right before still does. A post
+or page slug is stored at creation and did not move. A term or series slug is derived on every
+request, so the old address (`/tag/strae`) answers with a 301 to the new one (`/tag/strasse`) once
+an exact match has missed (`movedSlug` in `content/taxonomy.ts`); a heading anchor on a heading
+with ß in it is now spelled with `ss`.
+
 **Admin (`src/web/admin` drawing, `src/admin` wiring):** every address is a page the server
 draws, and the browser gets one island per screen — ADR 0054, which replaced 0006. It was one
 route serving an embedded SPA shell with client-side routing and 13 pages; there is no shell, no

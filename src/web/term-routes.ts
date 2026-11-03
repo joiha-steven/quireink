@@ -16,7 +16,7 @@ import type { Post, SiteSettings } from '@/types'
 import { getPublicPosts } from '@/content/posts'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { resolveSeries } from '@/content/series'
-import { canonicalTermSlug, resolveTerm, tagText, termSlug } from '@/content/taxonomy'
+import { canonicalTermSlug, movedSlug, resolveTerm, tagText, termSlug } from '@/content/taxonomy'
 import { t } from '@/i18n/i18n'
 import { escapeHtml, fill } from '@/utils'
 import { renderListing } from '@/web/listing'
@@ -56,6 +56,19 @@ async function termFeed(
     },
   })
 }
+
+/**
+ * A 404 from an archive, unless the slug asked for is the one its name had before `slugify`
+ * folded ß and full-width Latin (2026-11-03): then a 301 to where it lives now. Asked only on a
+ * miss, so the scan costs nothing on a page that resolves, and an exact match always wins.
+ */
+async function orMoved(res: Response, names: Iterable<string>, slug: string, at: (s: string) => string): Promise<Response> {
+  if (res.status !== 404) return res
+  const moved = movedSlug(names, slug)
+  return moved === null ? res : new Response(null, { status: 301, headers: { location: at(encodeURIComponent(moved)) } })
+}
+
+const seriesNames = (posts: Post[]): string[] => posts.flatMap((p) => (p.series ? [p.series] : []))
 
 export function registerTermRoutes(app: Hono): void {
   // ----- taxonomy -------------------------------------------------------------
@@ -137,7 +150,8 @@ export function registerTermRoutes(app: Hono): void {
           return c.redirect(`/${kind}/${encodeURIComponent(canonical)}`, 301)
         }
       }
-      return cached(`/${kind}/${asked}`, () => term(asked, 1))()
+      const res = await cached(`/${kind}/${asked}`, () => term(asked, 1))()
+      return orMoved(res, (await getPublicPosts()).flatMap((p) => p[field]), asked, (s) => `/${kind}/${s}`)
     })
 
     app.get(`/${kind}/:slug/page/:n`, async (c) => {
@@ -158,7 +172,7 @@ export function registerTermRoutes(app: Hono): void {
 
   app.get('/series/:slug', async (c) => {
     const slug = c.req.param('slug')
-    return cached(`/series/${slug}`, async () => {
+    const res = await cached(`/series/${slug}`, async () => {
       const settings = await getSettings()
       const { name, posts } = await resolveSeries(slug)
       if (!name) return null
@@ -178,6 +192,7 @@ export function registerTermRoutes(app: Hono): void {
         feed: { path: `/series/${slug}/feed.xml`, title: `${name} · ${settings.title}` },
       })
     })()
+    return orMoved(res, seriesNames(await getPublicPosts()), slug, (s) => `/series/${s}`)
   })
 
   // ----- the year archive -----------------------------------------------------
