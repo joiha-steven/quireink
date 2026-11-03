@@ -44,6 +44,12 @@ describe('saveNote', () => {
     expect((await getNote('x'))?.sourceUrl).toBeUndefined()
   })
 
+  it('does not hand back a source that never passed that rule, as a restored row has not', async () => {
+    await saveNote({ title: 'y', content: '', date: PAST, sourceUrl: 'https://example.com/a' })
+    db().run(`update notes set source_url = 'javascript:alert(1)' where slug = 'y'`)
+    expect((await getNote('y'))?.sourceUrl).toBeUndefined()
+  })
+
   it('lives in a namespace of its own: a note and a page may share a name', async () => {
     await savePage({ title: 'About', content: 'page', status: 'published' })
     const note = await saveNote({ title: 'About', content: 'note', date: PAST })

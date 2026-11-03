@@ -53,7 +53,9 @@ function rowToMeta(row: NoteRow): Note {
     slug: row.slug,
     date: toIso(row.date),
     status: row.status === 'published' ? 'published' : 'draft',
-    sourceUrl: row.source_url || undefined,
+    // Held to the write's rule on the way OUT too: a backup puts rows back without passing
+    // `normalize`, and this lands in an `href` on a public page.
+    sourceUrl: cleanUrl(row.source_url ?? undefined),
     sourceTitle: row.source_title || undefined,
     quote: row.quote || undefined,
     updatedAt: row.updated_at ? toIso(row.updated_at) : undefined,
