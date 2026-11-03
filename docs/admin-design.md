@@ -169,13 +169,14 @@ character and none of its typographic rules **except one**, below.
   `tried()` reports `asked`. Two of its three answers are successes that contacted nobody: a
   card with no test route, and one whose gate found nothing to try. `goodTitle` and `tried` are
   both exported so that choice can be asserted without a page.
-- **Enclosure weakens inward, and settings is built from three ranks.** The sheet's edge, then
-  the card's, then whatever is in the card — each line lighter than the one around it. It ran
-  backwards until 2026-09-01: the sheet `neutral-200/80`, the card `neutral-100`, and a box
-  inside the card `neutral-200` at the card's own 8px radius, so the innermost frame shouted
-  loudest and drew a corner inside an identical corner. The three ranks are **card**
-  (`panelCard` in [`web/admin/fields.ts`](../src/web/admin/fields.ts): a hairline box, its name
-  on a ruled header row at 16px/600), **group** (`group` in the same file: one rule and a 12px
+- **Enclosure weakens inward, and settings is built from three ranks.** The sheet is the ONE
+  box on a page; inside it a rank is a rule and a type size, never another frame (2026-11-03).
+  Until then each card was a hairline 8px box and a palette sat in a box inside that, so the
+  Appearance tab drew 27 frames, 20 of them three deep: the stacked-box look of every generated
+  settings screen. A thing a person picks — a theme, a palette, a font tile — keeps a frame,
+  because it is an object; `PANEL` and `INSET` are passages and get rules. The three ranks are
+  **card** (`panelCard` in [`web/admin/fields.ts`](../src/web/admin/fields.ts): its name on a
+  ruled header row at 16px/600, the rows under it, no edge), **group** (`group` in the same file: one rule and a 12px
   `UTIL` eyebrow, no box — a box inside a card is the arrangement above, one level further in)
   and **list** (`PANEL_LIST` in
   [`web/admin/fields-box.ts`](../src/web/admin/fields-box.ts): the card's full width,

@@ -280,9 +280,9 @@ export function textControl(f: {
 }
 
 /**
- * A PANEL: a card living INSIDE the one-sheet page — one radius step under the sheet's, hairline
- * edges, its title on a ruled header row. A card floating on the canvas keeps the sheet
- * register; a box in a box does not.
+ * A PANEL: a card living INSIDE the one-sheet page — a title on a ruled header row and its rows,
+ * with no edge of its own. A card floating on the canvas keeps the sheet register; a box in a
+ * box does not, and since 2026-11-03 neither does a box in the sheet.
  *
  * `lampHtml` rides at the END of the header row, with the actions, so that every card's title
  * starts at the same x whether or not that card has a state to report. ONE mark may: a group
@@ -310,11 +310,15 @@ export function panelCard(c: {
     ? `<span class="flex items-center gap-3">${c.lampHtml ?? ''}${c.actions ?? ''}</span>`
     : ''
   const header = titled || trailing
-    ? `<div class="flex items-center justify-between gap-3 border-b border-neutral-100 px-4 py-2.5`
+    // `neutral-200`, the sheet's own hairline: with no box round the card this rule is what
+    // says where one card's rows begin, and the `neutral-100` it was measured 1.09:1 on white.
+    ? `<div class="flex items-center justify-between gap-3 border-b border-neutral-200 px-4 py-2.5`
       + ` dark:border-neutral-800">${titled}${trailing}</div>`
     : ''
-  return `<section class="rounded-lg border border-neutral-100 dark:border-neutral-800`
-    + `${c.className ? ` ${c.className}` : ''}"${c.attrs ? ` ${c.attrs}` : ''}>`
+  // NO BOX since 2026-11-03: the sheet is the one box on the page, and a card inside it is its
+  // title, the rule under that title and the rows. It was a hairline-bordered 8px box, which
+  // with the boxes inside it put three frames round a palette on the Appearance tab.
+  return `<section${c.className ? ` class="${c.className}"` : ''}${c.attrs ? ` ${c.attrs}` : ''}>`
     + header + `<div class="card-body p-4${c.bodyClass ? ` ${c.bodyClass}` : ''}">${c.body}</div></section>`
 }
 

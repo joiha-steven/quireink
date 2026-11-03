@@ -13,11 +13,15 @@ import { panelCard } from '@/web/admin/fields'
 /** Rows with a rule between them and no edge of their own — the third rank. */
 export const PANEL_LIST = 'panel-list -mx-4 divide-y divide-neutral-100 dark:divide-neutral-800'
 
-/** A bordered box that is not a card: one radius step in, and no title row. */
-export const PANEL = 'overflow-hidden rounded-lg border border-neutral-100 dark:border-neutral-800'
+/**
+ * A stretch set apart inside a card by a RULE above and below it, not a box (2026-11-03): a
+ * bordered box in a card was the third frame in a row. The objects a person picks (a theme, a
+ * palette, a font) keep their own frames; they are things, and this is a passage.
+ */
+export const PANEL = 'overflow-hidden border-t border-b border-neutral-100 dark:border-neutral-800'
 
-/** The same box with its own padding, for a stretch that needs setting apart inside a card. */
-export const INSET = 'rounded-lg border border-neutral-100 p-4 dark:border-neutral-800'
+/** The same, with its own padding, and only the rule above: a stretch, not a frame. */
+export const INSET = 'border-t border-neutral-100 pt-4 dark:border-neutral-800'
 
 export const panelList = (rows: string[] | string, tag: 'div' | 'ul' = 'div', attrs = ''): string =>
   `<${tag} class="${PANEL_LIST}"${attrs ? ` ${attrs}` : ''}>`
