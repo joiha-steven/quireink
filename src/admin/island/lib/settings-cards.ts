@@ -24,7 +24,8 @@ export const setLamp = (el: Element | null, state: Lamp, title: string): void =>
   // Off says nothing a card header needs to say, so it shows nothing — the same rule the
   // server draws by (`connectionCard` in `web/admin/fields-box.ts`). Hidden rather than
   // removed: the next save may turn the card on, and this is the element that reports it.
-  el.hidden = state === 'off'
+  // Good says nothing either, since 2026-11-03: only amber (failed, unsaved) is news.
+  el.hidden = state === 'off' || state === 'good'
   el.className = `${LAMP_SHAPE} ${LAMP_HUES[state]}`
   if (title) { el.setAttribute('role', 'img'); el.setAttribute('aria-label', title); el.title = title }
 }

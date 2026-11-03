@@ -62,7 +62,7 @@
   `panel` mode for a card living INSIDE a sheet), `PageHeader`, `Tabs` (`lg` underline +
   `sm` segments, with a `dense` modifier), `StatCard`, `EmptyState`, and table tokens
   (`TableFrame` / `THEAD` / `TROW`). The one-sheet page itself lives in
-  `admin-shared/kit.ts` — `SHEET`, `SHEET_TOP`, `SHEET_FOOT`, `SHEET_TOOL` —
+  `admin-shared/kit.ts` — `SHEET`, `SHEET_TOP`, `SHEET_TOOL` —
   with `.paper-cols` (two newspaper columns) in `admin.css`; see "One sheet per page" in
   `docs/admin-design.md`. Admin is monochrome plus the product's own PEN BOX, and each ink
   keeps the meaning it has on paper: highlighter marks where you are (the rail's current row,

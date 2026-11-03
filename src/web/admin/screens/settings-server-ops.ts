@@ -315,7 +315,9 @@ export function backupsCard(t: AdminStrings, s: SiteSettings): string {
     // that drifts from this one in silence. So the server draws the answer for each case and the
     // island picks. Hidden is `display:none`, which is not a flex item at all, so the `gap-2`
     // here never pays for the one that is not showing.
-    + lamp({ state: 'good', title: t.backupLastRun, attrs: 'data-backup-lamp-some hidden' })
+    // No light when a backup HAS run (2026-11-03): "Last run" beside it says so, and only the
+    // amber "never" is news.
+    + lamp({ state: 'none', title: t.backupLastRun, attrs: 'data-backup-lamp-some hidden' })
     + lamp({ state: 'attention', title: t.backupNever, attrs: 'data-backup-lamp-none' })
     // The words travel WITH the line, because the island has to rebuild "Last run: <date>" and
     // the label half is translated. Reading it back off the element keeps every string on the

@@ -109,9 +109,8 @@ function rowBody(it: WriteItem, t: RowWords, views: Record<string, number>, lang
   const when = !drafty && (it.kind === 'post' || queued) ? it.created : it.touched
   const seen = views[`/${it.slug}`] ?? 0
 
-  // THE ROW'S STATE, in the admin's one lamp rather than in a dot of its own. Three answers,
-  // not two: a draft is amber because it is waiting on YOU, a scheduled post is amber BREATHING
-  // because it is waiting on the clock, and a published one is green because it is done.
+  // THE ROW'S STATE, only where it is not done (2026-11-03): a draft wears the pen's edge; a
+  // scheduled or published piece carries no light, its words say it, and the slot stays empty.
   //
   // ⚠️ THE TICK TAKES THE LAMP'S PLACE rather than standing beside it, and both ship drawn with
   // one hidden. Adding a column moved every title 24px right and re-wrapped half the list on the
@@ -119,9 +118,8 @@ function rowBody(it: WriteItem, t: RowWords, views: Record<string, number>, lang
   // went to pick from them; swapping costs 8px and nothing re-wraps.
   const mark = `<span class="write-lamp mt-1.5 flex shrink-0 self-start">`
     + lamp({
-      state: drafty || queued ? 'attention' : 'good',
-      pulse: queued,
-      title: drafty ? t.statusDraft : queued ? t.scheduled : t.statusPublished,
+      state: drafty && !queued ? 'pen' : 'none',
+      title: drafty && !queued ? t.statusDraft : '',
     })
     + `</span>`
     + tick({
@@ -250,22 +248,23 @@ function head(t: AdminStrings, needs: WriteNeeds, anyQueued: boolean): string {
   // arrival reads as a warning. Both hues are drawn and the island shows one (it builds no markup).
   // ⚠️ THE ATTRIBUTE GOES ON THE LAMP, not on a wrapper: a lamp is an inline-block, so a plain
   // span holding one takes a 16px line box for an 8px mark and the row grew by 8.
-  const statusLamp = (state: 'attention' | 'good'): string =>
+  // Pressed, a question lights in INK (2026-11-03): no row wears green or amber any more.
+  const statusLamp = (): string =>
     lamp({ state: 'off', attrs: 'data-lamp-off' })
-    + lamp({ state, attrs: 'data-lamp-on hidden' })
+    + lamp({ state: 'ink', attrs: 'data-lamp-on hidden' })
   // Scheduled (`isQueued`) leaves "Published"; its chip exists only while something is scheduled.
-  const states: ReadonlyArray<readonly [string, string, 'attention' | 'good']> = [
-    ['draft', t.scopeDrafts, 'attention'],
-    ...(anyQueued ? [['scheduled', t.scheduled, 'attention'] as const] : []),
-    ['published', t.scopePublished, 'good'],
+  const states: ReadonlyArray<readonly [string, string]> = [
+    ['draft', t.scopeDrafts],
+    ...(anyQueued ? [['scheduled', t.scheduled] as const] : []),
+    ['published', t.scopePublished],
   ]
   const statusLine = `<div class="flex items-center justify-between gap-3 text-xs">`
     + `<span class="flex gap-3">`
     + states
-      .map(([value, label, state]) =>
+      .map(([value, label]) =>
         `<button type="button" data-write-status="${escapeAttr(value)}" aria-pressed="false"`
         + ` class="${SHEET_TOOL} inline-flex items-center gap-1.5">`
-        + statusLamp(state)
+        + statusLamp()
         + `<span>${escapeHtml(label)}</span></button>`).join('')
     + `</span>`
     + `</div>`

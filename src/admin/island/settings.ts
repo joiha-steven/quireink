@@ -198,24 +198,17 @@ if (root) {
   // ---- the explanations --------------------------------------------------------------------
 
   /**
-   * SHOWN OR HIDDEN, and the default is MEASURED rather than fixed.
-   *
-   * The reason to hide the explanations is BULK. The sheet has a 60vh floor; a tab whose content
-   * stops above it leaves blank paper below, and taking the guidance away to make room in a
-   * space that is already empty buys nothing and costs the guidance. So a short tab opens with
-   * them shown, a long one without — until the owner touches the switch, and from then on their
-   * answer is the answer everywhere.
-   *
-   * ⚠️ MEASURED WITH THEM HIDDEN, always. Measuring the tab as drawn would be a loop: a short
-   * tab is given its explanations, grows past the floor, measures as long on the next pass, and
-   * has them taken away again. The attribute is set, the height read, and the attribute put back
-   * inside one frame, so nothing is ever painted in the measuring state.
+   * SHOWN OR HIDDEN, and the default is HIDDEN at every height (2026-11-03). It was measured: a
+   * tab shorter than the sheet's 60vh floor opened with its explanations, so the same tab had
+   * them or not depending on the window it was opened in, and a short tab opened as a grey
+   * sentence under every field. The switch stays, and the owner's answer is the answer
+   * everywhere from the moment they touch it.
    */
   let chosen: boolean | null = null
   try {
     const raw = localStorage.getItem(NOTES_KEY)
     chosen = raw === '1' ? true : raw === '0' ? false : null
-  } catch { /* a browser with storage refused: the measurement decides */ }
+  } catch { /* a browser with storage refused: hidden */ }
 
   function paintNotes(on: boolean): void {
     if (box) box.dataset.explanations = on ? 'on' : 'off'
@@ -224,15 +217,9 @@ if (root) {
     }
   }
 
+  /** The owner's answer, or hidden. Kept a function: a tab swap repaints the switch's words. */
   function measure(): void {
-    if (chosen !== null) { paintNotes(chosen); return }
-    const panel = panels.find((p) => !p.hidden)
-    if (!panel || !box) return
-    const was = box.dataset.explanations
-    box.dataset.explanations = 'off'
-    const bare = panel.getBoundingClientRect().height
-    if (was) box.dataset.explanations = was
-    paintNotes(bare < window.innerHeight * 0.6)
+    paintNotes(chosen ?? false)
   }
 
   screen.addEventListener('click', (e) => {

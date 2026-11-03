@@ -16,7 +16,7 @@ import type { SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { SHEET_FOOT, SHEET_TOOL_ON_CANVAS } from '@/admin-shared/kit'
+import { SHEET_TOOL_ON_CANVAS } from '@/admin-shared/kit'
 import { pageHeader, pager, sheet, sheetTop, tabs } from '@/web/admin/kit'
 import { newsletterView, subscribersView } from '@/web/admin/views-news'
 import { peoplePanel } from '@/web/admin/screens/newsletter-people'
@@ -85,7 +85,6 @@ export async function newsletterScreen(settings: SiteSettings, query: URLSearchP
       + peoplePanel(t, settings.language, people, open === 'people',
         pager(t, '/admin/newsletter', 'people', people.at, people.pages), siteZone(settings.timezone))
       + sendPanel(t, settings.language, letter.posts, open === 'send', siteZone(settings.timezone))
-      + testPanel(t, open === 'test', letter.mailConfigured)
-      + `<div class="${SHEET_FOOT}">${escapeHtml(t.nlPageHint)}</div>`)
+      + testPanel(t, open === 'test', letter.mailConfigured))
     + `</div>`
 }

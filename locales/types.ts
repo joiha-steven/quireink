@@ -327,7 +327,6 @@ export type AdminStrings = {
   commentsSortRecent: string
   commentsSortBusiest: string
   commentsFilterWeek: string
-  commentsWalkHint: string
   /** The order of the two counts: `{c}` is commentCount, `{p}` is postCount, each pluralised. */
   commentsInPosts: string
   commentCount: string
@@ -337,7 +336,6 @@ export type AdminStrings = {
   commentsStatPosts: string
   commentsStatWeek: string
   commentsStatPeople: string
-  commentsFootHint: string
   edit: string
   delete: string
   /** The dialog that replaced the twenty native prompts (2026-09-07). Titles name the OBJECT. */
@@ -745,7 +743,6 @@ export type AdminStrings = {
   siteTitleRequired: string
   noMedia: string
   deleteNoMatch: string
-  libraryIntro: string
   /** The library's pager: one page of tiles at a time, and the way to the next. */
   pagerPrev: string
   pagerNext: string
@@ -1502,7 +1499,6 @@ export type AdminStrings = {
   // system info panel (Overview)
   navTrash: string
   trashTitle: string
-  trashHint: string
   trashEmpty: string
   trashSearch: string
   colDeletedAt: string
@@ -1756,7 +1752,6 @@ export type AdminStrings = {
   nlTestSent: string
   nlTestFailed: string
   navNewsletter: string
-  nlPageHint: string
   nlSmtpSettingsLink: string
   nlManageLink: string
   nlNoSmtpWarning: string

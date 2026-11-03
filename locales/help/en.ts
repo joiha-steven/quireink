@@ -37,7 +37,7 @@ const help: HelpText = {
       title: 'Readers — comments and newsletter',
       body: `<p>Both are <b>off until you set them up</b>, and both are yours: no third-party service sits between you and your readers.</p>
 <ul class="after">
-<li><b>Comments</b> — turn them on in {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile against spam and sign-in with Google are optional. You can read and delete comments on the Comments screen.</li>
+<li><b>Comments</b> — turn them on in {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile against spam and sign-in with Google are optional. You can read and delete comments on the Comments screen. The keys <kbd>j</kbd> and <kbd>k</kbd> walk the comments there.</li>
 <li><b>Newsletter</b> — add your SMTP details in {t:navSettings} → {t:tabPeople}, and a sign-up form appears at the foot of every post, with a button in the site header. Sign-up is <b>double opt-in</b>: an address only counts once it has clicked the confirmation link.</li>
 <li><b>Sending is always manual.</b> Nothing is emailed automatically, not even a scheduled post going live. You tick the posts, read the real email in the preview, and press send. Tick several and they go out as <b>one digest</b>, not one message each.</li>
 <li>{t:navNewsletter} → {t:nlTabPeople} shows what each address actually received, any SMTP failure with its error, and the open rate. {t:navNewsletter} → {t:nlTabTest} sends you a sample of each email before a reader ever sees one.</li>

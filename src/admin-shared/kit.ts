@@ -202,10 +202,6 @@ export const SHEET = `${CARD} flex flex-col min-h-[60vh]`
  */
 export const SHEET_FIXED = `${CARD} flex flex-col min-h-[70dvh] lg:h-[calc(100dvh-9rem)]`
 
-/** The sheet's closing line of small print: counts, hints, what a click does. */
-export const SHEET_FOOT =
-  'mt-auto border-t border-neutral-100 px-4 py-2.5 text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400'
-
 /** A quiet tool on the sheet-top row — same voice as the write pane's sort cycle. */
 export const SHEET_TOOL =
   `${TAP} text-xs text-neutral-500 transition hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:text-neutral-200`
@@ -344,12 +340,21 @@ export const TICK_PATH = 'stroke-white dark:stroke-neutral-900'
  * the server now — the live strip's and the subscriber list's alike — and one emerald that
  * drifts a shade from another is the drift `check:admin-kit` exists to stop.
  */
-export type LampState = 'good' | 'attention' | 'off'
+export type LampState = 'good' | 'attention' | 'off' | 'pen' | 'ink' | 'none'
 
+/**
+ * `pen` is the work-in-progress dot of `admin-design.md` (a draft's row), in the highlighter's
+ * edge tone, which is the one colour a draft may wear; amber is for what needs the owner.
+ * `ink` is a pressed filter, which is a question and not a state. `none` holds a lamp's place and draws nothing: a state that is DONE (published, confirmed)
+ * carries no light (2026-11-03), and a row keeps its slot so every title starts at one x.
+ */
 export const LAMP_HUES: Record<LampState, string> = {
   good: 'bg-emerald-600 dark:bg-emerald-500',
   attention: 'bg-amber-500',
   off: 'bg-neutral-300 dark:bg-neutral-600',
+  pen: 'bg-[var(--pen-edge)]',
+  ink: 'bg-neutral-900 dark:bg-white',
+  none: '',
 }
 
 /** An 8px round mark that never shrinks, and it EASES: a lamp is a span, so the floor missed it. */

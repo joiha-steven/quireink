@@ -37,7 +37,7 @@ const help: HelpText = {
       title: 'Lettori — commenti e newsletter',
       body: `<p>Entrambi sono <b>spenti finché non li configuri</b>, ed entrambi sono tuoi: nessun servizio di terzi si mette tra te e i tuoi lettori.</p>
 <ul class="after">
-<li><b>Commenti</b> — attivali in {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile contro lo spam e l’accesso con Google sono facoltativi. Puoi leggere ed eliminare i commenti nella schermata Commenti.</li>
+<li><b>Commenti</b> — attivali in {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile contro lo spam e l’accesso con Google sono facoltativi. Puoi leggere ed eliminare i commenti nella schermata Commenti. Lì i tasti <kbd>j</kbd> e <kbd>k</kbd> scorrono i commenti.</li>
 <li><b>Newsletter</b> — inserisci i dati SMTP in {t:navSettings} → {t:tabPeople}, e un modulo d’iscrizione compare in fondo a ogni articolo, con un pulsante nell’intestazione del sito. L’iscrizione è a <b>doppio opt-in</b>: un indirizzo conta solo dopo aver cliccato il link di conferma.</li>
 <li><b>L’invio è sempre manuale.</b> Niente parte per email in automatico, nemmeno un articolo programmato che va online. Spunti gli articoli, leggi l’email vera nell’anteprima e premi invia. Se ne spunti più d’uno partono come <b>un solo riepilogo</b>, non un messaggio ciascuno.</li>
 <li>{t:navNewsletter} → {t:nlTabPeople} mostra che cosa ha ricevuto davvero ogni indirizzo, ogni errore SMTP con il suo messaggio e il tasso di apertura. {t:navNewsletter} → {t:nlTabTest} ti manda un esempio di ogni email prima che un lettore ne veda una.</li>

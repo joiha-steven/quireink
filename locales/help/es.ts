@@ -37,7 +37,7 @@ const help: HelpText = {
       title: 'Lectores — comentarios y boletín',
       body: `<p>Los dos están <b>apagados hasta que los configuras</b>, y los dos son tuyos: ningún servicio de terceros se interpone entre tú y tus lectores.</p>
 <ul class="after">
-<li><b>Comentarios</b> — actívalos en {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile contra el spam y el inicio de sesión con Google son opcionales. Puedes leer y eliminar comentarios en la pantalla Comentarios.</li>
+<li><b>Comentarios</b> — actívalos en {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile contra el spam y el inicio de sesión con Google son opcionales. Puedes leer y eliminar comentarios en la pantalla Comentarios. Allí, <kbd>j</kbd> y <kbd>k</kbd> recorren los comentarios.</li>
 <li><b>Boletín</b> — añade tus datos SMTP en {t:navSettings} → {t:tabPeople}, y aparece un formulario de suscripción al pie de cada entrada, con un botón en la cabecera del sitio. La suscripción es de <b>doble confirmación</b>: una dirección solo cuenta cuando ha pulsado el enlace de confirmación.</li>
 <li><b>El envío es siempre manual.</b> Nada se envía por correo de forma automática, ni siquiera una entrada programada al salir. Marcas las entradas, lees el correo real en la vista previa y pulsas enviar. Marca varias y salen como <b>un solo resumen</b>, no un mensaje por cada una.</li>
 <li>{t:navNewsletter} → {t:nlTabPeople} muestra lo que recibió de verdad cada dirección, cualquier fallo de SMTP con su error, y la tasa de apertura. {t:navNewsletter} → {t:nlTabTest} te envía una muestra de cada correo antes de que lo vea ningún lector.</li>

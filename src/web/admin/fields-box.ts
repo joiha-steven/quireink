@@ -111,7 +111,9 @@ export function connectionCard(c: {
       // so the amber outlived the change it was reporting.
       attrs: `data-card-lamp data-lamp-rest="${c.state}"`
         + ` data-lamp-rest-title="${escapeAttr(c.lampTitle)}"`
-        + (c.state === 'off' ? ' hidden' : ''),
+        // GOOD hides too (2026-11-03): a card that works says nothing, and a green dot on every
+        // card that had been tested was the lamp crying "fine". Amber, failed or unsaved, shows.
+        + (c.state === 'off' || c.state === 'good' ? ' hidden' : ''),
     }),
     actions: c.actions,
     body: c.body + foot,

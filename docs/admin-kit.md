@@ -173,6 +173,9 @@ failed:
   8px in the text field and 10px in the setting row, so a field and a picker in one card sat two pixels
   apart from their own labels.
 - **`SETTING_GAP`** is the space between two settings in a card. One number.
+- **The explanations are HIDDEN until the owner asks**, on every tab at every window height
+  (2026-11-03). A tab shorter than the sheet's 60vh floor used to open with them, so the same tab
+  had them or not by the window it was opened in; the switch stays, and its answer is remembered.
 - **ONE COLUMN PER CARD, in both states of the explanations switch.** With the sentences
   shown, an inline row is `justify-between` and every control ends on the card's right edge.
   With them hidden there is no sentence to fill the middle, so the row STACKS like the text

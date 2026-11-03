@@ -37,7 +37,7 @@ const help: HelpText = {
       title: '读者——评论与邮件通讯',
       body: `<p>两者都<b>在你设置之前处于关闭状态</b>，而且都完全属于你：你和读者之间没有任何第三方服务。</p>
 <ul class="after">
-<li><b>评论</b>——在 {t:navSettings} → {t:tabPeople} 中开启。用 Cloudflare Turnstile 防垃圾评论、用 Google 登录，都是可选的。你可以在评论页面阅读和删除评论。</li>
+<li><b>评论</b>——在 {t:navSettings} → {t:tabPeople} 中开启。用 Cloudflare Turnstile 防垃圾评论、用 Google 登录，都是可选的。你可以在评论页面阅读和删除评论。在那里，<kbd>j</kbd> 和 <kbd>k</kbd> 键可以逐条浏览评论。</li>
 <li><b>邮件通讯</b>——在 {t:navSettings} → {t:tabPeople} 中填好 SMTP 信息，每篇文章底部就会出现订阅表单，站点页眉也会出现一个按钮。订阅采用<b>双重确认</b>：一个地址只有点击了确认链接之后才算数。</li>
 <li><b>发送永远是手动的。</b>没有任何东西会自动发邮件，就连定时文章上线也不会。你勾选文章，在预览里读一遍真实的邮件，然后按下发送。勾选多篇时，它们会合成<b>一封摘要邮件</b>发出，而不是每篇一封。</li>
 <li>{t:navNewsletter} → {t:nlTabPeople} 显示每个地址实际收到了什么、每一次 SMTP 失败及其错误信息，以及打开率。{t:navNewsletter} → {t:nlTabTest} 会在任何读者看到之前，先把每种邮件的样本发给你。</li>

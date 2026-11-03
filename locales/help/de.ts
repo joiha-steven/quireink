@@ -37,7 +37,7 @@ const help: HelpText = {
       title: 'Leser — Kommentare und Newsletter',
       body: `<p>Beides ist <b>aus, bis Sie es einrichten</b>, und beides gehört Ihnen: Kein fremder Dienst steht zwischen Ihnen und Ihren Lesern.</p>
 <ul class="after">
-<li><b>Kommentare</b> — schalten Sie sie unter {t:navSettings} → {t:tabPeople} ein. Cloudflare Turnstile gegen Spam und die Anmeldung mit Google sind optional. Auf dem Bildschirm Kommentare können Sie Kommentare lesen und löschen.</li>
+<li><b>Kommentare</b> — schalten Sie sie unter {t:navSettings} → {t:tabPeople} ein. Cloudflare Turnstile gegen Spam und die Anmeldung mit Google sind optional. Auf dem Bildschirm Kommentare können Sie Kommentare lesen und löschen. Mit <kbd>j</kbd> und <kbd>k</kbd> gehen Sie dort durch die Kommentare.</li>
 <li><b>Newsletter</b> — tragen Sie Ihre SMTP-Daten unter {t:navSettings} → {t:tabPeople} ein, dann erscheint am Ende jedes Beitrags ein Anmeldeformular, dazu ein Knopf im Kopf der Website. Die Anmeldung ist <b>Double-Opt-in</b>: Eine Adresse zählt erst, wenn sie den Bestätigungslink angeklickt hat.</li>
 <li><b>Versendet wird immer von Hand.</b> Nichts geht automatisch per E-Mail raus, nicht einmal, wenn ein geplanter Beitrag online geht. Sie haken die Beiträge an, lesen in der Vorschau die echte E-Mail und drücken auf Senden. Haken Sie mehrere an, gehen sie als <b>eine Sammel-E-Mail</b> raus, nicht als je eine Nachricht.</li>
 <li>{t:navNewsletter} → {t:nlTabPeople} zeigt, was jede Adresse tatsächlich bekommen hat, jeden SMTP-Fehler mit seiner Meldung und die Öffnungsrate. {t:navNewsletter} → {t:nlTabTest} schickt Ihnen ein Muster jeder E-Mail, bevor ein Leser je eine sieht.</li>

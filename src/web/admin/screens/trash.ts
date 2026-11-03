@@ -20,7 +20,7 @@ import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { META, NOTE_TEXT } from '@/admin-shared/scale'
-import { CONTROL_SM, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
+import { CONTROL_SM, SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
 import { ICON_KEY, ICON_KEY_DANGER } from '@/admin-shared/controls'
 import { emptyState, icon, pageHeader, pager, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
 import { trashView } from '@/web/admin/views'
@@ -259,6 +259,6 @@ export async function trashScreen(settings: SiteSettings, query: URLSearchParams
 
   return `<div data-screen="trash" data-trash-tab="${open}" data-trash-ask="${ask}">`
     + pageHeader({ title: t.trashTitle })
-    + sheet(sheetTop(tools) + body + `<div class="${SHEET_FOOT}">${escapeHtml(t.trashHint)}</div>`)
+    + sheet(sheetTop(tools) + body)
     + `</div>`
 }

@@ -37,7 +37,7 @@ const help: HelpText = {
       title: 'Leitores — comentários e newsletter',
       body: `<p>Os dois ficam <b>desligados até você configurá-los</b>, e os dois são seus: nenhum serviço de terceiros fica entre você e os seus leitores.</p>
 <ul class="after">
-<li><b>Comentários</b> — ative em {t:navSettings} → {t:tabPeople}. O Cloudflare Turnstile contra spam e o login com o Google são opcionais. Você pode ler e excluir comentários na tela Comentários.</li>
+<li><b>Comentários</b> — ative em {t:navSettings} → {t:tabPeople}. O Cloudflare Turnstile contra spam e o login com o Google são opcionais. Você pode ler e excluir comentários na tela Comentários. Lá, as teclas <kbd>j</kbd> e <kbd>k</kbd> percorrem os comentários.</li>
 <li><b>Newsletter</b> — informe os dados de SMTP em {t:navSettings} → {t:tabPeople}, e um formulário de inscrição aparece no fim de cada post, com um botão no cabeçalho do site. A inscrição é de <b>confirmação dupla</b>: um endereço só conta depois de clicar no link de confirmação.</li>
 <li><b>O envio é sempre manual.</b> Nada é enviado por e-mail automaticamente, nem mesmo quando um post agendado entra no ar. Você marca os posts, lê o e-mail de verdade na prévia e aperta enviar. Marque vários e eles saem como <b>um único resumo</b>, não uma mensagem para cada.</li>
 <li>{t:navNewsletter} → {t:nlTabPeople} mostra o que cada endereço de fato recebeu, qualquer falha de SMTP com o erro, e a taxa de abertura. {t:navNewsletter} → {t:nlTabTest} manda para você uma amostra de cada e-mail antes que algum leitor o veja.</li>

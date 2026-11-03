@@ -37,7 +37,7 @@ const help: HelpText = {
       title: 'Lecteurs — commentaires et newsletter',
       body: `<p>Les deux sont <b>désactivés tant que vous ne les avez pas configurés</b>, et les deux sont à vous : aucun service tiers ne se glisse entre vous et vos lecteurs.</p>
 <ul class="after">
-<li><b>Commentaires</b> — activez-les dans {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile contre le spam et la connexion avec Google sont facultatifs. Vous pouvez lire et supprimer les commentaires sur l’écran Commentaires.</li>
+<li><b>Commentaires</b> — activez-les dans {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile contre le spam et la connexion avec Google sont facultatifs. Vous pouvez lire et supprimer les commentaires sur l’écran Commentaires. Les touches <kbd>j</kbd> et <kbd>k</kbd> y parcourent les commentaires.</li>
 <li><b>Newsletter</b> — saisissez vos paramètres SMTP dans {t:navSettings} → {t:tabPeople}, et un formulaire d’abonnement apparaît au pied de chaque article, avec un bouton dans l’en-tête du site. L’abonnement se fait en <b>double opt-in</b> : une adresse ne compte qu’une fois qu’elle a cliqué sur le lien de confirmation.</li>
 <li><b>L’envoi est toujours manuel.</b> Rien n’est envoyé automatiquement, pas même un article programmé qui paraît. Vous cochez les articles, lisez l’e-mail réel dans l’aperçu, et appuyez sur envoyer. Cochez-en plusieurs et ils partent en <b>un seul e-mail récapitulatif</b>, pas un message chacun.</li>
 <li>{t:navNewsletter} → {t:nlTabPeople} montre ce que chaque adresse a réellement reçu, chaque échec SMTP avec son erreur, et le taux d’ouverture. {t:navNewsletter} → {t:nlTabTest} vous envoie un exemplaire de chaque e-mail avant qu’un lecteur n’en voie un.</li>

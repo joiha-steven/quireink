@@ -288,51 +288,23 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       return still > 0 ? 'ok (asked, backed out, trash intact)' : 'backing out emptied it anyway'
     })()`, 1000))
 
-  // ITEM 14: a DIFFERENCE between two tabs, which no photograph of either shows. The
-  // explanations are hidden by default because they are bulk; a tab that stops short of the
-  // sheet's 60vh floor has no bulk to hide, so it opens with them. The owner's own answer
-  // outranks both, which is why the flow clears the preference before it measures.
+  // ITEM 14, REVERSED ON 2026-11-03: the explanations are hidden on EVERY tab until the owner
+  // asks for them. A short tab used to open with them, so the same tab had them or not
+  // depending on the window's height. With no answer stored, no tab may open them.
   // NOTE: this body is a template literal. No backticks.
-  flow('admin: a settings tab with paper to spare opens with its explanations', () => expect('/admin/settings?tab=people', `
+  flow('admin: every settings tab opens with its explanations hidden until asked', () => expect('/admin/settings?tab=people', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      // The OPEN panel. Each tab has its own tabpanel since the screen became server-drawn and
-      // all seven ship at once (ADR 0054); #settings-panel was the single panel React swapped.
-      const panel = () => document.querySelector('[data-settings-panel]:not([hidden])')
-      if (!panel()) return 'no settings panel'
-      // The switch is ONE answer for the whole screen, so it rides the stack that holds the
-      // seven panels rather than any one of them (ADR 0054). It was on the single panel React
-      // swapped in and out, which is the same place when there is only ever one.
-      const stack = () => document.querySelector('[data-settings-panels]')
-      const state = () => stack().getAttribute('data-explanations')
-      // Measured the way the screen measures it: with the explanations flipped off, so the
-      // answer is the tab's own height and not the height it grew to after being answered.
-      const bare = () => {
-        const box = stack()
-        const was = box.getAttribute('data-explanations')
-        box.setAttribute('data-explanations', 'off')
-        const h = Math.round(panel().getBoundingClientRect().height)
-        if (was !== null) box.setAttribute('data-explanations', was)
-        return h
-      }
-      const floor = innerHeight * 0.6
-      // WHICH tab is short is not the claim, so every tab is measured (reached the way a
-      // person reaches it) and the shortest is compared with the tallest.
+      if (localStorage.getItem('quireink-admin-settings-notes') !== null) return 'skip: an answer is stored, so the default is not what is showing'
+      const stack = document.querySelector('[data-settings-panels]')
+      if (!stack) return 'no settings panels'
       const tabs = Array.from(document.querySelectorAll('[role=tab]'))
-      if (tabs.length < 6) return 'only ' + tabs.length + ' tab(s) to compare across'
-      const heights = []
-      for (const tab of tabs) { tab.click(); await sleep(400); heights.push({ tab, h: bare(), label: tab.textContent.trim() }) }
-      heights.sort((a, b) => a.h - b.h)
-      const short = heights[0], long = heights[heights.length - 1]
-      if (short.h >= floor) return 'skip: no tab under the ' + Math.round(floor) + 'px floor at this window; the shortest (' + short.label + ') is ' + short.h + 'px'
-      if (long.h < floor) return 'skip: every tab is under the ' + Math.round(floor) + 'px floor; the tallest (' + long.label + ') is ' + long.h + 'px'
-      short.tab.click(); await sleep(400)
-      if (state() !== 'on') return short.label + ', with ' + Math.round(floor - short.h) + 'px of spare paper, still hid its explanations'
-      const visible = Array.from(document.querySelectorAll('.admin-note')).filter((n) => n.getBoundingClientRect().height > 0).length
-      if (visible < 2) return 'the flag says on and ' + visible + ' explanation(s) are drawn'
-      long.tab.click(); await sleep(400)
-      if (state() !== 'off') return long.label + ', past the floor at ' + long.h + 'px, opened its explanations too, so nothing is being measured'
-      return 'ok ' + short.label + ' ' + short.h + 'px shows ' + visible + ', ' + long.label + ' ' + long.h + 'px shows none, floor ' + Math.round(floor) + ' of ' + innerHeight
+      if (tabs.length < 6) return 'only ' + tabs.length + ' tab(s)'
+      for (const tab of tabs) {
+        tab.click(); await sleep(300)
+        if (stack.getAttribute('data-explanations') !== 'off') return tab.textContent.trim() + ' opened with its explanations at ' + innerHeight + 'px'
+      }
+      return 'ok ' + tabs.length + ' tabs, all hidden at ' + innerHeight + 'px'
     })()`, 900))
 
 

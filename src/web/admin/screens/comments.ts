@@ -20,7 +20,7 @@ import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { siteDateTimeShort } from '@/admin-shared/sheet-state'
 import { formatCount } from '@/i18n/format'
-import { SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
+import { SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
 import { emptyState, pageHeader, selectionBar, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
 import { numBand } from '@/web/admin/kit-figures'
 import { commentsView } from '@/web/admin/views'
@@ -182,7 +182,6 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
       // Its own sentence: it shared `filterEmpty` with Write and said "No posts match your
       // filter." to a search through comments (2026-11-03).
       + `<p data-comment-nomatch class="px-5 py-8 text-sm text-neutral-500 dark:text-neutral-400" hidden>${escapeHtml(t.commentsNoMatch)}</p>`
-      + `<div data-comment-cards class="paper-cols">${groups.map((g) => card(t, settings.language, siteZone(settings.timezone), g)).join('')}</div>`
-      + `<div class="${SHEET_FOOT}">${escapeHtml(t.commentsFootHint)} ${escapeHtml(t.commentsWalkHint)}</div>`)
+      + `<div data-comment-cards class="paper-cols">${groups.map((g) => card(t, settings.language, siteZone(settings.timezone), g)).join('')}</div>`)
     + `</div>`
 }

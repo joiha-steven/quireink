@@ -37,7 +37,7 @@ const help: HelpText = {
       title: 'Người đọc — bình luận và bản tin',
       body: `<p>Cả hai đều <b>tắt cho tới khi bạn cài đặt</b>, và cả hai đều là của bạn: không có dịch vụ bên thứ ba nào đứng giữa bạn và người đọc.</p>
 <ul class="after">
-<li><b>Bình luận</b> — bật ở {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile chặn spam và đăng nhập bằng Google là tuỳ chọn. Bạn đọc và xoá bình luận ở màn hình Bình luận.</li>
+<li><b>Bình luận</b> — bật ở {t:navSettings} → {t:tabPeople}. Cloudflare Turnstile chặn spam và đăng nhập bằng Google là tuỳ chọn. Bạn đọc và xoá bình luận ở màn hình Bình luận. Ở đó, phím <kbd>j</kbd> và <kbd>k</kbd> đi qua từng bình luận.</li>
 <li><b>Bản tin</b> — điền thông tin SMTP ở {t:navSettings} → {t:tabPeople}, và một form đăng ký sẽ hiện ở chân mọi bài, kèm một nút ở đầu trang site. Đăng ký theo kiểu <b>xác nhận hai lần</b> (double opt-in): một địa chỉ chỉ được tính khi đã bấm vào liên kết xác nhận.</li>
 <li><b>Gửi luôn là việc làm bằng tay.</b> Không có email nào tự động được gửi, kể cả khi một bài hẹn giờ lên site. Bạn tick các bài, đọc đúng email thật trong bản xem trước, rồi bấm gửi. Tick nhiều bài thì chúng đi chung <b>một email gộp</b>, không phải mỗi bài một thư.</li>
 <li>{t:navNewsletter} → {t:nlTabPeople} cho thấy mỗi địa chỉ thực sự đã nhận được gì, mọi lỗi SMTP kèm thông báo lỗi, và tỉ lệ mở. {t:navNewsletter} → {t:nlTabTest} gửi cho bạn một bản mẫu của từng email trước khi bất kỳ người đọc nào nhận được.</li>

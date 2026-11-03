@@ -37,7 +37,7 @@ const help: HelpText = {
       title: '독자 — 댓글과 뉴스레터',
       body: `<p>둘 다 <b>설정하기 전까지는 꺼져 있고</b>, 둘 다 당신의 것입니다. 당신과 독자 사이에 끼어드는 외부 서비스는 없습니다.</p>
 <ul class="after">
-<li><b>댓글</b> — {t:navSettings} → {t:tabPeople}에서 켜세요. 스팸을 막는 Cloudflare Turnstile과 Google로 로그인은 선택 사항입니다. 댓글은 댓글 화면에서 읽고 삭제할 수 있습니다.</li>
+<li><b>댓글</b> — {t:navSettings} → {t:tabPeople}에서 켜세요. 스팸을 막는 Cloudflare Turnstile과 Google로 로그인은 선택 사항입니다. 댓글은 댓글 화면에서 읽고 삭제할 수 있습니다. 그 화면에서는 <kbd>j</kbd>와 <kbd>k</kbd>로 댓글 사이를 오갑니다.</li>
 <li><b>뉴스레터</b> — {t:navSettings} → {t:tabPeople}에 SMTP 정보를 넣으면 모든 글 아래에 구독 양식이, 사이트 헤더에 버튼이 나타납니다. 구독은 <b>이중 확인</b> 방식입니다. 주소는 확인 링크를 클릭한 뒤에야 구독자로 셉니다.</li>
 <li><b>발송은 언제나 수동입니다.</b> 예약한 글이 공개될 때조차 자동으로 나가는 메일은 없습니다. 글을 체크하고, 미리보기에서 실제 메일을 읽고, 보내기를 누릅니다. 여러 개를 체크하면 하나씩이 아니라 <b>한 통의 모음 메일</b>로 나갑니다.</li>
 <li>{t:navNewsletter} → {t:nlTabPeople}에서는 각 주소가 실제로 무엇을 받았는지, SMTP 실패와 그 오류, 열람률을 볼 수 있습니다. {t:navNewsletter} → {t:nlTabTest}는 독자가 받기 전에 각 메일의 견본을 당신에게 보냅니다.</li>

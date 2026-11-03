@@ -151,20 +151,20 @@ character and none of its typographic rules **except one**, below.
   `getIntegrationStatus` computes as `!!key`. No test result is persisted anywhere, so **nothing
   the server draws can honestly say a far end answered**. Measured on a seeded blog: the MCP
   card was green and saying the far end had answered while `mcp_tokens` held nothing.
-  The vocabulary now says what is true, and the colour did not have to move:
+  The vocabulary now says what is true. Since 2026-11-03 **only amber is drawn**: what is on,
+  saved or answered is the normal state and carries no light (the sentence, the lamp's title,
+  still says it), the same rule a published post and a confirmed reader follow (below):
   | what is so | lamp | sentence |
   |---|---|---|
-  | a switch, and nothing behind it, on | green | `connectionOn` — *Switched on* |
+  | a switch, and nothing behind it, on | hidden | `connectionOn` — *Switched on* |
   | a switch, off | hidden | `connectionOff` |
-  | a far end with credentials, untried this page | green | `connectionUntested` — *Saved, but not tried yet* |
+  | a far end with credentials, untried this page | hidden | `connectionUntested` — *Saved, but not tried yet* |
   | a far end with no credentials | amber | `connectionUnset` — *Not set up yet* |
-  | a test route that answered | green | `connectionOk` — **island only** |
+  | a test route that answered | hidden | `connectionOk` — **island only** |
   | a test route that refused, or a failed save | amber | `connectionFailed` |
-  | edits not yet saved | amber | `connectionUnsaved` (amber beats green) |
-  ⚠️ Amber for "not set up" rather than grey is the older decision (2026-09-15) and it stands:
-  these cards have no switch, so "off" could only mean "never set up", which is a thing to do.
-  What changed is the SENTENCE beside it — it used to read "Saved, but not tried yet" on a card
-  where nothing had been saved.
+  | edits not yet saved | amber | `connectionUnsaved` |
+  ⚠️ Amber for "not set up" rather than grey stands (2026-09-15): these cards have no switch, so
+  "off" could only mean "never set up", which is a thing to do.
   ⚠️ `connectionOk` is handed to the island in `data-settings-words` and printed only when
   `tried()` reports `asked`. Two of its three answers are successes that contacted nobody: a
   card with no test route, and one whose gate found nothing to try. `goodTitle` and `tried` are
@@ -191,7 +191,10 @@ character and none of its typographic rules **except one**, below.
 - **Admin is monochrome plus two inks and the version dot, each with a named role. The accent is the product's highlighter** (the Writing
   Desk mock's `--pen`, 2026-08-17). Its roles are named and closed — where you are (above), a
   search hit as a `<mark>` in the write pane, and the small dots that mean "work in progress"
-  (a draft's row, the unsaved state, an unfinished chip on the home screen) in its edge tone.
+  (a draft's row, an unfinished piece on the home screen) in its edge tone (`LAMP_HUES.pen`).
+  **What is DONE carries no light** (2026-11-03) — a published post, a confirmed reader, a card
+  that works, a backup that ran: the words say so, and forty green dots said "done" forty times.
+  Amber is what waits on the owner; a scheduled post says so in words; a pressed filter is ink.
   Feedback,
   status, analytics trends, media selection, warnings, destructive actions and recovery
   banners stay on the neutral scale: a second use of colour spends the only signal that
@@ -290,7 +293,7 @@ Its four rules and the traps under each one moved to [`docs/admin-one-dom.md`](.
 Adopted 2026-08-18 from the admin-pages mock, which replaced a page-by-page fix session:
 mock every page first, then work through them, and stop the pages coming out at different
 widths. Four laws, held by the
-primitives in `admin-shared/kit.ts` (`SHEET`, `SHEET_TOP`, `SHEET_FOOT`,
+primitives in `admin-shared/kit.ts` (`SHEET`, `SHEET_TOP`,
 `SHEET_TOOL`) and `.paper-cols` in `admin.css`:
 
 1. **Every page is ONE full-width sheet at ONE width, as long as what is on it** — the

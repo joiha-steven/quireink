@@ -17,8 +17,7 @@ import { limitWords } from '@/admin-shared/upload-words'
 import type { SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
-import { escapeAttr, escapeHtml } from '@/utils'
-import { SHEET_FOOT } from '@/admin-shared/kit'
+import { escapeAttr } from '@/utils'
 import { pageHeader, pager, sheet, sheetTop, tabs } from '@/web/admin/kit'
 import { SEGMENT_TRACK, edgeAt, keyFaces, tabItemClass } from '@/admin-shared/tabs'
 import { iconSvg } from '@/icons'
@@ -105,10 +104,7 @@ export async function mediaScreen(settings: SiteSettings, query: URLSearchParams
       sheetTop(strip + viewKeys(t) + imageTools(t, lang, view.totals))
       + imagesPanel(t, lang, siteZone(settings.timezone), view.images, open === 'images', pager(t, '/admin/media', 'images', view.at.images, view.pages.images))
       + videosPanel(t, lang, siteZone(settings.timezone), view.videos, open === 'videos', pager(t, '/admin/media', 'videos', view.at.videos, view.pages.videos))
-      + filesPanel(t, lang, siteZone(settings.timezone), view.files, view.icons, open === 'files', pager(t, '/admin/media', 'files', view.at.files, view.pages.files))
-      // The page's old intro sentence, demoted to the sheet's closing small print — a hint is
-      // not a headline.
-      + `<div class="${SHEET_FOOT}">${escapeHtml(t.libraryIntro)}</div>`,
+      + filesPanel(t, lang, siteZone(settings.timezone), view.files, view.icons, open === 'files', pager(t, '/admin/media', 'files', view.at.files, view.pages.files)),
     )
     + `</div>`
 }

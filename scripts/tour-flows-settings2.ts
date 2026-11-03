@@ -135,9 +135,9 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
       toggle.click(); await sleep(200)
       if (box.dataset.explanations !== before) return 'it did not go back'
       // ⚠️ PUT THE PREFERENCE BACK. Once this is stored it stops being a preference nobody has
-      // answered, and the tab-length measurement stops running at all — which is exactly how
-      // this flow broke the one that checks a short tab opens with its explanations. A flow
-      // that leaves state behind changes what the next flow is testing.
+      // answered, and the flow that checks every tab opens with its explanations hidden would
+      // be reading this flow's answer instead of the default. A flow that leaves state behind
+      // changes what the next flow is testing.
       localStorage.removeItem('quireink-admin-settings-notes')
       return 'ok (hidden, remembered, and back)'
     })()`, 1800))

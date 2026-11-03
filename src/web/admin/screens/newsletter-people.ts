@@ -53,11 +53,12 @@ const titled = (word: string, lang: SiteLang): string =>
   word.charAt(0).toLocaleUpperCase(dateLocale(lang)) + word.slice(1)
 
 /**
- * Confirmed is the only state that is DONE. Pending is waiting on the reader and unsubscribed
+ * Confirmed is the only state that is DONE, so it carries no light (2026-11-03): every row of a
+ * list was a dot, and the one meaning nothing to act on was the commonest. Pending is waiting on the reader and unsubscribed
  * is a decision they made, so neither is a fault and neither is red: the lamp's `off` is
  * exactly "there is nothing to be right or wrong about here".
  */
-const LAMP = { confirmed: 'good', pending: 'attention', unsubscribed: 'off' } as const
+const LAMP = { confirmed: 'none', pending: 'attention', unsubscribed: 'off' } as const
 
 // One cell of the count row. Its hairlines come from `.count-row` in admin.css (2x2 on a phone,
 // 1x4 from 640px). The ring is inset so the band's clipping cannot cut it.
