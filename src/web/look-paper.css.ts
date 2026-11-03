@@ -184,6 +184,18 @@ html[data-look=paper] .site-bar > .site-menu{grid-area:3/1/4/-1;flex-wrap:wrap;
 @media (min-width:44.01rem) and (max-width:59.99rem){
   html[data-look=paper] .site-bar > .site-menu{justify-content:center}
 }
+/* ON A PHONE THE STRIP RUNS PAST THE EDGE, and says so the way the code look's chip strip
+   does: the last 2.5rem fade out, and as much padding at the end lets the last section scroll
+   clear of the fade. Measured at 375 before: 464px of links in 327px, cut hard mid-word. The
+   first mask layer is the 1px rule along the top, held solid, so only the links fade. */
+@media (max-width:44rem){
+  html[data-look=paper] .site-bar > .site-menu{padding-inline-end:2.5rem;
+    scroll-padding-inline-end:2.5rem;overscroll-behavior-x:contain;
+    -webkit-mask:linear-gradient(var(--c-text),var(--c-text)) top/100% 1px no-repeat,
+      linear-gradient(to right,var(--c-text) calc(100% - 2.5rem),transparent);
+    mask:linear-gradient(var(--c-text),var(--c-text)) top/100% 1px no-repeat,
+      linear-gradient(to right,var(--c-text) calc(100% - 2.5rem),transparent)}
+}
 /* A drawer with nothing left in it has no button: on the composed front the rail holds the
    menu alone, and the menu is in the masthead now. The engine marks that button
    .rail-menu-only and puts it away from 60rem up; this look's drawer is empty below that too. */
