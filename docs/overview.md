@@ -67,15 +67,15 @@ bun --smol src/index.ts
 
 <div align="center">
 
-<img src="demo-looks.jpg" alt="The same article in four looks: plain paper; source code, with the headline in a bold monospace and bracketed furniture; a newspaper, with a masthead, the sections under it and a drop cap; and a notebook, on dot-grid paper beside an index card" width="960">
+<img src="demo-looks.jpg" alt="The same post in the four themes: plain paper; source code, with the headline in a bold monospace and brackets round the dates; newspaper, with a masthead, the sections under it and a drop cap; and notebook, on a dot-grid sheet beside a square index card" width="960">
 
 <sub>One post, four looks, one palette. The look decides shape, type and marks; every colour on all four comes from the palette, so changing it moves all of them together.</sub>
 
-<img src="demo-reading.jpg" alt="Book mode, a two-column reader on paper with a drop cap, beside the dark theme showing a gallery of paintings above a table" width="960">
+<img src="demo-reading.jpg" alt="Book mode on paper, a title page on the left and the post set as a printed page with a drop cap on the right, beside the dark theme with a two-by-two gallery of Van Gogh paintings and their captions" width="960">
 
 <sub>Book mode and the dark theme. Neither is a filter dropped over the page; both are the reading typography itself. The fonts ship with Vietnamese and Central European accents included, so the specimen on the left is set properly instead of falling back to whatever the system has.</sub>
 
-<img src="demo-code.jpg" alt="A MathML formula in the reading face, a highlighted code block beside an unlabelled one, and three highlighter strokes" width="960">
+<img src="demo-code.jpg" alt="Three panels: a sum set in MathML between paragraphs of serif text with a Tip callout below, a numbered highlighted shell command above a plain block, and a passage on the pen with a sentence in each of five inks" width="960">
 
 <sub>Mathematics is MathML, laid out by the browser itself: no script, no stylesheet, no font file, so a post with a formula costs a reader nothing over one without. Code is highlighted on the server for the same reason. The lower block named no language, so nothing invented colours for it.</sub>
 
@@ -83,7 +83,7 @@ bun --smol src/index.ts
 
 ## Your readers get a pen
 
-<img src="demo-reader-pen.jpg" alt="Left: a post with a reader's yellow highlight and a pencil underline, and the pen bar open over a selected sentence offering five inks, underline, ring, note and copy quote. Right: the card over a highlight, with a note box, Send to my notebook, and a twenty-character notebook code under Kept on every device" width="960">
+<img src="demo-reader-pen.jpg" alt="Left: a reader's yellow highlight and pencil underline on a post, with the pen bar open over a selected phrase offering five inks, underline, ring, note and copy quote. Right: the card over the highlight, with a note box, Send to my notebook, Remove mark and a twenty-character code that keeps the marks on every device" width="960">
 
 The mark is anchored to the words rather than to a position, so it survives the author fixing a typo three paragraphs up. It lives in the reader's browser and nothing is sent anywhere, until they press *Keep on every device*: then the marks travel, by the Google sign-in commenters already have or by a twenty-character code for anyone who would rather not sign in to anything. The server keeps a hash and one row per page, never an address, and you as the owner see none of it. *Send to my notebook* opens a page on the reader's own Quire Ink, or any site that speaks Micropub, with the passage already filled in.
 
@@ -120,11 +120,11 @@ The CSS and JavaScript rows are build artefacts, the same bytes on every install
 
 <div align="center">
 
-<img src="demo-mobile.jpg" alt="Four phone screens: the post list, an article with its series contents, book mode set on paper and scrolled like a page, and the search panel filtering as it is typed" width="960">
+<img src="demo-mobile.jpg" alt="Four phone screens: the post list with a thumbnail beside the headline and a Chinese post below it, a post with its series box, book mode opening on a title page, and the menu drawer with a search box, the site menu and the post's contents" width="960">
 
 <sub>None of this is for a benchmark. It is for someone on a four-year-old phone who wanted to read four hundred words.</sub>
 
-<img src="demo-admin.jpg" alt="The Quire Ink admin: a post open in the editor with a pencil underline, a red ring and a highlighted sentence, beside the Appearance settings showing the four looks as drawn tiles, the reading fonts, the chrome font and the custom CSS box" width="960">
+<img src="demo-admin.jpg" alt="Four admin screens: Home with what was last edited, traffic and the most viewed posts; Write with the list of pieces beside what was recently edited; the editor with a post open and its pen marks; and Settings, Appearance, with the four themes drawn as previews beside the reading and site fonts" width="960">
 
 <sub>The admin as 2.2.16 draws it: server-rendered pages, no framework. Everything on the right, the four looks included, is a setting rather than code, and the chrome on both screens is wearing one of them.</sub>
 

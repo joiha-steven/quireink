@@ -67,11 +67,11 @@ bun --smol src/index.ts
 
 <div align="center">
 
-<img src="demo-looks.jpg" alt="Cùng một bài viết trong bốn lối giao diện: giấy trơn; mã nguồn, tiêu đề in chữ đơn cách đậm và khung ngoặc vuông; báo in, có măng sét, chuyên mục bên dưới và chữ cái đầu in lớn; và sổ tay, trên giấy chấm lưới cạnh một tấm thẻ" width="960">
+<img src="demo-looks.jpg" alt="Cùng một bài trong bốn theme: giấy trơn; mã nguồn, tiêu đề chữ đơn cách đậm và ngoặc vuông quanh ngày tháng; báo in, có măng sét, chuyên mục bên dưới và chữ đầu đoạn lớn; sổ tay, trên tờ giấy chấm bi cạnh một tấm thẻ vuông" width="960">
 
 <sub>Một bài, bốn lối, một bảng màu. Lối quyết định hình dáng, kiểu chữ và các dấu; còn màu trên cả bốn đều lấy từ bảng màu, nên đổi bảng màu là cả bốn đổi theo.</sub>
 
-<img src="demo-admin.jpg" alt="Trang quản trị Quire Ink: một bài mở trong trình soạn với câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung; bên cạnh là trang cấu hình Giao diện với bốn lối vẽ thành thẻ, bốn font đọc, font khung trang và ô CSS riêng" width="960">
+<img src="demo-admin.jpg" alt="Bốn màn quản trị: Home với những gì vừa sửa, lượng đọc và các bài được xem nhiều; Write với danh sách bài cạnh mục sửa gần đây; trình soạn đang mở một bài với các vệt bút; và Settings, Appearance với bốn theme vẽ thành ảnh xem trước cạnh các phông đọc và phông khung" width="960">
 
 <sub>Trang quản trị như 2.2.16 vẽ nó: trang do máy chủ dựng, không framework. Mọi thứ bên phải, kể cả bốn lối giao diện, đều là tuỳ chọn bấm chọn chứ không phải code, và khung trên cả hai màn đang mặc một trong số đó.</sub>
 
@@ -79,7 +79,7 @@ bun --smol src/index.ts
 
 ## Người đọc cũng có bút
 
-<img src="demo-reader-pen.jpg" alt="Trái: một bài với vệt tô vàng và gạch chì của người đọc, thanh bút mở trên câu đang chọn với năm màu mực, gạch, khoanh, ghi chú và chép trích. Phải: thẻ trên một vệt tô, có ô ghi chú, nút Gửi về sổ tay, và mã sổ tay hai mươi ký tự dưới dòng Giữ trên mọi thiết bị" width="960">
+<img src="demo-reader-pen.jpg" alt="Trái: vệt tô vàng và gạch chì của người đọc trên một bài, thanh bút mở trên cụm từ đang chọn với năm màu mực, gạch, khoanh, ghi chú và chép trích. Phải: thẻ trên vệt tô với ô ghi chú, Gửi vào sổ tay, Bỏ vệt và mã hai mươi ký tự giữ vệt trên mọi thiết bị" width="960">
 
 Bôi một câu trên bất kỳ bài nào là hiện một thanh nhỏ: năm màu mực, gạch chì, khoanh bút bi, ghi chú và chép trích. Dấu vẽ bằng đúng nét tay của trang, bám vào chữ chứ không bám vị trí, nên tác giả sửa lỗi chính tả ba đoạn phía trên thì dấu vẫn nằm yên. Dấu sống trong trình duyệt của người đọc, không gửi đi đâu.
 
