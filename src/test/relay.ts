@@ -10,6 +10,8 @@ export type Relay = {
   rcpt: string[]
   /** Messages whose final `.` arrived, answered or not. */
   bodies: number
+  /** Each message's header block as it arrived, in arrival order. */
+  heads: string[]
   /** Go silent after the final `.` of message `n` (1-based); 0 answers everything. */
   stallAt: (n: number) => void
   /** Forget everything seen, and answer everything again. */
@@ -21,6 +23,7 @@ export type Relay = {
 
 export async function startRelay(): Promise<Relay> {
   const rcpt: string[] = []
+  const heads: string[] = []
   let bodies = 0
   let stall = 0
   const waiting: { n: number; done: () => void }[] = []
@@ -29,6 +32,8 @@ export async function startRelay(): Promise<Relay> {
     open.add(socket)
     socket.on('close', () => open.delete(socket))
     let inData = false
+    let inHead = false
+    let head: string[] = []
     let pending = ''
     socket.on('error', () => {})
     socket.write('220 test relay\r\n')
@@ -39,6 +44,8 @@ export async function startRelay(): Promise<Relay> {
         const line = pending.slice(0, at)
         pending = pending.slice(at + 2)
         if (inData) {
+          if (inHead && line === '') { inHead = false; heads.push(head.join('\r\n')) }
+          else if (inHead) head.push(line)
           if (line !== '.') continue
           inData = false
           bodies++
@@ -54,6 +61,8 @@ export async function startRelay(): Promise<Relay> {
           socket.write('250 ok\r\n')
         } else if (verb === 'DATA') {
           inData = true
+          inHead = true
+          head = []
           socket.write('354 go on\r\n')
         } else if (verb === 'QUIT') {
           socket.write('221 bye\r\n')
@@ -66,10 +75,12 @@ export async function startRelay(): Promise<Relay> {
   return {
     port: (server.address() as net.AddressInfo).port,
     rcpt,
+    heads,
     get bodies() { return bodies },
     stallAt: (n) => { stall = n },
     reset: () => {
       rcpt.length = 0
+      heads.length = 0
       bodies = 0
       stall = 0
     },

@@ -343,6 +343,16 @@ describe('unsubscribe', () => {
     expect(second.status).toBe(200)
   })
 
+  // The mail client's own Unsubscribe button (RFC 8058): a POST from its servers, no Origin.
+  it('takes the one-click POST a mail client sends from the List-Unsubscribe header', async () => {
+    seed()
+    const res = await app.request('/api/newsletter/unsubscribe?token=unsub-token', {
+      method: 'POST', body: 'List-Unsubscribe=One-Click', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    })
+    expect(res.status).toBe(200)
+    expect(statusOf()).toBe('unsubscribed')
+  })
+
   it('confirms a pending subscriber through the emailed link', async () => {
     seedSubscriber('pending@example.com', 'pending', 'confirm-token')
     const res = await get('/api/newsletter/confirm?token=confirm-token')

@@ -214,6 +214,12 @@ export type Message = {
   date?: Date
   boundary?: string
   messageId?: string
+  /**
+   * A newsletter's unsubscribe address, sent as the one-click pair (RFC 8058): without it a mail
+   * client shows no Unsubscribe button, a reader who wants out presses "Report spam", and Gmail
+   * and Yahoo ask a bulk sender for it (2026-11-03). Left out of every other message.
+   */
+  listUnsubscribe?: string
 }
 
 /** A `multipart/alternative` message: the text part first, because a client picks the last. */
@@ -226,6 +232,10 @@ export function buildMessage(msg: Message): string {
     `Subject: ${encodeHeader(msg.subject)}`,
     `Date: ${(msg.date ?? new Date()).toUTCString().replace('GMT', '+0000')}`,
     `Message-ID: <${msg.messageId ?? crypto.randomUUID()}@${domain}>`,
+    // A line break in it would be a header of the caller's choosing; an address never has one.
+    ...(msg.listUnsubscribe && !/[\r\n]/.test(msg.listUnsubscribe)
+      ? [`List-Unsubscribe: <${msg.listUnsubscribe}>`, 'List-Unsubscribe-Post: List-Unsubscribe=One-Click']
+      : []),
     'MIME-Version: 1.0',
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
   ]

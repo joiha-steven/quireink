@@ -157,7 +157,7 @@ export async function saveSmtpConfig(input: Partial<SmtpConfig>): Promise<void> 
  * three never carried anything.
  */
 type Transport = {
-  sendMail: (m: { to: string; subject: string; html: string; text: string }) => Promise<void>
+  sendMail: (m: { to: string; subject: string; html: string; text: string; listUnsubscribe?: string }) => Promise<void>
   close: () => Promise<void>
 }
 type Pool = { key: string; transport: Transport }
@@ -197,6 +197,7 @@ async function makeTransport(cfg: SmtpConfig): Promise<Transport> {
       const body = buildMessage({
         from: cfg.from,
         to: msg.to,
+        listUnsubscribe: msg.listUnsubscribe,
         subject: msg.subject,
         text: msg.text,
         html: msg.html,
@@ -271,6 +272,8 @@ export async function sendMail(msg: {
   kind: SendKind
   postSlugs?: string[]
   openToken?: string
+  /** A newsletter's own unsubscribe address, sent as the one-click header pair (`mime.ts`). */
+  listUnsubscribe?: string
 }): Promise<{ sent: boolean; error?: string }> {
   const cfg = await getSmtpConfig()
   const record = (ok: boolean, error?: string) =>
@@ -296,6 +299,7 @@ export async function sendMail(msg: {
         // The plain-text part, from the HTML one. `news/mail-text.ts` carries what it does
         // and why it is a scanner rather than the tag-strip regex that stood here.
         text: msg.text || htmlToText(msg.html),
+        listUnsubscribe: msg.listUnsubscribe,
       })
     } finally {
       if (!shared) await transport.close()

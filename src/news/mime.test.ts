@@ -286,3 +286,20 @@ describe('what a mail server reads back', () => {
     expect(first.length).toBeLessThanOrEqual(76)
   })
 })
+
+// A newsletter carried no List-Unsubscribe, so a mail client showed no Unsubscribe button and a
+// reader who wanted out had "Report spam" to press; Gmail and Yahoo ask a bulk sender for the
+// pair (2026-11-03). The POST half answers the one-click form (`web/newsletter.ts`).
+describe('the one-click unsubscribe', () => {
+  const base = { from: 'Blog <b@example.com>', to: 'r@example.com', subject: 'S', text: 't', html: '<p>h</p>' }
+  it('is the pair of headers, pointing at the address given', () => {
+    const raw = buildMessage({ ...base, listUnsubscribe: 'https://blog.example/api/newsletter/unsubscribe?token=abc' })
+    const head = raw.slice(0, raw.indexOf('\r\n\r\n'))
+    expect(head).toContain('\r\nList-Unsubscribe: <https://blog.example/api/newsletter/unsubscribe?token=abc>')
+    expect(head).toContain('\r\nList-Unsubscribe-Post: List-Unsubscribe=One-Click')
+  })
+  it('is left out of a message that is not a newsletter, and refuses a line break', () => {
+    expect(buildMessage(base)).not.toContain('List-Unsubscribe')
+    expect(buildMessage({ ...base, listUnsubscribe: 'https://x\r\nBcc: e@x' })).not.toContain('Bcc:')
+  })
+})

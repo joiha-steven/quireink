@@ -6,7 +6,8 @@
   per-subscriber `token` used for BOTH confirm + unsubscribe links). `POST /api/subscribe`
   (public, rate-limited) upserts a pending row and emails a confirm link;
   `GET /api/newsletter/confirm?token=` → confirmed (opened again, the same thanks: a mail scanner
-  often opens it first); `GET /api/newsletter/unsubscribe?token=` →
+  often opens it first); every letter carries `List-Unsubscribe` + `List-Unsubscribe-Post` (RFC 8058),
+  so the mail client's own button POSTs the reader's link; `GET /api/newsletter/unsubscribe?token=` →
   unsubscribed. The confirm/unsubscribe routes return a standalone HTML page (`resultPage`) since
   they open from an email. Re-subscribing reuses the row's token; a confirmed address short-
   circuits (no re-send, no membership leak).

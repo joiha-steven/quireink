@@ -184,6 +184,7 @@ async function deliver(): Promise<void> {
   // The letter, parsed once per run rather than once per address.
   let letterOf = 0
   let render: (token: string, openToken: string) => { subject: string; html: string } = () => ({ subject: '', html: '' })
+  let unsubscribeAt: (token: string) => string = () => ''
   try {
     for (;;) {
       const step = claimNext(owner)
@@ -201,10 +202,15 @@ async function deliver(): Promise<void> {
         const words = t(l.lang)
         letterOf = step.runId
         render = (token, openToken) => broadcastEmail(words, l.brand, l.posts, token, openToken)
+        unsubscribeAt = (token) => `${l.brand.base}/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`
       }
       if (pool === undefined) pool = await openMailPool()
       const { subject, html } = render(step.token, step.openToken)
-      const res = await sendMail({ to: step.email, subject, html, kind: 'broadcast', postSlugs: step.slugs, openToken: step.openToken })
+      // The reader's own way out, as a header too: the mail client's Unsubscribe button POSTs it.
+      const res = await sendMail({
+        to: step.email, subject, html, kind: 'broadcast', postSlugs: step.slugs, openToken: step.openToken,
+        listUnsubscribe: unsubscribeAt(step.token),
+      })
       // False when another runner holds the lease now: it carries on, and this one must not.
       if (!recordResult(owner, step.id, res.sent)) return
     }

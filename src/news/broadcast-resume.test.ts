@@ -98,6 +98,18 @@ describe('resuming a send', () => {
     expect(broadcastRun()).toMatchObject({ recipients: 3, sent: 3, failed: 0, done: true })
   })
 
+  it('gives every letter its own one-click unsubscribe, the reader\'s own token in it', async () => {
+    const post = await savePost({ title: 'A letter', content: 'x '.repeat(200), status: 'published', date: PAST })
+    const subs = await everyone()
+    const letter = JSON.stringify({ posts: [{ slug: post.slug, title: post.title }], brand: emailBrand(await getSettings()), lang: 'en' })
+    openRun({ slugs: [post.slug], letter, subs, now: Date.now() })
+    await resumeBroadcast()
+    expect(relay.heads).toHaveLength(5)
+    const first = relay.heads[0]!
+    expect(first).toContain(`List-Unsubscribe: <${emailBrand(await getSettings()).base}/api/newsletter/unsubscribe?token=${encodeURIComponent(subs[0]!.token)}>`)
+    expect(first).toContain('List-Unsubscribe-Post: List-Unsubscribe=One-Click')
+  })
+
   it('waits for a runner still holding its lease, and takes over once the lease lapses', async () => {
     const post = await savePost({ title: 'A letter', content: 'x '.repeat(200), status: 'published', date: PAST })
     const subs = await everyone()
