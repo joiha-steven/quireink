@@ -125,7 +125,7 @@ describe('GET /uploads/* and an installed theme', () => {
     for (const path of [
       `/uploads/${THEME}/theme.css`, `/uploads/Themes/${'a'.repeat(64)}/theme.css`,
       `/uploads/media/../${THEME}/theme.css`, `/uploads/media/%2e%2e/${THEME}/theme.css`,
-      `/uploads/./${THEME}/theme.css`, `/uploads/media%2f..%2f${THEME.replace('/', '%2f')}%2ftheme.css`,
+      `/uploads/./${THEME}/theme.css`, `/uploads/media%2f..%2f${THEME.replaceAll('/', '%2f')}%2ftheme.css`,
     ]) {
       expect([path, (await get(path)).status]).toEqual([path, 404])
     }
