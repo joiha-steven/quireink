@@ -25,7 +25,7 @@ import { swapOffers } from './settings-offers'
 
 type Violation = { rule: string; file: string; line: number; col: number; subject: string }
 
-type ThemeWords = Partial<Record<
+export type ThemeWords = Partial<Record<
   'fallback' | 'installedOk' | 'unchanged' | 'refusedHead' | 'tooBig' | 'network' | 'serverError'
   | 'rolledBack' | 'removed' | 'failed' | 'reload' | 'askTitle' | 'askBody' | 'yes' | 'no'
   | 'previewMissing' | 'previewUnreadable' | 'pickGone' | 'skippedOs' | 'replaced', string>>
@@ -157,6 +157,18 @@ const isViolation = (v: unknown): v is Violation =>
 
 type Installed = { id: string; version: string; changed: boolean; skipped?: number; replaced?: boolean }
 
+/**
+ * What the card says after an install that went through: installed, already installed, or, for
+ * the same version with other files, replaced with nothing to roll back to; then how many files
+ * the operating system had added and the install left out, so nothing is left out in silence.
+ */
+export function installedMessage(data: Installed, name: string, w: ThemeWords): string {
+  const head = data.replaced === true ? w.replaced : data.changed ? w.installedOk : w.unchanged
+  const n = data.skipped ?? 0
+  const left = n > 0 ? ` ${fill(w.skippedOs, { n: String(n) })}` : ''
+  return fill(head, { theme: name, version: data.version }) + left
+}
+
 /** Send the zip, and say what came of it. */
 export async function install(screen: HTMLElement, file: File): Promise<void> {
   const w = wordsOf(pickerIn(screen))
@@ -169,14 +181,10 @@ export async function install(screen: HTMLElement, file: File): Promise<void> {
   const json = await res.json().catch(() => null) as
     { success?: boolean; data?: Installed; error?: string; violations?: unknown } | null
   if (res.ok && json?.success && json.data) {
-    const { id, version, changed, skipped, replaced } = json.data
+    const { id } = json.data
     const drawn = await refresh(screen, id)
     const name = listIn(screen)?.querySelector<HTMLElement>(`[data-choice="${CSS.escape(id)}"]`)?.dataset.name ?? id
-    // What the operating system had added to the zip is said, not left out in silence.
-    const left = typeof skipped === 'number' && skipped > 0 ? ` ${fill(w.skippedOs, { n: String(skipped) })}` : ''
-    // The same version with other files took the old one's place: said, because it cannot be rolled back.
-    const head = replaced === true ? w.replaced : changed ? w.installedOk : w.unchanged
-    const done = fill(head, { theme: name, version }) + left
+    const done = installedMessage(json.data, name, w)
     // Installed, but the tiles could not be drawn again: the owner is told where to look.
     return answer(screen, 'data-theme-status', drawn ? done : `${done} ${w.reload ?? ''}`)
   }

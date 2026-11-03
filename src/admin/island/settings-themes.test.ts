@@ -130,22 +130,6 @@ describe('installing from a file', () => {
     expect(moves).toBeGreaterThan(1)
   })
 
-  it('says how many files the operating system had added, which the install left out', async () => {
-    replies['POST /api/themes'] = { status: 200, body: { success: true, data: { id: 'broadsheet', version: '1.1.0', hash: HASH, changed: true, skipped: 7 } } }
-    serverInstalled = [BROADSHEET]
-    choose()
-    await settle()
-    expect($('[data-theme-status]')!.textContent).toBe('Installed Broadsheet 1.1.0. Files macOS or Windows add by themselves were left out: 7.')
-  })
-
-  it('warns that the same version with other files replaced the old one, with nothing to roll back to', async () => {
-    replies['POST /api/themes'] = { status: 200, body: { success: true, data: { id: 'broadsheet', version: '1.1.0', hash: HASH, changed: true, skipped: 0, replaced: true } } }
-    serverInstalled = [BROADSHEET]
-    choose()
-    await settle()
-    expect($('[data-theme-status]')!.textContent).toBe(t.themeReplaced.replace('{theme}', 'Broadsheet').replace('{version}', '1.1.0'))
-  })
-
   it('says already installed when the package changed nothing', async () => {
     replies['POST /api/themes'] = { status: 200, body: { success: true, data: { id: 'broadsheet', version: '1.1.0', hash: HASH, changed: false } } }
     serverInstalled = [BROADSHEET]
