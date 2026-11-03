@@ -25,7 +25,11 @@ export type SmtpOptions = {
 }
 
 export class SmtpError extends Error {
-  constructor(readonly code: number, message: string) {
+  /**
+   * `inDoubt`: the message was handed over whole (the closing `.` was written) and no answer came
+   * back. The relay may have queued it, so sending it again may deliver it twice.
+   */
+  constructor(readonly code: number, message: string, readonly inDoubt = false) {
     super(message)
     this.name = 'SmtpError'
   }
@@ -207,7 +211,16 @@ export class SmtpSession {
     // is why it is done here rather than inside the encoder.
     const stuffed = envelope.body.replace(/\r\n\./g, '\r\n..').replace(/^\./, '..')
     this.wire.write(stuffed.endsWith('\r\n') ? `${stuffed}.\r\n` : `${stuffed}\r\n.\r\n`)
-    const reply = await this.wire.read()
+    // ⚠️ PAST THE DOT, A LOST ANSWER IS NOT A LOST MESSAGE. The relay queues it on reading the dot
+    // and then says 250; a connection reset, or a relay that scans for longer than the timeout,
+    // loses only the 250. Read as "the connection dropped", the caller reconnected and sent the
+    // whole message again, and the reader had it twice (2026-11-03).
+    let reply: Reply
+    try {
+      reply = await this.wire.read()
+    } catch (error) {
+      throw new SmtpError(error instanceof SmtpError ? error.code : 0, `no answer after the message: ${(error as Error).message}`, true)
+    }
     if (reply.code !== 250) {
       throw new SmtpError(reply.code, `the message was refused: ${reply.code} ${reply.lines.join(' ')}`)
     }

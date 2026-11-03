@@ -186,10 +186,11 @@ async function makeTransport(cfg: SmtpConfig): Promise<Transport> {
    *
    * The difference decides whether retrying is a repair or a second delivery. A relay that
    * said 550 means it; a socket that died between two messages of a long run means nothing,
-   * and every relay closes one eventually.
+   * and every relay closes one eventually. A connection that died AFTER the message was handed
+   * over is neither: the relay may have it, so it is a failure, not a retry (`SmtpError.inDoubt`).
    */
   const droppedUs = (error: unknown): boolean =>
-    !(error instanceof SmtpError) || error.code === 0
+    !(error instanceof SmtpError) || (error.code === 0 && !error.inDoubt)
 
   return {
     async sendMail(msg) {

@@ -7,6 +7,7 @@
 // shared `integration_keys` row, and a port-587 STARTTLS server would then quietly stop
 // accepting mail with no setting having been touched.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
+import net from 'node:net'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/test/sqlite'
 import { getSmtpConfig, saveSmtpConfig, isMailConfigured, getMailStatus, mailBlocked, sendMail } from '@/news/mail'
@@ -159,6 +160,71 @@ describe('the environment can refuse to send at all', () => {
       process.env.SMTP_OFF = value
       expect(`SMTP_OFF=${JSON.stringify(value)}: ${mailBlocked(await getSmtpConfig())}`)
         .toBe(`SMTP_OFF=${JSON.stringify(value)}: null`)
+    }
+  })
+})
+
+/**
+ * A relay on loopback that drops the connection once, at the step named: right after it has
+ * read the message's closing `.` (so it HAS the message), or on the first `MAIL FROM`.
+ */
+async function droppingRelay(when: 'after-dot' | 'mail-from'): Promise<{ port: number; messages: () => number; close: () => void }> {
+  let messages = 0
+  let dropped = false
+  const server = net.createServer((socket) => {
+    let inData = false
+    let pending = ''
+    const drop = (): boolean => (dropped ? false : (dropped = true, socket.destroy(), true))
+    socket.on('error', () => {})
+    socket.write('220 relay\r\n')
+    socket.on('data', (chunk) => {
+      pending += chunk.toString()
+      for (let at = pending.indexOf('\r\n'); at >= 0; at = pending.indexOf('\r\n')) {
+        const line = pending.slice(0, at)
+        pending = pending.slice(at + 2)
+        if (inData) {
+          if (line !== '.') continue
+          inData = false
+          messages++
+          if (when === 'after-dot' && drop()) return
+          socket.write('250 queued\r\n')
+          continue
+        }
+        const verb = line.slice(0, 4).toUpperCase()
+        if (verb === 'MAIL' && when === 'mail-from' && drop()) return
+        if (verb === 'EHLO') socket.write('250-relay\r\n250 HELP\r\n')
+        else if (verb === 'DATA') { inData = true; socket.write('354 go\r\n') }
+        else if (verb === 'QUIT') { socket.write('221 bye\r\n'); socket.end() }
+        else socket.write('250 ok\r\n')
+      }
+    })
+  })
+  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done))
+  return { port: (server.address() as net.AddressInfo).port, messages: () => messages, close: () => server.close() }
+}
+
+describe('a connection that drops', () => {
+  it('is not a retry once the message was handed over, because the relay may have it', async () => {
+    const relay = await droppingRelay('after-dot')
+    try {
+      await saveSmtpConfig({ host: '127.0.0.1', port: relay.port, secure: false, from: 'blog@example.com' })
+      const out = await sendMail({ to: 'reader@example.com', subject: 's', html: '<p>h</p>', kind: 'test' })
+      expect(relay.messages()).toBe(1)
+      expect(out.sent).toBe(false)
+    } finally {
+      relay.close()
+    }
+  })
+
+  it('is retried once when it dropped before the message, which is the repair the retry is for', async () => {
+    const relay = await droppingRelay('mail-from')
+    try {
+      await saveSmtpConfig({ host: '127.0.0.1', port: relay.port, secure: false, from: 'blog@example.com' })
+      const out = await sendMail({ to: 'reader@example.com', subject: 's', html: '<p>h</p>', kind: 'test' })
+      expect(out).toEqual({ sent: true })
+      expect(relay.messages()).toBe(1)
+    } finally {
+      relay.close()
     }
   })
 })
