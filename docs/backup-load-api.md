@@ -38,7 +38,7 @@ The rules a client meets:
   (`bad-identity` and `bad-kdf` for a key that will not parse), `422 bad-archive`, `409 not-empty`,
   `409 busy`, `500 failed`. The parts are kept after a refusal and dropped after a
   load.
-- An id lives for a day from `POST`. After that, or for an id the blog never made, `404 unknown`.
+- An id lives for a day from `POST`: after that `PUT` and `load` answer `404 unknown`, as every route does for an id that does not parse. The blog keeps no list of ids, so a well-formed one it never made is not refused, and `GET` and `DELETE` do not look at its age.
 - Retry a part on a dropped connection or a `5xx`; a `4xx` is an answer, and sending again changes
   nothing.
 

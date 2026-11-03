@@ -3,7 +3,7 @@
 There are **four backups**, and they answer different questions. Losing track of which is which
 is how an install ends up with two copies of the same protection and none of another. There is
 also a **fifth download that is not a backup at all** — the Markdown export, which answers "take
-my writing somewhere else" and is [its own section below](#the-markdown-export-not-a-backup).
+my writing somewhere else" and is [its own section below](#the-markdown-export-which-is-not-a-backup).
 
 | | Where | Answers | Source |
 |:--|:--|:--|:--|
@@ -20,8 +20,8 @@ still packs `VACUUM INTO` copies of the two database files, the format every arc
 ADR 0067; [`scripts/restore.ts`](#restoring) reads both.
 
 A sibling under the same env-var convention, [`scripts/ops/quire-uptime.sh`](../scripts/ops/quire-uptime.sh),
-watches a list of URLs from cron and announces DOWN/UP through the same webhook file the
-backup script uses. It is not a backup, but it answers the question every backup story
+watches a list of URLs from cron and announces DOWN/UP through a webhook file of the same
+kind (`QUIRE_ALERT_HOOK_FILE`, by default `/root/.alert-webhook`, not the backup script's). It is not a backup, but it answers the question every backup story
 skips: who notices, and when. Run it from a machine that is not the one being watched.
 
 The frozen tree backed up to the owner's Google Drive from inside the application, with an
@@ -73,7 +73,7 @@ the default reaches only installs that never chose.
 ## Off-server, built in (ADR 0035)
 
 **Settings → Server & connections → Off-server copy.** Paste a bucket, an access key pair, and (for
-R2/MinIO) the endpoint — every archive the schedule or the "take one now" button writes is
+R2/MinIO) the endpoint — every archive the schedule or the "Back up now" button writes is
 also PUT into the bucket, and the remote copies are pruned by the local directory's rule. Env
 fallbacks exist for a fleet: `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`,
 `S3_PREFIX`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (the stored value wins). The upload
@@ -86,7 +86,7 @@ restoring from it means downloading the archive and following [Restoring](#resto
 exactly as for a local snapshot. A failed upload is logged (`backup.offsite` in the
 activity log) and never fails the backup: the local archive is already on disk. Pruning
 touches only keys under this blog's prefix whose basename is a snapshot name, so a shared
-bucket keeps everything else it holds. The **Test** button writes and deletes one marker
+bucket keeps everything else it holds. **Save and test** writes and deletes one marker
 object — a wrong paste is found while you are at the keyboard.
 
 ## Off-server, the ops script
@@ -130,7 +130,7 @@ migration writes `backups/pre-<step>-<stamp>-quire.db` before it migrates anythi
 two most recent, and refuses to migrate if it cannot ([ADR 0063](decisions/0063-an-upgrade-copies-first-and-gives-the-space-back.md)).
 It empties both render caches in the live database first, then takes a bare `VACUUM INTO` —
 no uploads, no archive, no encryption — so it is
-a floor under an upgrade rather than a backup, and it does not replace any of the four below.
+a floor under an upgrade rather than a backup, and it does not replace any of the four.
 
 **Neither render cache is backed up** (2026-09-13; `body_cache` joined `render_cache` there
 with ADR 0062; since ADR 0067 their rows are simply not written, and their empty tables come
@@ -388,7 +388,7 @@ this module reads — `export-md.test.ts` plants three secrets and looks for the
 counter-test that a value which *should* be there is found by the same search.
 
 **It comes back.** [`src/import/quireink.ts`](../src/import/quireink.ts) reads the bundle and is
-wired into `POST /api/import/archive` as a fourth recognised shape, sniffed structurally
+wired into `POST /api/import/archive` as a third recognised shape, sniffed structurally
 (`site.json` beside Markdown under `posts/`) like the Substack and Medium ones; its `uploads/` are written to the store where nothing is yet (`import/bundle-uploads.ts`), and `site.json` is not applied. That reader
 exists so that "everything survives the round trip" is a test rather than a hope: a field added
 to a post is a field the writer starts emitting, and without a reader nothing notices it cannot
