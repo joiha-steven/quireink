@@ -187,15 +187,17 @@ server-rendered as `<html data-look="code">` so the first paint is right and no 
 - **Two syntax roles, both from theme tokens.** An editor distinguishes a comment from a
   literal, so: labels are `--c-meta` and carry a `//` marker from CSS (never markup, so the
   heading a feed and a screen reader see stays the plain word); counts, dates and figures
-  are `--c-text` and counts are bracketed. Never `--c-accent`: this blog's accent is red,
+  are `--c-text` and dates are bracketed. Never `--c-accent`: this blog's accent is red,
   so every date read as a link that was not one. No third colour, no hex. Tested.
 - **Every chrome label is marked, not just the rail's** — the tagline, the series head,
   the related list, the sign-up card, the comment thread, an empty state. One selector
   list, so a new chrome heading that is missed is visibly missed. Tested.
 - **`[n]` means literal; `/` means path.** Both come from the SHEET, never from a renderer
   — the round parentheses in the base sheet too, or the switch could not put them back.
-  Dates, figures, indices, counts and the pager are all bracketed, and **the brackets are
-  `--c-meta` while their contents are `--c-text`**: they are punctuation, not the value.
+  **Dates are bracketed, and nothing else is** since 2026-11-04 (the related list's and the
+  series' indices keep theirs, as list markers): on every figure and count too, the device was
+  a pattern on every line. **The brackets are `--c-meta` while the date is `--c-text`**:
+  punctuation, not the value.
   The feed's gutter year takes the slash because a year over its months is a hierarchy.
   Markup supplies only the wrappers CSS cannot invent: `.num` round a figure, `.term-list`
   round a run of terms. Tested both ends. (The rail's counts were a filled ring for one

@@ -85,10 +85,11 @@ html[data-look=code] .comment-name::before{content:"// ";color:var(--c-meta);fon
    The brackets are a shade LIGHTER than what they hold. They are punctuation, not the
    value, and at the same weight as the digits a meta line reads as a row of boxes rather
    than as a date followed by two figures. */
-/* ONE bracket for every literal, and the term counts are in it too. They were a filled
-   ring for one deploy, on the reasoning that a term cloud has no sequence to punctuate;
-   the owner looked at it and said it was ugly, which settles it. Brackets everywhere is
-   also the simpler rule to hold. */
+/* Brackets round a DATE only, since 2026-11-04. Every count, figure and date in them made
+   the device a pattern rather than a signal: a post page carried [Nov 3, 2026] [3] min read
+   [365] words and a rail of [n] beside every row. A count now reads as the plain page's
+   count (a term count keeps the base sheet's round parentheses); the indices of the related
+   list and the series keep theirs, which stand in for list markers. */
 html[data-look=code] .rail-count,
 html[data-look=code] .term-count,
 html[data-look=code] .pager-count,
@@ -97,20 +98,12 @@ html[data-look=code] .comment-meta time,
 html[data-look=code] .related p,
 html[data-look=code] .num{color:var(--c-text)}
 html[data-look=code] .term-count{opacity:1}
-html[data-look=code] .rail-count::before,
-html[data-look=code] .term-count::before,
-html[data-look=code] .pager-count::before,
 html[data-look=code] .t-small time::before,
 html[data-look=code] .comment-meta time::before,
-html[data-look=code] .related p::before,
-html[data-look=code] .num::before{content:"[";color:var(--c-meta)}
-html[data-look=code] .rail-count::after,
-html[data-look=code] .term-count::after,
-html[data-look=code] .pager-count::after,
+html[data-look=code] .related p::before{content:"[";color:var(--c-meta)}
 html[data-look=code] .t-small time::after,
 html[data-look=code] .comment-meta time::after,
-html[data-look=code] .related p::after,
-html[data-look=code] .num::after{content:"]";color:var(--c-meta)}
+html[data-look=code] .related p::after{content:"]";color:var(--c-meta)}
 /* Darker inside the info panel than anywhere else, at the owner's ask: the same ink the
    contents list gives the row you are on. That panel is the only place a desktop reader
    sees the date and the length, so it has to carry the hierarchy by itself — everywhere

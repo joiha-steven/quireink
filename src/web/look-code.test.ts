@@ -78,30 +78,31 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
     ]) expect(ide).toContain(label)
   })
 
-  it('brackets every literal from the SHEET, so two renderers cannot disagree', () => {
-    // The sidebar typed its own parentheses, so the taxonomy read "(7)" three lines under a
-    // list that read "[7]". Both pairs come from CSS now — the round ones from the base
-    // sheet, the square ones from the switch — which is also what makes it reversible.
+  it('brackets the dates from the SHEET, and no count', () => {
+    // The brackets come from CSS, never a renderer, which is what makes the switch reversible.
+    // Since 2026-11-04 they are round a date only: on every count and figure as well, the
+    // device was a pattern on every line rather than a mark on the one literal that matters.
     expect(PUBLIC_CSS).toContain('.term-count::before{content:"("}')
     const ide = idelines()
-    for (const literal of [
-      '.rail-count::before', '.pager-count::before', '.t-small time::before',
-      '.comment-meta time::before', '.related p::before', '.num::before',
-    ]) expect(ide).toContain(literal)
+    for (const date of ['.t-small time::before', '.comment-meta time::before', '.related p::before']) {
+      expect(ide).toContain(date)
+    }
+    for (const count of ['.rail-count::', '.term-count::', '.pager-count::', '.num::']) {
+      expect(ide).not.toContain(count)
+    }
   })
 
   it('sets the brackets a shade lighter than the value they hold', () => {
     // They are punctuation, not the value. At the same weight as the digits a meta line
     // reads as a row of boxes rather than as a date followed by two figures.
-    expect(idelines()).toContain('.num::before{content:"[";color:var(--c-meta)}')
-    expect(idelines()).toContain('.num::after{content:"]";color:var(--c-meta)}')
+    expect(idelines()).toContain('.related p::before{content:"[";color:var(--c-meta)}')
+    expect(idelines()).toContain('.related p::after{content:"]";color:var(--c-meta)}')
   })
 
-  it('brackets the rail\'s term counts too, and does not ring them', () => {
-    // They were a filled ring for one deploy, on the reasoning that a term cloud has no
-    // sequence to punctuate. The owner looked at it and said it was ugly, which settles it —
-    // and one bracket for every literal is the simpler rule to hold anyway.
-    expect(idelines()).toContain('.term-count::before')
+  it('leaves the rail\'s term counts in the base sheet\'s parentheses, and does not ring them', () => {
+    // They were a filled ring for one deploy and in square brackets until 2026-11-04; a count
+    // is not a date, so it keeps the round pair the plain page gives it.
+    expect(idelines()).not.toContain('.term-count::before')
     // The whole of what the switch does to it: lift the base sheet's .6 opacity. Anything
     // more and the ring is back. (`border-radius:50%` alone is no test — the feed's dots and
     // the index's line numbers are circles too.)
