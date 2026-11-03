@@ -1,8 +1,8 @@
 // Parse a WordPress export (WXR .xml) into Quire Ink posts + pages. PURE — no I/O; the
 // API route (api/import/wordpress) persists the result via savePost/savePage. Each
 // post's HTML body is converted to Markdown (`html-parse.ts` then `html-to-md.ts`), and tags,
-// dates, status and excerpt are preserved. Image URLs are kept as-is (they point at
-// the source site) — the importer does not download/rehost binaries.
+// dates, status and excerpt are preserved. Image URLs point at the source site (a resized copy
+// swapped for the original the export names, `fullSize`); `images.ts` brings them home later.
 //
 // The Markdown pipe, the entity decoder and the slug allocator moved to `convert.ts`
 // on 2026-08-23, when Ghost, Substack and Medium arrived and would otherwise each have
@@ -54,6 +54,27 @@ function toIso(wpDate: unknown, fallback: string): string {
   return Number.isNaN(d.getTime()) ? fallback : d.toISOString()
 }
 
+// ---- the original of a resized picture --------------------------------------
+
+// WordPress names the copies it cuts `<name>-<w>x<h>.<ext>` and puts one of them in the post, so
+// the picture brought home was the column-wide `photo-1024x683.jpg` (2026-11-03). The original is
+// named by the export itself, as an attachment's URL (`-scaled` when WordPress capped a large
+// upload) or in the same image's `srcset`, and only a name the export lists is ever used: a file
+// that is merely CALLED `banner-468x60.png` has no other file behind it.
+const RESIZED = /(https?:\/\/[^\s"'<>()]+?)-\d+x\d+(\.[a-z0-9]+)(?=[\s"',?#)]|$)/gi
+
+function fullSize(html: string, attachments: ReadonlySet<string>): string {
+  const listed = new Set(attachments)
+  for (const m of html.matchAll(/\bsrcset=["']([^"']*)["']/gi)) {
+    for (const candidate of m[1]!.split(',')) {
+      const url = candidate.trim().split(/\s+/)[0]
+      if (url) listed.add(url)
+    }
+  }
+  return html.replace(RESIZED, (whole: string, stem: string, ext: string) =>
+    [`${stem}${ext}`, `${stem}-scaled${ext}`].find((url) => listed.has(url)) ?? whole)
+}
+
 // ---- parse ------------------------------------------------------------------
 
 export function parseWxr(xml: string, now: string): WxrResult {
@@ -61,6 +82,10 @@ export function parseWxr(xml: string, now: string): WxrResult {
   const items = asArray(doc?.rss?.channel?.item) as Record<string, unknown>[]
 
   const uniqueSlug = slugTracker()
+  const attachments = new Set(items
+    .filter((item) => text(item['wp:post_type']) === 'attachment')
+    .map((item) => text(item['wp:attachment_url']).trim())
+    .filter(Boolean))
 
   const posts: ImportedPost[] = []
   const pages: ImportedPage[] = []
@@ -79,7 +104,7 @@ export function parseWxr(xml: string, now: string): WxrResult {
     const title = text(item.title).trim() || 'Untitled'
     const slug = uniqueSlug(importSlug(text(item['wp:post_name']), title))
     const html = raw(item['content:encoded'])
-    const body = htmlToMarkdown(html)
+    const body = htmlToMarkdown(fullSize(html, attachments))
     // Behind a password there: a draft here, which has no password to put on it (`locked`).
     const guarded = text(item['wp:post_password']).trim() !== ''
     if (guarded) locked++

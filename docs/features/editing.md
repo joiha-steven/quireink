@@ -367,7 +367,8 @@ card, a link) it is called by its first words; see
   `ImportFields` uploads the file (multipart) to owner-gated `POST /api/import/wordpress`.
 - **`parseWxr(xml, now)` is PURE** (no I/O; unit-tested in `src/import/wordpress.test.ts`): each `item`
   with `wp:post_type` post/page and a live status → a post/page. HTML `content:encoded` → Markdown
-  (`src/import/html-to-md.ts`), `<figure><figcaption>` folded INTO the image alt (Quire Ink
+  (`src/import/html-to-md.ts`), a resized copy (`photo-1024x683.jpg`) swapped for the original the export
+  itself names (an attachment URL, `-scaled` included, or the image's `srcset`), `<figure><figcaption>` folded INTO the image alt (Quire Ink
   renders captions from alt). A **gallery** (`figure.wp-block-gallery`, which nests one `<figure><img>` per photo)
   emits EVERY nested image, each tagged `#grid` so `groupGalleries` rebuilds it as a grid —
   reading only the first nested image drops the rest of the gallery on the floor. An `<iframe>`, `<video>` or `<audio>` comes in as its address alone on a line, which plays when the host or file is known (`render/video.ts`).

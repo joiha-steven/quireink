@@ -221,3 +221,31 @@ describe('a scheduled WordPress post', () => {
     expect(out.posts.map((p) => [p.slug, p.status, p.date])).toEqual([['later', 'published', '2030-01-01T09:00:00.000Z']])
   })
 })
+
+// The picture brought home was the copy WordPress cut for the column, `photo-1024x683.jpg`, while
+// the export named the original in the same `srcset` or as the attachment (2026-11-03).
+describe('a resized WordPress image', () => {
+  const U = 'https://old.example/wp-content/uploads/2020/01'
+  const body = (content: string, extra = '') =>
+    parseWxr(wxr(item({ name: 'p', content }) + extra), NOW).posts[0]?.content ?? ''
+  const attachment = (url: string) => `<item><title>photo</title>
+    <wp:post_type>attachment</wp:post_type><wp:status>inherit</wp:status>
+    <wp:attachment_url><![CDATA[${url}]]></wp:attachment_url></item>`
+
+  it('comes in as the original the srcset lists', () => {
+    const html = `<figure class="wp-block-image size-large"><img src="${U}/photo-1024x683.jpg" `
+      + `srcset="${U}/photo-1024x683.jpg 1024w, ${U}/photo-300x200.jpg 300w, ${U}/photo.jpg 2048w" alt="River"></figure>`
+    expect(body(html)).toBe(`![River](${U}/photo.jpg)`)
+  })
+
+  it('comes in as the attachment the export carries, a -scaled one included', () => {
+    expect(body(`<p><img src="${U}/x-300x200.jpg" alt="X"></p>`, attachment(`${U}/x.jpg`))).toBe(`![X](${U}/x.jpg)`)
+    expect(body(`<p><img src="${U}/big-1024x683.jpg" alt="B"></p>`, attachment(`${U}/big-scaled.jpg`)))
+      .toBe(`![B](${U}/big-scaled.jpg)`)
+  })
+
+  // A name that only LOOKS resized is left alone: nothing in the export says there is another file.
+  it('keeps a name with a size in it when the export lists no original', () => {
+    expect(body(`<p><img src="${U}/banner-468x60.png" alt="Ad"></p>`)).toBe(`![Ad](${U}/banner-468x60.png)`)
+  })
+})
