@@ -578,7 +578,7 @@ const de = {
   firstRun2Label: 'Den ersten Beitrag schreiben',
   firstRun2Body: 'Speichern hält ihn als Entwurf; Veröffentlichen stellt ihn online.',
   firstRun3Label: 'Das Aussehen wählen',
-  firstRun3Body: 'Eine Palette und eine Schrift wählen; Lesende können die Palette selbst wechseln.',
+  firstRun3Body: 'Ein Theme, eine Palette und eine Schrift wählen; Lesende können die Palette selbst wechseln.',
   firstRun4Label: 'Einschalten, was gebraucht wird',
   firstRun4Body: 'E-Mail für den Newsletter, eine Kopie der Backups außerhalb dieses Servers und Cloudflare, falls der Blog dahinter liegt.',
   firstRun5Label: 'Leserschaft aufbauen',

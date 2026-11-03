@@ -578,7 +578,7 @@ const ja = {
   firstRun2Label: '最初の記事を書く',
   firstRun2Body: '保存では下書きのまま、公開でサイトに出ます。',
   firstRun3Label: '見た目を選ぶ',
-  firstRun3Body: 'パレットと書体を選べば、読者は自分でパレットを切り替えられます。',
+  firstRun3Body: 'テーマとパレットと書体を選べば、読者は自分でパレットを切り替えられます。',
   firstRun4Label: '必要なものを有効にする',
   firstRun4Body: 'ニュースレター用のメール、このサーバーの外に置くバックアップの複製、ブログが Cloudflare の背後にあるならその設定。',
   firstRun5Label: '読者を集める',

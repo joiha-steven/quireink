@@ -578,7 +578,7 @@ const es = {
   firstRun2Label: 'Escribe la primera entrada',
   firstRun2Body: 'Guardar la deja en borrador; Publicar la pone en el sitio.',
   firstRun3Label: 'Elige el aspecto',
-  firstRun3Body: 'Elige una paleta y una tipografía; los lectores pueden cambiar de paleta por su cuenta.',
+  firstRun3Body: 'Elige un tema, una paleta y una tipografía; los lectores pueden cambiar de paleta por su cuenta.',
   firstRun4Label: 'Enciende lo que necesites',
   firstRun4Body: 'Correo para el boletín, una copia de las copias de seguridad fuera de este servidor y Cloudflare si el blog está detrás.',
   firstRun5Label: 'Reúne lectores',

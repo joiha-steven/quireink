@@ -578,7 +578,7 @@ const fr = {
   firstRun2Label: 'Écrire le premier article',
   firstRun2Body: 'Enregistrer garde un brouillon ; Publier le met sur le site.',
   firstRun3Label: 'Choisir l’allure',
-  firstRun3Body: 'Choisissez une palette et une police ; les lecteurs peuvent changer de palette eux-mêmes.',
+  firstRun3Body: 'Choisissez un thème, une palette et une police ; les lecteurs peuvent changer de palette eux-mêmes.',
   firstRun4Label: 'Activer ce qu’il vous faut',
   firstRun4Body: 'L’e-mail pour la newsletter, une copie des sauvegardes hors de ce serveur, et Cloudflare si le blog passe par lui.',
   firstRun5Label: 'Rassembler des lecteurs',

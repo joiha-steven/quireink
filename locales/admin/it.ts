@@ -578,7 +578,7 @@ const it = {
   firstRun2Label: 'Scrivi il primo articolo',
   firstRun2Body: 'Salva lo tiene come bozza; Pubblica lo mette sul sito.',
   firstRun3Label: 'Scegli l’aspetto',
-  firstRun3Body: 'Scegli una palette e un carattere; i lettori possono cambiare palette da soli.',
+  firstRun3Body: 'Scegli un tema, una palette e un carattere; i lettori possono cambiare palette da soli.',
   firstRun4Label: 'Accendi quello che ti serve',
   firstRun4Body: 'L’e-mail per la newsletter, una copia dei backup fuori da questo server e Cloudflare, se il blog ci passa.',
   firstRun5Label: 'Raccogli lettori',

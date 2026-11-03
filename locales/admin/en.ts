@@ -578,7 +578,7 @@ const en = {
   firstRun2Label: 'Write the first post',
   firstRun2Body: 'Save keeps it a draft; Publish puts it on the site.',
   firstRun3Label: 'Choose the look',
-  firstRun3Body: 'Pick a palette and a font; readers can switch palette themselves.',
+  firstRun3Body: 'Pick a theme, a palette and a font; readers can switch palette themselves.',
   firstRun4Label: 'Turn on what you need',
   firstRun4Body: 'Email for the newsletter, a copy of your backups kept off this server, and Cloudflare if your blog sits behind it.',
   firstRun5Label: 'Gather readers',

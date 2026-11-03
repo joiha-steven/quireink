@@ -578,7 +578,7 @@ const zh = {
   firstRun2Label: '写第一篇文章',
   firstRun2Body: '保存仍是草稿，发布才会出现在站点上。',
   firstRun3Label: '选择外观',
-  firstRun3Body: '选一套配色和一种字体，读者可以自己切换配色。',
+  firstRun3Body: '选一套主题、一套配色和一种字体，读者可以自己切换配色。',
   firstRun4Label: '按需开启功能',
   firstRun4Body: '用于邮件列表的邮箱、存放在这台服务器之外的备份副本，以及博客位于 Cloudflare 之后时的设置。',
   firstRun5Label: '积累读者',

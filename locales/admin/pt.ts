@@ -579,7 +579,7 @@ const pt = {
   firstRun2Label: 'Escreva o primeiro post',
   firstRun2Body: 'Salvar deixa como rascunho; Publicar põe no site.',
   firstRun3Label: 'Escolha o visual',
-  firstRun3Body: 'Escolha uma paleta e uma fonte; os leitores podem trocar de paleta sozinhos.',
+  firstRun3Body: 'Escolha um tema, uma paleta e uma fonte; os leitores podem trocar de paleta sozinhos.',
   firstRun4Label: 'Ligue o que precisar',
   firstRun4Body: 'E-mail para a newsletter, uma cópia dos backups fora deste servidor e o Cloudflare, se o blog estiver atrás dele.',
   firstRun5Label: 'Reúna leitores',

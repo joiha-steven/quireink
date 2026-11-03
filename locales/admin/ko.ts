@@ -578,7 +578,7 @@ const ko = {
   firstRun2Label: '첫 글 쓰기',
   firstRun2Body: '저장하면 초안이고, 발행해야 사이트에 올라갑니다.',
   firstRun3Label: '겉모습 고르기',
-  firstRun3Body: '팔레트와 서체를 고르면 독자가 직접 팔레트를 바꿀 수 있습니다.',
+  firstRun3Body: '테마와 팔레트, 서체를 고르면 독자가 직접 팔레트를 바꿀 수 있습니다.',
   firstRun4Label: '필요한 것 켜기',
   firstRun4Body: '뉴스레터용 이메일, 이 서버 밖에 두는 백업 사본, 블로그가 Cloudflare 뒤에 있다면 그 설정.',
   firstRun5Label: '독자 모으기',

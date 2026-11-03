@@ -578,7 +578,7 @@ const vi = {
   firstRun2Label: 'Viết bài đầu tiên',
   firstRun2Body: 'Lưu thì vẫn là bản nháp; Đăng mới đưa lên site.',
   firstRun3Label: 'Chọn diện mạo',
-  firstRun3Body: 'Chọn một bảng màu và một bộ chữ; người đọc tự đổi bảng màu được.',
+  firstRun3Body: 'Chọn một theme, một bảng màu và một bộ chữ; người đọc tự đổi bảng màu được.',
   firstRun4Label: 'Bật những gì cần dùng',
   firstRun4Body: 'Email để gửi bản tin, bản sao lưu cất ngoài máy chủ này, và Cloudflare nếu blog chạy sau nó.',
   firstRun5Label: 'Gom người đọc',
