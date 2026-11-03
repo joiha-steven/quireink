@@ -1,5 +1,90 @@
 # CHANGELOG
 
+## 2026-11-04 · Quire Ink 2.2.21
+
+Six reviews of the whole product, each measured on a running blog: the server's security, the
+pages by eye, every feature from a user's side, making a theme as a stranger would, the AI and MCP
+tools, and the update count. Upgrading is the usual pull and restart, and the four new migrations
+run by themselves on start, after the usual copy of the database.
+
+### Changed
+
+- **The admin is quieter.** The greys take the paper's warmth and text has three inks. Settings
+  no longer draws a box in a box (the Appearance tab went from 27 frames to 19, none deeper than
+  one level). The highlighter is a stroke behind the word, not a filled key. Home is a writing
+  desk with the unfinished work first, the time-of-day greeting is gone, empty screens are a line
+  of text rather than a drawing (11 pictures removed), and each screen has one filled button
+  (the editor's bar went from 7 controls to 5). 102 of the 219 notes that restated their own label
+  are gone, so the 117 left are the ones that change a decision.
+- **A draft published for the first time is dated now,** not the day its writing began.
+- **A post's share card is dated in the post's own language,** where the card's faces can draw
+  it. Japanese, Korean and Chinese dates need characters those faces do not have, so those cards
+  keep the site's date ([ADR 0074](docs/decisions/0074-a-share-card-dates-a-piece-in-its-own-language.md)).
+- **Plain paper suggests Inter** when you press its tile, so leaving Source code no longer keeps
+  its mono headings.
+- **MCP chooses a theme by the admin's rule.** `update_appearance` now moves the chrome font with a
+  built-in theme, as pressing its tile does. An installed theme's palette and fonts are offered,
+  and taken with `useSuggestions: true`. The tool answers with what the page really draws.
+- **MCP has rate limits:** 20 wrong tokens an address in fifteen minutes, 600 calls a token a
+  minute, 10 code exchanges an address a minute, each answered 429 with `retry-after`.
+- **The theme checker is stricter about a typeface on `body`:** on `body`, `html`, `*` and `.wrap`
+  a face may only be one engine variable, because anything else overrode the owner's font slots.
+  A theme already installed keeps working; installing it again needs the fix.
+
+### Added
+
+- **`theme:preview` reports what the checker cannot see:** every declaration the browser drops
+  (`colour:`, `display:gird`, a missing `;`), with its line, column and what to write instead, and
+  any word split across two lines with no hyphen. It also makes `screenshot.webp` for you.
+- **A theme can be made and installed through MCP,** through the installer's own checks.
+- **The rail's menu has a skip link** where the rail stands in the margin, so a keyboard reaches it
+  second rather than after the whole page.
+- **Every newsletter carries List-Unsubscribe and List-Unsubscribe-Post,** so a mail client shows
+  its own unsubscribe button.
+
+### Fixed
+
+- **Security.** The ActivityPub inbox took a signer's identity from whatever document sat at the
+  key's address, so anyone could sign as another site's actor; it now refuses that, and refuses a
+  signature that does not cover the body. The address guard is held at connect time, so DNS
+  rebinding no longer reaches internal addresses, and it knows the reserved IPv4 ranges and every
+  IPv6 spelling of an internal address. Crafted text no longer holds the process: a webmention
+  source took 130 s and a Medium file 21 s, each now a few milliseconds. Backups refuse a
+  decompression bomb, a short GCM tag and a path carrying a backslash. A loaded backup signs
+  nobody in. The subscribe form no longer tells by its timing whether an address is on the list.
+- **Data that could be lost.** MCP `update_post` erased a post's series, cover and SEO fields, even
+  when sent the same post back. Emptying the files trash deleted attachments posts still linked.
+  The unused-media audit called a picture in custom CSS unused. "Back up now" pushed scheduled
+  snapshots out, so four presses lost the history. Two "New post" tabs shared one device copy. A
+  purge that failed halfway left bytes counted against the quota and no row to retry from. The
+  compaction after an upgrade could corrupt `quire.db` when another process had it open (4 of 5
+  tries). A newsletter send cut off by a lost reply no longer mails the same people twice.
+- **Fediverse.** A post restored from the Trash reaches followers again: each return is announced
+  under a new object id, because Mastodon keeps a tombstone for the old one for good.
+- **Renames.** A renamed post, page, note, category, tag or series takes its address, and its
+  readers' pen marks, with it.
+- **Imports.** WordPress images come in as originals with their captions, lazy-loaded ones as the
+  picture and not the placeholder. Locked posts come in as drafts. Embedded video and audio stay.
+  One 301 per old link, and a run stopped halfway finishes its redirects when run again. A
+  Quire Ink bundle brings its pictures and files.
+- **Dates and addresses.** An admin date reads the same on both runtimes, a save keeps a post's
+  seconds, a daylight-saving boundary is read by one rule in every zone. Slugs keep letters like
+  ß and full-width Latin. Redirects match in any case. A reader's search is not used up by
+  scheduled posts, and an unaccented `d` finds `đ`. JSON Feed carries `content_html`.
+- **Cloudflare.** The timezone list offers UTC again, the cache card that had nothing to purge is
+  gone, port 25 is refused at once with a word about 587 and 465, and the copy taken before a
+  migration is named in the log. The way back in after a lost password is written down and was run
+  from end to end.
+- **Pages.** Code in dark book mode is readable (seven token colours were under 4.5:1, the worst 2.12:1). Korean breaks at
+  its spaces. Paragraphs wholly on screen are never faded by the scroll fade. CJK text keeps the
+  right face for its language. Newspaper's menu fades at its edge on a phone. Touch targets
+  are 44px where a finger is the pointer, drawn exactly as before.
+- **AI.** Alt text and excerpts are written in all eleven site languages (six before), and a
+  comment is fenced as data when it goes to the spam guard. MCP tools that delete or restore say
+  so when the target does not exist, and `update_settings` says so when a value was thrown away.
+- **Update check.** A blog on `example.com` counts as a trial, as the docs' example address always
+  meant.
+
 ## 2026-10-27 · Quire Ink 2.2.20
 
 Themes become something you can install. The four built-in looks are now four themes, a theme
