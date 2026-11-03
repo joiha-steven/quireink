@@ -98,7 +98,9 @@
   never a subscriber address; `list_comments` drops the email and IP the admin shape
   carries. That line is held by `tools-insight.test.ts`, not by prose. Worked examples
   for owners: [`agent-cookbook.md`](./agent-cookbook.md). Content is Markdown verbatim — no HTML
-  conversion. Deletes are soft (→ Trash). **`update_post` REPLACES the whole post; `patch_post`
+  conversion. Deletes are soft (→ Trash). **`update_post` REPLACES the whole post** except five fields it could not
+  carry until 2026-11-03 and so erased on every update: `series`, `seriesOrder`, `metaTitle`, `metaDescription` and
+  `coverImage` keep their value when omitted, and an empty string clears one (`tools-update.test.ts`); **`patch_post`
   merges only the passed fields over the current post (body preserved)** — use it to change just
   the title/tags/categories/etc. The three `update_*` tools **keep the slug they are given**;
   `newSlug` renames (and leaves a 301). Until 2.2.15 the slug was rebuilt from the title, so an

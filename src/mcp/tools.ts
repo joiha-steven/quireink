@@ -30,8 +30,15 @@ const postFields = {
   excerpt: z.string().optional(),
   categories: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
-  featuredImage: z.string().optional().describe('Image URL used only for SEO/social cards'),
+  featuredImage: z.string().optional().describe('Image URL used only for SEO/social cards, never shown on the page. The visible picture at the top of the post is coverImage'),
   date: z.string().optional().describe('ISO 8601 publish date; defaults to now'),
+  // These five were missing until 2026-11-03, and because `update_post` REPLACES, a field this
+  // shape does not carry was erased by every update: zod strips it, the saver sees undefined.
+  series: z.string().optional().describe('Name of the series this post belongs to; an empty string takes it out'),
+  seriesOrder: z.number().int().min(0).optional().describe('Its place in the series, ascending'),
+  metaTitle: z.string().optional().describe('SEO <title> override; the post title when empty'),
+  metaDescription: z.string().optional().describe('SEO description override; the excerpt when empty'),
+  coverImage: z.string().optional().describe('The visible picture at the top of the post (a media URL from list_media); an empty string removes it'),
   // ADR 0056. An agent that cannot set these is an agent that ERASES them: `update_post` is a
   // REPLACE, so a field missing from this shape comes back undefined and overwrites what was
   // there. The same is already true of `series` and `coverImage`, which is the argument for
@@ -41,6 +48,9 @@ const postFields = {
   translationGroup: z.string().optional().describe(
     'A name shared by every translation of this piece. Two pieces with the same group are each other\'s translations.'),
 }
+
+/** The post fields `update_post` keeps when they are not sent; see the handler for why. */
+const KEPT_ON_UPDATE = ['series', 'seriesOrder', 'metaTitle', 'metaDescription', 'coverImage'] as const
 
 const pageFields = {
   title: z.string().optional(),
@@ -108,13 +118,25 @@ function registerPostTools(server: ToolHost): void {
 
   server.registerTool(
     'update_post',
-    { description: 'Overwrite an existing post by slug. This REPLACES the post, so pass the complete post (title, content, status, categories, tags…); omitted fields reset to defaults. To change only a few fields (title, tags, categories…) without touching the body, use patch_post instead. Returns the saved metadata.', inputSchema: { ...postFields, slug: z.string(), newSlug: z.string().optional().describe('Rename it: the new slug. Omit to keep the current one — the slug is never derived from the title here.') } },
+    { description: 'Overwrite an existing post by slug. This REPLACES the post, so pass the complete post (title, content, status, categories, tags…); omitted fields reset to defaults — except series, seriesOrder, metaTitle, metaDescription and coverImage, which keep their value when omitted (send an empty string to clear one). To change only a few fields (title, tags, categories…) without touching the body, use patch_post instead. Returns the saved metadata.', inputSchema: { ...postFields, slug: z.string(), newSlug: z.string().optional().describe('Rename it: the new slug. Omit to keep the current one — the slug is never derived from the title here.') } },
     // ⚠️ THE SLUG GOES THROUGH. It was stripped from the arguments, so the saver built one from
     // the title and every update of a post whose slug was not its title's renamed it, with a
     // 301 left behind. The slug stays unless `newSlug` asks otherwise.
     async ({ slug, newSlug, ...rest }) => {
+      // ⚠️ KEPT WHEN OMITTED, unlike the rest of a replace. Until 2026-11-03 this tool could not
+      // send these five at all, so every client written against it omits them, and for those
+      // clients "omitted resets" only ever meant "erased". Keeping them breaks no caller; making
+      // them reset would have kept erasing a series or a cover on every ordinary update.
+      const existing = await getPost(slug)
+      const kept = existing
+        ? Object.fromEntries(KEPT_ON_UPDATE.filter((k) => rest[k] === undefined).map((k) => [k, existing[k]]))
+        : {}
+      // An excerpt the saver DERIVED, sent back unchanged (as `get_post` handed it over), is still a
+      // derived one: written as the author's, it would stop following the body. `patch_post` draws
+      // the same line.
+      const fields = existing?.excerptAuto && rest.excerpt === existing.excerpt ? { ...rest, excerpt: undefined } : rest
       try {
-        const meta = await savePost({ ...rest, slug: newSlug?.trim() || slug } as Partial<PostWithContent>, slug)
+        const meta = await savePost({ ...kept, ...fields, slug: newSlug?.trim() || slug } as Partial<PostWithContent>, slug)
         clearCache()
         await logActivity('post.update', meta.title || meta.slug)
         return asJson(meta)
