@@ -20,8 +20,8 @@ differently. `/admin/settings` went from 880 KB to 571 KB. A hook an island or t
 stay written beside the name; the build refuses a marker in a list, and a utility no rule selects.
 A test about a primitive's LOOK reads it through `expandComponents()`, never the name.
 
-**A CARD'S TITLE OUTRANKS WHAT IS INSIDE IT.** 15 / 14 / 13 at 600 / 500 / 400 — heading,
-label, note. Since 2026-08-29 `Card panel` imports `SECTION` rather than typing a size; a
+**A CARD'S TITLE OUTRANKS WHAT IS INSIDE IT.** 16 / 14 / 13 at 600 / 500 / 400 — heading,
+label, note. Since 2026-08-29 `panelCard` imports `SECTION` rather than typing a size; a
 hand-typed size is how a scale stops being one.
 
 **TYPE COMES FROM A ROLE, NEVER FROM A WEIGHT OR SIZE TYPED ON THE SPOT** (2026-10-19). `check:admin-kit` fails
@@ -100,9 +100,9 @@ copying it. `md` is a page action; `sm` is an action inside a strip of text.
 `underline` that drew no underline, while three screens hand-rolled their own track — one of
 them 40px against the strip above it at 44, with no `aria-pressed` and no hover.
 `TAB_TRACK` and `tabItemClass()` are exported for a strip made of LINKS (the analytics range,
-which lives in the URL and so cannot be a `<Tabs>` with an `onChange`). `sm` has one
-modifier, `dense` (2026-08-17): tighter padding for the write pane's row of five, whose
-labels are the pane's own deliberately short `scope*` strings so five words share one line
+which lives in the URL and so cannot be a `<Tabs>` with an `onChange`). `dense`
+(2026-08-17) tightens a strip at either size: the write pane's row of four, `lg`, whose
+labels are the pane's own deliberately short `scope*` strings so four words share one line
 in all eleven languages — the row may not wrap.
 
 **Two stat shapes, one empty state.** `statCard` and the band it stands in, `statBand`, are

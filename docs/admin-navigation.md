@@ -61,7 +61,7 @@ already open: arrange mode, and the media picker.
   failure toast has no timer, so the sentence waits as long as it takes to be read. The reload is
   the toast's action, not something this code does: the rail is on every admin page INCLUDING the
   editor, and a reload started here would be a reload of somebody's half-written post, begun
-  because they pressed "Arrange the menu".
+  because they pressed "Rearrange sidebar".
 - **Anything that is not the missing file is rethrown.** A pattern broad enough to cover all
   three browsers would also swallow ordinary network failures, and those mean something else.
 - The picker answers `null` as well as speaking, because a screen waiting on a callback that
@@ -149,20 +149,20 @@ with the screens, the two actions and the writing beside it — so "make the tex
   which leaves the palette's own markup standing and reachable.
 - **The rail carries a search control, and printing the chord on it is the point.** ⌘⇧K cannot
   be discovered; a palette you must already know about is a lock rather than a door. Clicking
-  it opens the palette, and the control prints `printChord(PALETTE_CHORD, mac)` beside itself,
+  it opens the palette, and the control prints `printChord(PALETTE_CHORD, mac)` beside itself when it is pointed at or focused,
   which is how a mouse teaches a keyboard: use it once, read what it says, and the second time
   your hands do it without the mouse.
-  It sits on the WORDMARK ROW, beside the collapse control — chrome next to chrome. It was a
+  It sits on the WORDMARK ROW, beside the wordmark — chrome next to chrome. It was a
   full-width row above the rule first, which worked and spent a line of the rail on a thing
   that is not a destination, next to the rows that are. Up there the rail is a list of places
-  again. Collapsed, and on a phone, the glyph is the whole control and the chord moves into the
-  tooltip — there is no ⌘ to print on a phone.
+  again. Collapsed, and on a phone, the glyph is the whole control and no chord is
+  printed — there is no ⌘ to print on a phone.
   ⚠️ The rule and the spacing of a control belong to a WRAPPER. On the button itself, `pb-2`
   sat inside its own `h-8` box: the hover ground kept the full height while the label was
   pushed up out of the middle of it, so the one row with a border was the one row whose hover
   looked broken. A control's hover ground must be the control.
   The chord is one row in `admin-shared/keys.ts` like the rest, so the button, the Help sheet and the
-  handler cannot drift apart. `tour-flows-pane.ts` presses the BUTTON and checks the palette
+  handler cannot drift apart. `tour-flows-palette.ts` presses the BUTTON and checks the palette
   opens: a control that prints a shortcut it does not perform teaches something false.
 
 ## The write column, and what a page load has to give back
@@ -198,5 +198,5 @@ server for the one filter that arrives in the address
   categories and series of the list standing right there, and they drive the most far-reaching
   pair of writes in the admin: renaming a category rewrites the front matter of every post
   carrying it and merges on collision. Both had no unit test and no flow until step 5.
-- `tour-flows-pane.ts` presses the palette's own control and checks the palette opens: a control
+- `tour-flows-palette.ts` presses the palette's own control and checks the palette opens: a control
   that prints a shortcut it does not perform teaches something false.

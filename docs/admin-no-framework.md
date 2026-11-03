@@ -39,8 +39,8 @@ it needs; `check:bundle` measures the RAIL entry, because that is the one every 
 **The palette ships its hundred-odd rows as markup.** It is the clearest case of this ADR's second
 decision: the rows are a fixed list the server already holds — `settings-index.ts` plus the
 screens, the actions and the writing — so drawing them is the server's job and the island's job is
-to hide the ones that do not match. It carries **both search lanes** (`data-pal-lower` and
-`data-pal-fold`), which is `src/accent.ts`'s rule and not a fold of both sides: an unaccented query
+to hide the ones that do not match. A row carries its words once (`data-pal-search`) and the
+island folds **both search lanes** the first time a query reaches it, which is `src/accent.ts`'s rule and not a fold of both sides: an unaccented query
 finds every accent and an accented one finds only itself, because five Vietnamese words live inside
 one folded spelling.
 
@@ -79,7 +79,7 @@ press by closing the menu and doing nothing, however often it was pressed, and l
 rejection where nobody was looking. Both say so now, in one sentence with a reload beside it, and
 **neither reloads by itself** — the rail is on every admin page including the editor, and a reload
 started there would be a reload of somebody's half-written post, begun because they pressed
-"Arrange the menu". Details in [`admin-navigation.md`](./admin-navigation.md).
+"Rearrange sidebar". Details in [`admin-navigation.md`](./admin-navigation.md).
 
 **What is left of React in this repo is nothing.** What is left of the wrapper around ProseMirror
 is step 7.

@@ -52,9 +52,9 @@ that file first; this one only adds what is true here.
   and never masked — the admin's `scroll-fade` let the sheet's hint line print through the last
   rows; it prints each block's Markdown shortcut beside its row). The closing line under the writing says
   the two gestures once.
-- **"Hide attributes" is one key at a time.** Docked (from 1360px, a plain visit) the action row's
-  toggle is on screen and the panel's footer key is hidden by `[data-admin-sheet='docked']` in
-  `admin.css`. Modal (narrower, or the publish step at any width) the toggle sits under the scrim,
+- **"Hide attributes" is one key at a time.** Docked (from 1360px, a plain visit) the toggle stays in
+  the action row's "⋯" and the panel's footer key is hidden by `[data-admin-sheet='docked']` in
+  `admin.css`. Modal (narrower, or the publish step at any width) the "⋯" sits under the scrim,
   so the footer key stays: it is the one that closes the dialog from inside. The attribute is
   the island's own, so there is one place that decides.
 - **The toolbar is one row at every width; what does not fit goes behind "More"** (2026-10-19).
@@ -81,7 +81,7 @@ that file first; this one only adds what is true here.
   sheet's own sticky stack rather than floating over the paper, and pushes the toolbar down
   while it is open. In the writing surface the hits are ProseMirror
   DECORATIONS (`FindExtension.ts`) and in the Markdown view they are `<mark>` in the mirror
-  (`MarkdownSource.withHits`) — in both cases beside the text rather than on it, which is the
+  (`withHits`, `components/editor-source.ts`) — in both cases beside the text rather than on it, which is the
   only shape the contract below allows: a mark would go into the undo history, into the
   Markdown the piece saves as, and out to the reader. Matching is plain text and never a
   regular expression (`editorFind.ts` says why), non-overlapping so stepping agrees with what
@@ -105,11 +105,11 @@ that file first; this one only adds what is true here.
   ⚠️ **A fixed point is not the contract.** That file's original law — serialize twice, compare
   — passed on all four of those, because a document that is destroyed once and then holds still
   IS a fixed point. Anything that asks "does it settle?" is blind to "did it lose something?".
-  ⚠️ **Nor is "it still renders".** Eight fixtures are allowed to move, because Markdown itself
+  ⚠️ **Nor is "it still renders".** Eight fixtures were allowed to move until 2026-09-30, because Markdown itself
   permits the normalisation — entities decode, a lazy line folds, a reference link is written
   back inline. Excusing them by asserting only that the output is non-empty made the hatch
   wider than the law: any of the eight could have collapsed to one character and the check
-  would have said ok. Each now carries a BEHAVIOUR it belongs to, both counts are bounded, and
+  would have said ok. `MAY_DIFFER` is empty now; an entry added to it carries a BEHAVIOUR it belongs to, both counts are bounded, and
   what it publishes after a save is pinned in `golden/editor/` and compared byte for byte —
   the same shape `src/render/golden.test.ts` uses for its divergences from 1.x.
 - **Keyboard: one table, in `admin-shared/keys.ts`**, read by the handlers AND by the Help screen, so a
@@ -119,8 +119,8 @@ that file first; this one only adds what is true here.
   adds on top is `Mod-s` (save), `Mod-k` (link), `Mod-f` (find),
   `Mod-Shift-f` (find and replace), `Mod-Shift-h` (highlighter), `Mod-Shift-o` (ring), `Mod-Shift-x` (strip marks),
   `Mod-Shift-a` (Attributes), `Mod-Shift-m` (Markdown source) and `Mod-\` (focus).
-  ⚠️ **`Mod-s` is not a convenience.** Autosave here writes to localStorage and NEVER to the
-  server — deliberately, so editing a published post cannot push half a sentence live. Before
+  ⚠️ **`Mod-s` is not a convenience.** Autosave here writes snapshots and NEVER the
+  piece — deliberately, so editing a published post cannot push half a sentence live. Before
   this chord existed, a writer pressing Cmd+S got the browser's own "Save page as…" dialog and
   a reasonable belief that the work was safe. **Save never changes the status**: a draft
   stays a draft, a published piece stays published and the key reads "Save" rather than "Save
@@ -243,7 +243,7 @@ that file first; this one only adds what is true here.
   0-100, a plain linear fraction of a full scale defined once in `key-sound.ts`. The voice
   table holds the BALANCE — between the instruments, and between a letter and a space — and
   the slider is the only number that says how loud the whole thing is, so nothing about that
-  balance changes when it moves. A row with no volume stored reads as the default 60. 0 is a
+  balance changes when it moves. A row with no volume stored reads as the default 10. 0 is a
   real answer — the caret with the sound off — and is not the same setting as `keys: 'off'`.
 - **The three instruments are levelled by measurement, not by eye** (`LEVEL` in
   `key-sound.ts`): A-weighting for the ear, plus a second-order high-pass at 250 Hz for the

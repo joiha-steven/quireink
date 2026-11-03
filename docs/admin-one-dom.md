@@ -29,7 +29,7 @@ that surprises people:
    comment had gone with no way back.
 
 ⚠️ **AN ATTRIBUTE THAT PICKS A STATE MUST NOT ALSO MATCH THE ELEMENT IT IS STAMPED ON.** The
-dashboard's greeting draws all four parts of the day and the boot script stamps the root, and
+dashboard's greeting drew all four parts of the day and the boot script stamped the root (it went on 2026-11-03), and
 the first cut used one name for both: `[data-daypart] { display: none }` matched `<html>`, and
 the whole admin rendered as a blank page on every screen. Two names — one for the fact, one for
 the candidates — cannot collide. The rail's `data-rail-collapsed` is safe only because nothing

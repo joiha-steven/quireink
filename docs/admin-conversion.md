@@ -191,8 +191,8 @@ was obvious.
 Found by pressing the key twice. Pinned by a flow that presses it twice, and that flow was
 proved to go red against the broken build before it was kept.
 
-**One more thing the browser caught here.** The source view's textarea is built once at the
-first render rather than when the switch is thrown, because `useRawView` restores the caret into
+**One more thing the browser caught here.** The source view's textarea was built once at the
+first render rather than when the switch is thrown, because `useRawView` (`wireRaw` in `island/lib/sheet-raw.ts` now) restored the caret into
 it from an effect declared above — a box that does not exist at that moment is a caret that
 lands at the end of the document. The first cut let a second writer set the value afterwards,
 which sends a textarea's caret to the end: measured at 152 of 152 instead of 97. One writer now,
@@ -226,10 +226,10 @@ the build the owner was running.
 The fix was one word of markup. What went with it, and had to be taken back out, was a CSS rule
 written on a belief this repository states twice in `admin.css`: that "a `hidden` attribute
 against a display utility is a tie the utility wins, because preflight writes
-`[hidden]{display:none}` first". **It is not true in this build.** `utilities.css` line 255 is
+`[hidden]{display:none}` first". **It is not true in this build.** `utilities.css` line 266 is
 the only `!important` on a `display` in the entire sheet and it is on `[hidden]`, so the attribute beats `flex`,
 `contents` and `inline-block` outright — which is exactly why every drawn-and-hidden part of this
-sheet works with no rule at all. Both comments now say so, with the line number, because a belief
+sheet works with no rule at all. Both comments now say so, because a belief
 that is wrong and written down twice is how a third copy gets written.
 
 **The panel's five own shapes were four pixels out of step with the six around them.** A set of

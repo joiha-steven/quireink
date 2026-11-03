@@ -17,7 +17,7 @@ character and none of its typographic rules **except one**, below.
   - **The editor**, because it is WYSIWYG: the writing surface, the title field and the font
     picker's specimen tiles are set in the face the post publishes in — the holders of
     `.reading-font`. `--font-reading` and `spa.ts`'s `fontPresetCss` therefore stay.
-  - **The page title, once per screen, and the names of its cards** (`PageHeader`, `.page-title-face`).
+  - **The page title, once per screen, and the names of its cards** (`pageHeader`, `.page-title-face`).
     Measured on the home screen 2026-09-07: 129 of 129 text runs were Inter and the title was
     22px/600 against a card title at 15px/600, so every page opened with nothing that read as
     its own first line. It is **Literata at a fixed weight, not `--font-reading`**: the
@@ -46,7 +46,7 @@ character and none of its typographic rules **except one**, below.
 - `font-size-adjust: from-font` and a per-role `letter-spacing: normal` were both tried against
   the mixed-face symptoms and both removed: the source was one line in `adminStyles`.
 - **The canvas is PAPER** (`#f7f6f4`), and a card is a SHEET on it: a hairline edge, a 10px
-  radius, and no shadow at all. It was a flat neutral gray (`#f5f5f5`) under `rounded-2xl` white
+  radius, and one step of shadow (below). It was a flat neutral gray (`#f5f5f5`) under `rounded-2xl` white
   cards with a 1px drop shadow, rejected on 2026-08-15 as cheap: gray canvas + rounded white
   card + soft shadow + tinted pill tabs is the costume every generated dashboard wears, and
   **nothing in it came from this product**. The reading site is one sheet of paper with hairlines
@@ -95,8 +95,8 @@ character and none of its typographic rules **except one**, below.
   (ink, red ballpoint, highlighter) on 2026-08-27. What did not change is WHY a colour is
   allowed: it has to mean on screen what it means on paper. The highlighter is what you mark
   as worth returning to. **The red ballpoint is what you strike OUT — so it dresses the
-  actions that destroy something, and nothing else.** `SHEET_TOOL_DANGER` and the `danger`
-  button variant are its only two homes; Restore, Cancel and Close stay grey beside them,
+  actions that destroy something, and nothing else.** `SHEET_TOOL_DANGER`, `ICON_KEY_DANGER` and the `danger`
+  button variant are its homes on a control; Restore, Cancel and Close stay grey beside them,
   because a delete that looks like its neighbour is what put a native `confirm()` in the way
   of a deleted post. Values from `PEN_AUX_LIGHT`/`PEN_AUX_DARK` in `pen/pigments.ts`, the one
   source — measured off a photograph of a real pen box, never re-typed by eye.
@@ -106,7 +106,7 @@ character and none of its typographic rules **except one**, below.
   pane's one filled New post.
   A colour that means one thing is a signal; a palette is not. The test for a third ink is
   the same as it always was: what does this pen MEAN on a page?
-- **The sheet carries ONE shadow step** (2026-08-29): 1px of contact at 4% black, an edge
+- **The sheet carries ONE shadow step** (2026-08-29): 1px of contact at 5% black, an edge
   rather than a lift, dark mode none. It is deliberately an arbitrary value and not
   `shadow-sm`, so `check:admin-kit` did not have to move for it — the thing that guard
   protects against is a card PRETENDING to float while sitting in the flow, which is what a
@@ -121,19 +121,19 @@ character and none of its typographic rules **except one**, below.
   the colour was this product's, the shape was the tinted pill tab of the costume above. A
   SELECTED VALUE gets no pen at all, and that distinction is the whole point: a black pill once
   put "Site", the section you are in, and "English", a field's value, in the same ink and shape.
-  The `Tabs` component is the seam; a chooser built from `tabItemClass` gets the SUNKEN KEY, one
+  The `tabs()` function is the seam; a chooser built from `tabItemClass` gets the SUNKEN KEY, one
   grey step down from its ground, and `components/where-you-are.test.ts` fails the day one of
   them reaches for the marker. ⚠️ The active row carries no colour of its own and no hover
   (`SIDEBAR_NAV_QUIET`): two rules on one property land in Tailwind's order, not the element's,
   and the resting grey once beat the active ink on the pen (4.41:1). Structure, not out-ranking.
-- **TWO control heights, and only two (2026-09-01).** `CONTROL`/`Button` `md` are **36px**
+- **TWO control heights, and only two (2026-09-01).** `CONTROL`/`buttonClass` `md` are **36px**
   and move together — a field two pixels proud of the button that acts on it is one row
-  broken. `CONTROL_SM`/`Button` `sm`/the segmented strip are **32px**, which is what a
+  broken. `CONTROL_SM`/`buttonClass` `sm`/the segmented strip are **32px**, which is what a
   SHEET'S TOOLS ROW wears throughout: the strip sets that row's height, being the widest
   object on it and the first one read, and the key and the field beside it answer to it. The
   ordinary control was 40 until this release — a number the admin arrived with rather than
   one anyone measured. ⚠️ A caller cannot shrink a control by passing `h-8`: it loses to
-  `min-h-9`, which is a different property. `Select` swaps its BASE (`small`) instead.
+  `min-h-9`, which is a different property. `select()` wears `CONTROL_SM`, whose `h-8` is a height and not a minimum.
   ⚠️ **A MINIMUM HEIGHT IS NOT A HEIGHT, and the hairline is what finds the difference.** The
   box is `border-box`, so a bordered variant pays for its 1px out of the same height: at
   `py-1.5` the small key's content is 19.5 + 12 = 31.5, `min-h-8` lifts a BORDERLESS one to 32,
@@ -189,7 +189,7 @@ character and none of its typographic rules **except one**, below.
   inside it — which were set at 16px/600, one point below. Dropping the group to an eyebrow
   (12px capitals then, 13px/600 now: three points and a rule) let all three marks come off with
   nothing lost. The same reasoning took the list's own top and bottom rules away: a group's rule or the
-  card's header already sits above the first row and the card's edge below the last.
+  card's header already sits above the first row and the end of the card below the last.
 - **Admin is monochrome plus two inks and the version dot, each with a named role. The accent is the product's highlighter** (the Writing
   Desk mock's `--pen`, 2026-08-17). Its roles are named and closed — where you are (above), a
   search hit as a `<mark>` in the write pane, and the small dots that mean "work in progress"
@@ -204,7 +204,7 @@ character and none of its typographic rules **except one**, below.
   configurable palette.
   **ONE exception, since 2026-08-22: the dot beside the version on the dashboard** is
   amber when a newer release exists and green when this install is on the newest, asked for
-  in those words. It is the only place in the admin where colour carries a status, and the
+  in those words. Beside the amber lamps and the toast's lamp, it is the one place colour carries a status, and the
   argument for it is that this particular status is rare, actionable, and often a security
   fix — the thing the rule protects ("your words") is not competing for attention on a line
   of build metadata. A third state exists and draws NO dot: not knowing is not the same as
@@ -215,8 +215,8 @@ character and none of its typographic rules **except one**, below.
   2026-08-15 on the argument that the rail did not need them, and the rail measured on
   2026-09-07 is what retired it: four destinations plus a group, every row 40px of 14px grey
   `oklch(0.556)`, nothing on the column but text at one size — a list of words is scanned
-  letter by letter where a glyph is recognised. The switch lives at the BOTTOM of
-  "Manage" (2026-08-17 — a set-once device preference does not need a permanent
+  letter by letter where a glyph is recognised. The switch lives in the owner's
+  menu at the foot of the rail (2026-08-17 — a set-once device preference does not need a permanent
   footer row), and it means the WHOLE rail: nav glyphs and the footer controls' glyphs alike
   A COLLAPSED rail has no labels, so it stays icon-only
   and the collapse control is always available. Reading the setting as "no icons anywhere"
@@ -229,8 +229,8 @@ character and none of its typographic rules **except one**, below.
   under "Manage". The group opens itself when the current page is inside it, because
   a rail that hides where you are is worse than a long one. Eleven rows was eleven decisions
   before the one that matters, and the four are what the owner came to do.
-- **The rail is the owner's to arrange** (2026-09-06). "Rearrange sidebar", under the collapse
-  row and in the owner's menu at the foot, turns every row into something that can be dragged — or walked with the up/down buttons,
+- **The rail is the owner's to arrange** (2026-09-06). "Rearrange sidebar", in the owner's
+  menu at the foot, turns every row into something that can be dragged — or walked with the up/down buttons,
   which are the touch and keyboard route and reach across the three groups the same way a drag
   does. The wordmark and the search button are the two things that cannot be dragged, because a
   logo dropped into a column of destinations becomes a destination; they get switches instead,
@@ -303,15 +303,15 @@ primitives in `admin-shared/kit.ts` (`SHEET`, `SHEET_TOP`,
    to load rather than as a page with nothing in it. A floor answers the sparse page; a
    window-height MINIMUM answers it by printing blank paper. Long prose (Help) takes a reading
    column INSIDE the sheet; the page never changes size. Never fix a sparse page by narrowing it.
-2. **A page's tools live on the sheet's own first row** (`SheetTop`): scope tabs, search,
+2. **A page's tools live on the sheet's own first row** (`sheetTop`): scope tabs, search,
    sort, export, "empty this kind" — never scattered over the paper around the sheet. A
    second chrome row (the Library's count · search · sort band) is the editor's own
    two-row precedent.
 3. **Writing first; the numbers are one line of small print after it.** A comment is two
    lines of its text with one ledger line under it, not a six-column spreadsheet. Where a
-   page IS numbers (Analytics), they stand directly on the paper in a `NumBand` divided by
+   page IS numbers (Analytics), they stand directly on the paper in a `numBand` divided by
    hairlines — not floated in five little cards. Cards INSIDE a sheet become hairline
-   PANELS (`Card panel`), one radius step down, title on a ruled header row.
+   PANELS (`panelCard`), one radius step down, title on a ruled header row.
 4. **Lists of short rows fill two newspaper columns** (`.paper-cols`, with the rule a paper
    would draw between them) — one column left half the sheet blank, which the owner read
    as a hole. Comments flow this way; the log and the trash left it on 2026-09-23, since a
@@ -357,12 +357,12 @@ sidebar is 208px, 72px collapsed; the mobile menu is a floating rounded drawer t
 rather than pushing content down. **The rail holds two registers and they must not dress
 alike** (2026-08-17 — the rail read as subtly wrong, and the something was four CONTROLS
 wearing the nav's row, one of them reading as a page named "Light"): destinations
-wear `SIDEBAR_NAV`; the footer's controls (theme, Clear cache, Sign out) wear the smaller,
-quieter `SIDEBAR_UTIL`, and their glyphs are ALWAYS drawn — the "Show icons" switch governs
+wear `SIDEBAR_NAV`; the foot's controls (collapse, theme, Clear cache) are glyph keys, `SIDEBAR_ICON`, in one strip,
+with Sign out in the owner's menu, and their glyphs are ALWAYS drawn — the "Show icons" switch governs
 decoration beside nav labels, and a control's glyph is not decoration, it is the part that
-says "this does something". That switch itself lives at the bottom of "Manage",
-not on a permanent footer row. The theme control shows its sun/moon glyph before the
-applied mode label, and its menu opens UPWARD inside the rail (the rail carries `z-30`
+says "this does something". That switch itself lives in the owner's menu at the foot of the rail,
+not on a permanent footer row. The theme control is its sun/moon glyph alone, the word in
+its tooltip, and its menu opens UPWARD inside the rail (the rail carries `z-30`
 because `sticky` makes it a stacking context the content would otherwise paint over).
 Clear cache stays in the operations footer, reachable from every screen, expanded or
 collapsed.
@@ -382,7 +382,7 @@ Route changes, the progress bar and recovery from a deploy have their own file:
 - Admin navigation uses the custom Quire Ink line-icon language; its one stroke, centred ink and the rail's lines: [`admin-rail-and-icons.md`](./admin-rail-and-icons.md).
 - **The four public-header glyphs are settled** — search circle, three-circle palette,
   sun/moon, two-line menu. Shared button
-  sizing still comes from `ICON_BTN`; preserving glyphs does not permit per-button drift.
+  sizing still comes from `.icon-btn`; preserving glyphs does not permit per-button drift.
 - Tag labels render lowercase across the public rail, tag archives, post metadata, editor
   selections and taxonomy management, without mutating stored values.
 - The mobile reading-rail handle is a restrained 16 × 64px edge tab with a 10 × 18px chevron.
