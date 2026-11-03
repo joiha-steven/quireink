@@ -49,7 +49,7 @@ GET https://check.quireink.com/releases.json?v=2.2.2&t=8f2c91a04b7e&d=1&new=1&a=
 | `new` | sent once ever, on the first check a new database makes |
 | `a` | roughly how old the blog is: today · within a week · a month · a quarter · older |
 | `p` | roughly how much is published: nothing · up to 5 · up to 25 · more |
-| `i` | `docker`, `source`, or the name an install template gave itself (`unraid`, `synology`, …) |
+| `i` | `docker`, `source`, `cloudflare`, or the name an install template gave itself (`unraid`, `synology`, …) |
 | `l` | the language your admin screen is in |
 
 **The last four are steps, never numbers**, and that is deliberate rather than shy. A blog

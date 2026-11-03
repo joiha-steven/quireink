@@ -64,5 +64,5 @@ after it was applied:
 
 ## What only Cloudflare has
 
-- **Point-in-time restore** of the whole blog to any moment in the last 30 days, outside the app.
+- **A bookmark of any moment in the last 30 days**, kept by the platform. Restoring one takes code inside the object, which this release does not have (`self-host-cloudflare.md` › Upgrading).
 - **No machine to keep**: certificates, disks and operating-system updates are the platform's.

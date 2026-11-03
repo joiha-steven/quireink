@@ -5,8 +5,9 @@
 
 The native guide's sections **1, 2, 4 and 9** are replaced by what follows. Still yours to
 do from [`self-host.md`](self-host.md): **nginx** (section 5), **your account** (section 6 —
-a link the log prints, not a shell command), **the CDN note** (section 7), **the cron ticks**
-(section 8), and taking a backup before an upgrade.
+a link the log prints, not a shell command), **the CDN note** (section 7), and taking a backup
+before an upgrade. The ticks need nothing: the process runs them itself
+([section 8](self-host.md#8-the-ticks--nothing-to-do-unless-you-want-to)).
 
 **Give the container 256 MB; 192 MB is the floor.** Measured on a real blog with pictures,
 serving costs 56 MB and a quarter of a CPU is enough. What needs the rest is encoding the
@@ -170,7 +171,7 @@ plain HTTP at a LAN address, because the session cookie is `__Host-` and a brows
 that only on a secure connection. The password and the code are both accepted and the
 cookie is dropped, over and over. The login screen says so when it happens. And set `CSP`
 in the container's environment to the policy in
-[`docs/self-host.md`](./self-host.md) section 07: the NAS proxy sends no
+[`docs/self-host.md`](./self-host.md) section 5: the NAS proxy sends no
 Content-Security-Policy of its own, and the app sends none unless asked.
 
 
@@ -210,8 +211,9 @@ is nothing here that is Synology-shaped.
 1. In **File Station**, make the folder the blog will live in — say
    `docker/quireink`, with `data` and `uploads` inside it.
 2. In **Container Manager → Project**, create a project, point it at that folder, and choose
-   to write a `docker-compose.yml`. Paste the compose from the top of this file, with the
-   two bind mounts and the `PUID`/`PGID` above.
+   to write a `docker-compose.yml`. Paste [`docker-compose.yml`](../docker-compose.yml) from the
+   repository, with `env_file: .env` replaced by `SITE_URL` under `environment`, and the two
+   bind mounts and the `PUID`/`PGID` above.
 3. Build it, then open the project's **log**. The claim link is in there — that is the
    account step, and it is why this install needs no terminal.
 4. To reach it from outside, put it behind **Control Panel → Login Portal → Advanced →
@@ -223,7 +225,7 @@ Older DSM has **Docker** rather than Container Manager, and no compose UI; use t
 
 ### QNAP
 
-**Container Station → Applications → Create**, and paste the same compose. The mount and
+**Container Station → Applications → Create**, and paste that same compose. The mount and
 `PUID`/`PGID` advice above applies unchanged; QNAP's first non-admin user is usually
 `1000:100`, which you can confirm under Control Panel → Privilege.
 
@@ -231,8 +233,8 @@ Older DSM has **Docker** rather than Container Manager, and no compose UI; use t
 
 Runtipi's official app store [stopped accepting new
 applications](https://github.com/runtipi/runtipi/issues/2317), so there is no Quire Ink
-entry to search for and there is not going to be one. Use **Add custom app** and give it the
-compose above — the result is the same container, managed by Runtipi like any other app.
+entry to search for and there is not going to be one. Use **Add custom app** and give it that same
+compose — the result is the same container, managed by Runtipi like any other app.
 
 ## Kubernetes
 

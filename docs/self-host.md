@@ -101,7 +101,7 @@ alone behind the nginx block below or the shipped `Caddyfile`: both already send
 browser enforces the intersection of every policy it receives, and a second one from here
 could only narrow a policy those have tuned for embeds. Set it on an install where neither
 is in front — a NAS with its own reverse proxy, a PaaS, a Kubernetes ingress — because
-those serve the whole site with no policy at all otherwise. Paste the same line section 07
+those serve the whole site with no policy at all otherwise. Paste the same line section 5
 gives nginx; `deploy/kubernetes/kustomization.yaml` already carries it.
 
 **Sign-in needs HTTPS, and this is the one failure with nothing to read.** The session
@@ -243,7 +243,7 @@ ports 80 and 443 is a worse problem than the one this solves.
 ```nginx
 server {
     listen 443 ssl;
-    http2 on;  # nginx >= 1.25.1; older: `listen 443 ssl http2;` and delete this line. Caddy (§4) adds HTTP/3 by itself.
+    http2 on;  # nginx >= 1.25.1; older: `listen 443 ssl http2;` and delete this line. Caddy (§4b) adds HTTP/3 by itself.
     server_name example.com;
     ssl_certificate     /etc/nginx/ssl/example.com.pem;
     ssl_certificate_key /etc/nginx/ssl/example.com.key;
@@ -334,7 +334,8 @@ call the same two ticks yourself. `/api/cron` answers only a caller holding `CRO
 17  * * * *  curl -fsS -H "Authorization: Bearer $CRON_SECRET" 'http://127.0.0.1:3000/api/cron' >/dev/null
 ```
 
-The five-minute tick only flips due posts live; the hourly one does everything else. Set
+The five-minute tick flips due posts live, reads waiting link cards and sends the fediverse
+queue; the hourly one does the rest. Set
 `CRON_SECRET` in the environment. The route is **closed when it is unset** (it answers 401),
 because it is the most expensive lever in the process and the internal clock already covers
 an installation that configured nothing. It is rate-limited to 12 calls a minute regardless.
@@ -342,7 +343,7 @@ an installation that configured nothing. It is rate-limited to 12 calls a minute
 Running both is harmless (every sweep is idempotent) but pointless: pick one, and if you
 keep the crontab, set `CRON_INTERNAL=0` so the numbers in your logs mean what you think.
 
-Add `&purge=1` to a one-off call after a deploy to clear the CDN.
+Call `/api/cron?purge=1` once after a deploy to clear the CDN.
 
 ## 9. Upgrading
 
@@ -366,7 +367,8 @@ see [`backups.md`](backups.md), which also covers getting a copy off the server 
 Same app, same layout, nothing extra to run beside it, and it replaces sections 1, 2, 4 and
 9 of this guide. It has its own page: [`self-host-docker.md`](self-host-docker.md) — the
 published image, `docker compose`, bind mounts and the uid/gid question, and a section on
-NAS boxes. nginx, your account, the CDN note and **the cron ticks** still come from here.
+NAS boxes. nginx, your account and the CDN note still come from here, and so does section 8 if you
+would rather run the ticks from your own scheduler.
 
 ## 10. What this blog tells us, and how to stop it
 

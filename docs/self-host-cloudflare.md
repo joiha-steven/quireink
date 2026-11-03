@@ -92,7 +92,7 @@ CDN cache, so there is nothing of this blog's to purge, and a purge would empty 
 everything else on the zone. A blog on a server behind Cloudflare keeps the card.
 
 The newsletter's mail cannot leave on port 25, which Cloudflare blocks: a relay set to 25 is
-refused at once, with the reason under the Email card. Use the provider's port 587 or 465.
+refused at once, with the reason under the Newsletter card (Settings → Comments & mail). Use the provider's port 587 or 465.
 
 ## Upgrading
 
