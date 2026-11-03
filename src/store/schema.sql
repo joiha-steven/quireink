@@ -462,6 +462,10 @@ create table if not exists redirects (
   permanent   integer not null default 1 check (permanent in (0,1)),
   created_at  integer not null
 );
+-- The second lookup, asked only when the exact spelling misses: `/old-case` finds a rule saved for
+-- `/Old-Case` (2026-11-03). NOCASE folds ASCII letters only, which is what a typed or imported
+-- permalink differs by.
+create index if not exists redirects_source_nocase_idx on redirects (source collate nocase);
 
 -- ----- render_cache (content-addressed rendering) ------------------------------
 -- NEW in 2.0. Everything expensive on the read path that is a PURE FUNCTION OF ITS OWN

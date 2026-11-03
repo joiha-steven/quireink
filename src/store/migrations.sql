@@ -546,3 +546,8 @@ insert into webmentions_new (id, source, target, quote, status, received_at, ver
 drop table webmentions;
 alter table webmentions_new rename to webmentions;
 create index if not exists webmentions_target_idx on webmentions (target);
+
+-- migration: 028-redirects-source-nocase
+-- A redirect lookup that misses its exact spelling asks again ignoring case (`findRedirect`), and
+-- that second read needs an index in the same collation or it scans the table on every 404.
+create index if not exists redirects_source_nocase_idx on redirects (source collate nocase);

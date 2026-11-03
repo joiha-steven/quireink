@@ -75,6 +75,15 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
   made the auto-301 below silently untrue: every rename in that window lost its old URL.
   There is no in-process cache; the frozen tree's 60s one paid for an HTTP fetch to PostgREST,
   and here the lookup is an indexed read of a local file on the same thread.
+- **The exact spelling first, then the case ignored** (`serveRedirect`, 2026-11-03). A rule saved
+  for `/Old-Case` did nothing for `/old-case` and the reader got a 404; now a lookup that misses
+  asks again with `collate nocase` (ASCII letters only), through its own index
+  `redirects_source_nocase_idx` (migration `028-redirects-source-nocase`), so a 404 is two indexed
+  reads. When two rules differ only in case, the exact one wins and otherwise the oldest. The
+  second lookup never answers at a path a live post or page holds, nor from a reserved source:
+  `clearRedirectForPath` deletes by exact spelling, so `/Old-Post` outlives a post saved at
+  `old-post`, and matched without the case it would take every reader away from it. The admin
+  and the importer still ask `findRedirect`, which is exact.
 - **Live content always wins, and three places enforce it.** Saving a post/page at slug X
   deletes any redirect whose `source` is `/X` (`clearRedirectForPath`), so a live URL is
   never shadowed by a stale redirect and a rename-back (A→B then B→A) cannot create a

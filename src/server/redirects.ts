@@ -63,6 +63,39 @@ export function findRedirect(path: string): Redirect | null {
   }
 }
 
+/**
+ * The redirect a READER gets: the exact spelling first, and when that misses, a rule whose source
+ * differs only in case (2026-11-03). A rule saved for `/Old-Case` did nothing for `/old-case`, and
+ * a typed or imported permalink differs by exactly that. The oldest such rule when there are two.
+ *
+ * ⚠️ NEVER OVER LIVE CONTENT. `clearRedirectForPath` deletes the row at a slug content is saved
+ * at, by its exact spelling, so `/Old-Post` survives a post saved at `old-post`; matched without
+ * the case it would take every reader away from that post. And never a reserved source.
+ *
+ * NOCASE folds ASCII letters only, and has its own index (`redirects_source_nocase_idx`), so a
+ * 404 is two indexed reads, not a scan. Kept apart from `findRedirect`, which the admin and the
+ * importer ask about one exact row.
+ */
+export function serveRedirect(path: string): Redirect | null {
+  const exact = findRedirect(path)
+  if (exact !== null) return exact
+  const source = normalizePath(path)
+  if (!source) return null
+  try {
+    const row = one<Row>(
+      `select id, source, destination, permanent from redirects where source = ? collate nocase order by id limit 1`,
+      source,
+    )
+    if (row === null || isReservedPath(row.source)) return null
+    const slug = source.slice(1)
+    if (slug && !slug.includes('/') && liveSlugTaken(slug)) return null
+    return toRedirect(row)
+  } catch (error) {
+    console.error(`[ERROR] redirects.serveRedirect: ${(error as Error).message}`)
+    return null
+  }
+}
+
 export class RedirectInputError extends Error {}
 
 /** How far a save looks down the chain before deciding a ring is not its doing. */
@@ -118,7 +151,7 @@ export async function saveRedirect(input: {
       if (at === source) {
         throw new RedirectInputError(`loop:${source}`)
       }
-      const next = findRedirect(at)
+      const next = serveRedirect(at)
       at = next !== null && next.destination.startsWith('/') ? next.destination : ''
     }
   }

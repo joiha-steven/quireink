@@ -16,7 +16,7 @@
 // live content already holds.
 
 import type { MiddlewareHandler } from 'hono'
-import { findRedirect } from '@/server/redirects'
+import { serveRedirect } from '@/server/redirects'
 import { isReservedPath } from '@/server/redirect-path'
 
 /**
@@ -31,7 +31,7 @@ function isExcluded(path: string): boolean {
 export function userRedirects(): MiddlewareHandler {
   return async (c, next) => {
     if (!isExcluded(c.req.path)) {
-      const hit = findRedirect(c.req.path)
+      const hit = serveRedirect(c.req.path)
       if (hit) {
         // Sent as stored: a path stays a relative `Location`, an absolute URL stays absolute.
         //
