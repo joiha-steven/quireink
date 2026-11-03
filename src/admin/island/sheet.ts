@@ -268,7 +268,7 @@ function boot(root: HTMLElement, data: Payload): void {
     saving = true
     sayState()
     try {
-      const res = await savePiece(kind, slug, payloadOf(kind, draft, text, timezone, status), baseSavedAt)
+      const res = await savePiece(kind, slug, payloadOf(kind, draft, text, timezone, status, !slugTyped), baseSavedAt)
       if (!res.ok) {
         const why = { slug_taken: t.slugTaken, stale: t.staleSave, trashed: t.trashedSave, failed: t.saveFailed }
         say(why[res.reason], 'error')
@@ -285,7 +285,9 @@ function boot(root: HTMLElement, data: Payload): void {
       // ⚠️ CLEAN ONLY IF NOTHING MOVED IN THE AIR — the body AND every field (a title fixed during
       // the save was marked saved and lost). Read before the slug pin below, which is ours.
       const clean = body() === text && JSON.stringify(draft) === sent
-      if (!draft.slug) { draft.slug = res.slug; if (slugBox) slugBox.value = res.slug }
+      // The address the server KEPT: a taken derived slug comes back `-2`, and sending the old one
+      // again was a rename onto a slug somebody else holds.
+      if (draft.slug !== res.slug) { draft.slug = res.slug; if (slugBox) slugBox.value = res.slug }
       if (clean) {
         dirty = false
         safety.clear()

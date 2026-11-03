@@ -76,6 +76,13 @@ describe('a slug nobody typed', () => {
   })
   it('is not, once the writer typed one or a save pinned it', () => {
     expect(payloadOf('post', draft({ title: 'T', slug: 'mine' }), 'x', TZ).slugDerived).toBeUndefined()
+    expect(payloadOf('post', draft({ title: 'T', slug: 'mine' }), 'x', TZ, undefined, false).slugDerived).toBeUndefined()
+  })
+  // The editor fills the slug in from the title as it is typed, so the draft it sends always HAS
+  // one: asking `draft.slug` sent no flag, and a new post titled like an existing one still met
+  // "That slug is already taken" (2026-11-03). Whether the WRITER typed it is what decides.
+  it('is sent as derived when the editor filled it in from the title', () => {
+    expect(payloadOf('post', draft({ title: 'Three weeks', slug: 'three-weeks' }), 'x', TZ, undefined, true).slugDerived).toBe(true)
   })
 })
 

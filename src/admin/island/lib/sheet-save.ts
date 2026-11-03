@@ -42,6 +42,8 @@ export function previewPlan(
 export function payloadOf(
   kind: SheetKind, draft: SheetDraft, content: string, timezone: string,
   statusOverride?: SheetDraft['status'],
+  /** The slug on the draft was filled in from the title, not typed (the sheet's `slugTyped`). */
+  slugFromTitle = false,
 ): Record<string, unknown> {
   // Always have a slug, so the API never refuses a piece that is only a body. A piece with
   // NO name is addressed by its first words before it falls back to the clock (ADR 0064); one
@@ -58,8 +60,10 @@ export function payloadOf(
   }
   // NOBODY TYPED IT, so a collision is ours to settle, not the writer's: the server adds `-2`.
   // A new post titled like an existing one — or an untitled one whose first words match another,
-  // whose slug is not even on screen — failed every save with "That slug is already taken".
-  if (!draft.slug) base.slugDerived = true
+  // whose slug is not even on screen — failed every save with "That slug is already taken". The
+  // editor fills the slug in from the title AS IT IS TYPED, so a draft always has one by the save:
+  // asking `draft.slug` alone sent no flag at all for the common case (2026-11-03).
+  if (!draft.slug || slugFromTitle) base.slugDerived = true
   // A page has no date and no schedule: it is not in the archive and nothing waits for it.
   if (kind !== 'page') {
     base.date = draft.date ? zonedInputToIso(draft.date, timezone) : new Date().toISOString()
