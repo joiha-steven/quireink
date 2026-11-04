@@ -187,7 +187,7 @@ body:has(.book-overlay[open]){overflow:hidden}
      scripts/ops/subset-fonts.py put them back, so this had never rendered. */
   font-feature-settings:"onum" 1,"liga" 1,"dlig" 0,"hlig" 0}
 /* Media stays column-width and never taller than a page, so nothing overflows the spread. */
-.book-flow :is(img,video,iframe,pre,table,blockquote,figure){break-inside:avoid}
+.book-flow :is(img,video,iframe,pre,table,blockquote,figure,.callout){break-inside:avoid}
 .book-flow :is(img,video,iframe){max-width:100%;max-height:var(--book-page-h,70vh);object-fit:contain}
 .book-flow pre{max-height:var(--book-page-h,70vh);overflow:auto}
 /* A "wide" image has NO effect in here: it renders at column width like any other figure,
