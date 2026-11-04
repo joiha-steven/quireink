@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+
+- **A notebook card says what a note is.** The list drew the kept passage and nothing the owner
+  wrote, so a clip read as a dictionary entry and a note with no passage as a bare title. Each card
+  now shows the passage, its source and up to 200 characters of the owner's words, under one line
+  that says what the page is.
+- **The admin is lighter on a slow line.** The rail drew the owner's portrait from the original,
+  307,412 bytes for a 28px circle on every screen, and takes the 30,544 byte small copy now. A
+  screen also preloads its own code, so it starts with the rail's instead of after it.
+
 ## 2026-11-05 · Quire Ink 2.2.22
 
 No new feature: the admin's marks come together, the typing sound hears the Mac's Telex, and a
