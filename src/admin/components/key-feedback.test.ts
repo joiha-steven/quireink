@@ -21,7 +21,7 @@ afterAll(async () => { await GlobalRegistrator.unregister() })
 const SOUND: KeySound = { mode: 'crisp', volume: 50 }
 const KEYS = TELEX_STEPS.reduce((n, w) => n + w.length, 0) + TELEX_STEPS.length - 1
 
-type Ev = { key?: { at: number; repeat?: boolean }; input?: { type: string; data: string | null; composing?: boolean; at: number }; compose?: true }
+type Ev = { key?: { at: number; repeat?: boolean; method?: boolean; code?: string }; input?: { type: string; data: string | null; composing?: boolean; at: number }; compose?: true }
 
 async function hear(events: Ev[]): Promise<Strike[]> {
   const { keyFeedback } = await import('./key-feedback')
@@ -30,7 +30,12 @@ async function hear(events: Ev[]): Promise<Strike[]> {
   const view = {} as never
   for (const e of events) {
     if (e.compose) fb.composition()
-    if (e.key) fb.key({ timeStamp: e.key.at, repeat: e.key.repeat ?? false } as KeyboardEvent)
+    if (e.key) {
+      fb.key({
+        timeStamp: e.key.at, repeat: e.key.repeat ?? false, keyCode: e.key.method ? 229 : 65, code: e.key.code ?? 'KeyA',
+        ctrlKey: false, metaKey: false,
+      } as KeyboardEvent)
+    }
     if (e.input) {
       fb.input(view, {
         inputType: e.input.type, data: e.input.data, isComposing: e.input.composing ?? false, timeStamp: e.input.at,
@@ -136,6 +141,56 @@ describe('Vietnamese through a composing input method (macOS and Windows Telex)'
       { input: { type: 'insertText', data: 'x', composing: true, at: 2 } },
     ])
     expect(struck).toEqual([])
+  })
+})
+
+// As the real input method sends it, recorded through `com.apple.inputmethod.VietnameseSimpleTelex`
+// in WebKit on 2026-11-04. Nothing composes; the keydown is 229 and comes AFTER the edit it caused.
+function macTelex(word: number, gap = 90): Ev[] {
+  const out: Ev[] = []
+  let t = 1000
+  for (let w = 0; w < 2; w++) {
+    for (let i = 0; i < word; i++) {
+      out.push({ input: i === 0
+        ? { type: 'insertText', data: 't', at: t + 8 }
+        : { type: 'insertReplacementText', data: null, at: t + 8 } })
+      out.push({ key: { at: t, method: true, code: 'KeyT' } })
+      t += gap
+    }
+    out.push({ key: { at: t, code: 'Space' } }, { input: { type: 'insertText', data: ' ', at: t } })
+    t += gap
+  }
+  return out
+}
+
+describe("the Mac's own Telex, which does not compose", () => {
+  it('strikes once per key, the rewritten letters included', async () => {
+    const struck = await hear(macTelex(7))
+    expect(struck.length).toBe(16)
+    expect(struck.filter((k) => k === 'space').length).toBe(2)
+  })
+
+  it('still does when the keydown comes first, as Chrome sends it', async () => {
+    const struck = await hear([
+      { key: { at: 0, method: true, code: 'KeyT' } }, { input: { type: 'insertText', data: 't', at: 2 } },
+      { key: { at: 90, method: true, code: 'KeyI' } }, { input: { type: 'insertCompositionText', data: 'ti', composing: true, at: 92 } },
+      { key: { at: 180, method: true, code: 'KeyE' } }, { input: { type: 'insertReplacementText', data: null, at: 182 } },
+    ])
+    expect(struck).toEqual(['tap', 'tap', 'tap'])
+  })
+
+  it('hears what the key is, and nothing for a key that writes nothing', async () => {
+    const struck = await hear([
+      { key: { at: 0, method: true, code: 'Backspace' } },
+      { key: { at: 90, method: true, code: 'Enter' } },
+      { key: { at: 180, method: true, code: 'ArrowLeft' } },
+      { key: { at: 270, method: true, code: 'KeyT', repeat: true } },
+    ])
+    expect(struck).toEqual(['back', 'return'])
+  })
+
+  it('leaves the spelling checker silent: no key, no sound', async () => {
+    expect(await hear([{ input: { type: 'insertReplacementText', data: null, at: 0 } }])).toEqual([])
   })
 })
 

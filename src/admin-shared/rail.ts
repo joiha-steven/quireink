@@ -307,14 +307,15 @@ export const RAIL_WIDTH = { shut: '4.5rem', open: '13rem', arranging: '16rem' } 
 export const SIDEBAR_NAV_QUIET = component('kit-rail-row',
   'relative flex h-10 w-full shrink-0 items-center rounded-lg px-3 text-left text-sm font-medium transition-colors disabled:opacity-50 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]')
 
-// `neutral-200/70`, not `neutral-100`: the rail sits on the PAPER canvas (#f7f6f4), and
-// neutral-100 (#f5f5f5) is two points away from it — a hover nobody can see. Measured the
-// day the owner reported the rail had no hover at all.
+// THE HOVER IS THE MARK, FAINTER (2026-11-04): the band the current row wears, at under half its
+// strength (`.kit-rail-hover:hover` in admin.css), and the ink coming up. It was a grey box with
+// an inset, the key the current row had just stopped being, so the rail answered the pointer in
+// one shape and the page in another.
 // 120ms, written out rather than left to `--dur-fast` (150): a rail row is the control the
 // pointer crosses most often on the way to somewhere else, and the shorter curve is what
 // keeps a sweep down the column from lighting up behind the cursor like a trail.
 const SIDEBAR_NAV_HOVER = component('kit-rail-hover',
-  'hover:bg-neutral-200/70 hover:text-neutral-900 hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.12)] dark:hover:bg-neutral-800 dark:hover:text-white dark:hover:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.4)]')
+  'hover:text-neutral-900 dark:hover:text-white')
 // The resting ink is its own name: in the base it out-ranked the active row's (4.41:1, 2026-11-03).
 const SIDEBAR_NAV_INK = component('kit-rail-ink', 'text-neutral-500 dark:text-neutral-400')
 export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_INK} ${SIDEBAR_NAV_HOVER}`

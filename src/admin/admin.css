@@ -456,6 +456,13 @@ img.ProseMirror-separator {
   color: #fff;
 }
 
+/* A PHONE'S BAR: five keys in 360px. The two that end the session give up a little padding, and
+   where you came from and the save state give way before anything slides under a key. */
+@media (max-width: 39.98rem) {
+  [data-sheet-where] { overflow: hidden; }
+  [data-sheet-save], [data-sheet-publish] { padding-inline: .625rem; }
+}
+
 /* THE ATTRIBUTES SHEET, and the one number both halves of it read.
    `SlideOver` sets the width here rather than in its own class list because the canvas has
    to hold exactly this much of its right edge clear, and a sheet 24rem wide beside a canvas
@@ -463,6 +470,7 @@ img.ProseMirror-separator {
    readers. */
 :root {
   --admin-sheet-w: 24rem;
+  --admin-sheet-gutter: 1rem;
 }
 .admin-sheet {
   width: 100%;
@@ -476,7 +484,15 @@ img.ProseMirror-separator {
    which moves the text once, on a deliberate click, instead of hiding a third of every line
    for as long as the sheet is open. */
 [data-admin-sheet='docked'] .admin-canvas {
-  padding-right: var(--admin-sheet-w);
+  padding-right: calc(var(--admin-sheet-w) + var(--admin-sheet-gutter));
+}
+/* THE PAGE'S SCROLLBAR IS NOT THE SHEET'S TO COVER. A Mac's scrollbar floats over the page's right
+   edge and takes no width, so a fixed panel at `right: 0` lies on top of it: with the sheet docked
+   the writer scrolled a long piece with nothing to say how far down they were. Docked the page is
+   still being worked on, so the sheet stands the width of the bar in from the edge. A modal sheet
+   stays at the edge: its scrim has taken the page away. */
+[data-admin-sheet='docked'] .admin-sheet {
+  right: var(--admin-sheet-gutter);
 }
 /* Docked, the action row's own toggle is on screen and clickable, so the panel's footer "Hide" key
    is the second key of one name. Modal (narrower, or the publish step) it is the only way shut from
@@ -1134,15 +1150,30 @@ input[type='color']::-moz-color-swatch {
    and gives it back. Shut, the rail has no words: the band goes behind the glyph. */
 .pen-stroke,
 .kit-rail-here .rail-label,
-:root[data-rail-collapsed='1'] #admin-rail .kit-rail-here .rail-glyph {
-  background-image: linear-gradient(100deg, transparent .3em, var(--pen) .3em, var(--pen) calc(100% - .25em), transparent calc(100% - .25em));
+.kit-rail-hover:hover .rail-label,
+.kit-seg-idle:hover,
+[data-sheet-actions] [aria-pressed='true'],
+:root[data-rail-collapsed='1'] #admin-rail .kit-rail-here .rail-glyph,
+:root[data-rail-collapsed='1'] #admin-rail .kit-rail-hover:hover .rail-glyph {
+  background-image: linear-gradient(100deg, transparent .3em, var(--stroke, var(--pen)) .3em, var(--stroke, var(--pen)) calc(100% - .25em), transparent calc(100% - .25em));
   background-repeat: no-repeat;
   background-origin: content-box;
   background-size: calc(100% + .55em) .95em;
   background-position: -.3em 60%;
 }
-.kit-rail-here .rail-label { padding-inline: .3em; margin-inline: -.3em; }
-:root[data-rail-collapsed='1'] #admin-rail .kit-rail-here .rail-glyph { padding-inline: .3em; background-size: calc(100% + .55em) 1.1em; }
+/* The pointer gets the same band at under half strength: where a press would take you, in the
+   shape it would take. A touch has no hover to keep, and the band stayed on the last row tapped. */
+.kit-rail-hover:hover,
+.kit-seg-idle:hover { --stroke: color-mix(in srgb, var(--pen) 45%, transparent); }
+.kit-rail-here .rail-label,
+.kit-rail-hover .rail-label { padding-inline: .3em; margin-inline: -.3em; }
+:root[data-rail-collapsed='1'] #admin-rail .kit-rail-here .rail-glyph,
+:root[data-rail-collapsed='1'] #admin-rail .kit-rail-hover .rail-glyph { padding-inline: .3em; background-size: calc(100% + .55em) 1.1em; }
+@media (hover: none) {
+  .kit-rail-hover:hover .rail-label,
+  .kit-seg-idle:hover,
+  :root[data-rail-collapsed='1'] #admin-rail .kit-rail-hover:hover .rail-glyph { background-image: none; }
+}
 
 /* --- shut: the words go, the glyphs centre ------------------------------------------------ */
 :root[data-rail-collapsed='1'] #admin-rail .rail-label,

@@ -22,7 +22,7 @@ import {
 } from '@/admin-shared/kit'
 import { GLYPH, META } from '@/admin-shared/scale'
 import {
-  SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE, TAB_TRACK, TAB_TRACK_DENSE, edgeAt, keyFaces, tabItemClass, type TabRole, type TabSize,
+  SEGMENT_TRACK, SEGMENT_TRACK_DENSE, TAB_TRACK, TAB_TRACK_DENSE, edgeAt, keyFaces, tabItemClass, type TabSize,
 } from '@/admin-shared/tabs'
 import { HEADER_GAP, NOTE_SIZE, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
 
@@ -137,7 +137,7 @@ export function select({ name, label, options, value, attrs = '' }: {
  * the strip and know what was pressed without a second dictionary.
  */
 export function tabs({
-  items, value, role = 'place', tablist = false, panelId = '', attrs = '',
+  items, value, tablist = false, panelId = '', attrs = '',
   size = 'sm', dense = false,
 }: {
   items: { key: string; label: string }[]
@@ -174,20 +174,13 @@ export function tabs({
    * one panel, which is what a screen reader would then read out.
    */
   panelId?: string
-  /**
-   * A `place` is a tab you navigated to; a `choice` is a value you set. See `tabItemClass` for
-   * the argument — the highlighter marks WHERE YOU ARE and nothing else, so a filter takes the
-   * sunken paper key instead. The trash's kinds are places; the comments queue's sort and age
-   * strips are choices.
-   */
-  role?: TabRole
   attrs?: string
 }): string {
   const track = size === 'lg'
     ? (dense ? TAB_TRACK_DENSE : TAB_TRACK)
     : dense
-      ? (role === 'place' ? SEGMENT_TRACK_DENSE_PLACE : SEGMENT_TRACK_DENSE)
-      : (role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK)
+      ? SEGMENT_TRACK_DENSE
+      : SEGMENT_TRACK
   return `<div class="${track}"${tablist ? ' role="tablist"' : ''}${attrs ? ` ${attrs}` : ''}>`
     + items.map(({ key, label }, i) => {
       const on = key === value
@@ -197,8 +190,8 @@ export function tabs({
         ? ` role="tab" aria-selected="${on}" tabindex="${on ? '0' : '-1'}"`
           + (panelId ? ` aria-controls="${escapeAttr(`${panelId}-${key}`)}"` : '')
         : ` aria-pressed="${on}"`
-      return `<button type="button" data-tab="${escapeAttr(key)}"${tab}${keyFaces(size, dense, role, edgeAt(i, items.length))}`
-        + ` class="${tabItemClass(on, size, dense, role, edgeAt(i, items.length))}">${escapeHtml(label)}</button>`
+      return `<button type="button" data-tab="${escapeAttr(key)}"${tab}${keyFaces(size, dense, edgeAt(i, items.length))}`
+        + ` class="${tabItemClass(on, size, dense, edgeAt(i, items.length))}">${escapeHtml(label)}</button>`
     }).join('')
     + `</div>`
 }
@@ -241,18 +234,17 @@ export function tick({ label, className = '', attrs = '' }: {
  * that says "pressed" about the page you are already on is describing a control that is not
  * there. The class is the same `tabItemClass` either way, so the two strips cannot drift.
  */
-export function linkTabs({ items, value, size = 'sm', role = 'choice', attrs = '' }: {
+export function linkTabs({ items, value, size = 'sm', attrs = '' }: {
   items: { key: string; label: string; href: string }[]
   value: string
   size?: TabSize
-  role?: TabRole
   attrs?: string
 }): string {
-  return `<div class="${role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK}"${attrs ? ` ${attrs}` : ''}>`
+  return `<div class="${SEGMENT_TRACK}"${attrs ? ` ${attrs}` : ''}>`
     + items.map(({ key, label, href }, i) =>
       `<a href="${escapeAttr(href)}" data-tab="${escapeAttr(key)}"`
       + (key === value ? ' aria-current="page"' : '')
-      + ` class="${tabItemClass(key === value, size, false, role, edgeAt(i, items.length))}`
+      + ` class="${tabItemClass(key === value, size, false, edgeAt(i, items.length))}`
       + ` whitespace-nowrap">${escapeHtml(label)}</a>`).join('')
     + `</div>`
 }

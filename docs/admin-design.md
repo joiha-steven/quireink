@@ -101,7 +101,7 @@ character and none of its typographic rules **except one**, below.
   of a deleted post. Values from `PEN_AUX_LIGHT`/`PEN_AUX_DARK` in `pen/pigments.ts`, the one
   source — measured off a photograph of a real pen box, never re-typed by eye.
 - **One filled key per screen; what changes the VIEW is a word (2026-11-03).** The editor's
-  Markdown, Attributes and Focus sit in its "⋯", theme Preview and the font slots' Choose are
+  Attributes and Focus sit in its "⋯", theme Preview and the font slots' Choose are
   `SHEET_TOOL` words, and the empty Write sheet starts a piece with three words beside the
   pane's one filled New post.
   A colour that means one thing is a signal; a palette is not. The test for a third ink is
@@ -112,19 +112,16 @@ character and none of its typographic rules **except one**, below.
   protects against is a card PRETENDING to float while sitting in the flow, which is what a
   named Tailwind shadow gives you. There is no second step; a surface that wants one wants to
   be an overlay.
-- **The highlighter marks WHERE YOU ARE**, and it marks it the way a highlighter marks a word
-  (2026-11-03): a flat band of `--pen` behind the label, about two thirds of the line tall,
-  square, its ends cut on a slant (`.pen-stroke` in `admin.css`). The rail's current row and the
-  active tab of a strip wear the same rule, with ink on it (the reading site's olive `--on-pen`
-  stays on marks in running text — on a control it read as grey, 2026-08-31). It was a KEY HELD
-  DOWN in the pen: the whole control filled, carved with an inset, a 3px bar in the gutter —
-  the colour was this product's, the shape was the tinted pill tab of the costume above. A
-  SELECTED VALUE gets no pen at all, and that distinction is the whole point: a black pill once
-  put "Site", the section you are in, and "English", a field's value, in the same ink and shape.
-  The `tabs()` function is the seam; a chooser built from `tabItemClass` gets the SUNKEN KEY, one
-  grey step down from its ground, and `components/where-you-are.test.ts` fails the day one of
-  them reaches for the marker. ⚠️ The active row carries no colour of its own and no hover
-  (`SIDEBAR_NAV_QUIET`): two rules on one property land in Tailwind's order, not the element's,
+- **The highlighter marks what is ON**, the way a highlighter marks a word (2026-11-03): a flat
+  band of `--pen` behind the label, two thirds of the line tall, its ends cut on a slant
+  (`.pen-stroke` in `admin.css`). The rail's current row, the active key of ANY strip (a tab or a
+  chosen value, one look since 2026-11-04, `tabItemClass` no longer asks which) and the Markdown
+  and Focus switches wear this one rule, with ink on it. It was a key held down in the pen, and a
+  value a white key carved into a groove: on one screen, the new admin and the old one. A font or
+  theme CARD and the subscriber count's cell stay pressed in: they have no word to run behind.
+  **The pointer gets the band at 45%** (`--stroke`, `.kit-rail-hover:hover`, `.kit-seg-idle:hover`),
+  not a grey box. ⚠️ The active row carries no colour of its own and no hover
+  (`SIDEBAR_NAV_QUIET`): two rules on one property land in stylesheet order, not the element's,
   and the resting grey once beat the active ink on the pen (4.41:1). Structure, not out-ranking.
 - **TWO control heights, and only two (2026-09-01).** `CONTROL`/`buttonClass` `md` are **36px**
   and move together — a field two pixels proud of the button that acts on it is one row

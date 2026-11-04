@@ -17,15 +17,13 @@
 // 200-character list per key. The underlined `lg` strip is a handful of keys per page and is
 // left spelled out. `no-scrollbar` and `scroll-fade-x` stay written out beside the names: the
 // tour finds a track by them.
-import { component, utilitiesOf } from '@/admin-shared/component'
+import { component } from '@/admin-shared/component'
 import { NOTE_SIZE, TAP_TALL } from '@/admin-shared/scale'
 
 export type TabSize = 'lg' | 'sm'
 
 const TRACK = component('kit-track',
   'flex min-h-8 overflow-x-auto rounded-md border border-neutral-200 dark:border-neutral-800')
-const GROOVE = component('kit-groove',
-  'bg-neutral-200 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]')
 
 // The tracks and the item are exported separately because Analytics' range control is made of
 // LINKS: the range lives in the URL, so it cannot be a `<Tabs>` with an `onChange`. It had its
@@ -44,66 +42,27 @@ export const TAB_TRACK_DENSE = 'flex w-full items-end gap-4 border-b border-neut
 // the Settings tabs: at 390px five of the eight tabs were past the edge, AI and System among
 // them, and the only way to reach them was a `?tab=` URL. `no-scrollbar` keeps the bar
 // itself out of a 32px-tall control; the strip still clips visually at its rounded edge.
-// The track is carved — it CONTAINS the keys, so it wears the groove (`bg` one step off the
-// card plus a 1px inner shadow); the active key is HELD DOWN in it. Ink-on-ink shading is
-// invisible, so the pressed key also catches light on its lower inside edge.
 // `min-h-8` — 32px, the small control height, and the height of the whole segmented family.
 // The strip sets the height of the sheet's tools row: it is the widest thing on that row and
 // the first thing read on it, so the save key and the search field beside it are sized to IT
 // rather than the other way round. A MINIMUM rather than a fixed height, because three call
 // sites let the strip wrap and a fixed one would halve their rows; a single-line strip lands
 // on 32 exactly, its items stretching to 30 inside the 1px edge.
-// ⚠️ TWO TRACKS, AND THE ROLE PICKS ONE. A groove is a CHOOSER's furniture: a value control
-// that needs its chosen key to sit visibly lower than its neighbours. A `place` strip is
-// NAVIGATION — the settings tabs, the trash's kinds — and it is the page's own first row;
-// dressing it as a heavy grey control makes the top of every settings screen read as a
-// widget rather than as a set of sections. Both were the same string for a few hours on
-// 2026-09-07 and the settings tabs came out looking like a machine part.
-//
-// THE GROOVE, `neutral-200`, for a chooser. It was `neutral-50` — one point off the card it
-// sits on, so the strip had no edges of its own and the chosen key had to be drawn DARKER
-// than its own track to be seen. That inverts the object: a pressed key is not darker than
-// the panel it is set into, it is the panel's face pushed down. With a real groove the key
-// can be white and carved, which is what a segmented control on a desk looks like.
-export const SEGMENT_TRACK = `${TRACK} w-fit max-w-full no-scrollbar scroll-fade-x ${GROOVE}`
-/** The quiet track a PLACE strip wears: an outline on the sheet, not a control set into it. */
-export const SEGMENT_TRACK_PLACE = `${TRACK} w-fit max-w-full no-scrollbar scroll-fade-x bg-neutral-50 dark:bg-neutral-950/40`
+// ONE TRACK, an outline on the sheet, since 2026-11-04. A chooser had a grey groove with a white
+// key carved into it, and a place strip this outline with the stroke behind the word: two
+// controls eight lines apart on one settings screen, the second still in the look the admin had
+// just left.
+export const SEGMENT_TRACK = `${TRACK} w-fit max-w-full no-scrollbar scroll-fade-x bg-neutral-50 dark:bg-neutral-950/40`
 // The dense variant is full-width with growing items: five segments whose right edge lands
 // on the pane's own edge instead of stopping short of it, which read as a gap left over.
-export const SEGMENT_TRACK_DENSE = `${TRACK} w-full no-scrollbar scroll-fade-x ${GROOVE}`
-/** Full-width and quiet: the write pane's scope strip is a place strip that fills its column. */
-export const SEGMENT_TRACK_DENSE_PLACE = `${TRACK} w-full no-scrollbar scroll-fade-x bg-neutral-50 dark:bg-neutral-950/40`
-
-/**
- * What an active item MEANS, which turns out to be two different things wearing one costume.
- *
- * A `place` is a tab you navigated to: Site, Layout, Reading. A `choice` is a value you set:
- * English, 3:2, framed. They had the identical black pill, and on the Settings screen that
- * put "Site" — the section you are IN — beside "English" — a field's current value — in the
- * same ink, the same size, the same shape, eight lines apart. Nothing said which of the two
- * was answering "where am I". That sameness is most of what reads as machine-made: a screen
- * where everything is the same rectangle has told you nothing by the time you have looked
- * at all of it.
- *
- * So the highlighter marks WHERE YOU ARE and nothing else. It is the meaning the ink already
- * has on paper — the line you ran a marker over to come back to — and it is the reason this
- * is not decoration: a second colour that means one thing is a signal, and a palette is not.
- * A value you picked is not a place, so it takes the sunken paper key.
- *
- * The seam is the `Tabs` component below, which is the only thing in the admin that renders
- * navigation; the ten call sites that build a chooser out of `tabItemClass` directly are all
- * choices, and get the default.
- */
-export type TabRole = 'place' | 'choice'
+export const SEGMENT_TRACK_DENSE = `${TRACK} w-full no-scrollbar scroll-fade-x bg-neutral-50 dark:bg-neutral-950/40`
 
 /**
  * WHERE IN THE STRIP A KEY SITS, which is the only thing that decides its corners.
  *
- * ⚠️ A SEGMENTED KEY IS ROUNDED ONLY WHERE IT MEETS THE TRACK'S END. The chosen key fills its
- * track edge to edge, so at the two ends its corner has to follow the track's own curve — and
- * everywhere else it butts against the key beside it, where a curve would cut a notch out of a
- * straight run. Rounding all four corners of a middle key was the first cut and it read as a
- * pill floating in a groove rather than as one segment of a strip.
+ * ⚠️ A SEGMENTED KEY IS ROUNDED ONLY WHERE IT MEETS THE TRACK'S END. A key fills its track edge
+ * to edge, so its focus ring has to follow the track's own curve at the two ends, and everywhere
+ * else it butts against the key beside it, where a curve would cut a notch out of a straight run.
  */
 export type TabEdge = 'start' | 'end' | 'both' | 'none'
 
@@ -129,29 +88,29 @@ const CORNERS: Record<TabEdge, string> = {
  */
 /** The segmented key's faces, as components; `tabItemClass` below explains each list. */
 const SEGMENT = component('kit-seg', `py-1 ${NOTE_SIZE} font-medium transition`)
-// The place you are on: the same stroke behind the word the rail's current row wears
-// (`.pen-stroke` in admin.css), not a key filled with the pen and carved in (until 2026-11-03).
+// The stroke behind the word the rail's current row wears (`.pen-stroke` in admin.css). Every
+// strip wears it, tab or value: until 2026-11-04 a chosen value kept a white key carved into a
+// groove, so one screen showed the admin's new mark and its old one eight lines apart.
 const SEGMENT_HERE = component('kit-seg-here', 'pen-stroke text-neutral-950 dark:text-white')
-export const SEGMENT_ON = component('kit-seg-on',
-  'bg-white font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.55)]')
 /**
- * The chosen key for a control that sits on the CARD, not in a groove: SEGMENT_ON's white key
- * would vanish on a white card, so the same carved key takes one grey step. Derived from
- * SEGMENT_ON so the two cannot drift. Used by the subscriber count row.
+ * The chosen cell of the subscriber count row, the one chooser that is a block of two lines and
+ * not a word: a stroke has no word to run behind there, so the cell stays pressed in, one grey
+ * step down from the card.
  */
 export const SEGMENT_ON_CARD = component('kit-seg-on-card',
-  utilitiesOf(SEGMENT_ON).replace('bg-white', 'bg-neutral-100'))
+  'bg-neutral-100 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.55)]')
+// The stroke again, fainter, on hover (`.kit-seg-idle:hover` in admin.css), so a key answers the
+// pointer in the shape it would take if pressed and not in a grey box.
 const SEGMENT_IDLE = component('kit-seg-idle',
-  'hover:bg-neutral-300/60 hover:text-neutral-900 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200')
+  'hover:text-neutral-900 dark:hover:text-neutral-200')
 
-export const keyFaces = (size: TabSize, dense: boolean, role: TabRole, edge: TabEdge, extra = ''): string =>
-  ` data-on="${tabItemClass(true, size, dense, role, edge)}${extra}" data-off="${tabItemClass(false, size, dense, role, edge)}${extra}"`
+export const keyFaces = (size: TabSize, dense: boolean, edge: TabEdge, extra = ''): string =>
+  ` data-on="${tabItemClass(true, size, dense, edge)}${extra}" data-off="${tabItemClass(false, size, dense, edge)}${extra}"`
 
 export const tabItemClass = (
   active: boolean,
   size: TabSize = 'lg',
   dense = false,
-  role: TabRole = 'choice',
   edge: TabEdge = 'both',
 ): string =>
   size === 'lg'
@@ -162,9 +121,7 @@ export const tabItemClass = (
           // A marker stroke under the label, not a wash behind it: an underlined strip is
           // already a quiet control and a lime block in it would be the loudest thing on the
           // page. The ink stays on the word so the label is still read as a word.
-          ? role === 'place'
-            ? 'border-[var(--pen-edge)] text-neutral-900 dark:text-white'
-            : 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white'
+          ? 'border-[var(--pen-edge)] text-neutral-900 dark:text-white'
           : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:border-neutral-300 hover:text-neutral-900 dark:hover:border-neutral-600 dark:hover:text-neutral-200'
       }`
     // `shrink-0 whitespace-nowrap` on the segmented variant, now that the track scrolls
@@ -184,26 +141,13 @@ export const tabItemClass = (
     // and a curve there cuts a notch out of a straight run. See `TabEdge`.
     : `${CORNERS[edge]} ${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} ${SEGMENT} ${
         active
-          // INK on the highlighter, not the reading site's olive `--on-pen`: on a control
-          // the olive read as grey and dull, and the owner called it. A mark in running
-          // text keeps the olive; a pressed key wants the full contrast.
-          //
-          // A latched key: the active segment is held DOWN, so it carries the carved-in
-          // shadow every pressed control wears. It is WHITE and the track is the groove,
-          // reversed from what it was: the key used to be `neutral-200` — darker than its own
-          // `neutral-50` track — because a white key does vanish on a white card, and that
-          // argument stopped being true the day the track became a real groove. Measured on
-          // the rendered control: the chosen label reads 4.2:1 against an unchosen one, which
-          // is what tells them apart; the two GROUNDS are 1.3:1 and never were the signal.
-          ? role === 'place'
-            // `dark:text-white` for the reason set out on SIDEBAR_NAV_ACTIVE: the dark pen is
-            // an olive, and near-black on it measures 3.8:1 against the 5.0 white gets.
-            ? SEGMENT_HERE
-            : SEGMENT_ON
-          // `seg-off` and not a neutral step, because this label answers to two numbers at
-          // once: 4.5:1 against the neutral-200 groove it sits in, and 3:1 against the chosen
-          // label beside it. 500 gives 3.76 and 4.2; 600 gives 6.2 and 2.53. The class holds
-          // the one value that clears both, with the measurements beside it in `admin.css`.
+          // INK on the highlighter, not the reading site's olive `--on-pen`: on a control the
+          // olive read as grey and dull. `dark:text-white` for the reason set out on
+          // SIDEBAR_NAV_ACTIVE: the dark pen is an olive, and near-black on it measures 3.8:1
+          // against the 5.0 white gets.
+          ? SEGMENT_HERE
+          // `seg-off` and not a neutral step: the class holds the value, with the measurements
+          // beside it in `admin.css`.
           // Written out beside its hover's name, because it is `admin.css`'s own class.
           : `seg-off ${SEGMENT_IDLE}`
       }`

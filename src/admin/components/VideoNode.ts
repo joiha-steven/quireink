@@ -69,7 +69,7 @@ export class VideoView {
       const pair = [[false, this.words.column], [true, this.words.wide]] as const
       for (const [i, [on, label]] of pair.entries()) {
         const key = el('button', {
-          className: tabItemClass(wide === on, 'sm', false, 'choice', edgeAt(i, pair.length)),
+          className: tabItemClass(wide === on, 'sm', false, edgeAt(i, pair.length)),
           type: 'button',
           // The server's own `tabs()` says this and the React node view never did: a segmented
           // control whose pressed state is only a background colour is a control a screen

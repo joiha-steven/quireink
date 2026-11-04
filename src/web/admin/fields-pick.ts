@@ -16,7 +16,7 @@ import { icon } from '@/web/admin/kit'
 /** The strip's two faces, so the island moves `aria-pressed` and swaps a string it was given. */
 /** A choice key, at its position in the strip: only the two ends take a curve. */
 const choiceKey = (on: boolean, i: number, n: number): string =>
-  tabItemClass(on, 'sm', false, 'choice', edgeAt(i, n))
+  tabItemClass(on, 'sm', false, edgeAt(i, n))
 
 /**
  * A SEGMENTED CHOICE: three or four answers read at a glance.
@@ -44,7 +44,7 @@ export function choice(f: SettingText & {
   attrs?: string
 }): string {
   const items = f.options.map(([v, label], i) =>
-    `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${v === f.value}"${keyFaces('sm', false, 'choice', edgeAt(i, f.options.length))}`
+    `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${v === f.value}"${keyFaces('sm', false, edgeAt(i, f.options.length))}`
     + ` class="${choiceKey(v === f.value, i, f.options.length)}">${escapeHtml(label)}</button>`).join('')
   return settingRow({
     ...f,

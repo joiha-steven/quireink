@@ -280,7 +280,13 @@ function later(fn: () => void): void {
  * thing that calls this. Silent at volume 0 and with the instrument off, as `strike` is.
  */
 export function warmKeys(sound: KeySound): void {
-  if (sound.mode === 'off' || gainFor(sound.volume) <= 0 || warmed === sound.mode) return
+  if (sound.mode === 'off' || gainFor(sound.volume) <= 0) return
+  // WHILE THE GESTURE IS STILL A GESTURE. Safari unlocks a context only from inside one, and the
+  // context above was built later, in idle time. A strike used to do this from its `beforeinput`,
+  // which is inside the keydown on a plain keyboard; the Mac's Telex delivers the edit BEFORE the
+  // keydown, so that resume was outside any gesture and the context never ran.
+  if (audio && audio.state !== 'running') void audio.resume().catch(() => {})
+  if (warmed === sound.mode) return
   const activation = (navigator as { userActivation?: { hasBeenActive: boolean } }).userActivation
   if (activation && !activation.hasBeenActive) return
   const mode: Instrument = sound.mode

@@ -156,7 +156,7 @@ export class ImageView {
     const track = el('div', { className: SEGMENT_TRACK })
     for (const [i, v] of values.entries()) {
       const key = el('button', {
-        className: tabItemClass(v === current, 'sm', false, 'choice', edgeAt(i, values.length)),
+        className: tabItemClass(v === current, 'sm', false, edgeAt(i, values.length)),
         type: 'button',
         // The server's own `tabs()` says this and the React node view never did: a segmented
         // control whose pressed state is only a background colour is a control a screen reader

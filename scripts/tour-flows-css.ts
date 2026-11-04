@@ -198,15 +198,12 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
     }
   })
 
-  // ITEM 18. A segmented control has to answer "which one is chosen" before it is read, and
-  // the answer used to be a key DARKER than its own track — the wrong way round for a
-  // pressed key, forced by a track that was one point off the card behind it. The track is a
-  // groove now and the key is white and carved.
+  // ITEM 18. A segmented control has to answer "which one is chosen" before it is read. The
+  // stroke behind the word says it, and the label has to say it too.
   //
-  // What is measured is the CHOSEN LABEL AGAINST AN UNCHOSEN ONE, because that is the signal:
-  // the two grounds are 1.26:1 and never told anybody anything. Colours are read as PIXELS
-  // through a canvas — Tailwind 4 computes to `oklch()`, which no string parser here should
-  // be trying to understand.
+  // What is measured is the CHOSEN LABEL AGAINST AN UNCHOSEN ONE, read as PIXELS through a
+  // canvas: colours compute to `oklch()`, which no string parser here should be trying to
+  // understand.
   //
   // NOTE: this body is a template literal. No backticks, no backslashes.
   flow('admin: a chosen segment is legibly chosen', () => expect('/admin/settings?tab=post', `
@@ -227,20 +224,16 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       if (tracks.length === 0) return 'no segmented track on the tab'
       for (const track of tracks) {
         const keys = Array.from(track.querySelectorAll('button'))
-        const on = keys.find((k) => getComputedStyle(k).backgroundColor !== 'rgba(0, 0, 0, 0)')
+        // The stroke behind the word, one mark for a tab and a value since 2026-11-04.
+        const on = keys.find((k) => getComputedStyle(k).backgroundImage !== 'none')
         if (!on) continue
-        // The pen key is where-you-are, a different control with its own guard.
-        if (rgb(getComputedStyle(on).backgroundColor).join(',') === '213,248,86') continue
         const off = keys.find((k) => k !== on)
         const a = getComputedStyle(on), b = getComputedStyle(off)
-        if (Number(a.fontWeight) < 600) return 'the chosen key is weight ' + a.fontWeight
         const labels = ratio(a.color, b.color)
         if (labels < 3) return 'chosen and unchosen labels are ' + labels.toFixed(2) + ':1'
-        const onGround = ratio(a.color, a.backgroundColor)
-        if (onGround < 4.5) return 'the chosen label reads ' + onGround.toFixed(2) + ':1 on its key'
-        return 'ok labels ' + labels.toFixed(2) + ':1, chosen label on its key ' + onGround.toFixed(2) + ':1'
+        return 'ok labels ' + labels.toFixed(2) + ':1'
       }
-      return 'every segment on the tab is a place, not a choice'
+      return 'no segment on the tab wears the stroke'
     })()`, 900))
 
   // THE BOOK BUTTON HOVERS THE WAY THE HEADER HOVERS, and there is nothing drawn on it at rest.

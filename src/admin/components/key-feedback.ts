@@ -30,6 +30,9 @@ import { motionOn, dur, ease } from '@/admin/motion'
 const SETTLE_MS = 700
 let settleTimer = 0
 
+/** How long after a keyless edit a 229 keydown is that same key arriving late, not a new one. */
+const KEY_AFTER_EDIT_MS = 40
+
 /** Carets with a placement already waiting for the next frame. */
 const queued = new WeakSet<HTMLElement>()
 
@@ -101,6 +104,21 @@ function strikeOf(inputType: string, data: string | null): Strike {
   return data && data.endsWith(' ') ? 'space' : 'tap'
 }
 
+/**
+ * THE KEY AN INPUT METHOD TOOK, read off its keydown; null for one that writes nothing.
+ *
+ * `code`, because `key` is `Process` on the browsers that hide it from the page.
+ */
+function strikeOfKey(event: KeyboardEvent): Strike | null {
+  if (event.ctrlKey || event.metaKey) return null
+  if (event.code === 'Backspace' || event.code === 'Delete') return 'back'
+  if (event.code === 'Enter' || event.code === 'NumpadEnter') return 'return'
+  if (event.code === 'Space') return 'space'
+  return /^(Key[A-Z]|Digit\d|Numpad\d|Minus|Equal|Bracket|Semicolon|Quote|Backquote|Backslash|Comma|Period|Slash|Intl)/.test(event.code)
+    ? 'tap'
+    : null
+}
+
 /** What the writing surface hands over: the key behind an edit, the edit, and the IME's edges. */
 export type KeyFeedback = {
   /** Every `keydown`: when the key was made, and whether it is a held key repeating. */
@@ -133,6 +151,8 @@ export function keyFeedback(
   let pressed: { at: number; repeat: boolean; seen: number } | null = null
   /** What the input method is showing for the word it is building, so its echo is known. */
   let composed = ''
+  /** When an edit last struck with no keydown in front of it, which on Safari is the Telex order. */
+  let unkeyed = Number.NEGATIVE_INFINITY
 
   const burst = new KeyBurst((kind) => {
     play(sound, kind)
@@ -159,6 +179,23 @@ export function keyFeedback(
       // The first key of a session is the one that would pay for the audio machinery: build
       // it now, while this key is still on its way to the page (`warmKeys`, key-sound.ts).
       warmKeys(sound)
+
+      // ⚠️ THE MAC'S TELEX DOES NOT COMPOSE, whatever its name for what it does. Measured through
+      // the real input method in WebKit on `tiếng`: no compositionstart anywhere, `isComposing`
+      // false, the first letter an `insertText` and every letter after it an
+      // `insertReplacementText` with no data, the type a spelling checker's swap arrives as and
+      // the one edit `KEYED` must refuse. Six of seven keys were silent, and only a word's first
+      // letter and the space were heard. What the input method cannot change is the keydown: 229,
+      // one per finger. So a key the method took strikes from there, whatever edit it became.
+      // The edit that follows is told apart by the burst, on this same stamp, when it comes
+      // after; when it came BEFORE (WebKit sends the keydown once the method has answered) it has
+      // already struck, and `unkeyed` says so.
+      if (event.keyCode !== 229 || event.repeat) return
+      const kind = strikeOfKey(event)
+      if (!kind) return
+      holdBlink(caret())
+      if (event.timeStamp - unkeyed < KEY_AFTER_EDIT_MS) { unkeyed = Number.NEGATIVE_INFINITY; return }
+      burst.feed(kind, event.timeStamp)
     },
     composition: () => { composed = '' },
     input: (view, event) => {
@@ -195,6 +232,7 @@ export function keyFeedback(
         if (event.isComposing) return
         kind = strikeOf(type, event.data)
       }
+      if (!key) unkeyed = event.timeStamp
       burst.feed(kind, key ? key.at : event.timeStamp, key !== null)
     },
   }

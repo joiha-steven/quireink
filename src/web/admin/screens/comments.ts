@@ -146,11 +146,11 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
   // paper key here and the highlighter on the rail.
   const tools = tabs({
     items: [{ key: 'recent', label: t.commentsSortRecent }, { key: 'busiest', label: t.commentsSortBusiest }],
-    value: 'recent', role: 'choice', attrs: 'data-comment-sort',
+    value: 'recent', attrs: 'data-comment-sort',
   })
     + tabs({
       items: [{ key: 'all', label: t.filterAll }, { key: 'week', label: t.commentsFilterWeek }],
-      value: 'all', role: 'choice', attrs: 'data-comment-age',
+      value: 'all', attrs: 'data-comment-age',
     })
     + `<span class="flex-1"></span>`
     // ⚠️ THE SHARED BAR, not a third copy of it. This screen re-typed `selectionBar`'s markup

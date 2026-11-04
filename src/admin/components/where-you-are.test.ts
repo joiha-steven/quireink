@@ -1,20 +1,13 @@
-// The highlighter marks WHERE YOU ARE, and never what you chose.
+// One mark across the admin: a stroke of the pen behind the word that is ON.
 //
-// Before this, an active tab and a selected value wore the identical black pill. On the
-// Settings screen that put "Site" — the section you are in — eight lines above "English" — a
-// field's current value — in the same ink, size and shape, with nothing saying which of the
-// two was answering "where am I". A screen where everything is the same rectangle has told
-// you nothing by the time you have looked at all of it, and that sameness is most of what
-// made the admin read as stiff and mechanical.
-//
-// So the ink carries a meaning and the meaning is the thing worth defending: a second colour
-// that means ONE thing is a signal, and a palette is not. The day someone highlights a
-// selected value too, the signal is gone and no screenshot review will catch it — it will
-// look livelier, which is the trap.
+// The rail's current page, the settings tab and the value chosen in a strip all wear it. A chosen
+// value kept a white key carved into a grey groove until 2026-11-04, eight lines under a tab with
+// the stroke, so one screen spoke the admin's new look and its old one at the same time. The
+// pointer gets the same band, fainter, rather than a grey box.
 
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { tabItemClass as tabItemNames } from '@/admin-shared/tabs'
+import { SEGMENT_TRACK, SEGMENT_TRACK_DENSE, tabItemClass as tabItemNames } from '@/admin-shared/tabs'
 import * as rail from '@/admin-shared/rail'
 import { expandComponents } from '@/admin-shared/component'
 
@@ -25,20 +18,20 @@ const SIDEBAR_NAV = expandComponents(rail.SIDEBAR_NAV)
 const SIDEBAR_NAV_ACTIVE = expandComponents(rail.SIDEBAR_NAV_ACTIVE)
 const SIDEBAR_NAV_QUIET = expandComponents(rail.SIDEBAR_NAV_QUIET)
 
-describe('the highlighter marks a place', () => {
-  it('strokes an active tab you navigated to', () => {
+describe('the highlighter marks what is on', () => {
+  it('strokes the active key of a strip', () => {
     // A highlighter stroke behind the word (`.pen-stroke`), not the key filled with the pen.
-    expect(tabItemClass(true, 'sm', false, 'place')).toContain('pen-stroke')
-    expect(tabItemClass(true, 'sm', false, 'place')).not.toContain('bg-[var(--pen)]')
+    expect(tabItemClass(true, 'sm')).toContain('pen-stroke')
+    expect(tabItemClass(true, 'sm')).not.toContain('bg-[var(--pen)]')
     // Ink, not `--on-pen`: the olive belongs to marks in running text; on a pressed key it
     // read as grey. Full contrast on the control.
-    expect(tabItemClass(true, 'sm', false, 'place')).toContain('text-neutral-950')
+    expect(tabItemClass(true, 'sm')).toContain('text-neutral-950')
   })
 
   it('leaves an underlined strip as a marker STROKE, not a wash', () => {
     // A lime block inside an underlined strip would be the loudest thing on the page, and
     // the strip is meant to be quiet. The ink stays on the word so the label reads as a word.
-    const lg = tabItemClass(true, 'lg', false, 'place')
+    const lg = tabItemClass(true, 'lg')
     expect(lg).toContain('border-[var(--pen-edge)]')
     expect(lg).not.toContain('bg-[var(--pen)]')
   })
@@ -62,35 +55,23 @@ describe('the highlighter marks a place', () => {
   })
 })
 
-describe('the highlighter does NOT mark a choice', () => {
-  it('leaves a selected value on the sunken paper key, never the pen', () => {
-    // The default role. Ten call sites build a chooser out of this directly — the language
-    // picker, the home mode, the gallery ratio — and every one of them is a value, not a
-    // place. It was the solid ink pill; ink can show no relief, so the chosen value is now
-    // the paper key pressed into the groove. What stays pinned: no --pen on a value.
-    expect(tabItemClass(true, 'sm')).toContain('shadow-[inset')
-    expect(tabItemClass(true, 'sm')).not.toContain('--pen')
-    expect(tabItemClass(true, 'lg')).not.toContain('--pen')
+describe('one mark, not two', () => {
+  it('leaves no carved key in a strip', () => {
+    expect(tabItemClass(true, 'sm')).not.toContain('shadow-[inset')
+    expect(tabItemClass(false, 'sm')).not.toContain('shadow-[inset')
+    // Nor a groove for one to sit in.
+    expect(expandComponents(SEGMENT_TRACK)).not.toContain('bg-neutral-200')
+    expect(expandComponents(SEGMENT_TRACK_DENSE)).not.toContain('bg-neutral-200')
   })
 
-  it('is asked for only by the one component that renders navigation', () => {
-    // The seam. `tabs()` in `web/admin/kit.ts` is the one builder that renders the admin's
-    // navigation, and 'place' reaches `tabItemClass` solely through its own DEFAULT — a caller
-    // may opt DOWN to 'choice' (the write pane's scope strip does, to keep the pen away from
-    // the writing) but never up. A chooser that starts passing 'place' is the drift this whole
-    // file exists to catch. It read `components/tabs.tsx` until the admin stopped being React
-    // (ADR 0054, step 6); the default it is guarding did not move.
-    const tabs = readFileSync('src/web/admin/kit.ts', 'utf8')
-    expect(tabs).toContain("role = 'place'")
-    expect(tabs).toContain('tabItemClass(')
-    // Every chooser the server draws. `SiteFields.tsx` was on this list until the settings
-    // screen became a page (ADR 0054), and `WritePane.tsx` until the write column did; its kind
-    // strip is `tabs({ role: 'choice' })` in `src/web/admin/screens/content-pane.ts` now. The
-    // rule is unchanged and so is what it is worth: a filter that wears the highlighter claims
-    // to be WHERE YOU ARE, and the reader then cannot tell a place from a choice.
-    for (const f of ['src/web/admin/screens/content-pane.ts', 'src/web/admin/fields-pick.ts']) {
-      expect(readFileSync(f, 'utf8')).not.toContain("'place'")
-    }
+  it('answers the pointer with the band, not with a grey box', () => {
+    const css = readFileSync('src/admin/admin.css', 'utf8')
+    const rule = css.slice(css.indexOf('.pen-stroke,'), css.indexOf('}', css.indexOf('.pen-stroke,')))
+    expect(rule).toContain('.kit-rail-hover:hover .rail-label')
+    expect(rule).toContain('.kit-seg-idle:hover')
+    expect(SIDEBAR_NAV).not.toContain('hover:bg-')
+    expect(SIDEBAR_NAV).not.toContain('hover:shadow-')
+    expect(tabItemClass(false, 'sm')).not.toContain('hover:bg-')
   })
 })
 
@@ -110,10 +91,8 @@ describe('the mark cannot be painted over', () => {
     // and the grey was emitted later, so the current page read #6b6b6b on the pen (4.41:1).
     expect(SIDEBAR_NAV_QUIET).not.toMatch(/(^|\s)(dark:)?text-neutral-\d/)
     expect(SIDEBAR_NAV).toContain('text-neutral-500')
-    // The inactive row still has one — it is the only feedback that a row is a link.
-    // `neutral-200/70`, because the rail sits on the paper canvas and neutral-100 was
-    // invisible against it.
-    expect(SIDEBAR_NAV).toContain('hover:bg-neutral-200/70')
+    // The inactive row still has one: it is the only feedback that a row is a link.
+    expect(SIDEBAR_NAV).toContain('hover:text-neutral-900')
   })
 
   it('composes the active row from the quiet base', () => {

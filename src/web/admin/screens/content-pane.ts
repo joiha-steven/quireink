@@ -232,7 +232,6 @@ function head(t: AdminStrings, needs: WriteNeeds, anyQueued: boolean): string {
       { key: 'note', label: t.scopeNotes },
     ],
     value: 'all',
-    role: 'choice',
     // `lg dense`: the underlined strip at 13px with a 16px gap. The segmented track was the
     // first cut and it read as a different control — a strip of keys in a sunken well where the
     // column has always had a marker stroke under one word. Four words 24px apart do not fit a

@@ -71,8 +71,8 @@ function viewKeys(t: AdminStrings): string {
   const key = (view: 'grid' | 'list', icon: 'grid' | 'menu', label: string, i: number): string =>
     `<button type="button" data-media-view-key="${view}" title="${escapeAttr(label)}"`
     + ` aria-label="${escapeAttr(label)}"`
-    + keyFaces('sm', false, 'choice', edgeAt(i, 2), ' !px-2 flex items-center')
-    + ` class="${tabItemClass(false, 'sm', false, 'choice', edgeAt(i, 2))} !px-2 flex items-center">`
+    + keyFaces('sm', false, edgeAt(i, 2), ' !px-2 flex items-center')
+    + ` class="${tabItemClass(false, 'sm', false, edgeAt(i, 2))} !px-2 flex items-center">`
     + `${iconSvg(icon, 'h-4 w-4')}</button>`
   return `<div class="${SEGMENT_TRACK} shrink-0" data-media-view-keys>`
     + key('grid', 'grid', t.mediaViewGrid, 0) + key('list', 'menu', t.mediaViewList, 1) + `</div>`

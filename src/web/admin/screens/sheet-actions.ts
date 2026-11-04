@@ -1,5 +1,5 @@
 // THE ACTION LINE over the writing sheet: where you came from, what state the piece is in, the
-// three switches that change what you LOOK at, and the pair that ends the session.
+// switches that change what you LOOK at, and the pair that ends the session.
 //
 // ⚠️ EVERY STATE IS DRAWN AND THE ISLAND HIDES, which is this admin's rule (`docs/admin-one-dom.md`)
 // and matters twice over here: the bar is the first thing on the sheet, so a control that
@@ -68,13 +68,16 @@ export function sheetActions(t: AdminStrings, links: SheetLinks): string {
 
   return `<div data-sheet-actions class="${escapeAttr(BAR)}">`
     + `<div class="flex flex-nowrap items-center justify-between gap-3 px-4 py-2.5 lg:flex-wrap">`
-    + `<div class="flex min-w-0 flex-nowrap items-center gap-x-2 gap-y-1 lg:flex-wrap">`
-    + `<a href="/admin/content" class="${quiet} shrink-0">&larr; ${escapeHtml(t.navWrite)}</a>`
+    // `data-sheet-where`: on a phone the bar holds five keys in 360px, and this group gives way
+    // first rather than sliding under them (`admin.css`).
+    + `<div class="flex min-w-0 flex-nowrap items-center gap-x-2 gap-y-1 lg:flex-wrap" data-sheet-where>`
+    + `<a href="/admin/content" aria-label="${escapeAttr(t.navWrite)}" class="${quiet} shrink-0">&larr;`
+    + `<span class="hidden sm:inline"> ${escapeHtml(t.navWrite)}</span></a>`
     + `<span class="hidden h-4 w-px bg-neutral-200 sm:block dark:bg-neutral-800"></span>`
     // The mock's saved line: state, size, time to read. One string of small print. The dot
     // before it is the pen's edge, the small light that means "work in progress"; it is hidden
     // with the status, because a line that begins with a separator reads as a missing word.
-    + `<span class="text-xs text-neutral-500 dark:text-neutral-400">`
+    + `<span class="min-w-0 truncate text-xs text-neutral-500 dark:text-neutral-400">`
     + `<span data-say-dot hidden aria-hidden="true"`
     + ` class="mr-1.5 inline-block h-[5px] w-[5px] rounded-full bg-[var(--pen-edge)] align-middle"></span>`
     + `<span data-say-status></span>`
@@ -90,15 +93,22 @@ export function sheetActions(t: AdminStrings, links: SheetLinks): string {
     // 390px phone, with Save draft and Publish off the right edge and the whole admin scrolling
     // sideways to reach them. Measured 2026-08-27: 584px of scroll width on a 390px viewport.
     + `<div class="flex shrink-0 flex-nowrap items-center justify-end gap-1.5 lg:flex-wrap">`
-    // THE "⋯", at every width. The three controls that change what you LOOK at live behind it,
-    // so the row carries Preview, Save and Publish and nothing that weighs the same beside them;
-    // their chords still work without it. Below `lg` it also holds Preview and the live link,
-    // and opens upwards, because the bar sits on the bottom edge there.
+    // MARKDOWN STAYS ON THE ROW, quiet, at every width: it is the writer's other way of seeing the
+    // same page, used in the middle of a sentence, and two presses to reach it was one too many
+    // (2026-11-04). The stroke runs behind it while the source is showing (`admin.css`). On a phone
+    // it is the format's own mark, M and a down arrow, because the word took 85 of the 360px.
+    + `<button type="button" data-sheet-md${chord('markdown')} title="${escapeAttr(t.tbMarkdown)}"`
+    + ` aria-label="${escapeAttr(t.tbMarkdown)}" aria-pressed="false" class="${quiet} shrink-0">`
+    + `<span class="sm:hidden" aria-hidden="true">M&darr;</span>`
+    + `<span class="hidden sm:inline">${escapeHtml(t.tbMarkdown)}</span></button>`
+    // THE "⋯", at every width. Attributes and Focus live behind it, so the row carries nothing that
+    // weighs the same as Preview, Save and Publish beside them; their chords still work without
+    // it. Below `lg` it also holds Preview and the live link, and opens upwards, because the bar
+    // sits on the bottom edge there.
     + `<details data-sheet-more class="relative"><summary class="${quiet} list-none cursor-pointer select-none"`
     + ` aria-label="${escapeAttr(t.moreActions)}" title="${escapeAttr(t.moreActions)}">&#8943;</summary>`
     + `<div class="absolute bottom-full right-0 mb-2 flex w-44 flex-col p-1 lg:bottom-auto lg:top-full lg:mb-0 lg:mt-2`
     + ` ${escapeAttr(OVERLAY)}">`
-    + menuItem(`data-sheet-md${chord('markdown')} title="${escapeAttr(t.tbMarkdown)}"`, t.tbMarkdown, ' aria-pressed="false"')
     // `data-attrs` so the tour can find this without matching a word in eleven languages.
     + menuItem(`data-attrs data-sheet-attrs${chord('attributes')} title="${escapeAttr(t.attributes)}"`, t.attributes,
       ` data-say-open="${escapeAttr(t.attributes)}" data-say-shut="${escapeAttr(t.hideAttributes)}"`)

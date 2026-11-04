@@ -12,9 +12,11 @@ that file first; this one only adds what is true here.
 ## The editor
 
 - The chrome is the SHEET'S OWN top rows (the Writing Desk mock's `sheettop`): the action
-  line — back link + save state + word count on the left, one "⋯" holding Markdown, Attributes
-  and Focus (2026-11-03: they were three quiet words in the row, each the weight of a button
-  beside Preview) and the Preview/View/Save/main-key buttons on the right — is the card's first row, and
+  line — back link + save state + word count on the left, the quiet Markdown key, one "⋯" holding
+  Attributes and Focus (2026-11-03: they were three quiet words in the row, each the weight of a
+  button beside Preview; Markdown came back out on 2026-11-04, the other way of seeing the page
+  being one press in the middle of a sentence, and on a phone it is `M↓`) and the
+  Preview/View/Save/main-key buttons on the right — is the card's first row, and
   the toolbar sticks directly under it. The main key says what a press would do: **Publish** on
   a draft, **Schedule** when the date chosen is ahead, and **Update** on a piece the server
   already holds as published or scheduled (2026-10-08), enabled only once something changed. A
@@ -207,6 +209,10 @@ that file first; this one only adds what is true here.
   enough room for both and it goes back on top. (672px exactly at 1440; 666 at 1700 with the
   write pane beside the editor as well, which is the only place the sheet costs the column
   anything at all.)
+  **Docked, it stands 1rem in from the window's edge** (`--admin-sheet-gutter`). A Mac's scrollbar
+  floats over the page and takes no width, so at `right: 0` the sheet lay on top of it and a long
+  piece scrolled with nothing to say how far down it was. A modal sheet stays at the edge: its
+  scrim has taken the page away.
 - The editor frame must NOT use `overflow-hidden` — it breaks the nested sticky bars. The
   table bar's sticky offset is measured from the real action-header height, so it does not
   drift with the viewport or the translation.
@@ -233,7 +239,15 @@ that file first; this one only adds what is true here.
   thock drawn at 150 Hz measures beautifully and is inaudible on the machine it is for.
   Four keys, three takes of each (level-matched to the first, so takes differ in grain and
   not in force), plus a few percent of playback rate: forty keys in a line never repeat.
-  Selection-safe, IME-safe, and skipped entirely during composition.
+  Selection-safe, and a paste, a drop or the spelling checker make no sound.
+  ⚠️ **A key an input method took strikes from its keydown** (`keyCode` 229), not from the edit.
+  The Mac's Telex does not compose, whatever the name suggests. Measured through
+  `com.apple.inputmethod.VietnameseSimpleTelex` in WebKit on 2026-11-04: no `compositionstart`,
+  `isComposing` false, the first letter of a word an `insertText` and every letter after it an
+  `insertReplacementText` with no data, the same edit a spelling checker sends, and the keydown
+  arrives AFTER the edit. It had 7 strikes for 19 keys; it has 19. `key-feedback.test.ts` replays
+  that order. Chrome through the real input method has not been measured: a Mac's privacy
+  settings refuse the keystrokes unless granted, so that order is covered by `Input.imeSetComposition` in `scripts/typing-check.ts` only.
   ⚠️ **Nothing animates the TEXT.** Until 2026-08-24 every keystroke animated the whole
   block's opacity from 0.9 and nudged it 0.6px, which at sixty words a minute is a paragraph
   strobing five times a second — reported as "nháy". The sound carries the keystroke, the

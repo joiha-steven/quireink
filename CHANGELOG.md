@@ -8,6 +8,18 @@
   public from the moment a version was cut, so the update notice and the Cloudflare Update
   button could offer a version whose image had not been built. It now waits as a pre-release
   until the image and the Cloudflare package are both out.
+- **The typing sound works with the Mac's own Vietnamese Telex.** Only the first letter of a word
+  and the space were heard, because Telex rewrites the word in a way that looks like the spelling
+  checker. Every key now strikes once.
+- **The Attributes panel no longer covers the page's scrollbar on a Mac.** Docked, it stands a
+  little in from the window's edge.
+
+### Changed
+
+- **The admin has one mark.** A value chosen in a strip wears the same stroke behind the word as a
+  tab, where it was a white key in a grey groove, and pointing at a rail row or a strip shows that
+  stroke fainter, where it was a grey box.
+- **Markdown is back on the editor's row** instead of behind the "⋯". On a phone it is `M↓`.
 
 ## 2026-11-04 · Quire Ink 2.2.21
 
