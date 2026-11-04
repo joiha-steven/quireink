@@ -1,4 +1,4 @@
-// The notebook's fixture: five notes, three of them clips, so `/notes` and the notes MCP
+// The notebook's fixture: six notes, three of them clips, so `/notes` and the notes MCP
 // tools have something to show and a fresh reader sees what a clip looks like.
 //
 // A CLIP QUOTES A SENTENCE THAT CAN BE CHECKED. Each quote below is the opening sentence of
@@ -18,6 +18,15 @@ export type SeedNote = {
 }
 
 export const NOTES: SeedNote[] = [
+  {
+    // First on the page, and the one a visitor reads to find out what the page is. The words
+    // are the owner's voice about the feature, not about letterforms, on purpose: `/notes` is
+    // the one screen of the demo whose subject cannot be seen by looking at it.
+    title: 'What this notebook is for',
+    slug: 'what-this-notebook-is-for',
+    ago: 0,
+    content: 'Posts are finished work. This is the other pile: a passage worth keeping, with where it came from and a line of my own under it. Notes stay out of the post list, the front page and the newsletter.',
+  },
   {
     title: 'Where the name of this software comes from',
     slug: 'where-the-name-comes-from',
