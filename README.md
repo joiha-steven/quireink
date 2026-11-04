@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.21`
+`2.2.22`
 
 **A blog you keep. An AI agent can run it for you.**
 No algorithm, no ads, no platform between you and your readers.

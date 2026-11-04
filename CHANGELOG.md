@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-11-05 · Quire Ink 2.2.22
+
+No new feature: the admin's marks come together, the typing sound hears the Mac's Telex, and a
+pass over the reading pages, four themes at four widths in light and dark, put right eight
+things. Upgrading is the usual pull and restart, with no migration.
 
 ### Fixed
 
@@ -13,6 +17,15 @@
   checker. Every key now strikes once.
 - **The Attributes panel no longer covers the page's scrollbar on a Mac.** Docked, it stands a
   little in from the window's edge.
+- **A table head in book mode takes the book's paper.** With the page dark it came into the ivory
+  book as a near-black band, and on Newspaper as light words on ivory at 1.07:1, now 17.46:1.
+- **Newspaper's column rule stands only between two columns.** On the composed front page at 390
+  a stray hairline ran off the screen's edge beside each card, 14 of them, now none.
+- **Chinese, Japanese and Korean posts have no drop cap,** on Newspaper or in book mode. Raised
+  three lines, the character 一 printed as a bare stroke in front of the sentence. Latin and
+  Vietnamese posts keep their cap.
+- **A callout stays whole across a book page,** where its label could sit alone at the foot of a
+  column with its words on the next spread.
 
 ### Changed
 
@@ -20,6 +33,13 @@
   tab, where it was a white key in a grey groove, and pointing at a rail row or a strip shows that
   stroke fainter, where it was a grey box.
 - **Markdown is back on the editor's row** instead of behind the "⋯". On a phone it is `M↓`.
+- **A code panel sits evenly between the words around it:** 19.7px above and 25.3px below is now
+  25.3px on both sides.
+- **A post's author box takes the small copy of the portrait,** 307,412 bytes for a 48px circle
+  now 30,544.
+- **The search count is small print,** 15.2px in the quiet ink with air under it, where it was
+  body size and touched the first result.
+- **Notebook's tagline, footer and rail on the desk** reach 5.06:1 on Mono, from 4.74:1.
 
 ## 2026-11-04 · Quire Ink 2.2.21
 
