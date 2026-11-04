@@ -51,6 +51,7 @@ const NOT_A_THEME: Exempt[] = [
   { file: "src/types.ts", line: "export type SiteLook = 'plain' | 'code' | 'paper' | 'notes'", why: "the type of the old field, which still exists" },
   { file: "src/content/autosave.ts", line: "const TABLE: Record<AutosaveKind, string> = { post: 'posts', page: 'pages', note: 'notes' }", why: "the notes table" },
   { file: "src/content/notes.ts", line: "return all<NoteRow>(`select ${META_COLS} from notes where ${liveOnly('notes')} order by date desc`)", why: "the notes table" },
+  { file: "src/content/notes.ts", line: "return all<NoteRow>(`select ${META_COLS}, content from notes where ${liveOnly('notes')} order by date desc`)", why: "the notes table" },
   { file: "src/content/notes.ts", line: "from notes where ${liveOnly('notes')} and slug = ?`, slug)", why: "the notes table" },
   { file: "src/content/settings-save.ts", line: "const look = isBuiltinThemeId(input.look) ? input.look : null", why: "takes `look` as an alias on a write" },
   { file: "src/content/settings-save.ts", line: "if (look !== null && look !== current.look) return look", why: "takes `look` as an alias on a write" },
