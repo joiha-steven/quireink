@@ -102,7 +102,7 @@ function picture(body: string): string | undefined {
   return m?.[1]
 }
 
-// The notebook (ADR 0044): five notes, three of them clips, dated like the posts.
+// The notebook (ADR 0044): six notes, three of them clips, dated like the posts.
 for (const n of NOTES) {
   await saveNote({
     title: n.title, slug: n.slug, status: 'published',

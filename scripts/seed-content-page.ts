@@ -24,7 +24,7 @@ export const PAGE_POSTS: Seed[] = [
   {
     title: 'The golden canon, and the arithmetic under it',
     slug: 'the-golden-canon-and-its-arithmetic',
-    excerpt: 'Medieval scribes placed a text block by drawing nine lines and reading the answer off the diagonals. No measuring, no arithmetic, no taste required — and the proportions that fall out are still the best default anybody has for a page of running text.',
+    excerpt: 'Medieval scribes placed a text block by drawing nine lines and reading the answer off the diagonals. The proportions are still the best default for running text.',
     category: 'Typography', tags: ['margins', 'layout', 'proportion'],
     series: 'Designing a reading page', order: 4, ago: 0,
     body: `Nobody in a scriptorium measured a margin. They drew diagonals across the spread, marked where the lines crossed, and put the text block's corners on those marks. Van de Graaf reconstructed the method in the 1940s from books nobody had thought to measure, and what he found was that ++a construction with no numbers in it produces the same proportions over and over++.
@@ -74,7 +74,7 @@ Not for copying. For having somewhere to start that is not the default margin of
   {
     title: 'Optical size, and why 8pt is not 24pt shrunk',
     slug: 'optical-size-is-not-a-scale',
-    excerpt: 'A caption and a headline want different letterforms, not the same letterform at two sizes. Foundries knew this when type was cut in metal, lost it when photocomposition arrived, and variable fonts have finally made it adjustable again.',
+    excerpt: 'A caption and a headline want different letterforms, not one letterform at two sizes. Metal type knew that, and variable fonts have made it adjustable again.',
     category: 'Typography', tags: ['scale', 'variable fonts', 'craft'],
     series: 'Designing a reading page', order: 3, ago: 9,
     body: `Metal type was cut at every size it was going to be used at, and the small sizes were not the large ones reduced. They had shorter ascenders, sturdier hairlines, wider spacing and a larger x-height relative to the body. The punchcutter knew that a letter has to survive being small, and drew a different letter.
@@ -117,7 +117,7 @@ Set a line at 8pt and the same line at 48pt, then scale the small one up in a sc
   {
     title: 'A type scale you can defend',
     slug: 'a-type-scale-you-can-defend',
-    excerpt: 'Nine roles, one ratio, and no size typed twice. Every measurement on the page comes from what a piece of text IS rather than from where it happens to sit, so one setting changes the whole page instead of one heading.',
+    excerpt: 'Nine roles, one ratio, and no size typed twice. Every measurement comes from what a piece of text is, so one setting changes the whole page.',
     category: 'Typography', tags: ['scale', 'layout', 'craft'],
     series: 'Designing a reading page', order: 2, ago: 21,
     body: `Most type scales are a list of numbers somebody liked. That works until the day you want the whole page a little larger, and you discover the numbers were never related to each other at all.
@@ -180,7 +180,7 @@ Read down any column and the trend is monotone. That is the test worth keeping: 
   {
     title: 'The measure is the design',
     slug: 'the-measure-is-the-design',
-    excerpt: 'Sixty-six characters is not a superstition. It is the width at which the eye still finds the start of the next line without hunting for it, and it decides more about a reading page than the choice of typeface does.',
+    excerpt: 'Sixty-six characters is not a superstition. It is the width at which the eye still finds the start of the next line without hunting for it.',
     category: 'Typography', tags: ['measure', 'reading', 'layout'],
     series: 'Designing a reading page', order: 1, ago: 30,
     body: `Ask why a column is the width it is and you will usually be told about taste. It is @@not taste@@. It is the distance the eye can travel and still find the start of the next line without hunting for it.

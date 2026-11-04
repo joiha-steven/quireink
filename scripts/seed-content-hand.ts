@@ -16,7 +16,7 @@ export const HAND_POSTS: Seed[] = [
   {
     title: 'The reed pen, in Van Gogh’s letters',
     slug: 'the-reed-pen-in-van-goghs-letters',
-    excerpt: 'Over nine hundred of Van Gogh’s letters survive, and the famous ones are written with the same cut reed he drew with. They are the best free lesson in what a broad-edged tool does when nobody is performing: a working hand, at speed, on cheap paper.',
+    excerpt: 'Over nine hundred of Van Gogh’s letters survive, written with the same cut reed he drew with: a broad-edged tool in a working hand, at speed, on cheap paper.',
     category: 'Calligraphy', tags: ['pen', 'letters', 'van gogh'],
     ago: 1,
     body: `Vincent van Gogh wrote more than nine hundred letters that survive, most of them to his brother Theo, and he wrote the Arles ones with the same instrument he was drawing with: a reed, cut to a broad edge with a pocket knife.[^1] Not a metaphorically similar instrument — ++the same pen, dipped in the same ink++, moving between a sentence and a @@sketch@@ without being put down.
@@ -75,7 +75,7 @@ The table explains the letters' texture better than any stylistic analysis. A qu
   {
     title: 'The broad-edged pen, and what it still teaches',
     slug: 'the-broad-edged-pen',
-    excerpt: 'Nearly every serif on your screen is a frozen record of a flat nib held at an angle. Hold a pen at thirty degrees, write an O, and the thick and thin you get is the same modulation a type designer spends a year redrawing.',
+    excerpt: 'Nearly every serif on your screen is a frozen record of a flat nib held at an angle. Hold a pen at thirty degrees and write an O to see where it came from.',
     category: 'Calligraphy', tags: ['pen', 'history', 'letterforms'],
     ago: 63,
     body: `Pick up a broad-edged pen, hold it at thirty degrees, and write an **o**. The stroke is thick on the down-left and thin on the up-right, and you did nothing to make it so: the nib is a flat edge, and ++the width of the mark is simply how much of that edge is facing the direction you are travelling++.
@@ -120,7 +120,7 @@ Do it a third time faster and watch the joins start to slur. That slurring, disc
   {
     title: 'Uncials, half-uncials, and the shape of a slow hand',
     slug: 'uncials-and-the-slow-hand',
-    excerpt: 'The roundest letters in the Latin tradition were written by scribes who had all the time in the world and no lower case to write with. What they left is a hand with almost no ascenders and a rhythm nothing since has matched.',
+    excerpt: 'The roundest letters in the Latin tradition, written by scribes with all the time in the world and no lower case to write with.',
     category: 'Calligraphy', tags: ['history', 'letterforms', 'practice'],
     ago: 71,
     body: `Uncial is what happens when a formal alphabet meets a pen that prefers curves. Roman capitals were cut in stone, and their straight strokes and sharp corners are a chisel's preferences. Move the same alphabet onto vellum with a broad nib and the corners round off, because rounding is faster and the pen resists the turn.
@@ -157,7 +157,7 @@ Very little, honestly, and that is fine. It is the clearest way to feel what a n
   {
     title: 'Chancery italic in ninety minutes',
     slug: 'chancery-italic-in-ninety-minutes',
-    excerpt: 'The Renaissance hand that became our italic, reduced to four shapes and one angle. Ninety minutes gets you a legible page; the remaining decade is spent making it look easy.',
+    excerpt: 'The Renaissance hand that became our italic, reduced to four shapes and one angle. Ninety minutes gets you a legible page; the next decade makes it look easy.',
     category: 'Calligraphy', tags: ['italic', 'practice', 'history'],
     ago: 79,
     body: `Cancellaresca, the chancery hand of sixteenth-century Rome, is the ancestor of every italic on your screen. It is also, unusually for a calligraphic hand, learnable in an afternoon, because almost all of it is built from four shapes.
@@ -192,7 +192,7 @@ Because writing the letters teaches you where an italic's weight sits, and after
   {
     title: 'Ruling a page before you write on it',
     slug: 'ruling-a-page-before-you-write-on-it',
-    excerpt: 'A scribe ruled the page before writing a word, and the ruling was arithmetic: nib widths in, line height out. Every margin on this site comes from the same calculation, done by a stylesheet instead of a lead point.',
+    excerpt: 'A scribe ruled the page before writing a word, and the ruling was arithmetic: nib widths in, line height out. A stylesheet does the same sum here.',
     category: 'Calligraphy', tags: ['practice', 'layout', 'craft'],
     ago: 88,
     body: `Every formal hand is ruled before a single letter is written, and the ruling is not a matter of taste. It is derived from the nib, because the nib is the only fixed quantity on the desk.

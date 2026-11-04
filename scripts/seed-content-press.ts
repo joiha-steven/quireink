@@ -14,7 +14,7 @@ export const PRESS_POSTS: Seed[] = [
   {
     title: 'Paper weights, and the table nobody agrees on',
     slug: 'paper-weights-and-the-table-nobody-agrees-on',
-    excerpt: 'Two paper systems, one of them measuring a quantity that changes depending on what the paper is for. Here is the conversion table, and the honest reason it can never be exact for every sheet on it.',
+    excerpt: 'Two paper systems, one of them measuring a quantity that changes with what the paper is for. Here is the conversion table, and why it can never be exact.',
     category: 'Printing', tags: ['paper', 'stock', 'workflow'],
     ago: 130,
     body: `Ask for "80 pound paper" and ++you have not said anything until you also say what kind++. The American basis-weight system weighs a ream of paper *at its basis size*, and the basis size is different for every grade. Text stock is measured at 25 × 38 inches, cover stock at 20 × 26, index at 25.5 × 30.5. So 80 lb text and 80 lb cover are not close: the cover is roughly twice the substance.
@@ -58,7 +58,7 @@ Paper has a **grain direction**, the way the fibres lie. A book must be bound wi
   {
     title: 'Imposition: why page 1 sits beside page 8',
     slug: 'imposition-why-page-one-sits-beside-page-eight',
-    excerpt: 'Fold a sheet three times and the page order stops being obvious — page one ends up beside page eight, upside down. Printers solved this before 1500, and every book you own is still assembled by their answer.',
+    excerpt: 'Fold a sheet three times and page one ends up beside page eight, upside down. Printers solved this before 1500, and every book you own still uses their answer.',
     category: 'Printing', tags: ['imposition', 'binding', 'workflow'],
     ago: 141,
     body: `A book is not printed a page at a time. It is printed on large sheets, each carrying many pages, which are then folded, cut and gathered. Working out which page goes where on the sheet, and which way up, is called imposition, and getting it wrong wastes the whole run.
@@ -93,7 +93,7 @@ The fix is to shift each page slightly inward as it approaches the centre of the
   {
     title: 'A signature, a gathering, a quire',
     slug: 'a-signature-a-gathering-a-quire',
-    excerpt: 'Three words for nearly the same thing, and the small differences that still matter at the bindery. One of them gave this software its name, which seemed worth explaining.',
+    excerpt: 'Three words for nearly the same thing, and the small differences that still matter at the bindery. One of them gave this software its name.',
     category: 'Printing', tags: ['binding', 'vocabulary', 'history'],
     ago: 167,
     body: `A @@**quire**@@ is a set of sheets folded together and nested one inside another, ready to be sewn. It is one of the oldest units of bookmaking, ++older than printing++, and it is why the pages of a hardback come in clumps rather than as loose leaves.
@@ -121,7 +121,7 @@ It is a good word for a thing made of folded sheets. That is what a book is, and
   {
     title: 'Ink, paper, and the colour between them',
     slug: 'ink-paper-and-the-colour-between-them',
-    excerpt: 'A palette is two decisions: what the ink is, and what it sits on. Everything else is adjustment, which is why one hex value can read warm on a cream page and dirty on a white one.',
+    excerpt: 'A palette is two decisions: what the ink is, and what it sits on. That is why one hex value can read warm on cream and dirty on white.',
     category: 'Printing', tags: ['colour', 'paper', 'palette'],
     series: 'Ink and press', order: 1, ago: 224,
     body: `Printers did not have palettes. They had an ink and a stock, and ==everything they could do with colour lived in the relationship between those two==.
@@ -153,7 +153,7 @@ That is also the reason a good reading theme has so few colours in it. There wer
   {
     title: 'Registration, and the millimetre that ruins a spread',
     slug: 'registration-and-the-millimetre',
-    excerpt: 'Four inks, four passes, and one of them a hair out of place. Everything you know about print colour — trapping, rich black, the fear of hairline type in three colours — follows from that single millimetre.',
+    excerpt: 'Four inks, four passes, and one of them a hair out of place. Everything you know about print colour follows from that single millimetre.',
     category: 'Printing', tags: ['colour', 'press', 'craft'],
     series: 'Ink and press', order: 2, ago: 195,
     body: `A colour page is printed four times: cyan, magenta, yellow, black, one after another. Registration is how precisely those four passes line up, and a misregistration of a fraction of a millimetre is visible to anyone, even people who could not name what they are seeing.
@@ -181,7 +181,7 @@ Plain black for type, rich black for areas. That one rule prevents most print co
   {
     title: 'Trapping, overprint, and the black that is not black',
     slug: 'trapping-and-the-black-that-is-not-black',
-    excerpt: 'Two adjacent colours will not line up perfectly, not on any press ever built. Trapping is deciding in advance which one loses, and rich black is the same decision made about the darkest thing on the page.',
+    excerpt: 'Two adjacent colours will not line up perfectly on any press ever built. Trapping is deciding in advance which one loses.',
     category: 'Printing', tags: ['colour', 'press', 'craft'],
     series: 'Ink and press', order: 3, ago: 152,
     body: `Registration is never perfect, so where two solid colours meet there will be a hairline of white paper on one side. Trapping is the deliberate overlap that hides it: one colour is spread slightly under the other, so a small misregistration eats into the overlap instead of showing paper.
@@ -224,7 +224,7 @@ Four sentences, and they are older than every piece of software involved in prod
   {
     title: 'Thirty-six views, ten thousand impressions',
     slug: 'thirty-six-views-ten-thousand-impressions',
-    excerpt: 'The Great Wave is not a painting. It is a print run — four trades, a dozen blocks, and a registration system made of two notches in the wood. Everything this series has said about presses, Edo said first with cherry planks.',
+    excerpt: 'The Great Wave is not a painting. It is a print run: four trades, a dozen blocks, and a registration system made of two notches in the wood.',
     category: 'Printing', tags: ['woodblock', 'colour', 'history'],
     series: 'Ink and press', order: 4, ago: 4,
     body: `The most recognised image ever printed is not a painting. Under the Wave off Kanagawa exists as thousands of impressions — plausibly five to eight thousand in the Edo period alone[^1] — pulled from hand-carved cherry blocks until the blocks wore out, recut, and pulled again. It is press work, and every idea this series has described was already in it, two centuries before offset.

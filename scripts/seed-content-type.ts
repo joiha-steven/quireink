@@ -13,9 +13,44 @@ import type { Seed } from './seed-content'
 
 export const TYPE_POSTS: Seed[] = [
   {
+    // THE READER'S PEN, in the post that the demo bar's "The pen" opens, and the words on it are
+    // the feature's: every other post here is about letters, so a pen bar raised over one of
+    // them explained nothing. The first sentence is the one the bar selects, and it says what is
+    // happening while it happens. Every claim below is ADR 0043 or 0047.
+    title: 'Write on this page',
+    slug: 'write-on-this-page',
+    excerpt: 'Select any words here and a pen comes up: five inks, an underline, a ring and a note. No account, and the marks stay in your browser.',
+    category: 'Typography', tags: ['pen', 'reading', 'craft'],
+    ago: 2,
+    body: `Select this sentence with your mouse or your finger, and a pen comes up over it. Try it now, then keep reading with a mark on the page.
+
+Readers have always written in books. ==The marks that make a copy somebody's are the reader's==, and a web page has spent thirty years acting as if it could not be touched. This one can be, and it asks for nothing first: @@no account@@, no email, no sign-in.
+
+## What is on the bar
+
+- **The five dots** are the highlighter: yellow, green, pink, blue and orange. Pick the one that says why the sentence matters to you.
+- **Underline** draws a pencil line under the words.
+- **Ring** puts a red ballpoint circle round a word or two.
+- **Note** adds a line of your own, on a card under the paragraph.
+- **Copy quote** copies the words with a link back to this exact place.
+- **Keep on every device** gives you a code, or takes your commenter sign-in, and holds your marks on the blog so another device can read them. The public demo of this blog refuses every write, so the button is left off there; in the sandbox it works.
+
+To take a mark back, click it and choose Remove mark.
+
+## Where your marks go
+
+==Nowhere, unless you ask.== A mark is stored in this browser, against the words it sits on, and drawn again the next time you open the page. Nothing is sent, and the person who runs this blog cannot see what you marked.
+
+Because a mark holds on to words and not to a position, it survives the owner fixing a typo three paragraphs up. If the sentence itself is rewritten the mark does not land at all, which is better than landing on the wrong words.
+
+## One hand on the page
+
+The yellow strokes and the ring above were put there by the writer. Yours are drawn by the same pen: the same strokes, dealt the same way, so a page you have marked looks like a page somebody has read.`,
+  },
+  {
     title: 'What a font subsetter actually removes',
     slug: 'what-a-subsetter-removes',
-    excerpt: 'A webfont is mostly glyphs your pages will never show — alphabets you do not write in, symbols nobody has typed since 1994. Cutting them is the largest single saving available to a text site, and the reader gives up nothing at all for it.',
+    excerpt: 'A webfont is mostly glyphs your pages will never show. Cutting them is the largest single saving a text site has, and the reader gives up nothing for it.',
     category: 'Typography', tags: ['webfonts', 'performance', 'craft'],
     ago: 13,
     body: `A retail text font carries two to three thousand glyphs. A blog in English uses perhaps two hundred of them; add Vietnamese and it is four hundred. Everything else is Greek, Cyrillic, currency for markets you do not serve, and arrows.
@@ -85,7 +120,7 @@ Which means the honest number for "how much font does a reader download" is not 
   {
     title: 'The em, the en, and three dashes',
     slug: 'the-em-the-en-and-three-dashes',
-    excerpt: 'Four horizontal marks that look alike, mean entirely different things, and are wrong on most pages on the web. A hyphen joins, an en dash spans, an em dash interrupts — and a minus sign is none of the three.',
+    excerpt: 'Four horizontal marks that look alike and mean different things. A hyphen joins, an en dash spans, an em dash interrupts, and a minus sign is none of the three.',
     category: 'Typography', tags: ['punctuation', 'craft', 'detail'],
     ago: 38,
     body: `There are four horizontal marks in ordinary text and they are not interchangeable. Getting them right is the cheapest quality signal available to a page, because it costs nothing and almost nobody bothers.
@@ -127,7 +162,7 @@ The names are literal. An em was the width of a cast **M** — actually the widt
   {
     title: 'Five inks, and when to reach for each',
     slug: 'five-inks-and-when-to-reach-for-each',
-    excerpt: 'A highlighter is a reading tool, not a decoration. Five pigments, and which one you reach for is a claim about why the sentence matters: a definition, a warning and a number all want different colours.',
+    excerpt: 'A highlighter is a reading tool, not a decoration. Which of five pigments you reach for is a claim about why the sentence matters.',
     category: 'Typography', tags: ['reading', 'colour', 'craft'],
     ago: 55,
     body: `A pen box has five colours in it and a student uses all five, but not at random. Over a term a private grammar develops: one colour for the thing that will be examined, another for the thing that was surprising, a third for the thing to come back to. Nobody writes the grammar down and everybody has one.
@@ -181,7 +216,7 @@ A coloured rectangle behind text is not what a pen does. A real stroke has chise
   {
     title: 'Notes on reading, on paper and on glass',
     slug: 'reading-on-paper-and-glass',
-    excerpt: 'A measure, a leading and a typeface walk into a column, and only one of them ever gets blamed. Paper and screen do not disagree about type — they disagree about light, distance, and how long anybody will sit still.',
+    excerpt: 'Paper and screen do not disagree about type. They disagree about light, distance, and how long anybody will sit still.',
     category: 'Typography', tags: ['reading', 'screens', 'paper'],
     ago: 118,
     body: `Reading on a screen is not reading on paper with the lights on. The differences are small individually and they compound, and almost all of them push in the same direction: a screen needs more air.
@@ -236,7 +271,7 @@ Set the measure in \`rem\` rather than in characters: \`ch\` is the width of a z
   {
     title: 'Kerning is not tracking, and neither is spacing',
     slug: 'kerning-is-not-tracking',
-    excerpt: 'Three controls, three different jobs, and a great deal of type ruined by reaching for the wrong one. Kerning fixes a pair, tracking colours a paragraph, and letter-spacing is what you do to small caps and to nothing else.',
+    excerpt: 'Three controls and three different jobs. Kerning fixes a pair, tracking colours a paragraph, and letter-spacing is for small caps and nothing else.',
     category: 'Typography', tags: ['kerning', 'tracking', 'craft'],
     ago: 256,
     body: `**Spacing** is the sidebearing built into each glyph: how much air the designer left on either side of the letter. It applies always, to every pair, and you do not get to change it without editing the font.

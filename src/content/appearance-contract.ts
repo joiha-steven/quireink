@@ -200,6 +200,7 @@ export const PROMISED_SELECTORS: PromisedSelector[] = [
   { name: '.tl-mark', surface: 'blog', note: 'a month mark on the listing timeline' },
   { name: '.tl-yr', surface: 'blog', note: "one year's group of cards on the listing timeline" },
   { name: '.note-source', surface: 'blog', note: "a note's source line: where the quoted words come from" },
+  { name: '.note-quote', surface: 'blog', note: 'the passage a clip kept, on its page and on its card in the notebook' },
   { name: '.pager-count', surface: 'blog', note: 'the "page N / M" label' },
   { name: '.chip', surface: 'blog', note: 'one category or series link in the chip row' },
   { name: '.chips', surface: 'blog', note: 'the chip row under the header' },

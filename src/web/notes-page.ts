@@ -6,10 +6,11 @@
 // the same reading face, the same pen — because a notebook is read on the same desk.
 //
 // A CLIP opens on the passage it kept and where it came from, then the owner's own words
-// beneath; a note the owner simply wrote is only the words.
+// beneath; a note the owner simply wrote is only the words. The list keeps that order: what
+// makes a note a note is the line the owner added, so a card without it says nothing.
 
 import { getSettings } from '@/content/settings'
-import { getNote, getPublicNotes } from '@/content/notes'
+import { getNote, getPublicNotesWithWords } from '@/content/notes'
 import { renderPostContent } from '@/render/post-content'
 import { standaloneUrls } from '@/render/link-cards'
 import { cardFacts, noteLinks } from '@/content/link-cards'
@@ -19,28 +20,32 @@ import { clampExcerpt, escapeAttr, escapeHtml, fill, isPublicallyVisible, toPlai
 import type { Note } from '@/types'
 import { pieceWords } from '@/render/callout-words'
 
+/** How much of the owner's words a card carries: three lines of the reading column. */
+const CARD_WORDS = 200
+
 /** Where a clip came from, as one line: the word, then the source by its title. */
 function sourceLine(note: Note, prefix: string): string {
   if (!note.sourceUrl) return ''
   const name = note.sourceTitle || note.sourceUrl.replace(/^https?:\/\//, '')
   // `u-quotation-of`: the microformat a receiver reads the source off (ADR 0046).
-  return `<p class="note-source t-small text-meta">${escapeHtml(prefix)} <a class="link-accent u-quotation-of" href="${
+  return `<p class="note-source mt-2 t-small text-meta">${escapeHtml(prefix)} <a class="link-accent u-quotation-of" href="${
     escapeAttr(note.sourceUrl)}" rel="noopener">${escapeHtml(name)}</a></p>`
 }
 
 export async function renderNotesIndex(): Promise<string> {
   const settings = await getSettings()
   const s = t(settings.language)
-  const notes = await getPublicNotes()
+  const notes = await getPublicNotesWithWords()
   const cards = notes.map((n) => {
-    const summary = n.quote ? clampExcerpt(n.quote) : ''
+    const kept = n.quote ? `<blockquote class="note-quote reading-font mt-3 t-body">${escapeHtml(clampExcerpt(n.quote))}</blockquote>` : ''
+    const words = clampExcerpt(toPlainText(n.content), CARD_WORDS)
     return `<article class="reveal">
 <p class="t-small text-meta"><time class="meta-part" datetime="${escapeAttr(n.date)}">${
       escapeHtml(formatDate(n.date, settings.language, settings.timezone))}</time></p>
 <h2 class="reading-font mt-2 fs-h3 font-semibold"><a class="link-accent" href="/notes/${escapeAttr(n.slug)}">${
       escapeHtml(n.title || n.sourceTitle || n.slug)}</a></h2>${
-      summary ? `<p class="reading-font mt-3 t-body text-text">${escapeHtml(summary)}</p>` : ''}${
-      sourceLine(n, s.noteSourcePrefix)}
+      kept}${sourceLine(n, s.noteSourcePrefix)}${
+      words ? `<p class="reading-font mt-3 t-body text-text">${escapeHtml(words)}</p>` : ''}
 </article>`
   }).join('\n')
   const body = notes.length === 0
@@ -49,7 +54,11 @@ export async function renderNotesIndex(): Promise<string> {
   return listingPage({
     title: `${s.notesTitle} · ${settings.title}`,
     description: fill(s.notesMeta, { site: settings.title }),
-    body: `<header class="listing-head"><h1>${escapeHtml(s.notesTitle)}</h1></header>${body}`,
+    // The one line that says what this page is. A visitor who has met the word "notes" only as
+    // a menu entry had nothing else to go on, and the sentence was already written for the
+    // description tag, in every language.
+    body: `<header class="listing-head"><h1>${escapeHtml(s.notesTitle)}</h1><p class="t-small text-meta">${
+      escapeHtml(fill(s.notesMeta, { site: settings.title }))}</p></header>${body}`,
     canonicalPath: '/notes',
     cardTitle: s.notesTitle,
     activeHref: '/notes',

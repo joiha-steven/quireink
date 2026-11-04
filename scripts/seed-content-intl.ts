@@ -24,7 +24,7 @@ export const INTL_POSTS: Seed[] = [
   {
     title: 'Ogonek nie jest przecinkiem',
     slug: 'ogonek-nie-jest-przecinkiem',
-    excerpt: 'Ogonek rośnie z litery, po tej samej krzywej, którą kończy się jej brzuszek. Przecinek doklejony pod spodem widać z drugiego końca pokoju — a przy ciasnej interlinii dotyka wersalika z następnego wiersza.',
+    excerpt: 'Ogonek rośnie z litery, po tej samej krzywej, którą kończy się jej brzuszek. Przecinek doklejony pod spodem widać z drugiego końca pokoju.',
     category: 'Typography', tags: ['diacritics', 'craft', 'polish'],
     ago: 5,
     body: `Polski ogonek jest jedynym znakiem diakrytycznym, który nie stoi obok litery ani nad nią. ==On z niej **wyrasta**.==#green W dobrze narysowanym kroju ą i ę mają ogonek wyprowadzony ze skoku pióra, po tej samej krzywej, którą kończy się brzuszek litery.
@@ -52,7 +52,7 @@ Zażółć gęślą jaźń — to zdanie zawiera wszystkie polskie znaki diakryt
   {
     title: 'Háček a rytmus české sazby',
     slug: 'hacek-a-rytmus-ceske-sazby',
-    excerpt: 'Háček nad malým písmenem se vejde. Nad velkým se nevejde nikdy, a počítat se s tím musí dřív, než se nastaví proklad — jinak se Ř z jednoho řádku dotkne účaří řádku nad ním.',
+    excerpt: 'Háček nad malým písmenem se vejde. Nad velkým se nevejde nikdy, a počítat se s tím musí dřív, než se nastaví proklad.',
     category: 'Calligraphy', tags: ['diacritics', 'rhythm', 'czech'],
     ago: 16,
     body: `Čeština klade na sazbu požadavek, který latinka původně neřešila: nad polovinou souhlásek stojí háček, a nad dlouhými samohláskami čárka. Písmo, které s tím nepočítá, se nerozbije — jen začne být o něco těsnější, řádek po řádku, až je stránka nečitelná a nikdo neví proč.
@@ -75,7 +75,7 @@ Příliš žluťoučký kůň úpěl ďábelské ódy. Deset diakritických znam
   {
     title: 'Noktasız ı ve baş harfin tuzağı',
     slug: 'noktasiz-i-ve-bas-harfin-tuzagi',
-    excerpt: 'Türkçede i ve ı iki ayrı harftir, tıpkı o ile ö gibi. Yazılımın çoğu bunu bilmez, İstanbul’u ISTANBUL yapar, ve hatayı kimse bir veri tabanına yazılana kadar fark etmez.',
+    excerpt: 'Türkçede i ve ı iki ayrı harftir, tıpkı o ile ö gibi. Yazılımın çoğu bunu bilmez ve İstanbul’u ISTANBUL yapar.',
     category: 'Typography', tags: ['craft', 'letterforms', 'turkish'],
     ago: 27,
     body: `Latin alfabesini kullanan çoğu dilde **i** harfinin büyüğü **I**'dır. Türkçede değil. Türkçede dört harf vardır: noktalı **i** ve onun büyüğü **İ**, noktasız **ı** ve onun büyüğü **I**.
@@ -105,7 +105,7 @@ Işık, yığın, İstanbul. Üç kelime, dört farklı i.`,
     title: 'Die Kunst der Kapitälchen',
     slug: 'die-kunst-der-kapitaelchen',
     lang: 'de',
-    excerpt: 'Echte Kapitälchen sind gezeichnet: eigene Strichstärke, eigene Laufweite, eigene Höhe. Alles andere ist verkleinerte Versalschrift, wirkt dünn und zu eng — und genau das tut der Browser, wenn die Schrift den Schnitt nicht mitbringt.',
+    excerpt: 'Echte Kapitälchen sind gezeichnet: eigene Strichstärke, eigene Laufweite, eigene Höhe. Alles andere ist verkleinerte Versalschrift.',
     category: 'Typography', tags: ['small caps', 'craft'],
     ago: 34,
     body: `Kapitälchen sind der stillste Akzent, den die Typografie kennt. Sie heben ein Wort hervor, ohne die Zeile zu stören, weil sie die Höhe der Kleinbuchstaben behalten und trotzdem die Form der Großbuchstaben tragen.
@@ -125,7 +125,7 @@ Kapitälchen brauchen mehr Laufweite als Kleinbuchstaben, aus demselben Grund wi
   {
     title: 'Eð og þorn: tveir stafir sem lifðu af',
     slug: 'ed-og-thorn-tveir-stafir',
-    excerpt: 'Þorn og eð stóðu einu sinni í ensku líka. Íslenskan hélt þeim, og prentsmiðjurnar borguðu fyrir það í heila öld — með stöfum sem þurfti að steypa sérstaklega og týndust jafnóðum úr kassanum.',
+    excerpt: 'Þorn og eð stóðu einu sinni í ensku líka. Íslenskan hélt þeim, og prentsmiðjurnar borguðu fyrir það í heila öld.',
     category: 'Printing', tags: ['history', 'letterforms', 'icelandic'],
     ago: 41,
     body: `==Stafirnir **þ** (þorn) og **ð** (eð) eru ekki skraut.==#green Þeir eru tvö ólík hljóð sem latneska stafrófið átti ekkert tákn fyrir, og norrænir skrifarar bjuggu þau til vegna þess að þeir þurftu þau.
@@ -151,7 +151,7 @@ Enska notaði þorn líka, öldum saman. Hún missti hann ekki af málfræðileg
     title: 'La chasse, l’approche et le gris typographique',
     slug: 'la-chasse-et-l-approche',
     lang: 'fr',
-    excerpt: 'Trois mots français pour trois choses que l’anglais confond sous le seul mot spacing. La chasse appartient à la lettre, l’approche au couple, le gris à la page entière — et l’un ne corrige jamais l’autre.',
+    excerpt: 'Trois mots français pour trois choses que l’anglais confond sous le seul mot spacing. La chasse appartient à la lettre, l’approche au couple, le gris à la page.',
     category: 'Typography', tags: ['kerning', 'tracking', 'craft'],
     ago: 48,
     body: `Le français distingue ce que l'anglais mélange. La **chasse** est la largeur propre d'un caractère, gravée dans la fonte. L'**approche** est l'espace entre deux caractères. Le **gris typographique** est la teinte moyenne que produit un bloc de texte quand on le regarde de loin, les yeux mi-clos.
@@ -174,7 +174,7 @@ Same test, other languages: Íslenska, Čeština, Türkçe. Cùng một phép th
     title: 'Thư pháp và nhịp thở',
     slug: 'thu-phap-va-nhip-tho',
     lang: 'vi',
-    excerpt: 'Nét chữ đẹp không đến từ cổ tay. Nó đến từ chỗ người viết quyết định dừng lại, và từ nhịp thở giữa hai nét — thứ không cây bút nào dạy được cho người đang cầm nó.',
+    excerpt: 'Nét chữ đẹp không đến từ cổ tay. Nó đến từ chỗ người viết quyết định dừng lại, và từ nhịp thở giữa hai nét.',
     category: 'Calligraphy', tags: ['vietnamese', 'practice', 'rhythm'],
     ago: 96,
     body: `Người mới học thư pháp thường tập trung vào hình dáng từng chữ. ==Người viết lâu năm tập trung vào khoảng nghỉ giữa các chữ==#green, vì đó mới là chỗ quyết định cả trang giấy nhìn có sống hay không.
@@ -197,7 +197,7 @@ Tập một nét duy nhất, lặp lại kín một trang, cho tới khi nét th
     title: 'Dấu phụ tiếng Việt và chiều cao chữ hoa',
     slug: 'dau-phu-tieng-viet',
     lang: 'vi',
-    excerpt: 'Chữ Quốc ngữ chồng hai dấu lên cùng một nguyên âm: một dấu chất lượng, một dấu thanh. Đó là bài kiểm tra khắc nghiệt nhất cho khoảng cách dòng, và là lý do một trang tiếng Việt cần thoáng hơn tiếng Anh chừng hai phần mười.',
+    excerpt: 'Chữ Quốc ngữ chồng hai dấu lên cùng một nguyên âm: một dấu chất lượng, một dấu thanh. Đó là bài kiểm tra khắc nghiệt nhất cho khoảng cách dòng.',
     category: 'Typography', tags: ['vietnamese', 'diacritics', 'leading'],
     ago: 104,
     body: `Tiếng Việt là một trong số ít chữ viết Latinh chồng **hai** dấu lên cùng một nguyên âm: một dấu phụ chỉ âm, một dấu thanh. Chữ **ế** mang mũ rồi mang sắc; chữ **ườ** mang móc rồi mang huyền.
@@ -222,7 +222,7 @@ Deutsch, Polski und Türkçe stellen dieselbe Frage in kleinerem Maßstab: Grö�
     title: 'Der Blocksatz und die Lücke',
     slug: 'der-blocksatz-und-die-luecke',
     lang: 'de',
-    excerpt: 'Blocksatz ohne Silbentrennung ist der häufigste Satzfehler im Web: Löcher, die sich über drei Zeilen zu einem Bach zusammenschließen. Zu beheben ist er in einer einzigen CSS-Zeile, die fast niemand hinschreibt.',
+    excerpt: 'Blocksatz ohne Silbentrennung ist der häufigste Satzfehler im Web: Löcher, die sich über drei Zeilen zu einem Bach zusammenschließen.',
     category: 'Typography', tags: ['justification', 'hyphenation', 'craft'],
     ago: 112,
     body: `Blocksatz sieht ordentlich aus, solange die Spalte breit genug ist. Wird sie schmal, verteilt der Browser den fehlenden Platz auf die Wortzwischenräume einer Zeile — und weil er nur ganze Wörter umbrechen kann, entstehen Löcher.

@@ -35,6 +35,18 @@ describe('/notes', () => {
     expect(html).toContain('every stroke starts wet')
   })
 
+  it('draws the owner\'s words on the list, under the passage on a clip', async () => {
+    await saveNote({ title: 'A clip', content: 'Why I kept **this** one.', status: 'published', date: PAST,
+      sourceUrl: 'https://example.com/a', sourceTitle: 'Source A', quote: 'The passage.' })
+    await saveNote({ title: 'A thought', content: 'Only my own words, and no passage at all.', status: 'published', date: PAST })
+    const html = await get('/notes').then((r) => r.text())
+    expect(html).toContain('Only my own words, and no passage at all.')
+    expect(html).toContain('Why I kept this one.')
+    expect(html.indexOf('The passage.')).toBeLessThan(html.indexOf('Why I kept'))
+    expect(html).toContain('class="note-quote')
+    expect(html).toContain('Notes and clippings kept on')
+  })
+
   it('says so when there is nothing yet', async () => {
     const html = await get('/notes').then((r) => r.text())
     expect(html).toContain('No notes yet.')
