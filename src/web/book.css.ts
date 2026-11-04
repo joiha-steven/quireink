@@ -202,7 +202,9 @@ body:has(.book-overlay[open]){overflow:hidden}
 
 /* Drop cap: the first paragraph opens with a large raised initial spanning about three
    lines, which is the classic chapter opening. The line beside it is not also indented. */
-.book-flow.prose > p:first-child::first-letter,.book-flow.prose > .book-tp + p::first-letter{float:left;margin:.02em .09em 0 0;
+/* Latin only, as on Newspaper (look-paper.css.ts): a raised first character is no opening in
+   Chinese, Japanese or Korean, and the character one is a single stroke. */
+.book-flow.prose > :is(p:first-child,.book-tp + p):not(:lang(zh),:lang(ja),:lang(ko))::first-letter{float:left;margin:.02em .09em 0 0;
   font-size:3.1em;line-height:.72;font-weight:600;color:var(--c-heading)}
 .book-flow.prose > p:first-child,.book-flow.prose > .book-tp + p{text-indent:0}
 /* In the reader the same break becomes an asterism: more room, so the ornament can be a

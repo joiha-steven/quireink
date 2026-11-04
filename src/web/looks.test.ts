@@ -86,6 +86,10 @@ describe('the newspaper dialect', () => {
     expect(LOOK_PAPER_CSS).not.toContain('Fig.')
   })
 
+  it('keeps its drop cap to the alphabets that have one', () => {
+    expect(LOOK_PAPER_CSS).toContain('p:first-child:not(:lang(zh),:lang(ja),:lang(ko))::first-letter')
+  })
+
   it('draws a column rule only between two columns', () => {
     // Flat, it landed 4px off the edge of a phone and down the left of a row on a tablet.
     expect(LOOK_PAPER_CSS).not.toContain('.fc + .fc{border-left')

@@ -265,7 +265,9 @@ html[data-look=paper] .deck{text-align:left;max-width:88%;margin:1.5rem auto 0;
    The pseudo-element adds no character to the text, so the pen's anchors, a copy and the
    feed all read the word as it was written. */
 @supports (initial-letter:3) or (-webkit-initial-letter:3){
-  html[data-look=paper] article > .prose > p:first-child::first-letter{
+  /* NOT ON CHINESE, JAPANESE OR KOREAN: a first letter is a Latin idea, and raised three lines
+     the character one (U+4E00) printed as a bare stroke in front of the words. */
+  html[data-look=paper] article > .prose > p:first-child:not(:lang(zh),:lang(ja),:lang(ko))::first-letter{
     -webkit-initial-letter:3;initial-letter:3;margin-right:.12em;color:var(--c-heading);
     font-family:var(--font-display);font-weight:400}
 }

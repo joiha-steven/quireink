@@ -153,7 +153,7 @@ describe('the title page is a page of its own', () => {
 
   it('does not take the body\'s drop cap or indent from the first child any more', () => {
     // The title page is the first child now, so the opening paragraph is the one AFTER it.
-    expect(BOOK_CSS).toContain('.book-flow.prose > .book-tp + p::first-letter')
+    expect(BOOK_CSS).toContain('.book-flow.prose > :is(p:first-child,.book-tp + p):not(:lang(zh),:lang(ja),:lang(ko))::first-letter')
     expect(BOOK_CSS).toContain('.book-flow.prose > .book-tp + p{text-indent:0}')
     expect(BOOK_CSS).toContain('.book-flow.prose > .book-tp + *{margin-top:0}')
   })

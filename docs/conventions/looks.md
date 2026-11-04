@@ -317,7 +317,7 @@ A masthead, a lead headline, column rules, and a piece printed as an offprint.
   decision, never a sheet's.
 - **A shelf with nothing left on it is hidden** — a page, or a piece with its contents off,
   whose rail held only the menu.
-- **The first letter is a drop cap**, `initial-letter:3` only, with no float fallback. Three
+- **The first letter is a drop cap**, `initial-letter:3` only, with no float fallback, and never on Chinese, Japanese or Korean, where it printed the character one as a bare stroke. Three
 front-page shapes are dressed, not one: `list`, `grid` (the reader's own toggle) and the
 composed `front`.
 
