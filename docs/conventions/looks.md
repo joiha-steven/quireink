@@ -343,7 +343,7 @@ composed `front`.
   hide and put five default-blue underlined links across a phone masthead, beside a drawer
   button that opened the same five. The phone strip now lives in its own narrow-width block
   that paints the links, and the drawer no longer carries the menu.
-- **One gutter for every column rule on the page** (`margin-left:-20px;padding-left:20px`
+- **One gutter for every column rule on the page**, drawn only between two columns of the grid (`margin-left:-20px;padding-left:20px`
   against a 40px gap), centred IN the gap and never drawn at a card's edge. The card grid
   ships 28px of its own, so this look restates it: the same hairline standing 14px off a
   picture in one place and 20px off words in another reads as a mistake.

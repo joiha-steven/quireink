@@ -86,6 +86,12 @@ describe('the newspaper dialect', () => {
     expect(LOOK_PAPER_CSS).not.toContain('Fig.')
   })
 
+  it('draws a column rule only between two columns', () => {
+    // Flat, it landed 4px off the edge of a phone and down the left of a row on a tablet.
+    expect(LOOK_PAPER_CSS).not.toContain('.fc + .fc{border-left')
+    expect(LOOK_PAPER_CSS).toContain('.front-grid:is(.cols-2,.cols-3) > .fc:nth-child(even)')
+  })
+
   it('clears the auto margin that pins the masthead name to the left edge', () => {
     // With `display:contents` on the bar, the name's own `margin-right:auto` — there to
     // push the controls to the far end of the ROW — ate 917px of the column and left the

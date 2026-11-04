@@ -350,10 +350,17 @@ html[data-look=paper] .front-label{padding:.45rem 0;line-height:1}
    the other - and 14px beside a card whose picture is a filled block read as a rule leaning
    on the picture. The grid takes the row's gutter, so both rules now breathe the same. */
 html[data-look=paper] .front-grid{column-gap:40px}
-html[data-look=paper] .front-grid > .fc + .fc{border-left:1px solid var(--c-rule);
-  margin-left:-20px;padding-left:20px}
-html[data-look=paper] .front-secondary{border-left:1px solid var(--c-rule);
-  margin-left:-20px;padding-left:20px}
+/* A RULE STANDS ONLY BETWEEN TWO COLUMNS, counted per column at the grid's own widths. A flat
+   '.fc + .fc' drew it 4px off the edge of a phone and down the left of a row on a tablet. */
+@media (min-width:641px){
+  html[data-look=paper] .front-grid:is(.cols-2,.cols-3) > .fc:nth-child(even){
+    border-left:1px solid var(--c-rule);margin-left:-20px;padding-left:20px}
+}
+@media (min-width:901px){
+  html[data-look=paper] .front-grid.cols-3 > .fc:nth-child(3n+1){border-left:0;margin-left:0;padding-left:0}
+  html[data-look=paper] :is(.front-grid.cols-3 > .fc:not(:nth-child(3n+1)),.front-secondary){
+    border-left:1px solid var(--c-rule);margin-left:-20px;padding-left:20px}
+}
 html[data-look=paper] .front-secondary > .fc + .fc{border-top:1px solid var(--c-rule);
   padding-top:.85rem;margin-top:.85rem}
 /* The lead headline is the one thing on a front page allowed to shout. */
