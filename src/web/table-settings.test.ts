@@ -45,6 +45,12 @@ describe('the table defaults', () => {
     expect(css).toContain('var(--c-text)')
   })
 
+  it('is declared on the column, so book mode mixes it from the book\'s own paper', () => {
+    // A var() in a custom property resolves where it is declared. On :root the head took the
+    // page's palette into book mode: with the page dark, 1.07:1 on Newspaper's ivory.
+    expect(tableToCss(DEFAULT_TABLE).startsWith('.prose{')).toBe(true)
+  })
+
   it('is today exactly in every OTHER field', () => {
     expect(DEFAULT_TABLE.grid).toBe('all')
     expect(DEFAULT_TABLE.ruleWeight).toBe('hairline')

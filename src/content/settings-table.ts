@@ -137,7 +137,13 @@ function withoutOwned(saved: TableSettings, owned: readonly string[]): TableSett
 }
 
 /**
- * The table variables, for `:root`.
+ * The table variables, for `.prose`.
+ *
+ * ON THE COLUMN, NOT THE ROOT, and the palette is why: `--tbl-head-bg` and `--tbl-head-fg` are
+ * mixed from `--c-*`, and a `var()` inside a custom property resolves where it is DECLARED. On
+ * `:root` they took the page's palette and kept it inside book mode, which sets its own paper:
+ * with the page dark, a near-black band on an ivory sheet, and on Newspaper, whose head has no
+ * ground of its own, light words on that ivory at 1.07:1.
  *
  * Emitted as numbers-and-lengths rather than as finished declarations so `web/prose.css.ts`
  * keeps every selector. A stylesheet that reads its values from variables can be cached and
@@ -148,7 +154,7 @@ export function tableToCss(saved: TableSettings, owned: readonly string[] = []):
   const head = HEAD_LOOK[t.head]
   const lines = GRID_LINES[t.grid]
   const rule = RULE_PX[t.ruleWeight]
-  return ':root{'
+  return '.prose{'
     + `--tbl-head-bg:${head.bg}`
     + `;--tbl-head-fg:${head.fg}`
     // The rule under the header is drawn whatever `grid` says: it is the header's own
