@@ -17,6 +17,8 @@ import type { AdminFile } from '@/runtime/ports'
 import type { SiteSettings } from '@/types'
 import { getIntegrationStatus } from '@/store/integration-keys'
 import { railBootScript, railData, railHtml, railHtmlAttrs } from '@/web/admin/rail'
+import { mediaFacts } from '@/web/article-blocks'
+import { collapseBlob } from '@/media/blob'
 import { overlaysHtml } from '@/web/admin/overlays'
 import { notFoundScreen } from '@/web/admin/screens/not-found'
 import { screenFor } from '@/web/admin/screens'
@@ -161,9 +163,23 @@ function bootChunks(entry: string): string[] {
   return found
 }
 
-const PRELOADS = bootChunks(RAIL_ENTRY_NAME)
+const RAIL_CHUNKS = bootChunks(RAIL_ENTRY_NAME)
+const PRELOADS = RAIL_CHUNKS
   .map((name) => `<link rel="modulepreload" href="/admin/assets/${name}">`)
   .join('')
+
+/**
+ * The same for the screen's own island, the part the rail's list does not cover. The editor's
+ * `sheet` imports 24 chunks and 14 of them are nobody else's: nothing could ask for those until
+ * all 554 KB of `sheet` had arrived and been read, so on the sandbox the editor's second wave
+ * left at 19.2 s of a 23.7 s load, on a path where one round trip is 182 ms. The island's own
+ * file is the `<script>` already in the page, so only what it imports is named here.
+ */
+function islandPreloads(entry: string): string {
+  const named = new Set(RAIL_CHUNKS)
+  return bootChunks(entry).filter((name) => !named.has(name))
+    .map((name) => `\n<link rel="modulepreload" href="/admin/assets/${name}">`).join('')
+}
 
 /**
  * The owner's live type and colour settings, for the admin document.
@@ -267,6 +283,8 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
   const esc = (s: string) => s.replace(/[<>"&]/g, (c) =>
     ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', '&': '&amp;' })[c] ?? c)
   const { aiConfigured } = await getIntegrationStatus()
+  const stored = settings.author.avatarUrl ?? ''
+  const portrait = stored ? (await mediaFacts()).thumbs.get(collapseBlob(stored)) ?? stored : ''
   // ADR 0054: every admin screen arrives as finished HTML in the canvas. An address the table
   // does not claim is not a gap any more — it is the dead end, and the server draws that too.
   const found = screenFor(path)
@@ -276,8 +294,9 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
   const t = adminT(settings.language)
   const named = found ? await found.screen.title(t, query) : [t.notFoundTitle]
   const ink = found?.screen.pen ? `\n<link rel="stylesheet" href="${INK}">` : ''
-  const island = found?.screen.island
-    ? `\n<script type="module" src="/admin/assets/${islandNamed(found.screen.island)}"></script>`
+  const entry = found?.screen.island ? islandNamed(found.screen.island) : ''
+  const island = entry
+    ? `${islandPreloads(entry)}\n<script type="module" src="/admin/assets/${entry}"></script>`
     : ''
   // No `data-chrome-font`: the admin does not wear the site's chrome face (see adminStyles),
   // and the only rule that ever read the attribute was `MONO_TRACKING`, which is no longer
@@ -325,7 +344,7 @@ ${PRELOADS}
      on every visit. Invisible until it has focus, which is the whole convention: the people who
      need it find it with the first key they press, and nobody else ever sees it. -->
 <a href="#admin-content" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:border focus:border-neutral-300 focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-neutral-900 focus:shadow-lg dark:focus:border-neutral-700 dark:focus:bg-neutral-900 dark:focus:text-neutral-100">${escapeHtml(adminT(settings.language).skipToContent)}</a>
-${railHtml({ settings, aiConfigured, path })}
+${railHtml({ settings, aiConfigured, path, avatar: portrait })}
 <main id="admin-content" class="admin-canvas min-w-0 flex-1 lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-y-contain">
 <div class="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12">${screen}<div id="admin"></div></div>
 </main>

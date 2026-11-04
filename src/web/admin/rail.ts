@@ -70,6 +70,12 @@ export type RailOptions = {
   aiConfigured: boolean
   /** The path being served, for the where-you-are mark. */
   path: string
+  /**
+   * The owner's portrait as the rail draws it: 28px, on every screen. The library's small copy
+   * when there is one, which only the caller can look up: this function is synchronous and the
+   * original is what `settings.author.avatarUrl` holds (307 KB on the fixture, 31 KB small).
+   */
+  avatar?: string
 }
 
 /**
@@ -86,13 +92,13 @@ export type RailOptions = {
  * tables, so content width IS the product. At `lg` the sums turn: 1024 less the rail is 816,
  * and below that the rail is one tap away in the drawer.
  */
-export function railHtml({ settings, aiConfigured, path }: RailOptions): string {
+export function railHtml({ settings, aiConfigured, path, avatar: face }: RailOptions): string {
   const t = adminT(settings.language)
   const defaults = defaultOrder(aiConfigured)
   const order = reconcileNavOrder(settings.navOrder, defaults)
   const hidden = new Set(order.hidden)
   const rows = railRows(t)
-  const avatar = settings.author.avatarUrl ?? ''
+  const avatar = face ?? settings.author.avatarUrl ?? ''
 
   const top = topRow(t)
   const nav = column(order, rows, t, path)
