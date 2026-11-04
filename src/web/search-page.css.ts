@@ -20,6 +20,9 @@ form.qbox button{flex:none;display:grid;place-items:center;width:44px;height:44p
   border-radius:calc(var(--radius,.5rem) - 2px);background:transparent;color:var(--c-heading);cursor:pointer}
 form.qbox button:focus-visible{color:var(--c-accent)}
 form.qbox button svg{width:20px;height:20px}
+/* The count under the box belongs to the list below it, so it sits nearer that than the box. It
+   carried a class nothing defined, so it printed in the body's size and ink 1px over a list. */
+.search-count{margin:0 0 1rem}
 /* Under the box with no query: the busiest tags as chips, then the newest posts. */
 .qs-label{margin:0 0 .75rem;color:var(--c-meta);font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small)}

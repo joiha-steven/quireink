@@ -74,7 +74,7 @@ export async function handlePreview(c: Context): Promise<Response> {
   }), t(settings.language), settings.features.curlyQuotes ? settings.language : null)
   noteLinks(standaloneUrls(body), settings.siteUrl)
   const meta = post
-    ? `<p class="meta"><time datetime="${escapeAttr(post.date)}">${
+    ? `<p class="t-small text-meta"><time datetime="${escapeAttr(post.date)}">${
         escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time></p>`
     : ''
 

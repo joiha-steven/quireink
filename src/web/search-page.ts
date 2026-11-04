@@ -86,7 +86,7 @@ export async function handleSearchPage(c: Context): Promise<Response> {
     : renderListing({
     headingHtml: escapeHtml(tx.search),
     afterHead: searchBox(tx, q)
-      + (q ? `<p class="meta search-count">${escapeHtml(fill(tx.searchResults, { n: results.length, q }))}</p>` : ''),
+      + (q ? `<p class="t-small text-meta search-count">${escapeHtml(fill(tx.searchResults, { n: results.length, q }))}</p>` : ''),
     paged: { items: results, page: 1, totalPages: 1 },
     basePath: '/search',
     empty: tx.searchEmpty,

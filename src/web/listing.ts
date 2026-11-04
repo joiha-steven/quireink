@@ -244,7 +244,7 @@ export type ListingView = {
 export function renderListing(view: ListingView, settings: SiteSettings): string {
   const head = view.headingHtml
     ? `<header class="listing-head"><h1>${view.headingHtml}</h1>${
-        view.subheading ? `<p class="meta">${escapeHtml(view.subheading)}</p>` : ''
+        view.subheading ? `<p class="t-small text-meta">${escapeHtml(view.subheading)}</p>` : ''
       }</header>${view.afterHead ?? ''}`
     : view.afterHead ?? ''
   if (view.paged.items.length === 0) {
