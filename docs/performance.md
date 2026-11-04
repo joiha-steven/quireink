@@ -21,7 +21,7 @@ costs a round trip on the one image the page is judged by.
 `loading="lazy"`** — `fetchpriority` on everything is `fetchpriority` on nothing. Three places
 decide it and they now agree: the front page lead (`front-card.ts`, image kind only), the
 first body image (`render/figures.ts`, `seen === 0`), and the light site logo
-(`chrome.ts`; never the dark mark, since both ship and only one can be the LCP element).
+(`chrome.ts`; never the dark mark, since both ship and only one can be the LCP element). The author's portrait is the library's small copy, never the original (307 KB for a 48px circle).
 
 ## Fonts — preload ONLY what the LCP text needs
 

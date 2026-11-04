@@ -7,20 +7,18 @@
 import type { Post } from '@/types'
 import { getPost, getPublicPosts, getRelatedPosts } from '@/content/posts'
 import { getPage } from '@/content/pages'
-import { getMediaRefs } from '@/media/media-refs'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { getMailStatus } from '@/news/mail'
 import { getCommentEnv } from '@/comments/comment-env'
 import { issueStamp } from '@/comments/stamp'
 import { siteFooter, siteHeader, subscribeCard } from '@/web/chrome'
-import { heroImage, byline, authorBox } from '@/web/article-blocks'
+import { heroImage, byline, authorBox, mediaFacts } from '@/web/article-blocks'
 import { getSeriesForPost } from '@/content/series'
 import { seriesBox as seriesBoxHtml } from '@/web/series-box'
 import { collapseBlob } from '@/media/blob'
 import { renderPostContent } from '@/render/post-content'
 import { standaloneUrls } from '@/render/link-cards'
 import { cardFacts, noteLinks } from '@/content/link-cards'
-import type { ImageDims, ReadyOriginals } from '@/render/figures'
 import { extractHeadings } from '@/utils'
 import { isUntitled, postName } from '@/content/untitled'
 import { langOf, siblingsOf } from '@/content/translations'
@@ -51,23 +49,6 @@ import { pieceWords } from '@/render/callout-words'
 const META_DESC_MAX = 157
 
 
-/**
- * Media facts the renderer needs: which originals have responsive variants, and the
- * intrinsic size of each. Read once per render rather than per image.
- */
-async function mediaFacts(): Promise<{ ready: ReadyOriginals; dims: ImageDims }> {
-  const ready: ReadyOriginals = new Map()
-  const dims: ImageDims = new Map()
-  for (const r of await getMediaRefs()) {
-    const key = collapseBlob(r.url)
-    // The NUMBER, not a boolean: it says which widths exist on disk, and the renderer may
-    // only name those. See `ReadyOriginals` — a <picture> naming a missing file fails.
-    if (r.variants) ready.set(key, r.variants)
-    if (r.width && r.height) dims.set(key, { width: r.width, height: r.height })
-  }
-  return { ready, dims }
-}
-
 // `canonicalPath`: the address this answers at when that is not its own slug (`home-mode.ts`).
 
 
@@ -85,7 +66,7 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   const item = post ?? page
   if (!item) return null
 
-  const { ready, dims } = await mediaFacts()
+  const { ready, dims, thumbs } = await mediaFacts()
   const cards = await cardFacts(settings)
   // The callout labels and the quotes in the piece's own language; the body itself is language-blind.
   const pieceLang = langOf(item, settings.language)
@@ -249,7 +230,7 @@ ${untitled ? '' : `<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtm
     lead = postInfoPanel(post, settings, s, words) + seriesBox
     // Tags first (they belong to the post), then the person, then the ways onward. '' unless
     // the owner has filled in both a name and a bio.
-    footer = taxoBlock + authorBox(settings) + readNextBlock + relatedBlock
+    footer = taxoBlock + authorBox(settings, thumbs) + readNextBlock + relatedBlock
   }
 
   // The table of contents is server-rendered markup, so a reader without JavaScript still

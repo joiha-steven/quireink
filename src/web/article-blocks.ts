@@ -14,6 +14,9 @@
 import type { Post, SiteSettings } from '@/types'
 import { postImage, type ReadyImages } from '@/web/front-card'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { collapseBlob } from '@/media/blob'
+import { getMediaRefs } from '@/media/media-refs'
+import type { ImageDims, ReadyOriginals } from '@/render/figures'
 
 /**
  * The picture at the top of an article, ABOVE the headline, or ''.
@@ -85,13 +88,16 @@ export function byline(settings: SiteSettings, byLabel: string): string {
  * copy of this is the `author` object in the JSON-LD (`render/schema.ts`), and two
  * declarations of the same fact are two things to keep in step.
  */
-export function authorBox(settings: SiteSettings): string {
+export function authorBox(settings: SiteSettings, thumbs: ReadonlyMap<string, string> = new Map()): string {
   const { name, bio, avatarUrl, url } = settings.author
   if (!name || !bio) return ''
-  // 96px at 2x: the box draws it at 48, and a portrait is the one image on the page whose
-  // dimensions are known before the render, so it carries width/height and never shifts.
+  // The box draws it at 48, and a portrait is the one image on the page whose dimensions are
+  // known before the render, so it carries width/height and never shifts. THE LIBRARY'S SMALL
+  // COPY when it has one: the original went out here, 307 KB for 48px under every post of the
+  // fixture, and the small copy is 31 KB. A portrait from outside the library keeps its URL.
+  const face = thumbs.get(collapseBlob(avatarUrl)) ?? avatarUrl
   const portrait = avatarUrl
-    ? `<img class="author-face" src="${escapeAttr(avatarUrl)}" alt="" width="48" height="48" loading="lazy" decoding="async">`
+    ? `<img class="author-face" src="${escapeAttr(face)}" alt="" width="48" height="48" loading="lazy" decoding="async">`
     : ''
   const who = url
     ? `<a class="link-accent" href="${escapeAttr(url)}" rel="author">${escapeHtml(name)}</a>`
@@ -100,4 +106,23 @@ export function authorBox(settings: SiteSettings): string {
 <p class="author-name">${who}</p>
 <p class="author-bio t-small text-meta">${escapeHtml(bio)}</p>
 </div></aside>`
+}
+
+/**
+ * Media facts the renderer needs: which originals have responsive variants, the intrinsic size
+ * of each, and each one's small copy. Read once per render rather than per image.
+ */
+export async function mediaFacts(): Promise<{ ready: ReadyOriginals; dims: ImageDims; thumbs: Map<string, string> }> {
+  const ready: ReadyOriginals = new Map()
+  const dims: ImageDims = new Map()
+  const thumbs = new Map<string, string>()
+  for (const r of await getMediaRefs()) {
+    const key = collapseBlob(r.url)
+    // The NUMBER, not a boolean: it says which widths exist on disk, and the renderer may
+    // only name those. See `ReadyOriginals` — a <picture> naming a missing file fails.
+    if (r.variants) ready.set(key, r.variants)
+    if (r.width && r.height) dims.set(key, { width: r.width, height: r.height })
+    if (r.thumb) thumbs.set(key, r.thumb)
+  }
+  return { ready, dims, thumbs }
 }

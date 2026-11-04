@@ -132,6 +132,13 @@ describe('the author, once there is one', () => {
     expect(box).toContain('height="48"')
   })
 
+  it('draws the library\'s small copy of the portrait, not the original', () => {
+    const settings = withAuthor({ name: 'H', bio: 'b', avatarUrl: '/uploads/media/me.jpg' })
+    const thumbs = new Map([['media/me.jpg', '/uploads/media/me-thumb.webp']])
+    expect(authorBox(settings, thumbs)).toContain('src="/uploads/media/me-thumb.webp"')
+    expect(authorBox(settings)).toContain('src="/uploads/media/me.jpg"')
+  })
+
   it('escapes a name and a bio rather than trusting the owner typed HTML', () => {
     const box = authorBox(withAuthor({ name: '<script>x</script>', bio: 'a & b' }))
     expect(box).not.toContain('<script>')
