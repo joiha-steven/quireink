@@ -139,9 +139,10 @@ export function labelVarsCss(lang: SiteLang): string {
  *
  * The palette's `--c-meta` is chosen against `--c-bg`. The notebook puts a desk under the page
  * that is the page darkened, and the tagline, the footer and the dates down the rail stand on
- * it: mono's #6d6c6c measured 4.47:1 there, under the 4.5 AA asks at that size. 94% of the meta
- * ink into the text ink lands it at 4.60:1, and every palette moves by the same slice, derived
- * from its own two tokens.
+ * it: mono's #6d6c6c measured 4.47:1 there, under the 4.5 AA asks at that size. 86% of the meta
+ * ink into the text ink lands it at 5.07:1, over the 5.0 `palette-contrast.test.ts` holds every
+ * palette to on its own page (94% stopped at 4.74), and every palette moves by the same slice,
+ * derived from its own two tokens.
  *
  * TWO DECLARATIONS, because a custom property that names itself is a cycle and not a reference
  * to its parent: `--c-meta` mixed from `var(--c-meta)` on the body made it invalid for
@@ -157,7 +158,7 @@ export function labelVarsCss(lang: SiteLang): string {
 export function deepenMetaInkCss(theme: SiteTheme): string {
   if (!theme.layout.deepenMetaInk) return ''
   const root = `html[data-theme="${theme.id}"]`
-  return `${root}{--meta-deepened:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}`
+  return `${root}{--meta-deepened:color-mix(in srgb,var(--c-meta) 86%,var(--c-text))}`
     + `${root} body{--c-meta:var(--meta-deepened)}`
 }
 

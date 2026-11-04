@@ -243,7 +243,7 @@ describe('the notebook dialect', () => {
     // The step is the engine's since ADR 0072 (a theme may not set --c-meta), asked for by the
     // notebook's `layout.deepenMetaInk` and written behind its sheet (web/layout-styles.ts).
     const css = deepenMetaInkCss(builtinTheme('notes'))
-    expect(css).toContain('html[data-theme="notes"]{--meta-deepened:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}')
+    expect(css).toContain('html[data-theme="notes"]{--meta-deepened:color-mix(in srgb,var(--c-meta) 86%,var(--c-text))}')
     expect(css).toContain('html[data-theme="notes"] body{--c-meta:var(--meta-deepened)}')
     expect(css).not.toMatch(/--c-meta:[^;}]*var\(--c-meta\)/)
     expect(LOOK_NOTES_CSS).not.toContain('--c-meta:')
