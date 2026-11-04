@@ -83,6 +83,23 @@ export async function getPublicNotes(): Promise<Note[]> {
   return readIndex().filter((n) => isPublicallyVisible(n.status, n.date))
 }
 
+/**
+ * The same notes with the owner's words on them, for the notebook's own list. The list drew
+ * the kept passage and nothing the owner wrote, so a clip read as a dictionary entry and a note
+ * with no passage as a bare title. Apart from `getPublicNotes` because the sitemap, the feed
+ * index and `llms.txt` want no words and a note can be long.
+ */
+export async function getPublicNotesWithWords(): Promise<NoteWithContent[]> {
+  try {
+    return all<NoteRow>(`select ${META_COLS}, content from notes where ${liveOnly('notes')} order by date desc`)
+      .map((row) => ({ ...rowToMeta(row), content: row.content ?? '' }))
+      .filter((n) => isPublicallyVisible(n.status, n.date))
+  } catch (error) {
+    console.error(`[ERROR] notes.getPublicNotesWithWords: ${(error as Error).message}`)
+    return []
+  }
+}
+
 export async function getNote(slug: string): Promise<NoteWithContent | null> {
   try {
     // NAMED COLUMNS, never `select *`. `content/autosave.ts` states the rule in capitals: nothing

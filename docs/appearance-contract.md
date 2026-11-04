@@ -111,6 +111,7 @@ pages, **front** is the composed front page, **both** is furniture the two share
 | `.tl-year-tag` `.tl-mark` `.pager-count` | The timeline's year and month marks, and the "page N / M" label | blog |
 | `.tl-yr` | One year's group of rows on the timeline | blog |
 | `.note-source` | A note's source line: where the quoted words come from | blog |
+| `.note-quote` | The passage a clip kept, on its page and on its card in the notebook | blog |
 | `.chips` `.chip` | The chip row of categories and series, and one link in it | blog |
 | `.file-card` `.link-card` | The cards for a linked file or page | blog |
 | `.footnotes` `.fn-rule` `.table-scroll` | The footnotes list and its rule, the frame around a wide table | blog |

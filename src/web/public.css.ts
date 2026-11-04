@@ -267,6 +267,9 @@ ${CARD_CSS}
 .listing-head{margin:0 0 2rem}
 .listing-head h1{font-size:var(--fs-h1);line-height:var(--lh-h1);
   letter-spacing:var(--ls-h1);color:var(--c-heading);margin:0;font-weight:var(--fw-title,700)}
+/* The passage on a notebook card, drawn as the note's own page draws it: the blockquote's left
+   rule and the meta ink, so the kept words read as somebody else's before the owner's begin. */
+.note-quote{border-left:2px solid var(--c-rule);padding-left:var(--sp);color:var(--c-meta)}
 .lower{text-transform:lowercase}
 ${UTILITY_CSS}
 
