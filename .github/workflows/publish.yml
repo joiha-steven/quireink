@@ -82,8 +82,31 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       checks: read
-      contents: read
+      # Write, for the one step below that holds the release back.
+      contents: write
     steps:
+      # A RELEASE PAGE IS AN ANNOUNCEMENT, AND IT EXISTS BEFORE ANYTHING IT ANNOUNCES. `gh release
+      # create` is what pushes the tag, so it runs first, and three things read GitHub's newest
+      # release: the update check's `releases.json`, a Cloudflare blog's Update button and its
+      # `update-quireink.yml`. Until 2026-11-04 they all learned of a version before this workflow
+      # had built it; 2.2.21's matrix failed, and blogs were offered that version for five hours with
+      # no image behind it. A pre-release is what `releases/latest` skips and what
+      # `update-quireink.yml` refuses, so the release waits as one, and `announce` at the end of this
+      # file lets it go. A cut that fails stays held. It is done here rather than left to a flag on
+      # `gh release create` because a flag is a thing to remember on the day that matters.
+      - name: Hold the release back until everything is out
+        if: env.DRY != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # The tag can reach this runner a moment before the release is readable.
+          for i in $(seq 1 12); do
+            gh release edit "${GITHUB_REF_NAME}" --prerelease && exit 0
+            sleep 5
+          done
+          echo "no release for ${GITHUB_REF_NAME}: cut with gh release create, not a bare tag"; exit 1
+
       - name: Wait for CI on ${{ github.sha }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -296,3 +319,28 @@ jobs:
         run: |
           echo "Docker Hub was skipped: no DOCKERHUB_TOKEN secret on this repository." >> "$GITHUB_STEP_SUMMARY"
           echo "GHCR published ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}." >> "$GITHUB_STEP_SUMMARY"
+
+  # THE LAST THING THAT HAPPENS: the image is on both registries and the Cloudflare bundle is on the
+  # release, so the release stops being held and a blog may be told about it. A retried older tag
+  # stops being held too, but does not take `latest` back from a newer release. A beta stays what
+  # it was cut as.
+  announce:
+    needs: [cloudflare, publish]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Let the release go
+        if: env.DRY != 'true' && !contains(github.ref_name, '-')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          current=$(gh api "repos/${GH_REPO}/releases/latest" --jq .tag_name)
+          newest=$(printf '%s\n%s\n' "${current}" "${GITHUB_REF_NAME}" | sort -V | tail -1)
+          if [ "${newest}" = "${GITHUB_REF_NAME}" ]; then latest=--latest; else latest=--latest=false; fi
+          gh release edit "${GITHUB_REF_NAME}" --prerelease=false "${latest}"
+      - name: Dry run, so nothing is announced
+        if: env.DRY == 'true'
+        run: echo "A real run would take ${GITHUB_REF_NAME} out of pre-release here." >> "$GITHUB_STEP_SUMMARY"

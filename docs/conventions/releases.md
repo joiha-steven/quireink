@@ -175,6 +175,15 @@ On any behavior change, update the matching doc in the SAME change:
      and the category, and it runs when that file changes rather than on a release, because a typo
      in prose should not need a version number. Docker Hub resolves no relative link, which
      is why that overview exists instead of pointing at the README.
+  **The release page waits for the image.** `gh release create` is what pushes the tag, so the
+  page exists before anything it announces, and the update check, a Cloudflare blog's Update
+  button and `update-quireink.yml` all read GitHub's newest release. So `publish.yml` turns the
+  release into a pre-release as its first step, which those three skip, and its last job,
+  `announce`, turns it back once the image is on both registries and the Cloudflare bundle is
+  attached. The cut command does not change. A release still marked pre-release an hour after
+  the tag means a job failed: read the run. A cut that is thrown away (nothing published) is
+  undone with `gh release delete <tag> --cleanup-tag`; once an image is out, the number is
+  spent. If only `announce` failed, rerun it.
   Docker Hub needs `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` as repository secrets. Without
   them both workflows skip the Hub and still publish to GHCR: a missing credential must never
   fail a release.

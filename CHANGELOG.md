@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+
+- **A blog is told about a new version only once it can be installed.** The release page was
+  public from the moment a version was cut, so the update notice and the Cloudflare Update
+  button could offer a version whose image had not been built. It now waits as a pre-release
+  until the image and the Cloudflare package are both out.
+
 ## 2026-11-04 · Quire Ink 2.2.21
 
 Six reviews of the whole product, each measured on a running blog: the server's security, the
