@@ -147,6 +147,13 @@ ${LISTS_INK_CSS}
    are one category here -- machine values sitting inside human words -- and inventing a
    second distinction between them would be the guessing this whole file refuses. */
 .prose pre.plain-code .tk-s,.prose pre.plain-code .tk-v{font-weight:600;color:var(--c-heading)}
+/* The lead above a block is 1.4em of its OWN size, and a panel is set in the code role. So the
+   panel sat 19.7px under a paragraph and 25.3px over the next, 10.5px under a heading where
+   a table sits at 13.5: a filled box visibly nearer the words above it. Measured in the body's
+   em here, as the paragraph below it already is. */
+.prose > * + pre{margin-top:calc(var(--fs-body) * 1.4)}
+.prose > :is(h1,h2) + pre{margin-top:calc(var(--fs-body) * .75)}
+.prose > :is(h3,h4,h5) + pre{margin-top:calc(var(--fs-body) * .6)}
 .prose pre code{font-size:inherit;line-height:inherit;letter-spacing:inherit}
 /* A SECTION BREAK, not a divider. A printed book never rules a line across the text
    block to change subject: it leaves white space, and marks it with something small and
