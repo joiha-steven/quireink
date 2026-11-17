@@ -4,7 +4,7 @@
 
 # Agent cookbook
 
-Connect Claude (or any MCP client) to your blog — the README's [MCP section](../README.md#let-an-ai-agent-write-for-you)
+Connect Claude (or any MCP client) to your blog — the README's [MCP section](../README.md#connecting-an-ai-agent)
 shows the two steps — and these are prompts that do a real job, not demos. Every one goes
 through the same code the admin uses: same slug rules, same revisions, same trash.
 
