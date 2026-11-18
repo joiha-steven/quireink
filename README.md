@@ -7,9 +7,9 @@
 
 `2.2.22`
 
-**A blog you keep. An AI agent can run it for you.**
-No algorithm, no ads, no platform between you and your readers.
-Your writing is two files on your own disk, in one small process that needs no cloud account. Cloudflare is there if you would rather not rent a server.
+**A self-hosted blog that an AI agent can run for you.**
+Your posts live in two SQLite files on your own disk, served by one small process that needs no cloud account.
+If you would rather not rent a server, it also runs on Cloudflare.
 
 <br/>
 
@@ -23,51 +23,51 @@ Your writing is two files on your own disk, in one small process that needs no c
 
 <img src="docs/demo.jpg" alt="The Newspaper theme: a composed front page with a lead story, a Featured row of three illustrated pieces and a Typography row with Polish, Japanese and English headlines, beside a post opening on a drop cap, with pen marks in the text and a scanned Van Gogh letter below" width="960">
 
-<sub>**[demo.quireink.com](https://demo.quireink.com)** is the real thing. No sign-up, nothing to fill in. The bar at the bottom jumps between the front page, the list, an article, book mode, light and dark, and the admin. That bar is the only thing added, and it lives outside the code, so the demo is always the latest build.</sub>
+<sub>**[demo.quireink.com](https://demo.quireink.com)** is a normal install you can use without signing up. The bar at the bottom jumps between the front page, the list, an article, book mode, light and dark, and the admin. The bar is the only addition and lives outside the code, so the demo always runs the latest build.</sub>
 
 </div>
 
 ## What it is
 
-Quire Ink is a blog for one person who means to keep writing for years. You write in the browser and press publish. The post goes to your site, your feed and your subscribers' inboxes, and to Mastodon if you switch that on.
+Quire Ink is a blog for one person who means to keep writing for years. You write in the browser and press publish, and the post goes to your site, your feed, your subscribers' inboxes and, if you switch it on, Mastodon.
 
-Nobody decides who sees it, nothing runs ads across it, and nobody can change the rules next year. Your writing sits on a server you rent, and one button turns it into a folder of Markdown any editor can open.
+No algorithm decides who sees a post and no ads run beside it. Because the software runs on a server you rent, nobody can change the rules on you next year, and one button exports everything as a folder of Markdown that any editor can open.
 
-The first setup is a technical job, so ask someone who knows servers, or hand it to an AI agent. After that you write, from a laptop or a phone, and only an upgrade sends you back to a terminal.
+The first setup is a technical job: ask someone who knows servers, or hand it to an AI agent. After that you write from a laptop or a phone, and only upgrades need a terminal.
 
 **Made for** one person, one server, one blog they mean to keep. **Not made for** a team that needs roles, approvals and an editorial queue.
 
-## Why people pick it
+## Features
 
-**The reading page is the product.** Plain paper, source code, a newspaper or a notebook, in six palettes, light and dark, with four reading fonts. Any post opens as a book, set in two columns like paper. Size, colour and spacing are settings, and the build fails if anyone writes one into the stylesheet by hand.
+**Reading themes.** Four themes (plain paper, source code, newspaper and notebook) in six palettes, each with a light and a dark version, and four reading fonts. Any post can open as a book, set in two columns like a printed page. Size, colour and spacing are settings; a build check rejects any of them written into the stylesheet by hand.
 
-**A pen that looks drawn.** Highlight in five inks, underline in pencil, ring a word in ballpoint, and no two strokes share a shape. Your readers get the pen too, in their own browser, with no account, for 4.5 KB on a post.
+**The pen.** Highlight in five inks, underline in pencil or ring a word in ballpoint, and each stroke gets its own hand-drawn shape. Readers can use the pen too, in their own browser and without an account. It adds 4.5 KB to a post.
 
-**An agent can run the blog, not just write in it.** The MCP server is built in. An assistant drafts, schedules and publishes, reads your numbers, sweeps spam, rearranges the front page, and can build and install a theme. It goes through the same checks the admin does, and a read-only token stays read-only.
+**Built-in MCP server.** An assistant can draft, schedule and publish posts, read your traffic, sweep spam, rearrange the front page, and build and install a theme. Its calls pass the same checks as the admin's, and a read-only token stays read-only.
 
-**Anyone can make a theme.** A theme is CSS, fonts and images in a zip, with no code in it. The kit checks yours, photographs it on every page at three widths, and tells you which line is wrong and what to write instead. [Start here](docs/themes.md).
+**Themes from anyone.** A theme is a zip of CSS, fonts and images with no code in it. The theme kit checks yours, screenshots it on every page at three widths, and reports which line is wrong along with what to write instead. [Start here](docs/themes.md).
 
-**You can always leave, and you can move in today.** WordPress, Ghost, Substack and Medium come across with their pictures, and old links keep working. Out is one button. Every release restores a real backup, table by table and file by file, before it ships, because a backup nobody has restored is not a backup.
+**Import and export.** Posts from WordPress, Ghost, Substack and Medium come across with their images, and their old links keep working. Exporting is one button. Before each release ships, a real backup is restored and checked table by table and file by file.
 
-**Small enough to forget about.** One process and two SQLite files, with no database server. It runs in 256 MB of memory, and a reader downloads single-digit kilobytes of JavaScript. It really does run on the cheapest server you can rent.
+**Small footprint.** One process and two SQLite files, with no database server. It runs in 256 MB of memory, which fits the cheapest server you can rent, and readers download single-digit kilobytes of JavaScript.
 
-**Nothing watches your readers.** Analytics without cookies, comments with no account and no third party, a newsletter through your own mail server. Sign in with a passkey beside your password and code, never in place of them.
+**Privacy.** Analytics use no cookies, comments need no account and no third party, and the newsletter goes out through your own mail server. A passkey can be added alongside your password and code but never replaces them.
 
-**A real editor, in eleven languages.** Tables, footnotes, callouts, maths, galleries and video over plain Markdown. It saves as you type, keeps versions and schedules. The admin and the site speak eleven languages, and a single post can name its own.
+**Editor and languages.** Tables, footnotes, callouts, maths, galleries and video on top of plain Markdown. The editor saves as you type, keeps versions and schedules posts. The admin and the site are available in eleven languages, and each post can set its own.
 
-**Tested the hard way.** Nearly 6,000 tests and more than 300 flows in a real browser on every push. Each release is installed fresh and upgraded on every path in this page before it is published.
+**Testing.** Nearly 6,000 tests and more than 300 browser flows run on every push. Before a release is published, it is installed fresh and upgraded on every install path listed below.
 
-Every part in detail, and against the alternatives: [**Quire Ink, in full**](./docs/overview.md).
+Every part in detail, with comparisons to the alternatives: [**Quire Ink, in full**](./docs/overview.md).
 
 ## A look around
 
 <img src="docs/demo-looks.jpg" alt="The same post in the four themes: plain paper; source code, with the headline in a bold monospace and brackets round the dates; newspaper, with a masthead, the sections under it and a drop cap; and notebook, on a dot-grid sheet beside a square index card" width="960">
 
-<sub>**Four themes, one click.** The same post as plain paper, source code, a newspaper and a notebook. A theme sets shape, type and marks, and the colour always comes from the palette.</sub>
+<sub>**The four themes.** The same post as plain paper, source code, a newspaper and a notebook. A theme sets shape, type and marks; colour always comes from the palette.</sub>
 
 <img src="docs/demo-reading.jpg" alt="Book mode on paper, a title page on the left and the post set as a printed page with a drop cap on the right, beside the dark theme with a two-by-two gallery of Van Gogh paintings and their captions" width="960">
 
-<sub>**Book mode and the dark theme.** Any post opens as a paginated book that starts on a title page; every palette is drawn twice, once for light and once for dark.</sub>
+<sub>**Book mode and the dark theme.** Any post opens as a paginated book that starts on a title page. Every palette has a light and a dark version.</sub>
 
 <img src="docs/demo-code.jpg" alt="Three panels: a sum set in MathML between paragraphs of serif text with a Tip callout below, a numbered highlighted shell command above a plain block, and a passage on the pen with a sentence in each of five inks" width="960">
 
@@ -75,7 +75,7 @@ Every part in detail, and against the alternatives: [**Quire Ink, in full**](./d
 
 <img src="docs/demo-reader-pen.jpg" alt="Left: a reader's yellow highlight and pencil underline on a post, with the pen bar open over a selected phrase offering five inks, underline, ring, note and copy quote. Right: the card over the highlight, with a note box, Send to my notebook, Remove mark and a twenty-character code that keeps the marks on every device" width="960">
 
-<sub>**Readers get the pen too.** Their marks stay in their own browser, and travel between their devices only if they ask.</sub>
+<sub>**Reader marks.** A reader's marks stay in their own browser and sync to their other devices only if they ask for it.</sub>
 
 <img src="docs/demo-mobile.jpg" alt="Four phone screens: the post list with a thumbnail beside the headline and a Chinese post below it, a post with its series box, book mode opening on a title page, and the menu drawer with a search box, the site menu and the post's contents" width="960">
 
@@ -83,17 +83,17 @@ Every part in detail, and against the alternatives: [**Quire Ink, in full**](./d
 
 <img src="docs/demo-admin.jpg" alt="Four admin screens: Home with what was last edited, traffic and the most viewed posts; Write with the list of pieces beside what was recently edited; the editor with a post open and its pen marks; and Settings, Appearance, with the four themes drawn as previews beside the reading and site fonts" width="960">
 
-<sub>**The admin.** Home, the writing list, the editor and the settings that decide how the site looks. All of it a setting, none of it code.</sub>
+<sub>**The admin.** Home, the writing list, the editor, and the appearance settings, where the look of the site is changed without touching code.</sub>
 
 <img src="docs/demo-setup.jpg" alt="Three setup screens: claiming the blog with a language, username, email and password; naming the site with its time zone and address; and the last step, choosing one of the four themes from small previews" width="960">
 
-<sub>**Setting up** is seven short screens in the browser, ending on the theme, and then you are in the editor.</sub>
+<sub>**Setup** takes seven short screens in the browser. The last one picks the theme, and then the editor opens.</sub>
 
 ## Install
 
 **Try it first, nothing to install:** [demo.quireink.com](https://demo.quireink.com), or your own throwaway blog at [try.quireink.com](https://try.quireink.com), wiped twice an hour.
 
-Then pick the way that matches what you have. All of them end at the same blog.
+Then pick the option that matches what you already have. Each one installs the same blog.
 
 ### No server: on Cloudflare <sup>beta</sup>
 
@@ -130,9 +130,9 @@ curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/server.s
 | **Kubernetes** | [The manifests](./deploy/kubernetes/README.md) | Change the image tag |
 | **A DigitalOcean droplet** | [One pasted file](./deploy/digitalocean/README.md) | As the VPS above |
 
-Every way installs a published release, tried on each of these paths before it ships ([how](./docs/install.md)). Images exist for `amd64` and `arm64`. **Rather not do it yourself?** Hand the server to an AI agent: the [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) skill walks it through, checks included.
+Every way installs a published release, tried on each of these paths before it ships ([how](./docs/install.md)). Images exist for `amd64` and `arm64`. An AI agent can also do the install for you: the [`quireink-install`](./.claude/skills/quireink-install/SKILL.md) skill takes it through the steps and the checks afterwards.
 
-## Let an AI agent write for you
+## Connecting an AI agent
 
 1. **Admin → Settings → Server & connections → Advanced → MCP**, and create a token.
 2. Point your agent at `https://<your-domain>/api/mcp` with `Authorization: Bearer <token>`.
@@ -159,31 +159,31 @@ bun run dev                         # http://localhost:3000
 # the log prints a /setup link to claim it; or: bun run user create --username me --email me@example.com
 ```
 
-Nothing is finished until `bun run check:all` passes: two typechecks, the static guards and the tests, all offline, with no credentials and no services. `bun run tour` then drives every screen in a real browser and opens the backup it built. Start at [`CONTRIBUTING.md`](./CONTRIBUTING.md), which points to the house rules in [`CLAUDE.md`](./CLAUDE.md).
+A change is done when `bun run check:all` passes. It runs two typechecks, the static guards and the tests, offline and without credentials or external services. `bun run tour` then drives every screen in a real browser and restores the backup it made. Start at [`CONTRIBUTING.md`](./CONTRIBUTING.md), which points to the house rules in [`CLAUDE.md`](./CLAUDE.md).
 
 <details>
 <summary><b>Where things live</b></summary>
 
 | Where | What is in it |
 |---|---|
-| `src/` | The whole thing: Bun, Hono, SQLite. [How the pieces fit](./docs/spec/02-structure.md) |
+| `src/` | The application: Bun, Hono, SQLite. [How the pieces fit](./docs/spec/02-structure.md) |
 | `docs/` | How it works and why. [`docs/README.md`](./docs/README.md) indexes it; [`docs/decisions/`](./docs/decisions/README.md) is every decision, including the ones that were reversed |
 | `golden/` | The rendering contract. One byte of different output fails the build |
-| `scripts/checks/` | The guards. Register a write route outside the owner-only group and the build stops, same as a hardcoded font size in the reader's stylesheet |
+| `scripts/checks/` | The static guards. A write route registered outside the owner-only group stops the build, and so does a hardcoded font size in the reader's stylesheet |
 
-What is planned lives with the author's own notes rather than here, because it is one person's intentions for one blog and not a promise to anybody running the software ([ADR 0017](./docs/decisions/0017-move-state-and-instance-config-private.md)).
+Plans are kept in the author's private notes rather than here: they are one person's intentions for one blog, not commitments to anyone running the software ([ADR 0017](./docs/decisions/0017-move-state-and-instance-config-private.md)).
 
 </details>
 
 ## License
 
-**The code here** is [PolyForm Noncommercial 1.0.0](./LICENSE) plus [one additional permission](./LICENSE-EXCEPTION.md). Source-available, not open source. Together they come to one sentence: **run it, and charge for running it, as long as the version you run is the one published here.**
+**The code here** is [PolyForm Noncommercial 1.0.0](./LICENSE) plus [one additional permission](./LICENSE-EXCEPTION.md). Source-available, not open source. In short: **you may run it, and charge for running it, as long as you run a version published here.**
 
 - **Noncommercial: everything.** Your own blog, a hobby project, study, research, and also charities, schools, public research bodies and government. Read it, change it, host it, fork it, pass it on.
-- **Commercial: yes, unmodified.** Run it for a business or a client, sell hosting where each customer gets their own blog. Four things are asked in return: run a published release with its source unchanged, keep the notices, say your service runs Quire Ink and link back, and sell the service rather than the software. Settings, palettes, fonts and content are not source, so the look of a site is a setting here rather than a fork.
-- **A modified version, used commercially, needs a separate licence.** That is the one line the project holds. Fixing a bug or a security hole in your own deployment is carved out; patch it, and tell the owner within 30 days.
+- **Commercial: yes, unmodified.** Run it for a business or a client, sell hosting where each customer gets their own blog. Four things are asked in return: run a published release with its source unchanged, keep the notices, say your service runs Quire Ink and link back, and sell the service rather than the software. Settings, palettes, fonts and content are not source, so changing them to alter how a site looks does not count as a modification.
+- **A modified version, used commercially, needs a separate licence.** Fixing a bug or a security hole in your own deployment is exempt: patch it, and tell the owner within 30 days.
 - **What you write stays yours.** Your posts and images are not covered by the code licence and are not in this repository.
-- **If the project ever goes quiet, it opens.** Forty-eight months without a release and the code as it then stands is also yours under the Apache License 2.0, by a grant already made today. Nobody has to be reachable for that to happen ([ADR 0050](./docs/decisions/0050-the-licence-opens-by-itself-after-48-months-without-a-release.md)).
+- **After 48 months without a release, it opens.** The code as it stands at that point also becomes available to you under the Apache License 2.0, through a grant made today. Nobody has to be reachable for that to take effect ([ADR 0050](./docs/decisions/0050-the-licence-opens-by-itself-after-48-months-without-a-release.md)).
 
 > **Everything up to and including v2.0.0 was MIT, and stays MIT forever.** A licence change
 > does not reach backwards ([ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md)).
