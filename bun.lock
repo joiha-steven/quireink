@@ -10,7 +10,7 @@
         "@noble/hashes": "^2.4.0",
         "@resvg/resvg-wasm": "^2.6.2",
         "aws4fetch": "^1.0.20",
-        "hono": "^4.13.13",
+        "hono": "^4.13.18",
         "prosemirror-commands": "^1.7.2",
         "prosemirror-dropcursor": "^1.8.4",
         "prosemirror-gapcursor": "^1.4.1",
@@ -42,7 +42,7 @@
     "@hono/node-server": "^2.1.6",
     "body-parser": "^2.4.0",
     "fast-uri": "^3.1.9",
-    "hono": "^4.13.13",
+    "hono": "^4.13.18",
     "ip-address": "^10.7.4",
     "prosemirror-model": "1.25.12",
     "prosemirror-transform": "1.12.2",
@@ -416,7 +416,7 @@
 
     "hex-rgb": ["hex-rgb@4.3.0", "", {}, "sha512-Ox1pJVrDCyGHMG9CFg1tmrRUMRPRsAWYc/PinY0XzJU4K7y7vjNoLKIQ7BR5UJMCxNN8EM1MNDmHWA/B3aZUuw=="],
 
-    "hono": ["hono@4.13.13", "", {}, "sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA=="],
+    "hono": ["hono@4.13.19", "", {}, "sha512-KmXvQAXwcAHV+muzbIwoJ23niEB5nMoDVr9WcRkU8mvjUECm/1+7v4Jgp7P7a+H6MLFrh+vXrGonGrGS+RQfkA=="],
 
     "html-void-elements": ["html-void-elements@3.0.0", "", {}, "sha512-bEqo66MRXsUGxWHV5IP0PUiAWwoEjba4VCzg0LjFJBpchPaTfyfCKTG6bc5F8ucKec3q5y6qOdGyYTSBEvhCrg=="],
 
