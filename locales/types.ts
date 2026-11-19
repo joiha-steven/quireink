@@ -441,6 +441,11 @@ export type AdminStrings = {
   keptScheduled: string
   published: string
   imageUploadFailed: string
+  /** `{name}`: the video file being uploaded. */
+  videoUploading: string
+  videoUploadFailed: string
+  /** A .mov was uploaded; it may not play outside Safari. */
+  videoMovWarning: string
   /** `{size}` and `{limit}` in megabytes: a file over the upload cap. */
   uploadTooLarge: string
   /** `{size}` and `{limit}` in megabytes: the store would pass its quota. */

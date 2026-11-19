@@ -2,7 +2,30 @@
 
 ## Unreleased
 
+A video file goes into a post the way a picture does, and the code is open source again, under
+the GNU AGPL. Upgrading is the usual pull and restart, with no migration.
+
+### Changed
+
+- **The licence is the GNU AGPL v3.0 only.** Anyone may use, change, host and sell Quire Ink;
+  whoever runs a changed copy for other people over the network must offer them its source.
+  Releases up to 2.2.22 keep the PolyForm Noncommercial terms they shipped with, and everything
+  up to 2.0.0 stays MIT ([ADR 0075](docs/decisions/0075-relicense-agpl.md)).
+
+### Added
+
+- **Drop or paste a video into a post.** A video file dropped on the page or pasted into it is
+  uploaded to the Library and shows as a player where it landed, the same way a picture does.
+  mp4, m4v, webm and mov are taken. A file over the upload limit is refused with the size and the
+  limit in the message, and an mkv or avi is refused before it uploads. A mov file goes in with a
+  note that Chrome and Firefox may not play it and an mp4 is safer.
+
 ### Fixed
+
+- **A video in a post survives a save.** A YouTube, Vimeo or TikTok link on its own line showed
+  as a player in the editor and was dropped from the post the next time it was saved. It stays now,
+  and so does a link to an uploaded video file. A link written in bold, as code or with other text
+  as its label stays a link.
 
 - **A notebook card says what a note is.** The list drew the kept passage and nothing the owner
   wrote, so a clip read as a dictionary entry and a note with no passage as a bare title. Each card

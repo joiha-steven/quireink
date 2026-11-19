@@ -142,6 +142,7 @@ export const SHEET_WORD_KEYS = [
   'tbRowDel', 'tbStrike', 'tbTable', 'tbTableDelete', 'tbTask', 'tbUnderline',
   'titlePlaceholder', 'trashFailed', 'trashHomePage', 'trashedOne', 'undo', 'unsaved',
   'unsupportedType', 'untitled', 'unusedBadge', 'update', 'uploadNoRoom', 'uploadTooLarge',
+  'videoMovWarning', 'videoUploadFailed', 'videoUploading',
 ] as const
 
 export type SheetWords = Pick<AdminStrings, (typeof SHEET_WORD_KEYS)[number]>

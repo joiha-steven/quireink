@@ -15,6 +15,7 @@ import type { Hit } from '@/admin/components/editorFind'
 import type { SlashAt } from '@/admin/components/editor-menus'
 import { writingSurface } from '@/admin/components/editor-surface'
 import { mountSource } from '@/admin/components/editor-source'
+import { mediaFiles, mediaKind } from '@/admin/components/media-files'
 import { captionFromUrl, readMarkdown, videoUrlsToNodes } from '@/admin/components/editorDoc'
 import { placeCaret } from '@/admin/components/key-feedback'
 import { penStrokes } from '@/admin/components/pen-feedback'
@@ -48,6 +49,8 @@ export type PaperHooks = {
   pickImage: () => void
   pickGallery: () => void
   uploadFile: (file: File) => Promise<string | null>
+  /** A video file, uploaded as an attachment; the URL to play it from, or null (already told). */
+  uploadVideo: (file: File) => Promise<string | null>
 }
 
 export type Paper = {
@@ -80,10 +83,6 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
   /** Every edit to the body, in either view: the word count skips a tick with none. */
   let revision = 0
 
-  /** The image files out of a DataTransfer, from a drop or from the clipboard. */
-  const imageFiles = (list: FileList | null | undefined): File[] =>
-    Array.from(list ?? []).filter((f) => f.type.startsWith('image/'))
-
   /**
    * Upload and insert, in order, from wherever they came.
    *
@@ -94,17 +93,31 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
    *
    * Sequential on purpose. In parallel the uploads finish in whatever order the network
    * decides, and a set of pictures a person chose in an order arrives in another.
+   *
+   * A video file goes its own way (the attachments route, not the image route that sniffs
+   * image bytes) and lands as a video node; images and videos dropped together keep their order.
    */
-  const insertImages = async (files: File[], at: number | undefined): Promise<void> => {
+  const insertMedia = async (files: File[], at: number | undefined): Promise<void> => {
     let pos = at
+    // The doc may have shrunk while an upload was in flight.
+    const inDoc = (ed: Editor, p: number | undefined): number | undefined =>
+      p == null ? p : Math.min(p, ed.state.doc.content.size)
     for (const file of files) {
+      if (mediaKind(file) === 'video') {
+        const src = await hooks.uploadVideo(file)
+        const ed = editorRef.current
+        if (!src || !ed) continue
+        ;(pos == null ? ed.chain().focus() : ed.chain().focus(inDoc(ed, pos))).setVideo(src).run()
+        pos = ed.state.selection.to
+        continue
+      }
       const url = await hooks.uploadFile(file)
       const ed = editorRef.current
       if (!url || !ed) continue
       // A pasted screenshot's name is the browser's ("image.png"), which is no caption at all;
       // a dropped file's usually is one. Either way it stays editable under the picture.
       const alt = file.name.replace(/\.[a-z0-9]+$/i, '')
-      const chain = pos == null ? ed.chain().focus() : ed.chain().focus(pos)
+      const chain = pos == null ? ed.chain().focus() : ed.chain().focus(inDoc(ed, pos))
       chain.setImage({ src: url, alt }).run()
       pos = ed.state.selection.to
     }
@@ -137,8 +150,8 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
       setSlash: (at) => { slashRef.current = at; chrome.openSlash(at) },
       slashKey: (key) => chrome.slashKey(key),
       editorRef,
-      insertImages,
-      imageFiles,
+      insertMedia,
+      mediaFiles,
     }),
   })
   editorRef.current = editor

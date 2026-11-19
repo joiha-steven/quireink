@@ -41,7 +41,7 @@ import { wireHistory } from './lib/sheet-history'
 import { draftFromRevision } from './lib/sheet-revision'
 import { sayStanding } from './lib/sheet-standing'
 import { liveSave } from './lib/sheet-live'
-import { moveToTrash, openPreview, uploadInline } from './lib/sheet-errands'
+import { moveToTrash, openPreview, uploadInline, uploadVideoInline } from './lib/sheet-errands'
 
 type Payload = SheetData & { words: SheetWords }
 
@@ -120,6 +120,7 @@ function boot(root: HTMLElement, data: Payload): void {
     pickImage: () => void choose('editor'),
     pickGallery: () => void choose('gallery'),
     uploadFile: (file) => uploadInline(t, file),
+    uploadVideo: (file) => uploadVideoInline(t, file),
   })
 
   const body = (): string => paper.getMarkdown()

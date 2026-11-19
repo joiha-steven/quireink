@@ -33,13 +33,13 @@ export type SurfaceHooks = {
   slashKey: (key: string) => boolean
   editorRef: Holder<Editor | null>
   /** Upload and insert, in order, from wherever they came. */
-  insertImages: (files: File[], at: number | undefined) => Promise<void>
-  /** The image files out of a DataTransfer, from a drop or from the clipboard. */
-  imageFiles: (list: FileList | null | undefined) => File[]
+  insertMedia: (files: File[], at: number | undefined) => Promise<void>
+  /** The image and video files out of a DataTransfer, from a drop or from the clipboard. */
+  mediaFiles: (list: FileList | null | undefined) => File[]
 }
 
 export function writingSurface(
-  { keySound, caretRef, slashRef, setSlash, slashKey, editorRef, insertImages, imageFiles }: SurfaceHooks,
+  { keySound, caretRef, slashRef, setSlash, slashKey, editorRef, insertMedia, mediaFiles }: SurfaceHooks,
 ): EditorProps {
   const feedback = keyFeedback(() => caretRef.current, keySound)
   return {
@@ -101,13 +101,13 @@ export function writingSurface(
         },
       },
       handleDrop(view, event) {
-        const files = imageFiles(event.dataTransfer?.files)
+        const files = mediaFiles(event.dataTransfer?.files)
         if (files.length === 0) return false
         event.preventDefault()
         // Capture WHERE the image was dropped now — uploads are async, so by the
         // time they resolve the text cursor has wandered (the image used to land
         // at the stale cursor, i.e. the end of the post). Insert at the drop point.
-        void insertImages(files, view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos)
+        void insertMedia(files, view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos)
         return true
       },
       handlePaste(_view, event) {
@@ -117,12 +117,12 @@ export function writingSurface(
         // a screenshot and pressing paste is how most people put a picture in a post, and
         // the product answered it with silence. Same upload path as a drop, so alt text,
         // ordering and the caption default are the ones the rest of the editor already uses.
-        const pasted = imageFiles(event.clipboardData?.files)
+        const pasted = mediaFiles(event.clipboardData?.files)
         if (pasted.length > 0) {
           event.preventDefault()
           // No coordinates on a paste: it goes where the cursor is, which is where the
           // person is looking. `undefined` means "wherever the selection is now".
-          void insertImages(pasted, undefined)
+          void insertMedia(pasted, undefined)
           return true
         }
         // Paste a lone video URL (YouTube/Vimeo/TikTok) -> insert a video embed.

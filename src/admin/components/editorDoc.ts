@@ -7,7 +7,7 @@
 // same reason and the split held.
 import type { Editor } from '@/admin/editor/editor'
 import { TextSelection } from 'prosemirror-state'
-import { isVideoUrl } from '@/render/video'
+import { isVideoUrl, videoFileUrl } from '@/render/video'
 import { documentToMarkdown } from './MarkdownBridge'
 
 export function readMarkdown(editor: Editor): string {
@@ -72,6 +72,23 @@ export function captionFromUrl(url: string): string {
   return base.replace(/^\d+-/, '').replace(/\.[a-z0-9]+$/i, '')
 }
 
+/**
+ * Only a paragraph that is the URL and nothing else: plain text, or one link whose target is
+ * its own text. Code, bold or `[url](other)` stay as written, as on the public page.
+ */
+function isBareUrlParagraph(node: import('prosemirror-model').Node): boolean {
+  let ok = true
+  node.forEach((child) => {
+    if (!child.isText) { ok = false; return }
+    const marks = child.marks
+    if (marks.length === 0) return
+    const link = marks[0]
+    if (marks.length === 1 && link?.type.name === 'link' && link.attrs.href === child.text) return
+    ok = false
+  })
+  return ok
+}
+
 // After loading/parsing markdown, promote any paragraph that is just a video URL
 // into a video node, so reloaded posts show the embed (not a bare link).
 export function videoUrlsToNodes(editor: Editor): void {
@@ -82,7 +99,8 @@ export function videoUrlsToNodes(editor: Editor): void {
   state.doc.descendants((node, pos) => {
     if (node.type.name !== 'paragraph') return
     const text = node.textContent.trim()
-    if (text && !/\s/.test(text) && isVideoUrl(text)) hits.push({ from: pos, to: pos + node.nodeSize, src: text })
+    if (!isBareUrlParagraph(node)) return
+    if (text && !/\s/.test(text) && (isVideoUrl(text) || videoFileUrl(text))) hits.push({ from: pos, to: pos + node.nodeSize, src: text })
   })
   if (!hits.length) return
   let tr = state.tr

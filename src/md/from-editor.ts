@@ -270,6 +270,11 @@ function oneBlock(node: PMNode): Block | null {
       return { type: 'htmlBlock', value: textOf(node) }
     case 'table':
       return tableOf(node)
+    case 'video': {
+      // A block video is its URL alone on a line, which the public page turns into a player.
+      const src = String(node.attrs?.src ?? '')
+      return src ? { type: 'paragraph', children: [{ type: 'text', value: src }] } : null
+    }
     case 'image': {
       // A block image is a paragraph of one image in Markdown, which is what a figure is.
       const [only] = leaf(node)

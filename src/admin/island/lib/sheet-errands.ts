@@ -4,7 +4,9 @@
 // Both are one request and a navigation, and both are easy to get subtly wrong — which is why
 // they are here rather than inline in the entry.
 import type { SheetKind, SheetWords } from '@/admin-shared/sheet-wire'
-import { refusalWords, uploadImages } from '@/admin/upload-client'
+import { refusalWords, uploadAttachments, uploadImages } from '@/admin/upload-client'
+import { isPlayableVideo, isQuickTime } from '@/admin/components/media-files'
+import { videoFileUrl } from '@/render/video'
 import { say } from './media-bridge'
 import { sayAcross } from './say-across'
 
@@ -22,6 +24,36 @@ export async function uploadInline(t: SheetWords, file: File): Promise<string | 
   } catch (err) {
     say(refusalWords(err, {
       badType: t.unsupportedType, tooLarge: t.uploadTooLarge, noRoom: t.uploadNoRoom, failed: t.imageUploadFailed,
+    }), 'error')
+    return null
+  }
+}
+
+/**
+ * A video file dropped or pasted into the writing, uploaded as an attachment (the Library's
+ * Videos tab uses the same route); gives the URL the player plays from.
+ *
+ * The refusals are the image ones, size and room included, so a file over the limit names the
+ * limit. A `.mov` goes up anyway but the writer is told it may not play outside Safari.
+ */
+export async function uploadVideoInline(t: SheetWords, file: File): Promise<string | null> {
+  if (!isPlayableVideo(file)) {
+    console.error('video refused before upload: unsupported extension', file.name, file.type)
+    say(t.unsupportedType, 'error')
+    return null
+  }
+  say(t.videoUploading.replace('{name}', file.name))
+  try {
+    const [item] = await uploadAttachments([file])
+    const url = item?.url ?? ''
+    // A URL without a video extension would be saved as a bare link, not a player.
+    if (!videoFileUrl(url)) throw new Error(`upload gave no playable url (${url || 'empty'})`)
+    if (isQuickTime(file)) say(t.videoMovWarning)
+    return url
+  } catch (err) {
+    console.error('video upload failed', file.name, file.size, file.type, err)
+    say(refusalWords(err, {
+      badType: t.unsupportedType, tooLarge: t.uploadTooLarge, noRoom: t.uploadNoRoom, failed: t.videoUploadFailed,
     }), 'error')
     return null
   }
