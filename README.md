@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.22`
+`2.2.23`
 
 **A self-hosted blog that an AI agent can run for you.**
 Your posts live in two SQLite files on your own disk, served by one small process that needs no cloud account.

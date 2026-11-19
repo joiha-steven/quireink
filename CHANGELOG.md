@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-11-19 · Quire Ink 2.2.23
 
 A video file goes into a post the way a picture does, and the code is open source again, under
 the GNU AGPL. Upgrading is the usual pull and restart, with no migration.
