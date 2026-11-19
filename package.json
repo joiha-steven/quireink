@@ -2,7 +2,7 @@
   "name": "quireink",
   "version": "2.2.22",
   "private": true,
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "engines": {
     "bun": ">=1.3"

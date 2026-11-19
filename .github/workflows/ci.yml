@@ -162,7 +162,7 @@ jobs:
           for want in \
             'org.opencontainers.image.title=Quire Ink' \
             'org.opencontainers.image.source=https://github.com/${{ github.repository }}' \
-            'org.opencontainers.image.licenses=PolyForm-Noncommercial-1.0.0' \
+            'org.opencontainers.image.licenses=AGPL-3.0-only' \
             'io.modelcontextprotocol.server.name=com.quireink/blog'
           do
             key=${want%%=*}; expected=${want#*=}

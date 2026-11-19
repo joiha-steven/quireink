@@ -37,7 +37,7 @@ licence that misses it is not a licence for this product.
 ## Decision
 
 The licence stays **PolyForm Noncommercial 1.0.0**, unchanged, in `LICENSE`.
-[`LICENSE-EXCEPTION.md`](../../LICENSE-EXCEPTION.md) grants one additional permission on top
+[`LICENSE-EXCEPTION.md`](https://github.com/joiha-steven/quireink/blob/v2.2.22/LICENSE-EXCEPTION.md) grants one additional permission on top
 of it: **use and run the software for any purpose including a commercial one, and charge for
 it — paid hosting included — provided what you run is a published release with its source
 unchanged**, the notices stay, the service says it runs Quire Ink and links back, and what is

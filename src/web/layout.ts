@@ -28,17 +28,11 @@ export { pageStyles } from '@/web/layout-styles'
 /**
  * THE ONE PLACE THE SOFTWARE NAMES ITSELF THAT AN OWNER CANNOT EDIT AWAY.
  *
- * `LICENSE-EXCEPTION.md` §2(c) requires that "wherever the software displays its own name and
- * version, that stays visible", and until 2026-08-29 there was nowhere it did. The only
- * public mention was the FOOTER, which is a setting — and §2(a) says in as many words that
- * anything set through the admin is not a change to the source. So a commercial licensee
- * could delete every trace of Quire Ink from their pages without touching a line of code and
- * still be inside the permission, which is the exact thing the permission exists to prevent.
- *
- * A `generator` meta is the standard answer (WordPress, Ghost and Hugo all emit one), costs
- * a reader nothing, shows nothing on the page, and makes the condition CHECKABLE from
- * outside instead of only stated. It is not a lock — anyone modifying the source can remove
- * it, and doing so is then a source change, which is precisely the line the licence draws.
+ * The footer credit is a setting and can be deleted from the admin. A `generator` meta is the
+ * standard answer (WordPress, Ghost and Hugo all emit one): it costs a reader nothing, shows
+ * nothing on the page, and lets anyone looking at a Quire Ink site find where its source lives,
+ * which is what AGPL §13 is about. Until ADR 0075 it was also a licence condition
+ * (`LICENSE-EXCEPTION.md` §2(c), v2.2.22 and earlier); it no longer is.
  */
 import pkg from '../../package.json' with { type: 'json' }
 

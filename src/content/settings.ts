@@ -109,7 +109,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   customBodyEnd: '',
   // The credit points at the PRODUCT'S HOME, not the repository: a reader who follows it
   // wants to know what Quire Ink is, and the repository answers a different question for a
-  // different visitor. The licence accepts either (LICENSE-EXCEPTION.md §2(d)).
+  // different visitor.
   footer: '© {year} {title} · [powered by Quire Ink](https://quireink.com)',
   menu: [],
   featured: [],

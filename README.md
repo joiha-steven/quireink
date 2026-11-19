@@ -13,7 +13,7 @@ If you would rather not rent a server, it also runs on Cloudflare.
 
 <br/>
 
-![License: PolyForm Noncommercial plus paid hosting](https://img.shields.io/badge/License-PolyForm_NC_%2B_paid_hosting-22c55e) ![MCP](https://img.shields.io/badge/MCP-ready-7c3aed)
+![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-22c55e) ![MCP](https://img.shields.io/badge/MCP-ready-7c3aed)
 
 [**quireink.com**](https://quireink.com) · [**Try it**](https://demo.quireink.com) · [**Install**](#install) · [**Docs**](#where-to-go-next) · [**In full**](./docs/overview.md) · [**Changelog**](./CHANGELOG.md) · [**License**](#license)
 
@@ -177,16 +177,15 @@ Plans are kept in the author's private notes rather than here: they are one pers
 
 ## License
 
-**The code here** is [PolyForm Noncommercial 1.0.0](./LICENSE) plus [one additional permission](./LICENSE-EXCEPTION.md). Source-available, not open source. In short: **you may run it, and charge for running it, as long as you run a version published here.**
+**The code here** is [GNU AGPL v3.0 only](./LICENSE). Open source. In short: **use it, change it, host it, sell it — and if you run a changed version for other people, offer them its source.**
 
-- **Noncommercial: everything.** Your own blog, a hobby project, study, research, and also charities, schools, public research bodies and government. Read it, change it, host it, fork it, pass it on.
-- **Commercial: yes, unmodified.** Run it for a business or a client, sell hosting where each customer gets their own blog. Four things are asked in return: run a published release with its source unchanged, keep the notices, say your service runs Quire Ink and link back, and sell the service rather than the software. Settings, palettes, fonts and content are not source, so changing them to alter how a site looks does not count as a modification.
-- **A modified version, used commercially, needs a separate licence.** Fixing a bug or a security hole in your own deployment is exempt: patch it, and tell the owner within 30 days.
+- **Anything you like, for free.** Your own blog, a client's, a business, a hosting service. Read it, change it, fork it, pass it on.
+- **Changed it and run it for others? Share the change.** If people use your modified Quire Ink over the network, you must offer them the source of that version (AGPL §13). Running it unmodified asks nothing more of you.
 - **What you write stays yours.** Your posts and images are not covered by the code licence and are not in this repository.
-- **After 48 months without a release, it opens.** The code as it stands at that point also becomes available to you under the Apache License 2.0, through a grant made today. Nobody has to be reachable for that to take effect ([ADR 0050](./docs/decisions/0050-the-licence-opens-by-itself-after-48-months-without-a-release.md)).
 
-> **Everything up to and including v2.0.0 was MIT, and stays MIT forever.** A licence change
-> does not reach backwards ([ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md)).
+> **Older releases keep their own terms.** Everything up to and including v2.0.0 is MIT. Later releases up to v2.2.22 are
+> PolyForm Noncommercial plus the [additional permission](https://github.com/joiha-steven/quireink/blob/v2.2.22/LICENSE-EXCEPTION.md)
+> they shipped with. A licence change does not reach backwards ([ADR 0075](./docs/decisions/0075-relicense-agpl.md)).
 
 ## About this project
 

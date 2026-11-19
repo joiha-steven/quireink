@@ -4771,7 +4771,7 @@ And the licence said no to the wrong people. The relicense had been written on t
 sentence "nobody may make money from it", which blocked a host that installs published
 releases and sells the operation of them as firmly as it blocked the fork-and-rename it
 was written for. Only the second was ever the point.
-[`LICENSE-EXCEPTION.md`](LICENSE-EXCEPTION.md) now grants commercial use of a **published
+[`LICENSE-EXCEPTION.md`](https://github.com/joiha-steven/quireink/blob/v2.2.22/LICENSE-EXCEPTION.md) now grants commercial use of a **published
 release run unmodified**, on four conditions: notices stay, credit and no passing off,
 sell the service not the software, and security fixes only, reported within 30 days.
 Commercial use of a modified copy still needs asking

@@ -149,7 +149,7 @@ export async function helpScreen(settings: SiteSettings): Promise<string> {
       + lookup(t, h.trouble, h.troubleHead, 'w-2/5', false)))
     + `<p class="pt-2 text-center text-xs text-neutral-500 dark:text-neutral-400">`
     + `${ext(REPO, 'Quire Ink')} v${escapeHtml(APP_VERSION)} · `
-    + `${ext(doc('LICENSE-EXCEPTION.md'), 'PolyForm NC + hosting')} · `
+    + `${ext(doc('LICENSE'), 'AGPL-3.0')} · `
     + `${ext(`${REPO}#readme`, 'README')}</p>`
     + `</div>`
 

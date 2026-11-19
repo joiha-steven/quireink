@@ -131,7 +131,6 @@ copy off the machine is your job.
 
 ## Licence
 
-[PolyForm Noncommercial](https://github.com/joiha-steven/quireink/blob/main/LICENSE), plus
-[one additional permission](https://github.com/joiha-steven/quireink/blob/main/LICENSE-EXCEPTION.md)
-that lets you run **this published image** commercially, paid hosting included. Only a
-*modified* version used commercially needs to ask first.
+[GNU AGPL v3.0 only](https://github.com/joiha-steven/quireink/blob/main/LICENSE). Run it, change
+it, host it, charge for it. If you run a **modified** version for other people, offer them its
+source. Images up to 2.2.22 keep the PolyForm Noncommercial terms they shipped with.
